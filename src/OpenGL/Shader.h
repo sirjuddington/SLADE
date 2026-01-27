@@ -40,8 +40,9 @@ namespace gl
 		bool loadResourceEntries(
 			string_view vertex_entry,
 			string_view fragment_entry,
-			string_view geometry_entry = {},
-			bool        link           = true);
+			string_view geometry_entry   = {},
+			bool        link             = true,
+			bool        reload_resources = false);
 		bool link();
 
 		void bind() const;
@@ -82,6 +83,7 @@ namespace gl
 	};
 
 	Shader* getShader(string_view name);
-	void    reloadShaders();
+	void    reloadShaders(string_view match_name = {});
+	void    reloadShader(string_view name);
 } // namespace gl
 } // namespace slade

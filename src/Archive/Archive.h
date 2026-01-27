@@ -91,8 +91,12 @@ public:
 	void     putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, const ArchiveDir* start = nullptr) const;
 	bool     canSave() const { return parent_.lock() || on_disk_; }
 	bool     paste(ArchiveDir* tree, unsigned position = 0xFFFFFFFF, shared_ptr<ArchiveDir> base = nullptr);
-	bool     importDir(string_view directory, bool ignore_hidden = false, shared_ptr<ArchiveDir> base = nullptr);
-	bool     hasFlatHack() { return false; }
+	bool     importDir(
+			string_view            directory,
+			bool                   ignore_hidden = false,
+			shared_ptr<ArchiveDir> base          = nullptr,
+			bool                   set_filepath  = false);
+	bool hasFlatHack() { return false; }
 
 	// Directory stuff
 	ArchiveDir*            dirAtPath(string_view path, ArchiveDir* base = nullptr) const;
@@ -120,7 +124,7 @@ public:
 
 	// Entry modification
 	bool renameEntry(ArchiveEntry* entry, string_view name, bool force = false);
-	bool revertEntry(ArchiveEntry* entry);
+	bool revertEntry(ArchiveEntry* entry, bool force = false);
 
 	// Detection
 	MapDesc         mapDesc(ArchiveEntry* maphead);

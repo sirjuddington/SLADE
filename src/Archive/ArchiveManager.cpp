@@ -153,7 +153,7 @@ bool ArchiveManager::init()
 	{
 		program_resource_archive_ = std::make_shared<Archive>(ArchiveFormat::Dir);
 		program_resource_archive_->setFilename(app::path("slade.pk3", app::Dir::Executable));
-		program_resource_archive_->importDir(resdir);
+		program_resource_archive_->importDir(resdir, false, nullptr, true);
 		res_archive_open_ = (program_resource_archive_->numEntries() > 0);
 
 		if (!initArchiveFormats())
@@ -217,6 +217,32 @@ bool ArchiveManager::initArchiveFormats() const
 bool ArchiveManager::initBaseResource()
 {
 	return openBaseResource((int)base_resource);
+}
+
+// -----------------------------------------------------------------------------
+// Reloads the program resource archive from disk
+// Note that this does not re-open the archive, it just reloads existing entry
+// data, so any new entries added to slade.pk3 (or res dir) will not be loaded
+// -----------------------------------------------------------------------------
+void ArchiveManager::reloadResArchive() const
+{
+	for (auto entry : program_resource_archive_->rootDir()->allEntries())
+		program_resource_archive_->revertEntry(entry.get(), true);
+}
+
+// -----------------------------------------------------------------------------
+// Reloads the entry at [res_path] in the program resource archive frin disk
+// -----------------------------------------------------------------------------
+bool ArchiveManager::reloadResource(string_view res_path) const
+{
+	if (auto entry = program_resource_archive_->entryAtPath(res_path))
+	{
+		program_resource_archive_->revertEntry(entry, true);
+		return true;
+	}
+
+	log::warning("Resource {} not found in resource archive", res_path);
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -1269,3 +1295,25 @@ void c_open(const vector<string>& args)
 		app::archiveManager().openArchive(arg);
 }
 ConsoleCommand am_open("open", &c_open, 1, true); // Can't use the macro with this name
+
+// -----------------------------------------------------------------------------
+// Reloads all resources from slade.pk3
+// -----------------------------------------------------------------------------
+CONSOLE_COMMAND(reload_resources, 0, true)
+{
+	app::archiveManager().reloadResArchive();
+
+	log::info("Reloaded all resources from slade.pk3");
+}
+
+// -----------------------------------------------------------------------------
+// Reloads a specific resource entry given by its path in the resource archive
+// -----------------------------------------------------------------------------
+CONSOLE_COMMAND(reload_resource, 1, true)
+{
+	auto res_path = args[0];
+	if (app::archiveManager().reloadResource(res_path))
+		log::info("Reloaded resource: {}", res_path);
+	else
+		log::error("Failed to reload resource: {}", res_path);
+}

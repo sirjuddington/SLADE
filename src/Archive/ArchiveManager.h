@@ -14,6 +14,8 @@ public:
 	bool                        init();
 	bool                        initBaseResource();
 	bool                        resArchiveOK() const { return res_archive_open_; }
+	void                        reloadResArchive() const;
+	bool                        reloadResource(string_view res_path) const;
 	bool                        addArchive(shared_ptr<Archive> archive);
 	bool                        validResDir(string_view dir) const;
 	shared_ptr<Archive>         getArchive(int index);

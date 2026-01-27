@@ -843,7 +843,7 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 // If [ignore_hidden] is true, files and directories beginning with a '.' will
 // not be imported
 // -----------------------------------------------------------------------------
-bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<ArchiveDir> base)
+bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<ArchiveDir> base, bool set_filepath)
 {
 	// Get a list of all files in the directory
 	auto files = fileutil::allFilesInDir(directory, true, true);
@@ -891,6 +891,9 @@ bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<Ar
 		else
 			log::error(global::error);
 
+		if (set_filepath)
+			entry->exProp("filePath") = file;
+
 		// Set unmodified
 		entry->setState(EntryState::Unmodified);
 		dir->dirEntry()->setState(EntryState::Unmodified);
@@ -904,7 +907,7 @@ bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<Ar
 // saved.
 // Returns false if entry was invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::revertEntry(ArchiveEntry* entry)
+bool Archive::revertEntry(ArchiveEntry* entry, bool force)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -915,7 +918,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 		return false;
 
 	// No point if entry is unmodified or newly created
-	if (entry->state() != EntryState::Modified)
+	if (!force && entry->state() != EntryState::Modified)
 		return true;
 
 	// Reload entry data from the archive on disk

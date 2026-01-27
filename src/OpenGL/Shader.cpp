@@ -5,6 +5,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "General/Console.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include <glm/gtc/type_ptr.hpp>
@@ -119,10 +120,29 @@ Shader* getShader(string_view name)
 	return nullptr;
 }
 
-void reloadShaders()
+void reloadShaders(string_view match_name)
 {
-	// TODO: this
-	// Need to add the ability to reload program resource entries from disk
+	for (auto& ls : loaded_shaders)
+	{
+		if (match_name.empty() || strutil::matchesCI(ls.name, match_name))
+		{
+			ls.shader->loadResourceEntries(ls.vertex_entry, ls.fragment_entry, ls.geometry_entry, true, true);
+			log::info("Reloaded shader '{}'", ls.name);
+		}
+	}
+}
+
+void reloadShader(string_view name)
+{
+	for (auto& ls : loaded_shaders)
+	{
+		if (ls.name == name)
+		{
+			ls.shader->loadResourceEntries(ls.vertex_entry, ls.fragment_entry, ls.geometry_entry, true, true);
+			log::info("Reloaded shader '{}'", ls.name);
+			return;
+		}
+	}
 }
 } // namespace slade::gl
 
@@ -267,7 +287,8 @@ bool Shader::loadResourceEntries(
 	string_view vertex_entry,
 	string_view fragment_entry,
 	string_view geometry_entry,
-	bool        link)
+	bool        link,
+	bool        reload_resources)
 {
 	auto program_resource = app::archiveManager().programResourceArchive();
 	if (program_resource)
@@ -298,6 +319,15 @@ bool Shader::loadResourceEntries(
 				log::error("Geometry shader file {} not found in slade.pk3", geometry_entry);
 				return false;
 			}
+		}
+
+		// Reload resource entries if requested
+		if (reload_resources)
+		{
+			program_resource->revertEntry(entry_vert, true);
+			program_resource->revertEntry(entry_frag, true);
+			if (entry_geom)
+				program_resource->revertEntry(entry_geom, true);
 		}
 
 		if (load(
@@ -573,4 +603,30 @@ const Shader* Shader::currentShader()
 			return ls.shader;
 
 	return nullptr;
+}
+
+
+CONSOLE_COMMAND(reload_shaders, 0, true)
+{
+	if (args.size() == 0)
+		reloadShaders();
+	else
+	{
+		for (auto& arg : args)
+			reloadShaders(arg);
+	}
+}
+
+CONSOLE_COMMAND(list_shaders, 0, false)
+{
+	log::info("Loaded shaders:");
+	for (const auto& ls : loaded_shaders)
+	{
+		log::info(
+			"{} ({} / {}{})",
+			ls.name,
+			ls.vertex_entry,
+			ls.fragment_entry,
+			ls.geometry_entry.empty() ? "" : " / " + ls.geometry_entry);
+	}
 }
