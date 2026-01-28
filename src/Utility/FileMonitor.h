@@ -37,7 +37,8 @@ public:
 	void processTerminated() override;
 
 private:
-	Archive* archive_ = nullptr;
-	string   map_name_;
+	Archive*                   archive_ = nullptr;
+	string                     map_name_;
+	sigslot::scoped_connection sc_archive_closed_;
 };
 } // namespace slade
