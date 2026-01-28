@@ -207,3 +207,12 @@ public:
 
 	int isThisFormat(MemChunk& mc) override { return SiNArchive::isSiNArchive(mc) ? MATCH_TRUE : MATCH_FALSE; }
 };
+
+class LabDataFormat : public EntryDataFormat
+{
+public:
+	LabDataFormat() : EntryDataFormat("archive_lab") {}
+	~LabDataFormat() = default;
+
+	int isThisFormat(MemChunk& mc) override { return LabArchive::isLabArchive(mc) ? MATCH_TRUE : MATCH_FALSE; }
+};

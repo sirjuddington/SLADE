@@ -39,8 +39,10 @@ public:
 	// Accessors
 	const string&            name() const { return name_; }
 	string_view              nameNoExt() const;
+	string_view              ext() const;
 	const string&            upperName() const { return upper_name_; }
 	string_view              upperNameNoExt() const;
+	string_view              upperExt() const;
 	uint32_t                 size() const { return data_loaded_ ? data_.size() : size_; }
 	MemChunk&                data(bool allow_load = true);
 	const uint8_t*           rawData(bool allow_load = true);

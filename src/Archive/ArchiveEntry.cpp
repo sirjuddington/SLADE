@@ -131,6 +131,30 @@ string_view ArchiveEntry::upperNameNoExt() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the entry file extension
+// -----------------------------------------------------------------------------
+string_view ArchiveEntry::ext() const
+{
+	auto ext_pos = name_.find('.');
+	if (ext_pos != string::npos)
+		return { name_.data() + ext_pos };
+
+	return {};
+}
+
+// -----------------------------------------------------------------------------
+// Returns the entry file extension in uppercase
+// -----------------------------------------------------------------------------
+string_view ArchiveEntry::upperExt() const
+{
+	auto ext_pos = upper_name_.find('.');
+	if (ext_pos != string::npos)
+		return { upper_name_.data() + ext_pos };
+
+	return {};
+}
+
+// -----------------------------------------------------------------------------
 // Returns the entry's parent archive
 // -----------------------------------------------------------------------------
 Archive* ArchiveEntry::parent() const

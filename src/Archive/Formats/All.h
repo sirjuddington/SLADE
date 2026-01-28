@@ -9,6 +9,7 @@
 #include "GobArchive.h"
 #include "GrpArchive.h"
 #include "HogArchive.h"
+#include "LabArchive.h"
 #include "LfdArchive.h"
 #include "LibArchive.h"
 #include "PakArchive.h"
