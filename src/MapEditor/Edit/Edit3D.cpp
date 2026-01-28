@@ -366,6 +366,8 @@ void Edit3D::changeSectorHeight(int amount) const
 		{
 			// Get sector
 			auto sector = context_->map().side(item.index)->sector();
+			if (!sector)
+				continue;
 
 			// Check this sector's ceiling hasn't already been changed
 			int index = sector->index();
@@ -387,6 +389,8 @@ void Edit3D::changeSectorHeight(int amount) const
 
 			// Get sector
 			MapSector* sector = context_->map().sector(item.index);
+			if (!sector)
+				continue;
 
 			if (floor)
 			{
