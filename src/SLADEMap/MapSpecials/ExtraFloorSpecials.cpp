@@ -35,6 +35,7 @@
 #include "Game/Configuration.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Vector.h"
@@ -115,6 +116,20 @@ bool ExtraFloorSpecials::lineUpdated(const MapLine& line, bool update_outdated)
 		updateOutdatedSectorExtraFloors();
 
 	return specials_updated_;
+}
+
+bool ExtraFloorSpecials::sideUpdated(const MapSide& side, bool update_outdated)
+{
+	// Sector_Set3dFloor - if [side] is on a control line, it may be used as the
+	// side texture of the ExtraFloor, so update all target sectors' render info
+	for (const auto& special : set_3d_floor_specials_)
+		if (special.line == side.parentLine())
+			special.target->setRenderInfoUpdated();
+
+	if (update_outdated)
+		updateOutdatedSectorExtraFloors();
+
+	return false;
 }
 
 bool ExtraFloorSpecials::sectorUpdated(const MapSector& sector, bool update_outdated)

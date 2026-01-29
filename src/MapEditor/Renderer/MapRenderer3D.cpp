@@ -10,7 +10,9 @@
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/Shader.h"
 #include "Quad3D.h"
+#include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapSpecials/MapSpecials.h"
@@ -142,7 +144,7 @@ void MapRenderer3D::clearData()
 
 	// Walls
 	vb_quads_->buffer().clear();
-	quads_.clear();
+	line_quads_.clear();
 	quad_groups_.clear();
 }
 
@@ -154,6 +156,12 @@ unsigned MapRenderer3D::flatsBufferSize() const
 unsigned MapRenderer3D::quadsBufferSize() const
 {
 	return vb_quads_->buffer().size() * sizeof(mapeditor::MGVertex);
+}
+
+static bool flatsNeedUpdate(long last_updated, const SLADEMap* map)
+{
+	return last_updated < map->typeLastUpdated(map::ObjectType::Sector)
+		   || last_updated < map->mapSpecials().specialsLastUpdated() || last_updated < map->sectorRenderInfoUpdated();
 }
 
 void MapRenderer3D::updateFlats()
@@ -190,11 +198,10 @@ void MapRenderer3D::updateFlats()
 		flats_updated_ = app::runTimer();
 		flat_groups_.clear();
 	}
-	else if (
-		flats_updated_ < map_->typeLastUpdated(map::ObjectType::Sector)
-		|| flats_updated_ < map_->mapSpecials().specialsLastUpdated()
-		|| flats_updated_ < map_->sectorRenderInfoUpdated())
+	else if (flatsNeedUpdate(flats_updated_, map_))
 	{
+		map_->mapSpecials().updateSpecials();
+
 		// Check for sectors that need an update
 		bool updated = false;
 		for (auto& sf : sector_flats_)
@@ -254,16 +261,20 @@ void MapRenderer3D::updateFlats()
 			for (auto& flat : sf.flats)
 				flats_to_process.push_back({ .flat = &flat, .processed = false });
 
-		for (auto& fp1 : flats_to_process)
+		for (unsigned i1 = 0; i1 < flats_to_process.size(); ++i1)
 		{
+			auto& fp1 = flats_to_process[i1];
+
 			if (fp1.processed)
 				continue;
 
 			// Build list of vertex indices for flats with matching texture/flags/etc
 			vector<GLuint> indices;
-			for (auto& fp2 : flats_to_process)
+			for (unsigned i2 = i1; i2 < flats_to_process.size(); ++i2)
 			{
-				// Check for match
+				auto& fp2 = flats_to_process[i2];
+
+				// Ignore if already processed or not matching
 				if (fp2.processed || *fp1.flat != *fp2.flat)
 					continue;
 
@@ -298,6 +309,37 @@ void MapRenderer3D::updateFlats()
 	}
 }
 
+static bool quadsNeedUpdate(long last_updated, const SLADEMap* map)
+{
+	return last_updated < map->typeLastUpdated(map::ObjectType::Line)
+		   || last_updated < map->typeLastUpdated(map::ObjectType::Side)
+		   || last_updated < map->typeLastUpdated(map::ObjectType::Sector)
+		   || last_updated < map->mapSpecials().specialsLastUpdated()
+		   || last_updated < map->sectorRenderInfoUpdated(); // ExtraFloors may affect wall quads
+}
+
+static bool lineNeedsUpdate(long last_updated, const MapLine* line)
+{
+	if (last_updated < line->modifiedTime())
+		return true;
+
+	// Check sides
+	if (line->s1())
+	{
+		if (last_updated < line->s1()->modifiedTime() || last_updated < line->s1()->sector()->modifiedTime()
+			|| last_updated < line->s1()->sector()->renderInfoLastUpdated())
+			return true;
+	}
+	if (line->s2())
+	{
+		if (last_updated < line->s2()->modifiedTime() || last_updated < line->s2()->sector()->modifiedTime()
+			|| last_updated < line->s2()->sector()->renderInfoLastUpdated())
+			return true;
+	}
+
+	return false;
+}
+
 void MapRenderer3D::updateWalls()
 {
 	using QuadFlags = mapeditor::Quad3D::Flags;
@@ -306,79 +348,136 @@ void MapRenderer3D::updateWalls()
 	if (map_->geometryUpdated() > quads_updated_)
 	{
 		vb_quads_->buffer().clear();
-		quads_.clear();
+		line_quads_.clear();
 		quad_groups_.clear();
 	}
 
 	// Generate wall quads if needed
-	if (quads_.empty())
+	if (line_quads_.empty())
 	{
 		unsigned vertex_index = 0;
 		for (auto* line : map_->lines())
 		{
 			auto [quads, vertices] = mapeditor::generateLineQuads(*line, vertex_index);
-			vectorConcat(quads_, quads);
+
+			line_quads_.push_back(
+				{ .line                 = line,
+				  .quads                = quads,
+				  .vertex_buffer_offset = vertex_index,
+				  .updated_time         = app::runTimer() });
+
 			vb_quads_->addVertices(vertices);
 			vertex_index += vertices.size();
 		}
 		vb_quads_->push();
 		quads_updated_ = app::runTimer();
 	}
+	else if (quadsNeedUpdate(quads_updated_, map_))
+	{
+		map_->mapSpecials().updateSpecials();
+
+		// Check for lines that need an update
+		bool updated = false;
+		for (auto& lq : line_quads_)
+		{
+			if (!lineNeedsUpdate(lq.updated_time, lq.line))
+				continue;
+
+			// Build new quads/vertices
+			auto quads_count               = lq.quads.size();
+			auto [new_quads, new_vertices] = mapeditor::generateLineQuads(*lq.line, lq.vertex_buffer_offset);
+			lq.quads                       = new_quads;
+
+			// Update vertex buffer
+			if (new_quads.size() <= quads_count)
+			{
+				// Same or fewer quads, just update existing vertex data
+				vb_quads_->buffer().update(lq.vertex_buffer_offset, new_vertices);
+			}
+			else
+			{
+				// More quads than before, need to re-upload entire buffer
+
+				// TODO: This will result in gaps in the buffer, either compact
+				//       the buffer here or implement some way to track and
+				//       reuse freed space later
+
+				lq.vertex_buffer_offset = vb_quads_->buffer().size();
+				vb_quads_->pull();                    // Pull data from GPU
+				vb_quads_->addVertices(new_vertices); // Add new vertex data
+				vb_quads_->push();                    // Push data back to GPU
+			}
+
+			// Set updated
+			updated         = true;
+			lq.updated_time = app::runTimer();
+		}
+
+		// Clear quad groups to be rebuilt if any quads were updated
+		if (updated)
+		{
+			quads_updated_ = app::runTimer();
+			quad_groups_.clear();
+		}
+	}
 
 	// Generate quad groups if needed
 	if (quad_groups_.empty())
 	{
-		vector<uint8_t> quads_processed(quads_.size());
-
-		for (unsigned i = 0; i < quads_.size(); ++i)
+		// Build list of quads to process
+		struct QuadToProcess
 		{
-			if (quads_processed[i])
+			mapeditor::Quad3D* quad;
+			bool               processed;
+		};
+		vector<QuadToProcess> quads_to_process;
+		for (auto& sf : line_quads_)
+			for (auto& quad : sf.quads)
+				quads_to_process.push_back({ .quad = &quad, .processed = false });
+
+		for (unsigned i1 = 0; i1 < quads_to_process.size(); ++i1)
+		{
+			if (quads_to_process[i1].processed)
 				continue;
+
+			auto quad = quads_to_process[i1].quad;
 
 			// Build list of vertex indices for quads with this texture+colour+flags
 			vector<GLuint> indices;
-			for (unsigned f = i; f < quads_.size(); ++f)
+			for (unsigned i2 = i1; i2 < quads_to_process.size(); ++i2)
 			{
-				// Check texture match
-				auto& quad = quads_[f];
-				if (quads_processed[f] || quad.texture != quads_[i].texture)
-					continue;
+				auto& match = quads_to_process[i2];
 
-				// Check colour match
-				if (quad.colour != quads_[i].colour)
-					continue;
-
-				// Check flags
-				if (quad.flags != quads_[i].flags)
+				// Ignore if already processed or not matching
+				if (match.processed || *quad != *match.quad)
 					continue;
 
 				// Add indices
-				auto vi = quad.vertex_offset;
-				while (vi < quad.vertex_offset + 6)
+				auto vi = match.quad->vertex_offset;
+				while (vi < match.quad->vertex_offset + 6)
 					indices.push_back(vi++);
 
-				quads_processed[f] = 1;
+				match.processed = true;
 			}
 
 			// Determine transparency type
 			auto transparency = RenderGroup::Transparency::None;
-			if (quads_[i].hasFlag(QuadFlags::Additive))
+			if (quad->hasFlag(QuadFlags::Additive))
 				transparency = RenderGroup::Transparency::Additive;
-			else if (quads_[i].colour.a < 1.0f)
+			else if (quad->colour.a < 1.0f)
 				transparency = RenderGroup::Transparency::Normal;
 
 			// Add quad group for texture
 			quad_groups_.push_back(
-				{ .texture      = quads_[i].texture,
-				  .colour       = quads_[i].colour,
+				{ .texture      = quad->texture,
+				  .colour       = quad->colour,
 				  .index_buffer = std::make_unique<gl::IndexBuffer>(),
-				  .alpha_test   = transparency == RenderGroup::Transparency::None
-								&& quads_[i].hasFlag(QuadFlags::MidTexture),
-				  .sky         = quads_[i].hasFlag(QuadFlags::Sky),
+				  .alpha_test = transparency == RenderGroup::Transparency::None && quad->hasFlag(QuadFlags::MidTexture),
+				  .sky        = quad->hasFlag(QuadFlags::Sky),
 				  .transparent = transparency });
 			quad_groups_.back().index_buffer->upload(indices);
 
-			quads_processed[i] = 1;
+			quads_to_process[i1].processed = true;
 		}
 	}
 }

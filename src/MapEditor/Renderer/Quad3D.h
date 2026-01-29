@@ -28,5 +28,9 @@ struct Quad3D
 
 	bool hasFlag(Flags flag) const { return flags & static_cast<u8>(flag); }
 	void setFlag(Flags flag) { flags |= static_cast<u8>(flag); }
+	bool operator==(const Quad3D& other) const
+	{
+		return texture == other.texture && colour == other.colour && flags == other.flags;
+	}
 };
 } // namespace slade::mapeditor

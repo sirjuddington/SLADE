@@ -253,11 +253,7 @@ void MapEditContext::setEditMode(Mode mode)
 
 	// Setup for 3d mode if switching to it
 	if (mode == Mode::Visual)
-	{
 		KeyBind::releaseAll();
-		// map_->mapSpecials().processAllSpecials(); // Refresh all slopes/3dfloors etc.
-		// renderer_->forceUpdate(false, true);
-	}
 }
 
 // -----------------------------------------------------------------------------

@@ -221,7 +221,13 @@ void MapSpecials::updateSpecials() const
 		{
 		case ObjectType::Object: break;
 		case ObjectType::Vertex: break;
-		case ObjectType::Side:   break;
+
+		case ObjectType::Side:
+		{
+			auto side = dynamic_cast<MapSide*>(obj);
+			extrafloor_specials_->sideUpdated(*side, false);
+			break;
+		}
 
 		case ObjectType::Line:
 		{

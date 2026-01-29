@@ -67,7 +67,15 @@ private:
 	unique_ptr<mapeditor::MapGeometryBuffer3D> vb_flats_; // Vertex buffer for all flats
 	long                                       flats_updated_ = 0;
 
-	vector<mapeditor::Quad3D>                  quads_;
+	struct LineQuads
+	{
+		const MapLine*            line;
+		vector<mapeditor::Quad3D> quads;
+		unsigned                  vertex_buffer_offset;
+		long                      updated_time;
+	};
+
+	vector<LineQuads>                          line_quads_;
 	unique_ptr<mapeditor::MapGeometryBuffer3D> vb_quads_; // Vertex buffer for all wall quads
 	long                                       quads_updated_ = 0;
 

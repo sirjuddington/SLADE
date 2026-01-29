@@ -22,6 +22,7 @@ public:
 	void updateOutdatedSectorExtraFloors();
 
 	bool lineUpdated(const MapLine& line, bool update_outdated = true);
+	bool sideUpdated(const MapSide& side, bool update_outdated = true);
 	bool sectorUpdated(const MapSector& sector, bool update_outdated = true);
 
 private:
