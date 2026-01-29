@@ -188,6 +188,7 @@ void SlopeSpecials::addVertexHeightThing(const MapThing& thing, SectorSurfaceTyp
 	}
 
 	vertex_height_things_.push_back(vht);
+	specials_updated_ = true;
 }
 
 void SlopeSpecials::removeVertexHeightThing(const MapThing& thing)

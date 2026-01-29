@@ -39,12 +39,14 @@ public:
 	MapFormat                  currentFormat() const { return current_format_; }
 	long                       geometryUpdated() const { return geometry_updated_; }
 	long                       thingsUpdated() const { return things_updated_; }
+	long                       sectorRenderInfoUpdated() const { return sector_renderinfo_updated_; }
 	long                       typeLastUpdated(map::ObjectType type) const;
 	const MapObjectCollection& mapData() const { return data_; }
 	bool                       isOpen() const { return is_open_; }
 
 	void setGeometryUpdated();
 	void setThingsUpdated();
+	void setSectorRenderInfoUpdated();
 	void setTypeUpdated(map::ObjectType type);
 
 	// MapObject access
@@ -165,9 +167,10 @@ private:
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras
 
-	std::array<long, 6> type_modified_times_;  // The last modified time of each object type
-	long                geometry_updated_ = 0; // The last time the map geometry was updated
-	long                things_updated_   = 0; // The last time the thing list was modified
+	std::array<long, 6> type_modified_times_;           // The last modified time of each object type
+	long                geometry_updated_          = 0; // The last time the map geometry was updated
+	long                things_updated_            = 0; // The last time the thing list was modified
+	long                sector_renderinfo_updated_ = 0; // The last time any sector render info was updated
 
 	// Usage counts
 	std::map<int, int> usage_thing_type_;

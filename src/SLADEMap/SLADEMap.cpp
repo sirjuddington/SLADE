@@ -214,6 +214,14 @@ void SLADEMap::setThingsUpdated()
 }
 
 // -----------------------------------------------------------------------------
+// Sets the sector render info last updated time to now
+// -----------------------------------------------------------------------------
+void SLADEMap::setSectorRenderInfoUpdated()
+{
+	sector_renderinfo_updated_ = app::runTimer();
+}
+
+// -----------------------------------------------------------------------------
 // Sets the last modified time for [type] to now
 // -----------------------------------------------------------------------------
 void SLADEMap::setTypeUpdated(map::ObjectType type)

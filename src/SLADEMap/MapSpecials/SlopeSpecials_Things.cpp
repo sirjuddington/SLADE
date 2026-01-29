@@ -82,6 +82,7 @@ void SlopeSpecials::addLineSlopeThing(const MapThing& thing, SectorSurfaceType s
 			continue;
 
 		line_slope_things_.push_back(lst);
+		specials_updated_ = true;
 	}
 
 	sorted_slope_things_.clear();
@@ -126,6 +127,7 @@ void SlopeSpecials::addSectorTiltThing(const MapThing& thing, SectorSurfaceType 
 
 	sector_tilt_things_.push_back(stt);
 	sorted_slope_things_.clear();
+	specials_updated_ = true;
 }
 
 void SlopeSpecials::applySectorTiltThing(const SectorTiltThing& special)
@@ -203,6 +205,7 @@ void SlopeSpecials::addVavoomSlopeThing(const MapThing& thing, SectorSurfaceType
 		vst.line = lines[a];
 		vavoom_things_.push_back(vst);
 		sorted_slope_things_.clear();
+		specials_updated_ = true;
 
 		return;
 	}
@@ -238,6 +241,7 @@ void SlopeSpecials::removeSlopeThing(const MapThing& thing)
 		{
 			vectorAddUnique(sectors_to_update_, sorted_slope_things_[i]->target);
 			sorted_slope_things_.erase(sorted_slope_things_.begin() + i);
+			specials_updated_ = true;
 			continue;
 		}
 		i++;
@@ -253,6 +257,7 @@ void SlopeSpecials::removeSlopeThing(const MapThing& thing)
 			{
 				vectorAddUnique(sectors_to_update_, vec[i].target);
 				vec.erase(vec.begin() + i);
+				specials_updated_ = true;
 				continue;
 			}
 			i++;
@@ -279,8 +284,7 @@ void SlopeSpecials::applySlopeThingSpecials(const MapSector& sector)
 
 		// Sort by thing index
 		std::ranges::sort(
-			sorted_slope_things_,
-			[](const auto& a, const auto& b) { return a->thing->index() < b->thing->index(); });
+			sorted_slope_things_, [](const auto& a, const auto& b) { return a->thing->index() < b->thing->index(); });
 	}
 
 	// Apply each SlopeThingSpecial in order
@@ -334,6 +338,7 @@ void SlopeSpecials::addCopySlopeThing(const MapThing& thing, SectorSurfaceType s
 
 	copy_slope_things_.push_back(cst);
 	copy_slope_things_sorted_ = false;
+	specials_updated_         = true;
 }
 
 void SlopeSpecials::removeCopySlopeThing(const MapThing& thing)
@@ -345,6 +350,7 @@ void SlopeSpecials::removeCopySlopeThing(const MapThing& thing)
 		{
 			vectorAddUnique(sectors_to_update_, copy_slope_things_[i].target);
 			copy_slope_things_.erase(copy_slope_things_.begin() + i);
+			specials_updated_ = true;
 			continue;
 		}
 		i++;

@@ -13,6 +13,7 @@
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Skybox.h"
 #include "Utility/Vector.h"
@@ -189,13 +190,16 @@ void MapRenderer3D::updateFlats()
 		flats_updated_ = app::runTimer();
 		flat_groups_.clear();
 	}
-	else if (flats_updated_ < map_->typeLastUpdated(map::ObjectType::Sector))
+	else if (
+		flats_updated_ < map_->typeLastUpdated(map::ObjectType::Sector)
+		|| flats_updated_ < map_->mapSpecials().specialsLastUpdated()
+		|| flats_updated_ < map_->sectorRenderInfoUpdated())
 	{
 		// Check for sectors that need an update
 		bool updated = false;
 		for (auto& sf : sector_flats_)
 		{
-			if (sf.updated_time >= sf.sector->modifiedTime() && sf.updated_time >= sf.sector->geometryUpdatedTime())
+			if (sf.updated_time >= sf.sector->modifiedTime() && sf.updated_time >= sf.sector->renderInfoLastUpdated())
 				continue;
 
 			// Build new flats/vertices

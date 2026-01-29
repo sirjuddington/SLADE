@@ -286,8 +286,10 @@ void SlopeSpecials::updateOutdatedSectorPlanes()
 	sectors_to_update_.clear();
 }
 
-void SlopeSpecials::lineUpdated(const MapLine& line, bool update_planes)
+bool SlopeSpecials::lineUpdated(const MapLine& line, bool update_planes)
 {
+	specials_updated_ = false;
+
 	// Remove existing specials
 	removePlaneAlign(line);
 	removePlaneCopy(line);
@@ -298,12 +300,15 @@ void SlopeSpecials::lineUpdated(const MapLine& line, bool update_planes)
 	// TODO: Check if line needs to be added or removed from relevant (Line/Vavoom)SlopeThings
 
 	// Update planes for sectors that need updating
-	if (update_planes)
+	if (specials_updated_ && update_planes)
 		updateOutdatedSectorPlanes();
+
+	return specials_updated_;
 }
 
-void SlopeSpecials::sectorUpdated(MapSector& sector, bool update_planes)
+bool SlopeSpecials::sectorUpdated(MapSector& sector, bool update_planes)
 {
+	specials_updated_ = false;
 	// Update sector planes
 	vectorAddUnique(sectors_to_update_, &sector);
 
@@ -327,12 +332,16 @@ void SlopeSpecials::sectorUpdated(MapSector& sector, bool update_planes)
 			vectorAddUnique(sectors_to_update_, ls.target);
 
 	// Update planes for sectors that need updating
-	if (update_planes)
+	if (specials_updated_ && update_planes)
 		updateOutdatedSectorPlanes();
+
+	return specials_updated_;
 }
 
-void SlopeSpecials::thingUpdated(const MapThing& thing, bool update_planes)
+bool SlopeSpecials::thingUpdated(const MapThing& thing, bool update_planes)
 {
+	specials_updated_ = false;
+
 	// Remove existing specials
 	removeSlopeThing(thing);
 	removeCopySlopeThing(thing);
@@ -341,12 +350,16 @@ void SlopeSpecials::thingUpdated(const MapThing& thing, bool update_planes)
 	processThing(thing);
 
 	// Update planes for sectors that need updating
-	if (update_planes)
+	if (specials_updated_ && update_planes)
 		updateOutdatedSectorPlanes();
+
+	return specials_updated_;
 }
 
 void SlopeSpecials::addPlaneCopy(const MapLine& line)
 {
+	auto pc_count = plane_copy_specials_.size();
+
 	PlaneCopy pc{ SectorSurfaceType::Floor };
 	pc.line = &line;
 
@@ -443,6 +456,9 @@ void SlopeSpecials::addPlaneCopy(const MapLine& line)
 			plane_copy_specials_.push_back(pc);
 		}
 	}
+
+	if (plane_copy_specials_.size() != pc_count)
+		specials_updated_ = true;
 }
 
 void SlopeSpecials::addSRB2PlaneCopy(const MapLine& line, SectorSurfaceType surface_type)
@@ -468,6 +484,7 @@ void SlopeSpecials::addSRB2PlaneCopy(const MapLine& line, SectorSurfaceType surf
 	pc.model = tagged;
 
 	plane_copy_specials_.push_back(pc);
+	specials_updated_ = true;
 }
 
 void SlopeSpecials::removePlaneCopy(const MapLine& line)
@@ -479,6 +496,7 @@ void SlopeSpecials::removePlaneCopy(const MapLine& line)
 		{
 			vectorAddUnique(sectors_to_update_, plane_copy_specials_[i].target);
 			plane_copy_specials_.erase(plane_copy_specials_.begin() + i);
+			specials_updated_ = true;
 			continue;
 		}
 		i++;
@@ -567,6 +585,7 @@ void SlopeSpecials::addSRB2VertexSlope(const MapLine& line, SectorSurfaceType su
 
 	srb2_vertex_slope_specials_.push_back(svs);
 	srb2_vertex_slope_specials_sorted_ = false;
+	specials_updated_                  = true;
 }
 
 void SlopeSpecials::removeSRB2VertexSlope(const MapLine& line)
@@ -578,6 +597,7 @@ void SlopeSpecials::removeSRB2VertexSlope(const MapLine& line)
 		{
 			vectorAddUnique(sectors_to_update_, srb2_vertex_slope_specials_[i].target);
 			srb2_vertex_slope_specials_.erase(srb2_vertex_slope_specials_.begin() + i);
+			specials_updated_ = true;
 			continue;
 		}
 		i++;

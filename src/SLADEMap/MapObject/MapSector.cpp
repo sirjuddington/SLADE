@@ -72,7 +72,7 @@ MapSector::MapSector(
 	light_{ light },
 	special_{ special },
 	id_{ id },
-	geometry_updated_{ app::runTimer() }
+	renderinfo_updated_{ app::runTimer() }
 {
 }
 
@@ -162,9 +162,9 @@ void MapSector::copy(MapObject* obj)
 // -----------------------------------------------------------------------------
 // Update the last time the sector geometry changed
 // -----------------------------------------------------------------------------
-void MapSector::setGeometryUpdated() const
+void MapSector::setRenderInfoUpdated() const
 {
-	geometry_updated_ = app::runTimer();
+	renderinfo_updated_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -330,7 +330,7 @@ void MapSector::setCeilingHeight(short height)
 void MapSector::setFloorPlane(const Plane& p)
 {
 	if (floor_.plane != p)
-		setGeometryUpdated();
+		setRenderInfoUpdated();
 	floor_.plane = p;
 }
 
@@ -340,7 +340,7 @@ void MapSector::setFloorPlane(const Plane& p)
 void MapSector::setCeilingPlane(const Plane& p)
 {
 	if (ceiling_.plane != p)
-		setGeometryUpdated();
+		setRenderInfoUpdated();
 	ceiling_.plane = p;
 }
 
@@ -425,7 +425,7 @@ void MapSector::updateBBox() const
 	}
 
 	text_point_ = { 0, 0 };
-	setGeometryUpdated();
+	setRenderInfoUpdated();
 }
 
 // -----------------------------------------------------------------------------
@@ -756,7 +756,7 @@ void MapSector::connectSide(MapSide* side)
 	connected_sides_.push_back(side);
 	poly_needsupdate_ = true;
 	bbox_.reset();
-	setGeometryUpdated();
+	setRenderInfoUpdated();
 }
 
 // -----------------------------------------------------------------------------
@@ -776,7 +776,7 @@ void MapSector::disconnectSide(const MapSide* side)
 
 	poly_needsupdate_ = true;
 	bbox_.reset();
-	setGeometryUpdated();
+	setRenderInfoUpdated();
 }
 
 // -----------------------------------------------------------------------------
@@ -819,7 +819,7 @@ void MapSector::readBackup(Backup* backup)
 	// Update geometry info
 	poly_needsupdate_ = true;
 	bbox_.reset();
-	setGeometryUpdated();
+	setRenderInfoUpdated();
 }
 
 // -----------------------------------------------------------------------------

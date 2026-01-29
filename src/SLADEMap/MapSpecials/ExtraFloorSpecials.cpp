@@ -37,23 +37,23 @@
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
 using namespace map;
 
 
-
 ExtraFloorSpecials::ExtraFloorSpecials(SLADEMap& map) : map_(&map) {}
 
-bool ExtraFloorSpecials::hasExtraFloors(const MapSector* sector) const
+bool ExtraFloorSpecials::hasExtraFloors(const MapSector& sector) const
 {
-	return std::ranges::any_of(sector_extra_floors_, [sector](const auto& sef) { return sef.sector == sector; });
+	return std::ranges::any_of(sector_extra_floors_, [&sector](const auto& sef) { return sef.sector == &sector; });
 }
 
-const vector<ExtraFloor>& ExtraFloorSpecials::extraFloors(const MapSector* sector) const
+const vector<ExtraFloor>& ExtraFloorSpecials::extraFloors(const MapSector& sector)
 {
 	const auto it = std::ranges::find_if(
-		sector_extra_floors_, [sector](const auto& sef) { return sef.sector == sector; });
+		sector_extra_floors_, [&sector](const auto& sef) { return sef.sector == &sector; });
 
 	if (it != sector_extra_floors_.end())
 		return it->extra_floors;
@@ -77,52 +77,104 @@ void ExtraFloorSpecials::clearSpecials()
 {
 	sector_extra_floors_.clear();
 	set_3d_floor_specials_.clear();
+	sectors_to_update_.clear();
 }
 
-void ExtraFloorSpecials::updateSectorExtraFloors(const MapSector* sector)
+void ExtraFloorSpecials::updateSectorExtraFloors(const MapSector& sector)
 {
 	clearExtraFloors(sector);
 
-	SectorExtraFloors sef{ .sector = sector };
+	SectorExtraFloors sef{ .sector = &sector };
 
 	for (const auto& special : set_3d_floor_specials_)
-		if (special.target == sector)
+		if (special.target == &sector)
 			applySet3dFloorSpecial(special, sef);
 
 	if (!sef.extra_floors.empty())
 		sector_extra_floors_.push_back(sef);
 }
 
-ExtraFloorSpecials::SectorExtraFloors* ExtraFloorSpecials::getSectorExtraFloors(const MapSector* sector)
+void ExtraFloorSpecials::updateOutdatedSectorExtraFloors()
+{
+	for (const auto s : sectors_to_update_)
+		updateSectorExtraFloors(*s);
+	sectors_to_update_.clear();
+}
+
+bool ExtraFloorSpecials::lineUpdated(const MapLine& line, bool update_outdated)
+{
+	specials_updated_ = false;
+
+	// Remove existing specials
+	removeSet3dFloorSpecial(line);
+
+	// Re-process
+	processLineSpecial(line);
+
+	if (specials_updated_ && update_outdated)
+		updateOutdatedSectorExtraFloors();
+
+	return specials_updated_;
+}
+
+bool ExtraFloorSpecials::sectorUpdated(const MapSector& sector, bool update_outdated)
+{
+	// Sector_Set3dFloor - if [sector] is a control sector, update all target sectors' ExtraFloors
+	for (const auto& special : set_3d_floor_specials_)
+		if (special.control_sector == &sector)
+			vectorAddUnique(sectors_to_update_, special.target);
+
+	if (update_outdated)
+		updateOutdatedSectorExtraFloors();
+
+	return false;
+}
+
+ExtraFloorSpecials::SectorExtraFloors* ExtraFloorSpecials::getSectorExtraFloors(const MapSector& sector)
 {
 	// Find existing extra floors for this sector
 	if (auto it = std::ranges::find_if(
-			sector_extra_floors_, [sector](const auto& sef) { return sef.sector == sector; });
+			sector_extra_floors_, [&sector](const auto& sef) { return sef.sector == &sector; });
 		it == sector_extra_floors_.end())
 	{
 		// No existing extra floors, create new entry
-		sector_extra_floors_.emplace_back(sector);
+		sector_extra_floors_.emplace_back(&sector);
 		return &sector_extra_floors_.back();
 	}
 	else
 		return &(*it);
 }
 
-void ExtraFloorSpecials::addExtraFloor(const MapSector* sector, const ExtraFloor& extra_floor)
-{
-	auto sef = getSectorExtraFloors(sector);
-	sef->extra_floors.push_back(extra_floor);
-
-	// Sort extra floors by height (top-down)
-	std::ranges::sort(sef->extra_floors, [](const ExtraFloor& a, const ExtraFloor& b) { return a.height > b.height; });
-}
-
-void ExtraFloorSpecials::clearExtraFloors(const MapSector* sector)
+void ExtraFloorSpecials::clearExtraFloors(const MapSector& sector)
 {
 	if (auto it = std::ranges::find_if(
-			sector_extra_floors_, [sector](const auto& sef) { return sef.sector == sector; });
+			sector_extra_floors_, [&sector](const auto& sef) { return sef.sector == &sector; });
 		it != sector_extra_floors_.end())
-		it->extra_floors.clear();
+		sector_extra_floors_.erase(it);
+}
+
+void ExtraFloorSpecials::addExtraFloor(SectorExtraFloors& sef, const ExtraFloor& extra_floor)
+{
+	sef.extra_floors.push_back(extra_floor);
+	sef.sector->setRenderInfoUpdated();
+
+	// Sort extra floors by height (top-down)
+	std::ranges::sort(sef.extra_floors, [](const ExtraFloor& a, const ExtraFloor& b) { return a.height > b.height; });
+}
+
+void ExtraFloorSpecials::removeExtraFloor(SectorExtraFloors& sef, const MapLine& control_line)
+{
+	unsigned i = 0;
+	while (i < sef.extra_floors.size())
+	{
+		if (sef.extra_floors[i].control_line == &control_line)
+		{
+			sef.extra_floors.erase(sef.extra_floors.begin() + i);
+			sef.sector->setRenderInfoUpdated();
+			continue;
+		}
+		i++;
+	}
 }
 
 void ExtraFloorSpecials::addSet3dFloorSpecial(const MapLine& line)
@@ -155,12 +207,28 @@ void ExtraFloorSpecials::addSet3dFloorSpecial(const MapLine& line)
 			  .render_inside  = type & 0x4 || (type & 0x3) == 2,
 			  .flags          = static_cast<u16>(flags),
 			  .alpha          = alpha / 255.0f });
+		vectorAddUnique(sectors_to_update_, const_cast<const MapSector*>(sector));
+		specials_updated_ = true;
 	}
 }
 
-void ExtraFloorSpecials::applySet3dFloorSpecial(
-	const Set3dFloorSpecial& special,
-	SectorExtraFloors&       sector_extra_floors)
+void ExtraFloorSpecials::removeSet3dFloorSpecial(const MapLine& line)
+{
+	unsigned i = 0;
+	while (i < set_3d_floor_specials_.size())
+	{
+		if (set_3d_floor_specials_[i].line == &line)
+		{
+			vectorAddUnique(sectors_to_update_, set_3d_floor_specials_[i].target);
+			set_3d_floor_specials_.erase(set_3d_floor_specials_.begin() + i);
+			specials_updated_ = true;
+			continue;
+		}
+		i++;
+	}
+}
+
+void ExtraFloorSpecials::applySet3dFloorSpecial(const Set3dFloorSpecial& special, SectorExtraFloors& sef)
 {
 	ExtraFloor ef;
 	ef.control_line   = special.line;
@@ -200,5 +268,5 @@ void ExtraFloorSpecials::applySet3dFloorSpecial(
 	if (special.type == Set3dFloorSpecial::Type::Solid || special.type == Set3dFloorSpecial::Type::Vavoom)
 		ef.setFlag(ExtraFloor::Flags::Solid);
 
-	sector_extra_floors.extra_floors.push_back(ef);
+	addExtraFloor(sef, ef);
 }

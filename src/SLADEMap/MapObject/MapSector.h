@@ -78,11 +78,11 @@ public:
 	void setSpecial(int special);
 	void setTag(int tag);
 
-	template<SurfaceType p> short       planeHeight() const;
-	template<SurfaceType p> Plane       plane() const;
-	template<SurfaceType p> void        setPlane(const Plane& plane);
-	bool                                ceilingHasSlope() const;
-	bool                                floorHasSlope() const;
+	template<SurfaceType p> short planeHeight() const;
+	template<SurfaceType p> Plane plane() const;
+	template<SurfaceType p> void  setPlane(const Plane& plane);
+	bool                          ceilingHasSlope() const;
+	bool                          floorHasSlope() const;
 
 	Vec2d                    getPoint(Point point) const override;
 	void                     resetBBox() const { bbox_.reset(); }
@@ -99,7 +99,8 @@ public:
 	uint8_t                  lightAt(SectorPart where = SectorPart::Interior) const;
 	void                     changeLight(int amount, SectorPart where = SectorPart::Interior);
 	ColRGBA                  fogColour() const;
-	long                     geometryUpdatedTime() const { return geometry_updated_; }
+	long                     renderInfoLastUpdated() const { return renderinfo_updated_; }
+	void                     setRenderInfoUpdated() const;
 	void                     findTextPoint() const;
 
 	void connectSide(MapSide* side);
@@ -128,10 +129,8 @@ private:
 	mutable BBox              bbox_;
 	mutable vector<glm::vec2> polygon_triangles_;
 	mutable bool              poly_needsupdate_ = true;
-	mutable long              geometry_updated_ = 0;
-	mutable Vec2d             text_point_       = {};
-
-	void setGeometryUpdated() const;
+	mutable long  renderinfo_updated_           = 0; // Last time anything related to rendering this sector was updated
+	mutable Vec2d text_point_                   = {};
 };
 
 // Note: these MUST be inline, or the linker will complain

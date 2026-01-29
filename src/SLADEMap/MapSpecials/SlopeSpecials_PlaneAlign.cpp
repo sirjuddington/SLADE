@@ -87,6 +87,7 @@ void SlopeSpecials::addPlaneAlign(const MapLine& line, SectorSurfaceType surface
 
 	plane_align_specials_.push_back(pa);
 	plane_align_specials_sorted_ = false;
+	specials_updated_            = true;
 }
 
 void SlopeSpecials::removePlaneAlign(const MapLine& line)
@@ -98,6 +99,7 @@ void SlopeSpecials::removePlaneAlign(const MapLine& line)
 		{
 			vectorAddUnique(sectors_to_update_, plane_align_specials_[i].target);
 			plane_align_specials_.erase(plane_align_specials_.begin() + i);
+			specials_updated_ = true;
 			continue;
 		}
 

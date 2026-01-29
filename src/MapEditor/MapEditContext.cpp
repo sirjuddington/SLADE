@@ -255,8 +255,8 @@ void MapEditContext::setEditMode(Mode mode)
 	if (mode == Mode::Visual)
 	{
 		KeyBind::releaseAll();
-		map_->mapSpecials().processAllSpecials(); // Refresh all slopes/3dfloors etc.
-		renderer_->forceUpdate(false, true);
+		// map_->mapSpecials().processAllSpecials(); // Refresh all slopes/3dfloors etc.
+		// renderer_->forceUpdate(false, true);
 	}
 }
 

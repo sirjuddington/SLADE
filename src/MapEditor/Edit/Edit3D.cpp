@@ -376,7 +376,6 @@ void Edit3D::changeSectorHeight(int amount) const
 
 			// Change height
 			sector->setCeilingHeight(sector->ceiling().height + amount);
-			context_->map().mapSpecials().sectorUpdated(*sector);
 
 			// Set to changed
 			ceilings.push_back(index);
@@ -410,8 +409,6 @@ void Edit3D::changeSectorHeight(int amount) const
 				// Set to changed
 				ceilings.push_back(sector->index());
 			}
-
-			context_->map().mapSpecials().sectorUpdated(*sector);
 		}
 	}
 
@@ -1133,7 +1130,6 @@ void Edit3D::changeThingZ(int amount) const
 			double z = thing->zPos();
 			z += amount;
 			thing->setZ(z);
-			context_->map().mapSpecials().thingUpdated(*thing);
 		}
 	}
 }
@@ -1283,7 +1279,6 @@ void Edit3D::changeHeight(int amount) const
 			double z = thing->zPos();
 			z += amount;
 			thing->setZ(z);
-			context_->map().mapSpecials().thingUpdated(*thing);
 		}
 
 		// Wall
@@ -1318,7 +1313,6 @@ void Edit3D::changeHeight(int amount) const
 				sector->setFloorHeight(sector->floor().height + amount);
 			else if (type == ItemType::Ceiling)
 				sector->setCeilingHeight(sector->ceiling().height + amount);
-			context_->map().mapSpecials().sectorUpdated(*sector);
 		}
 	}
 

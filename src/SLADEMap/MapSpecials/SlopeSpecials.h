@@ -17,9 +17,9 @@ public:
 	void updateSectorPlanes(MapSector& sector);
 	void updateOutdatedSectorPlanes();
 
-	void lineUpdated(const MapLine& line, bool update_planes = true);
-	void sectorUpdated(MapSector& sector, bool update_planes = true);
-	void thingUpdated(const MapThing& thing, bool update_planes = true);
+	bool lineUpdated(const MapLine& line, bool update_planes = true);
+	bool sectorUpdated(MapSector& sector, bool update_planes = true);
+	bool thingUpdated(const MapThing& thing, bool update_planes = true);
 
 private:
 	struct VertexHeightThing
@@ -118,6 +118,7 @@ private:
 	vector<VertexHeightThing>  vertex_height_things_;
 	vector<SRB2VertexSlope>    srb2_vertex_slope_specials_;
 	bool                       srb2_vertex_slope_specials_sorted_ = false;
+	mutable bool               specials_updated_                  = false;
 
 	// Vertex slopes
 	std::optional<double> vertexHeight(const MapVertex& vertex, SectorSurfaceType surface_type) const;

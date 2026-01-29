@@ -35,6 +35,7 @@
 #include "App.h"
 #include "Game/Configuration.h"
 #include "Game/UDMFProperty.h"
+#include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/PropertyUtils.h"
 
@@ -109,8 +110,11 @@ void MapObject::setModified()
 
 	modified_time_ = app::runTimer();
 
-	if (parent_map_)
+	if (parent_map_ && parent_map_->isOpen())
+	{
 		parent_map_->setTypeUpdated(type_);
+		parent_map_->mapSpecials().objectUpdated(*this);
+	}
 }
 
 // -----------------------------------------------------------------------------

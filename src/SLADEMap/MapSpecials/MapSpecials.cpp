@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapSpecials.h"
+#include "App.h"
 #include "ExtraFloorSpecials.h"
 #include "Game/Configuration.h"
 #include "LineTranslucency.h"
@@ -46,6 +47,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "SlopeSpecials.h"
 #include "Utility/Colour.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
 using namespace map;
@@ -77,7 +79,8 @@ MapSpecials::~MapSpecials() = default;
 // -----------------------------------------------------------------------------
 const vector<ExtraFloor>& MapSpecials::sectorExtraFloors(const MapSector* sector) const
 {
-	return extrafloor_specials_->extraFloors(sector);
+	updateSpecials();
+	return extrafloor_specials_->extraFloors(*sector);
 }
 
 // -----------------------------------------------------------------------------
@@ -85,7 +88,8 @@ const vector<ExtraFloor>& MapSpecials::sectorExtraFloors(const MapSector* sector
 // -----------------------------------------------------------------------------
 bool MapSpecials::sectorHasExtraFloors(const MapSector* sector) const
 {
-	return extrafloor_specials_->hasExtraFloors(sector);
+	updateSpecials();
+	return extrafloor_specials_->hasExtraFloors(*sector);
 }
 
 // -----------------------------------------------------------------------------
@@ -112,9 +116,11 @@ ColRGBA MapSpecials::sectorColour(const MapSector& sector, SectorPart where) con
 // -----------------------------------------------------------------------------
 float MapSpecials::sectorFloorHeightAt(const MapSector& sector, Vec3d pos) const
 {
+	updateSpecials();
+
 	float height = sector.floor().plane.heightAt(pos.xy());
 
-	for (const auto& ef : extrafloor_specials_->extraFloors(&sector))
+	for (const auto& ef : extrafloor_specials_->extraFloors(sector))
 	{
 		if (ef.hasFlag(ExtraFloor::Flags::Solid))
 		{
@@ -156,6 +162,7 @@ optional<LineTranslucency> MapSpecials::lineTranslucency(const MapLine& line) co
 	}
 
 	// Otherwise check with render specials
+	updateSpecials();
 	return render_specials_->lineTranslucency(line);
 }
 
@@ -196,49 +203,70 @@ void MapSpecials::processAllSpecials() const
 	for (const auto sector : map_->sectors())
 	{
 		slope_specials_->updateSectorPlanes(*sector);
-		extrafloor_specials_->updateSectorExtraFloors(sector);
+		extrafloor_specials_->updateSectorExtraFloors(*sector);
 	}
+
+	specials_updated_ = app::runTimer();
 }
 
-void MapSpecials::lineUpdated(const MapLine& line) const
+void MapSpecials::updateSpecials() const
 {
-	slope_specials_->lineUpdated(line, !bulk_update_);
-	render_specials_->lineUpdated(line);
-}
+	if (updated_objects_.empty())
+		return;
 
-void MapSpecials::sectorUpdated(MapSector& sector) const
-{
-	slope_specials_->sectorUpdated(sector, !bulk_update_);
-}
+	bool updated = false;
+	for (auto obj : updated_objects_)
+	{
+		switch (obj->objType())
+		{
+		case ObjectType::Object: break;
+		case ObjectType::Vertex: break;
+		case ObjectType::Side:   break;
 
-void MapSpecials::thingUpdated(const MapThing& thing) const
-{
-	slope_specials_->thingUpdated(thing, !bulk_update_);
+		case ObjectType::Line:
+		{
+			auto line = dynamic_cast<MapLine*>(obj);
+			updated |= slope_specials_->lineUpdated(*line, false);
+			render_specials_->lineUpdated(*line);
+			updated |= extrafloor_specials_->lineUpdated(*line);
+			break;
+		}
+
+		case ObjectType::Sector:
+		{
+			auto sector = dynamic_cast<MapSector*>(obj);
+			updated |= slope_specials_->sectorUpdated(*sector, false);
+			updated |= extrafloor_specials_->sectorUpdated(*sector);
+			break;
+		}
+
+		case ObjectType::Thing:
+		{
+			auto thing = dynamic_cast<MapThing*>(obj);
+			updated |= slope_specials_->thingUpdated(*thing, false);
+			break;
+		}
+		}
+	}
+
+	// Update planes for sectors that need updating
+	slope_specials_->updateOutdatedSectorPlanes();
+
+	if (updated)
+		specials_updated_ = app::runTimer();
+
+	updated_objects_.clear();
 }
 
 void MapSpecials::objectUpdated(MapObject& object) const
 {
-	switch (object.objType())
-	{
-	case ObjectType::Object: break;
-	case ObjectType::Vertex: break;
-	case ObjectType::Line:   lineUpdated(dynamic_cast<MapLine&>(object)); break;
-	case ObjectType::Side:   break;
-	case ObjectType::Sector: sectorUpdated(dynamic_cast<MapSector&>(object)); break;
-	case ObjectType::Thing:  thingUpdated(dynamic_cast<MapThing&>(object)); break;
-	}
+	vectorAddUnique(updated_objects_, &object);
 }
 
-void MapSpecials::objectsUpdated(const vector<MapObject*>& objects)
+void MapSpecials::objectsUpdated(const vector<MapObject*>& objects) const
 {
-	// Update specials for all given objects
-	bulk_update_ = true;
-	for (const auto obj : objects)
-		objectUpdated(*obj);
-	bulk_update_ = false;
-
-	// Update planes for sectors that need updating
-	slope_specials_->updateOutdatedSectorPlanes();
+	for (auto obj : objects)
+		vectorAddUnique(updated_objects_, obj);
 }
 
 void MapSpecials::processLineSpecial(const MapLine& line) const
