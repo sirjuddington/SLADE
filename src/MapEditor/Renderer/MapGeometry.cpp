@@ -54,6 +54,31 @@ using SurfaceType = map::SectorSurfaceType;
 using SectorPart  = map::SectorPart;
 
 
+namespace
+{
+struct SectorFlatsContext
+{
+	const MapSector* sector = nullptr;
+	vector<Flat3D>   flats;
+	vector<MGVertex> vertices;
+	unsigned         vertex_offset       = 0;
+	unsigned         sector_vertex_count = 0;
+	bool             extrafloor_lighting = false;
+};
+
+struct FlatInfo
+{
+	SurfaceType      surface_type;
+	const MapSector* control_sector;
+	SurfaceType      control_sector_surface;
+	Plane            plane;
+	u8               brightness  = 255;
+	glm::vec4        colour      = glm::vec4(1.0f);
+	bool             extra_floor = false;
+};
+} // namespace
+
+
 namespace slade::mapeditor
 {
 // -----------------------------------------------------------------------------
@@ -71,7 +96,7 @@ TexTransformInfo getSectorTextureTransformInfo(const MapSector& sector, bool cei
 
 	// Get scaling/offset info
 	// Check for various UDMF extensions
-	if (mapeditor::editContext().mapDesc().format == MapFormat::UDMF)
+	if (editContext().mapDesc().format == MapFormat::UDMF)
 	{
 		// Ceiling
 		if (ceiling)
@@ -114,75 +139,133 @@ TexTransformInfo getSectorTextureTransformInfo(const MapSector& sector, bool cei
 	return info;
 }
 
-static void generateFlatVertices(const Flat3D& flat, const MapTextureManager::Texture& tex, vector<MGVertex>& vertices)
+static void addFlatVertices(
+	SectorFlatsContext&               context,
+	const FlatInfo&                   flat,
+	const MapTextureManager::Texture& texture)
 {
-	auto& sector         = *flat.sector;
-	auto& control_sector = *flat.controlSector();
-	auto& tex_info       = gl::Texture::info(flat.texture);
-	auto  ttf   = getSectorTextureTransformInfo(control_sector, flat.source_tex == SurfaceType::Ceiling, tex.scale);
-	auto& plane = (flat.source_surface == SurfaceType::Ceiling) ? control_sector.ceiling().plane
-																: control_sector.floor().plane;
+	auto& tex_info = gl::Texture::info(texture.gl_id);
+	auto  tti      = getSectorTextureTransformInfo(
+        *flat.control_sector, flat.control_sector_surface == SurfaceType::Ceiling, texture.scale);
+	auto brightness = static_cast<float>(flat.brightness) / 255.0f;
 
 	if (flat.surface_type == SurfaceType::Ceiling)
 	{
-		for (auto& vertex : sector.polygonVertices())
+		for (auto& vertex : context.sector->polygonVertices())
 		{
-			vertices.emplace_back(
-				glm::vec3(vertex, plane.heightAt(vertex)),
+			context.vertices.emplace_back(
+				glm::vec3(vertex, flat.plane.heightAt(vertex)),
 				polygon::calculateTexCoords(
-					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, ttf.sx, ttf.sy, ttf.ox, ttf.oy, ttf.rot),
-				flat.brightness);
+					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, tti.sx, tti.sy, tti.ox, tti.oy, tti.rot),
+				brightness);
 		}
 	}
 	else
 	{
-		for (int i = sector.polygonVertices().size(); i > 0; --i) // Floor polygons need to be flipped
+		for (int i = context.sector->polygonVertices().size(); i > 0; --i) // Floor polygons need to be flipped
 		{
-			auto& vertex = sector.polygonVertices()[i - 1];
-			vertices.emplace_back(
-				glm::vec3(vertex, plane.heightAt(vertex)),
+			auto& vertex = context.sector->polygonVertices()[i - 1];
+			context.vertices.emplace_back(
+				glm::vec3(vertex, flat.plane.heightAt(vertex)),
 				polygon::calculateTexCoords(
-					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, ttf.sx, ttf.sy, ttf.ox, ttf.oy, ttf.rot),
-				flat.brightness);
+					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, tti.sx, tti.sy, tti.ox, tti.oy, tti.rot),
+				brightness);
 		}
 	}
+
+	context.vertex_offset += context.sector_vertex_count;
 }
 
-static void setupFlat3D(
-	Flat3D&                  flat,
-	unsigned                 vertex_index,
-	vector<MGVertex>&        vertices,
-	std::optional<glm::vec4> colour = std::nullopt,
-	u8                       light  = 255)
+static void addFlat(SectorFlatsContext& context, FlatInfo& flat)
 {
-	auto& sector = *flat.controlSector();
-	auto  map    = sector.parentMap();
-
-	// Colour
-	bool ceiling = flat.source_tex == SurfaceType::Ceiling;
-	if (colour.has_value())
-		flat.colour = colour.value();
-	else
-		flat.colour = map->mapSpecials().sectorColour(sector, ceiling ? SectorPart::Ceiling : SectorPart::Floor, true);
-
-	// Brightness
-	flat.brightness = static_cast<float>(light) / 255.0f;
-
-	// Texture
+	// Get texture & info
 	bool  mix_tex_flats = game::configuration().featureSupported(game::Feature::MixTexFlats);
-	auto  tex_name      = ceiling ? sector.ceiling().texture : sector.floor().texture;
+	auto  tex_name      = flat.control_sector_surface == SurfaceType::Ceiling ? flat.control_sector->ceiling().texture
+																			  : flat.control_sector->floor().texture;
 	auto& texture       = textureManager().flat(tex_name, mix_tex_flats);
-	flat.texture        = texture.gl_id;
 
-	// Sky
+	Flat3D flat_3d{ .sector        = context.sector,
+					.vertex_offset = context.vertex_offset,
+					.texture       = texture.gl_id,
+					.colour        = flat.colour };
+
+	// Check for sky flat
 	if (strutil::equalCI(tex_name, game::configuration().skyFlat()))
-		flat.setFlag(Flat3D::Flags::Sky);
+		flat_3d.setFlag(Flat3D::Flags::Sky);
 
-	// Vertices
-	flat.vertex_offset = vertex_index;
-	generateFlatVertices(flat, texture, vertices);
+	// ExtraFloor
+	if (flat.extra_floor)
+		flat_3d.setFlag(Flat3D::Flags::ExtraFloor);
 
-	flat.updated_time = app::runTimer();
+	// Add flat vertices
+	addFlatVertices(context, flat, texture);
+
+	// Add flat
+	context.flats.push_back(flat_3d);
+}
+
+static void generateExtraFloorFlats(SectorFlatsContext& context, FlatInfo& flat, const map::ExtraFloor& extrafloor)
+{
+	using EFFlags = map::ExtraFloor::Flags;
+
+	// Top outer flat
+	flat.surface_type           = SurfaceType::Floor;
+	flat.control_sector         = extrafloor.control_sector;
+	flat.control_sector_surface = SurfaceType::Ceiling;
+	flat.plane                  = extrafloor.plane_top;
+	flat.colour.a               = extrafloor.alpha;
+	flat.extra_floor            = true;
+	addFlat(context, flat);
+
+	// Save lighting info in case the LightingInsideOnly flag is set
+	u8        brightness_above = flat.brightness;
+	glm::vec4 colour_above     = flat.colour;
+
+	// Update lighting if not disabled
+	if (!extrafloor.hasFlag(EFFlags::DisableLighting))
+	{
+		auto& map_specials = context.sector->parentMap()->mapSpecials();
+		flat.brightness    = extrafloor.control_sector->lightAt(SectorPart::Interior);
+		flat.colour        = map_specials.sectorColour(*extrafloor.control_sector, SectorPart::Interior);
+		flat.colour.a      = extrafloor.alpha;
+
+		if (!extrafloor.hasFlag(EFFlags::LightingInsideOnly))
+			context.extrafloor_lighting = true;
+	}
+
+	// Inner flats
+	if (extrafloor.hasFlag(EFFlags::DrawInside) && !extrafloor.hasFlag(EFFlags::FlatAtCeiling))
+	{
+		// Top
+		flat.surface_type           = SurfaceType::Ceiling;
+		flat.control_sector_surface = SurfaceType::Ceiling;
+		flat.plane                  = extrafloor.plane_top;
+		addFlat(context, flat);
+
+		// Bottom
+		flat.surface_type           = SurfaceType::Floor;
+		flat.control_sector_surface = SurfaceType::Floor;
+		flat.plane                  = extrafloor.plane_bottom;
+		addFlat(context, flat);
+
+		// Restore lighting from above if LightingInsideOnly flag set
+		if (extrafloor.hasFlag(EFFlags::LightingInsideOnly))
+		{
+			flat.brightness = brightness_above;
+			flat.colour     = colour_above;
+		}
+	}
+
+	// Lastly, bottom outer flat
+	flat.surface_type           = SurfaceType::Ceiling;
+	flat.control_sector_surface = extrafloor.hasFlag(EFFlags::FlatAtCeiling) ? SurfaceType::Ceiling
+																			 : SurfaceType::Floor;
+	flat.plane                  = extrafloor.plane_bottom;
+	addFlat(context, flat);
+
+	// Restore normal flat state
+	flat.colour.a    = 1.0f;
+	flat.extra_floor = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -190,105 +273,45 @@ static void setupFlat3D(
 // -----------------------------------------------------------------------------
 std::tuple<vector<Flat3D>, vector<MGVertex>> generateSectorFlats(const MapSector& sector, unsigned vertex_index)
 {
-	using ExtraFloor = map::ExtraFloor;
+	auto& map_specials = sector.parentMap()->mapSpecials();
 
-	vector<Flat3D>   flats;
-	vector<MGVertex> vertices;
+	SectorFlatsContext context{ .sector              = &sector,
+								.vertex_offset       = vertex_index,
+								.sector_vertex_count = static_cast<unsigned>(sector.polygonVertices().size()) };
 
-	auto  sector_vertex_count = static_cast<unsigned>(sector.polygonVertices().size());
-	auto& map_specials        = sector.parentMap()->mapSpecials();
+	// Start with ceiling flat
+	FlatInfo info{ .surface_type           = SurfaceType::Ceiling,
+				   .control_sector         = &sector,
+				   .control_sector_surface = SurfaceType::Ceiling,
+				   .plane                  = sector.ceiling().plane,
+				   .brightness             = sector.lightAt(SectorPart::Ceiling),
+				   .colour                 = map_specials.sectorColour(sector, SectorPart::Ceiling) };
+	addFlat(context, info);
 
-	// Ceiling
-	auto&     flat_ceiling = flats.emplace_back(&sector, SurfaceType::Ceiling);
-	glm::vec4 colour       = map_specials.sectorColour(sector, SectorPart::Ceiling, true);
-	auto      light        = sector.lightAt(SectorPart::Ceiling);
-	setupFlat3D(flat_ceiling, vertex_index, vertices, colour, light);
-	vertex_index += sector_vertex_count;
-
-	// 3d floors
-	for (auto& extrafloor : map_specials.sectorExtraFloors(&sector))
+	// Then ExtraFloors, from top to bottom, if any
+	if (map_specials.sectorHasExtraFloors(&sector))
 	{
-		colour.a = extrafloor.alpha;
+		// Start with sector interior light/colour
+		info.brightness = sector.lightAt(SectorPart::Interior);
+		info.colour     = map_specials.sectorColour(sector, SectorPart::Interior);
 
-		// Top
-		auto& flat_top = flats.emplace_back(
-			&sector, SurfaceType::Floor, extrafloor.control_sector, SurfaceType::Ceiling, SurfaceType::Ceiling);
-		flat_top.setFlag(Flat3D::Flags::ExtraFloor);
-		setupFlat3D(flat_top, vertex_index, vertices, colour, light);
-		vertex_index += sector_vertex_count;
-
-		// Inner (if needed)
-		colour   = map_specials.sectorColour(*extrafloor.control_sector, SectorPart::Ceiling, true);
-		colour.a = extrafloor.alpha;
-		light    = extrafloor.control_sector->lightAt(SectorPart::Ceiling);
-		if (extrafloor.hasFlag(ExtraFloor::Flags::DrawInside))
-		{
-			// Top
-			if (extrafloor.height < sector.ceiling().height)
-			{
-				auto& flat_inner_top = flats.emplace_back(
-					&sector,
-					SurfaceType::Ceiling,
-					extrafloor.control_sector,
-					SurfaceType::Ceiling,
-					SurfaceType::Ceiling);
-				flat_inner_top.setFlag(Flat3D::Flags::ExtraFloor);
-				setupFlat3D(flat_inner_top, vertex_index, vertices, colour, light);
-				vertex_index += sector_vertex_count;
-			}
-
-			// Bottom
-			if (extrafloor.control_sector->floor().height > sector.floor().height)
-			{
-				auto& flat_inner_bottom = flats.emplace_back(
-					&sector, SurfaceType::Floor, extrafloor.control_sector, SurfaceType::Floor, SurfaceType::Floor);
-				flat_inner_bottom.setFlag(Flat3D::Flags::ExtraFloor);
-				colour   = map_specials.sectorColour(*extrafloor.control_sector, SectorPart::Floor, true);
-				colour.a = extrafloor.alpha;
-				light    = extrafloor.control_sector->lightAt(SectorPart::Floor);
-				setupFlat3D(flat_inner_bottom, vertex_index, vertices, colour, light);
-				vertex_index += sector_vertex_count;
-			}
-		}
-
-		// Bottom
-		auto& flat_bottom = flats.emplace_back(
-			&sector,
-			SurfaceType::Ceiling,
-			extrafloor.control_sector,
-			extrafloor.hasFlag(ExtraFloor::Flags::FlatAtCeiling) ? SurfaceType::Ceiling : SurfaceType::Floor,
-			SurfaceType::Floor);
-		flat_bottom.setFlag(Flat3D::Flags::ExtraFloor);
-		setupFlat3D(flat_bottom, vertex_index, vertices, colour, light);
-		vertex_index += sector_vertex_count;
+		for (const auto& extra_floor : map_specials.sectorExtraFloors(&sector))
+			generateExtraFloorFlats(context, info, extra_floor);
 	}
 
-	// Floor
-	auto& flat_floor = flats.emplace_back(&sector, SurfaceType::Floor);
-	colour.a         = 1.0f;
-	light            = sector.lightAt(SectorPart::Floor);
-	setupFlat3D(flat_floor, vertex_index, vertices, colour, light);
+	// Lastly, the floor flat
+	info.surface_type           = SurfaceType::Floor;
+	info.control_sector         = &sector;
+	info.control_sector_surface = SurfaceType::Floor;
+	info.plane                  = sector.floor().plane;
+	if (!context.extrafloor_lighting)
+	{
+		// If no ExtraFloors affected lighting, use floor light/colour
+		info.brightness = sector.lightAt(SectorPart::Floor);
+		info.colour     = map_specials.sectorColour(sector, SectorPart::Floor);
+	}
+	addFlat(context, info);
 
-	return { flats, vertices };
-}
-
-// -----------------------------------------------------------------------------
-// Updates [flat] and generates new [vertices] for it
-// -----------------------------------------------------------------------------
-void updateFlat(Flat3D& flat, vector<MGVertex>& vertices)
-{
-	// Update flat
-	auto& sector       = *flat.controlSector();
-	auto& map_specials = sector.parentMap()->mapSpecials();
-	auto& texture      = flat.source_tex == SurfaceType::Ceiling ? textureManager().flat(sector.ceiling().texture, true)
-																 : textureManager().flat(sector.floor().texture, true);
-	flat.texture       = texture.gl_id;
-	flat.colour        = map_specials.sectorColour(
-        sector, flat.source_tex == SurfaceType::Ceiling ? SectorPart::Ceiling : SectorPart::Floor, true);
-
-	// Generate new vertices
-	generateFlatVertices(flat, texture, vertices);
-
-	flat.updated_time = app::runTimer();
+	return { context.flats, context.vertices };
 }
 } // namespace slade::mapeditor

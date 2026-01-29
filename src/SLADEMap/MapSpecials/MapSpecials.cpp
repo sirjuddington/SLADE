@@ -91,10 +91,9 @@ bool MapSpecials::sectorHasExtraFloors(const MapSector* sector) const
 // -----------------------------------------------------------------------------
 // Returns the colour for the given [sector] at [where]
 // -----------------------------------------------------------------------------
-ColRGBA MapSpecials::sectorColour(const MapSector& sector, SectorPart where, bool fullbright) const
+ColRGBA MapSpecials::sectorColour(const MapSector& sector, SectorPart where) const
 {
 	auto colour = ColRGBA::WHITE;
-	u8   light  = fullbright ? 255 : sector.lightAt(where);
 
 	// Check for UDMF
 	if (map_->currentFormat() == MapFormat::UDMF)
@@ -104,13 +103,7 @@ ColRGBA MapSpecials::sectorColour(const MapSector& sector, SectorPart where, boo
 			colour = colour::fromInt(sector.intProperty("lightcolor"));
 	}
 
-	// If fullbright, just return the colour
-	if (fullbright)
-		return colour;
-
-	// Otherwise, apply light level
-	auto mult = static_cast<float>(light) / 255.0f;
-	return colour.ampf(mult, mult, mult, 1.0f);
+	return colour;
 }
 
 // -----------------------------------------------------------------------------
@@ -171,7 +164,7 @@ optional<LineTranslucency> MapSpecials::lineTranslucency(const MapLine& line) co
 // -----------------------------------------------------------------------------
 ColRGBA MapSpecials::sideColour(const MapSide& side, SidePart where, bool fullbright) const
 {
-	auto colour = sectorColour(*side.sector(), SectorPart::Interior, true);
+	auto colour = sectorColour(*side.sector(), SectorPart::Interior);
 
 	if (fullbright)
 		return colour;

@@ -55,7 +55,15 @@ private:
 	bool                          fullbright_ = false;
 	bool                          fog_        = true;
 
-	vector<mapeditor::Flat3D>                  flats_;
+	struct SectorFlats
+	{
+		const MapSector*          sector;
+		vector<mapeditor::Flat3D> flats;
+		unsigned                  vertex_buffer_offset;
+		long                      updated_time;
+	};
+
+	vector<SectorFlats>                        sector_flats_;
 	unique_ptr<mapeditor::MapGeometryBuffer3D> vb_flats_; // Vertex buffer for all flats
 	long                                       flats_updated_ = 0;
 

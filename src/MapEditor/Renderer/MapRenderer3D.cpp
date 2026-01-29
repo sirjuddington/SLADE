@@ -134,8 +134,15 @@ void MapRenderer3D::render(const gl::Camera& camera)
 
 void MapRenderer3D::clearData()
 {
+	// Flats
 	vb_flats_->buffer().clear();
-	flats_.clear();
+	sector_flats_.clear();
+	flat_groups_.clear();
+
+	// Walls
+	vb_quads_->buffer().clear();
+	quads_.clear();
+	quad_groups_.clear();
 }
 
 unsigned MapRenderer3D::flatsBufferSize() const
@@ -156,42 +163,72 @@ void MapRenderer3D::updateFlats()
 	if (map_->geometryUpdated() > flats_updated_)
 	{
 		vb_flats_->buffer().clear();
-		flats_.clear();
+		sector_flats_.clear();
 		flat_groups_.clear();
 	}
 
 	// Generate flats if needed
-	if (flats_.empty())
+	if (sector_flats_.empty())
 	{
 		unsigned vertex_index = 0;
 		for (auto* sector : map_->sectors())
 		{
 			auto [flats, vertices] = mapeditor::generateSectorFlats(*sector, vertex_index);
 
-			vectorConcat(flats_, flats);
+			sector_flats_.push_back(
+				{ .sector               = sector,
+				  .flats                = flats,
+				  .vertex_buffer_offset = vertex_index,
+				  .updated_time         = app::runTimer() });
+
 			vb_flats_->addVertices(vertices);
 			vertex_index += vertices.size();
 		}
 
 		vb_flats_->push();
 		flats_updated_ = app::runTimer();
+		flat_groups_.clear();
 	}
 	else if (flats_updated_ < map_->typeLastUpdated(map::ObjectType::Sector))
 	{
-		// Check for flats that need an update
+		// Check for sectors that need an update
 		bool updated = false;
-		for (auto& flat : flats_)
+		for (auto& sf : sector_flats_)
 		{
-			if (flat.updated_time < flat.sector->modifiedTime())
+			if (sf.updated_time >= sf.sector->modifiedTime() && sf.updated_time >= sf.sector->geometryUpdatedTime())
+				continue;
+
+			// Build new flats/vertices
+			auto flats_count               = sf.flats.size();
+			auto [new_flats, new_vertices] = mapeditor::generateSectorFlats(*sf.sector, sf.vertex_buffer_offset);
+			sf.flats                       = new_flats;
+
+			// Update vertex buffer
+			if (new_flats.size() <= flats_count)
 			{
-				vector<mapeditor::MGVertex> vertices;
-				updateFlat(flat, vertices);
-				vb_flats_->buffer().update(flat.vertex_offset, vertices);
-				updated = true;
+				// Same or fewer flats, just update existing vertex data
+				vb_flats_->buffer().update(sf.vertex_buffer_offset, new_vertices);
 			}
+			else
+			{
+				// More flats than before, need to re-upload entire buffer
+
+				// TODO: This will result in gaps in the buffer, either compact
+				//       the buffer here or implement some way to track and
+				//       reuse freed space later
+
+				sf.vertex_buffer_offset = vb_flats_->buffer().size();
+				vb_flats_->pull();                    // Pull data from GPU
+				vb_flats_->addVertices(new_vertices); // Add new vertex data
+				vb_flats_->push();                    // Push data back to GPU
+			}
+
+			// Set updated
+			updated         = true;
+			sf.updated_time = app::runTimer();
 		}
 
-		// Rebuild flat groups if any flats were updated
+		// Clear flat groups to be rebuilt if any flats were updated
 		if (updated)
 		{
 			flats_updated_ = app::runTimer();
@@ -202,57 +239,57 @@ void MapRenderer3D::updateFlats()
 	// Generate flat groups if needed
 	if (flat_groups_.empty())
 	{
-		vector<uint8_t> flats_processed(flats_.size());
-
-		for (unsigned i = 0; i < flats_.size(); ++i)
+		// Build list of flats to process
+		struct FlatToProcess
 		{
-			if (flats_processed[i])
+			mapeditor::Flat3D* flat;
+			bool               processed;
+		};
+		vector<FlatToProcess> flats_to_process;
+		for (auto& sf : sector_flats_)
+			for (auto& flat : sf.flats)
+				flats_to_process.push_back({ .flat = &flat, .processed = false });
+
+		for (auto& fp1 : flats_to_process)
+		{
+			if (fp1.processed)
 				continue;
 
-			// Build list of vertex indices for flats with this texture+flags
+			// Build list of vertex indices for flats with matching texture/flags/etc
 			vector<GLuint> indices;
-			for (unsigned f = i; f < flats_.size(); ++f)
+			for (auto& fp2 : flats_to_process)
 			{
-				// Check texture match
-				auto& flat = flats_[f];
-				if (flats_processed[f] || flat.texture != flats_[i].texture)
-					continue;
-
-				// Check colour match
-				if (flat.colour != flats_[i].colour)
-					continue;
-
-				// Check flags
-				if (flat.flags != flats_[i].flags)
+				// Check for match
+				if (fp2.processed || *fp1.flat != *fp2.flat)
 					continue;
 
 				// Add indices
-				auto vi = flat.vertex_offset;
-				while (vi < flat.vertex_offset + flat.sector->polygonVertices().size())
+				auto vi = fp2.flat->vertex_offset;
+				while (vi < fp2.flat->vertex_offset + fp2.flat->sector->polygonVertices().size())
 					indices.push_back(vi++);
 
-				flats_processed[f] = 1;
+				fp2.processed = true;
 			}
 
 			// Determine transparency type
 			auto transparency = RenderGroup::Transparency::None;
-			if (flats_[i].hasFlag(FlatFlags::Additive))
+			if (fp1.flat->hasFlag(FlatFlags::Additive))
 				transparency = RenderGroup::Transparency::Additive;
-			else if (flats_[i].colour.a < 1.0f)
+			else if (fp1.flat->colour.a < 1.0f)
 				transparency = RenderGroup::Transparency::Normal;
 
 			// Add flat group for texture
 			flat_groups_.push_back(
-				{ .texture      = flats_[i].texture,
-				  .colour       = flats_[i].colour,
+				{ .texture      = fp1.flat->texture,
+				  .colour       = fp1.flat->colour,
 				  .index_buffer = std::make_unique<gl::IndexBuffer>(),
 				  .alpha_test   = transparency == RenderGroup::Transparency::None
-								&& flats_[i].hasFlag(FlatFlags::ExtraFloor),
-				  .sky         = flats_[i].hasFlag(FlatFlags::Sky),
+								&& fp1.flat->hasFlag(FlatFlags::ExtraFloor),
+				  .sky         = fp1.flat->hasFlag(FlatFlags::Sky),
 				  .transparent = transparency });
 			flat_groups_.back().index_buffer->upload(indices);
 
-			flats_processed[i] = 1;
+			fp1.processed = true;
 		}
 	}
 }

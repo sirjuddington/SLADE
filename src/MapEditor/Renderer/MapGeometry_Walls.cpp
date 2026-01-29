@@ -443,14 +443,14 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 						context,
 						quad_info,
 						side,
-						map_specials.sectorColour(*ef.control_sector, map::SectorPart::Interior, true));
+						map_specials.sectorColour(*ef.control_sector, map::SectorPart::Interior));
 				}
 
 				// Propogate lighting down if needed
 				// TODO: Does side lighting (UDMF) override/affect this?
 				if (!ef.hasFlag(ExtraFloor::Flags::DisableLighting))
 				{
-					colour = map_specials.sectorColour(*ef.control_sector, map::SectorPart::Interior, true);
+					colour = map_specials.sectorColour(*ef.control_sector, map::SectorPart::Interior);
 					light  = ef.control_sector->lightAt();
 				}
 

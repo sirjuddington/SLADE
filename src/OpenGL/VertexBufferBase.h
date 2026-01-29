@@ -36,6 +36,15 @@ public:
 		vertices_.clear();
 	}
 
+	bool pull()
+	{
+		if (!getContext() || buffer_.empty())
+			return false;
+
+		vertices_ = buffer_.download();
+		return true;
+	}
+
 	void draw(
 		Primitive     primitive = Primitive::Triangles,
 		const Shader* shader    = nullptr,

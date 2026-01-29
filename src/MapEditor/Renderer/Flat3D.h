@@ -17,11 +17,7 @@ struct Flat3D
 	};
 
 	// Origin
-	const MapSector* sector         = nullptr; // For sector geometry (vertices/polygon)
-	const MapSector* control_sector = nullptr; // For height, texture and colour info (if nullptr use sector)
-	SurfaceType      surface_type;             // How this flat is rendered
-	SurfaceType      source_surface;           // What surface of the (control) sector is used for height/plane
-	SurfaceType      source_tex;               // What surface of the (control) sector is used for texture/lighting
+	const MapSector* sector = nullptr;
 
 	// Index into flats vertex buffer
 	// (vertex count is always sector polygon vertex count)
@@ -31,34 +27,13 @@ struct Flat3D
 	unsigned  texture = 0;
 	u8        flags   = 0;
 	glm::vec4 colour{ 1.0f };
-	float     brightness = 1.0f;
 
-	long updated_time = 0;
+	bool hasFlag(Flags flag) const { return flags & static_cast<u8>(flag); }
+	void setFlag(Flags flag) { flags |= static_cast<u8>(flag); }
 
-	Flat3D() = default;
-	Flat3D(const MapSector* sector, SurfaceType surface_type) :
-		sector{ sector },
-		surface_type{ surface_type },
-		source_surface{ surface_type },
-		source_tex{ surface_type }
+	bool operator==(const Flat3D& other) const
 	{
+		return texture == other.texture && colour == other.colour && flags == other.flags;
 	}
-	Flat3D(
-		const MapSector* sector,
-		SurfaceType      surface_type,
-		const MapSector* control_sector,
-		SurfaceType      source_surface,
-		SurfaceType      source_tex) :
-		sector{ sector },
-		control_sector{ control_sector },
-		surface_type{ surface_type },
-		source_surface{ source_surface },
-		source_tex{ source_tex }
-	{
-	}
-
-	const MapSector* controlSector() const { return control_sector ? control_sector : sector; }
-	bool             hasFlag(Flags flag) const { return flags & static_cast<u8>(flag); }
-	void             setFlag(Flags flag) { flags |= static_cast<u8>(flag); }
 };
 } // namespace slade::mapeditor

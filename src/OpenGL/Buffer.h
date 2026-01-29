@@ -66,6 +66,21 @@ public:
 		return true;
 	}
 
+	vector<T> download()
+	{
+		vector<T> data;
+
+		// Check any data has been uploaded
+		if (!getContext() || vbo_ == 0 || data_uploaded_ == 0)
+			return data;
+
+		data.resize(data_uploaded_);
+		bindVBO(vbo_);
+		glGetBufferSubData(GL_ARRAY_BUFFER, 0, data_uploaded_ * sizeof(T), data.data());
+
+		return data;
+	}
+
 private:
 	unsigned vbo_           = 0;
 	unsigned data_uploaded_ = 0; // No. of items currently 'uploaded' to the GL buffer

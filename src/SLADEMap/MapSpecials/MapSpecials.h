@@ -21,7 +21,7 @@ public:
 
 	const vector<ExtraFloor>& sectorExtraFloors(const MapSector* sector) const;
 	bool                      sectorHasExtraFloors(const MapSector* sector) const;
-	ColRGBA                   sectorColour(const MapSector& sector, SectorPart where, bool fullbright = false) const;
+	ColRGBA                   sectorColour(const MapSector& sector, SectorPart where) const;
 	float                     sectorFloorHeightAt(const MapSector& sector, Vec3d pos) const;
 
 	optional<LineTranslucency> lineTranslucency(const MapLine& line) const;

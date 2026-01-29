@@ -1,5 +1,4 @@
 #pragma once
-#include "Common.h"
 
 // Forward declarations
 namespace slade::mapeditor
@@ -23,7 +22,6 @@ struct TexTransformInfo
 TexTransformInfo getSectorTextureTransformInfo(const MapSector& sector, bool ceiling, Vec2d tex_scale);
 
 std::tuple<vector<Flat3D>, vector<MGVertex>> generateSectorFlats(const MapSector& sector, unsigned vertex_index);
-void                                         updateFlat(Flat3D& flat, vector<MGVertex>& vertices);
 
 std::tuple<vector<Quad3D>, vector<MGVertex>> generateLineQuads(const MapLine& line, unsigned vertex_index);
 } // namespace slade::mapeditor
