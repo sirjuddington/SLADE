@@ -624,7 +624,7 @@ uint8_t MapSector::lightAt(SectorPart where) const
 	}
 
 	// Clamp light level
-	return std::clamp<u8>(light, 0, 255);
+	return std::clamp<int>(light, 0, 255);
 }
 
 // -----------------------------------------------------------------------------

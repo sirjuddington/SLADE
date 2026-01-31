@@ -37,7 +37,6 @@
 #include "MapGeometry.h"
 #include "MapGeometryBuffer3D.h"
 #include "OpenGL/GLTexture.h"
-#include "OpenGL/VertexBuffer3D.h"
 #include "Quad3D.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
@@ -85,8 +84,7 @@ struct QuadInfo
 	const MapTexture*  texture    = nullptr;
 	const gl::Texture* gl_texture = nullptr;
 	MGVertex           tl, tr, bl, br;
-	Vec2i              offsets;
-	u8                 light        = 255;
+	Vec2d              offsets;
 	int                line_length  = 0;
 	int                tex_y_origin = 0; // Absolute height to align texture y origin to
 	bool               back_side    = false;
@@ -135,12 +133,12 @@ static bool planeIntersectsQuad(
 static void setupQuadTexCoords(QuadInfo& info)
 {
 	// Calculate texture coordinates
-	int x1 = info.offsets.x;
-	int x2 = info.line_length + info.offsets.x;
-	int y1 = info.tex_y_origin - info.height_top;
+	float x1 = info.offsets.x;
+	float x2 = info.line_length + info.offsets.x;
+	float y1 = info.tex_y_origin - info.height_top;
 	if (!info.midtex)
 		y1 += info.offsets.y;
-	int y2 = y1 + (info.height_top - info.height_bottom);
+	float y2 = y1 + (info.height_top - info.height_bottom);
 
 	float tl_diff = info.height_top - info.tl.position.z;
 	float tr_diff = info.height_top - info.tr.position.z;
@@ -148,23 +146,28 @@ static void setupQuadTexCoords(QuadInfo& info)
 	float br_diff = info.height_bottom - info.br.position.z;
 
 	// Set uv tex coords
-	info.tl.uv.x = static_cast<float>(x1) / static_cast<float>(info.gl_texture->size.x);
-	info.tl.uv.y = (static_cast<float>(y1) + tl_diff) / static_cast<float>(info.gl_texture->size.y);
-	info.tr.uv.x = static_cast<float>(x2) / static_cast<float>(info.gl_texture->size.x);
-	info.tr.uv.y = (static_cast<float>(y1) + tr_diff) / static_cast<float>(info.gl_texture->size.y);
-	info.bl.uv.x = static_cast<float>(x1) / static_cast<float>(info.gl_texture->size.x);
-	info.bl.uv.y = (static_cast<float>(y2) + bl_diff) / static_cast<float>(info.gl_texture->size.y);
-	info.br.uv.x = static_cast<float>(x2) / static_cast<float>(info.gl_texture->size.x);
-	info.br.uv.y = (static_cast<float>(y2) + br_diff) / static_cast<float>(info.gl_texture->size.y);
+	info.tl.uv.x = x1 / static_cast<float>(info.gl_texture->size.x);
+	info.tl.uv.y = (y1 + tl_diff) / static_cast<float>(info.gl_texture->size.y);
+	info.tr.uv.x = x2 / static_cast<float>(info.gl_texture->size.x);
+	info.tr.uv.y = (y1 + tr_diff) / static_cast<float>(info.gl_texture->size.y);
+	info.bl.uv.x = x1 / static_cast<float>(info.gl_texture->size.x);
+	info.bl.uv.y = (y2 + bl_diff) / static_cast<float>(info.gl_texture->size.y);
+	info.br.uv.x = x2 / static_cast<float>(info.gl_texture->size.x);
+	info.br.uv.y = (y2 + br_diff) / static_cast<float>(info.gl_texture->size.y);
 }
 
-static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* side, const glm::vec4& colour)
+static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* side, const MapSector* sector = nullptr)
 {
+	// Determine lighting
+	auto& map_specials = side->parentMap()->mapSpecials();
+	auto  lighting     = map_specials.sectorLightingAt(
+        sector ? *sector : *side->sector(), map::SectorPart::Interior, info.plane_top, true);
+
 	// Setup & add quad
 	Quad3D quad{ .side          = side,
 				 .vertex_offset = context.vertex_index,
-				 .brightness    = static_cast<float>(info.light) / 255.0f,
-				 .colour        = colour,
+				 .brightness    = static_cast<float>(lighting.brightness) / 255.0f,
+				 .colour        = lighting.colour,
 				 .texture       = info.texture->gl_id };
 	if (info.midtex)
 	{
@@ -262,9 +265,8 @@ void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, b
 		return;
 
 	// Add quad
-	auto  control_side = ef.control_line->s1();
-	auto& map_specials = control_side->parentMap()->mapSpecials();
-	addQuad(context, quad_info, control_side, map_specials.sideColour(*side, map::SidePart::Middle, true));
+	auto control_side = ef.control_line->s1();
+	addQuad(context, quad_info, control_side, side->sector());
 }
 
 void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
@@ -349,42 +351,11 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 		.plane_bottom  = plane_bottom,
 		.texture       = &texture,
 		.gl_texture    = &gl_tex,
-		.offsets       = side->texOffset(),
-		.light         = side->light(),
+		.offsets       = side->texOffset(side_part),
 		.line_length   = static_cast<int>(line->length()),
 		.tex_y_origin  = tex_y_origin,
 		.back_side     = (side == line->s2()),
 	};
-
-	// Apply per-part texture offsets if supported
-	if (line->parentMap()->currentFormat() == MapFormat::UDMF)
-	{
-		switch (part)
-		{
-		case MapLine::FrontUpper:
-		case MapLine::BackUpper:
-			if (side->hasProp("offsetx_top"))
-				quad_info.offsets.x += side->intProperty("offsetx_top");
-			if (side->hasProp("offsety_top"))
-				quad_info.offsets.y += side->intProperty("offsety_top");
-			break;
-		case MapLine::FrontLower:
-		case MapLine::BackLower:
-			if (side->hasProp("offsetx_bottom"))
-				quad_info.offsets.x += side->intProperty("offsetx_bottom");
-			if (side->hasProp("offsety_bottom"))
-				quad_info.offsets.y += side->intProperty("offsety_bottom");
-			break;
-		case MapLine::FrontMiddle:
-		case MapLine::BackMiddle:
-			if (side->hasProp("offsetx_mid"))
-				quad_info.offsets.x += side->intProperty("offsetx_mid");
-			if (side->hasProp("offsety_mid"))
-				quad_info.offsets.y += side->intProperty("offsety_mid");
-			break;
-		default: break;
-		}
-	}
 
 	// Handle 2-sided midtextures
 	if ((part == MapLine::FrontMiddle || part == MapLine::BackMiddle) && line->s2())
@@ -413,9 +384,6 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 			quad_info.sky = true;
 	}
 
-	auto&     map_specials = line->parentMap()->mapSpecials();
-	glm::vec4 colour       = map_specials.sideColour(*side, side_part, true);
-	auto      light        = side->light();
 	if (!quad_info.sky && !quad_info.midtex && line->parentMap()->mapSpecials().sectorHasExtraFloors(side->sector()))
 	{
 		// Split quad by extrafloors
@@ -428,30 +396,16 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 				// Add quad down to extrafloor
 				quad_info.height_bottom = ef.height;
 				quad_info.plane_bottom  = ef.plane_top;
-				quad_info.light         = light;
-				addQuad(context, quad_info, side, colour);
+				addQuad(context, quad_info, side);
 
 				// Add inner quad if needed
-				if (ef.hasFlag(ExtraFloor::Flags::DrawInside))
+				if (ef.alpha < 1.0f)
 				{
 					quad_info.height_top    = ef.height;
 					quad_info.plane_top     = ef.plane_top;
 					quad_info.height_bottom = ef.control_sector->floor().height; // TODO: Vavoom
 					quad_info.plane_bottom  = ef.plane_bottom;
-					quad_info.light         = ef.control_sector->lightAt();
-					addQuad(
-						context,
-						quad_info,
-						side,
-						map_specials.sectorColour(*ef.control_sector, map::SectorPart::Interior));
-				}
-
-				// Propogate lighting down if needed
-				// TODO: Does side lighting (UDMF) override/affect this?
-				if (!ef.hasFlag(ExtraFloor::Flags::DisableLighting))
-				{
-					colour = map_specials.sectorColour(*ef.control_sector, map::SectorPart::Interior);
-					light  = ef.control_sector->lightAt();
+					addQuad(context, quad_info, side);
 				}
 
 				// Setup for next quad below
@@ -459,15 +413,14 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 				quad_info.plane_top     = ef.hasFlag(ExtraFloor::Flags::FlatAtCeiling) ? ef.plane_top : ef.plane_bottom;
 				quad_info.height_bottom = height_bottom;
 				quad_info.plane_bottom  = plane_bottom;
-				quad_info.light         = light;
 			}
 		}
 
-		addQuad(context, quad_info, side, colour);
+		addQuad(context, quad_info, side);
 	}
 	else
 	{
-		addQuad(context, quad_info, side, colour);
+		addQuad(context, quad_info, side);
 	}
 }
 

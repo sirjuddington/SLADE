@@ -1,7 +1,10 @@
 ﻿#pragma once
 
+#include "Geometry/Plane.h"
+
 namespace slade::map
 {
+struct SectorLighting;
 enum class SidePart : u8;
 enum class SectorPart : u8;
 class RenderSpecials;
@@ -23,6 +26,11 @@ public:
 	bool                      sectorHasExtraFloors(const MapSector* sector) const;
 	ColRGBA                   sectorColour(const MapSector& sector, SectorPart where) const;
 	float                     sectorFloorHeightAt(const MapSector& sector, Vec3d pos) const;
+	SectorLighting            sectorLightingAt(
+				   const MapSector& sector,
+				   SectorPart       where,
+				   optional<Plane>  plane       = {},
+				   bool             below_plane = false) const;
 
 	optional<LineTranslucency> lineTranslucency(const MapLine& line) const;
 

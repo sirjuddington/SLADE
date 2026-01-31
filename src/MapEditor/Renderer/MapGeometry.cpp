@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapGeometry.h"
-#include "App.h"
 #include "Flat3D.h"
 #include "Game/Configuration.h"
 #include "MapEditor/MapEditContext.h"
@@ -58,23 +57,23 @@ namespace
 {
 struct SectorFlatsContext
 {
-	const MapSector* sector = nullptr;
-	vector<Flat3D>   flats;
-	vector<MGVertex> vertices;
-	unsigned         vertex_offset       = 0;
-	unsigned         sector_vertex_count = 0;
-	bool             extrafloor_lighting = false;
+	const MapSector*  sector       = nullptr;
+	map::MapSpecials* map_specials = nullptr;
+	vector<Flat3D>    flats;
+	vector<MGVertex>  vertices;
+	unsigned          vertex_offset       = 0;
+	unsigned          sector_vertex_count = 0;
 };
 
 struct FlatInfo
 {
-	SurfaceType      surface_type;
-	const MapSector* control_sector;
-	SurfaceType      control_sector_surface;
-	Plane            plane;
-	u8               brightness  = 255;
-	glm::vec4        colour      = glm::vec4(1.0f);
-	bool             extra_floor = false;
+	SurfaceType         surface_type;
+	const MapSector*    control_sector;
+	SurfaceType         control_sector_surface;
+	Plane               plane;
+	map::SectorLighting lighting;
+	bool                extra_floor = false;
+	float               alpha       = 1.0f;
 };
 } // namespace
 
@@ -147,7 +146,7 @@ static void addFlatVertices(
 	auto& tex_info = gl::Texture::info(texture.gl_id);
 	auto  tti      = getSectorTextureTransformInfo(
         *flat.control_sector, flat.control_sector_surface == SurfaceType::Ceiling, texture.scale);
-	auto brightness = static_cast<float>(flat.brightness) / 255.0f;
+	auto brightness = static_cast<float>(flat.lighting.brightness) / 255.0f;
 
 	if (flat.surface_type == SurfaceType::Ceiling)
 	{
@@ -155,20 +154,19 @@ static void addFlatVertices(
 		{
 			context.vertices.emplace_back(
 				glm::vec3(vertex, flat.plane.heightAt(vertex)),
-				polygon::calculateTexCoords(
-					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, tti.sx, tti.sy, tti.ox, tti.oy, tti.rot),
+				polygon::calculateTexCoords(vertex, tex_info.size, tti),
 				brightness);
 		}
 	}
 	else
 	{
-		for (int i = context.sector->polygonVertices().size(); i > 0; --i) // Floor polygons need to be flipped
+		// Floor polygons need to be flipped
+		for (int i = context.sector->polygonVertices().size(); i > 0; --i)
 		{
 			auto& vertex = context.sector->polygonVertices()[i - 1];
 			context.vertices.emplace_back(
 				glm::vec3(vertex, flat.plane.heightAt(vertex)),
-				polygon::calculateTexCoords(
-					vertex.x, vertex.y, tex_info.size.x, tex_info.size.y, tti.sx, tti.sy, tti.ox, tti.oy, tti.rot),
+				polygon::calculateTexCoords(vertex, tex_info.size, tti),
 				brightness);
 		}
 	}
@@ -187,7 +185,7 @@ static void addFlat(SectorFlatsContext& context, FlatInfo& flat)
 	Flat3D flat_3d{ .sector        = context.sector,
 					.vertex_offset = context.vertex_offset,
 					.texture       = texture.gl_id,
-					.colour        = flat.colour };
+					.colour        = flat.lighting.colour };
 
 	// Check for sky flat
 	if (strutil::equalCI(tex_name, game::configuration().skyFlat()))
@@ -195,7 +193,10 @@ static void addFlat(SectorFlatsContext& context, FlatInfo& flat)
 
 	// ExtraFloor
 	if (flat.extra_floor)
+	{
 		flat_3d.setFlag(Flat3D::Flags::ExtraFloor);
+		flat_3d.colour.a *= flat.alpha;
+	}
 
 	// Add flat vertices
 	addFlatVertices(context, flat, texture);
@@ -213,25 +214,11 @@ static void generateExtraFloorFlats(SectorFlatsContext& context, FlatInfo& flat,
 	flat.control_sector         = extrafloor.control_sector;
 	flat.control_sector_surface = SurfaceType::Ceiling;
 	flat.plane                  = extrafloor.plane_top;
-	flat.colour.a               = extrafloor.alpha;
+	flat.alpha                  = extrafloor.alpha;
 	flat.extra_floor            = true;
+	flat.lighting               = context.map_specials->sectorLightingAt(
+        *context.sector, SectorPart::Interior, extrafloor.plane_top, false);
 	addFlat(context, flat);
-
-	// Save lighting info in case the LightingInsideOnly flag is set
-	u8        brightness_above = flat.brightness;
-	glm::vec4 colour_above     = flat.colour;
-
-	// Update lighting if not disabled
-	if (!extrafloor.hasFlag(EFFlags::DisableLighting))
-	{
-		auto& map_specials = context.sector->parentMap()->mapSpecials();
-		flat.brightness    = extrafloor.control_sector->lightAt(SectorPart::Interior);
-		flat.colour        = map_specials.sectorColour(*extrafloor.control_sector, SectorPart::Interior);
-		flat.colour.a      = extrafloor.alpha;
-
-		if (!extrafloor.hasFlag(EFFlags::LightingInsideOnly))
-			context.extrafloor_lighting = true;
-	}
 
 	// Inner flats
 	if (extrafloor.hasFlag(EFFlags::DrawInside) && !extrafloor.hasFlag(EFFlags::FlatAtCeiling))
@@ -240,31 +227,36 @@ static void generateExtraFloorFlats(SectorFlatsContext& context, FlatInfo& flat,
 		flat.surface_type           = SurfaceType::Ceiling;
 		flat.control_sector_surface = SurfaceType::Ceiling;
 		flat.plane                  = extrafloor.plane_top;
+		flat.lighting               = context.map_specials->sectorLightingAt(
+            *context.sector, SectorPart::Interior, extrafloor.plane_top, true);
 		addFlat(context, flat);
 
 		// Bottom
 		flat.surface_type           = SurfaceType::Floor;
 		flat.control_sector_surface = SurfaceType::Floor;
 		flat.plane                  = extrafloor.plane_bottom;
+		flat.lighting               = context.map_specials->sectorLightingAt(
+            *context.sector, SectorPart::Interior, extrafloor.plane_bottom, false);
 		addFlat(context, flat);
-
-		// Restore lighting from above if LightingInsideOnly flag set
-		if (extrafloor.hasFlag(EFFlags::LightingInsideOnly))
-		{
-			flat.brightness = brightness_above;
-			flat.colour     = colour_above;
-		}
 	}
 
-	// Lastly, bottom outer flat
-	flat.surface_type           = SurfaceType::Ceiling;
-	flat.control_sector_surface = extrafloor.hasFlag(EFFlags::FlatAtCeiling) ? SurfaceType::Ceiling
-																			 : SurfaceType::Floor;
-	flat.plane                  = extrafloor.plane_bottom;
+	// Bottom outer flat
+	flat.surface_type = SurfaceType::Ceiling;
+	if (extrafloor.hasFlag(EFFlags::FlatAtCeiling))
+	{
+		flat.control_sector_surface = SurfaceType::Ceiling;
+		flat.plane                  = extrafloor.plane_top;
+	}
+	else
+	{
+		flat.control_sector_surface = SurfaceType::Floor;
+		flat.plane                  = extrafloor.plane_bottom;
+	}
+	flat.lighting = context.map_specials->sectorLightingAt(*context.sector, SectorPart::Interior, flat.plane, true);
 	addFlat(context, flat);
 
 	// Restore normal flat state
-	flat.colour.a    = 1.0f;
+	flat.alpha       = 1.0f;
 	flat.extra_floor = false;
 }
 
@@ -276,6 +268,7 @@ std::tuple<vector<Flat3D>, vector<MGVertex>> generateSectorFlats(const MapSector
 	auto& map_specials = sector.parentMap()->mapSpecials();
 
 	SectorFlatsContext context{ .sector              = &sector,
+								.map_specials        = &map_specials,
 								.vertex_offset       = vertex_index,
 								.sector_vertex_count = static_cast<unsigned>(sector.polygonVertices().size()) };
 
@@ -284,32 +277,19 @@ std::tuple<vector<Flat3D>, vector<MGVertex>> generateSectorFlats(const MapSector
 				   .control_sector         = &sector,
 				   .control_sector_surface = SurfaceType::Ceiling,
 				   .plane                  = sector.ceiling().plane,
-				   .brightness             = sector.lightAt(SectorPart::Ceiling),
-				   .colour                 = map_specials.sectorColour(sector, SectorPart::Ceiling) };
+				   .lighting               = map_specials.sectorLightingAt(sector, SectorPart::Ceiling) };
 	addFlat(context, info);
 
 	// Then ExtraFloors, from top to bottom, if any
-	if (map_specials.sectorHasExtraFloors(&sector))
-	{
-		// Start with sector interior light/colour
-		info.brightness = sector.lightAt(SectorPart::Interior);
-		info.colour     = map_specials.sectorColour(sector, SectorPart::Interior);
-
-		for (const auto& extra_floor : map_specials.sectorExtraFloors(&sector))
-			generateExtraFloorFlats(context, info, extra_floor);
-	}
+	for (const auto& extra_floor : map_specials.sectorExtraFloors(&sector))
+		generateExtraFloorFlats(context, info, extra_floor);
 
 	// Lastly, the floor flat
 	info.surface_type           = SurfaceType::Floor;
 	info.control_sector         = &sector;
 	info.control_sector_surface = SurfaceType::Floor;
 	info.plane                  = sector.floor().plane;
-	if (!context.extrafloor_lighting)
-	{
-		// If no ExtraFloors affected lighting, use floor light/colour
-		info.brightness = sector.lightAt(SectorPart::Floor);
-		info.colour     = map_specials.sectorColour(sector, SectorPart::Floor);
-	}
+	info.lighting               = map_specials.sectorLightingAt(sector, SectorPart::Floor);
 	addFlat(context, info);
 
 	return { context.flats, context.vertices };

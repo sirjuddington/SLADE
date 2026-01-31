@@ -33,6 +33,7 @@
 #include "ExtraFloorSpecials.h"
 #include "ExtraFloor.h"
 #include "Game/Configuration.h"
+#include "MapSpecials.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -44,7 +45,11 @@ using namespace slade;
 using namespace map;
 
 
-ExtraFloorSpecials::ExtraFloorSpecials(SLADEMap& map) : map_(&map) {}
+ExtraFloorSpecials::ExtraFloorSpecials(SLADEMap& map, MapSpecials& map_specials) :
+	map_{ &map },
+	map_specials_{ &map_specials }
+{
+}
 
 bool ExtraFloorSpecials::hasExtraFloors(const MapSector& sector) const
 {
@@ -91,8 +96,37 @@ void ExtraFloorSpecials::updateSectorExtraFloors(const MapSector& sector)
 		if (special.target == &sector)
 			applySet3dFloorSpecial(special, sef);
 
+
 	if (!sef.extra_floors.empty())
+	{
+		// Calculate ExtraFloor lighting
+		// TODO: Fog
+		optional<SectorLighting> lighting;
+		for (auto& ef : sef.extra_floors)
+		{
+			// Reset lighting if flag set
+			if (ef.hasFlag(ExtraFloor::Flags::ResetLighting))
+				lighting = std::nullopt;
+
+			// Inside
+			if (!ef.hasFlag(ExtraFloor::Flags::DisableLighting))
+			{
+				ef.lighting_inside = { .brightness = ef.control_sector->lightAt(SectorPart::Interior),
+									   .colour     = map_specials_->sectorColour(
+                                           *ef.control_sector, SectorPart::Interior) };
+			}
+			else
+				ef.lighting_inside = lighting;
+
+			// Below
+			if (!ef.hasFlag(ExtraFloor::Flags::LightingInsideOnly))
+				lighting = ef.lighting_inside;
+			ef.lighting_below = lighting;
+		}
+
+		// Add to list
 		sector_extra_floors_.push_back(sef);
+	}
 }
 
 void ExtraFloorSpecials::updateOutdatedSectorExtraFloors()
@@ -250,18 +284,19 @@ void ExtraFloorSpecials::applySet3dFloorSpecial(const Set3dFloorSpecial& special
 	ef.control_sector = special.control_sector;
 	ef.alpha          = special.alpha;
 
+	auto midpoint = sef.sector->getPoint(MapObject::Point::Mid);
 	if (special.type == Set3dFloorSpecial::Type::Vavoom)
 	{
 		ef.plane_top    = special.control_sector->floor().plane;
 		ef.plane_bottom = special.control_sector->ceiling().plane;
-		ef.height       = special.control_sector->floor().height;
+		ef.height       = special.control_sector->floor().plane.heightAt(midpoint);
 		ef.setFlag(ExtraFloor::Flags::Flipped);
 	}
 	else
 	{
 		ef.plane_top    = special.control_sector->ceiling().plane;
 		ef.plane_bottom = special.control_sector->floor().plane;
-		ef.height       = special.control_sector->ceiling().height;
+		ef.height       = special.control_sector->ceiling().plane.heightAt(midpoint);
 	}
 
 	if (special.hasFlag(Set3dFloorSpecial::Flags::DisableLighting))
@@ -278,6 +313,8 @@ void ExtraFloorSpecials::applySet3dFloorSpecial(const Set3dFloorSpecial& special
 		ef.setFlag(ExtraFloor::Flags::UseLowerTexture);
 	if (special.hasFlag(Set3dFloorSpecial::Flags::TransAdd))
 		ef.setFlag(ExtraFloor::Flags::AdditiveTransparency);
+	if (special.hasFlag(Set3dFloorSpecial::Flags::ResetLighting))
+		ef.setFlag(ExtraFloor::Flags::ResetLighting);
 	if (special.render_inside)
 		ef.setFlag(ExtraFloor::Flags::DrawInside);
 	if (special.type == Set3dFloorSpecial::Type::Solid || special.type == Set3dFloorSpecial::Type::Vavoom)

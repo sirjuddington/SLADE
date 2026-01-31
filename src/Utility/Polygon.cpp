@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "Polygon.h"
 #include "Geometry/Geometry.h"
+#include "MapEditor/Renderer/MapGeometry.h"
 #include "MathStuff.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/VertexBuffer2D.h"
@@ -724,6 +725,10 @@ glm::vec2 calculateTexCoords(
 
 	// Set texture coordinate for vertex
 	return { x * owidth, y * oheight };
+}
+glm::vec2 calculateTexCoords(glm::vec2 vertex, glm::vec2 tex_size, const mapeditor::TexTransformInfo& tti)
+{
+	return calculateTexCoords(vertex.x, vertex.y, tex_size.x, tex_size.y, tti.sx, tti.sy, tti.ox, tti.oy, tti.rot);
 }
 
 vector<glm::vec2> generateSectorTriangles(const MapSector& sector)

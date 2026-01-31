@@ -4,12 +4,13 @@
 
 namespace slade::map
 {
+class MapSpecials;
 enum class SectorSurfaceType : u8;
 
 class ExtraFloorSpecials
 {
 public:
-	ExtraFloorSpecials(SLADEMap& map);
+	ExtraFloorSpecials(SLADEMap& map, MapSpecials& map_specials);
 	~ExtraFloorSpecials() = default;
 
 	bool                      hasExtraFloors(const MapSector& sector) const;
@@ -67,7 +68,8 @@ private:
 		bool hasFlag(Flags flag) const { return (flags & static_cast<u16>(flag)) != 0; }
 	};
 
-	SLADEMap*                        map_ = nullptr;
+	SLADEMap*                        map_          = nullptr;
+	MapSpecials*                     map_specials_ = nullptr;
 	vector<SectorExtraFloors>        sector_extra_floors_;
 	vector<Set3dFloorSpecial>        set_3d_floor_specials_;
 	mutable vector<const MapSector*> sectors_to_update_;

@@ -65,7 +65,7 @@ using namespace map;
 MapSpecials::MapSpecials(SLADEMap& map) : map_{ &map }
 {
 	slope_specials_      = std::make_unique<SlopeSpecials>(map);
-	extrafloor_specials_ = std::make_unique<ExtraFloorSpecials>(map);
+	extrafloor_specials_ = std::make_unique<ExtraFloorSpecials>(map, *this);
 	render_specials_     = std::make_unique<RenderSpecials>(map);
 }
 
@@ -131,6 +131,71 @@ float MapSpecials::sectorFloorHeightAt(const MapSector& sector, Vec3d pos) const
 	}
 
 	return height;
+}
+
+SectorLighting MapSpecials::sectorLightingAt(
+	const MapSector& sector,
+	SectorPart       where,
+	optional<Plane>  plane,
+	bool             below_plane) const
+{
+	if (where == SectorPart::Ceiling)
+		return { .brightness = sector.lightAt(where), .colour = sectorColour(sector, where), .fog = ColRGBA::BLACK };
+
+	auto extrafloors = extrafloor_specials_->extraFloors(sector);
+
+	if (where == SectorPart::Floor)
+	{
+		// Check if ExtraFloor lighting affects the floor
+		if (!extrafloors.empty() && extrafloors.back().lighting_below.has_value())
+			return extrafloors.back().lighting_below.value();
+
+		// No ExtraFloor lighting, return sector floor lighting
+		return { .brightness = sector.lightAt(where), .colour = sectorColour(sector, where), .fog = ColRGBA::BLACK };
+	}
+
+	// Interior - if no ExtraFloors or no plane given just return sector interior lighting
+	auto lighting_interior = SectorLighting{ .brightness = sector.lightAt(SectorPart::Interior),
+											 .colour     = sectorColour(sector, SectorPart::Interior),
+											 .fog        = ColRGBA::BLACK };
+	if (extrafloors.empty() || !plane.has_value())
+		return lighting_interior;
+
+	// Determine height of given plane at sector midpoint
+	auto plane_height = plane->heightAt(sector.getPoint(MapObject::Point::Mid));
+	if (below_plane)
+		plane_height -= 0.01f;
+	else
+		plane_height += 0.01f;
+	if (plane_height > extrafloors[0].height)
+		return lighting_interior; // Above all ExtraFloors, return sector interior lighting
+
+	// Check ExtraFloors from top to bottom
+	const ExtraFloor* nearest = nullptr;
+	for (auto& ef : extrafloors)
+	{
+		if (plane_height <= ef.height)
+			nearest = &ef;
+		else
+			break;
+	}
+	if (!nearest)
+		return lighting_interior; // Shouldn't happen
+
+	// Determine if we're underneath or inside the nearest ExtraFloor
+	bool underneath = false;
+	if (nearest->hasFlag(ExtraFloor::Flags::FlatAtCeiling))
+		underneath = true;
+	else
+		underneath = plane_height < nearest->plane_bottom.heightAt(sector.getPoint(MapObject::Point::Mid));
+
+	// Return appropriate lighting
+	if (underneath && nearest->lighting_below.has_value())
+		return nearest->lighting_below.value();
+	if (!underneath && nearest->lighting_inside.has_value())
+		return nearest->lighting_inside.value();
+
+	return lighting_interior;
 }
 
 // -----------------------------------------------------------------------------
@@ -201,10 +266,9 @@ void MapSpecials::processAllSpecials() const
 
 	// Update all sector info
 	for (const auto sector : map_->sectors())
-	{
-		slope_specials_->updateSectorPlanes(*sector);
+		slope_specials_->updateSectorPlanes(*sector); // All slopes first because they can affect extrafloors
+	for (const auto sector : map_->sectors())
 		extrafloor_specials_->updateSectorExtraFloors(*sector);
-	}
 
 	specials_updated_ = app::runTimer();
 }

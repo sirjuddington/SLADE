@@ -167,6 +167,44 @@ MapVertex* MapSide::endVertex() const
 		return parentLine()->v1();
 }
 
+// -----------------------------------------------------------------------------
+// Returns the texture offset of the given side [part], including UDMF offsets
+// if supported
+// -----------------------------------------------------------------------------
+Vec2d MapSide::texOffset(map::SidePart part) const
+{
+	// Get base offsets
+	auto offsets = Vec2d{ static_cast<double>(tex_offset_.x), static_cast<double>(tex_offset_.y) };
+
+	// Apply UDMF offsets if supported
+	if (parent_map_->currentFormat() == MapFormat::UDMF
+		&& game::configuration().featureSupported(game::UDMFFeature::TextureOffsets))
+	{
+		switch (part)
+		{
+		case map::SidePart::Upper:
+			if (hasProp("offsetx_top"))
+				offsets.x += floatProperty("offsetx_top");
+			if (hasProp("offsety_top"))
+				offsets.y += floatProperty("offsety_top");
+			break;
+		case map::SidePart::Lower:
+			if (hasProp("offsetx_bottom"))
+				offsets.x += floatProperty("offsetx_bottom");
+			if (hasProp("offsety_bottom"))
+				offsets.y += floatProperty("offsety_bottom");
+			break;
+		case map::SidePart::Middle:
+			if (hasProp("offsetx_mid"))
+				offsets.x += floatProperty("offsetx_mid");
+			if (hasProp("offsety_mid"))
+				offsets.y += floatProperty("offsety_mid");
+			break;
+		}
+	}
+
+	return offsets;
+}
 
 // -----------------------------------------------------------------------------
 // Returns the light level of the given side

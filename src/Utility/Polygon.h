@@ -9,6 +9,11 @@ namespace gl
 	struct Vertex2D;
 } // namespace gl
 
+namespace mapeditor
+{
+	struct TexTransformInfo;
+}
+
 namespace polygon
 {
 	vector<glm::vec2> generateSectorTriangles(const MapSector& sector);
@@ -23,6 +28,8 @@ namespace polygon
 		float offset_x,
 		float offset_y,
 		float rotation);
+
+	glm::vec2 calculateTexCoords(glm::vec2 vertex, glm::vec2 tex_size, const mapeditor::TexTransformInfo& tti);
 
 	bool generateTextureCoords(
 		vector<gl::Vertex2D>& vertices,
