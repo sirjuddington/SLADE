@@ -36,7 +36,9 @@
 #include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Item.h"
+#include "MapEditor/MapEditContext.h"
 #include "MapRenderer2D.h"
+#include "MapRenderer3D.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/OpenGL.h"
@@ -44,12 +46,14 @@
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
 #include "OpenGL/View.h"
+#include "Renderer.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -578,18 +582,12 @@ void MCAHilightFade::draw(gl::draw2d::Context& dc)
 // -----------------------------------------------------------------------------
 // MCAHilightFade3D class constructor
 // -----------------------------------------------------------------------------
-MCAHilightFade3D::MCAHilightFade3D(
-	long                start,
-	int                 item_index,
-	mapeditor::ItemType item_type,
-	MapRenderer3D*      renderer,
-	float               fade_init) :
+MCAHilightFade3D::MCAHilightFade3D(long start, const Item& item, MapEditContext* context, float fade_init) :
 	MCAnimation(start, true),
-	item_index_{ item_index },
-	item_type_{ item_type },
+	item_{ item },
 	fade_{ fade_init },
 	init_fade_{ fade_init },
-	renderer_{ renderer }
+	context_{ context }
 {
 }
 
@@ -610,6 +608,5 @@ bool MCAHilightFade3D::update(long time)
 // -----------------------------------------------------------------------------
 void MCAHilightFade3D::draw()
 {
-	// TODO: 3dmode
-	// renderer_->renderHilight({ item_index_, item_type_ }, fade_);
+	context_->renderer().renderer3D().renderHighlight(item_, context_->camera3d(), context_->renderer().view(), fade_);
 }

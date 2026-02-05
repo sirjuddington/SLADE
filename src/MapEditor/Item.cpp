@@ -100,6 +100,27 @@ MapObject* Item::asObject(const SLADEMap& map) const
 	}
 }
 
+MapSector* Item::realSector(const SLADEMap& map) const
+{
+	if (type != ItemType::Floor && type != ItemType::Ceiling)
+		return nullptr;
+
+	return map.sector(real_index >= 0 ? real_index : index);
+}
+
+MapSide* Item::realSide(const SLADEMap& map) const
+{
+	if (baseItemType(type) != ItemType::Side)
+		return nullptr;
+
+	return map.side(real_index >= 0 ? real_index : index);
+}
+
+MapLine* Item::controlLine(const SLADEMap& map) const
+{
+	return map.line(control_line);
+}
+
 
 // -----------------------------------------------------------------------------
 //

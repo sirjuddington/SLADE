@@ -2,13 +2,13 @@
 
 #include "Geometry/Plane.h"
 #include "Geometry/Rect.h"
+#include "MapEditor/Item.h"
 
 namespace slade
 {
 // Forward declarations
 class Polygon2D;
 class MapRenderer2D;
-class MapRenderer3D;
 namespace gl
 {
 	enum class Blend;
@@ -24,8 +24,9 @@ namespace gl
 } // namespace gl
 namespace mapeditor
 {
-	enum class ItemType;
-}
+	class MapEditContext;
+	class MapRenderer3D;
+} // namespace mapeditor
 
 class MCAnimation
 {
@@ -194,22 +195,16 @@ private:
 class MCAHilightFade3D : public MCAnimation
 {
 public:
-	MCAHilightFade3D(
-		long                start,
-		int                 item_index,
-		mapeditor::ItemType item_type,
-		MapRenderer3D*      renderer,
-		float               fade_init);
+	MCAHilightFade3D(long start, const mapeditor::Item& item, mapeditor::MapEditContext* context, float fade_init);
 	~MCAHilightFade3D() override = default;
 
 	bool update(long time) override;
 	void draw() override;
 
 private:
-	int                 item_index_ = 0;
-	mapeditor::ItemType item_type_;
-	float               fade_      = 1.f;
-	float               init_fade_ = 1.f;
-	MapRenderer3D*      renderer_  = nullptr;
+	mapeditor::Item            item_;
+	float                      fade_      = 1.f;
+	float                      init_fade_ = 1.f;
+	mapeditor::MapEditContext* context_   = nullptr;
 };
 } // namespace slade

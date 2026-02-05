@@ -1,26 +1,61 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    MapRenderer3D.cpp
+// Description: MapRenderer3D class - handles all rendering related stuff for
+//              3d mode.
+//
+//              Vertex data for all flats and walls are stored in vertex buffers
+//              (one for all flats, one for all quads), which are updated when
+//              the map geometry is changed as needed.
+//              This is then split into 'render groups' which group together
+//              flats/quads with the same textures and properties to reduce the
+//              number of texture binds and draw calls required.
+//              Each render group contains an index buffer into the relevant
+//              vertex buffer, used to render everything in the group with a
+//              single draw call.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapRenderer3D.h"
-#include "App.h"
 #include "Flat3D.h"
-#include "MapGeometry.h"
+#include "General/ColourConfiguration.h"
+#include "MapEditor/Item.h"
 #include "MapGeometryBuffer3D.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/IndexBuffer.h"
+#include "OpenGL/LineBuffer.h"
 #include "OpenGL/Shader.h"
 #include "Quad3D.h"
-#include "SLADEMap/MapObject/MapLine.h"
-#include "SLADEMap/MapObject/MapSector.h"
-#include "SLADEMap/MapObject/MapSide.h"
-#include "SLADEMap/MapObjectList/LineList.h"
-#include "SLADEMap/MapObjectList/SectorList.h"
-#include "SLADEMap/MapSpecials/MapSpecials.h"
-#include "SLADEMap/SLADEMap.h"
 #include "Skybox.h"
-#include "Utility/Vector.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -48,23 +83,33 @@ CVAR(Bool, render_shade_orthogonal_lines, true, CVar::Flag::Save)
 //
 // -----------------------------------------------------------------------------
 
+
+// -----------------------------------------------------------------------------
+// MapRenderer3D class constructor
+// -----------------------------------------------------------------------------
 MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }
 {
-	vb_flats_ = std::make_unique<mapeditor::MapGeometryBuffer3D>();
-	vb_quads_ = std::make_unique<mapeditor::MapGeometryBuffer3D>();
-	skybox_   = std::make_unique<mapeditor::Skybox>();
+	vb_flats_ = std::make_unique<MapGeometryBuffer3D>();
+	vb_quads_ = std::make_unique<MapGeometryBuffer3D>();
+	skybox_   = std::make_unique<Skybox>();
 }
 
+// -----------------------------------------------------------------------------
+// MapRenderer3D class destructor
+// -----------------------------------------------------------------------------
 MapRenderer3D::~MapRenderer3D() = default;
 
-void MapRenderer3D::enableHilight(bool enable) {}
-void MapRenderer3D::enableSelection(bool enable) {}
-
+// -----------------------------------------------------------------------------
+// Sets the skybox textures to [tex1] and [tex2]
+// -----------------------------------------------------------------------------
 void MapRenderer3D::setSkyTexture(string_view tex1, string_view tex2) const
 {
 	skybox_->setSkyTextures(tex1, tex2);
 }
 
+// -----------------------------------------------------------------------------
+// Renders the 3d view from the given [camera]'s perspective
+// -----------------------------------------------------------------------------
 void MapRenderer3D::render(const gl::Camera& camera)
 {
 	// Create shaders if needed
@@ -87,6 +132,7 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	glEnable(GL_ALPHA_TEST);
 	glDepthMask(GL_TRUE);
 	glAlphaFunc(GL_GREATER, 0.0f);
+	gl::setBlend(gl::Blend::Normal);
 
 	// Render skybox first (before depth buffer is populated)
 	if (render_3d_sky)
@@ -114,19 +160,25 @@ void MapRenderer3D::render(const gl::Camera& camera)
 		renderSkyFlatsQuads();
 
 	// First pass, render solid flats/walls
-	renderFlats(*shader_3d_, 0);
-	renderWalls(*shader_3d_, 0);
+	renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Normal); // Flats
+	renderGroups(*vb_quads_, quad_groups_, *shader_3d_, RenderPass::Normal); // Walls
+	if (!render_3d_sky)
+	{
+		// Not rendering the skybox, render sky walls/flats as normal
+		renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Sky); // Flats
+		renderGroups(*vb_quads_, quad_groups_, *shader_3d_, RenderPass::Sky); // Walls
+	}
 
-	// Second pass, render alpha-tested flats/walls
+	// Second pass, render masked flats/walls
 	shader_3d_alphatest_->bind();
-	renderFlats(*shader_3d_alphatest_, 1);
-	renderWalls(*shader_3d_alphatest_, 1);
+	renderGroups(*vb_flats_, flat_groups_, *shader_3d_alphatest_, RenderPass::Masked); // Flats
+	renderGroups(*vb_quads_, quad_groups_, *shader_3d_alphatest_, RenderPass::Masked); // Walls
 
 	// Third pass, render transparent flats/walls
 	shader_3d_->bind();
 	glDepthMask(GL_FALSE);
-	renderFlats(*shader_3d_, 2);
-	renderWalls(*shader_3d_, 2);
+	renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Transparent); // Flats
+	renderGroups(*vb_quads_, quad_groups_, *shader_3d_, RenderPass::Transparent); // Walls
 
 	// Cleanup gl state
 	glDepthMask(GL_TRUE);
@@ -135,6 +187,98 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	glDisable(GL_CULL_FACE);
 }
 
+// -----------------------------------------------------------------------------
+// Renders a highlight for the given [item] using the specified [camera] and
+// [view]
+// ----------------------------------------------------------------------------
+void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, const gl::View& view, float alpha)
+{
+	if (!highlight_enabled_ || render_3d_hilight == 0)
+		return;
+
+	// Create buffers if needed
+	if (!highlight_lines_)
+	{
+		highlight_lines_ = std::make_unique<gl::LineBuffer>();
+		highlight_lines_->setWidthMult(2.0f);
+
+		highlight_fill_ = std::make_unique<gl::IndexBuffer>();
+	}
+
+	// Determine item type and highlight colour
+	auto  base_type = baseItemType(item.type);
+	auto& def       = colourconfig::colDef("map_3d_hilight");
+	auto  hl_colour = def.colour.ampf(1.0f, 1.0f, 1.0f, alpha);
+
+	// Outline
+	if (render_3d_hilight == 1 || render_3d_hilight == 2)
+	{
+		// Update line buffer
+		highlight_lines_->buffer().clear();
+		if (base_type == ItemType::Sector)
+			addFlatOutline(item, *highlight_lines_, 1.0f);
+		else if (base_type == ItemType::Side)
+			addQuadOutline(item, *highlight_lines_, 1.0f);
+		highlight_lines_->push();
+
+		// Draw outline
+		gl::setBlend(def.blendMode());
+		highlight_lines_->draw(camera, view.size(), hl_colour);
+	}
+
+	// Fill
+	if (render_3d_hilight == 2 || render_3d_hilight == 3)
+	{
+		// Setup fill buffer
+		MapGeometryBuffer3D* vertex_buffer = nullptr;
+		vector<GLuint>       indices;
+		if (base_type == ItemType::Sector)
+		{
+			addItemFlatIndices(item, indices);
+			vertex_buffer = vb_flats_.get();
+		}
+		else if (base_type == ItemType::Side)
+		{
+			addItemQuadIndices(item, indices);
+			vertex_buffer = vb_quads_.get();
+		}
+
+		// Draw fill (if any)
+		if (vertex_buffer && !indices.empty())
+		{
+			highlight_fill_->upload(indices);
+
+			// Setup shader
+			shader_3d_->bind();
+			shader_3d_->setUniform("modelview", camera.viewMatrix());
+			shader_3d_->setUniform("projection", camera.projectionMatrix());
+			shader_3d_->setUniform("fullbright", true);
+			shader_3d_->setUniform("fog_density", 0.0f);
+			shader_3d_->setUniform("colour", hl_colour.ampf(1.0f, 1.0f, 1.0f, render_3d_hilight == 2 ? 0.15f : 0.25f));
+
+			// Setup GL state
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LEQUAL);
+
+			// Draw filled polygon(s)
+			gl::Texture::bind(gl::Texture::whiteTexture());
+			gl::bindVAO(vertex_buffer->vao());
+			highlight_fill_->bind();
+			gl::drawElements(gl::Primitive::Triangles, highlight_fill_->size(), GL_UNSIGNED_INT);
+			gl::bindEBO(0);
+			gl::bindVAO(0);
+		}
+	}
+
+	// Reset GL state
+	gl::setBlend(gl::Blend::Normal);
+	glDepthFunc(GL_LESS);
+	glDisable(GL_DEPTH_TEST);
+}
+
+// -----------------------------------------------------------------------------
+// Clears all geometry data (flats/quads) from the renderer
+// -----------------------------------------------------------------------------
 void MapRenderer3D::clearData()
 {
 	// Flats
@@ -148,340 +292,26 @@ void MapRenderer3D::clearData()
 	quad_groups_.clear();
 }
 
+// -----------------------------------------------------------------------------
+// Returns the size of the flats vertex buffer in bytes
+// -----------------------------------------------------------------------------
 unsigned MapRenderer3D::flatsBufferSize() const
 {
-	return vb_flats_->buffer().size() * sizeof(mapeditor::MGVertex);
+	return vb_flats_->buffer().size() * sizeof(MGVertex);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the size of the quads vertex buffer in bytes
+// -----------------------------------------------------------------------------
 unsigned MapRenderer3D::quadsBufferSize() const
 {
-	return vb_quads_->buffer().size() * sizeof(mapeditor::MGVertex);
+	return vb_quads_->buffer().size() * sizeof(MGVertex);
 }
 
-static bool flatsNeedUpdate(long last_updated, const SLADEMap* map)
-{
-	return last_updated < map->typeLastUpdated(map::ObjectType::Sector)
-		   || last_updated < map->mapSpecials().specialsLastUpdated() || last_updated < map->sectorRenderInfoUpdated();
-}
-
-void MapRenderer3D::updateFlats()
-{
-	using FlatFlags = mapeditor::Flat3D::Flags;
-
-	// Clear flats to be rebuilt if map geometry has been updated
-	if (map_->geometryUpdated() > flats_updated_)
-	{
-		vb_flats_->buffer().clear();
-		sector_flats_.clear();
-		flat_groups_.clear();
-	}
-
-	// Generate flats if needed
-	if (sector_flats_.empty())
-	{
-		unsigned vertex_index = 0;
-		for (auto* sector : map_->sectors())
-		{
-			auto [flats, vertices] = mapeditor::generateSectorFlats(*sector, vertex_index);
-
-			sector_flats_.push_back(
-				{ .sector               = sector,
-				  .flats                = flats,
-				  .vertex_buffer_offset = vertex_index,
-				  .updated_time         = app::runTimer() });
-
-			vb_flats_->addVertices(vertices);
-			vertex_index += vertices.size();
-		}
-
-		vb_flats_->push();
-		flats_updated_ = app::runTimer();
-		flat_groups_.clear();
-	}
-	else if (flatsNeedUpdate(flats_updated_, map_))
-	{
-		map_->mapSpecials().updateSpecials();
-
-		// Check for sectors that need an update
-		bool updated = false;
-		for (auto& sf : sector_flats_)
-		{
-			if (sf.updated_time >= sf.sector->modifiedTime() && sf.updated_time >= sf.sector->renderInfoLastUpdated())
-				continue;
-
-			// Build new flats/vertices
-			auto flats_count               = sf.flats.size();
-			auto [new_flats, new_vertices] = mapeditor::generateSectorFlats(*sf.sector, sf.vertex_buffer_offset);
-			sf.flats                       = new_flats;
-
-			// Update vertex buffer
-			if (new_flats.size() <= flats_count)
-			{
-				// Same or fewer flats, just update existing vertex data
-				vb_flats_->buffer().update(sf.vertex_buffer_offset, new_vertices);
-			}
-			else
-			{
-				// More flats than before, need to re-upload entire buffer
-
-				// TODO: This will result in gaps in the buffer, either compact
-				//       the buffer here or implement some way to track and
-				//       reuse freed space later
-
-				sf.vertex_buffer_offset = vb_flats_->buffer().size();
-				vb_flats_->pull();                    // Pull data from GPU
-				vb_flats_->addVertices(new_vertices); // Add new vertex data
-				vb_flats_->push();                    // Push data back to GPU
-			}
-
-			// Set updated
-			updated         = true;
-			sf.updated_time = app::runTimer();
-		}
-
-		// Clear flat groups to be rebuilt if any flats were updated
-		if (updated)
-		{
-			flats_updated_ = app::runTimer();
-			flat_groups_.clear();
-		}
-	}
-
-	// Generate flat groups if needed
-	if (flat_groups_.empty())
-	{
-		// Build list of flats to process
-		struct FlatToProcess
-		{
-			mapeditor::Flat3D* flat;
-			bool               processed;
-		};
-		vector<FlatToProcess> flats_to_process;
-		for (auto& sf : sector_flats_)
-			for (auto& flat : sf.flats)
-				flats_to_process.push_back({ .flat = &flat, .processed = false });
-
-		for (unsigned i1 = 0; i1 < flats_to_process.size(); ++i1)
-		{
-			auto& fp1 = flats_to_process[i1];
-
-			if (fp1.processed)
-				continue;
-
-			// Build list of vertex indices for flats with matching texture/flags/etc
-			vector<GLuint> indices;
-			for (unsigned i2 = i1; i2 < flats_to_process.size(); ++i2)
-			{
-				auto& fp2 = flats_to_process[i2];
-
-				// Ignore if already processed or not matching
-				if (fp2.processed || *fp1.flat != *fp2.flat)
-					continue;
-
-				// Add indices
-				auto vi = fp2.flat->vertex_offset;
-				while (vi < fp2.flat->vertex_offset + fp2.flat->sector->polygonVertices().size())
-					indices.push_back(vi++);
-
-				fp2.processed = true;
-			}
-
-			// Determine transparency type
-			auto transparency = RenderGroup::Transparency::None;
-			if (fp1.flat->hasFlag(FlatFlags::Additive))
-				transparency = RenderGroup::Transparency::Additive;
-			else if (fp1.flat->colour.a < 1.0f)
-				transparency = RenderGroup::Transparency::Normal;
-
-			// Add flat group for texture
-			flat_groups_.push_back(
-				{ .texture      = fp1.flat->texture,
-				  .colour       = fp1.flat->colour,
-				  .index_buffer = std::make_unique<gl::IndexBuffer>(),
-				  .alpha_test   = transparency == RenderGroup::Transparency::None
-								&& fp1.flat->hasFlag(FlatFlags::ExtraFloor),
-				  .sky         = fp1.flat->hasFlag(FlatFlags::Sky),
-				  .transparent = transparency });
-			flat_groups_.back().index_buffer->upload(indices);
-
-			fp1.processed = true;
-		}
-	}
-}
-
-static bool quadsNeedUpdate(long last_updated, const SLADEMap* map)
-{
-	return last_updated < map->typeLastUpdated(map::ObjectType::Line)
-		   || last_updated < map->typeLastUpdated(map::ObjectType::Side)
-		   || last_updated < map->typeLastUpdated(map::ObjectType::Sector)
-		   || last_updated < map->mapSpecials().specialsLastUpdated()
-		   || last_updated < map->sectorRenderInfoUpdated(); // ExtraFloors may affect wall quads
-}
-
-static bool lineNeedsUpdate(long last_updated, const MapLine* line)
-{
-	if (last_updated < line->modifiedTime())
-		return true;
-
-	// Check sides
-	if (line->s1())
-	{
-		if (last_updated < line->s1()->modifiedTime() || last_updated < line->s1()->sector()->modifiedTime()
-			|| last_updated < line->s1()->sector()->renderInfoLastUpdated())
-			return true;
-	}
-	if (line->s2())
-	{
-		if (last_updated < line->s2()->modifiedTime() || last_updated < line->s2()->sector()->modifiedTime()
-			|| last_updated < line->s2()->sector()->renderInfoLastUpdated())
-			return true;
-	}
-
-	return false;
-}
-
-void MapRenderer3D::updateWalls()
-{
-	using QuadFlags = mapeditor::Quad3D::Flags;
-
-	// Clear walls to be rebuilt if map geometry has been updated
-	if (map_->geometryUpdated() > quads_updated_)
-	{
-		vb_quads_->buffer().clear();
-		line_quads_.clear();
-		quad_groups_.clear();
-	}
-
-	// Generate wall quads if needed
-	if (line_quads_.empty())
-	{
-		unsigned vertex_index = 0;
-		for (auto* line : map_->lines())
-		{
-			auto [quads, vertices] = mapeditor::generateLineQuads(*line, vertex_index);
-
-			line_quads_.push_back(
-				{ .line                 = line,
-				  .quads                = quads,
-				  .vertex_buffer_offset = vertex_index,
-				  .updated_time         = app::runTimer() });
-
-			vb_quads_->addVertices(vertices);
-			vertex_index += vertices.size();
-		}
-		vb_quads_->push();
-		quads_updated_ = app::runTimer();
-	}
-	else if (quadsNeedUpdate(quads_updated_, map_))
-	{
-		map_->mapSpecials().updateSpecials();
-
-		// Check for lines that need an update
-		bool updated = false;
-		for (auto& lq : line_quads_)
-		{
-			if (!lineNeedsUpdate(lq.updated_time, lq.line))
-				continue;
-
-			// Build new quads/vertices
-			auto quads_count               = lq.quads.size();
-			auto [new_quads, new_vertices] = mapeditor::generateLineQuads(*lq.line, lq.vertex_buffer_offset);
-			lq.quads                       = new_quads;
-
-			// Update vertex buffer
-			if (new_quads.size() <= quads_count)
-			{
-				// Same or fewer quads, just update existing vertex data
-				vb_quads_->buffer().update(lq.vertex_buffer_offset, new_vertices);
-			}
-			else
-			{
-				// More quads than before, need to re-upload entire buffer
-
-				// TODO: This will result in gaps in the buffer, either compact
-				//       the buffer here or implement some way to track and
-				//       reuse freed space later
-
-				lq.vertex_buffer_offset = vb_quads_->buffer().size();
-				vb_quads_->pull();                    // Pull data from GPU
-				vb_quads_->addVertices(new_vertices); // Add new vertex data
-				vb_quads_->push();                    // Push data back to GPU
-			}
-
-			// Set updated
-			updated         = true;
-			lq.updated_time = app::runTimer();
-		}
-
-		// Clear quad groups to be rebuilt if any quads were updated
-		if (updated)
-		{
-			quads_updated_ = app::runTimer();
-			quad_groups_.clear();
-		}
-	}
-
-	// Generate quad groups if needed
-	if (quad_groups_.empty())
-	{
-		// Build list of quads to process
-		struct QuadToProcess
-		{
-			mapeditor::Quad3D* quad;
-			bool               processed;
-		};
-		vector<QuadToProcess> quads_to_process;
-		for (auto& sf : line_quads_)
-			for (auto& quad : sf.quads)
-				quads_to_process.push_back({ .quad = &quad, .processed = false });
-
-		for (unsigned i1 = 0; i1 < quads_to_process.size(); ++i1)
-		{
-			if (quads_to_process[i1].processed)
-				continue;
-
-			auto quad = quads_to_process[i1].quad;
-
-			// Build list of vertex indices for quads with this texture+colour+flags
-			vector<GLuint> indices;
-			for (unsigned i2 = i1; i2 < quads_to_process.size(); ++i2)
-			{
-				auto& match = quads_to_process[i2];
-
-				// Ignore if already processed or not matching
-				if (match.processed || *quad != *match.quad)
-					continue;
-
-				// Add indices
-				auto vi = match.quad->vertex_offset;
-				while (vi < match.quad->vertex_offset + 6)
-					indices.push_back(vi++);
-
-				match.processed = true;
-			}
-
-			// Determine transparency type
-			auto transparency = RenderGroup::Transparency::None;
-			if (quad->hasFlag(QuadFlags::Additive))
-				transparency = RenderGroup::Transparency::Additive;
-			else if (quad->colour.a < 1.0f)
-				transparency = RenderGroup::Transparency::Normal;
-
-			// Add quad group for texture
-			quad_groups_.push_back(
-				{ .texture      = quad->texture,
-				  .colour       = quad->colour,
-				  .index_buffer = std::make_unique<gl::IndexBuffer>(),
-				  .alpha_test = transparency == RenderGroup::Transparency::None && quad->hasFlag(QuadFlags::MidTexture),
-				  .sky        = quad->hasFlag(QuadFlags::Sky),
-				  .transparent = transparency });
-			quad_groups_.back().index_buffer->upload(indices);
-
-			quads_to_process[i1].processed = true;
-		}
-	}
-}
-
+// -----------------------------------------------------------------------------
+// Renders sky flats and quads (if any) to fill the depth buffer where the sky
+// is visible
+// -----------------------------------------------------------------------------
 void MapRenderer3D::renderSkyFlatsQuads() const
 {
 	gl::Texture::bind(gl::Texture::whiteTexture());
@@ -491,7 +321,7 @@ void MapRenderer3D::renderSkyFlatsQuads() const
 	gl::bindVAO(vb_flats_->vao());
 	for (auto& group : flat_groups_)
 	{
-		if (!group.sky)
+		if (group.render_pass != RenderPass::Sky)
 			continue;
 
 		group.index_buffer->bind();
@@ -502,7 +332,7 @@ void MapRenderer3D::renderSkyFlatsQuads() const
 	gl::bindVAO(vb_quads_->vao());
 	for (auto& group : quad_groups_)
 	{
-		if (!group.sky)
+		if (group.render_pass != RenderPass::Sky)
 			continue;
 
 		group.index_buffer->bind();
@@ -515,62 +345,29 @@ void MapRenderer3D::renderSkyFlatsQuads() const
 	gl::bindVAO(0);
 }
 
-void MapRenderer3D::renderFlats(gl::Shader& shader, int pass) const
+// -----------------------------------------------------------------------------
+// Renders the given [groups] of geometry from the specified [buffer] using the
+// given [shader].
+// Only groups that match the specified render [pass] will be rendered
+// -----------------------------------------------------------------------------
+void MapRenderer3D::renderGroups(
+	const MapGeometryBuffer3D& buffer,
+	const vector<RenderGroup>& groups,
+	const gl::Shader&          shader,
+	RenderPass                 pass)
 {
-	gl::bindVAO(vb_flats_->vao());
+	gl::bindVAO(buffer.vao());
 
-	for (auto& group : flat_groups_)
+	for (auto& group : groups)
 	{
 		// Ensure group is part of the correct render pass
-		if (group.transparent != RenderGroup::Transparency::None && pass != 2)
-			continue;
-		if (group.alpha_test && pass == 0)
-			continue;
-
-		// Ignore sky flats if sky rendering is enabled
-		if (render_3d_sky && group.sky)
+		if (group.render_pass != pass)
 			continue;
 
 		// Setup blending if needed
-		if (pass == 2)
+		if (pass == RenderPass::Transparent)
 		{
-			if (group.transparent == RenderGroup::Transparency::Additive)
-				gl::setBlend(gl::Blend::Additive);
-			else
-				gl::setBlend(gl::Blend::Normal);
-		}
-
-		shader.setUniform("colour", group.colour);
-		gl::Texture::bind(group.texture);
-		group.index_buffer->bind();
-		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
-	}
-
-	gl::bindEBO(0);
-	gl::bindVAO(0);
-}
-
-void MapRenderer3D::renderWalls(gl::Shader& shader, int pass) const
-{
-	gl::bindVAO(vb_quads_->vao());
-
-	// First render non-alpha-tested quads
-	for (auto& group : quad_groups_)
-	{
-		// Ensure group is part of the correct render pass
-		if (group.transparent != RenderGroup::Transparency::None && pass != 2)
-			continue;
-		if (group.alpha_test && pass == 0)
-			continue;
-
-		// Ignore sky quads if sky rendering is enabled
-		if (render_3d_sky && group.sky)
-			continue;
-
-		// Setup blending if needed
-		if (pass == 2)
-		{
-			if (group.transparent == RenderGroup::Transparency::Additive)
+			if (group.trans_additive)
 				gl::setBlend(gl::Blend::Additive);
 			else
 				gl::setBlend(gl::Blend::Normal);

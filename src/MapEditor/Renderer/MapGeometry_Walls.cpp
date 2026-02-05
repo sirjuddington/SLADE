@@ -50,6 +50,7 @@ using namespace slade;
 using namespace mapeditor;
 
 using ExtraFloor = map::ExtraFloor;
+using SidePart   = map::SidePart;
 
 
 // -----------------------------------------------------------------------------
@@ -90,6 +91,7 @@ struct QuadInfo
 	bool               back_side    = false;
 	bool               midtex       = false; // If true, the quad is clipped to the height of the texture
 	bool               sky          = false;
+	bool               extrafloor   = false; // If true, the quad is part of an ExtraFloor
 };
 } // namespace
 
@@ -156,7 +158,12 @@ static void setupQuadTexCoords(QuadInfo& info)
 	info.br.uv.y = (y2 + br_diff) / static_cast<float>(info.gl_texture->size.y);
 }
 
-static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* side, const MapSector* sector = nullptr)
+static void addQuad(
+	LineQuadsContext& context,
+	QuadInfo&         info,
+	const MapSide*    side,
+	SidePart          part,
+	const MapSector*  sector = nullptr)
 {
 	// Determine lighting
 	auto& map_specials = side->parentMap()->mapSpecials();
@@ -165,25 +172,34 @@ static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* si
 
 	// Setup & add quad
 	Quad3D quad{ .side          = side,
+				 .part          = part,
 				 .vertex_offset = context.vertex_index,
 				 .brightness    = static_cast<float>(lighting.brightness) / 255.0f,
 				 .colour        = lighting.colour,
 				 .texture       = info.texture->gl_id };
-	if (info.midtex)
-	{
-		quad.setFlag(Quad3D::Flags::MidTexture);
 
-		// Transparency (only applies to mid textures)
-		if (context.translucency.has_value())
-		{
-			if (context.translucency->additive)
-				quad.setFlag(Quad3D::Flags::Additive);
-			quad.colour.a *= context.translucency->alpha;
-		}
-	}
+	// Determine render pass
+	bool masked = info.midtex || info.extrafloor; // Midtextures and extrafloor sides are always masked
 	if (info.sky)
-		quad.setFlag(Quad3D::Flags::Sky);
-	context.quads.push_back(quad);
+		quad.render_pass = RenderPass::Sky;
+	else if (masked && context.translucency.has_value())
+	{
+		// Transparency only applies to mid textures and extrafloor sides
+		if (context.translucency->additive)
+			quad.setFlag(Quad3D::Flags::Additive);
+		quad.colour.a *= context.translucency->alpha;
+		quad.render_pass = RenderPass::Transparent;
+	}
+	else if (masked)
+		quad.render_pass = RenderPass::Masked;
+	else
+		quad.render_pass = RenderPass::Normal;
+
+	// Setup flags
+	if (info.extrafloor)
+		quad.setFlag(Quad3D::Flags::ExtraFloor);
+	if (info.back_side)
+		quad.setFlag(Quad3D::Flags::BackSide);
 
 	// Determine vertex positions
 	float x1, y1, x2, y2;
@@ -217,9 +233,16 @@ static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* si
 		info.br = { glm::vec3{ x2, y2, info.plane_bottom.heightAt(x2, y2) }, {}, quad.brightness };
 	}
 
-	setupQuadTexCoords(info);
+	// Heights
+	quad.height[0] = info.tl.position.z;
+	quad.height[1] = info.bl.position.z;
+	quad.height[2] = info.br.position.z;
+	quad.height[3] = info.tr.position.z;
+
+	context.quads.push_back(quad);
 
 	// Add vertices (two triangles)
+	setupQuadTexCoords(info);
 	context.vertices.emplace_back(info.tl);
 	context.vertices.emplace_back(info.bl);
 	context.vertices.emplace_back(info.br);
@@ -231,22 +254,23 @@ static void addQuad(LineQuadsContext& context, QuadInfo& info, const MapSide* si
 
 void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, bool front)
 {
+	// TODO: 'Use upper/lower texture' flags
+
 	// Setup base quad info
 	auto&    texture = textureManager().texture(ef.control_line->s1()->texMiddle(), context.mix_tex_flats);
 	auto&    gl_tex  = gl::Texture::info(texture.gl_id);
-	QuadInfo quad_info{
-		.line          = context.line,
-		.height_top    = ef.height,
-		.plane_top     = ef.plane_top,
-		.height_bottom = ef.control_sector->floor().height, // TODO: Vavoom
-		.plane_bottom  = ef.plane_bottom,
-		.texture       = &texture,
-		.gl_texture    = &gl_tex,
-		.offsets       = { 0, 0 },
-		.line_length   = static_cast<int>(context.line->length()),
-		.tex_y_origin  = ef.height,
-		.back_side     = front, // Show on back side of line if extrafloor is on front
-	};
+	QuadInfo quad_info{ .line          = context.line,
+						.height_top    = ef.height,
+						.plane_top     = ef.plane_top,
+						.height_bottom = ef.control_sector->floor().height, // TODO: Vavoom
+						.plane_bottom  = ef.plane_bottom,
+						.texture       = &texture,
+						.gl_texture    = &gl_tex,
+						.offsets       = { 0, 0 },
+						.line_length   = static_cast<int>(context.line->length()),
+						.tex_y_origin  = ef.height,
+						.back_side     = front, // Show on back side of line if extrafloor is on front
+						.extrafloor    = true };
 
 	auto side = front ? context.line->s2() : context.line->s1();
 
@@ -266,13 +290,11 @@ void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, b
 
 	// Add quad
 	auto control_side = ef.control_line->s1();
-	addQuad(context, quad_info, control_side, side->sector());
+	addQuad(context, quad_info, control_side, SidePart::Middle, side->sector());
 }
 
 void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 {
-	using SidePart = map::SidePart;
-
 	// TODO:
 	//  - Handle quads that are split (or not full-line length) due to slopes
 
@@ -396,7 +418,7 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 				// Add quad down to extrafloor
 				quad_info.height_bottom = ef.height;
 				quad_info.plane_bottom  = ef.plane_top;
-				addQuad(context, quad_info, side);
+				addQuad(context, quad_info, side, side_part);
 
 				// Add inner quad if needed
 				if (ef.alpha < 1.0f)
@@ -405,7 +427,7 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 					quad_info.plane_top     = ef.plane_top;
 					quad_info.height_bottom = ef.control_sector->floor().height; // TODO: Vavoom
 					quad_info.plane_bottom  = ef.plane_bottom;
-					addQuad(context, quad_info, side);
+					addQuad(context, quad_info, side, side_part);
 				}
 
 				// Setup for next quad below
@@ -416,11 +438,11 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 			}
 		}
 
-		addQuad(context, quad_info, side);
+		addQuad(context, quad_info, side, side_part);
 	}
 	else
 	{
-		addQuad(context, quad_info, side);
+		addQuad(context, quad_info, side, side_part);
 	}
 }
 

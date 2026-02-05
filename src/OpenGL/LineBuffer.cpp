@@ -1,7 +1,9 @@
 
 #include "Main.h"
 #include "LineBuffer.h"
+#include "Camera.h"
 #include "Geometry/Geometry.h"
+#include "Geometry/Plane.h"
 #include "Shader.h"
 #include "Utility/Vector.h"
 #include "View.h"
@@ -99,6 +101,15 @@ void LineBuffer::add(const vector<Line>& lines)
 	vectorConcat(lines_, lines);
 }
 
+void LineBuffer::add3d(glm::vec2 start, glm::vec2 end, const Plane& plane, glm::vec4 colour, float width)
+{
+	lines_.push_back(
+		Line{ .v1_pos_width = { start.x, start.y, plane.heightAt(start.x, start.y), width },
+			  .v1_colour    = colour,
+			  .v2_pos_width = { end.x, end.y, plane.heightAt(end.x, end.y), width },
+			  .v2_colour    = colour });
+}
+
 void LineBuffer::addArrow(
 	const Rectf& line,
 	glm::vec4    colour,
@@ -149,9 +160,42 @@ void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4
 	if (view)
 		view->setupShader(shader, model);
 
-	gl::bindVAO(vao_);
-	gl::drawElementsInstanced(Primitive::Triangles, 6, GL_UNSIGNED_SHORT, buffer_.size());
-	gl::bindVAO(0);
+	bindVAO(vao_);
+	drawElementsInstanced(Primitive::Triangles, 6, GL_UNSIGNED_SHORT, buffer_.size());
+	bindVAO(0);
+}
+
+void LineBuffer::draw(const Camera& camera, glm::vec2 viewport_size, const glm::vec4& colour, const glm::mat4& model)
+	const
+{
+	if (!getContext())
+		return;
+
+	// Check we have anything to draw
+	if (buffer_.empty())
+		return;
+
+	// Setup shader for drawing
+	if (!shader_lines.isValid())
+		initShader();
+	Shader& shader = dashed_ ? shader_lines_dashed : shader_lines;
+	shader.bind();
+	shader.setUniform("aa_radius", aa_radius_);
+	shader.setUniform("line_width", width_mult_);
+	shader.setUniform("colour", colour);
+	if (dashed_)
+	{
+		shader.setUniform("dash_size", dash_size_);
+		shader.setUniform("gap_size", dash_gap_size_);
+	}
+
+	// Setup camera matrix and view uniforms
+	shader.setUniform("mvp", camera.projectionMatrix() * camera.viewMatrix() * model);
+	shader.setUniform("viewport_size", viewport_size);
+
+	bindVAO(vao_);
+	drawElementsInstanced(Primitive::Triangles, 6, GL_UNSIGNED_SHORT, buffer_.size());
+	bindVAO(0);
 }
 
 const Shader& LineBuffer::shader()

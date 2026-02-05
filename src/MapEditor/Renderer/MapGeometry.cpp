@@ -39,8 +39,10 @@
 #include "MapEditor/MapTextureManager.h"
 #include "MapGeometryBuffer3D.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/LineBuffer.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapSpecials/ExtraFloor.h"
 #include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
@@ -74,6 +76,7 @@ struct FlatInfo
 	map::SectorLighting lighting;
 	bool                extra_floor = false;
 	float               alpha       = 1.0f;
+	bool                additive    = false;
 };
 } // namespace
 
@@ -182,20 +185,30 @@ static void addFlat(SectorFlatsContext& context, FlatInfo& flat)
 																			  : flat.control_sector->floor().texture;
 	auto& texture       = textureManager().flat(tex_name, mix_tex_flats);
 
-	Flat3D flat_3d{ .sector        = context.sector,
-					.vertex_offset = context.vertex_offset,
-					.texture       = texture.gl_id,
-					.colour        = flat.lighting.colour };
+	Flat3D flat_3d{ .sector               = context.sector,
+					.surface_type         = flat.surface_type,
+					.control_sector       = flat.control_sector,
+					.control_surface_type = flat.control_sector_surface,
+					.vertex_offset        = context.vertex_offset,
+					.texture              = texture.gl_id,
+					.colour               = flat.lighting.colour };
 
-	// Check for sky flat
-	if (strutil::equalCI(tex_name, game::configuration().skyFlat()))
-		flat_3d.setFlag(Flat3D::Flags::Sky);
-
-	// ExtraFloor
-	if (flat.extra_floor)
+	// Determine render pass/flags
+	if (strutil::equalCI(tex_name, game::configuration().skyFlat())) // Check for sky flat
+		flat_3d.render_pass = RenderPass::Sky;
+	else if (flat.extra_floor)
 	{
 		flat_3d.setFlag(Flat3D::Flags::ExtraFloor);
 		flat_3d.colour.a *= flat.alpha;
+
+		if (flat.additive)
+			flat_3d.setFlag(Flat3D::Flags::Additive);
+
+		// ExtraFloor flats are always masked or transparent
+		if (flat.alpha < 1.0f || flat.additive)
+			flat_3d.render_pass = RenderPass::Transparent;
+		else
+			flat_3d.render_pass = RenderPass::Masked;
 	}
 
 	// Add flat vertices
@@ -215,6 +228,7 @@ static void generateExtraFloorFlats(SectorFlatsContext& context, FlatInfo& flat,
 	flat.control_sector_surface = SurfaceType::Ceiling;
 	flat.plane                  = extrafloor.plane_top;
 	flat.alpha                  = extrafloor.alpha;
+	flat.additive               = extrafloor.hasFlag(map::ExtraFloor::Flags::AdditiveTransparency);
 	flat.extra_floor            = true;
 	flat.lighting               = context.map_specials->sectorLightingAt(
         *context.sector, SectorPart::Interior, extrafloor.plane_top, false);

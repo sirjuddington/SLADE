@@ -25,8 +25,10 @@ struct Item
 {
 	int      index;
 	ItemType type;
-	int      real_index;
-	int      control_line;
+
+	// ExtraFloor handling
+	int real_index;   // The 'real' index of the item (eg. the sector the ExtraFloor is applied to)
+	int control_line; // The index of the relevant ExtraFloor control line
 
 	Item(int index = -1, ItemType type = ItemType::Any) :
 		index{ index },
@@ -64,6 +66,11 @@ struct Item
 	MapSector* asSector(const SLADEMap& map) const;
 	MapThing*  asThing(const SLADEMap& map) const;
 	MapObject* asObject(const SLADEMap& map) const;
+
+	// ExtraFloor handling
+	MapSector* realSector(const SLADEMap& map) const;
+	MapSide*   realSide(const SLADEMap& map) const;
+	MapLine*   controlLine(const SLADEMap& map) const;
 };
 
 ItemType baseItemType(const ItemType& type);

@@ -343,11 +343,11 @@ bool MapEditContext::update(double frametime)
 
 		// Update hilight
 		Item hl{ -1, ItemType::Any };
-		if (!selection_->hilightLocked())
+		if (!selection_->hilightLocked() && input_->mouseState() == Input::MouseState::Normal)
 		{
 			auto old_hl = selection_->hilight();
-			// TODO: 3dmode
-			// hl          = renderer_->renderer3D().determineHilight();
+			hl          = renderer_->renderer3D().findHighlightedItem(
+                renderer_->camera(), renderer_->view(), input_->mousePos());
 			if (selection_->setHilight(hl))
 			{
 				// Update 3d info overlay
@@ -1634,7 +1634,7 @@ void MapEditContext::openQuickTextureOverlay()
 	{
 		overlay_current_ = std::make_unique<QuickTextureOverlay3d>(this);
 
-		renderer_->renderer3D().enableHilight(false);
+		renderer_->renderer3D().enableHighlight(false);
 		renderer_->renderer3D().enableSelection(false);
 		selection_->lockHilight(true);
 	}

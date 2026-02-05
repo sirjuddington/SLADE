@@ -6,7 +6,6 @@ namespace slade
 class ItemSelection;
 class MCAnimation;
 class MapRenderer2D;
-class MapRenderer3D;
 class MCOverlay;
 namespace gl
 {
@@ -24,6 +23,7 @@ namespace gl
 namespace mapeditor
 {
 	class MapEditContext;
+	class MapRenderer3D;
 	struct Item;
 
 	class Renderer

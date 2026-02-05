@@ -3,8 +3,14 @@
 #include "Buffer.h"
 #include "Geometry/RectFwd.h"
 
+namespace slade
+{
+struct Plane;
+}
+
 namespace slade::gl
 {
+class Camera;
 class Shader;
 class View;
 
@@ -42,6 +48,11 @@ public:
 	{
 		add(Line{ { x1, y1, 0.0f, width }, colour, { x2, y2, 0.0f, width }, colour });
 	}
+	void add3d(glm::vec3 start, glm::vec3 end, glm::vec4 colour, float width = 1.0f)
+	{
+		add(Line{ { start.x, start.y, start.z, width }, colour, { end.x, end.y, end.z, width }, colour });
+	}
+	void add3d(glm::vec2 start, glm::vec2 end, const Plane& plane, glm::vec4 colour, float width = 1.0f);
 	void addArrow(
 		const Rectf& line,
 		glm::vec4    colour,
@@ -54,6 +65,12 @@ public:
 
 	void draw(
 		const View*      view   = nullptr,
+		const glm::vec4& colour = glm::vec4{ 1.0f },
+		const glm::mat4& model  = glm::mat4{ 1.0f }) const;
+
+	void draw(
+		const Camera&    camera,
+		glm::vec2        viewport_size,
 		const glm::vec4& colour = glm::vec4{ 1.0f },
 		const glm::mat4& model  = glm::mat4{ 1.0f }) const;
 

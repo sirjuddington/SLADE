@@ -940,7 +940,9 @@ void Renderer::drawAnimations(gl::draw2d::Context& dc) const
 	auto mode = context_->editMode();
 	for (auto& animation : animations_)
 	{
-		if ((mode == Mode::Visual && animation->mode3d()) || (mode != Mode::Visual && !animation->mode3d()))
+		if ((mode == Mode::Visual && animation->mode3d()))
+			animation->draw();
+		else if (mode != Mode::Visual && !animation->mode3d())
 			animation->draw(dc);
 	}
 }
@@ -1106,7 +1108,9 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 	}
 
 	// Draw animations
-	drawAnimations(dc);
+	for (auto& animation : animations_)
+		if (!animation->mode3d())
+			animation->draw(dc);
 
 	// Draw paste objects if needed
 	if (mouse_state == Input::MouseState::Paste)
@@ -1157,6 +1161,13 @@ void Renderer::drawMap3d() const
 {
 	camera_->setProjection(view_->size().x, view_->size().y, 0.5f, 20000.0f, render_fov);
 	renderer_3d_->render(*camera_);
+	if (context_->input().mouseState() == Input::MouseState::Normal)
+		renderer_3d_->renderHighlight(context_->hilightItem(), *camera_, *view_, anim_flash_level_);
+
+	// Draw animations
+	for (auto& animation : animations_)
+		if (animation->mode3d())
+			animation->draw();
 }
 
 // -----------------------------------------------------------------------------
@@ -1179,6 +1190,9 @@ void Renderer::draw() const
 	else
 		drawMap2d(dc);
 
+	// Disable depth testing for 2d overlays
+	glDisable(GL_DEPTH_TEST);
+
 	render_times.push_back(clock.getElapsedTime().asMicroseconds());
 	if (render_times.size() > 50)
 		render_times.pop_front();
@@ -1186,6 +1200,8 @@ void Renderer::draw() const
 
 	// Set view for overlays
 	dc.view = view_screen_.get();
+
+	// TODO: Crosshair (if mouselooking)
 
 	// Draw info overlay
 	dc.font       = draw2d::Font::Condensed;
@@ -1197,79 +1213,6 @@ void Renderer::draw() const
 	// Draw current fullscreen overlay
 	if (context_->currentOverlay() && anim_overlay_fade_ > 0.01f)
 		context_->currentOverlay()->draw(dc, anim_overlay_fade_);
-
-	//// Draw crosshair if 3d mode
-	// if (context_->editMode() == Mode::Visual)
-	//{
-	//	// Get crosshair colour
-	//	auto& def = colourconfig::colDef("map_3d_crosshair");
-	//	auto  col = def.colour;
-	//	gl::setColour(col, def.blendMode());
-
-	//	glEnable(GL_LINE_SMOOTH);
-	//	glLineWidth(1.5f);
-
-	//	double midx = view_->size().x * 0.5;
-	//	double midy = view_->size().y * 0.5;
-	//	int    size = camera_3d_crosshair_size;
-
-	//	glBegin(GL_LINES);
-	//	// Right
-	//	gl::setColour(col);
-	//	glVertex2d(midx + 1, midy);
-	//	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-	//	glVertex2d(midx + size, midy);
-
-	//	// Left
-	//	gl::setColour(col);
-	//	glVertex2d(midx - 1, midy);
-	//	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-	//	glVertex2d(midx - size, midy);
-
-	//	// Bottom
-	//	gl::setColour(col);
-	//	glVertex2d(midx, midy + 1);
-	//	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-	//	glVertex2d(midx, midy + size);
-
-	//	// Top
-	//	gl::setColour(col);
-	//	glVertex2d(midx, midy - 1);
-	//	glColor4f(col.fr(), col.fg(), col.fb(), 0.0f);
-	//	glVertex2d(midx, midy - size);
-	//	glEnd();
-
-	//	// Draw item distance (if any)
-	//	if (context_->renderer().renderer3D().itemDistance() >= 0 && camera_3d_show_distance)
-	//	{
-	//		gl::setColour(col);
-	//		drawing::drawText(
-	//			fmt::format("{}", renderer_3d_->itemDistance()),
-	//			midx + 5,
-	//			midy + 5,
-	//			ColRGBA(255, 255, 255, 200),
-	//			drawing::Font::Small);
-	//	}
-	//}
-
-	// FPS counter
-	/*if (map_showfps)
-	{
-		if (frametime_last > 0)
-		{
-			int fps = MathStuff::round(1.0 / (frametime_last / 1000.0));
-			fps_avg.push_back(fps);
-			if (fps_avg.size() > 20) fps_avg.erase(fps_avg.begin());
-		}
-		int afps = 0;
-		for (unsigned a = 0; a < fps_avg.size(); a++)
-			afps += fps_avg[a];
-		if (fps_avg.size() > 0) afps /= fps_avg.size();
-		Drawing::drawText(fmt::format("FPS: {}", afps));
-	}*/
-
-	// test
-	// Drawing::drawText(fmt::format("Render distance: {:1.2f}", (double)render_max_dist), 0, 100);
 
 	// Editor messages
 	drawEditorMessages(dc);
@@ -1785,8 +1728,7 @@ void Renderer::animateHilightChange(const mapeditor::Item& old_item, MapObject* 
 	{
 		// 3d mode
 		animations_.push_back(
-			std::make_unique<MCAHilightFade3D>(
-				app::runTimer(), old_item.index, old_item.type, renderer_3d_.get(), anim_flash_level_));
+			std::make_unique<MCAHilightFade3D>(app::runTimer(), old_item, context_, anim_flash_level_));
 	}
 
 	// Reset hilight flash

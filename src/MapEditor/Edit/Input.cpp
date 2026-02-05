@@ -548,7 +548,7 @@ void Input::onKeyBindPress(string_view name)
 		if (name == "map_edit_accept")
 		{
 			context_->closeCurrentOverlay();
-			context_->renderer().renderer3D().enableHilight(true);
+			context_->renderer().renderer3D().enableHighlight(true);
 			context_->renderer().renderer3D().enableSelection(true);
 		}
 
@@ -556,7 +556,7 @@ void Input::onKeyBindPress(string_view name)
 		else if (name == "map_edit_cancel")
 		{
 			context_->closeCurrentOverlay(true);
-			context_->renderer().renderer3D().enableHilight(true);
+			context_->renderer().renderer3D().enableHighlight(true);
 			context_->renderer().renderer3D().enableSelection(true);
 		}
 
@@ -1131,7 +1131,7 @@ void Input::handleKeyBind3d(string_view name) const
 	{
 		// Change hilight type
 		render_3d_hilight = render_3d_hilight + 1;
-		if (render_3d_hilight > 2)
+		if (render_3d_hilight > 3)
 			render_3d_hilight = 0;
 
 		// Editor message
@@ -1140,7 +1140,9 @@ void Input::handleKeyBind3d(string_view name) const
 		else if (render_3d_hilight == 1)
 			context_->addEditorMessage("Hilight enabled: Outline");
 		else if (render_3d_hilight == 2)
-			context_->addEditorMessage("Hilight enabled: Solid");
+			context_->addEditorMessage("Hilight enabled: Outline+Fill");
+		else if (render_3d_hilight == 3)
+			context_->addEditorMessage("Hilight enabled: Fill");
 	}
 
 	// Toggle info overlay
