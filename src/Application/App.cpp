@@ -762,7 +762,7 @@ void app::exit(bool save_config)
 	}
 
 	// Close all open archives
-	archive_manager.closeAll();
+	archive_manager.closeAll(true);
 
 	// Clean up
 	gl::Texture::clearAll();

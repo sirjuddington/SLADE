@@ -667,13 +667,23 @@ bool ArchiveManager::closeArchive(const Archive* archive)
 }
 
 // -----------------------------------------------------------------------------
-// Closes all opened archives
+// Closes all opened archives. If [exiting] is true, does some extra cleanup
+// for program exit
 // -----------------------------------------------------------------------------
-void ArchiveManager::closeAll()
+void ArchiveManager::closeAll(bool exiting)
 {
 	// Close the first archive in the list until no archives are open
 	while (!open_archives_.empty())
 		closeArchive(0);
+
+	// If we're exiting the program, do some cleanup
+	if (exiting)
+	{
+		base_resource_archive_->close();
+		base_resource_archive_.reset();
+		program_resource_archive_->close();
+		program_resource_archive_.reset();
+	}
 }
 
 // -----------------------------------------------------------------------------

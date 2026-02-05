@@ -29,7 +29,7 @@ public:
 	bool                        closeArchive(int index);
 	bool                        closeArchive(string_view filename);
 	bool                        closeArchive(const Archive* archive);
-	void                        closeAll();
+	void                        closeAll(bool exiting = false);
 	int                         numArchives() const { return static_cast<int>(open_archives_.size()); }
 	int                         archiveIndex(const Archive* archive) const;
 	vector<shared_ptr<Archive>> getDependentArchives(const Archive* archive);
