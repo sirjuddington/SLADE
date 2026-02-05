@@ -2,14 +2,15 @@
 
 #include "MCOverlay.h"
 
-namespace slade
+// Forward declarations
+namespace slade::mapeditor
 {
 class ItemSelection;
-namespace mapeditor
-{
-	class MapEditContext;
-}
+class MapEditContext;
+} // namespace slade::mapeditor
 
+namespace slade
+{
 class QuickTextureOverlay3d : public MCOverlay
 {
 public:
@@ -30,7 +31,7 @@ public:
 	void doSearch();
 	void keyDown(string_view key) override;
 
-	static bool ok(const ItemSelection& sel);
+	static bool ok(const mapeditor::ItemSelection& sel);
 
 private:
 	struct QTTex

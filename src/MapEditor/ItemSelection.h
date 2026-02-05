@@ -3,44 +3,48 @@
 #include "Geometry/RectFwd.h"
 #include "Item.h"
 
+// Forward declarations
 namespace slade
 {
 class MapCanvas;
-namespace mapeditor
+}
+namespace slade::mapeditor
 {
-	enum class Mode;
-	class MapEditContext;
-} // namespace mapeditor
+enum class Mode;
+class MapEditContext;
+} // namespace slade::mapeditor
 
+namespace slade::mapeditor
+{
 class ItemSelection
 {
 public:
-	typedef std::map<mapeditor::Item, bool>         ChangeSet;
-	typedef vector<mapeditor::Item>::const_iterator const_iterator;
-	typedef vector<mapeditor::Item>::iterator       iterator;
-	typedef vector<mapeditor::Item>::value_type     value_type;
+	typedef std::map<Item, bool>         ChangeSet;
+	typedef vector<Item>::const_iterator const_iterator;
+	typedef vector<Item>::iterator       iterator;
+	typedef vector<Item>::value_type     value_type;
 
-	ItemSelection(mapeditor::MapEditContext* context = nullptr) : context_{ context } {}
+	ItemSelection(MapEditContext* context = nullptr) : context_{ context } {}
 
 	// Accessors
-	mapeditor::Item  hilight() const { return hilight_; }
+	Item             hilight() const { return hilight_; }
 	bool             hilightLocked() const { return hilight_lock_; }
 	const ChangeSet& lastChange() const { return last_change_; }
 
 	// Access to selection
-	const_iterator         begin() const { return selection_.begin(); }
-	const_iterator         end() const { return selection_.end(); }
-	iterator               begin() { return selection_.begin(); }
-	iterator               end() { return selection_.end(); }
-	mapeditor::Item&       operator[](unsigned index) { return selection_[index]; }
-	const mapeditor::Item& operator[](unsigned index) const { return selection_[index]; }
+	const_iterator begin() const { return selection_.begin(); }
+	const_iterator end() const { return selection_.end(); }
+	iterator       begin() { return selection_.begin(); }
+	iterator       end() { return selection_.end(); }
+	Item&          operator[](unsigned index) { return selection_[index]; }
+	const Item&    operator[](unsigned index) const { return selection_[index]; }
 
-	vector<mapeditor::Item> selectionOrHilight();
-	mapeditor::Item         firstSelectedOrHilight() const;
+	vector<Item> selectionOrHilight();
+	Item         firstSelectedOrHilight() const;
 
 	// Setters
 	void lockHilight(bool lock = true) { hilight_lock_ = lock; }
-	bool setHilight(const mapeditor::Item& item);
+	bool setHilight(const Item& item);
 	bool setHilight(int index);
 
 	unsigned size() const { return selection_.size(); }
@@ -53,15 +57,15 @@ public:
 
 	bool hasHilight() const { return hilight_.index >= 0; }
 	bool hasHilightOrSelection() const { return !selection_.empty() || hilight_.index >= 0; }
-	bool isSelected(const mapeditor::Item& item) const { return VECTOR_EXISTS(selection_, item); }
-	bool isHilighted(const mapeditor::Item& item) const { return item == hilight_; }
+	bool isSelected(const Item& item) const { return VECTOR_EXISTS(selection_, item); }
+	bool isHilighted(const Item& item) const { return item == hilight_; }
 
 	bool updateHilight(const Vec2d& mouse_pos, double dist_scale);
 	void clear();
 
-	void select(const mapeditor::Item& item, bool select = true, bool new_change = true);
-	void select(const vector<mapeditor::Item>& items, bool select = true, bool new_change = true);
-	void deSelect(const mapeditor::Item& item, bool new_change = true) { select(item, false, new_change); }
+	void select(const Item& item, bool select = true, bool new_change = true);
+	void select(const vector<Item>& items, bool select = true, bool new_change = true);
+	void deSelect(const Item& item, bool new_change = true) { select(item, false, new_change); }
 	void selectAll();
 	bool toggleCurrent(bool clear_none = true);
 	void selectVerticesWithin(const SLADEMap& map, const Rectd& rect);
@@ -82,15 +86,15 @@ public:
 	vector<MapThing*>  selectedThings(bool try_hilight = true) const;
 	vector<MapObject*> selectedObjects(bool try_hilight = true) const;
 
-	void migrate(mapeditor::Mode from_edit_mode, mapeditor::Mode to_edit_mode);
+	void migrate(Mode from_edit_mode, Mode to_edit_mode);
 
 private:
-	mapeditor::Item            hilight_ = { -1, mapeditor::ItemType::Any };
-	vector<mapeditor::Item>    selection_;
-	bool                       hilight_lock_ = false;
-	ChangeSet                  last_change_;
-	mapeditor::MapEditContext* context_ = nullptr;
+	Item            hilight_ = { -1, ItemType::Any };
+	vector<Item>    selection_;
+	bool            hilight_lock_ = false;
+	ChangeSet       last_change_;
+	MapEditContext* context_ = nullptr;
 
-	void selectItem(const mapeditor::Item& item, bool select = true);
+	void selectItem(const Item& item, bool select = true);
 };
-} // namespace slade
+} // namespace slade::mapeditor

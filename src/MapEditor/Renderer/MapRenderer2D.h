@@ -2,7 +2,6 @@
 
 namespace slade
 {
-class ItemSelection;
 namespace game
 {
 	class ThingType;
@@ -23,12 +22,13 @@ namespace gl
 namespace mapeditor
 {
 	struct Item;
+	class ItemSelection;
 	class ObjectEditGroup;
 } // namespace mapeditor
 } // namespace slade
 
 
-namespace slade
+namespace slade::mapeditor
 {
 class MapRenderer2D
 {
@@ -168,4 +168,4 @@ private:
 	double  scaledRadius(int radius) const;
 	ColRGBA lineColour(const MapLine* line, bool ignore_filter = false) const;
 };
-} // namespace slade
+} // namespace slade::mapeditor

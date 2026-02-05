@@ -7,7 +7,6 @@
 namespace slade
 {
 class InfoOverlay3D;
-class ItemSelection;
 class LineInfoOverlay;
 class MapCanvas;
 class MCOverlay;
@@ -37,6 +36,7 @@ namespace mapeditor
 	class Edit2D;
 	class Edit3D;
 	class Input;
+	class ItemSelection;
 	class LineDraw;
 	class MoveObjects;
 	class ObjectEdit;

@@ -3,9 +3,7 @@
 namespace slade
 {
 // Forward declarations
-class ItemSelection;
 class MCAnimation;
-class MapRenderer2D;
 class MCOverlay;
 namespace gl
 {
@@ -23,8 +21,10 @@ namespace gl
 namespace mapeditor
 {
 	class MapEditContext;
+	class MapRenderer2D;
 	class MapRenderer3D;
 	struct Item;
+	class ItemSelection;
 
 	class Renderer
 	{

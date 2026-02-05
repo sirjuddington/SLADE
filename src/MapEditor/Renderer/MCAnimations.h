@@ -8,7 +8,6 @@ namespace slade
 {
 // Forward declarations
 class Polygon2D;
-class MapRenderer2D;
 namespace gl
 {
 	enum class Blend;
@@ -25,6 +24,7 @@ namespace gl
 namespace mapeditor
 {
 	class MapEditContext;
+	class MapRenderer2D;
 	class MapRenderer3D;
 } // namespace mapeditor
 
@@ -178,17 +178,17 @@ private:
 class MCAHilightFade : public MCAnimation
 {
 public:
-	MCAHilightFade(long start, MapObject* object, MapRenderer2D* renderer, float fade_init);
+	MCAHilightFade(long start, MapObject* object, mapeditor::MapRenderer2D* renderer, float fade_init);
 	~MCAHilightFade() override = default;
 
 	bool update(long time) override;
 	void draw(gl::draw2d::Context& dc) override;
 
 private:
-	MapObject*     object_    = nullptr;
-	float          fade_      = 1.f;
-	float          init_fade_ = 1.f;
-	MapRenderer2D* renderer_  = nullptr;
+	MapObject*                object_    = nullptr;
+	float                     fade_      = 1.f;
+	float                     init_fade_ = 1.f;
+	mapeditor::MapRenderer2D* renderer_  = nullptr;
 };
 
 // Fading out animation for 3d mode wall/flat/thing hilights
