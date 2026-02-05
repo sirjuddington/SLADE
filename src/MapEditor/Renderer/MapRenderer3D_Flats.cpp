@@ -38,6 +38,7 @@
 #include "MapRenderer3D.h"
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/LineBuffer.h"
+#include "Renderer.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -100,6 +101,7 @@ void MapRenderer3D::updateFlats()
 		vb_flats_->buffer().clear();
 		sector_flats_.clear();
 		flat_groups_.clear();
+		renderer_->clearAnimations();
 	}
 
 	// Generate flats if needed
@@ -170,6 +172,7 @@ void MapRenderer3D::updateFlats()
 		{
 			flats_updated_ = app::runTimer();
 			flat_groups_.clear();
+			renderer_->clearAnimations();
 		}
 	}
 
@@ -256,7 +259,8 @@ void MapRenderer3D::addFlatOutline(const Item& item, gl::LineBuffer& buffer, flo
 void MapRenderer3D::addItemFlatIndices(const Item& item, vector<GLuint>& indices) const
 {
 	// Find the sector flat for the item
-	for (const auto& flat : sector_flats_[item.real_index].flats)
+	auto real_index = item.real_index >= 0 ? item.real_index : item.index;
+	for (const auto& flat : sector_flats_[real_index].flats)
 	{
 		if (flat == item)
 		{

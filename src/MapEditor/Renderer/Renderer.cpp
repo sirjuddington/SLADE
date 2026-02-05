@@ -125,7 +125,7 @@ Renderer::Renderer(MapEditContext& context) : context_{ &context }
 	view_              = std::make_unique<View>(true, true);
 	view_screen_       = std::make_unique<View>(false, false);
 	renderer_2d_       = std::make_unique<MapRenderer2D>(&context.map(), view_.get());
-	renderer_3d_       = std::make_unique<MapRenderer3D>(&context.map());
+	renderer_3d_       = std::make_unique<MapRenderer3D>(&context.map(), this);
 	vb_grid_           = std::make_unique<VertexBuffer2D>();
 	lb_crosshair_      = std::make_unique<LineBuffer>();
 	lb_objectedit_box_ = std::make_unique<LineBuffer>();
@@ -933,21 +933,6 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 }
 
 // -----------------------------------------------------------------------------
-// Draws all MCAnimations for the current edit mode
-// -----------------------------------------------------------------------------
-void Renderer::drawAnimations(gl::draw2d::Context& dc) const
-{
-	auto mode = context_->editMode();
-	for (auto& animation : animations_)
-	{
-		if ((mode == Mode::Visual && animation->mode3d()))
-			animation->draw();
-		else if (mode != Mode::Visual && !animation->mode3d())
-			animation->draw(dc);
-	}
-}
-
-// -----------------------------------------------------------------------------
 // Draws the 2d map
 // -----------------------------------------------------------------------------
 void Renderer::drawMap2d(draw2d::Context& dc) const
@@ -1159,15 +1144,22 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 // -----------------------------------------------------------------------------
 void Renderer::drawMap3d() const
 {
+	// Setup camera
 	camera_->setProjection(view_->size().x, view_->size().y, 0.5f, 20000.0f, render_fov);
+	// Render map
 	renderer_3d_->render(*camera_);
+
+	// Render highlight
 	if (context_->input().mouseState() == Input::MouseState::Normal)
 		renderer_3d_->renderHighlight(context_->hilightItem(), *camera_, *view_, anim_flash_level_);
+
+	// Render selection
+	renderer_3d_->renderSelection(*camera_, *view_);
 
 	// Draw animations
 	for (auto& animation : animations_)
 		if (animation->mode3d())
-			animation->draw();
+			animation->draw(*renderer_3d_, *camera_, *view_);
 }
 
 // -----------------------------------------------------------------------------
@@ -1513,41 +1505,17 @@ bool Renderer::update2dModeCrossfade(double mult)
 // -----------------------------------------------------------------------------
 // Animates the (de)selection of [item], depending on [selected]
 // -----------------------------------------------------------------------------
-void Renderer::animateSelectionChange(const mapeditor::Item& item, bool selected)
+void Renderer::animateSelectionChange(const Item& item, bool selected)
 {
 	using mapeditor::ItemType;
 
 	// 3d mode wall
-	if (mapeditor::baseItemType(item.type) == ItemType::Side)
-	{
-		// TODO: 3dmode
-		//// Get quad
-		// auto quad = renderer_3d_->getQuad(item);
-
-		// if (quad)
-		//{
-		//	// Get quad points
-		//	Vec3f points[4];
-		//	for (unsigned a = 0; a < 4; a++)
-		//		points[a] = { quad->points[a].x, quad->points[a].y, quad->points[a].z };
-
-		//	// Start animation
-		//	animations_.push_back(std::make_unique<MCA3dWallSelection>(app::runTimer(), points, selected));
-		//}
-	}
+	if (baseItemType(item.type) == ItemType::Side)
+		animations_.push_back(std::make_unique<MCA3dSelection>(vector{ item }, *renderer_3d_, selected));
 
 	// 3d mode flat
 	else if (item.type == ItemType::Ceiling || item.type == ItemType::Floor)
-	{
-		// TODO: 3dmode
-		//// Get flat
-		// auto flat = renderer_3d_->getFlat(item);
-
-		//// Start animation
-		// if (flat)
-		//	animations_.push_back(
-		//		std::make_unique<MCA3dFlatSelection>(app::runTimer(), flat->sector, flat->plane, selected));
-	}
+		animations_.push_back(std::make_unique<MCA3dSelection>(vector{ item }, *renderer_3d_, selected));
 
 	// 2d mode thing
 	else if (item.type == ItemType::Thing)
@@ -1620,6 +1588,8 @@ void Renderer::animateSelectionChange(const ItemSelection& selection)
 	vector<MapSector*> sectors_deselected;
 	vector<MapThing*>  things_selected;
 	vector<MapThing*>  things_deselected;
+	vector<Item>       other_selected;
+	vector<Item>       other_deselected;
 
 	for (auto& change : selection.lastChange())
 	{
@@ -1659,9 +1629,14 @@ void Renderer::animateSelectionChange(const ItemSelection& selection)
 				things_deselected.push_back(change.first.asThing(map));
 		}
 
-		// Other (animate individual items)
+		// Other (3d mode)
 		else
-			animateSelectionChange(change.first, change.second);
+		{
+			if (change.second)
+				other_selected.push_back(change.first);
+			else
+				other_deselected.push_back(change.first);
+		}
 	}
 
 	// Animate selected vertices
@@ -1711,6 +1686,12 @@ void Renderer::animateSelectionChange(const ItemSelection& selection)
 				view_->scale(true).x,
 				thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
 				false));
+
+	// Animate other selected items (3d mode)
+	if (!other_selected.empty())
+		animations_.push_back(std::make_unique<MCA3dSelection>(other_selected, *renderer_3d_, true));
+	if (!other_deselected.empty())
+		animations_.push_back(std::make_unique<MCA3dSelection>(other_deselected, *renderer_3d_, false));
 }
 
 // -----------------------------------------------------------------------------
@@ -1727,8 +1708,7 @@ void Renderer::animateHilightChange(const mapeditor::Item& old_item, MapObject* 
 	else
 	{
 		// 3d mode
-		animations_.push_back(
-			std::make_unique<MCAHilightFade3D>(app::runTimer(), old_item, context_, anim_flash_level_));
+		animations_.push_back(std::make_unique<MCAHilightFade3D>(app::runTimer(), old_item, anim_flash_level_));
 	}
 
 	// Reset hilight flash

@@ -1,23 +1,31 @@
 #pragma once
 
+#include "SelectionOverlay3D.h"
+
+namespace slade
+{
+class MCA3dSelection;
+}
 // Forward declarations
 namespace slade::gl
 {
-class LineBuffer;
-class IndexBuffer;
-struct Vertex3D;
 class Camera;
-class View;
+class IndexBuffer;
+class LineBuffer;
 class Shader;
+class View;
+struct Vertex3D;
 } // namespace slade::gl
 namespace slade::mapeditor
 {
-enum class RenderPass : u8;
-struct Item;
-struct Flat3D;
-struct Quad3D;
-class Skybox;
+class ItemSelection;
 class MapGeometryBuffer3D;
+class Renderer;
+class Skybox;
+enum class RenderPass : u8;
+struct Flat3D;
+struct Item;
+struct Quad3D;
 } // namespace slade::mapeditor
 
 
@@ -26,20 +34,30 @@ namespace slade::mapeditor
 class MapRenderer3D
 {
 public:
-	MapRenderer3D(SLADEMap* map);
+	MapRenderer3D(SLADEMap* map, Renderer* renderer);
 	~MapRenderer3D();
 
 	bool fogEnabled() const { return fog_; }
 	bool fullbrightEnabled() const { return fullbright_; }
 
 	void enableHighlight(bool enable = true) { highlight_enabled_ = enable; }
-	void enableSelection(bool enable = true) {}
+	void enableSelection(bool enable = true) { selection_enabled_ = enable; }
 	void enableFog(bool enable = true) { fog_ = enable; }
 	void enableFullbright(bool enable = true) { fullbright_ = enable; }
 	void setSkyTexture(string_view tex1, string_view tex2 = "") const;
 
 	void render(const gl::Camera& camera);
 	void renderHighlight(const Item& item, const gl::Camera& camera, const gl::View& view, float alpha = 1.0f);
+
+	void updateSelection(const ItemSelection& selection);
+	void populateSelectionOverlay(SelectionOverlay3D& overlay, const vector<Item>& items) const;
+	void renderSelectionOverlay(
+		const gl::Camera&         camera,
+		const gl::View&           view,
+		const SelectionOverlay3D& overlay,
+		glm::vec4                 colour,
+		float                     alpha = 1.0f) const;
+	void renderSelection(const gl::Camera& camera, const gl::View& view) const;
 
 	void clearData();
 
@@ -50,7 +68,8 @@ public:
 	unsigned quadsBufferSize() const;
 
 private:
-	SLADEMap*              map_ = nullptr;
+	SLADEMap*              map_      = nullptr;
+	Renderer*              renderer_ = nullptr;
 	unique_ptr<gl::Shader> shader_3d_;
 	unique_ptr<gl::Shader> shader_3d_alphatest_;
 	unique_ptr<Skybox>     skybox_;
@@ -95,8 +114,10 @@ private:
 
 	// Highlighted/selected items
 	bool                        highlight_enabled_ = true;
+	bool                        selection_enabled_ = true;
 	unique_ptr<gl::LineBuffer>  highlight_lines_;
 	unique_ptr<gl::IndexBuffer> highlight_fill_;
+	SelectionOverlay3D          selection_overlay_;
 
 	void updateFlats();
 	void updateWalls();

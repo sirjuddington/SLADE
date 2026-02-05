@@ -3,6 +3,7 @@
 #include "Geometry/Plane.h"
 #include "Geometry/Rect.h"
 #include "MapEditor/Item.h"
+#include "SelectionOverlay3D.h"
 
 namespace slade
 {
@@ -10,6 +11,10 @@ namespace slade
 class Polygon2D;
 namespace gl
 {
+	class View;
+	class Camera;
+	class IndexBuffer;
+	class LineBuffer;
 	enum class Blend;
 	enum class PointSpriteType;
 
@@ -23,6 +28,7 @@ namespace gl
 } // namespace gl
 namespace mapeditor
 {
+	class MapGeometryBuffer3D;
 	class MapEditContext;
 	class MapRenderer2D;
 	class MapRenderer3D;
@@ -37,7 +43,7 @@ public:
 	bool mode3d() const { return mode_3d_; }
 
 	virtual bool update(long time) { return false; }
-	virtual void draw() {}
+	virtual void draw(mapeditor::MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view) {}
 	virtual void draw(gl::draw2d::Context& dc) {}
 
 protected:
@@ -149,7 +155,7 @@ public:
 	~MCA3dWallSelection() override = default;
 
 	bool update(long time) override;
-	void draw() override;
+	void draw(mapeditor::MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view) override;
 
 private:
 	Vec3f points_[4];
@@ -165,13 +171,29 @@ public:
 	~MCA3dFlatSelection() override = default;
 
 	bool update(long time) override;
-	void draw() override;
+	void draw(mapeditor::MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view) override;
 
 private:
 	MapSector* sector_ = nullptr;
 	Plane      plane_;
 	bool       select_ = true;
 	float      fade_   = 1.f;
+};
+
+class MCA3dSelection : public MCAnimation
+{
+public:
+	MCA3dSelection(const vector<mapeditor::Item>& items, mapeditor::MapRenderer3D& renderer, bool select = true);
+
+	bool update(long time) override;
+	void draw(mapeditor::MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view) override;
+
+private:
+	mapeditor::SelectionOverlay3D overlay_;
+	bool                          select_ = true;
+	float                         fade_   = 1.f;
+	glm::vec4                     colour_;
+	bool                          additive_ = false;
 };
 
 // Fading out animation for object hilights
@@ -195,16 +217,15 @@ private:
 class MCAHilightFade3D : public MCAnimation
 {
 public:
-	MCAHilightFade3D(long start, const mapeditor::Item& item, mapeditor::MapEditContext* context, float fade_init);
+	MCAHilightFade3D(long start, const mapeditor::Item& item, float fade_init);
 	~MCAHilightFade3D() override = default;
 
 	bool update(long time) override;
-	void draw() override;
+	void draw(mapeditor::MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view) override;
 
 private:
-	mapeditor::Item            item_;
-	float                      fade_      = 1.f;
-	float                      init_fade_ = 1.f;
-	mapeditor::MapEditContext* context_   = nullptr;
+	mapeditor::Item item_;
+	float           fade_      = 1.f;
+	float           init_fade_ = 1.f;
 };
 } // namespace slade

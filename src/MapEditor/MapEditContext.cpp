@@ -791,6 +791,7 @@ void MapEditContext::selectionUpdated()
 
 	last_undo_level_ = "";
 
+	renderer_->renderer3D().updateSelection(*selection_);
 	renderer_->animateSelectionChange(*selection_);
 
 	updateStatusText();

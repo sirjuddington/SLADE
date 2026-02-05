@@ -260,19 +260,13 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 		// 3d mode
 		if (context_->editMode() == Mode::Visual)
 		{
-			// If the mouse is unlocked, lock the mouse
-			// if (!context_->mouseLocked())
-			//	context_->lockMouse(true);
-			// else
-			{
-				// Shift down, select all matching adjacent structures
-				if (shift_down_)
-					context_->edit3D().selectAdjacent(context_->hilightItem());
+			// Shift down, select all matching adjacent structures
+			if (shift_down_)
+				context_->edit3D().selectAdjacent(context_->hilightItem());
 
-				// Otherwise toggle selection
-				else
-					context_->selection().toggleCurrent();
-			}
+			// Otherwise toggle selection
+			else
+				context_->selection().toggleCurrent();
 
 			return false;
 		}

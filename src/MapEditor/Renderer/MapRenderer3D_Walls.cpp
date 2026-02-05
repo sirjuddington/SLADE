@@ -38,6 +38,7 @@
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/LineBuffer.h"
 #include "Quad3D.h"
+#include "Renderer.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -136,6 +137,7 @@ void MapRenderer3D::updateWalls()
 		vb_quads_->buffer().clear();
 		line_quads_.clear();
 		quad_groups_.clear();
+		renderer_->clearAnimations();
 	}
 
 	// Generate wall quads if needed
@@ -204,6 +206,7 @@ void MapRenderer3D::updateWalls()
 		{
 			quads_updated_ = app::runTimer();
 			quad_groups_.clear();
+			renderer_->clearAnimations();
 		}
 	}
 

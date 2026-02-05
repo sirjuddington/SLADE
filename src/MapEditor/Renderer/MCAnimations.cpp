@@ -32,21 +32,22 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MCAnimations.h"
+#include "App.h"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
 #include "General/ColourConfiguration.h"
 #include "MapEditor/Item.h"
-#include "MapEditor/MapEditContext.h"
 #include "MapRenderer2D.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/IndexBuffer.h"
+#include "OpenGL/LineBuffer.h"
 #include "OpenGL/OpenGL.h"
 #include "OpenGL/PointSpriteBuffer.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
 #include "OpenGL/View.h"
-#include "Renderer.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapThing.h"
@@ -442,7 +443,7 @@ bool MCA3dWallSelection::update(long time)
 // -----------------------------------------------------------------------------
 // Draws the animation
 // -----------------------------------------------------------------------------
-void MCA3dWallSelection::draw()
+void MCA3dWallSelection::draw(MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view)
 {
 	//// Setup colour
 	// if (select_)
@@ -500,7 +501,7 @@ bool MCA3dFlatSelection::update(long time)
 // -----------------------------------------------------------------------------
 // Draws the animation
 // -----------------------------------------------------------------------------
-void MCA3dFlatSelection::draw()
+void MCA3dFlatSelection::draw(MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view)
 {
 	// if (!sector_)
 	//	return;
@@ -523,6 +524,48 @@ void MCA3dFlatSelection::draw()
 
 	// glEnable(GL_CULL_FACE);
 }
+
+
+
+
+
+MCA3dSelection::MCA3dSelection(const vector<Item>& items, MapRenderer3D& renderer, bool select) :
+	MCAnimation{ app::runTimer(), true },
+	select_{ select }
+{
+	renderer.populateSelectionOverlay(overlay_, items);
+	if (select)
+	{
+		additive_ = true;
+		colour_   = glm::vec4{ 1.0f, 1.0f, 1.0f, 0.2f };
+	}
+	else
+	{
+		const auto& def = colourconfig::colDef("map_selection");
+		additive_       = def.blendMode() == gl::Blend::Additive;
+		colour_         = def.colour;
+	}
+}
+
+bool MCA3dSelection::update(long time)
+{
+	// Determine fade amount (0.0-1.0 over 150ms)
+	fade_ = 1.0f - ((time - starttime_) * 0.008f);
+
+	// Check if animation is finished
+	return !(fade_ < 0.0f || fade_ > 1.0f);
+}
+
+void MCA3dSelection::draw(MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view)
+{
+	auto colour = colour_;
+	colour.a *= fade_;
+	renderer.renderSelectionOverlay(camera, view, overlay_, colour);
+}
+
+
+
+
 
 
 // -----------------------------------------------------------------------------
@@ -582,12 +625,11 @@ void MCAHilightFade::draw(gl::draw2d::Context& dc)
 // -----------------------------------------------------------------------------
 // MCAHilightFade3D class constructor
 // -----------------------------------------------------------------------------
-MCAHilightFade3D::MCAHilightFade3D(long start, const Item& item, MapEditContext* context, float fade_init) :
+MCAHilightFade3D::MCAHilightFade3D(long start, const Item& item, float fade_init) :
 	MCAnimation(start, true),
 	item_{ item },
 	fade_{ fade_init },
-	init_fade_{ fade_init },
-	context_{ context }
+	init_fade_{ fade_init }
 {
 }
 
@@ -606,7 +648,7 @@ bool MCAHilightFade3D::update(long time)
 // -----------------------------------------------------------------------------
 // Draws the animation
 // -----------------------------------------------------------------------------
-void MCAHilightFade3D::draw()
+void MCAHilightFade3D::draw(MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view)
 {
-	context_->renderer().renderer3D().renderHighlight(item_, context_->camera3d(), context_->renderer().view(), fade_);
+	renderer.renderHighlight(item_, camera, view, fade_);
 }

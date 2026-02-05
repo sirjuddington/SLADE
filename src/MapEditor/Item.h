@@ -53,7 +53,8 @@ struct Item
 	}
 	bool operator==(const Item& other) const
 	{
-		return index == other.index && (type == ItemType::Any || type == other.type) && real_index == other.real_index;
+		return index == other.index && (type == ItemType::Any || type == other.type)
+			   && realIndex() == other.realIndex();
 	}
 	bool operator!=(const Item& other) const { return !(*this == other); }
 
@@ -68,6 +69,7 @@ struct Item
 	MapObject* asObject(const SLADEMap& map) const;
 
 	// ExtraFloor handling
+	int        realIndex() const { return real_index >= 0 ? real_index : index; }
 	MapSector* realSector(const SLADEMap& map) const;
 	MapSide*   realSide(const SLADEMap& map) const;
 	MapLine*   controlLine(const SLADEMap& map) const;

@@ -27,9 +27,11 @@ public:
 	ItemSelection(MapEditContext* context = nullptr) : context_{ context } {}
 
 	// Accessors
-	Item             hilight() const { return hilight_; }
-	bool             hilightLocked() const { return hilight_lock_; }
-	const ChangeSet& lastChange() const { return last_change_; }
+	Item                hilight() const { return hilight_; }
+	bool                hilightLocked() const { return hilight_lock_; }
+	const ChangeSet&    lastChange() const { return last_change_; }
+	const vector<Item>& selectedItems() const { return selection_; }
+	vector<Item>&       selectedItems() { return selection_; }
 
 	// Access to selection
 	const_iterator begin() const { return selection_.begin(); }

@@ -44,7 +44,9 @@
 #include "MapRenderer3D.h"
 #include "Flat3D.h"
 #include "General/ColourConfiguration.h"
+#include "MCAnimations.h"
 #include "MapEditor/Item.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapGeometryBuffer3D.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/GLTexture.h"
@@ -52,6 +54,7 @@
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/Shader.h"
 #include "Quad3D.h"
+#include "Renderer.h"
 #include "Skybox.h"
 
 using namespace slade;
@@ -87,7 +90,7 @@ CVAR(Bool, render_shade_orthogonal_lines, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // MapRenderer3D class constructor
 // -----------------------------------------------------------------------------
-MapRenderer3D::MapRenderer3D(SLADEMap* map) : map_{ map }
+MapRenderer3D::MapRenderer3D(SLADEMap* map, Renderer* renderer) : map_{ map }, renderer_{ renderer }
 {
 	vb_flats_ = std::make_unique<MapGeometryBuffer3D>();
 	vb_quads_ = std::make_unique<MapGeometryBuffer3D>();
@@ -277,6 +280,128 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 }
 
 // -----------------------------------------------------------------------------
+// Updates the selection overlay with the given [seletion]
+// -----------------------------------------------------------------------------
+void MapRenderer3D::updateSelection(const ItemSelection& selection)
+{
+	populateSelectionOverlay(selection_overlay_, selection.selectedItems());
+}
+
+// -----------------------------------------------------------------------------
+// Populates the given selection [overlay] with the vertex/index data for the
+// given list of [items]
+// -----------------------------------------------------------------------------
+void MapRenderer3D::populateSelectionOverlay(SelectionOverlay3D& overlay, const vector<Item>& items) const
+{
+	if (items.empty())
+	{
+		// No selection, clear buffers
+		overlay.outline.reset();
+		overlay.fill_flats.reset();
+		overlay.fill_quads.reset();
+		return;
+	}
+
+	// (Re-)Create buffers
+	overlay.outline = std::make_unique<gl::LineBuffer>();
+	overlay.outline->setWidthMult(1.5f);
+	overlay.fill_flats = std::make_unique<gl::IndexBuffer>();
+	overlay.fill_quads = std::make_unique<gl::IndexBuffer>();
+
+	// Update buffers
+	overlay.outline->buffer().clear();
+	vector<GLuint> indices_flats;
+	vector<GLuint> indices_quads;
+	for (const auto& item : items)
+	{
+		auto base_type = baseItemType(item.type);
+		if (base_type == ItemType::Sector)
+		{
+			addFlatOutline(item, *overlay.outline, 1.0f);
+			addItemFlatIndices(item, indices_flats);
+		}
+		else if (base_type == ItemType::Side)
+		{
+			addQuadOutline(item, *overlay.outline, 1.0f);
+			addItemQuadIndices(item, indices_quads);
+		}
+	}
+	overlay.outline->push();
+	overlay.fill_flats->upload(indices_flats);
+	overlay.fill_quads->upload(indices_quads);
+}
+
+// -----------------------------------------------------------------------------
+// Renders a selection [overlay] using the given [camera] and [view], with the
+// specified [colour] and [alpha] transparency
+// -----------------------------------------------------------------------------
+void MapRenderer3D::renderSelectionOverlay(
+	const gl::Camera&         camera,
+	const gl::View&           view,
+	const SelectionOverlay3D& overlay,
+	glm::vec4                 colour,
+	float                     alpha) const
+{
+	if (!overlay.outline)
+		return;
+
+	// Setup colour
+	colour.a *= alpha;
+
+	// Draw outline
+	overlay.outline->draw(camera, view.size(), colour);
+
+	// Draw fill
+
+	// Setup shader
+	shader_3d_->bind();
+	shader_3d_->setUniform("modelview", camera.viewMatrix());
+	shader_3d_->setUniform("projection", camera.projectionMatrix());
+	shader_3d_->setUniform("fullbright", true);
+	shader_3d_->setUniform("fog_density", 0.0f);
+	colour.a *= 0.15f;
+	shader_3d_->setUniform("colour", colour);
+
+	// Setup GL state
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+
+	// Draw filled flats
+	gl::Texture::bind(gl::Texture::whiteTexture());
+	gl::bindVAO(vb_flats_->vao());
+	overlay.fill_flats->bind();
+	gl::drawElements(gl::Primitive::Triangles, overlay.fill_flats->size(), GL_UNSIGNED_INT);
+
+	// Draw filled quads
+	gl::bindVAO(vb_quads_->vao());
+	overlay.fill_quads->bind();
+	gl::drawElements(gl::Primitive::Triangles, overlay.fill_quads->size(), GL_UNSIGNED_INT);
+	gl::bindEBO(0);
+	gl::bindVAO(0);
+
+
+	// Reset GL state
+	glDepthFunc(GL_LESS);
+	glDisable(GL_DEPTH_TEST);
+}
+
+// -----------------------------------------------------------------------------
+// Renders the current selection overlay (if any) using the given [camera] and
+// [view]
+// -----------------------------------------------------------------------------
+void MapRenderer3D::renderSelection(const gl::Camera& camera, const gl::View& view) const
+{
+	if (!selection_enabled_)
+		return;
+
+	// Render selection overlay in selection colour
+	auto& def = colourconfig::colDef("map_3d_selection");
+	gl::setBlend(def.blendMode());
+	renderSelectionOverlay(camera, view, selection_overlay_, def.colour);
+	gl::setBlend(gl::Blend::Normal);
+}
+
+// -----------------------------------------------------------------------------
 // Clears all geometry data (flats/quads) from the renderer
 // -----------------------------------------------------------------------------
 void MapRenderer3D::clearData()
@@ -290,6 +415,10 @@ void MapRenderer3D::clearData()
 	vb_quads_->buffer().clear();
 	line_quads_.clear();
 	quad_groups_.clear();
+
+	// Selection/Highlight
+	highlight_lines_.reset();
+	highlight_fill_.reset();
 }
 
 // -----------------------------------------------------------------------------

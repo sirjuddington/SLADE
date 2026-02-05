@@ -113,7 +113,6 @@ namespace mapeditor
 		void drawLineDrawLines(gl::draw2d::Context& dc, bool snap_nearest_vertex) const;
 		void drawPasteLines(gl::draw2d::Context& dc) const;
 		void drawObjectEdit(gl::draw2d::Context& dc) const;
-		void drawAnimations(gl::draw2d::Context& dc) const;
 		void drawMap2d(gl::draw2d::Context& dc) const;
 		void drawMap3d() const;
 
