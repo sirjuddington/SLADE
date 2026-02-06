@@ -217,8 +217,8 @@ i64 database::archiveFileId(const string& path, optional<i64> parent_id)
 // -----------------------------------------------------------------------------
 i64 database::archiveFileId(const Archive& archive)
 {
-	auto path      = strutil::replace(archive.filename(), "\\", "/");
-	auto parent_id = -1;
+	auto          path = strutil::replace(archive.filename(), "\\", "/");
+	optional<i64> parent_id;
 
 	if (auto* parent = archive.parentArchive())
 	{
