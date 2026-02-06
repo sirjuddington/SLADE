@@ -510,6 +510,9 @@ bool MapEditorWindow::chooseMap(Archive* archive)
 			return false;
 		}
 
+		// Save selected game/port to UI saved state
+		dlg.saveGamePortSelection();
+
 		// Show map editor window
 		if (IsIconized())
 			Restore();

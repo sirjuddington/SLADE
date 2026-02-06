@@ -3453,6 +3453,9 @@ void ArchivePanel::onEntryListActivated(wxDataViewEvent& e)
 					wxS("Selected Game Configuration does not match the map format"), wxS("Error"), wxICON_ERROR);
 			else
 			{
+				// Save selected game/port to UI saved state
+				dlg.saveGamePortSelection();
+
 				// Load game configuration
 				game::configuration().openConfig(dlg.selectedGame(), dlg.selectedPort(), info.format);
 

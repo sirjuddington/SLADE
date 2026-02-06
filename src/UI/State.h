@@ -33,6 +33,8 @@ static string RUNDIALOG_LAST_EXE            = "RunDialogLastExe";
 static string RUNDIALOG_LAST_CONFIG         = "RunDialogLastConfig";
 static string RUNDIALOG_LAST_EXTRA          = "RunDialogLastExtra";
 static string RUNDIALOG_START_3D            = "RunDialogStart3d";
+static string MAPDIALOG_LAST_GAME           = "MapDialogLastGame";
+static string MAPDIALOG_LAST_PORT           = "MapDialogLastPort";
 
 void initStateProps();
 bool hasSavedState(string_view name, const Archive* archive = nullptr);

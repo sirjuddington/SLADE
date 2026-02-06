@@ -29,6 +29,7 @@ public:
 	bool    configMatchesMap(const MapDesc& map) const;
 	string  selectedGame();
 	string  selectedPort();
+	void    saveGamePortSelection();
 
 private:
 	wxChoice*                  choice_game_config_   = nullptr;

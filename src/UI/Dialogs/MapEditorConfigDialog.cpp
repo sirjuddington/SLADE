@@ -46,6 +46,7 @@
 #include "UI/Controls/ResourceArchiveChooser.h"
 #include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -222,6 +223,12 @@ MapEditorConfigDialog::MapEditorConfigDialog(wxWindow* parent, Archive* archive,
 	hbox->Add(new wxStaticText(this, -1, wxS("Port:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	choice_port_config_ = new wxChoice(this, -1);
 	hbox->Add(choice_port_config_, wxSizerFlags(1).Expand());
+
+	// Load last selected game/port for the archive if saved state exists
+	if (ui::hasSavedState(ui::MAPDIALOG_LAST_GAME, archive))
+		game_current_ = ui::getStateString(ui::MAPDIALOG_LAST_GAME, archive);
+	if (ui::hasSavedState(ui::MAPDIALOG_LAST_PORT, archive))
+		port_current_ = ui::getStateString(ui::MAPDIALOG_LAST_PORT, archive);
 
 	// Populate game/port lists
 	populateGameList();
@@ -529,6 +536,15 @@ string MapEditorConfigDialog::selectedPort()
 		return "";
 
 	return ports_list_[choice_port_config_->GetSelection() - 1];
+}
+
+// -----------------------------------------------------------------------------
+// Saves the currently selected game/port to saved state for the archive
+// -----------------------------------------------------------------------------
+void MapEditorConfigDialog::saveGamePortSelection()
+{
+	ui::saveStateString(ui::MAPDIALOG_LAST_GAME, selectedGame(), archive_);
+	ui::saveStateString(ui::MAPDIALOG_LAST_PORT, selectedPort(), archive_);
 }
 
 
