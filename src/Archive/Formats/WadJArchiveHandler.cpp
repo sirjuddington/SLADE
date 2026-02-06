@@ -284,14 +284,14 @@ bool WadJArchiveHandler::write(Archive& archive, MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Hack to account for Jaguar Doom's silly sprite scheme
 // -----------------------------------------------------------------------------
-string WadJArchiveHandler::detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir)
+string WadJArchiveHandler::detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir)
 {
 	auto nextentry = archive.entryAt(index + 1);
 	if (nextentry && strutil::equalCI(nextentry->name(), "."))
 		return "sprites";
 	return WadArchiveHandler::detectNamespace(archive, index);
 }
-string WadJArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
+string WadJArchiveHandler::detectNamespace(const Archive& archive, ArchiveEntry* entry)
 {
 	size_t index     = archive.entryIndex(entry);
 	auto   nextentry = archive.entryAt(index + 1);

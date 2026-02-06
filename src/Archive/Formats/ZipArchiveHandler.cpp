@@ -468,7 +468,7 @@ shared_ptr<ArchiveEntry> ZipArchiveHandler::addEntry(
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-MapDesc ZipArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
+MapDesc ZipArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead)
 {
 	MapDesc map;
 
@@ -497,7 +497,7 @@ MapDesc ZipArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<MapDesc> ZipArchiveHandler::detectMaps(Archive& archive)
+vector<MapDesc> ZipArchiveHandler::detectMaps(const Archive& archive)
 {
 	vector<MapDesc> ret;
 
@@ -540,7 +540,7 @@ vector<MapDesc> ZipArchiveHandler::detectMaps(Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ZipArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -573,7 +573,7 @@ ArchiveEntry* ZipArchiveHandler::findFirst(Archive& archive, ArchiveSearchOption
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ZipArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -605,7 +605,7 @@ ArchiveEntry* ZipArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ZipArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> ZipArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();

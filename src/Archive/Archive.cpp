@@ -947,7 +947,7 @@ MapDesc Archive::mapDesc(ArchiveEntry* maphead)
 // Returns the MapDesc information about all maps in the Archive.
 // To be implemented in Archive sub-classes.
 // -----------------------------------------------------------------------------
-vector<MapDesc> Archive::detectMaps()
+vector<MapDesc> Archive::detectMaps() const
 {
 	return format_handler_->detectMaps(*this);
 }

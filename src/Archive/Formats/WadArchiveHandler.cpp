@@ -767,7 +767,7 @@ bool WadArchiveHandler::moveEntry(Archive& archive, ArchiveEntry* entry, unsigne
 // If [maphead] is not really a map header entry, an invalid MapDesc will be
 // returned (MapDesc::head == nullptr)
 // -----------------------------------------------------------------------------
-MapDesc WadArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
+MapDesc WadArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead)
 {
 	MapDesc map;
 
@@ -911,7 +911,7 @@ MapDesc WadArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 // -----------------------------------------------------------------------------
 // Searches for any maps in the wad and adds them to the map list
 // -----------------------------------------------------------------------------
-vector<MapDesc> WadArchiveHandler::detectMaps(Archive& archive)
+vector<MapDesc> WadArchiveHandler::detectMaps(const Archive& archive)
 {
 	vector<MapDesc> maps;
 
@@ -1077,7 +1077,7 @@ vector<MapDesc> WadArchiveHandler::detectMaps(Archive& archive)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string WadArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
+string WadArchiveHandler::detectNamespace(const Archive& archive, ArchiveEntry* entry)
 {
 	return detectNamespace(archive, archive.entryIndex(entry));
 }
@@ -1085,7 +1085,7 @@ string WadArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string WadArchiveHandler::detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir)
+string WadArchiveHandler::detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir)
 {
 	// Go through namespaces
 	for (auto& ns : namespaces_)
@@ -1161,7 +1161,7 @@ void WadArchiveHandler::detectIncludes(Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* WadArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	unsigned index     = 0;
@@ -1230,7 +1230,7 @@ ArchiveEntry* WadArchiveHandler::findFirst(Archive& archive, ArchiveSearchOption
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* WadArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	int index       = archive.numEntries() - 1;
@@ -1302,7 +1302,7 @@ ArchiveEntry* WadArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> WadArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> WadArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	unsigned index     = 0;

@@ -68,15 +68,15 @@ public:
 	virtual bool renameEntry(Archive& archive, ArchiveEntry* entry, string_view name, bool force = false);
 
 	// Detection
-	virtual MapDesc         mapDesc(Archive& archive, ArchiveEntry* maphead);
-	virtual vector<MapDesc> detectMaps(Archive& archive);
-	virtual string          detectNamespace(Archive& archive, ArchiveEntry* entry);
-	virtual string          detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir = nullptr);
+	virtual MapDesc         mapDesc(const Archive& archive, ArchiveEntry* maphead);
+	virtual vector<MapDesc> detectMaps(const Archive& archive);
+	virtual string          detectNamespace(const Archive& archive, ArchiveEntry* entry);
+	virtual string          detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir = nullptr);
 
 	// Search
-	virtual ArchiveEntry*         findFirst(Archive& archive, ArchiveSearchOptions& options);
-	virtual ArchiveEntry*         findLast(Archive& archive, ArchiveSearchOptions& options);
-	virtual vector<ArchiveEntry*> findAll(Archive& archive, ArchiveSearchOptions& options);
+	virtual ArchiveEntry*         findFirst(const Archive& archive, ArchiveSearchOptions& options);
+	virtual ArchiveEntry*         findLast(const Archive& archive, ArchiveSearchOptions& options);
+	virtual vector<ArchiveEntry*> findAll(const Archive& archive, ArchiveSearchOptions& options);
 
 	// Format detection
 	virtual bool isThisFormat(const MemChunk& mc);

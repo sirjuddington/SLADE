@@ -128,7 +128,7 @@ public:
 
 	// Detection
 	MapDesc         mapDesc(ArchiveEntry* maphead);
-	vector<MapDesc> detectMaps();
+	vector<MapDesc> detectMaps() const;
 	string          detectNamespace(ArchiveEntry* entry);
 	string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr);
 

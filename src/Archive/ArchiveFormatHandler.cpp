@@ -808,7 +808,7 @@ bool ArchiveFormatHandler::renameEntry(Archive& archive, ArchiveEntry* entry, st
 // Returns the MapDesc information about the map beginning at [maphead].
 // To be implemented in Archive sub-classes.
 // -----------------------------------------------------------------------------
-MapDesc ArchiveFormatHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
+MapDesc ArchiveFormatHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead)
 {
 	return {};
 }
@@ -817,7 +817,7 @@ MapDesc ArchiveFormatHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 // Returns the MapDesc information about all maps in the Archive.
 // To be implemented in Archive sub-classes.
 // -----------------------------------------------------------------------------
-vector<MapDesc> ArchiveFormatHandler::detectMaps(Archive& archive)
+vector<MapDesc> ArchiveFormatHandler::detectMaps(const Archive& archive)
 {
 	return {};
 }
@@ -825,7 +825,7 @@ vector<MapDesc> ArchiveFormatHandler::detectMaps(Archive& archive)
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-string ArchiveFormatHandler::detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir)
+string ArchiveFormatHandler::detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir)
 {
 	if (dir && index < dir->numEntries())
 		return detectNamespace(archive, dir->entryAt(index));
@@ -836,7 +836,7 @@ string ArchiveFormatHandler::detectNamespace(Archive& archive, unsigned index, A
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string ArchiveFormatHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
+string ArchiveFormatHandler::detectNamespace(const Archive& archive, ArchiveEntry* entry)
 {
 	// Check entry
 	if (!archive.checkEntry(entry))
@@ -862,7 +862,7 @@ string ArchiveFormatHandler::detectNamespace(Archive& archive, ArchiveEntry* ent
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveFormatHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ArchiveFormatHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -931,7 +931,7 @@ ArchiveEntry* ArchiveFormatHandler::findFirst(Archive& archive, ArchiveSearchOpt
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveFormatHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ArchiveFormatHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -999,7 +999,7 @@ ArchiveEntry* ArchiveFormatHandler::findLast(Archive& archive, ArchiveSearchOpti
 // -----------------------------------------------------------------------------
 // Returns a list of entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveFormatHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> ArchiveFormatHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;

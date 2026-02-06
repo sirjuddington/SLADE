@@ -28,13 +28,13 @@ public:
 		override;
 
 	// Detection
-	MapDesc         mapDesc(Archive& archive, ArchiveEntry* maphead) override;
-	vector<MapDesc> detectMaps(Archive& archive) override;
+	MapDesc         mapDesc(const Archive& archive, ArchiveEntry* maphead) override;
+	vector<MapDesc> detectMaps(const Archive& archive) override;
 
 	// Search
-	ArchiveEntry*         findFirst(Archive& archive, ArchiveSearchOptions& options) override;
-	ArchiveEntry*         findLast(Archive& archive, ArchiveSearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(Archive& archive, ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findFirst(const Archive& archive, ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findLast(const Archive& archive, ArchiveSearchOptions& options) override;
+	vector<ArchiveEntry*> findAll(const Archive& archive, ArchiveSearchOptions& options) override;
 
 	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;

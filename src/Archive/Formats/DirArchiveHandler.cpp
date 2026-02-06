@@ -451,7 +451,7 @@ bool DirArchiveHandler::renameEntry(Archive& archive, ArchiveEntry* entry, strin
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-MapDesc DirArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* entry)
+MapDesc DirArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* entry)
 {
 	MapDesc map;
 
@@ -480,7 +480,7 @@ MapDesc DirArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* entry)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<MapDesc> DirArchiveHandler::detectMaps(Archive& archive)
+vector<MapDesc> DirArchiveHandler::detectMaps(const Archive& archive)
 {
 	vector<MapDesc> ret;
 
@@ -523,7 +523,7 @@ vector<MapDesc> DirArchiveHandler::detectMaps(Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* DirArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -556,7 +556,7 @@ ArchiveEntry* DirArchiveHandler::findFirst(Archive& archive, ArchiveSearchOption
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* DirArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -588,7 +588,7 @@ ArchiveEntry* DirArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> DirArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> DirArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();

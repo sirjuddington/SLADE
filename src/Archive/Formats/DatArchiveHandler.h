@@ -36,8 +36,8 @@ public:
 	bool renameEntry(Archive& archive, ArchiveEntry* entry, string_view name, bool force = false) override;
 
 	// Detection
-	string detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir = nullptr) override;
-	string detectNamespace(Archive& archive, ArchiveEntry* entry) override;
+	string detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir = nullptr) override;
+	string detectNamespace(const Archive& archive, ArchiveEntry* entry) override;
 
 	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;

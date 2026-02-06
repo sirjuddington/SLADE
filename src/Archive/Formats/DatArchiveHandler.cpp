@@ -191,7 +191,7 @@ bool DatArchiveHandler::open(Archive& archive, const MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string DatArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
+string DatArchiveHandler::detectNamespace(const Archive& archive, ArchiveEntry* entry)
 {
 	return detectNamespace(archive, archive.entryIndex(entry));
 }
@@ -199,7 +199,7 @@ string DatArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string DatArchiveHandler::detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir)
+string DatArchiveHandler::detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir)
 {
 	// Textures
 	if (index > static_cast<unsigned>(walls_[0]) && index < static_cast<unsigned>(walls_[1]))
