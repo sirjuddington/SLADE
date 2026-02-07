@@ -50,6 +50,7 @@
 #include "MapRenderer3D.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/Draw2D.h"
+#include "OpenGL/IndexBuffer.h"
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/OpenGL.h"
 #include "OpenGL/Shader.h"
