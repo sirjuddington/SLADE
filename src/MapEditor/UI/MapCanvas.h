@@ -36,6 +36,7 @@ public:
 private:
 	mapeditor::MapEditContext* context_    = nullptr;
 	bool                       mouse_warp_ = false;
+	int                        mouse_look_skip_frames_ = 0;
 	vector<int>                fps_avg_;
 	unique_ptr<sf::Clock>      sf_clock_;
 	wxTimer                    timer_;

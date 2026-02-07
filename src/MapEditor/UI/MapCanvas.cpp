@@ -139,6 +139,9 @@ void MapCanvas::lockMouse(bool lock)
 {
 	if (lock)
 	{
+		// Skip a few frames of mouselook to allow the mouse to actually move to the center
+		mouse_look_skip_frames_ = 2;
+
 		// Save current mouse position
 		auto mouse_pos      = ScreenToClient(wxGetMousePosition());
 		mouse_locked_pos_.x = mouse_pos.x;
@@ -155,6 +158,8 @@ void MapCanvas::lockMouse(bool lock)
 	}
 	else
 	{
+		mouse_look_skip_frames_ = 0;
+
 		// Show cursor
 		SetCursor(wxNullCursor);
 
@@ -177,8 +182,15 @@ void MapCanvas::mouseLook3d()
 		return;
 
 	auto overlay_current = context_->currentOverlay();
-	if (!overlay_current || !overlay_current->isActive() || (overlay_current && overlay_current->allow3dMlook()))
+	if (!overlay_current || !overlay_current->isActive() || overlay_current->allow3dMlook())
 	{
+		if (mouse_look_skip_frames_ > 0)
+		{
+			mouse_look_skip_frames_--;
+			mouseToCenter();
+			return;
+		}
+
 		// Get relative mouse movement
 		const wxPoint mouse_screen_pos = wxGetMousePosition();
 		const wxPoint mouse_client_pos = ScreenToClient(mouse_screen_pos);
