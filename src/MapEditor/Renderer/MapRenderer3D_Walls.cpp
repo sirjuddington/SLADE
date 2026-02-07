@@ -299,9 +299,12 @@ void MapRenderer3D::addQuadOutline(const Item& item, gl::LineBuffer& buffer, flo
 // -----------------------------------------------------------------------------
 void MapRenderer3D::addItemQuadIndices(const Item& item, vector<GLuint>& indices) const
 {
-	// Find the line quads for the item
 	auto real_side = item.realSide(*map_);
-	auto line      = real_side->parentLine();
+	if (!real_side)
+		return;
+
+	// Find the line quads for the item
+	auto line = real_side->parentLine();
 	for (const auto& quad : line_quads_[line->index()].quads)
 	{
 		if (quad == item)

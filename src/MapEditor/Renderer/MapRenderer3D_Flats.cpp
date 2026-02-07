@@ -258,8 +258,11 @@ void MapRenderer3D::addFlatOutline(const Item& item, gl::LineBuffer& buffer, flo
 // -----------------------------------------------------------------------------
 void MapRenderer3D::addItemFlatIndices(const Item& item, vector<GLuint>& indices) const
 {
-	// Find the sector flat for the item
 	auto real_index = item.real_index >= 0 ? item.real_index : item.index;
+	if (real_index < 0 || real_index >= sector_flats_.size())
+		return;
+
+	// Find the sector flat for the item
 	for (const auto& flat : sector_flats_[real_index].flats)
 	{
 		if (flat == item)
