@@ -257,14 +257,12 @@ void MapCanvas::update()
 	if (context_->input().mouseState() == Input::MouseState::MouseLook)
 		mouseLook3d();
 
-	// Get time since last redraw
+	// Get time since last update
 	auto frametime = sf_clock_->getElapsedTime().asSeconds() * 1000.0;
+	sf_clock_->restart();
 
 	if (context_->update(frametime))
-	{
 		Refresh(false);
-		sf_clock_->restart();
-	}
 }
 
 
@@ -526,6 +524,7 @@ void MapCanvas::onMouseEnter(wxMouseEvent& e)
 void MapCanvas::onIdle(wxIdleEvent& e)
 {
 	update();
+	e.RequestMore();
 }
 
 // -----------------------------------------------------------------------------
