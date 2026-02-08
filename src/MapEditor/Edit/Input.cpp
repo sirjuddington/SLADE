@@ -101,6 +101,15 @@ EXTERN_CVAR(Bool, info_overlay_3d)
 Input::Input(MapEditContext& context) : context_{ &context } {}
 
 // -----------------------------------------------------------------------------
+// Sets the current mouse position to [pos], does not update anything else
+// -----------------------------------------------------------------------------
+void Input::setMousePos(const Vec2i& pos)
+{
+	mouse_pos_     = pos;
+	mouse_pos_map_ = context_->renderer().view().canvasPos(mouse_pos_);
+}
+
+// -----------------------------------------------------------------------------
 // Handles mouse movement to [new_x],[new_y] on the map editor view
 // -----------------------------------------------------------------------------
 bool Input::mouseMove(int new_x, int new_y)

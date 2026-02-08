@@ -121,13 +121,23 @@ void MapCanvas::draw()
 }
 
 // -----------------------------------------------------------------------------
+// Moves the mouse cursor to [pos] (in client coordinates) and updates the input
+// system's mouse position accordingly
+// -----------------------------------------------------------------------------
+void MapCanvas::warpMouse(const Vec2i& pos)
+{
+	mouse_warp_ = true;
+	WarpPointer(pos.x, pos.y);
+	context_->input().setMousePos(pos);
+}
+
+// -----------------------------------------------------------------------------
 // Moves the mouse cursor to the center of the canvas
 // -----------------------------------------------------------------------------
 void MapCanvas::mouseToCenter()
 {
-	mouse_warp_       = true;
-	const wxSize size = GetSize();
-	WarpPointer(static_cast<int>(size.x * 0.5), static_cast<int>(size.y * 0.5));
+	auto size = GetSize();
+	warpMouse({ static_cast<int>(size.x * 0.5), static_cast<int>(size.y * 0.5) });
 }
 
 // -----------------------------------------------------------------------------
@@ -166,7 +176,7 @@ void MapCanvas::lockMouse(bool lock)
 		// Move mouse back to original position (if it was initially moved to lock)
 		if (mouse_locked_pos_.x != -1 && mouse_locked_pos_.y != -1)
 		{
-			WarpPointer(mouse_locked_pos_.x, mouse_locked_pos_.y);
+			warpMouse(mouse_locked_pos_);
 			mouse_locked_pos_ = { -1, -1 };
 		}
 	}
@@ -184,6 +194,7 @@ void MapCanvas::mouseLook3d()
 	auto overlay_current = context_->currentOverlay();
 	if (!overlay_current || !overlay_current->isActive() || overlay_current->allow3dMlook())
 	{
+		// Hack to avoid camera view jumping when beginning mouselook on linux
 		if (mouse_look_skip_frames_ > 0)
 		{
 			mouse_look_skip_frames_--;

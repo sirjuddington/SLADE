@@ -61,6 +61,7 @@ public:
 
 	// Mouse handling
 	void setMouseState(MouseState state) { mouse_state_ = state; }
+	void setMousePos(const Vec2i& pos);
 	bool mouseMove(int new_x, int new_y);
 	bool mouseDown(MouseButton button, int x, int y, bool double_click = false);
 	bool mouseUp(MouseButton button);

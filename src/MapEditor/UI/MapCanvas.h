@@ -26,6 +26,7 @@ public:
 	void draw() override;
 
 	// Mouse
+	void warpMouse(const Vec2i& pos);
 	void mouseToCenter();
 	void lockMouse(bool lock);
 	void mouseLook3d();
@@ -34,8 +35,8 @@ public:
 	void onKeyBindPress(string_view name) override;
 
 private:
-	mapeditor::MapEditContext* context_    = nullptr;
-	bool                       mouse_warp_ = false;
+	mapeditor::MapEditContext* context_                = nullptr;
+	bool                       mouse_warp_             = false;
 	int                        mouse_look_skip_frames_ = 0;
 	vector<int>                fps_avg_;
 	unique_ptr<sf::Clock>      sf_clock_;

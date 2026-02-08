@@ -342,25 +342,33 @@ bool MapEditContext::update(double frametime)
 			3);
 
 		// Update hilight
-		Item hl{ -1, ItemType::Any };
-		if (!selection_->hilightLocked() && input_->mouseState() == Input::MouseState::Normal)
+		if (input_->mouseState() == Input::MouseState::MouseLook)
 		{
-			auto old_hl = selection_->hilight();
-			hl          = renderer_->renderer3D().findHighlightedItem(
-                renderer_->camera(), renderer_->view(), input_->mousePos());
-			if (selection_->setHilight(hl))
+			selection_->clearHilight();
+			info_showing_ = false;
+		}
+		else
+		{
+			Item hl{ -1, ItemType::Any };
+			if (!selection_->hilightLocked())
 			{
-				// Update 3d info overlay
-				if (info_overlay_3d && hl.index >= 0)
+				auto old_hl = selection_->hilight();
+				hl          = renderer_->renderer3D().findHighlightedItem(
+                    renderer_->camera(), renderer_->view(), input_->mousePos());
+				if (selection_->setHilight(hl))
 				{
-					info_3d_->update({ hl.index, hl.type }, map_.get());
-					info_showing_ = true;
-				}
-				else
-					info_showing_ = false;
+					// Update 3d info overlay
+					if (info_overlay_3d && hl.index >= 0)
+					{
+						info_3d_->update({ hl.index, hl.type }, map_.get());
+						info_showing_ = true;
+					}
+					else
+						info_showing_ = false;
 
-				// Animation
-				renderer_->animateHilightChange(old_hl);
+					// Animation
+					renderer_->animateHilightChange(old_hl);
+				}
 			}
 		}
 	}
