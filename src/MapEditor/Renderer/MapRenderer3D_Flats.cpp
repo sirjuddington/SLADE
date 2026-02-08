@@ -65,8 +65,8 @@ namespace
 bool operator==(const Item& item, const Flat3D& flat)
 {
 	return flat.control_sector->index() == item.index
-		   && (item.type == ItemType::Floor && flat.surface_type == Flat3D::SurfaceType::Floor
-			   || item.type == ItemType::Ceiling && flat.surface_type == Flat3D::SurfaceType::Ceiling);
+		   && (item.type == ItemType::Floor && flat.control_surface_type == Flat3D::SurfaceType::Floor
+			   || item.type == ItemType::Ceiling && flat.control_surface_type == Flat3D::SurfaceType::Ceiling);
 }
 
 // -----------------------------------------------------------------------------
