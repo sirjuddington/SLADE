@@ -316,6 +316,9 @@ void MapEditContext::move3dCameraToCursor()
 // -----------------------------------------------------------------------------
 bool MapEditContext::update(double frametime)
 {
+	if (!map_->isOpen())
+		return false;
+
 	//// Force an update if animations are active
 	// if (renderer_->animationsActive() || selection_->hasHilight())
 	//	next_frame_length_ = 2;

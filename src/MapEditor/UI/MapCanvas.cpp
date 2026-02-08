@@ -276,16 +276,20 @@ void MapCanvas::onKeyBindPress(string_view name)
 // -----------------------------------------------------------------------------
 void MapCanvas::update()
 {
-	// Handle 3d mode mouselook
-	if (context_->input().mouseState() == Input::MouseState::MouseLook)
-		mouseLook3d();
-
 	// Get time since last update
 	auto frametime = sf_clock_->getElapsedTime().asSeconds() * 1000.0;
 	sf_clock_->restart();
 
+	timer_.Stop();
+
+	// Handle 3d mode mouselook
+	if (context_->input().mouseState() == Input::MouseState::MouseLook)
+		mouseLook3d();
+
 	if (context_->update(frametime))
 		Refresh(false);
+
+	timer_.Start();
 }
 
 
