@@ -34,6 +34,7 @@ public:
 	void setAspectRatio(float aspect);
 	void setFar(float far);
 	void setProjection(float width, float height, float near, float far, float fov_h);
+	void enableReverseDepth(bool enable);
 
 	Seg2f strafeLine() const;
 
@@ -52,10 +53,11 @@ private:
 	float pitch_     = 0.;
 
 	// Projection
-	float fov_    = 0.9817477f; // Vertical fov (is 90 degrees horizontal)
-	float aspect_ = 1.6f;
-	float near_   = 0.5f;
-	float far_    = 20000.0f;
+	float fov_           = 0.9817477f; // Vertical fov (is 90 degrees horizontal)
+	float aspect_        = 1.6f;
+	float near_          = 2.0f;
+	float far_           = 40000.0f;
+	bool  reverse_depth_ = true; // Use reverse depth for better precision at distance
 
 	// Vectors & Matrices
 	Vec3f     dir3d_;

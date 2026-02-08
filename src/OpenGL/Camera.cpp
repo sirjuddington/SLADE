@@ -95,6 +95,9 @@ void Camera::setFar(float far)
 	updateProjection();
 }
 
+// -----------------------------------------------------------------------------
+// Sets the camera's projection matrix
+// -----------------------------------------------------------------------------
 void Camera::setProjection(float width, float height, float near, float far, float fov_h)
 {
 	aspect_ = (1.6f / 1.333333f) * (width / height);
@@ -102,6 +105,15 @@ void Camera::setProjection(float width, float height, float near, float far, flo
 	near_   = near;
 	far_    = far;
 
+	updateProjection();
+}
+
+// -----------------------------------------------------------------------------
+// Enables or disables reverse depth mode for the camera
+// -----------------------------------------------------------------------------
+void Camera::enableReverseDepth(bool enable)
+{
+	reverse_depth_ = enable;
 	updateProjection();
 }
 
@@ -261,5 +273,21 @@ void Camera::updateView()
 
 void Camera::updateProjection()
 {
-	projection_ = glm::perspective(fov_, aspect_, near_, far_);
+	if (reverse_depth_)
+	{
+		// Reverse depth projection matrix for better precision at distance
+		float     focal_length = 1.0f / glm::tan(fov_ * 0.5f);
+		glm::mat4 proj         = glm::mat4(0.0f);
+		proj[0][0]             = focal_length / aspect_; // Scale for aspect ratio
+		proj[1][1]             = focal_length;           // Scale for FOV
+		proj[2][2]             = 0.0f;                   // Reverse depth: no linear component
+		proj[2][3]             = -1.0f;                  // Map to NDC
+		proj[3][2]             = near_;                  // Shift based on near plane
+
+		projection_ = proj;
+	}
+	else
+	{
+		projection_ = glm::perspective(fov_, aspect_, near_, far_);
+	}
 }

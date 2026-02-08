@@ -130,6 +130,8 @@ void MapRenderer3D::render(const gl::Camera& camera)
 
 	// Setup GL stuff
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_GEQUAL);
+	glClearDepth(0.0f);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_ALPHA_TEST);
@@ -261,7 +263,6 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 
 			// Setup GL state
 			glEnable(GL_DEPTH_TEST);
-			glDepthFunc(GL_LEQUAL);
 
 			// Draw filled polygon(s)
 			gl::Texture::bind(gl::Texture::whiteTexture());
@@ -275,7 +276,6 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 
 	// Reset GL state
 	gl::setBlend(gl::Blend::Normal);
-	glDepthFunc(GL_LESS);
 	glDisable(GL_DEPTH_TEST);
 }
 

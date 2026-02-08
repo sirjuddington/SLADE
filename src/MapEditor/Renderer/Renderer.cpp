@@ -1146,7 +1146,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 void Renderer::drawMap3d() const
 {
 	// Setup camera
-	camera_->setProjection(view_->size().x, view_->size().y, 0.5f, 20000.0f, render_fov);
+	camera_->setProjection(view_->size().x, view_->size().y, 2.0f, 40000.0f, render_fov);
+
 	// Render map
 	renderer_3d_->render(*camera_);
 
