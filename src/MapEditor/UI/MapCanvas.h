@@ -41,6 +41,7 @@ private:
 	vector<int>                fps_avg_;
 	unique_ptr<sf::Clock>      sf_clock_;
 	wxTimer                    timer_;
+	long                       next_frame_ms_        = 0;
 	long                       last_wheel_timestamp_ = -1;
 	bool                       mouse_looking_        = false;
 	Vec2i                      mouse_locked_pos_{ -1, -1 };
@@ -58,7 +59,7 @@ private:
 	void onMouseLeave(wxMouseEvent& e);
 	void onMouseEnter(wxMouseEvent& e);
 	void onIdle(wxIdleEvent& e);
-	void onRTimer(wxTimerEvent& e);
+	void onRefreshTimer(wxTimerEvent& e);
 	void onFocus(wxFocusEvent& e);
 };
 } // namespace slade

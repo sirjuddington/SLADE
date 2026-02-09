@@ -100,10 +100,20 @@ MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
 	Bind(wxEVT_ENTER_WINDOW, &MapCanvas::onMouseEnter, this);
 	Bind(wxEVT_SET_FOCUS, &MapCanvas::onFocus, this);
 	Bind(wxEVT_KILL_FOCUS, &MapCanvas::onFocus, this);
-	timer_.Bind(wxEVT_TIMER, &MapCanvas::onRTimer, this);
+	timer_.Bind(wxEVT_TIMER, &MapCanvas::onRefreshTimer, this);
 	Bind(wxEVT_IDLE, &MapCanvas::onIdle, this);
 
-	timer_.Start(map_bg_ms);
+	// Pause timer when canvas is hidden
+	Bind(
+		wxEVT_SHOW,
+		[this](wxShowEvent& e)
+		{
+			if (e.IsShown())
+				timer_.Start(map_bg_ms);
+			else
+				timer_.Stop();
+			e.Skip();
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -111,9 +121,6 @@ MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
 // -----------------------------------------------------------------------------
 void MapCanvas::draw()
 {
-	// if (!IsEnabled())
-	//	return;
-
 	setBackground(BGStyle::Colour, colourconfig::colour("map_background"));
 
 	context_->renderer().setUIScale(GetDPIScaleFactor());
@@ -276,10 +283,17 @@ void MapCanvas::onKeyBindPress(string_view name)
 // -----------------------------------------------------------------------------
 void MapCanvas::update()
 {
+	if (!context_->map().isOpen())
+		return;
+
 	// Get time since last update
 	auto frametime = sf_clock_->getElapsedTime().asSeconds() * 1000.0;
-	sf_clock_->restart();
 
+	// Don't update if we haven't reached the time for the next frame yet
+	if (frametime < next_frame_ms_)
+		return;
+
+	sf_clock_->restart();
 	timer_.Stop();
 
 	// Handle 3d mode mouselook
@@ -287,9 +301,13 @@ void MapCanvas::update()
 		mouseLook3d();
 
 	if (context_->update(frametime))
-		Refresh(false);
+		next_frame_ms_ = 1;
+	else
+		next_frame_ms_ = map_bg_ms;
 
-	timer_.Start();
+	Refresh(false);
+
+	timer_.Start(next_frame_ms_);
 }
 
 
@@ -494,6 +512,9 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 	if (!context_->input().mouseMove(e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor()))
 		return;
 
+	// Update as fast as possible while mouse is moving
+	next_frame_ms_ = 0;
+
 	e.Skip();
 }
 
@@ -551,13 +572,12 @@ void MapCanvas::onMouseEnter(wxMouseEvent& e)
 void MapCanvas::onIdle(wxIdleEvent& e)
 {
 	update();
-	e.RequestMore();
 }
 
 // -----------------------------------------------------------------------------
 // Called when the canvas timer is triggered
 // -----------------------------------------------------------------------------
-void MapCanvas::onRTimer(wxTimerEvent& e)
+void MapCanvas::onRefreshTimer(wxTimerEvent& e)
 {
 	update();
 }

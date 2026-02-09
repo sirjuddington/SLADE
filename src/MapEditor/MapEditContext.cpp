@@ -319,23 +319,16 @@ bool MapEditContext::update(double frametime)
 	if (!map_->isOpen())
 		return false;
 
-	//// Force an update if animations are active
-	// if (renderer_->animationsActive() || selection_->hasHilight())
-	//	next_frame_length_ = 2;
-
-	//// Ignore if we aren't ready to update
-	// if (frametime < next_frame_length_)
-	//	return false;
-
 	// Get frame time multiplier
 	double mult = frametime / 10.0;
 
 	// 3d mode
+	bool camera_moving = false;
 	if (edit_mode_ == Mode::Visual && !overlayActive())
 	{
 		// Update camera
 		if (input_->updateCamera3d(mult))
-			next_frame_length_ = 2;
+			camera_moving = true;
 
 		// Update status bar
 		auto pos = renderer_->camera().position();
@@ -408,7 +401,7 @@ bool MapEditContext::update(double frametime)
 	// Update animations
 	renderer_->updateAnimations(mult);
 
-	return true;
+	return camera_moving || renderer_->animationsActive();
 }
 
 // -----------------------------------------------------------------------------
