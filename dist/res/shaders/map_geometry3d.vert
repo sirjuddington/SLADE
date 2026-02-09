@@ -11,10 +11,11 @@ out VertexData
 	vec3  view_pos;
 } vertex_out;
 
-uniform mat4 projection;
-uniform mat4 modelview;
-uniform bool fullbright;
-uniform vec3 fog_colour = vec3(0.0);
+uniform mat4  projection;
+uniform mat4  modelview;
+uniform bool  fullbright;
+uniform float brightness_mult = 1.0;
+uniform vec3  fog_colour = vec3(0.0);
 
 void main()
 {
@@ -24,7 +25,7 @@ void main()
 	if (fullbright)
 		vertex_out.brightness = 1.0;
 	else
-		vertex_out.brightness = in_brightness;
+		vertex_out.brightness = in_brightness * brightness_mult;
 
 	vec4 view_position = modelview * vec4(in_position, 1.0);
 	vertex_out.view_pos = view_position.xyz;

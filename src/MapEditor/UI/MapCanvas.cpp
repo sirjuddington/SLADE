@@ -74,7 +74,8 @@ CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
 MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
 	GLCanvas{ parent },
 	context_{ context },
-	sf_clock_{ new sf::Clock }
+	sf_clock_{ new sf::Clock },
+	timer_{ this }
 {
 	// Init variables
 	context_->setCanvas(this);
@@ -108,6 +109,9 @@ MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
 		wxEVT_SHOW,
 		[this](wxShowEvent& e)
 		{
+			if (IsBeingDeleted())
+				return;
+
 			if (e.IsShown())
 				timer_.Start(map_bg_ms);
 			else

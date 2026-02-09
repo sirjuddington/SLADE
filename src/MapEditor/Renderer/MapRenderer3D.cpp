@@ -152,8 +152,10 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	// Setup shader uniforms
 	shader_3d_->setUniform("fullbright", fullbright_);
 	shader_3d_->setUniform("fog_density", fog_ ? render_fog_density : 0.0f);
+	shader_3d_->setUniform("brightness_mult", render_3d_brightness.value);
 	shader_3d_alphatest_->setUniform("fullbright", fullbright_);
 	shader_3d_alphatest_->setUniform("fog_density", fog_ ? render_fog_density : 0.0f);
+	shader_3d_alphatest_->setUniform("brightness_mult", render_3d_brightness.value);
 
 	// Update flats and walls
 	updateFlats();
