@@ -674,5 +674,6 @@ void InfoOverlay3D::drawTexture(gl::draw2d::Context& dc, float alpha, float x, f
 		strutil::truncateIP(tn_truncated, 8);
 		tn_truncated.append("...");
 	}
+	dc.text_alignment = gl::draw2d::Align::Center;
 	dc.drawText(tn_truncated, { x + (tex_box_size * 0.5f), y - line_height });
 }

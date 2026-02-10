@@ -190,7 +190,11 @@ void MapRenderer3D::updateWalls()
 				//       the buffer here or implement some way to track and
 				//       reuse freed space later
 
+				// Update vertex offsets for line and quads
 				lq.vertex_buffer_offset = vb_quads_->buffer().size();
+				for (auto i = 0; i < new_quads.size(); ++i)
+					lq.quads[i].vertex_offset = lq.vertex_buffer_offset + i * 6;
+
 				vb_quads_->pull();                    // Pull data from GPU
 				vb_quads_->addVertices(new_vertices); // Add new vertex data
 				vb_quads_->push();                    // Push data back to GPU

@@ -156,7 +156,12 @@ void MapRenderer3D::updateFlats()
 				//       the buffer here or implement some way to track and
 				//       reuse freed space later
 
+				// Update vertex offsets for sector and flats
 				sf.vertex_buffer_offset = vb_flats_->buffer().size();
+				const auto vertex_count = sf.sector->polygonVertices().size();
+				for (auto i = 0; i < new_flats.size(); ++i)
+					sf.flats[i].vertex_offset = sf.vertex_buffer_offset + i * vertex_count;
+
 				vb_flats_->pull();                    // Pull data from GPU
 				vb_flats_->addVertices(new_vertices); // Add new vertex data
 				vb_flats_->push();                    // Push data back to GPU
