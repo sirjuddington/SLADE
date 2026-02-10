@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -1134,6 +1134,10 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 	vector<string> unused_tex;
 	for (auto& tx_entrie : tx_entries)
 	{
+		// Skip invalid entries
+		if (!tx_entrie)
+			continue;
+
 		TextureXList txlist;
 		txlist.readTEXTUREXData(tx_entrie, ptable);
 
@@ -1365,6 +1369,10 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 	bool           anim = false;
 	for (auto& flat : flats)
 	{
+		// Skip invalid entries
+		if (!flat)
+			continue;
+
 		// Skip markers
 		if (flat->size() == 0)
 			continue;
@@ -1792,6 +1800,10 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	vector<ArchiveEntry*> unused_entries;
 	for (auto& texture : textures)
 	{
+		// Skip invalid entries
+		if (!texture)
+			continue;
+
 		// Skip markers
 		if (texture->size() == 0)
 			continue;
@@ -1847,6 +1859,10 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	unused_entries.clear();
 	for (auto& flat : flats)
 	{
+		// Skip invalid entries
+		if (!flat)
+			continue;
+
 		// Skip markers
 		if (flat->size() == 0)
 			continue;

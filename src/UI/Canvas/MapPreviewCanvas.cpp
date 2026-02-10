@@ -827,6 +827,10 @@ void MapPreviewCanvas::draw()
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::createImage(ArchiveEntry& ae, int width, int height)
 {
+	// Set context to this window
+	if (!setActive())
+		return;
+
 	// Find extents of map
 	Vertex m_min(999999.0, 999999.0);
 	Vertex m_max(-999999.0, -999999.0);
