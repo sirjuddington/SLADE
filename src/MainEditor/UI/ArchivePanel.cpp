@@ -2979,7 +2979,7 @@ void ArchivePanel::onEntryListRightClick(wxDataViewEvent& e)
 		{
 			if (entry->type() == EntryType::mapMarkerType())
 				map_selected = true;
-			else if (entry->parentDir()->name() == "maps")
+			else if (entry->parentDir() && entry->parentDir()->name() == "maps")
 				map_selected = true;
 		}
 #if 0

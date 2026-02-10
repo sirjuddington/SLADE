@@ -468,37 +468,32 @@ protected:
 			// Build transparency info (if there is a mask)
 			if (img_mask)
 			{
-				// Find palette index to use for transparent pixels
-				if (used_pal->transIndex() < 0)
+				// Determine which palette index to use for transparent pixels
+				// Start with the palette's existing transparent index if set
+				int trans_index = used_pal->transIndex();
+				
+				// If no existing transparent index, find first unused colour in this image
+				if (trans_index < 0)
 				{
-					// No existing transparent index, find first unused colour
-					auto unused = image.findUnusedColour(255);
-
+					trans_index = image.findUnusedColour(255);
+					
 					// Set any transparent pixels to this colour (if we found an unused colour)
-					bool has_trans = false;
-					if (unused >= 0)
+					if (trans_index >= 0)
 					{
 						for (int a = 0; a < width * height; a++)
 						{
 							if (img_mask[a] == 0)
-							{
-								img_data[a] = unused;
-								has_trans   = true;
-							}
+								img_data[a] = trans_index;
 						}
-
-						// Set palette transparency
-						if (has_trans)
-							used_pal->setTransIndex(unused);
 					}
 				}
 
-				// Set tRNS chunk if there is a transparent index
-				if (used_pal->transIndex() >= 0)
+				// Set tRNS chunk if we have a valid transparent index
+				if (trans_index >= 0)
 				{
 					std::array<uint8_t, 256> trans;
 					trans.fill(255);
-					trans[used_pal->transIndex()] = 0;
+					trans[trans_index] = 0;
 					png_set_tRNS(png_ptr, info_ptr, trans.data(), trans.size(), nullptr);
 				}
 			}

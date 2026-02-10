@@ -770,7 +770,8 @@ CTexture* ResourceManager::getTexture(
 	}
 
 	// Return the most relevant texture
-	if (parent != ignore)
+	if (parent != ignore
+		&& (!type.empty() ? tex->type() == type : true)) // Ensure the returned texture is of requested type (if any)
 		return tex;
 	else
 		return nullptr;

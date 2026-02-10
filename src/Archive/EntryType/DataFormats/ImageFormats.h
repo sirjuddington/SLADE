@@ -807,14 +807,26 @@ public:
 		uint32_t offset = 36; // Offset to start of first frame
 		for (size_t a = 0; a < nframes; ++a)
 		{
+			// Check if we can read the frame type (4 bytes)
+			if (offset + 3 >= size)
+				return MATCH_FALSE;
+			
 			if (mc.readL32(offset) != 0)
 			{
 				// We have a frame with a group of picture
+				// Check if we can read the group size (4 bytes at offset + 4)
+				if (offset + 7 >= size)
+					return MATCH_FALSE;
+				
 				uint32_t grpsz = mc.readL32(offset + 4);
 				// Move to end of group header
 				offset += (grpsz + 2) << 2;
 				for (size_t b = 0; b < grpsz; ++b)
 				{
+					// Check if we can read picture dimensions (8 bytes at offset + 8)
+					if (offset + 15 >= size)
+						return MATCH_FALSE;
+					
 					uint32_t pw = mc.readL32(offset + 8);
 					uint32_t ph = mc.readL32(offset + 12);
 					if (pw > width || ph > height)
@@ -831,6 +843,11 @@ public:
 			{
 				// We have a frame with a single picture
 				offset += 4;
+
+				// Check if we can read picture dimensions (8 bytes at offset + 8)
+				if (offset + 15 >= size)
+					return MATCH_FALSE;
+				
 				uint32_t pw = mc.readL32(offset + 8);
 				uint32_t ph = mc.readL32(offset + 12);
 				if (pw > width || ph > height)
