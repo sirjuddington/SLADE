@@ -202,36 +202,40 @@ static void addQuad(
 	if (info.back_side)
 		quad.setFlag(Quad3D::Flags::BackSide);
 
-	// Determine vertex positions
-	float x1, y1, x2, y2;
+	// Determine vertex positions & normals
+	float     x1, y1, x2, y2;
+	glm::vec3 normal;
+	auto      front_vec = info.line->frontVector();
 	if (info.back_side)
 	{
-		x1 = info.line->x2();
-		y1 = info.line->y2();
-		x2 = info.line->x1();
-		y2 = info.line->y1();
+		x1     = info.line->x2();
+		y1     = info.line->y2();
+		x2     = info.line->x1();
+		y2     = info.line->y1();
+		normal = { -front_vec.x, -front_vec.y, 0.0f };
 	}
 	else
 	{
-		x1 = info.line->x1();
-		y1 = info.line->y1();
-		x2 = info.line->x2();
-		y2 = info.line->y2();
+		x1     = info.line->x1();
+		y1     = info.line->y1();
+		x2     = info.line->x2();
+		y2     = info.line->y2();
+		normal = { front_vec.x, front_vec.y, 0.0f };
 	}
 	if (info.midtex)
 	{
 		// Midtextures ignore slopes
-		info.tl = { glm::vec3{ x1, y1, info.height_top }, {}, quad.brightness };
-		info.tr = { glm::vec3{ x2, y2, info.height_top }, {}, quad.brightness };
-		info.bl = { glm::vec3{ x1, y1, info.height_bottom }, {}, quad.brightness };
-		info.br = { glm::vec3{ x2, y2, info.height_bottom }, {}, quad.brightness };
+		info.tl = { glm::vec3{ x1, y1, info.height_top }, {}, quad.brightness, normal };
+		info.tr = { glm::vec3{ x2, y2, info.height_top }, {}, quad.brightness, normal };
+		info.bl = { glm::vec3{ x1, y1, info.height_bottom }, {}, quad.brightness, normal };
+		info.br = { glm::vec3{ x2, y2, info.height_bottom }, {}, quad.brightness, normal };
 	}
 	else
 	{
-		info.tl = { glm::vec3{ x1, y1, info.plane_top.heightAt(x1, y1) }, {}, quad.brightness };
-		info.tr = { glm::vec3{ x2, y2, info.plane_top.heightAt(x2, y2) }, {}, quad.brightness };
-		info.bl = { glm::vec3{ x1, y1, info.plane_bottom.heightAt(x1, y1) }, {}, quad.brightness };
-		info.br = { glm::vec3{ x2, y2, info.plane_bottom.heightAt(x2, y2) }, {}, quad.brightness };
+		info.tl = { glm::vec3{ x1, y1, info.plane_top.heightAt(x1, y1) }, {}, quad.brightness, normal };
+		info.tr = { glm::vec3{ x2, y2, info.plane_top.heightAt(x2, y2) }, {}, quad.brightness, normal };
+		info.bl = { glm::vec3{ x1, y1, info.plane_bottom.heightAt(x1, y1) }, {}, quad.brightness, normal };
+		info.br = { glm::vec3{ x2, y2, info.plane_bottom.heightAt(x2, y2) }, {}, quad.brightness, normal };
 	}
 
 	// Heights

@@ -82,6 +82,31 @@ CVAR(Bool, render_shade_orthogonal_lines, true, CVar::Flag::Save)
 
 // -----------------------------------------------------------------------------
 //
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Sets up common shader uniforms for the given 3d geometry [shader]
+// -----------------------------------------------------------------------------
+void setupShaderUniforms(const gl::Shader& shader, const gl::Camera& camera, bool fullbright, bool fog)
+{
+	// Set ModelView/Projection matrix uniforms from camera
+	shader.setUniform("modelview", camera.viewMatrix());
+	shader.setUniform("projection", camera.projectionMatrix());
+
+	// Set option uniforms
+	shader.setUniform("fullbright", fullbright);
+	shader.setUniform("fog_density", fog ? render_fog_density : 0.0f);
+	shader.setUniform("brightness_mult", render_3d_brightness.value);
+	shader.setUniform("fake_contrast", render_shade_orthogonal_lines);
+}
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
 // MapRenderer3D Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -143,19 +168,9 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	if (render_3d_sky)
 		skybox_->render(camera);
 
-	// Set ModelView/Projection matrix uniforms from camera
-	shader_3d_->setUniform("modelview", camera.viewMatrix());
-	shader_3d_->setUniform("projection", camera.projectionMatrix());
-	shader_3d_alphatest_->setUniform("modelview", camera.viewMatrix());
-	shader_3d_alphatest_->setUniform("projection", camera.projectionMatrix());
-
-	// Setup shader uniforms
-	shader_3d_->setUniform("fullbright", fullbright_);
-	shader_3d_->setUniform("fog_density", fog_ ? render_fog_density : 0.0f);
-	shader_3d_->setUniform("brightness_mult", render_3d_brightness.value);
-	shader_3d_alphatest_->setUniform("fullbright", fullbright_);
-	shader_3d_alphatest_->setUniform("fog_density", fog_ ? render_fog_density : 0.0f);
-	shader_3d_alphatest_->setUniform("brightness_mult", render_3d_brightness.value);
+	// Setup shaders
+	setupShaderUniforms(*shader_3d_, camera, fullbright_, fog_);
+	setupShaderUniforms(*shader_3d_alphatest_, camera, fullbright_, fog_);
 
 	// Update flats and walls
 	updateFlats();

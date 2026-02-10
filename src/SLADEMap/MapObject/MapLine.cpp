@@ -695,7 +695,7 @@ bool MapLine::doubleSector() const
 // -----------------------------------------------------------------------------
 // Returns the vector perpendicular to the front side of the line
 // -----------------------------------------------------------------------------
-Vec2d MapLine::frontVector()
+Vec2d MapLine::frontVector() const
 {
 	// Check if vector needs to be recalculated
 	if (front_vec_.x == 0 && front_vec_.y == 0)

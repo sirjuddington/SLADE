@@ -103,7 +103,7 @@ public:
 	Seg2d  seg() const;
 	double length() const;
 	bool   doubleSector() const;
-	Vec2d  frontVector();
+	Vec2d  frontVector() const;
 	Vec2d  dirTabPoint(double tab_length = 0.);
 	double distanceTo(const Vec2d& point) const;
 	int    needsTexture() const;
@@ -142,6 +142,6 @@ private:
 	mutable double length_ = -1.;
 	mutable double ca_     = 0.; // Used for intersection calculations
 	mutable double sa_     = 0.; // ^^
-	Vec2d          front_vec_;
+	mutable Vec2d  front_vec_;
 };
 } // namespace slade

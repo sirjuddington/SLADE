@@ -33,10 +33,20 @@
 #include "MapGeometryBuffer3D.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
+// -----------------------------------------------------------------------------
+//
+// MapGeometryBuffer3D Class Functions
+//
+// -----------------------------------------------------------------------------
 
-void mapeditor::MapGeometryBuffer3D::initVAO()
+
+// -----------------------------------------------------------------------------
+// Initializes the vertex array object for this buffer
+// -----------------------------------------------------------------------------
+void MapGeometryBuffer3D::initVAO()
 {
 	vao_ = gl::createVAO();
 	gl::bindVAO(vao_);
@@ -53,12 +63,12 @@ void mapeditor::MapGeometryBuffer3D::initVAO()
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, SIZE, (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	// Colour
-	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, SIZE, (void*)(5 * sizeof(float)));
+	// Brightness
+	glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, SIZE, (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 	// Normal
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, SIZE, (void*)(9 * sizeof(float)));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, SIZE, (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(3);
 
 	gl::bindVAO(0);
