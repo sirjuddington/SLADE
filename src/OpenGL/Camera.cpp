@@ -1,6 +1,7 @@
 
 #include "Main.h"
 #include "Camera.h"
+#include "Geometry/BBox.h"
 #include "Geometry/Geometry.h"
 #include "Geometry/Rect.h"
 #include "Utility/MathStuff.h"
@@ -246,6 +247,52 @@ bool Camera::applyGravity(float floor_height, float view_height, float mult)
 	return changed;
 }
 
+bool Camera::pointInFrustum2d(const Vec2f& point) const
+{
+	double z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
+
+	// Check against left/right planes
+	for (auto plane : { FrustumPlane::Left, FrustumPlane::Right })
+		if (frustumPlane(plane).distanceTo(Vec3d(point, z)) < 0)
+			return false;
+
+	return true;
+}
+
+bool Camera::lineInFrustum2d(const Seg2d& line) const
+{
+	double z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
+
+	// Check against left/right planes
+	for (auto plane : { FrustumPlane::Left, FrustumPlane::Right })
+	{
+		auto d1 = frustumPlane(plane).distanceTo(Vec3d(line.start(), z));
+		auto d2 = frustumPlane(plane).distanceTo(Vec3d(line.end(), z));
+		if (d1 < 0 && d2 < 0)
+			return false;
+	}
+
+	return true;
+}
+
+bool Camera::bboxInFrustum2d(const BBox& bbox) const
+{
+	double z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
+
+	// Check against left/right planes
+	for (auto plane : { FrustumPlane::Left, FrustumPlane::Right })
+	{
+		auto d1 = frustumPlane(plane).distanceTo(Vec3d(bbox.min.x, bbox.min.y, z));
+		auto d2 = frustumPlane(plane).distanceTo(Vec3d(bbox.max.x, bbox.min.y, z));
+		auto d3 = frustumPlane(plane).distanceTo(Vec3d(bbox.min.x, bbox.max.y, z));
+		auto d4 = frustumPlane(plane).distanceTo(Vec3d(bbox.max.x, bbox.max.y, z));
+		if (d1 < 0 && d2 < 0 && d3 < 0 && d4 < 0)
+			return false;
+	}
+
+	return true;
+}
+
 // -----------------------------------------------------------------------------
 // Updates the strafe, direction and up vectors for the camera
 // -----------------------------------------------------------------------------
@@ -269,6 +316,7 @@ void Camera::updateVectors()
 void Camera::updateView()
 {
 	view_ = glm::lookAt(position_, position_ + dir3d_, up_);
+	updateFrustumPlanes();
 }
 
 void Camera::updateProjection()
@@ -290,4 +338,65 @@ void Camera::updateProjection()
 	{
 		projection_ = glm::perspective(fov_, aspect_, near_, far_);
 	}
+
+	updateFrustumPlanes();
+}
+
+void Camera::updateFrustumPlanes()
+{
+	const glm::mat4 clip = projection_ * view_;
+
+	auto set_plane = [this](FrustumPlane plane, double a, double b, double c, double d)
+	{
+		frustum_planes_[static_cast<u8>(plane)].set(a, b, c, -d);
+		frustum_planes_[static_cast<u8>(plane)].normalize();
+	};
+
+	// Left plane
+	set_plane(
+		FrustumPlane::Left,
+		clip[0][3] + clip[0][0],
+		clip[1][3] + clip[1][0],
+		clip[2][3] + clip[2][0],
+		clip[3][3] + clip[3][0]);
+
+	// Right plane
+	set_plane(
+		FrustumPlane::Right,
+		clip[0][3] - clip[0][0],
+		clip[1][3] - clip[1][0],
+		clip[2][3] - clip[2][0],
+		clip[3][3] - clip[3][0]);
+
+	// Bottom plane
+	set_plane(
+		FrustumPlane::Bottom,
+		clip[0][3] + clip[0][1],
+		clip[1][3] + clip[1][1],
+		clip[2][3] + clip[2][1],
+		clip[3][3] + clip[3][1]);
+
+	// Top plane
+	set_plane(
+		FrustumPlane::Top,
+		clip[0][3] - clip[0][1],
+		clip[1][3] - clip[1][1],
+		clip[2][3] - clip[2][1],
+		clip[3][3] - clip[3][1]);
+
+	// Near plane
+	set_plane(
+		FrustumPlane::Near,
+		clip[0][3] + clip[0][2],
+		clip[1][3] + clip[1][2],
+		clip[2][3] + clip[2][2],
+		clip[3][3] + clip[3][2]);
+
+	// Far plane
+	set_plane(
+		FrustumPlane::Far,
+		clip[0][3] - clip[0][2],
+		clip[1][3] - clip[1][2],
+		clip[2][3] - clip[2][2],
+		clip[3][3] - clip[3][2]);
 }

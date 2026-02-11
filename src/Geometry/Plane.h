@@ -20,6 +20,8 @@ struct Plane
 	double heightAt(const Vec2d& point) const;
 	double heightAt(double x, double y) const;
 
+	double distanceTo(const Vec3d& point) const;
+
 	static Plane flat(float height);
 };
 } // namespace slade

@@ -100,6 +100,16 @@ double Plane::heightAt(double x, double y) const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the distance from the plane to [point].
+// Positive distance means the point is in front of the plane, negative means
+// it's behind.
+// -----------------------------------------------------------------------------
+double Plane::distanceTo(const Vec3d& point) const
+{
+	return a * point.x + b * point.y + c * point.z - d;
+}
+
+// -----------------------------------------------------------------------------
 // Constructs a flat plane (perpendicular to the z axis) at the given height
 // -----------------------------------------------------------------------------
 Plane Plane::flat(float height)

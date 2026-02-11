@@ -90,13 +90,24 @@ bool flatsNeedUpdate(long last_updated, const SLADEMap* map)
 // -----------------------------------------------------------------------------
 
 
+// -----------------------------------------------------------------------------
+// Updates sector flat visibility from the given [camera]. Any flats further
+// than [max_dist] from the camera will be hidden.
+// -----------------------------------------------------------------------------
 void MapRenderer3D::updateFlatVisibility(const gl::Camera& camera, float max_dist)
 {
 	Vec2d cam_pos_2d = camera.position().xy();
 
 	for (auto& sf : sector_flats_)
 	{
-		// Check with sector bounding box mid-point first
+		// Check sector bbox with camera frustum first
+		if (!camera.bboxInFrustum2d(sf.sector->boundingBox()))
+		{
+			sf.visible = false;
+			continue;
+		}
+
+		// Check with sector bounding box mid-point
 		if (glm::distance(cam_pos_2d, sf.sector->boundingBox().mid()) < max_dist)
 		{
 			sf.visible = true;
@@ -128,8 +139,10 @@ void MapRenderer3D::updateFlatVisibility(const gl::Camera& camera, float max_dis
 		else
 			sf.visible = false;
 	}
-}
 
+	// Force rebuild of flat groups next frame
+	update_flat_groups_ = true;
+}
 
 // -----------------------------------------------------------------------------
 // Updates sector flats/geometry and render groups if needed
@@ -232,8 +245,8 @@ void MapRenderer3D::updateFlats(bool vis_check)
 		}
 	}
 
-	// Force rebuild of flat groups if vis checking is enabled
-	if (vis_check)
+	// Force rebuild of flat groups if requested
+	if (update_flat_groups_)
 		flat_groups_.clear();
 
 	// Generate flat groups if needed
@@ -287,6 +300,10 @@ void MapRenderer3D::updateFlats(bool vis_check)
 
 			fp1.processed = true;
 		}
+
+		// Refresh flat groups next frame if vis checking is enabled
+		if (vis_check)
+			update_flat_groups_ = true;
 	}
 }
 

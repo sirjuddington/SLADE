@@ -1,16 +1,33 @@
 #pragma once
 
+#include "Geometry/Plane.h"
 #include "Geometry/RectFwd.h"
+#include <array>
 
 // These unnecessary macros are defined in windows headers somewhere...
 #undef near
 #undef far
 
+namespace slade
+{
+struct BBox;
+}
 namespace slade::gl
 {
 class Camera
 {
 public:
+	// Frustum plane indices
+	enum class FrustumPlane : u8
+	{
+		Left = 0,
+		Right,
+		Bottom,
+		Top,
+		Near,
+		Far
+	};
+
 	Camera(const Vec3f& world_up = { 0.0f, 1.0f, 0.0f });
 
 	float            pitch() const { return pitch_; }
@@ -25,6 +42,7 @@ public:
 	const Vec3f&     upVector() const { return up_; }
 	const glm::mat4& viewMatrix() const { return view_; }
 	const glm::mat4& projectionMatrix() const { return projection_; }
+	const Plane&     frustumPlane(FrustumPlane plane) const { return frustum_planes_[static_cast<u8>(plane)]; }
 
 	void setPitch(float pitch);
 	void setPosition(const Vec3f& position);
@@ -46,6 +64,10 @@ public:
 	void look(float xrel, float yrel);
 	bool applyGravity(float floor_height, float view_height, float mult);
 
+	bool pointInFrustum2d(const Vec2f& point) const;
+	bool lineInFrustum2d(const Seg2d& line) const;
+	bool bboxInFrustum2d(const BBox& bbox) const;
+
 private:
 	// View
 	Vec3f position_  = { 0.0f, 0.0f, 0.0f };
@@ -60,15 +82,17 @@ private:
 	bool  reverse_depth_ = true; // Use reverse depth for better precision at distance
 
 	// Vectors & Matrices
-	Vec3f     dir3d_;
-	Vec3f     strafe_;
-	Vec3f     up_;
-	Vec3f     world_up_;
-	glm::mat4 view_;
-	glm::mat4 projection_;
+	Vec3f                dir3d_;
+	Vec3f                strafe_;
+	Vec3f                up_;
+	Vec3f                world_up_;
+	glm::mat4            view_       = glm::mat4(1.0f);
+	glm::mat4            projection_ = glm::mat4(1.0f);
+	std::array<Plane, 6> frustum_planes_;
 
 	void updateVectors();
 	void updateView();
 	void updateProjection();
+	void updateFrustumPlanes();
 };
 } // namespace slade::gl

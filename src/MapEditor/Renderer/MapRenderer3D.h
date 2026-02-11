@@ -111,8 +111,10 @@ private:
 		RenderPass                  render_pass;
 		bool                        trans_additive = false;
 	};
-	vector<RenderGroup> quad_groups_;
 	vector<RenderGroup> flat_groups_;
+	vector<RenderGroup> quad_groups_;
+	bool                update_flat_groups_ = true;
+	bool                update_quad_groups_ = true;
 
 	// Highlighted/selected items
 	bool                        highlight_enabled_ = true;

@@ -47,7 +47,6 @@
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -127,13 +126,28 @@ bool lineNeedsUpdate(long last_updated, const MapLine* line)
 // -----------------------------------------------------------------------------
 
 
+// -----------------------------------------------------------------------------
+// Updates wall quad visibility from the given [camera]. Any quads further than
+// [max_dist] from the camera will be hidden.
+// -----------------------------------------------------------------------------
 void MapRenderer3D::updateWallVisibility(const gl::Camera& camera, float max_dist)
 {
 	Vec2d cam_pos_2d = camera.position().xy();
 
 	// Update visibility of wall quads based on camera position
 	for (auto& lq : line_quads_)
+	{
+		if (!camera.lineInFrustum2d(lq.line->seg()))
+		{
+			lq.visible = false;
+			continue;
+		}
+
 		lq.visible = geometry::distanceToLine(cam_pos_2d, lq.line->seg()) < max_dist;
+	}
+
+	// Force rebuild of quad groups next frame
+	update_quad_groups_ = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -234,8 +248,8 @@ void MapRenderer3D::updateWalls(bool vis_check)
 		}
 	}
 
-	// Force rebuild of quad groups if vis checking is enabled
-	if (vis_check)
+	// Force rebuild of quad groups if requested
+	if (update_quad_groups_)
 		quad_groups_.clear();
 
 	// Generate quad groups if needed
@@ -289,6 +303,10 @@ void MapRenderer3D::updateWalls(bool vis_check)
 
 			quads_to_process[i1].processed = true;
 		}
+
+		// Refresh quad groups next frame if vis checking is enabled
+		if (vis_check)
+			update_quad_groups_ = true;
 	}
 }
 
