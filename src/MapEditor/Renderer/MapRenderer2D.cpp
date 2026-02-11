@@ -65,10 +65,7 @@ using namespace mapeditor;
 CVAR(Bool, map_animate_hilight, true, CVar::Flag::Save)
 CVAR(Bool, map_animate_selection, false, CVar::Flag::Save)
 CVAR(Bool, map_animate_tagged, true, CVar::Flag::Save)
-CVAR(Float, arrowhead_angle, 0.7854f, CVar::Flag::Save)
-CVAR(Float, arrowhead_length, 25.f, CVar::Flag::Save)
-CVAR(Bool, action_lines, true, CVar::Flag::Save)
-CVAR(Bool, test_ssplit, false, CVar::Flag::Save)
+CVAR(Bool, map2d_action_lines, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -77,8 +74,8 @@ CVAR(Bool, test_ssplit, false, CVar::Flag::Save)
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, use_zeth_icons)
-EXTERN_CVAR(Float, line_width)
-EXTERN_CVAR(Int, thing_shape)
+EXTERN_CVAR(Float, map2d_line_width)
+EXTERN_CVAR(Int, map2d_thing_shape)
 
 
 // -----------------------------------------------------------------------------
@@ -152,7 +149,7 @@ void MapRenderer2D::renderMovingVertices(gl::draw2d::Context& dc, const vector<I
 
 	// Draw moving lines
 	gl::setBlend(gl::Blend::Normal);
-	temp_lines_buffer_->setWidthMult(line_width);
+	temp_lines_buffer_->setWidthMult(map2d_line_width);
 	temp_lines_buffer_->draw(view_);
 
 	// Get list of moving vertex points
@@ -233,7 +230,7 @@ void MapRenderer2D::renderMovingLines(gl::draw2d::Context& dc, const vector<Item
 
 	// Draw moving lines
 	gl::setBlend(gl::Blend::Normal);
-	temp_lines_buffer_->setWidthMult(line_width);
+	temp_lines_buffer_->setWidthMult(map2d_line_width);
 	temp_lines_buffer_->draw(view_);
 
 	// Build list of moving lines (for overlays)
@@ -244,7 +241,7 @@ void MapRenderer2D::renderMovingLines(gl::draw2d::Context& dc, const vector<Item
 
 	// Draw moving line overlays
 	dc.setColourFromConfig("map_moving");
-	dc.line_thickness = line_width * 3;
+	dc.line_thickness = map2d_line_width * 3;
 	dc.drawLines(line_overlays);
 }
 
@@ -336,7 +333,7 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, const ObjectE
 			lineColour(line.map_line, true));
 	}
 	temp_lines_buffer_->push();
-	temp_lines_buffer_->setWidthMult(line_width);
+	temp_lines_buffer_->setWidthMult(map2d_line_width);
 	temp_lines_buffer_->draw(view_);
 
 	// Edit overlay
@@ -346,7 +343,7 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, const ObjectE
 			overlay_lines.emplace_back(
 				line.v1->position.x, line.v1->position.y, line.v2->position.x, line.v2->position.y);
 	dc.setColourFromConfig("map_object_edit");
-	dc.line_thickness = line_width * 3;
+	dc.line_thickness = map2d_line_width * 3;
 	dc.drawLines(overlay_lines);
 
 
@@ -383,7 +380,7 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, const ObjectE
 			// Draw thing
 			temp_things_buffer_->add(x, y, angle);
 			temp_things_buffer_->push();
-			temp_things_buffer_->draw(view_, glm::vec4{ 1.0f }, thing_shape == 1, true);
+			temp_things_buffer_->draw(view_, glm::vec4{ 1.0f }, map2d_thing_shape == 1, true);
 		}
 
 		// Draw thing overlays
@@ -402,7 +399,8 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, const ObjectE
 		thing_overlay_buffer_->setFillOpacity(0.25f);
 		thing_overlay_buffer_->setOutlineWidth(std::min(3.0f / static_cast<float>(view_->scale().x), 4.0f));
 		thing_overlay_buffer_->draw(
-			thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline, view_);
+			map2d_thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+			view_);
 	}
 }
 

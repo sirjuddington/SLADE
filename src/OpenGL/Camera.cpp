@@ -10,9 +10,9 @@
 using namespace slade;
 using namespace gl;
 
-CVAR(Bool, mlook_invert_y, false, CVar::Flag::Save)
-CVAR(Float, camera_3d_sensitivity_x, 1.0f, CVar::Flag::Save)
-CVAR(Float, camera_3d_sensitivity_y, 1.0f, CVar::Flag::Save)
+CVAR(Bool, map3d_mlook_invert_y, false, CVar::Flag::Save)
+CVAR(Float, map3d_mlook_sensitivity_x, 1.0f, CVar::Flag::Save)
+CVAR(Float, map3d_mlook_sensitivity_y, 1.0f, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -207,11 +207,11 @@ void Camera::pitch(float amount)
 // -----------------------------------------------------------------------------
 void Camera::look(float xrel, float yrel)
 {
-	turn(-xrel * 0.1f * camera_3d_sensitivity_x);
-	if (mlook_invert_y)
-		pitch(yrel * 0.003f * camera_3d_sensitivity_y);
+	turn(-xrel * 0.1f * map3d_mlook_sensitivity_x);
+	if (map3d_mlook_invert_y)
+		pitch(yrel * 0.003f * map3d_mlook_sensitivity_y);
 	else
-		pitch(-yrel * 0.003f * camera_3d_sensitivity_y);
+		pitch(-yrel * 0.003f * map3d_mlook_sensitivity_y);
 }
 
 // -----------------------------------------------------------------------------

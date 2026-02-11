@@ -83,6 +83,7 @@ private:
 		vector<Flat3D>   flats;
 		unsigned         vertex_buffer_offset;
 		long             updated_time;
+		bool             visible = true;
 	};
 	vector<SectorFlats>             sector_flats_;
 	unique_ptr<MapGeometryBuffer3D> vb_flats_; // Vertex buffer for all flats
@@ -95,6 +96,7 @@ private:
 		vector<Quad3D> quads;
 		unsigned       vertex_buffer_offset;
 		long           updated_time;
+		bool           visible = true;
 	};
 	vector<LineQuads>               line_quads_;
 	unique_ptr<MapGeometryBuffer3D> vb_quads_; // Vertex buffer for all wall quads
@@ -119,8 +121,11 @@ private:
 	unique_ptr<gl::IndexBuffer> highlight_fill_;
 	SelectionOverlay3D          selection_overlay_;
 
-	void updateFlats();
-	void updateWalls();
+	void updateFlatVisibility(const gl::Camera& camera, float max_dist);
+	void updateWallVisibility(const gl::Camera& camera, float max_dist);
+
+	void updateFlats(bool vis_check = false);
+	void updateWalls(bool vis_check = false);
 
 	void renderSkyFlatsQuads() const;
 	void renderGroups(

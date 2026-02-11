@@ -78,14 +78,14 @@ CVAR(Bool, selection_clear_click, false, CVar::Flag::Save)
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Int, flat_drawtype)
-EXTERN_CVAR(Bool, map_show_selection_numbers)
-EXTERN_CVAR(Float, render_3d_brightness)
-EXTERN_CVAR(Bool, camera_3d_gravity)
-EXTERN_CVAR(Int, render_3d_things)
-EXTERN_CVAR(Int, render_3d_things_style)
-EXTERN_CVAR(Int, render_3d_hilight)
-EXTERN_CVAR(Bool, info_overlay_3d)
+EXTERN_CVAR(Int, map2d_flat_drawtype)
+EXTERN_CVAR(Bool, map2d_show_selection_numbers)
+EXTERN_CVAR(Float, map3d_brightness)
+EXTERN_CVAR(Bool, map3d_gravity)
+EXTERN_CVAR(Int, map3d_things)
+EXTERN_CVAR(Int, map3d_things_style)
+EXTERN_CVAR(Int, map3d_hilight)
+EXTERN_CVAR(Bool, map3d_info_overlay)
 
 
 // -----------------------------------------------------------------------------
@@ -834,12 +834,12 @@ void Input::handleKeyBind2d(string_view name)
 		// Cycle flat type
 		if (name == "me2d_flat_type")
 		{
-			flat_drawtype = flat_drawtype + 1;
-			if (flat_drawtype > 2)
-				flat_drawtype = 0;
+			map2d_flat_drawtype = map2d_flat_drawtype + 1;
+			if (map2d_flat_drawtype > 2)
+				map2d_flat_drawtype = 0;
 
 			// Editor message and toolbar update
-			switch (flat_drawtype)
+			switch (map2d_flat_drawtype)
 			{
 			case 0:  SAction::fromId("mapw_flat_none")->setChecked(); break;
 			case 1:  SAction::fromId("mapw_flat_untextured")->setChecked(); break;
@@ -923,9 +923,9 @@ void Input::handleKeyBind2d(string_view name)
 		// Toggle selection numbers
 		else if (name == "me2d_toggle_selection_numbers")
 		{
-			map_show_selection_numbers = !map_show_selection_numbers;
+			map2d_show_selection_numbers = !map2d_show_selection_numbers;
 
-			if (map_show_selection_numbers)
+			if (map2d_show_selection_numbers)
 				context_->addEditorMessage("Selection numbers enabled");
 			else
 				context_->addEditorMessage("Selection numbers disabled");
@@ -1073,19 +1073,19 @@ void Input::handleKeyBind3d(string_view name) const
 	// Adjust brightness
 	else if (name == "me3d_adjust_brightness")
 	{
-		render_3d_brightness = render_3d_brightness + 0.1;
-		if (render_3d_brightness > 2.0)
+		map3d_brightness = map3d_brightness + 0.1;
+		if (map3d_brightness > 2.0)
 		{
-			render_3d_brightness = 1.0;
+			map3d_brightness = 1.0;
 		}
-		context_->addEditorMessage(fmt::format("Brightness set to {:1.1f}", static_cast<double>(render_3d_brightness)));
+		context_->addEditorMessage(fmt::format("Brightness set to {:1.1f}", static_cast<double>(map3d_brightness)));
 	}
 
 	// Toggle gravity
 	else if (name == "me3d_toggle_gravity")
 	{
-		camera_3d_gravity = !camera_3d_gravity;
-		if (!camera_3d_gravity)
+		map3d_gravity = !map3d_gravity;
+		if (!map3d_gravity)
 			context_->addEditorMessage("Gravity disabled");
 		else
 			context_->addEditorMessage("Gravity enabled");
@@ -1099,14 +1099,14 @@ void Input::handleKeyBind3d(string_view name) const
 	else if (name == "me3d_toggle_things")
 	{
 		// Change thing display type
-		render_3d_things = render_3d_things + 1;
-		if (render_3d_things > 2)
-			render_3d_things = 0;
+		map3d_things = map3d_things + 1;
+		if (map3d_things > 2)
+			map3d_things = 0;
 
 		// Editor message
-		if (render_3d_things == 0)
+		if (map3d_things == 0)
 			context_->addEditorMessage("Things disabled");
-		else if (render_3d_things == 1)
+		else if (map3d_things == 1)
 			context_->addEditorMessage("Things enabled: All");
 		else
 			context_->addEditorMessage("Things enabled: Decorations only");
@@ -1116,14 +1116,14 @@ void Input::handleKeyBind3d(string_view name) const
 	else if (name == "me3d_thing_style")
 	{
 		// Change thing display style
-		render_3d_things_style = render_3d_things_style + 1;
-		if (render_3d_things_style > 2)
-			render_3d_things_style = 0;
+		map3d_things_style = map3d_things_style + 1;
+		if (map3d_things_style > 2)
+			map3d_things_style = 0;
 
 		// Editor message
-		if (render_3d_things_style == 0)
+		if (map3d_things_style == 0)
 			context_->addEditorMessage("Thing render style: Sprites only");
-		else if (render_3d_things_style == 1)
+		else if (map3d_things_style == 1)
 			context_->addEditorMessage("Thing render style: Sprites + Ground boxes");
 		else
 			context_->addEditorMessage("Thing render style: Sprites + Full boxes");
@@ -1133,24 +1133,24 @@ void Input::handleKeyBind3d(string_view name) const
 	else if (name == "me3d_toggle_hilight")
 	{
 		// Change hilight type
-		render_3d_hilight = render_3d_hilight + 1;
-		if (render_3d_hilight > 3)
-			render_3d_hilight = 0;
+		map3d_hilight = map3d_hilight + 1;
+		if (map3d_hilight > 3)
+			map3d_hilight = 0;
 
 		// Editor message
-		if (render_3d_hilight == 0)
+		if (map3d_hilight == 0)
 			context_->addEditorMessage("Hilight disabled");
-		else if (render_3d_hilight == 1)
+		else if (map3d_hilight == 1)
 			context_->addEditorMessage("Hilight enabled: Outline");
-		else if (render_3d_hilight == 2)
+		else if (map3d_hilight == 2)
 			context_->addEditorMessage("Hilight enabled: Outline+Fill");
-		else if (render_3d_hilight == 3)
+		else if (map3d_hilight == 3)
 			context_->addEditorMessage("Hilight enabled: Fill");
 	}
 
 	// Toggle info overlay
 	else if (name == "me3d_toggle_info")
-		info_overlay_3d = !info_overlay_3d;
+		map3d_info_overlay = !map3d_info_overlay;
 
 	// Quick texture
 	else if (name == "me3d_quick_texture")
@@ -1175,14 +1175,14 @@ bool Input::updateCamera3d(double mult) const
 	// Camera forward
 	if (KeyBind::isPressed("me3d_camera_forward"))
 	{
-		camera.move(speed, !camera_3d_gravity || !sector);
+		camera.move(speed, !map3d_gravity || !sector);
 		moving = true;
 	}
 
 	// Camera backward
 	if (KeyBind::isPressed("me3d_camera_back"))
 	{
-		camera.move(-speed, !camera_3d_gravity || !sector);
+		camera.move(-speed, !map3d_gravity || !sector);
 		moving = true;
 	}
 
@@ -1229,7 +1229,7 @@ bool Input::updateCamera3d(double mult) const
 	}
 
 	// Apply gravity to camera if needed
-	if (camera_3d_gravity && sector)
+	if (map3d_gravity && sector)
 	{
 		auto height = context_->map().mapSpecials().sectorFloorHeightAt(*sector, camera.position());
 		if (camera.applyGravity(height, game::configuration().playerEyeHeight(), mult))

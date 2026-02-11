@@ -31,10 +31,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
+#include "Geometry/Geometry.h"
 #include "MapEditor/Item.h"
 #include "MapGeometry.h"
 #include "MapGeometryBuffer3D.h"
 #include "MapRenderer3D.h"
+#include "OpenGL/Camera.h"
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/LineBuffer.h"
 #include "Quad3D.h"
@@ -45,6 +47,7 @@
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/MathStuff.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -124,10 +127,19 @@ bool lineNeedsUpdate(long last_updated, const MapLine* line)
 // -----------------------------------------------------------------------------
 
 
+void MapRenderer3D::updateWallVisibility(const gl::Camera& camera, float max_dist)
+{
+	Vec2d cam_pos_2d = camera.position().xy();
+
+	// Update visibility of wall quads based on camera position
+	for (auto& lq : line_quads_)
+		lq.visible = geometry::distanceToLine(cam_pos_2d, lq.line->seg()) < max_dist;
+}
+
 // -----------------------------------------------------------------------------
 // Updates wall quads and render groups as needed
 // -----------------------------------------------------------------------------
-void MapRenderer3D::updateWalls()
+void MapRenderer3D::updateWalls(bool vis_check)
 {
 	using QuadFlags = Quad3D::Flags;
 
@@ -165,7 +177,8 @@ void MapRenderer3D::updateWalls()
 		map_->mapSpecials().updateSpecials();
 
 		// Check for lines that need an update
-		bool updated = false;
+		bool             updated = false;
+		vector<MGVertex> add_vertices;
 		for (auto& lq : line_quads_)
 		{
 			if (!lineNeedsUpdate(lq.updated_time, lq.line))
@@ -184,25 +197,32 @@ void MapRenderer3D::updateWalls()
 			}
 			else
 			{
-				// More quads than before, need to re-upload entire buffer
+				// More quads than before, will need to re-upload entire buffer
 
 				// TODO: This will result in gaps in the buffer, either compact
 				//       the buffer here or implement some way to track and
 				//       reuse freed space later
 
 				// Update vertex offsets for line and quads
-				lq.vertex_buffer_offset = vb_quads_->buffer().size();
+				lq.vertex_buffer_offset = vb_quads_->buffer().size() + add_vertices.size();
 				for (auto i = 0; i < new_quads.size(); ++i)
 					lq.quads[i].vertex_offset = lq.vertex_buffer_offset + i * 6;
 
-				vb_quads_->pull();                    // Pull data from GPU
-				vb_quads_->addVertices(new_vertices); // Add new vertex data
-				vb_quads_->push();                    // Push data back to GPU
+				// Add new vertex data to be added to buffer later
+				vectorConcat(add_vertices, new_vertices);
 			}
 
 			// Set updated
 			updated         = true;
 			lq.updated_time = app::runTimer();
+		}
+
+		// Upload new vertices to the buffer, if any
+		if (!add_vertices.empty())
+		{
+			vb_quads_->pull();                    // Pull data from GPU
+			vb_quads_->addVertices(add_vertices); // Append new vertex data
+			vb_quads_->push();                    // Push data back to GPU
 		}
 
 		// Clear quad groups to be rebuilt if any quads were updated
@@ -214,6 +234,10 @@ void MapRenderer3D::updateWalls()
 		}
 	}
 
+	// Force rebuild of quad groups if vis checking is enabled
+	if (vis_check)
+		quad_groups_.clear();
+
 	// Generate quad groups if needed
 	if (quad_groups_.empty())
 	{
@@ -224,9 +248,10 @@ void MapRenderer3D::updateWalls()
 			bool    processed;
 		};
 		vector<QuadToProcess> quads_to_process;
-		for (auto& sf : line_quads_)
-			for (auto& quad : sf.quads)
-				quads_to_process.push_back({ .quad = &quad, .processed = false });
+		for (auto& lq : line_quads_)
+			if (!vis_check || lq.visible)
+				for (auto& quad : lq.quads)
+					quads_to_process.push_back({ .quad = &quad, .processed = false });
 
 		for (unsigned i1 = 0; i1 < quads_to_process.size(); ++i1)
 		{

@@ -93,7 +93,7 @@ CVAR(Bool, save_archive_with_map, true, CVar::Flag::Save);
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Int, flat_drawtype);
+EXTERN_CVAR(Int, map2d_flat_drawtype);
 
 
 // -----------------------------------------------------------------------------
@@ -279,9 +279,9 @@ void MapEditorWindow::setupLayout()
 	toolbar_->showGroup("Things Mode", false);
 
 	// Toggle current flat type
-	if (flat_drawtype == 0)
+	if (map2d_flat_drawtype == 0)
 		SAction::fromId("mapw_flat_none")->setChecked();
-	else if (flat_drawtype == 1)
+	else if (map2d_flat_drawtype == 1)
 		SAction::fromId("mapw_flat_untextured")->setChecked();
 	else
 		SAction::fromId("mapw_flat_textured")->setChecked();

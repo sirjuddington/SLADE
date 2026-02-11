@@ -58,14 +58,14 @@ using namespace mapeditor;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, thing_shape, 0, CVar::Flag::Save)
-CVAR(Bool, thing_sprites, true, CVar::Flag::Save)
-CVAR(Bool, thing_force_dir, false, CVar::Flag::Save)
-CVAR(Bool, thing_overlay_square, false, CVar::Flag::Save)
-CVAR(Bool, thing_preview_lights, true, CVar::Flag::Save)
-CVAR(Float, thing_light_intensity, 0.5f, CVar::Flag::Save)
-CVAR(Float, thing_shadow, 0.7f, CVar::Flag::Save)
-CVAR(Int, halo_width, 4, CVar::Flag::Save)
+CVAR(Int, map2d_thing_shape, 0, CVar::Flag::Save)
+CVAR(Bool, map2d_thing_sprites, true, CVar::Flag::Save)
+CVAR(Bool, map2d_thing_force_dir, false, CVar::Flag::Save)
+CVAR(Bool, map2d_thing_overlay_square, false, CVar::Flag::Save)
+CVAR(Bool, map2d_thing_preview_lights, true, CVar::Flag::Save)
+CVAR(Float, map2d_thing_light_intensity, 0.5f, CVar::Flag::Save)
+CVAR(Float, map2d_thing_shadow, 0.7f, CVar::Flag::Save)
+CVAR(Int, map2d_thing_halo_width, 4, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -76,7 +76,7 @@ CVAR(Int, halo_width, 4, CVar::Flag::Save)
 EXTERN_CVAR(Bool, map_animate_hilight)
 EXTERN_CVAR(Bool, map_animate_selection)
 EXTERN_CVAR(Bool, map_animate_tagged)
-EXTERN_CVAR(Bool, action_lines)
+EXTERN_CVAR(Bool, map2d_action_lines)
 
 
 // -----------------------------------------------------------------------------
@@ -96,7 +96,7 @@ void MapRenderer2D::renderThingOverlays(
 	const Vec2d&             offset) const
 {
 	// Check if we want square overlays
-	if (thing_overlay_square)
+	if (map2d_thing_overlay_square)
 	{
 		dc.texture = 0;
 		dc.colour.a /= 2;
@@ -127,7 +127,7 @@ void MapRenderer2D::renderThingOverlays(
 	thing_overlay_buffer_->setPointRadius(dc.pointsprite_radius);
 
 	// Populate thing overlay buffer
-	auto hwidth = static_cast<float>(halo_width);
+	auto hwidth = static_cast<float>(map2d_thing_halo_width);
 	for (const auto thing : things)
 	{
 		const auto& tt     = game::configuration().thingType(thing->type());
@@ -142,7 +142,8 @@ void MapRenderer2D::renderThingOverlays(
 
 	// Draw the buffer
 	thing_overlay_buffer_->draw(
-		thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline, dc.view);
+		map2d_thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+		dc.view);
 }
 
 // -----------------------------------------------------------------------------
@@ -160,7 +161,8 @@ void MapRenderer2D::renderThings(float alpha, bool force_dir)
 	// Draw thing buffers
 	gl::setBlend(gl::Blend::Normal);
 	for (auto& buffer : thing_buffers_)
-		buffer->draw(view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, thing_shape == 1, thing_force_dir || force_dir);
+		buffer->draw(
+			view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, map2d_thing_shape == 1, map2d_thing_force_dir || force_dir);
 }
 
 // -----------------------------------------------------------------------------
@@ -194,7 +196,8 @@ void MapRenderer2D::renderThings(const vector<MapThing*>& things, float alpha, c
 		temp_things_buffer_->push();
 
 		// Render
-		temp_things_buffer_->draw(view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, thing_shape == 1, thing_force_dir);
+		temp_things_buffer_->draw(
+			view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, map2d_thing_shape == 1, map2d_thing_force_dir);
 
 		// Continue
 		types_rendered.push_back(ttype);
@@ -224,7 +227,7 @@ void MapRenderer2D::renderThingHilight(gl::draw2d::Context& dc, int index, float
 	dc.setColourFromConfig("map_hilight", fade);
 
 	// Check if we want square overlays
-	if (thing_overlay_square)
+	if (map2d_thing_overlay_square)
 	{
 		// Get thing info
 		auto& tt = game::configuration().thingType(thing->type());
@@ -288,7 +291,7 @@ void MapRenderer2D::renderTaggedThings(gl::draw2d::Context& dc, const vector<Map
 
 	// Action lines
 	auto object = editContext().selection().hilightedObject();
-	if (object && action_lines)
+	if (object && map2d_action_lines)
 	{
 		// Build list of lines (arrow: hilighted object -> thing)
 		vector<Rectf> r_arrows;
@@ -319,7 +322,7 @@ void MapRenderer2D::renderTaggingThings(gl::draw2d::Context& dc, const vector<Ma
 
 	// Action lines
 	auto object = editContext().selection().hilightedObject();
-	if (object && action_lines)
+	if (object && map2d_action_lines)
 	{
 		// Build list of lines (arrow: thing -> hilighted object)
 		vector<Rectf> r_arrows;
@@ -341,7 +344,7 @@ void MapRenderer2D::renderTaggingThings(gl::draw2d::Context& dc, const vector<Ma
 void MapRenderer2D::renderPathedThings(gl::draw2d::Context& dc, const vector<MapThing*>& things)
 {
 	// Skip if action lines are not desired, or if there's nothing to do
-	if (!action_lines || things.empty())
+	if (!map2d_action_lines || things.empty())
 		return;
 
 	// Check if paths need updating
@@ -411,7 +414,7 @@ void MapRenderer2D::renderPathedThings(gl::draw2d::Context& dc, const vector<Map
 // -----------------------------------------------------------------------------
 void MapRenderer2D::renderPointLightPreviews(gl::draw2d::Context& dc, float alpha, int hilight_index) const
 {
-	if (!thing_preview_lights)
+	if (!map2d_thing_preview_lights)
 		return;
 
 	// Build light preview buffer
@@ -474,7 +477,7 @@ void MapRenderer2D::renderPointLightPreviews(gl::draw2d::Context& dc, float alph
 	// Setup rendering
 	const auto& shader = gl::draw2d::defaultShader();
 	dc.texture         = textureManager().editorImage("thing/light_preview").gl_id;
-	dc.colour.set(255, 255, 255, static_cast<uint8_t>(alpha * (thing_light_intensity * 255.f)));
+	dc.colour.set(255, 255, 255, static_cast<uint8_t>(alpha * (map2d_thing_light_intensity * 255.f)));
 	dc.blend = gl::Blend::Additive;
 	dc.setupToDraw(shader);
 
@@ -663,7 +666,7 @@ void MapRenderer2D::setupThingBuffer(gl::ThingBuffer2D& buffer, const game::Thin
 	auto sprite = false;
 
 	// Sprite if we are drawing them
-	if (thing_sprites)
+	if (map2d_thing_sprites)
 	{
 		tex    = textureManager().sprite(tt.sprite(), tt.translation(), tt.palette()).gl_id;
 		sprite = true;
@@ -678,6 +681,6 @@ void MapRenderer2D::setupThingBuffer(gl::ThingBuffer2D& buffer, const game::Thin
 
 	// Setup buffer
 	buffer.setup(tt);
-	buffer.setShadowOpacity(thing_shadow);
+	buffer.setShadowOpacity(map2d_thing_shadow);
 	buffer.setTexture(tex, sprite);
 }

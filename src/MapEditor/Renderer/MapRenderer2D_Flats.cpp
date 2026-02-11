@@ -60,11 +60,11 @@ using namespace mapeditor;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, flat_drawtype, 2, CVar::Flag::Save)
-CVAR(Float, flat_brightness, 0.8f, CVar::Flag::Save)
-CVAR(Bool, flat_ignore_light, false, CVar::Flag::Save)
-CVAR(Bool, sector_hilight_fill, true, CVar::Flag::Save)
-CVAR(Bool, sector_selected_fill, true, CVar::Flag::Save)
+CVAR(Int, map2d_flat_drawtype, 2, CVar::Flag::Save)
+CVAR(Float, map2d_flat_brightness, 0.8f, CVar::Flag::Save)
+CVAR(Bool, map2d_flat_ignore_light, false, CVar::Flag::Save)
+CVAR(Bool, map2d_sector_hilight_fill, true, CVar::Flag::Save)
+CVAR(Bool, map2d_sector_selected_fill, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -75,8 +75,8 @@ CVAR(Bool, sector_selected_fill, true, CVar::Flag::Save)
 EXTERN_CVAR(Bool, map_animate_hilight)
 EXTERN_CVAR(Bool, map_animate_selection)
 EXTERN_CVAR(Bool, map_animate_tagged)
-EXTERN_CVAR(Bool, action_lines)
-EXTERN_CVAR(Float, line_width)
+EXTERN_CVAR(Bool, map2d_action_lines)
+EXTERN_CVAR(Float, map2d_line_width)
 
 
 // -----------------------------------------------------------------------------
@@ -106,7 +106,7 @@ glm::vec4 sectorColour(const MapSector& sector, bool ceiling)
 {
 	auto& map_specials = sector.parentMap()->mapSpecials();
 	return map_specials.sectorColour(sector, ceiling ? map::SectorPart::Ceiling : map::SectorPart::Floor)
-		.ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
+		.ampf(map2d_flat_brightness, map2d_flat_brightness, map2d_flat_brightness, 1.0f);
 	// return sector->colourAt(ceiling ? 2 : 1).ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
 }
 
@@ -188,11 +188,11 @@ void generateTextureCoords(
 void MapRenderer2D::renderFlats(bool ceilings, float alpha)
 {
 	// Don't bother if (practically) invisible
-	if (alpha <= 0.01f || flat_drawtype == 0)
+	if (alpha <= 0.01f || map2d_flat_drawtype == 0)
 		return;
 
 	// Apply flat alpha from theme
-	bool texture = flat_drawtype > 1;
+	bool texture = map2d_flat_drawtype > 1;
 	if (texture)
 		alpha *= colourconfig::flatAlpha();
 
@@ -202,7 +202,8 @@ void MapRenderer2D::renderFlats(bool ceilings, float alpha)
 	// Setup shader
 	const auto& shader = gl::draw2d::defaultShader(texture);
 	view_->setupShader(shader);
-	shader.setUniform("colour", glm::vec4{ flat_brightness, flat_brightness, flat_brightness, alpha });
+	shader.setUniform(
+		"colour", glm::vec4{ map2d_flat_brightness, map2d_flat_brightness, map2d_flat_brightness, alpha });
 
 	if (texture)
 	{
@@ -240,10 +241,10 @@ void MapRenderer2D::renderFlatHilight(gl::draw2d::Context& dc, int index, float 
 
 	// Set render options
 	dc.setColourFromConfig("map_hilight", fade);
-	dc.line_thickness = line_width * (colourconfig::lineHilightWidth() * fade);
+	dc.line_thickness = map2d_line_width * (colourconfig::lineHilightWidth() * fade);
 
 	// Fill if cvar is set
-	if (sector_hilight_fill)
+	if (map2d_sector_hilight_fill)
 	{
 		const auto& shader = gl::draw2d::defaultShader(false);
 		shader.setUniform("colour", dc.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f));
@@ -301,7 +302,7 @@ void MapRenderer2D::renderFlatOverlays(const gl::draw2d::Context& dc, const vect
 		//	continue;
 
 		// Render fill if needed
-		if (sector_selected_fill)
+		if (map2d_sector_selected_fill)
 			flats_buffer_->draw(
 				gl::Primitive::Triangles,
 				nullptr,
@@ -342,7 +343,7 @@ void MapRenderer2D::renderFlatSelection(gl::draw2d::Context& dc, const ItemSelec
 
 	// Set render options
 	dc.setColourFromConfig("map_selection", fade);
-	dc.line_thickness = line_width * 2.0f;
+	dc.line_thickness = map2d_line_width * 2.0f;
 
 	// Render flat overlays for selection
 	vector<MapSector*> sectors;
@@ -362,14 +363,14 @@ void MapRenderer2D::renderTaggedFlats(gl::draw2d::Context& dc, const vector<MapS
 
 	// Setup render options
 	dc.setColourFromConfig("map_tagged", fade);
-	dc.line_thickness = line_width * 2.0f;
+	dc.line_thickness = map2d_line_width * 2.0f;
 
 	// Render overlays for tagged sectors
 	renderFlatOverlays(dc, sectors);
 
 	// Action Lines
 	auto object = editContext().selection().hilightedObject();
-	if (action_lines && object)
+	if (map2d_action_lines && object)
 	{
 		vector<Rectf> lines;
 		for (const auto sector : sectors)

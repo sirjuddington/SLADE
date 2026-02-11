@@ -81,24 +81,24 @@ using namespace gl;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, things_always, 2, CVar::Flag::Save)
-CVAR(Int, vertices_always, 0, CVar::Flag::Save)
-CVAR(Bool, line_tabs_always, 1, CVar::Flag::Save)
-CVAR(Bool, flat_fade, 1, CVar::Flag::Save)
-CVAR(Bool, line_fade, 0, CVar::Flag::Save)
-CVAR(Bool, grid_dashed, false, CVar::Flag::Save)
-CVAR(Int, grid_64_style, 1, CVar::Flag::Save)
-CVAR(Bool, grid_show_origin, true, CVar::Flag::Save)
-CVAR(Bool, scroll_smooth, true, CVar::Flag::Save)
+CVAR(Int, map2d_things_always, 2, CVar::Flag::Save)
+CVAR(Int, map2d_vertices_always, 0, CVar::Flag::Save)
+CVAR(Bool, map2d_line_tabs_always, 1, CVar::Flag::Save)
+CVAR(Bool, map2d_flat_fade, 1, CVar::Flag::Save)
+CVAR(Bool, map2d_line_fade, 0, CVar::Flag::Save)
+CVAR(Bool, map2d_grid_dashed, false, CVar::Flag::Save)
+CVAR(Int, map2d_64grid_style, 1, CVar::Flag::Save)
+CVAR(Bool, map2d_grid_show_origin, true, CVar::Flag::Save)
+CVAR(Bool, map2d_scroll_smooth, true, CVar::Flag::Save)
 CVAR(Bool, map_showfps, false, CVar::Flag::Save)
-CVAR(Bool, camera_3d_gravity, true, CVar::Flag::Save)
-CVAR(Int, camera_3d_crosshair_size, 6, CVar::Flag::Save)
-CVAR(Bool, camera_3d_show_distance, false, CVar::Flag::Save)
+CVAR(Bool, map3d_gravity, true, CVar::Flag::Save)
+CVAR(Int, map3d_crosshair_size, 6, CVar::Flag::Save)
+CVAR(Bool, map3d_crosshair_show_distance, false, CVar::Flag::Save)
 CVAR(Bool, map_show_help, true, CVar::Flag::Save)
-CVAR(Int, map_crosshair, 0, CVar::Flag::Save)
-CVAR(Bool, map_show_selection_numbers, true, CVar::Flag::Save)
-CVAR(Int, map_max_selection_numbers, 1000, CVar::Flag::Save)
-CVAR(Int, render_fov, 90, CVar::Flag::Save)
+CVAR(Int, map2d_crosshair, 0, CVar::Flag::Save)
+CVAR(Bool, map2d_show_selection_numbers, true, CVar::Flag::Save)
+CVAR(Int, map2d_max_selection_numbers, 1000, CVar::Flag::Save)
+CVAR(Int, map3d_fov, 90, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -106,9 +106,9 @@ CVAR(Int, render_fov, 90, CVar::Flag::Save)
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, vertex_round)
-EXTERN_CVAR(Int, vertex_size)
-EXTERN_CVAR(Int, thing_shape)
+EXTERN_CVAR(Bool, map2d_vertex_round)
+EXTERN_CVAR(Int, map2d_vertex_size)
+EXTERN_CVAR(Int, map2d_thing_shape)
 
 
 // -----------------------------------------------------------------------------
@@ -377,7 +377,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	auto end_y   = view_->canvasY(0);
 
 	// Draw origin grid lines
-	if (grid_show_origin)
+	if (map2d_grid_show_origin)
 	{
 		dc.line_thickness = 3.0f;
 		dc.setColourFromConfig("map_grid");
@@ -385,7 +385,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	}
 
 	// Setup regular grid if it's not too small
-	auto shader   = grid_dashed ? &draw2d::lineStippleShader(0xAAAA, 2.0f) : &draw2d::defaultShader(false);
+	auto shader   = map2d_grid_dashed ? &draw2d::lineStippleShader(0xAAAA, 2.0f) : &draw2d::defaultShader(false);
 	auto gridsize = static_cast<int>(context_->gridSize());
 	if (gridsize > grid_hidelevel)
 	{
@@ -415,7 +415,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	}
 
 	// Setup 64 grid if it's not too small and we're not on a larger grid size
-	if (64 > grid_hidelevel && gridsize < 64 && grid_64_style > 0)
+	if (64 > grid_hidelevel && gridsize < 64 && map2d_64grid_style > 0)
 	{
 		glm::vec4 col_64grid = colourconfig::colour("map_64grid");
 		int       cross_size = 8;
@@ -423,14 +423,14 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 			cross_size = gridsize;
 
 		// Disable stipple if style set to crosses
-		if (grid_64_style > 1)
+		if (map2d_64grid_style > 1)
 			shader = &draw2d::defaultShader(false);
 
 		// Vertical
 		int ofs = static_cast<int>(start_x) % 64;
 		for (int x = start_x - ofs; x <= end_x; x += 64)
 		{
-			if (grid_64_style > 1)
+			if (map2d_64grid_style > 1)
 			{
 				// Cross style
 				int y = start_y - (static_cast<int>(start_y) % 64);
@@ -453,7 +453,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 		ofs = static_cast<int>(start_y) % 64;
 		for (int y = start_y - ofs; y <= end_y; y += 64)
 		{
-			if (grid_64_style > 1)
+			if (map2d_64grid_style > 1)
 			{
 				// Cross style
 				int x = start_x - (static_cast<int>(start_x) % 64);
@@ -480,7 +480,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	}
 
 	// Draw crosshair if needed
-	if (map_crosshair > 0)
+	if (map2d_crosshair > 0)
 	{
 		auto   mouse_pos = context_->input().mousePos();
 		double x         = context_->snapToGrid(view_->canvasX(mouse_pos.x), false);
@@ -489,7 +489,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 		auto   col       = def.colour;
 
 		// Small
-		if (map_crosshair == 1)
+		if (map2d_crosshair == 1)
 		{
 			glm::vec4      col1  = col.ampf(1.0f, 1.0f, 1.0f, 2.0f);
 			glm::vec4      col2  = col.ampf(1.0f, 1.0f, 1.0f, 0.0f);
@@ -508,7 +508,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 		}
 
 		// Full
-		else if (map_crosshair == 2)
+		else if (map2d_crosshair == 2)
 		{
 			lb_crosshair_->add2d(x, start_y, x, end_y, col, 3.0f);
 			lb_crosshair_->add2d(start_x, y, end_x, y, col, 3.0f);
@@ -628,7 +628,7 @@ void Renderer::drawSelectionNumbers(draw2d::Context& dc) const
 	string text;
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (map_max_selection_numbers > 0 && static_cast<int>(a) > map_max_selection_numbers)
+		if (map2d_max_selection_numbers > 0 && static_cast<int>(a) > map2d_max_selection_numbers)
 			break;
 		if (!selection[a])
 			continue;
@@ -762,7 +762,7 @@ void Renderer::drawLineDrawLines(draw2d::Context& dc, bool snap_nearest_vertex) 
 	dc.view = view_.get();
 
 	// Draw points
-	auto          ps_type = vertex_round ? PointSpriteType::Circle : PointSpriteType::Textured;
+	auto          ps_type = map2d_vertex_round ? PointSpriteType::Circle : PointSpriteType::Textured;
 	vector<Vec2f> points;
 	for (auto& point : line_draw.points())
 		points.emplace_back(point);
@@ -770,7 +770,7 @@ void Renderer::drawLineDrawLines(draw2d::Context& dc, bool snap_nearest_vertex) 
 		|| context_->lineDraw().state() == LineDraw::State::ShapeOrigin)
 		points.emplace_back(end);
 	dc.pointsprite_type   = ps_type;
-	dc.pointsprite_radius = vertex_size / view_->scale(true).x;
+	dc.pointsprite_radius = map2d_vertex_size / view_->scale(true).x;
 	dc.drawPointSprites(points);
 }
 
@@ -958,8 +958,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 	if (context_->editMode() == Mode::Vertices)
 	{
 		// Vertices mode
-		renderer_2d_->renderThings(fade_things_);                 // Things
-		renderer_2d_->renderLines(line_tabs_always, fade_lines_); // Lines
+		renderer_2d_->renderThings(fade_things_);                       // Things
+		renderer_2d_->renderLines(map2d_line_tabs_always, fade_lines_); // Lines
 
 		// Vertices
 		if (mouse_state == Input::MouseState::Move)
@@ -995,9 +995,9 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 	else if (context_->editMode() == Mode::Sectors)
 	{
 		// Sectors mode
-		renderer_2d_->renderThings(fade_things_);                 // Things
-		renderer_2d_->renderLines(line_tabs_always, fade_lines_); // Lines
-		renderer_2d_->renderVertices(fade_vertices_);             // Vertices
+		renderer_2d_->renderThings(fade_things_);                       // Things
+		renderer_2d_->renderLines(map2d_line_tabs_always, fade_lines_); // Lines
+		renderer_2d_->renderVertices(fade_vertices_);                   // Vertices
 
 		// Selection if needed
 		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
@@ -1019,7 +1019,7 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 
 		// Things mode
 		auto hl_index = context_->hilightItem().index;
-		renderer_2d_->renderLines(line_tabs_always, fade_lines_);           // Lines
+		renderer_2d_->renderLines(map2d_line_tabs_always, fade_lines_);     // Lines
 		renderer_2d_->renderVertices(fade_vertices_);                       // Vertices
 		renderer_2d_->renderPointLightPreviews(dc, fade_things_, hl_index); // Point light previews
 		renderer_2d_->renderThings(fade_things_, force_dir);                // Things
@@ -1055,7 +1055,7 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 	}
 
 	// Draw selection numbers if needed
-	if (!context_->selection().empty() && mouse_state == Input::MouseState::Normal && map_show_selection_numbers)
+	if (!context_->selection().empty() && mouse_state == Input::MouseState::Normal && map2d_show_selection_numbers)
 		drawSelectionNumbers(dc);
 
 	// Draw thing quick angle lines if needed
@@ -1146,7 +1146,7 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 void Renderer::drawMap3d() const
 {
 	// Setup camera
-	camera_->setProjection(view_->size().x, view_->size().y, 2.0f, 40000.0f, render_fov);
+	camera_->setProjection(view_->size().x, view_->size().y, 2.0f, 40000.0f, map3d_fov);
 
 	// Render map
 	renderer_3d_->render(*camera_);
@@ -1309,7 +1309,7 @@ void Renderer::updateAnimations(double mult)
 			animations_active_ = true;
 
 		// View pan/zoom animation
-		anim_view_speed_ = interpolateView(scroll_smooth, anim_view_speed_, mult);
+		anim_view_speed_ = interpolateView(map2d_scroll_smooth, anim_view_speed_, mult);
 		if (viewIsInterpolated())
 			animations_active_ = true;
 	}
@@ -1388,29 +1388,29 @@ bool Renderer::update2dModeCrossfade(double mult)
 	float fa_vertices, fa_lines, fa_flats, fa_things;
 
 	// Vertices
-	if (vertices_always == 0)
+	if (map2d_vertices_always == 0)
 		fa_vertices = 0.0f;
-	else if (vertices_always == 1)
+	else if (map2d_vertices_always == 1)
 		fa_vertices = 1.0f;
 	else
 		fa_vertices = 0.5f;
 
 	// Things
-	if (things_always == 0)
+	if (map2d_things_always == 0)
 		fa_things = 0.0f;
-	else if (things_always == 1)
+	else if (map2d_things_always == 1)
 		fa_things = 1.0f;
 	else
 		fa_things = 0.5f;
 
 	// Lines
-	if (line_fade)
+	if (map2d_line_fade)
 		fa_lines = 0.5f;
 	else
 		fa_lines = 1.0f;
 
 	// Flats
-	if (flat_fade)
+	if (map2d_flat_fade)
 		fa_flats = 0.7f;
 	else
 		fa_flats = 1.0f;
@@ -1533,7 +1533,7 @@ void Renderer::animateSelectionChange(const Item& item, bool selected)
 				app::runTimer(),
 				vector{ t },
 				1.0 / view_->scale(true).x,
-				thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+				map2d_thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
 				selected));
 	}
 
@@ -1676,7 +1676,7 @@ void Renderer::animateSelectionChange(const ItemSelection& selection)
 				app::runTimer(),
 				things_selected,
 				view_->scale(true).x,
-				thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+				map2d_thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
 				true));
 
 	// Animate deselected things
@@ -1686,7 +1686,7 @@ void Renderer::animateSelectionChange(const ItemSelection& selection)
 				app::runTimer(),
 				things_deselected,
 				view_->scale(true).x,
-				thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
+				map2d_thing_shape == 1 ? gl::PointSpriteType::RoundedSquareOutline : gl::PointSpriteType::CircleOutline,
 				false));
 
 	// Animate other selected items (3d mode)

@@ -98,8 +98,7 @@ namespace
 double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5,  1,    2,    4,    8,     16,    32,   64,
 						128,  256, 512,  1024, 2048, 4096, 8192, 16384, 32768, 65536 };
 }
-CVAR(Bool, info_overlay_3d, true, CVar::Flag::Save)
-CVAR(Bool, hilight_smooth, true, CVar::Flag::Save)
+CVAR(Bool, map3d_info_overlay, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -107,8 +106,8 @@ CVAR(Bool, hilight_smooth, true, CVar::Flag::Save)
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Int, flat_drawtype)
-EXTERN_CVAR(Bool, thing_preview_lights)
+EXTERN_CVAR(Int, map2d_flat_drawtype)
+EXTERN_CVAR(Bool, map2d_thing_preview_lights)
 
 
 // -----------------------------------------------------------------------------
@@ -244,7 +243,7 @@ void MapEditContext::setEditMode(Mode mode)
 
 		mapeditor::window()->showToolbarGroup("Things Mode");
 
-		SAction::fromId("mapw_thing_light_previews")->setChecked(thing_preview_lights);
+		SAction::fromId("mapw_thing_light_previews")->setChecked(map2d_thing_preview_lights);
 	}
 	else if (mode == Mode::Visual)
 	{
@@ -354,7 +353,7 @@ bool MapEditContext::update(double frametime)
 				if (selection_->setHilight(hl))
 				{
 					// Update 3d info overlay
-					if (info_overlay_3d && hl.index >= 0)
+					if (map3d_info_overlay && hl.index >= 0)
 					{
 						info_3d_->update({ hl.index, hl.type }, map_.get());
 						info_showing_ = true;
@@ -377,7 +376,7 @@ bool MapEditContext::update(double frametime)
 		if (input_->mouseState() == Input::MouseState::Normal /* && !mouse_movebegin*/)
 		{
 			auto old_hl = selection_->hilightedObject();
-			if (selection_->updateHilight(input_->mousePosMap(), renderer_->view().scale().x) && hilight_smooth)
+			if (selection_->updateHilight(input_->mousePosMap(), renderer_->view().scale().x))
 				renderer_->animateHilightChange({}, old_hl);
 		}
 
@@ -1759,7 +1758,7 @@ bool MapEditContext::handleAction(string_view id)
 	// 'None' (wireframe) flat type
 	else if (id == "mapw_flat_none")
 	{
-		flat_drawtype = 0;
+		map2d_flat_drawtype = 0;
 		addEditorMessage("Flats: None");
 		updateStatusText();
 		forceRefreshRenderer(true, false);
@@ -1769,7 +1768,7 @@ bool MapEditContext::handleAction(string_view id)
 	// 'Untextured' flat type
 	else if (id == "mapw_flat_untextured")
 	{
-		flat_drawtype = 1;
+		map2d_flat_drawtype = 1;
 		addEditorMessage("Flats: Untextured");
 		updateStatusText();
 		forceRefreshRenderer(true, false);
@@ -1779,7 +1778,7 @@ bool MapEditContext::handleAction(string_view id)
 	// 'Textured' flat type
 	else if (id == "mapw_flat_textured")
 	{
-		flat_drawtype = 2;
+		map2d_flat_drawtype = 2;
 		addEditorMessage("Flats: Textured");
 		updateStatusText();
 		forceRefreshRenderer(true, false);

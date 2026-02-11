@@ -53,8 +53,8 @@ using namespace mapeditor;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, vertex_round, true, CVar::Flag::Save)
-CVAR(Int, vertex_size, 7, CVar::Flag::Save)
+CVAR(Bool, map2d_vertex_round, true, CVar::Flag::Save)
+CVAR(Int, map2d_vertex_size, 10, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -79,9 +79,9 @@ EXTERN_CVAR(Bool, map_animate_selection)
 unsigned MapRenderer2D::vertexTexture(bool overlay)
 {
 	if (overlay)
-		return textureManager().editorImage(vertex_round ? "vertex/hilight_r" : "vertex/hilight_s").gl_id;
+		return textureManager().editorImage(map2d_vertex_round ? "vertex/hilight_r" : "vertex/hilight_s").gl_id;
 
-	return textureManager().editorImage(vertex_round ? "vertex/round" : "vertex/square").gl_id;
+	return textureManager().editorImage(map2d_vertex_round ? "vertex/round" : "vertex/square").gl_id;
 }
 
 // -----------------------------------------------------------------------------
@@ -90,7 +90,7 @@ unsigned MapRenderer2D::vertexTexture(bool overlay)
 float MapRenderer2D::vertexRadius(float scale) const
 {
 	auto vscale = view_->scale(true).x;
-	auto size   = vertex_size / vscale;
+	auto size   = map2d_vertex_size / vscale;
 
 	if (vscale < 1.0f)
 		size *= vscale;

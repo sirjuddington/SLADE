@@ -11,6 +11,7 @@ out vec4 f_colour;
 uniform vec4  colour      = vec4(1.0);
 uniform vec3  fog_colour  = vec3(0.0);
 uniform float fog_density = 1.0;
+uniform float max_dist    = 40000.0;
 
 #ifdef ALPHA_TEST
 uniform float alpha_threshold = 0.0;
@@ -43,4 +44,9 @@ void main()
 
 	// Apply fog
 	f_colour = vec4(mix(fog_colour, frag_colour.rgb, fogFactor()), frag_colour.a);
+
+	// Apply alpha fade at 128 units from max distance
+	float xy_dist = length(vertex_in.view_pos);
+	float alpha_fade = clamp((max_dist - xy_dist) / 128.0, 0.0, 1.0);
+	f_colour.a *= alpha_fade;
 }

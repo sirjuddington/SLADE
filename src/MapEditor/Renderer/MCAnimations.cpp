@@ -62,10 +62,10 @@ using namespace mapeditor;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, thing_overlay_square)
+EXTERN_CVAR(Bool, map2d_thing_overlay_square)
 EXTERN_CVAR(Int, thing_drawtype)
-EXTERN_CVAR(Int, halo_width)
-EXTERN_CVAR(Bool, sector_selected_fill)
+EXTERN_CVAR(Int, map2d_thing_halo_width)
+EXTERN_CVAR(Bool, map2d_sector_selected_fill)
 
 
 // -----------------------------------------------------------------------------
@@ -181,23 +181,23 @@ void MCAThingSelection::draw(gl::draw2d::Context& dc)
 	else
 	{
 		const auto& cdef = colourconfig::colDef("map_selection");
-		buffer_->setColour(cdef.colour.ampf(1.0f, 1.0f, 1.0f, thing_overlay_square ? fade_ * 0.5f : fade_));
+		buffer_->setColour(cdef.colour.ampf(1.0f, 1.0f, 1.0f, map2d_thing_overlay_square ? fade_ * 0.5f : fade_));
 		gl::setBlend(cdef.blendMode());
 	}
 
 	// Animate radius
-	if (select_ && !thing_overlay_square)
+	if (select_ && !map2d_thing_overlay_square)
 		buffer_->setPointRadius(1.0f + 0.2f * fade_);
 
 	// No texture if square overlay
-	if (thing_overlay_square)
+	if (map2d_thing_overlay_square)
 	{
 		gl::Texture::bind(gl::Texture::whiteTexture());
 		buffer_->setPointRadius(0.8f);
 	}
 
 	// Draw
-	buffer_->draw(thing_overlay_square ? gl::PointSpriteType::Textured : ps_type_, dc.view);
+	buffer_->draw(map2d_thing_overlay_square ? gl::PointSpriteType::Textured : ps_type_, dc.view);
 }
 
 float MCAThingSelection::scaledRadius(float radius, float view_scale)
@@ -393,7 +393,7 @@ bool MCASectorSelection::update(long time)
 void MCASectorSelection::draw(gl::draw2d::Context& dc)
 {
 	// Don't draw if no fill
-	if (!sector_selected_fill)
+	if (!map2d_sector_selected_fill)
 		return;
 
 	// Setup shader

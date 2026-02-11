@@ -42,16 +42,13 @@ using namespace ui;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Float, render_max_dist)
-EXTERN_CVAR(Float, render_max_thing_dist)
-EXTERN_CVAR(Bool, render_max_dist_adaptive)
-EXTERN_CVAR(Int, render_adaptive_ms)
-EXTERN_CVAR(Bool, render_3d_sky)
-EXTERN_CVAR(Bool, camera_3d_show_distance)
-EXTERN_CVAR(Bool, mlook_invert_y)
-EXTERN_CVAR(Bool, render_shade_orthogonal_lines)
-EXTERN_CVAR(Int, render_fov)
-EXTERN_CVAR(Bool, map_process_3d_floors)
+EXTERN_CVAR(Float, map3d_max_render_dist)
+EXTERN_CVAR(Float, map3d_max_thing_dist)
+EXTERN_CVAR(Bool, map3d_render_sky)
+EXTERN_CVAR(Bool, map3d_crosshair_show_distance)
+EXTERN_CVAR(Bool, map3d_mlook_invert_y)
+EXTERN_CVAR(Bool, map3d_fake_contrast)
+EXTERN_CVAR(Int, map3d_fov)
 
 
 // -----------------------------------------------------------------------------
@@ -95,18 +92,6 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	slider_fov_ = new NumberSlider(this, 70, 120, 5);
 	gbsizer->Add(slider_fov_, { 2, 1 }, { 1, 2 }, wxEXPAND);
 
-	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	psizer->Add(hbox, wxSizerFlags().Expand());
-
-	// Adaptive render distance
-	cb_render_dist_adaptive_ = new wxCheckBox(this, -1, wxS("Adaptive render distance"));
-	hbox->Add(cb_render_dist_adaptive_, lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
-
-	hbox->Add(new wxStaticText(this, -1, wxS("Target framerate:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
-	spin_adaptive_fps_ = new wxSpinCtrl(
-		this, -1, wxS("30"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 10, 100, 30);
-	hbox->Add(spin_adaptive_fps_, wxSizerFlags().Expand());
-
 	psizer->Add(new wxStaticLine(this, -1), lh.sfWithLargeBorder(0, wxTOP | wxBOTTOM).Expand());
 
 	lh.layoutVertically(
@@ -114,8 +99,7 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 		{ cb_render_sky_       = new wxCheckBox(this, -1, wxS("Render sky preview")),
 		  cb_show_distance_    = new wxCheckBox(this, -1, wxS("Show distance under crosshair")),
 		  cb_invert_y_         = new wxCheckBox(this, -1, wxS("Invert mouse Y axis")),
-		  cb_shade_orthogonal_ = new wxCheckBox(this, -1, wxS("Shade orthogonal lines")),
-		  cb_enable_3d_floors_ = new wxCheckBox(this, -1, wxS("[EXPERIMENTAL] Enable 3d floors preview")) },
+		  cb_shade_orthogonal_ = new wxCheckBox(this, -1, wxS("Fake contrast on orthogonal walls")) },
 		wxSizerFlags(0).Expand());
 
 	// Bind events
@@ -144,17 +128,6 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 			updateDistanceControls();
 			e.Skip();
 		});
-	cb_enable_3d_floors_->Bind(
-		wxEVT_CHECKBOX,
-		[&](wxCommandEvent&)
-		{
-			if (cb_enable_3d_floors_->GetValue())
-				wxMessageBox(
-					wxS("This feature is currently experimental and does not work correctly for all 3d floor types.\n\n"
-						"Any currently open map will need to be closed and reopened for the setting to take effect."),
-					wxS("Experimental Feature Warning"),
-					wxICON_WARNING);
-		});
 }
 
 // -----------------------------------------------------------------------------
@@ -162,34 +135,30 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 // -----------------------------------------------------------------------------
 void Map3DSettingsPanel::loadSettings()
 {
-	if (render_max_dist < 0)
+	if (map3d_max_render_dist <= 0)
 	{
 		cb_distance_unlimited_->SetValue(true);
 		slider_max_render_dist_->setValue(6 * 500);
 	}
 	else
 	{
-		slider_max_render_dist_->setValue(render_max_dist);
+		slider_max_render_dist_->setValue(map3d_max_render_dist);
 		cb_distance_unlimited_->SetValue(false);
 	}
 
-	if (render_max_thing_dist < 0)
+	if (map3d_max_thing_dist <= 0)
 		cb_max_thing_dist_lock_->SetValue(true);
 	else
 	{
-		slider_max_thing_dist_->setValue(render_max_thing_dist);
+		slider_max_thing_dist_->setValue(map3d_max_thing_dist);
 		cb_max_thing_dist_lock_->SetValue(false);
 	}
 
-	slider_fov_->setValue(render_fov);
-	cb_render_dist_adaptive_->SetValue(render_max_dist_adaptive);
-	int fps = 1.0 / (render_adaptive_ms / 1000.0);
-	spin_adaptive_fps_->SetValue(fps);
-	cb_render_sky_->SetValue(render_3d_sky);
-	cb_show_distance_->SetValue(camera_3d_show_distance);
-	cb_invert_y_->SetValue(mlook_invert_y);
-	cb_shade_orthogonal_->SetValue(render_shade_orthogonal_lines);
-	cb_enable_3d_floors_->SetValue(map_process_3d_floors);
+	slider_fov_->setValue(map3d_fov);
+	cb_render_sky_->SetValue(map3d_render_sky);
+	cb_show_distance_->SetValue(map3d_crosshair_show_distance);
+	cb_invert_y_->SetValue(map3d_mlook_invert_y);
+	cb_shade_orthogonal_->SetValue(map3d_fake_contrast);
 
 	updateDistanceControls();
 }
@@ -219,25 +188,20 @@ void Map3DSettingsPanel::applySettings()
 {
 	// Max render distance
 	if (cb_distance_unlimited_->GetValue())
-		render_max_dist = -1.0f;
+		map3d_max_render_dist = 0.0f;
 	else
-		render_max_dist = slider_max_render_dist_->value();
+		map3d_max_render_dist = slider_max_render_dist_->value();
 
 	// Max thing distance
 	if (cb_max_thing_dist_lock_->GetValue())
-		render_max_thing_dist = -1.0f;
+		map3d_max_thing_dist = 0.0f;
 	else
-		render_max_thing_dist = slider_max_thing_dist_->value();
-
-	// Adaptive fps
-	render_max_dist_adaptive = cb_render_dist_adaptive_->GetValue();
-	render_adaptive_ms       = 1000 / spin_adaptive_fps_->GetValue();
+		map3d_max_thing_dist = slider_max_thing_dist_->value();
 
 	// Other
-	render_3d_sky                 = cb_render_sky_->GetValue();
-	camera_3d_show_distance       = cb_show_distance_->GetValue();
-	mlook_invert_y                = cb_invert_y_->GetValue();
-	render_fov                    = slider_fov_->value();
-	render_shade_orthogonal_lines = cb_shade_orthogonal_->GetValue();
-	map_process_3d_floors         = cb_enable_3d_floors_->GetValue();
+	map3d_render_sky              = cb_render_sky_->GetValue();
+	map3d_crosshair_show_distance = cb_show_distance_->GetValue();
+	map3d_mlook_invert_y          = cb_invert_y_->GetValue();
+	map3d_fov                     = slider_fov_->value();
+	map3d_fake_contrast           = cb_shade_orthogonal_->GetValue();
 }

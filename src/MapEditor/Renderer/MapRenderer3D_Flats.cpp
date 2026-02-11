@@ -32,10 +32,12 @@
 #include "Main.h"
 #include "App.h"
 #include "Flat3D.h"
+#include "Geometry/Geometry.h"
 #include "MapEditor/Item.h"
 #include "MapGeometry.h"
 #include "MapGeometryBuffer3D.h"
 #include "MapRenderer3D.h"
+#include "OpenGL/Camera.h"
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/LineBuffer.h"
 #include "Renderer.h"
@@ -88,10 +90,51 @@ bool flatsNeedUpdate(long last_updated, const SLADEMap* map)
 // -----------------------------------------------------------------------------
 
 
+void MapRenderer3D::updateFlatVisibility(const gl::Camera& camera, float max_dist)
+{
+	Vec2d cam_pos_2d = camera.position().xy();
+
+	for (auto& sf : sector_flats_)
+	{
+		// Check with sector bounding box mid-point first
+		if (glm::distance(cam_pos_2d, sf.sector->boundingBox().mid()) < max_dist)
+		{
+			sf.visible = true;
+			continue;
+		}
+
+		// Find closest bounding box side to camera position
+		Seg2d bbox_side = sf.sector->boundingBox().bottomSide();
+		auto  min_dist  = geometry::distanceToLineFast(cam_pos_2d, bbox_side);
+		auto  dist      = geometry::distanceToLineFast(cam_pos_2d, sf.sector->boundingBox().topSide());
+		if (dist < min_dist)
+		{
+			bbox_side = sf.sector->boundingBox().topSide();
+			min_dist  = dist;
+		}
+		dist = geometry::distanceToLineFast(cam_pos_2d, sf.sector->boundingBox().leftSide());
+		if (dist < min_dist)
+		{
+			bbox_side = sf.sector->boundingBox().leftSide();
+			min_dist  = dist;
+		}
+		dist = geometry::distanceToLineFast(cam_pos_2d, sf.sector->boundingBox().rightSide());
+		if (dist < min_dist)
+			bbox_side = sf.sector->boundingBox().rightSide();
+
+		// Check if closest side is within max distance
+		if (geometry::distanceToLine(cam_pos_2d, bbox_side) < max_dist)
+			sf.visible = true;
+		else
+			sf.visible = false;
+	}
+}
+
+
 // -----------------------------------------------------------------------------
 // Updates sector flats/geometry and render groups if needed
 // -----------------------------------------------------------------------------
-void MapRenderer3D::updateFlats()
+void MapRenderer3D::updateFlats(bool vis_check)
 {
 	using FlatFlags = Flat3D::Flags;
 
@@ -131,7 +174,8 @@ void MapRenderer3D::updateFlats()
 		map_->mapSpecials().updateSpecials();
 
 		// Check for sectors that need an update
-		bool updated = false;
+		bool             updated = false;
+		vector<MGVertex> add_vertices;
 		for (auto& sf : sector_flats_)
 		{
 			if (sf.updated_time >= sf.sector->modifiedTime() && sf.updated_time >= sf.sector->renderInfoLastUpdated())
@@ -150,26 +194,33 @@ void MapRenderer3D::updateFlats()
 			}
 			else
 			{
-				// More flats than before, need to re-upload entire buffer
+				// More flats than before, will need to re-upload entire buffer
 
 				// TODO: This will result in gaps in the buffer, either compact
 				//       the buffer here or implement some way to track and
 				//       reuse freed space later
 
 				// Update vertex offsets for sector and flats
-				sf.vertex_buffer_offset = vb_flats_->buffer().size();
+				sf.vertex_buffer_offset = vb_flats_->buffer().size() + add_vertices.size();
 				const auto vertex_count = sf.sector->polygonVertices().size();
 				for (auto i = 0; i < new_flats.size(); ++i)
 					sf.flats[i].vertex_offset = sf.vertex_buffer_offset + i * vertex_count;
 
-				vb_flats_->pull();                    // Pull data from GPU
-				vb_flats_->addVertices(new_vertices); // Add new vertex data
-				vb_flats_->push();                    // Push data back to GPU
+				// Add new vertex data to be added to buffer later
+				vectorConcat(add_vertices, new_vertices);
 			}
 
 			// Set updated
 			updated         = true;
 			sf.updated_time = app::runTimer();
+		}
+
+		// Upload new vertices to the buffer, if any
+		if (!add_vertices.empty())
+		{
+			vb_quads_->pull();                    // Pull data from GPU
+			vb_quads_->addVertices(add_vertices); // Append new vertex data
+			vb_quads_->push();                    // Push data back to GPU
 		}
 
 		// Clear flat groups to be rebuilt if any flats were updated
@@ -180,6 +231,10 @@ void MapRenderer3D::updateFlats()
 			renderer_->clearAnimations();
 		}
 	}
+
+	// Force rebuild of flat groups if vis checking is enabled
+	if (vis_check)
+		flat_groups_.clear();
 
 	// Generate flat groups if needed
 	if (flat_groups_.empty())
@@ -192,8 +247,9 @@ void MapRenderer3D::updateFlats()
 		};
 		vector<FlatToProcess> flats_to_process;
 		for (auto& sf : sector_flats_)
-			for (auto& flat : sf.flats)
-				flats_to_process.push_back({ .flat = &flat, .processed = false });
+			if (!vis_check || sf.visible)
+				for (auto& flat : sf.flats)
+					flats_to_process.push_back({ .flat = &flat, .processed = false });
 
 		for (unsigned i1 = 0; i1 < flats_to_process.size(); ++i1)
 		{

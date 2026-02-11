@@ -66,18 +66,16 @@ using namespace mapeditor;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Float, render_max_dist, 2000, CVar::Flag::Save)
-CVAR(Float, render_max_thing_dist, 2000, CVar::Flag::Save)
-CVAR(Int, render_thing_icon_size, 16, CVar::Flag::Save)
-CVAR(Bool, render_max_dist_adaptive, false, CVar::Flag::Save)
-CVAR(Int, render_adaptive_ms, 15, CVar::Flag::Save)
-CVAR(Bool, render_3d_sky, true, CVar::Flag::Save)
-CVAR(Int, render_3d_things, 1, CVar::Flag::Save)
-CVAR(Int, render_3d_things_style, 1, CVar::Flag::Save)
-CVAR(Int, render_3d_hilight, 1, CVar::Flag::Save)
-CVAR(Float, render_3d_brightness, 1, CVar::Flag::Save)
-CVAR(Float, render_fog_density, 1, CVar::Flag::Save)
-CVAR(Bool, render_shade_orthogonal_lines, true, CVar::Flag::Save)
+CVAR(Float, map3d_max_render_dist, 0, CVar::Flag::Save)
+CVAR(Float, map3d_max_thing_dist, 0, CVar::Flag::Save)
+CVAR(Int, map3d_thing_icon_size, 16, CVar::Flag::Save)
+CVAR(Bool, map3d_render_sky, true, CVar::Flag::Save)
+CVAR(Int, map3d_things, 1, CVar::Flag::Save)
+CVAR(Int, map3d_things_style, 1, CVar::Flag::Save)
+CVAR(Int, map3d_hilight, 3, CVar::Flag::Save)
+CVAR(Float, map3d_brightness, 1, CVar::Flag::Save)
+CVAR(Float, map3d_fog_density, 1, CVar::Flag::Save)
+CVAR(Bool, map3d_fake_contrast, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -98,9 +96,10 @@ void setupShaderUniforms(const gl::Shader& shader, const gl::Camera& camera, boo
 
 	// Set option uniforms
 	shader.setUniform("fullbright", fullbright);
-	shader.setUniform("fog_density", fog ? render_fog_density : 0.0f);
-	shader.setUniform("brightness_mult", render_3d_brightness.value);
-	shader.setUniform("fake_contrast", render_shade_orthogonal_lines);
+	shader.setUniform("fog_density", fog ? map3d_fog_density : 0.0f);
+	shader.setUniform("brightness_mult", map3d_brightness.value);
+	shader.setUniform("fake_contrast", map3d_fake_contrast);
+	shader.setUniform("max_dist", map3d_max_render_dist > 0.0f ? map3d_max_render_dist : 40000.0f);
 }
 } // namespace
 
@@ -140,6 +139,10 @@ void MapRenderer3D::setSkyTexture(string_view tex1, string_view tex2) const
 // -----------------------------------------------------------------------------
 void MapRenderer3D::render(const gl::Camera& camera)
 {
+	// Clear to black
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	// Create shaders if needed
 	if (!shader_3d_)
 	{
@@ -164,27 +167,49 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	glAlphaFunc(GL_GREATER, 0.0f);
 	gl::setBlend(gl::Blend::Normal);
 
-	// Render skybox first (before depth buffer is populated)
-	if (render_3d_sky)
-		skybox_->render(camera);
-
 	// Setup shaders
 	setupShaderUniforms(*shader_3d_, camera, fullbright_, fog_);
 	setupShaderUniforms(*shader_3d_alphatest_, camera, fullbright_, fog_);
 
-	// Update flats and walls
-	updateFlats();
-	updateWalls();
+	// Update visibility if needed
+	if (map3d_max_render_dist > 0.0f)
+	{
+		updateFlatVisibility(camera, map3d_max_render_dist);
+		updateWallVisibility(camera, map3d_max_render_dist);
+	}
 
-	// Render sky flats/quads first if needed
+	// Update flats and walls
+	updateFlats(map3d_max_render_dist > 0.0f);
+	updateWalls(map3d_max_render_dist > 0.0f);
+
+	// Render sky first if needed
 	shader_3d_->bind();
-	if (render_3d_sky)
+	if (map3d_render_sky)
+	{
+		// Stencil-mask the skybox to only sky flats/quads
+		glEnable(GL_STENCIL_TEST);
+		glClearStencil(0);
+		glStencilMask(0xFF);
+		glClear(GL_STENCIL_BUFFER_BIT);
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+
+		glDepthMask(GL_TRUE);
+		glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		renderSkyFlatsQuads();
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+
+		glStencilMask(0x00);
+		glStencilFunc(GL_EQUAL, 1, 0xFF);
+		skybox_->render(camera);
+
+		glDisable(GL_STENCIL_TEST);
+	}
 
 	// First pass, render solid flats/walls
 	renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Normal); // Flats
 	renderGroups(*vb_quads_, quad_groups_, *shader_3d_, RenderPass::Normal); // Walls
-	if (!render_3d_sky)
+	if (!map3d_render_sky)
 	{
 		// Not rendering the skybox, render sky walls/flats as normal
 		renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Sky); // Flats
@@ -215,7 +240,7 @@ void MapRenderer3D::render(const gl::Camera& camera)
 // ----------------------------------------------------------------------------
 void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, const gl::View& view, float alpha)
 {
-	if (!highlight_enabled_ || render_3d_hilight == 0)
+	if (!highlight_enabled_ || map3d_hilight == 0)
 		return;
 
 	// Create buffers if needed
@@ -233,7 +258,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 	auto  hl_colour = def.colour.ampf(1.0f, 1.0f, 1.0f, alpha);
 
 	// Outline
-	if (render_3d_hilight == 1 || render_3d_hilight == 2)
+	if (map3d_hilight == 1 || map3d_hilight == 2)
 	{
 		// Update line buffer
 		highlight_lines_->buffer().clear();
@@ -249,7 +274,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 	}
 
 	// Fill
-	if (render_3d_hilight == 2 || render_3d_hilight == 3)
+	if (map3d_hilight == 2 || map3d_hilight == 3)
 	{
 		// Setup fill buffer
 		MapGeometryBuffer3D* vertex_buffer = nullptr;
@@ -276,7 +301,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 			shader_3d_->setUniform("projection", camera.projectionMatrix());
 			shader_3d_->setUniform("fullbright", true);
 			shader_3d_->setUniform("fog_density", 0.0f);
-			shader_3d_->setUniform("colour", hl_colour.ampf(1.0f, 1.0f, 1.0f, render_3d_hilight == 2 ? 0.15f : 0.25f));
+			shader_3d_->setUniform("colour", hl_colour.ampf(1.0f, 1.0f, 1.0f, map3d_hilight == 2 ? 0.15f : 0.25f));
 
 			// Setup GL state
 			glEnable(GL_DEPTH_TEST);
@@ -381,7 +406,7 @@ void MapRenderer3D::renderSelectionOverlay(
 
 	// Setup GL state
 	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_CULL_FACE);
 
 	// Draw filled flats
 	gl::Texture::bind(gl::Texture::whiteTexture());
@@ -398,8 +423,8 @@ void MapRenderer3D::renderSelectionOverlay(
 
 
 	// Reset GL state
-	glDepthFunc(GL_LESS);
 	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
 }
 
 // -----------------------------------------------------------------------------
