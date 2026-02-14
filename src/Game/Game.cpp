@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -44,7 +44,6 @@
 #include "TextEditor/TextLanguage.h"
 #include "ThingType.h"
 #include "Utility/FileUtils.h"
-#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"
 #include <thread>

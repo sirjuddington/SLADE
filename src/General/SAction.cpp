@@ -40,7 +40,6 @@
 #include "General/KeyBind.h"
 #include "SActionHandler.h"
 #include "UI/WxUtils.h"
-#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;

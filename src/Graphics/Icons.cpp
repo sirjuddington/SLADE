@@ -35,7 +35,6 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "Utility/JsonUtils.h"
 #include "WxGfx.h"
 #include <wx/mstream.h>
 

@@ -63,7 +63,6 @@
 #include "UI/State.h"
 #include "UI/UI.h"
 #include "Utility/FileUtils.h"
-#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include <cpptrace/formatting.hpp>

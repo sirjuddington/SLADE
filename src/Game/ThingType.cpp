@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -34,7 +34,6 @@
 #include "Game.h"
 #include "Game/Configuration.h"
 #include "Utility/Colour.h"
-#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 

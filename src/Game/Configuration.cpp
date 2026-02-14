@@ -48,7 +48,6 @@
 #include "SpecialPreset.h"
 #include "ThingType.h"
 #include "UDMFProperty.h"
-#include "Utility/JsonUtils.h"
 #include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"

@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "UDMFProperty.h"
 #include "Utility/Colour.h"
-#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"

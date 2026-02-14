@@ -239,7 +239,7 @@ void TextEditorStyleSettingsPanel::loadSettings()
 	language_preview_->addWord(TextLanguage::WordType::Type, "object");
 	language_preview_->addWord(TextLanguage::WordType::Property, "x_property");
 	language_preview_->addWord(TextLanguage::WordType::Property, "y_property");
-	language_preview_->addFunction("function", "int x, int y");
+	language_preview_->addFunction(string_view{ "function" }, string_view{ "int x, int y" });
 	te_preview_->setLanguage(language_preview_.get());
 
 	te_preview_->SetReadOnly(true);

@@ -80,6 +80,7 @@ using u64 = uint64_t;
 #include "Utility/MemChunk.h"
 #include "OpenGL/GLHeaders.h"
 #include "Utility/ColRGBA.h"
+#include "Utility/JsonUtils.h"
 // clang-format on
 
 #endif // __MAIN_H__

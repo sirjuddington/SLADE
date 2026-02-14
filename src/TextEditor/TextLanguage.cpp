@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -40,7 +40,6 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Game/ZScript.h"
-#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 

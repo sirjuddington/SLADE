@@ -40,7 +40,6 @@
 #include "General/SActionHandler.h"
 #include "Graphics/Icons.h"
 #include "SAuiToolBarArt.h"
-#include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include "WxUtils.h"
 

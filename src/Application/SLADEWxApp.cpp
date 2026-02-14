@@ -42,7 +42,6 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Dialogs/CrashReportDialog.h"
 #include "UI/WxWebpHandler.h"
-#include "Utility/JsonUtils.h"
 #include "Utility/Parser.h"
 #include <cpptrace/from_current.hpp>
 #include <wx/filefn.h>
