@@ -25,7 +25,7 @@ public:
 	bool                        closeArchive(int index);
 	bool                        closeArchive(string_view filename);
 	bool                        closeArchive(Archive* archive);
-	void                        closeAll();
+	void                        closeAll(bool exiting = false);
 	int                         numArchives() const { return (int)open_archives_.size(); }
 	int                         archiveIndex(Archive* archive);
 	vector<shared_ptr<Archive>> getDependentArchives(Archive* archive);
