@@ -1311,6 +1311,8 @@ ArchiveEntry* WadArchive::findFirst(SearchOptions& options)
 	for (; index < index_end; ++index)
 	{
 		entry = entryAt(index);
+		if (!entry)
+			continue;
 
 		// Check type
 		if (options.match_type)
@@ -1384,6 +1386,8 @@ ArchiveEntry* WadArchive::findLast(SearchOptions& options)
 	for (; index >= index_start; --index)
 	{
 		entry = entryAt(index);
+		if (!entry)
+			continue;
 
 		// Check type
 		if (options.match_type)
@@ -1453,6 +1457,8 @@ vector<ArchiveEntry*> WadArchive::findAll(SearchOptions& options)
 	for (; index < index_end; ++index)
 	{
 		entry = entryAt(index);
+		if (!entry)
+			continue;
 
 		// Check type
 		if (options.match_type)
