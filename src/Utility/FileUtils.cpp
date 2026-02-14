@@ -349,8 +349,19 @@ bool SFile::open(const string& path, Mode mode)
 	}
 #endif
 
+	// Determine file size
 	if (handle_)
-		stat(path.c_str(), &stat_);
+	{
+#ifdef __WXMSW__
+		struct _stat st;
+		_wstat(wpath.wc_str(), &st);
+#else
+		struct stat st;
+		stat(path.c_str(), &st);
+#endif
+
+		size_ = st.st_size;
+	}
 
 	return handle_ != nullptr;
 }
@@ -364,6 +375,7 @@ void SFile::close()
 	{
 		fclose(handle_);
 		handle_ = nullptr;
+		size_   = 0;
 	}
 }
 

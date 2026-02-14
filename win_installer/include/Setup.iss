@@ -13,3 +13,4 @@ AllowNoIcons=yes
 SetupIconFile=..\msvc\slade.ico
 Compression=lzma
 SolidCompression=yes
+WizardStyle=modern dynamic

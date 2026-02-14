@@ -37,8 +37,8 @@ public:
 
 	bool     isOpen() const { return handle_ != nullptr; }
 	unsigned currentPos() const override;
-	unsigned length() const { return handle_ ? stat_.st_size : 0; }
-	unsigned size() const override { return handle_ ? stat_.st_size : 0; }
+	unsigned length() const { return handle_ ? size_ : 0; }
+	unsigned size() const override { return handle_ ? size_ : 0; }
 
 	bool open(const string& path, Mode mode = Mode::ReadOnly);
 	void close();
@@ -55,7 +55,7 @@ public:
 	bool writeStr(string_view str) const;
 
 private:
-	FILE*       handle_ = nullptr;
-	struct stat stat_;
+	FILE*    handle_ = nullptr;
+	unsigned size_   = 0;
 };
 } // namespace slade
