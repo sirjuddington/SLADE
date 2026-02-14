@@ -810,14 +810,14 @@ public:
 			// Check if we can read the frame type (4 bytes)
 			if (offset + 3 >= size)
 				return MATCH_FALSE;
-			
+
 			if (mc.readL32(offset) != 0)
 			{
 				// We have a frame with a group of picture
 				// Check if we can read the group size (4 bytes at offset + 4)
 				if (offset + 7 >= size)
 					return MATCH_FALSE;
-				
+
 				uint32_t grpsz = mc.readL32(offset + 4);
 				// Move to end of group header
 				offset += (grpsz + 2) << 2;
@@ -826,7 +826,7 @@ public:
 					// Check if we can read picture dimensions (8 bytes at offset + 8)
 					if (offset + 15 >= size)
 						return MATCH_FALSE;
-					
+
 					uint32_t pw = mc.readL32(offset + 8);
 					uint32_t ph = mc.readL32(offset + 12);
 					if (pw > width || ph > height)
@@ -847,7 +847,7 @@ public:
 				// Check if we can read picture dimensions (8 bytes at offset + 8)
 				if (offset + 15 >= size)
 					return MATCH_FALSE;
-				
+
 				uint32_t pw = mc.readL32(offset + 8);
 				uint32_t ph = mc.readL32(offset + 12);
 				if (pw > width || ph > height)
@@ -902,22 +902,6 @@ public:
 		size_t size = mc.size();
 		if (size < 101)
 			return MATCH_FALSE;
-		// Avoid some false positives by looking for "garbage" characters
-		// after the end of the "name"
-		bool nameend = false;
-		for (int i = 0; i < 32; ++i)
-		{
-			if (mc[i] == 0)
-			{
-				if (i == 0)
-					return false;
-				nameend = true;
-			}
-			else if (nameend)
-			{
-				return false;
-			}
-		}
 		size_t width  = mc.readL32(32);
 		size_t height = mc.readL32(36);
 		if (!width || !height || width % 8 || height % 8)
