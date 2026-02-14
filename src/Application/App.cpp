@@ -607,11 +607,20 @@ void app::saveConfigFile()
 	// ReSharper disable CppExpressionWithoutSideEffects
 
 	// Open SLADE.cfg for writing text
-	SFile file(app::path("slade3.cfg", app::Dir::User), SFile::Mode::Write);
+	auto  cfg_path = app::path("slade3.cfg", app::Dir::User);
+	SFile file(cfg_path, SFile::Mode::Write);
 
-	// Do nothing if it didn't open correctly
+	// Show error message if it didn't open correctly
 	if (!file.isOpen())
+	{
+		log::error("Failed to open slade3.cfg for writing");
+		wxMessageBox(
+			WX_FMT(
+				"Failed to open the SLADE configuration file ({}) for writing, settings will not be saved!", cfg_path),
+			wxS("Error"),
+			wxICON_ERROR);
 		return;
+	}
 
 	// Write cfg header
 	file.writeStr("/*****************************************************\n");

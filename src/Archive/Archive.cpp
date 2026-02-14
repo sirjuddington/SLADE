@@ -128,7 +128,8 @@ public:
 	bool doUndo() override
 	{
 		swapNames();
-		archive_->dirAtPath(path_)->dirEntry()->setState(prev_state_);
+		if (auto dir = archive_->dirAtPath(path_))
+			dir->dirEntry()->setState(prev_state_);
 		return true;
 	}
 

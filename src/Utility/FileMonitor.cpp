@@ -122,6 +122,8 @@ DB2MapFileMonitor::DB2MapFileMonitor(string_view filename, Archive* archive, str
 	archive_{ archive },
 	map_name_{ map_name }
 {
+	// Clear archive pointer if it is closed before the process terminates
+	sc_archive_closed_ = archive_->signals().closed.connect([this](Archive&) { archive_ = nullptr; });
 }
 
 // -----------------------------------------------------------------------------
@@ -129,7 +131,7 @@ DB2MapFileMonitor::DB2MapFileMonitor(string_view filename, Archive* archive, str
 // -----------------------------------------------------------------------------
 void DB2MapFileMonitor::fileModified()
 {
-	// Check stuff
+	// Check archive is still valid
 	if (!archive_)
 		return;
 
@@ -166,9 +168,7 @@ void DB2MapFileMonitor::fileModified()
 			auto index = archive_->entryIndex(map.head.lock().get());
 			for (unsigned b = 1; b < wad->numEntries(); b++) // Start at 1 to skip map header
 			{
-				auto ne = archive_->addEntry(std::make_shared<ArchiveEntry>(*wad->entryAt(b)), index + 1, nullptr);
-				if (index <= archive_->numEntries())
-					index++;
+				auto ne = archive_->addEntry(std::make_shared<ArchiveEntry>(*wad->entryAt(b)), index + b, nullptr);
 				ne->lock();
 			}
 		}
@@ -180,16 +180,20 @@ void DB2MapFileMonitor::fileModified()
 // -----------------------------------------------------------------------------
 void DB2MapFileMonitor::processTerminated()
 {
-	// Get map info for target archive
-	for (auto& map : archive_->detectMaps())
+	// Check archive is still valid
+	if (archive_)
 	{
-		if (strutil::equalCI(map.name, map_name_))
+		// Get map info for target archive
+		for (auto& map : archive_->detectMaps())
 		{
-			// Unlock map entries
-			auto index     = archive_->entryIndex(map.head.lock().get());
-			auto index_end = archive_->entryIndex(map.end.lock().get());
-			while (index <= index_end)
-				archive_->entryAt(index++)->unlock();
+			if (strutil::equalCI(map.name, map_name_))
+			{
+				// Unlock map entries
+				auto index     = archive_->entryIndex(map.head.lock().get());
+				auto index_end = archive_->entryIndex(map.end.lock().get());
+				while (index <= index_end)
+					archive_->entryAt(index++)->unlock();
+			}
 		}
 	}
 

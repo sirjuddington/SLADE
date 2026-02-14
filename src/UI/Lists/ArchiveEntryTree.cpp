@@ -375,30 +375,32 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	// Name column
 	if (col == 0)
 	{
+		string icon = entry->type() ? entry->type()->icon() : "default";
+
 		// Find icon in cache
-		if (icon_cache.find(entry->type()->icon()) == icon_cache.end())
+		if (icon_cache.find(icon) == icon_cache.end())
 		{
 			// Not found, add to cache
 			const auto pad = Point2i{ 1, elist_icon_padding };
 
 #if wxCHECK_VERSION(3, 1, 6)
-			const auto bundle = icons::getIcon(icons::Type::Entry, entry->type()->icon(), elist_icon_size, pad);
-			icon_cache[entry->type()->icon()] = bundle;
+			const auto bundle = icons::getIcon(icons::Type::Entry, icon, elist_icon_size, pad);
+			icon_cache[icon] = bundle;
 #else
 			const auto size = scalePx(elist_icon_size);
-			const auto bmp  = icons::getIcon(icons::Type::Entry, entry->type()->icon(), size, pad);
+			const auto bmp  = icons::getIcon(icons::Type::Entry, icon, size, pad);
 
 			wxIcon icon;
 			icon.CopyFromBitmap(bmp);
-			icon_cache[entry->type()->icon()] = icon;
+			icon_cache[icon] = icon;
 #endif
 		}
 
 		auto name = wxString::FromUTF8(entry->name());
 		if (modified_indicator_ && entry->state() != ArchiveEntry::State::Unmodified)
-			variant << wxDataViewIconText(name + wxS(" *"), icon_cache[entry->type()->icon()]);
+			variant << wxDataViewIconText(name + wxS(" *"), icon_cache[icon]);
 		else
-			variant << wxDataViewIconText(name, icon_cache[entry->type()->icon()]);
+			variant << wxDataViewIconText(name, icon_cache[icon]);
 	}
 
 	// Size column

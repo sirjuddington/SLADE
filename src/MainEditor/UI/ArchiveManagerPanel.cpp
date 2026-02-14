@@ -712,7 +712,7 @@ Archive* ArchiveManagerPanel::currentArchive() const
 	else if (page->GetName() == wxS("entry"))
 	{
 		auto ep = dynamic_cast<EntryPanel*>(page);
-		return ep->entry()->parent();
+		return ep->entry() ? ep->entry()->parent() : nullptr;
 	}
 
 	// TextureXEditor
@@ -1185,7 +1185,7 @@ void ArchiveManagerPanel::closeEntryTabs(Archive* parent) const
 
 		// Check for entry parent archive match
 		auto ep = dynamic_cast<EntryPanel*>(stc_archives_->GetPage(a));
-		if (ep->entry()->parent() == parent)
+		if (ep->entry() && ep->entry()->parent() == parent)
 		{
 			// Close tab
 			ep->removeCustomMenu();
@@ -1478,7 +1478,7 @@ bool ArchiveManagerPanel::saveEntryChanges(Archive* archive) const
 		{
 			// Check for entry parent archive match
 			auto ep = dynamic_cast<EntryPanel*>(stc_archives_->GetPage(a));
-			if (ep->entry()->parent() == archive)
+			if (ep->entry() && ep->entry()->parent() == archive)
 			{
 				if (ep->isModified() && autosave_entry_changes > 0)
 				{

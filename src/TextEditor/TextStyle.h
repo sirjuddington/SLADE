@@ -99,6 +99,7 @@ public:
 	static string    styleName(unsigned index);
 	static unsigned  numSets();
 	static StyleSet* set(unsigned index);
+	static StyleSet* set(string_view name);
 	static void      addEditor(TextEditorCtrl* stc);
 	static void      removeEditor(TextEditorCtrl* stc);
 	static void      applyCurrentToAll();

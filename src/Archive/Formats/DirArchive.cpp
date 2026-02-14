@@ -648,10 +648,12 @@ void DirArchive::updateChangedEntries(vector<DirEntryChange>& changes)
 		// Modified Entries
 		if (change.action == DirEntryChange::Action::Updated)
 		{
-			auto entry = entryAtPath(change.entry_path);
-			entry->importFile(change.file_path);
-			EntryType::detectEntryType(*entry);
-			file_modification_times_[entry] = fileutil::fileModifiedTime(change.file_path);
+			if (auto entry = entryAtPath(change.entry_path))
+			{
+				entry->importFile(change.file_path);
+				EntryType::detectEntryType(*entry);
+				file_modification_times_[entry] = fileutil::fileModifiedTime(change.file_path);
+			}
 		}
 
 		// Deleted Entries
