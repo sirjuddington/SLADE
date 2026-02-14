@@ -603,6 +603,12 @@
     "name": "KEX Font",
     "match_ext": [ "kfont" ]
   },
+  "demoloop": {
+    "inherits": "text",
+    "name": "Demo Loop",
+    "match_name": [ "demoloop" ],
+    "text_language": "json"
+  },
   "txt": {
     "inherits": "text",
     "name": "Text",

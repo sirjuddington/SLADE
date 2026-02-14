@@ -41,7 +41,8 @@
     "editor": "gfx",
     "reliability": 21,
     "extra": [ "image" ],
-    "export_ext": "lmp",
+    "match_ext": [ "wal" ],
+    "export_ext": "wal",
     "image_format": "quake2wal"
   },
   "scsprite": {

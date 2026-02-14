@@ -351,13 +351,6 @@ bool SFile::open(const string& path, Mode mode)
 	case Mode::ReadWite: handle_ = _wfopen(wpath.wc_str(), L"r+b"); break;
 	case Mode::Append:   handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
 	}
-
-	if (handle_)
-	{
-		struct _stat win_stat;
-		_wstat(wpath.wc_str(), &win_stat);
-		stat_.st_size = win_stat.st_size;
-	}
 #else
 	switch (mode)
 	{
@@ -366,14 +359,22 @@ bool SFile::open(const string& path, Mode mode)
 	case Mode::ReadWite: handle_ = fopen(path.c_str(), "r+b"); break;
 	case Mode::Append:   handle_ = fopen(path.c_str(), "ab"); break;
 	}
-
-	if (handle_)
-		stat(path.c_str(), &stat_);
 #endif
 
 	if (handle_)
 	{
+		// Determine file size
+#ifdef __WXMSW__
+		struct _stat st;
+		_wstat(wpath.wc_str(), &st);
+#else
+		struct stat st;
+		stat(path.c_str(), &st);
+#endif
+		size_ = st.st_size;
+
 		path_ = path;
+
 		return true;
 	}
 
@@ -389,6 +390,7 @@ void SFile::close()
 	{
 		fclose(handle_);
 		handle_ = nullptr;
+		size_   = 0;
 		path_.clear();
 	}
 }

@@ -2083,7 +2083,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 
 	auto process_entries = [&found_entries, &found_duplicates](const vector<ArchiveEntry*>& archive_entries)
 	{
-		for (auto& archive_entry : archive_entries)
+		for (auto archive_entry : archive_entries)
 		{
 			// Skip markers
 			if (archive_entry->size() == 0)
