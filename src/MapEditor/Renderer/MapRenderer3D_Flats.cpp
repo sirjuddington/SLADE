@@ -141,7 +141,7 @@ void MapRenderer3D::updateFlatVisibility(const gl::Camera& camera, float max_dis
 	}
 
 	// Force rebuild of flat groups next frame
-	update_flat_groups_ = true;
+	force_update_flat_groups_ = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -246,8 +246,11 @@ void MapRenderer3D::updateFlats(bool vis_check)
 	}
 
 	// Force rebuild of flat groups if requested
-	if (update_flat_groups_)
+	if (force_update_flat_groups_)
+	{
 		flat_groups_.clear();
+		force_update_flat_groups_ = false;
+	}
 
 	// Generate flat groups if needed
 	if (flat_groups_.empty())
@@ -303,7 +306,7 @@ void MapRenderer3D::updateFlats(bool vis_check)
 
 		// Refresh flat groups next frame if vis checking is enabled
 		if (vis_check)
-			update_flat_groups_ = true;
+			force_update_flat_groups_ = true;
 	}
 }
 

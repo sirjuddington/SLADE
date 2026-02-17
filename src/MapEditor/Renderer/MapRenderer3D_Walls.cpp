@@ -147,7 +147,7 @@ void MapRenderer3D::updateWallVisibility(const gl::Camera& camera, float max_dis
 	}
 
 	// Force rebuild of quad groups next frame
-	update_quad_groups_ = true;
+	force_update_quad_groups_ = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -249,8 +249,11 @@ void MapRenderer3D::updateWalls(bool vis_check)
 	}
 
 	// Force rebuild of quad groups if requested
-	if (update_quad_groups_)
+	if (force_update_quad_groups_)
+	{
 		quad_groups_.clear();
+		force_update_quad_groups_ = false;
+	}
 
 	// Generate quad groups if needed
 	if (quad_groups_.empty())
@@ -306,7 +309,7 @@ void MapRenderer3D::updateWalls(bool vis_check)
 
 		// Refresh quad groups next frame if vis checking is enabled
 		if (vis_check)
-			update_quad_groups_ = true;
+			force_update_quad_groups_ = true;
 	}
 }
 

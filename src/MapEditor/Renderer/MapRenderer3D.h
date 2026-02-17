@@ -113,8 +113,8 @@ private:
 	};
 	vector<RenderGroup> flat_groups_;
 	vector<RenderGroup> quad_groups_;
-	bool                update_flat_groups_ = true;
-	bool                update_quad_groups_ = true;
+	bool                force_update_flat_groups_ = false;
+	bool                force_update_quad_groups_ = false;
 
 	// Highlighted/selected items
 	bool                        highlight_enabled_ = true;
