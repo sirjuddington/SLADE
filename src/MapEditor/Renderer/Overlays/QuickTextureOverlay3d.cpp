@@ -349,9 +349,9 @@ void QuickTextureOverlay3d::close(bool cancel)
 {
 	if (editor_)
 	{
-		editor_->endUndoRecord(true);
+		bool recorded = editor_->endUndoRecord(true);
 		editor_->selection().lockHilight(false);
-		if (cancel)
+		if (cancel && recorded)
 			editor_->doUndo();
 	}
 

@@ -1427,12 +1427,14 @@ void MapEditContext::beginUndoRecordLocked(string_view name, bool mod, bool crea
 }
 
 // -----------------------------------------------------------------------------
-// Finish recording undo level. Discarded if [success] is false
+// Finish recording undo level. Discarded if [success] is false.
+// Returns true if an undo level was actually recorded
 // -----------------------------------------------------------------------------
-void MapEditContext::endUndoRecord(bool success)
+bool MapEditContext::endUndoRecord(bool success)
 {
 	auto manager = (edit_mode_ == Mode::Visual) ? edit_3d_->undoManager() : undo_manager_.get();
 
+	bool recorded = false;
 	if (manager->currentlyRecording())
 	{
 		// Record necessary undo steps
@@ -1449,10 +1451,13 @@ void MapEditContext::endUndoRecord(bool success)
 		}
 
 		// End recording
+		recorded = success && (modified || created_deleted);
 		manager->endRecord(success && (modified || created_deleted));
 	}
 	updateThingLists();
 	us_create_delete_.reset(nullptr);
+
+	return recorded;
 }
 
 // -----------------------------------------------------------------------------

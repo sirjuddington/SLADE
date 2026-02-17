@@ -384,6 +384,7 @@ private:
 // -----------------------------------------------------------------------------
 ExternalEditManager::~ExternalEditManager()
 {
+	destructing_ = true;
 	for (auto& file_monitor : file_monitors_)
 		delete file_monitor;
 }
@@ -458,6 +459,11 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view edi
 // -----------------------------------------------------------------------------
 void ExternalEditManager::monitorStopped(const ExternalEditFileMonitor* monitor)
 {
+	// Ignore if we're in the destructor, to avoid modifying file_monitors_
+	// while we're iterating through it
+	if (destructing_)
+		return;
+
 	if (VECTOR_EXISTS(file_monitors_, monitor))
 		VECTOR_REMOVE(file_monitors_, monitor);
 }
