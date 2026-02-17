@@ -116,7 +116,7 @@ public:
 	// Undo/Redo
 	void beginUndoRecord(string_view name, bool mod = true, bool create = true, bool del = true);
 	void beginUndoRecordLocked(string_view name, bool mod = true, bool create = true, bool del = true);
-	void endUndoRecord(bool success = true);
+	bool endUndoRecord(bool success = true);
 	void recordPropertyChangeUndoStep(MapObject* object) const;
 	void doUndo();
 	void doRedo();
