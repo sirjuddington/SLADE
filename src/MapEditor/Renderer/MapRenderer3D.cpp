@@ -2544,7 +2544,7 @@ void MapRenderer3D::renderThings()
 			continue;
 
 		// Update thing if needed
-		if (things_[a].updated_time < thing->modifiedTime()
+		if (!things_[a].type || things_[a].updated_time < thing->modifiedTime()
 			|| (things_[a].sector
 				&& (things_[a].updated_time < things_[a].sector->modifiedTime()
 					|| things_[a].updated_time < things_[a].sector->geometryUpdatedTime())))
