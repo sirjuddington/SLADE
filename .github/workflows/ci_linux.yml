@@ -16,24 +16,25 @@ jobs:
           - name: "Linux GCC"
             os: ubuntu-24.04
             shell: bash
-            extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo -WITH_WXPATH=./wxWidgets/build-cmake"
+            extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo"
             package_name: "linux_gcc"
             artifact_path: build/*
 
           - name: "Linux Clang"
             os: ubuntu-24.04
-            release_appimage: true
+            #release_appimage: true
             shell: bash
-            extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo -WITH_WXPATH=./wxWidgets/build-cmake -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
+            extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
             package_name: "linux_clang"
             artifact_path: build/*
 
-          - name: "Linux Clang (No WebView)"
+          - name: "Linux Clang (wx3.3, No WebView)"
             os: ubuntu-24.04
-            #release_appimage: true
+            release_appimage: true
+            build_wx33: true
             shell: bash
             extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
-                            -DNO_WEBVIEW=ON"
+                            -DNO_WEBVIEW=ON -WITH_WXPATH=./wxWidgets/build-cmake"
             package_name: "linux_clang_nowebview"
             artifact_path: build/*
 
@@ -53,6 +54,7 @@ jobs:
           sudo apt-mark unhold firefox
 
       - name: Build wxWidgets 3.3
+        if: ${{ matrix.config.build_wx33 }}
         run: |
           git clone https://github.com/wxWidgets/wxWidgets --branch v3.3.1
           cd wxWidgets
