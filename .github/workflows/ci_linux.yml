@@ -88,6 +88,7 @@ jobs:
 
       - name: Build AppImage
         run: |
+          export LD_LIBRARY_PATH=$HOME/wxWidgets/build-cmake/lib:$LD_LIBRARY_PATH
           export LDAI_OUTPUT="SLADE.AppImage"
           export LDAI_UPDATE_INFORMATION="gh-releases-zsync|sirjuddington|SLADE|latest|SLADE.AppImage.zsync"
           export NO_STRIP=1
