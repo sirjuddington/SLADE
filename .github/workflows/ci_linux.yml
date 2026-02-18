@@ -61,7 +61,7 @@ jobs:
           mkdir build-cmake
           cmake -G "Ninja" -B "build-cmake" -DwxBUILD_SHARED=ON -DwxUSE_OPENGL=ON -DwxUSE_WEBVIEW=ON .
           cmake --build "build-cmake" --config RelWithDebInfo
-          cmake --build "build-cmake" --target install
+          sudo cmake --build "build-cmake" --target install --config RelWithDebInfo
           sudo ldconfig
           cd ..
 
