@@ -694,9 +694,12 @@ void ArchiveManager::closeAll(bool exiting)
 	// If we're exiting the program, do some cleanup
 	if (exiting)
 	{
-		base_resource_archive_->close();
+		if (base_resource_archive_)
+			base_resource_archive_->close();
 		base_resource_archive_.reset();
-		program_resource_archive_->close();
+
+		if (program_resource_archive_)
+			program_resource_archive_->close();
 		program_resource_archive_.reset();
 	}
 }
