@@ -22,7 +22,6 @@ jobs:
 
           - name: "Linux Clang"
             os: ubuntu-24.04
-            #release_appimage: true
             shell: bash
             extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++"
             package_name: "linux_clang"
@@ -34,7 +33,7 @@ jobs:
             build_wx33: true
             shell: bash
             extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
-                            -DNO_WEBVIEW=ON -WITH_WXPATH=./wxWidgets/build-cmake"
+                            -DNO_WEBVIEW=ON -DWITH_WXPATH=./wxWidgets/build-cmake"
             package_name: "linux_clang_nowebview"
             artifact_path: build/*
 
