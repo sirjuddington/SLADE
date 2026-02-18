@@ -92,7 +92,16 @@ jobs:
           export LDAI_OUTPUT="SLADE.AppImage"
           export LDAI_UPDATE_INFORMATION="gh-releases-zsync|sirjuddington|SLADE|latest|SLADE.AppImage.zsync"
           export NO_STRIP=1
-          ${{ steps.install-linuxdeploy.outputs.linuxdeploy }} --output=appimage --appdir AppDir
+          ${{ steps.install-linuxdeploy.outputs.linuxdeploy }} \
+            --output=appimage \
+            --appdir AppDir \
+            --library=$HOME/wxWidgets/build-cmake/lib/libwx_gtk3u_aui-3.3.so.1 \
+            --library=$HOME/wxWidgets/build-cmake/lib/libwx_gtk3u_core-3.3.so.1 \
+            --library=$HOME/wxWidgets/build-cmake/lib/libwx_baseu-3.3.so.1 \
+            --library=$HOME/wxWidgets/build-cmake/lib/libwx_gtk3u_gl-3.3.so.1 \
+            --library=$HOME/wxWidgets/build-cmake/lib/libwx_gtk3u_propgrid-3.3.so.1 \
+            --library=$HOME/wxWidgets/build-cmake/lib/libwx_gtk3u_stc-3.3.so.1 \
+            --library=$HOME/wxWidgets/build-cmake/lib/libwx_gtk3u_html-3.3.so.1
 
       - name: Upload Artifacts
         if: ${{ matrix.config.package_name }}
