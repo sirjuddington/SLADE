@@ -136,7 +136,7 @@ wxSize SAuiToolBarArt::GetToolSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiT
 // -----------------------------------------------------------------------------
 void SAuiToolBarArt::DrawPlainBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 {
-#ifdef __WXMSW__
+#if wxCHECK_VERSION(3, 3, 0)
 	dc.SetBrush(wnd->GetBackgroundColour());
 #else
 	dc.SetBrush(*wxTRANSPARENT_BRUSH);
@@ -145,7 +145,6 @@ void SAuiToolBarArt::DrawPlainBackground(wxDC& dc, wxWindow* wnd, const wxRect& 
 
 	dc.DrawRectangle(rect);
 
-#ifdef __WXMSW__
 	if (main_toolbar_)
 	{
 		dc.SetPen(wxPen(wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW)));
@@ -154,7 +153,6 @@ void SAuiToolBarArt::DrawPlainBackground(wxDC& dc, wxWindow* wnd, const wxRect& 
 		dc.DrawLine(rect.x, rect.y, right, rect.y);
 		dc.DrawLine(rect.x, bottom, right, bottom);
 	}
-#endif
 }
 
 // -----------------------------------------------------------------------------

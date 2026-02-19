@@ -146,9 +146,13 @@ endif ()
 # Define a SLADE_DEBUG macro
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSLADE_DEBUG")
 
-# Enable debug symbols for glib (so gdb debugging works properly with strings etc.)
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
+# (Optionally) Enable debug symbols for glib (so gdb debugging works properly with strings etc.)
+OPTION(GLIB_DEBUG "Enable glib debug symbols" OFF)
+if (GLIB_DEBUG)
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
+endif (GLIB_DEBUG)
 
+# Enable AddressSanitizer if option enabled
 if (USE_SANITIZER)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
