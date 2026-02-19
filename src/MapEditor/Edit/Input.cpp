@@ -71,6 +71,7 @@ using namespace mapeditor;
 // -----------------------------------------------------------------------------
 CVAR(Bool, property_edit_dclick, true, CVar::Flag::Save)
 CVAR(Bool, selection_clear_click, false, CVar::Flag::Save)
+CVAR(Int, map3d_mlook_type, 0, CVar::Flag::Save) // 0 = hold rmb, 1 = rmb drag, 2 = always
 
 
 // -----------------------------------------------------------------------------
@@ -124,6 +125,10 @@ bool Input::mouseMove(int new_x, int new_y)
 	// Panning
 	if (panning_)
 		context_->renderer().pan(mouse_pos_.x - new_x, -(mouse_pos_.y - new_y), true);
+
+	// 3d mode mouselook (drag mode)
+	if (mouse_state_ == MouseState::MouseLook && map3d_mlook_type == 1)
+		context_->camera3d().look(new_x - mouse_pos_.x, new_y - mouse_pos_.y);
 
 	// Update mouse variables
 	mouse_pos_     = { new_x, new_y };

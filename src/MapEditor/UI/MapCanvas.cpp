@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -46,6 +46,7 @@
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/UI.h"
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
 
@@ -59,6 +60,14 @@ using namespace mapeditor;
 //
 // -----------------------------------------------------------------------------
 CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(Int, map3d_mlook_type)
 
 
 // -----------------------------------------------------------------------------
@@ -169,13 +178,19 @@ void MapCanvas::lockMouse(bool lock)
 		mouse_locked_pos_.y = mouse_pos.y;
 
 		// Center mouse
-		mouseToCenter();
+		if (map3d_mlook_type != 1)
+			mouseToCenter();
 
 		// Hide cursor
-		wxImage img(32, 32, true);
-		img.SetMask(true);
-		img.SetMaskColour(0, 0, 0);
-		SetCursor(wxCursor(img));
+		if (map3d_mlook_type == 1)
+			ui::setCursor(this, ui::MouseCursor::Move);
+		else
+		{
+			wxImage img(32, 32, true);
+			img.SetMask(true);
+			img.SetMaskColour(0, 0, 0);
+			SetCursor(wxCursor(img));
+		}
 	}
 	else
 	{
@@ -185,7 +200,7 @@ void MapCanvas::lockMouse(bool lock)
 		SetCursor(wxNullCursor);
 
 		// Move mouse back to original position (if it was initially moved to lock)
-		if (mouse_locked_pos_.x != -1 && mouse_locked_pos_.y != -1)
+		if (map3d_mlook_type != 1 && mouse_locked_pos_.x != -1 && mouse_locked_pos_.y != -1)
 		{
 			warpMouse(mouse_locked_pos_);
 			mouse_locked_pos_ = { -1, -1 };
@@ -301,7 +316,7 @@ void MapCanvas::update()
 	timer_.Stop();
 
 	// Handle 3d mode mouselook
-	if (context_->input().mouseState() == Input::MouseState::MouseLook)
+	if (context_->input().mouseState() == Input::MouseState::MouseLook && map3d_mlook_type != 1)
 		mouseLook3d();
 
 	if (context_->update(frametime))

@@ -400,7 +400,7 @@ bool MapEditContext::update(double frametime)
 	// Update animations
 	renderer_->updateAnimations(mult);
 
-	return camera_moving || renderer_->animationsActive();
+	return camera_moving || renderer_->animationsActive() || input_->panning();
 }
 
 // -----------------------------------------------------------------------------
