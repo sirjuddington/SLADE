@@ -162,9 +162,7 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	glClearDepth(0.0f);
 	glCullFace(GL_BACK);
 	glEnable(GL_CULL_FACE);
-	glEnable(GL_ALPHA_TEST);
 	glDepthMask(GL_TRUE);
-	glAlphaFunc(GL_GREATER, 0.0f);
 	gl::setBlend(gl::Blend::Normal);
 
 	// Setup shaders
@@ -229,7 +227,6 @@ void MapRenderer3D::render(const gl::Camera& camera)
 
 	// Cleanup gl state
 	glDepthMask(GL_TRUE);
-	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_CULL_FACE);
 }

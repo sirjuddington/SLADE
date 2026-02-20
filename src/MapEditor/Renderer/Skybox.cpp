@@ -135,7 +135,6 @@ void Skybox::render(const gl::Camera& camera)
 	glDepthMask(GL_TRUE);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_ALPHA_TEST);
 }
 
 // -----------------------------------------------------------------------------
