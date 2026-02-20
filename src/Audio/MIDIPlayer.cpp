@@ -50,7 +50,11 @@ using namespace audio;
 // Variables
 //
 // -----------------------------------------------------------------------------
+#ifndef NO_FLUIDSYNTH
+CVAR(String, snd_midi_player, "fluidsynth", CVar::Flag::Save)
+#else
 CVAR(String, snd_midi_player, "none", CVar::Flag::Save)
+#endif
 CVAR(String, fs_soundfont_path, "", CVar::Flag::Save)
 CVAR(String, fs_driver, "", CVar::Flag::Save)
 CVAR(String, snd_timidity_path, "", CVar::Flag::Save)
