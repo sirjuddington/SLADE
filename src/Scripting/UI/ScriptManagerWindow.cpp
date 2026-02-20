@@ -258,7 +258,7 @@ void ScriptManagerWindow::setupLayout()
 {
 	// Maximize if it was last time
 	if (ui::getStateBool(ui::SCRIPTMANAGERWINDOW_MAXIMIZED))
-		CallAfter(&ScriptManagerWindow::Maximize, this);
+		ScriptManagerWindow::Maximize();
 
 	// Create the wxAUI manager & related things
 	auto m_mgr = new wxAuiManager(this);

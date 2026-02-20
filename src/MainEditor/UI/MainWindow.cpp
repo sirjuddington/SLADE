@@ -114,11 +114,7 @@ MainWindow::MainWindow() : STopWindow("SLADE", "main")
 	custom_menus_begin_ = 2;
 
 	if (ui::getStateBool(ui::MAINWINDOW_MAXIMIZED))
-#ifdef __WXGTK__
-		CallAfter(&MainWindow::Maximize, this);
-#else
 		MainWindow::Maximize();
-#endif
 
 	setupLayout();
 

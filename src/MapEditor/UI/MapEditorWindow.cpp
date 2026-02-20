@@ -109,7 +109,8 @@ EXTERN_CVAR(Int, map2d_flat_drawtype);
 MapEditorWindow::MapEditorWindow() : STopWindow{ "SLADE", "map" }
 {
 	if (ui::getStateBool(ui::MAPEDITORWINDOW_MAXIMIZED))
-		CallAfter(&MapEditorWindow::Maximize, this);
+		MapEditorWindow::Maximize();
+
 	setupLayout();
 	wxTopLevelWindow::Show(false);
 	custom_menus_begin_ = 2;
