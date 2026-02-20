@@ -426,12 +426,20 @@ string RunDialog::selectedCommandLine(const Config& cfg) const
 	if (exe)
 	{
 		// Get exe path
-		const auto exe_path = getExecutablePath(exe);
-
+		auto exe_path = getExecutablePath(exe);
 		if (exe_path.empty())
 			return "";
 
-		auto path = fmt::format("\"{}\"", exe_path);
+		string path;
+		if (exe_path.size() > 1 && exe_path[0] == '"' && exe_path[exe_path.size() - 1] == '"')
+		{
+			// If the path is wrapped in quotes, treat it as a command instead
+			// (so we can support commands with multiple parts eg. "distrobox-exec-host <path_to_executable>")
+			exe_path = exe_path.substr(1, exe_path.size() - 2);
+			path = exe_path;
+		}
+		else
+			path = fmt::format("\"{}\"", exe_path);
 
 		unsigned    cfg_index = choice_config_->GetSelection();
 		const auto& configs   = run_map_ ? exe->map_configs : exe->run_configs;
@@ -571,7 +579,8 @@ void RunDialog::run(const Config& cfg, i64 archive_db_id) const
 		wxSetWorkingDirectory(wxString::FromUTF8(selectedExeDir()));
 
 		// Run
-		wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC);
+		if (wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC) == 0)
+			wxMessageBox(wxS("Failed to run game executable"), wxS("Error"), wxICON_ERROR);
 
 		// Restore working directory
 		wxSetWorkingDirectory(wd);
