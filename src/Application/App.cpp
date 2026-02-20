@@ -93,6 +93,7 @@ std::thread::id main_thread_id;
 Version version_num{ 3, 3, 0, 1000 };
 
 // Directory paths
+bool   dirs_portable = false;
 string dir_data;
 string dir_user;
 string dir_app;
@@ -217,7 +218,7 @@ bool initDirectories()
 	dir_app = strutil::Path::pathOf(wxStandardPaths::Get().GetExecutablePath().utf8_string(), false);
 
 	// Check for portable install
-	if (fileutil::fileExists(path("portable", Dir::Executable)))
+	if (dirs_portable || fileutil::fileExists(path("portable", Dir::Executable)))
 	{
 		// Setup portable user/data dirs
 		dir_data = dir_app;
@@ -398,15 +399,22 @@ vector<string> processCommandLine(const vector<string>& args)
 	// Process command line args (except the first as it is normally the executable name)
 	for (auto& arg : args)
 	{
-		// -nosplash: Disable splash window
-		if (strutil::equalCI(arg, "-nosplash"))
+		// --nosplash: Disable splash window
+		if (strutil::equalCI(arg, "--nosplash"))
 			ui::enableSplash(false);
 
-		// -debug: Enable debug mode
-		else if (strutil::equalCI(arg, "-debug"))
+		// --debug: Enable debug mode
+		else if (strutil::equalCI(arg, "--debug"))
 		{
 			global::debug = true;
 			log::info("Debugging stuff enabled");
+		}
+
+		// --portable: Enable portable mode
+		else if (strutil::equalCI(arg, "--portable"))
+		{
+			dirs_portable = true;
+			log::info("Portable mode enabled");
 		}
 
 		// Other (no dash), open as archive
@@ -506,15 +514,15 @@ bool app::init(const vector<string>& args)
 	// even in locales where the decimal separator is a comma.
 	wxSetlocale(LC_NUMERIC, "C");
 
+	// Process the command line arguments
+	auto paths_to_open = processCommandLine(args);
+
 	// Init application directories
 	if (!initDirectories())
 		return false;
 
 	// Init log
 	log::init();
-
-	// Process the command line arguments
-	auto paths_to_open = processCommandLine(args);
 
 	// Init keybinds
 	KeyBind::initBinds();
