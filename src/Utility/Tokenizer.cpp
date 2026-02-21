@@ -59,7 +59,7 @@ namespace
 bool isWhitespace(char p)
 {
 	// Whitespace is either a newline, tab character or space
-	return p == '\n' || p == 13 || p == ' ' || p == '\t';
+	return p == '\r' || p == '\n' || p == 13 || p == ' ' || p == '\t';
 }
 } // namespace
 
@@ -874,7 +874,7 @@ void Tokenizer::tokenizeComment()
 	}
 
 	// Check for end of line comment
-	if (state_.comment_type != CStyle && data_[state_.position] == '\n')
+	if (state_.comment_type != CStyle && (data_[state_.position] == '\n' || data_[state_.position] == '\r'))
 	{
 		state_.state = TokenizeState::State::Unknown;
 		++state_.position;
@@ -996,7 +996,7 @@ bool Tokenizer::isEndOfToken() const
 {
 	// Token is to end of line, only ends on newline
 	if (state_.to_eol)
-		return data_[state_.position] == '\n';
+		return data_[state_.position] == '\n' || data_[state_.position] == '\r';
 
 	// Regular token
 	return isWhitespace(data_[state_.position]) ||       // Whitespace

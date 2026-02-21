@@ -243,6 +243,6 @@
     "icon": "lightbulb",
     "help_text": "Enable colour & radius previews for point light things",
     "type": "check",
-    "linked_cvar": "thing_preview_lights"
+    "linked_cvar": "map2d_thing_preview_lights"
   }
 }

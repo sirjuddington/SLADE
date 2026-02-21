@@ -482,7 +482,7 @@ void ThingType::fromJson(const Json& j)
 		jsonutil::getIf(j, "icon", icon_);
 		jsonutil::getIf(j, "radius", radius_);
 		jsonutil::getIf(j, "height", height_);
-		jsonutil::getIf(j, "angled", angled_);   // Show angle
+		jsonutil::getIf(j, "angle", angled_);    // Show angle
 		jsonutil::getIf(j, "hanging", hanging_); // Hanging object
 		jsonutil::getIf(j, "shrink", shrink_);   // Shrink on zoom
 		jsonutil::getIf(j, "fullbright", fullbright_);
