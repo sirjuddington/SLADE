@@ -48,5 +48,11 @@
 !/msvc/SLADE.manifest
 !/msvc/SLADE.rc
 
+/unix/*
+!/unix/build-appimage.sh
+!/unix/net.mancubus.SLADE.desktop
+!/unix/net.mancubus.SLADE.metainfo.xml
+!/unix/net.mancubus.SLADE.svg
+
 CMakeSettings.json
 CMakeUserPresets.json

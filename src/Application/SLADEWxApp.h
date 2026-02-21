@@ -7,7 +7,7 @@ class MainAppFileListener;
 class SLADEWxApp : public wxApp
 {
 public:
-	SLADEWxApp()           = default;
+	SLADEWxApp();
 	~SLADEWxApp() override = default;
 
 	bool isSessionEnding() const { return session_ending_; }

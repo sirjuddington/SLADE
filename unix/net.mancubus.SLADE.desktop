@@ -9,3 +9,4 @@ Terminal=false
 MimeType=application/x-doom-wad;
 Keywords=modding;mapping;doom;map-editor;doom-editor;wad;map;
 Keywords[de]=modden;karten-erstellung;doom;karten-editor;doom-editor;wad;karte;
+StartupWMClass=net.mancubus.SLADE

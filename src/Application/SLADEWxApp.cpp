@@ -203,6 +203,16 @@ IMPLEMENT_APP(SLADEWxApp)
 
 
 // -----------------------------------------------------------------------------
+// SLADEWxApp class constructor
+// -----------------------------------------------------------------------------
+SLADEWxApp::SLADEWxApp()
+{
+#ifndef __WXMSW__
+	SetClassName("net.mancubus.SLADE");
+#endif
+}
+
+// -----------------------------------------------------------------------------
 // Checks if another instance of SLADE is already running, and if so, sends the
 // args to the file listener of the existing SLADE process.
 // Returns false if another instance was found and the new SLADE was started
@@ -265,9 +275,9 @@ bool SLADEWxApp::OnInit()
 
 	// Set application name (for wx directory stuff)
 #ifdef __WINDOWS__
-	wxApp::SetAppName(wxS("SLADE3"));
+	SetAppName(wxS("SLADE3"));
 #else
-	wxApp::SetAppName(wxS("slade3"));
+	SetAppName(wxS("slade3"));
 #endif
 
 	// Handle exceptions using wxDebug stuff, but only in release mode

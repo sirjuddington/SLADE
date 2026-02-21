@@ -160,16 +160,15 @@ else (APPLE)
 			)
 		endif ()
 
-		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/icons/general/logo.svg"
+		install(FILES "${PROJECT_SOURCE_DIR}/unix/net.mancubus.SLADE.svg"
 			DESTINATION share/icons/hicolor/scalable/apps/
-			RENAME net.mancubus.SLADE.svg
 		)
 
-		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.desktop"
+		install(FILES "${PROJECT_SOURCE_DIR}/unix/net.mancubus.SLADE.desktop"
 			DESTINATION share/applications/
 		)
 
-		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.metainfo.xml"
+		install(FILES "${PROJECT_SOURCE_DIR}/unix/net.mancubus.SLADE.metainfo.xml"
 			DESTINATION share/metainfo/
 		)
 	endif (UNIX)
