@@ -169,11 +169,11 @@ SettingsDialog::SettingsDialog(wxWindow* parent, SettingsPage initial_page) :
 		});
 	btn_cancel_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { EndModal(wxID_CANCEL); });
 
-	// Determine best minimum size based on larger pages
+	// Determine best minimum size based on larger pages (ignore advanced page)
 	int min_width  = 0;
 	int min_height = 0;
-	for (const auto* page : settings_pages_)
-		updateMinSize(page, min_width, min_height);
+	for (auto i = 0; i < SETTINGS_PAGE_COUNT - 1; i++)
+		updateMinSize(settings_pages_[i], min_width, min_height);
 	SetMinSize(
 		{ sections_panel->GetBestSize().x + min_width + FromDIP(100),
 		  min_height + button_sizer->CalcMin().y + title_panel->GetBestSize().y + FromDIP(100) });
