@@ -1,4 +1,34 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Shader.cpp
+// Description: Shader class - handles loading and using OpenGL shader programs
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Shader.h"
 #include "App.h"
@@ -46,6 +76,9 @@ CVAR(String, gl_glsl_version, "330 core", CVar::Save)
 // -----------------------------------------------------------------------------
 namespace slade::gl
 {
+// -----------------------------------------------------------------------------
+// Loads and compiles a shader of [type] from [shader_text] into [shader_id]
+// -----------------------------------------------------------------------------
 bool loadShader(const string& shader_text, GLenum type, GLuint& shader_id, const std::map<string, string>& defines)
 {
 	if (shader_text.empty())
@@ -95,7 +128,7 @@ bool loadShader(const string& shader_text, GLenum type, GLuint& shader_id, const
 }
 
 // -----------------------------------------------------------------------------
-// Loads and compiles a shader of [type] from [filename] into [shader_id].
+// Loads and compiles a shader of [type] from [filename] into [shader_id]
 // -----------------------------------------------------------------------------
 bool loadShaderFile(const string& filename, GLenum type, GLuint& shader_id, const std::map<string, string>& defines)
 {
@@ -109,6 +142,9 @@ bool loadShaderFile(const string& filename, GLenum type, GLuint& shader_id, cons
 	return loadShader(shader_text, type, shader_id, defines);
 }
 
+// -----------------------------------------------------------------------------
+// Returns a pointer to the loaded shader with [name], or nullptr if not found
+// -----------------------------------------------------------------------------
 Shader* getShader(string_view name)
 {
 	for (const auto& ls : loaded_shaders)
@@ -120,6 +156,10 @@ Shader* getShader(string_view name)
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Reloads all shaders with names matching [match_name].
+// If [match_name] is empty, all shaders will be reloaded.
+// -----------------------------------------------------------------------------
 void reloadShaders(string_view match_name)
 {
 	for (auto& ls : loaded_shaders)
@@ -132,6 +172,9 @@ void reloadShaders(string_view match_name)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Reloads the shader matching [name]
+// -----------------------------------------------------------------------------
 void reloadShader(string_view name)
 {
 	for (auto& ls : loaded_shaders)
@@ -174,6 +217,9 @@ Shader::Shader(string_view name, const string& vertex_text, const string& fragme
 	loaded_shaders.emplace_back(this, name);
 }
 
+// -----------------------------------------------------------------------------
+// Adds a #define with [name] and [value] to the shader
+// -----------------------------------------------------------------------------
 void Shader::define(string_view name, string_view value)
 {
 	if (isValid())
@@ -604,6 +650,13 @@ const Shader* Shader::currentShader()
 
 	return nullptr;
 }
+
+
+// -----------------------------------------------------------------------------
+//
+// Console Commands
+//
+// -----------------------------------------------------------------------------
 
 
 CONSOLE_COMMAND(reload_shaders, 0, true)

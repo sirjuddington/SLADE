@@ -1,4 +1,35 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    Camera.cpp
+// Description: A Camera class for the 3D map view, handling position,
+//              direction, projection, etc.
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Camera.h"
 #include "Geometry/BBox.h"
@@ -11,9 +42,22 @@
 using namespace slade;
 using namespace gl;
 
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 CVAR(Bool, map3d_mlook_invert_y, false, CVar::Flag::Save)
 CVAR(Float, map3d_mlook_sensitivity_x, 1.0f, CVar::Flag::Save)
 CVAR(Float, map3d_mlook_sensitivity_y, 1.0f, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// Camera Class Functions
+//
+// -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
@@ -247,6 +291,9 @@ bool Camera::applyGravity(float floor_height, float view_height, float mult)
 	return changed;
 }
 
+// -----------------------------------------------------------------------------
+// Checks if a 2D point is within the camera's frustum
+// -----------------------------------------------------------------------------
 bool Camera::pointInFrustum2d(const Vec2f& point) const
 {
 	double z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
@@ -259,6 +306,9 @@ bool Camera::pointInFrustum2d(const Vec2f& point) const
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Checks if a 2D line is within the camera's frustum
+// -----------------------------------------------------------------------------
 bool Camera::lineInFrustum2d(const Seg2d& line) const
 {
 	double z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
@@ -275,6 +325,9 @@ bool Camera::lineInFrustum2d(const Seg2d& line) const
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Checks if a 2D bounding box is within the camera's frustum
+// -----------------------------------------------------------------------------
 bool Camera::bboxInFrustum2d(const BBox& bbox) const
 {
 	double z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
@@ -313,12 +366,18 @@ void Camera::updateVectors()
 	updateView();
 }
 
+// -----------------------------------------------------------------------------
+// Updates the camera's view matrix and frustum planes
+// -----------------------------------------------------------------------------
 void Camera::updateView()
 {
 	view_ = glm::lookAt(position_, position_ + dir3d_, up_);
 	updateFrustumPlanes();
 }
 
+// -----------------------------------------------------------------------------
+// Updates the camera's projection matrix and frustum planes
+// -----------------------------------------------------------------------------
 void Camera::updateProjection()
 {
 	if (reverse_depth_)
@@ -342,6 +401,10 @@ void Camera::updateProjection()
 	updateFrustumPlanes();
 }
 
+// -----------------------------------------------------------------------------
+// Updates the camera's frustum planes based on the current view and projection
+// matrices. The planes are stored in world space and point inward.
+// -----------------------------------------------------------------------------
 void Camera::updateFrustumPlanes()
 {
 	const glm::mat4 clip = projection_ * view_;

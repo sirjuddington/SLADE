@@ -1,4 +1,35 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    ThingBuffer2D.cpp
+// Description: ThingBuffer2D class - buffer for rendering things in the 2d map
+//              editor view
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ThingBuffer2D.h"
 #include "Game/ThingType.h"
@@ -11,6 +42,11 @@ using namespace slade;
 using namespace gl;
 
 
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 enum class TexType
@@ -28,12 +64,23 @@ struct ThingShader
 	bool               direction = false;
 };
 vector<ThingShader> thing_shaders;
-
 } // namespace
 
 
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace
 {
+// -----------------------------------------------------------------------------
+// Returns a shader for rendering things with the specified properties:
+// [square] - if true, shader will render things with a square background
+// instead of round
+// [textured] - the type of texture to use for things (none, icon or sprite)
+// [direction] - if true, shader will render an arrow indicating thing direction
+// -----------------------------------------------------------------------------
 Shader* thingShader(bool square, TexType textured, bool direction)
 {
 	// Check if already loaded
@@ -74,11 +121,24 @@ Shader* thingShader(bool square, TexType textured, bool direction)
 } // namespace
 
 
+// -----------------------------------------------------------------------------
+//
+// ThingBuffer2D Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// ThingBuffer2D class constructor
+// -----------------------------------------------------------------------------
 ThingBuffer2D::ThingBuffer2D()
 {
 	buffer_things_ = std::make_unique<Buffer<ThingInstance>>();
 }
 
+// -----------------------------------------------------------------------------
+// Sets up the buffer for a thing type, using the type's properties
+// -----------------------------------------------------------------------------
 void ThingBuffer2D::setup(const game::ThingType& type)
 {
 	colour_         = type.colour();
@@ -87,6 +147,11 @@ void ThingBuffer2D::setup(const game::ThingType& type)
 	shrink_on_zoom_ = type.shrinkOnZoom();
 }
 
+// -----------------------------------------------------------------------------
+// Sets the texture to use for things in this buffer. If [sprite] is true, the
+// texture is treated as a sprite and is adjusted to fit within the thing's
+// radius
+// -----------------------------------------------------------------------------
 void ThingBuffer2D::setTexture(unsigned texture, bool sprite)
 {
 	texture_ = texture;
@@ -114,12 +179,18 @@ void ThingBuffer2D::setTexture(unsigned texture, bool sprite)
 		tex_size_ = glm::vec2{ 1.0f };
 }
 
+// -----------------------------------------------------------------------------
+// Adds a thing instance to the buffer with the specified properties
+// -----------------------------------------------------------------------------
 void ThingBuffer2D::add(float x, float y, float angle, float alpha)
 {
 	auto dir = geometry::vectorAngle(geometry::degToRad(angle));
 	things_.emplace_back(glm::vec2{ x, y }, glm::vec2{ dir.x, dir.y }, alpha);
 }
 
+// -----------------------------------------------------------------------------
+// Uploads thing instances to the GPU and clears the instance list
+// -----------------------------------------------------------------------------
 void ThingBuffer2D::push()
 {
 	if (!vao_)
@@ -129,6 +200,13 @@ void ThingBuffer2D::push()
 	things_.clear();
 }
 
+// -----------------------------------------------------------------------------
+// Draws the things in this buffer using the specified [view] and [colour].
+// If [square] is true, things will be drawn with a square background instead of
+// round.
+// If [force_arrow] is true, things will be drawn with an arrow indicating their
+// direction, regardless of the thing type's angled property
+// -----------------------------------------------------------------------------
 void ThingBuffer2D::draw(const View* view, const glm::vec4& colour, bool square, bool force_arrow) const
 {
 	if (!getContext())
@@ -168,6 +246,10 @@ void ThingBuffer2D::draw(const View* view, const glm::vec4& colour, bool square,
 	gl::bindVAO(0);
 }
 
+// -----------------------------------------------------------------------------
+// Initializes the VAO for this buffer, setting up vertex attributes for the
+// square and thing instance data
+// -----------------------------------------------------------------------------
 void ThingBuffer2D::initVAO()
 {
 	vao_ = gl::createVAO();

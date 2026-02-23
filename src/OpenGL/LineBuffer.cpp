@@ -1,4 +1,34 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    LineBuffer.cpp
+// Description: LineBuffer class - buffer for rendering thick antialiased lines
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "LineBuffer.h"
 #include "Camera.h"
@@ -11,6 +41,12 @@
 using namespace slade;
 using namespace gl;
 
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 unsigned vbo_quad        = 0;
@@ -22,8 +58,16 @@ Shader   shader_lines_dashed{ "lines_dashed" };
 } // namespace
 
 
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace
 {
+// -----------------------------------------------------------------------------
+// Initializes the line shader(s)
+// -----------------------------------------------------------------------------
 void initShader()
 {
 	shader_lines.loadResourceEntries("lines.vert", "lines.frag");
@@ -31,6 +75,9 @@ void initShader()
 	shader_lines_dashed.loadResourceEntries("lines.vert", "lines.frag");
 }
 
+// -----------------------------------------------------------------------------
+// Initializes the line [buffer]'s VAO for rendering lines with the line shader
+// -----------------------------------------------------------------------------
 unsigned initVAO(Buffer<LineBuffer::Line>& buffer)
 {
 	auto vao = createVAO();
@@ -86,21 +133,41 @@ unsigned initVAO(Buffer<LineBuffer::Line>& buffer)
 }
 } // namespace
 
+
+// -----------------------------------------------------------------------------
+//
+// LineBuffer Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// LineBuffer class destructor
+// -----------------------------------------------------------------------------
 LineBuffer::~LineBuffer()
 {
 	deleteVAO(vao_);
 }
 
+// -----------------------------------------------------------------------------
+// Adds a [line] to the buffer
+// -----------------------------------------------------------------------------
 void LineBuffer::add(const Line& line)
 {
 	lines_.push_back(line);
 }
 
+// -----------------------------------------------------------------------------
+// Adds [lines] to the buffer
+// -----------------------------------------------------------------------------
 void LineBuffer::add(const vector<Line>& lines)
 {
 	vectorConcat(lines_, lines);
 }
 
+// -----------------------------------------------------------------------------
+// Adds a 2D line from [start] to [end] with [colour] and [width]
+// -----------------------------------------------------------------------------
 void LineBuffer::add3d(glm::vec2 start, glm::vec2 end, const Plane& plane, glm::vec4 colour, float width)
 {
 	lines_.push_back(
@@ -110,6 +177,11 @@ void LineBuffer::add3d(glm::vec2 start, glm::vec2 end, const Plane& plane, glm::
 			  .v2_colour    = colour });
 }
 
+// -----------------------------------------------------------------------------
+// Adds a 2D [line]  with an arrowhead to the buffer with [colour] and [width].
+// The arrowhead is added to the end of the line, or both ends if
+// [arrowhead_both] is true
+// -----------------------------------------------------------------------------
 void LineBuffer::addArrow(
 	const Rectf& line,
 	glm::vec4    colour,
@@ -135,6 +207,10 @@ void LineBuffer::push()
 	lines_.clear();
 }
 
+// -----------------------------------------------------------------------------
+// Draws the lines in 2D using the specified [view] and [colour].
+// If [model] is specified, it will be used as the model matrix for the view
+// -----------------------------------------------------------------------------
 void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4& model) const
 {
 	if (!getContext())
@@ -165,6 +241,10 @@ void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4
 	bindVAO(0);
 }
 
+// -----------------------------------------------------------------------------
+// Draws the lines in 3D using the given [camera], [viewport_size] and [colour].
+// If [model] is specified, it will be used as the model matrix for the camera
+// -----------------------------------------------------------------------------
 void LineBuffer::draw(const Camera& camera, glm::vec2 viewport_size, const glm::vec4& colour, const glm::mat4& model)
 	const
 {
@@ -198,6 +278,9 @@ void LineBuffer::draw(const Camera& camera, glm::vec2 viewport_size, const glm::
 	bindVAO(0);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the shader used for drawing lines with this buffer
+// -----------------------------------------------------------------------------
 const Shader& LineBuffer::shader()
 {
 	if (!shader_lines.isValid())

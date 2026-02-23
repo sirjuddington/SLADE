@@ -6,7 +6,8 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    Archive.cpp
-// Description: Functions to export Archive and its subclasses to lua using sol3
+// Description: Functions to export Archive and its subclasses to lua using
+//              luabridge
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free

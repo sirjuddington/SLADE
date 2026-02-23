@@ -1,3 +1,34 @@
+
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    PointSpriteBuffer.cpp
+// Description: PointSpriteBuffer class - buffer for rendering point sprites
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PointSpriteBuffer.h"
 #include "Shader.h"
@@ -6,6 +37,12 @@
 using namespace slade;
 using namespace gl;
 
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 unique_ptr<Shader> shader_ps_textured;
@@ -15,8 +52,17 @@ unique_ptr<Shader> shader_ps_rsquare;
 unique_ptr<Shader> shader_ps_rsquare_outline;
 } // namespace
 
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace
 {
+// -----------------------------------------------------------------------------
+// Loads the shaders used for point sprites
+// -----------------------------------------------------------------------------
 void loadShaders()
 {
 	shader_ps_textured = std::make_unique<Shader>("ps_textured");
@@ -38,6 +84,9 @@ void loadShaders()
 	shader_ps_rsquare_outline->loadResourceEntries("point_sprite.vert", "rounded_square.frag");
 }
 
+// -----------------------------------------------------------------------------
+// Returns the shader for rendering point sprites of the specified [type]
+// -----------------------------------------------------------------------------
 Shader* pointSpriteShader(PointSpriteType type)
 {
 	if (!shader_ps_textured)
@@ -55,22 +104,42 @@ Shader* pointSpriteShader(PointSpriteType type)
 }
 } // namespace
 
+
+// -----------------------------------------------------------------------------
+//
+// PointSpriteBuffer Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// PointSpriteBuffer class destructor
+// -----------------------------------------------------------------------------
 PointSpriteBuffer::~PointSpriteBuffer()
 {
 	gl::deleteVAO(vao_);
 }
 
+// -----------------------------------------------------------------------------
+// Adds a point sprite at [position] with [radius] to the buffer
+// -----------------------------------------------------------------------------
 void PointSpriteBuffer::add(const glm::vec2& position, float radius)
 {
 	sprites_.emplace_back(position, radius);
 }
 
+// -----------------------------------------------------------------------------
+// Adds multiple point sprites at [positions] with [radius] to the buffer
+// -----------------------------------------------------------------------------
 void PointSpriteBuffer::add(const vector<glm::vec2>& positions, float radius)
 {
 	for (const auto& pos : positions)
 		sprites_.emplace_back(pos, radius);
 }
 
+// -----------------------------------------------------------------------------
+// Uploads point sprites to the GPU and clears the instance list
+// -----------------------------------------------------------------------------
 void PointSpriteBuffer::push()
 {
 	if (!vao_)
@@ -80,6 +149,10 @@ void PointSpriteBuffer::push()
 	sprites_.clear();
 }
 
+// -----------------------------------------------------------------------------
+// Draws the point sprites using the specified [view] and [type].
+// If [count] is non-zero, only draw the first [count] sprites in the buffer.
+// -----------------------------------------------------------------------------
 void PointSpriteBuffer::draw(PointSpriteType type, const View* view, unsigned count) const
 {
 	if (!getContext())
@@ -113,6 +186,9 @@ void PointSpriteBuffer::draw(PointSpriteType type, const View* view, unsigned co
 	gl::bindVAO(0);
 }
 
+// -----------------------------------------------------------------------------
+// Initializes the VAO for rendering point sprites
+// -----------------------------------------------------------------------------
 void PointSpriteBuffer::initVAO()
 {
 	vao_ = createVAO();
