@@ -11,6 +11,9 @@
 using namespace slade;
 
 
+CVAR(Bool, glcanvas_vsync, false, CVar::Flag::Save)
+
+
 GLCanvas::GLCanvas(wxWindow* parent, BGStyle bg_style, const ColRGBA& bg_colour, const gl::View& view) :
 	wxGLCanvas(parent, gl::getWxGLAttribs(), -1, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS),
 	view_{ view },
@@ -230,6 +233,10 @@ void GLCanvas::onPaint(wxPaintEvent& e)
 
 	if (!init_done_)
 		init();
+
+#if wxCHECK_VERSION(3, 3, 2)
+	SetSwapInterval(glcanvas_vsync ? DefaultSwapInterval : 0);
+#endif
 
 	// Set viewport
 	glViewport(0, 0, ToPhys(GetSize().x), ToPhys(GetSize().y));

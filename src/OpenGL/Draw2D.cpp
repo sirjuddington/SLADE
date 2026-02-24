@@ -78,17 +78,17 @@ struct FontDef
 	dtx_font* handle   = nullptr;
 	float     yoff     = 0.08f;
 };
-constexpr int      FONT_SIZE_BASE = 36;
-vector<FontDef>    fonts          = { { "FiraSans-Regular", 0.018f, nullptr },          // Normal
-									  { "FiraSans-Bold", 0.018f, nullptr },             // Bold
-									  { "FiraSansCondensed-Regular", 0.018f, nullptr }, // Condensed
-									  { "FiraSansCondensed-Bold", 0.018f, nullptr },    // CondensedBold
-									  { "FiraMono-Medium", 0.02f, nullptr },            // Monospace
-									  { "FiraMono-Bold", 0.02f, nullptr } };            // MonospaceBold
-gl::VertexBuffer2D vb_text;
-bool               text_draw_init = false;
-glm::vec2          text_offset;
-float              text_scale = 1.0f;
+constexpr int   FONT_SIZE_BASE = 36;
+vector<FontDef> fonts          = { { "FiraSans-Regular", 0.018f, nullptr },          // Normal
+								   { "FiraSans-Bold", 0.018f, nullptr },             // Bold
+								   { "FiraSansCondensed-Regular", 0.018f, nullptr }, // Condensed
+								   { "FiraSansCondensed-Bold", 0.018f, nullptr },    // CondensedBold
+								   { "FiraMono-Medium", 0.02f, nullptr },            // Monospace
+								   { "FiraMono-Bold", 0.02f, nullptr } };            // MonospaceBold
+VertexBuffer2D  vb_text;
+bool            text_draw_init = false;
+glm::vec2       text_offset;
+float           text_scale = 1.0f;
 } // namespace
 CVAR(Bool, hud_statusbar, 1, CVar::Flag::Save)
 CVAR(Bool, hud_center, 1, CVar::Flag::Save)

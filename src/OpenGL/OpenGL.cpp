@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
-#include "Utility/StringUtils.h"
+#include "App.h"
 
 using namespace slade;
 
@@ -417,7 +417,7 @@ void gl::bindVBO(unsigned id)
 
 void gl::deleteVBO(unsigned id)
 {
-	if (!initialised)
+	if (!initialised || app::isExiting())
 		return;
 
 	if (id > 0)
@@ -448,7 +448,7 @@ void gl::bindEBO(unsigned id)
 
 void gl::deleteEBO(unsigned id)
 {
-	if (!initialised || id == 0)
+	if (!initialised || id == 0 || app::isExiting())
 		return;
 
 	if (ebo_current == id)
@@ -486,7 +486,7 @@ void gl::bindVAO(unsigned id)
 
 void gl::deleteVAO(unsigned id)
 {
-	if (!initialised)
+	if (!initialised || app::isExiting())
 		return;
 
 	if (id > 0)

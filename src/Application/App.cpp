@@ -86,7 +86,7 @@ namespace slade::app
 wxStopWatch     timer;
 int             temp_fail_count = 0;
 bool            init_ok         = false;
-bool            exiting         = false;
+static bool     exiting         = false;
 std::thread::id main_thread_id;
 
 // Version

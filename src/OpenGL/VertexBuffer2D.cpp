@@ -174,9 +174,9 @@ void VertexBuffer2D::draw(Primitive primitive, const Shader* shader, const View*
 		view->setupShader(*shader);
 
 	// Draw
-	gl::bindVAO(vao_);
-	gl::drawArrays(primitive, first, count);
-	gl::bindVAO(0);
+	bindVAO(vao_);
+	drawArrays(primitive, first, count);
+	bindVAO(0);
 }
 
 // -----------------------------------------------------------------------------
