@@ -1,10 +1,12 @@
 #pragma once
 
+#include "Canvas.h"
+
 namespace slade
 {
 struct MapPreviewData;
 
-class MapPreviewCanvas : public wxPanel
+class MapPreviewCanvas : public ui::Canvas
 {
 public:
 	MapPreviewCanvas(wxWindow* parent, MapPreviewData* data);

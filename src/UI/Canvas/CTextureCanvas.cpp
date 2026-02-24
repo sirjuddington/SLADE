@@ -78,10 +78,8 @@ void sImageToBitmap(const SImage& image, const Palette* palette, wxBitmap& bitma
 // -----------------------------------------------------------------------------
 // CTextureCanvas class constructor
 // -----------------------------------------------------------------------------
-CTextureCanvas::CTextureCanvas(wxWindow* parent) : wxPanel(parent), palette_{ new Palette }
+CTextureCanvas::CTextureCanvas(wxWindow* parent) : Canvas(parent), palette_{ new Palette }
 {
-	SetDoubleBuffered(true);
-
 	view_.setCentered(true);
 
 	// Bind Events

@@ -43,13 +43,12 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 
+
 // -----------------------------------------------------------------------------
 // PaletteCanvas class constructor
 // -----------------------------------------------------------------------------
-PaletteCanvas::PaletteCanvas(wxWindow* parent) : wxPanel(parent), palette_{ new Palette }, buffer_{ 1000, 1000, 32 }
+PaletteCanvas::PaletteCanvas(wxWindow* parent) : Canvas(parent), palette_{ new Palette }, buffer_{ 1000, 1000, 32 }
 {
-	SetDoubleBuffered(true);
-
 	// Bind Events
 	Bind(wxEVT_PAINT, &PaletteCanvas::onPaint, this);
 	Bind(wxEVT_LEFT_DOWN, &PaletteCanvas::onMouseLeftDown, this);

@@ -47,6 +47,8 @@ public:
 
 	bool activateContext();
 
+	double GetContentScaleFactor() const override;
+
 protected:
 	gl::View            view_;
 	unique_ptr<Palette> palette_;

@@ -59,12 +59,10 @@ EXTERN_CVAR(Bool, gfx_show_border)
 // -----------------------------------------------------------------------------
 // GfxCanvas class constructor
 // -----------------------------------------------------------------------------
-GfxCanvas::GfxCanvas(wxWindow* parent) : wxPanel(parent)
+GfxCanvas::GfxCanvas(wxWindow* parent) : Canvas(parent)
 {
 	view_.setCentered(true);
 	resetViewOffsets();
-
-	SetDoubleBuffered(true);
 
 	// Bind Events
 	Bind(wxEVT_PAINT, &GfxCanvas::onPaint, this);
@@ -243,7 +241,7 @@ void GfxCanvas::drawImageTiled(const wxgfx::Context& ctx)
 		auto x = left;
 		while (x < right)
 		{
-			ctx.drawBitmap(image_bitmap_, x, y);
+			ctx.drawBitmap(image_bitmap_, x, y, 1.0, image_->width(), image_->height());
 			x += image_->width();
 		}
 

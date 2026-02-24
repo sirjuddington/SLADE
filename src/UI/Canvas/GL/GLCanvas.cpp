@@ -6,6 +6,7 @@
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
+#include "UI/Canvas/Canvas.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace slade;
@@ -102,6 +103,20 @@ bool GLCanvas::activateContext()
 	}
 
 	return false;
+}
+
+// ----------------------------------------------------------------------------
+// Override of GetContentScaleFactor to use the configured canvas scale factor,
+// if set. Otherwise just use the default wxWidgets-detected scaling factor.
+// -----------------------------------------------------------------------------
+double GLCanvas::GetContentScaleFactor() const
+{
+	// Check for custom scale factor
+	auto scale = ui::Canvas::scaleFactor();
+	if (scale > 0)
+		return scale;
+
+	return wxGLCanvas::GetContentScaleFactor();
 }
 
 void GLCanvas::draw()
@@ -239,7 +254,7 @@ void GLCanvas::onPaint(wxPaintEvent& e)
 #endif
 
 	// Set viewport
-	glViewport(0, 0, ToPhys(GetSize().x), ToPhys(GetSize().y));
+	glViewport(0, 0, GetSize().x * wxWindow::GetContentScaleFactor(), GetSize().y * wxWindow::GetContentScaleFactor());
 
 	// Clear
 	glClearColor(bg_colour_.fr(), bg_colour_.fg(), bg_colour_.fb(), 1.f);

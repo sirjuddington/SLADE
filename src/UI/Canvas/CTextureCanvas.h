@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CTextureCanvasBase.h"
+#include "Canvas.h"
 #include "OpenGL/View.h"
 
 namespace slade
@@ -10,7 +11,7 @@ namespace wxgfx
 	struct Context;
 }
 
-class CTextureCanvas : public wxPanel, public CTextureCanvasBase
+class CTextureCanvas : public ui::Canvas, public CTextureCanvasBase
 {
 public:
 	CTextureCanvas(wxWindow* parent);

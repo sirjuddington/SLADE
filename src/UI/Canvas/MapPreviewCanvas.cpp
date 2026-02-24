@@ -54,10 +54,8 @@ EXTERN_CVAR(Bool, map_view_things)
 // -----------------------------------------------------------------------------
 // MapPreviewCanvas class constructor
 // -----------------------------------------------------------------------------
-MapPreviewCanvas::MapPreviewCanvas(wxWindow* parent, MapPreviewData* data) : wxPanel(parent), data_{ data }
+MapPreviewCanvas::MapPreviewCanvas(wxWindow* parent, MapPreviewData* data) : Canvas(parent), data_{ data }
 {
-	SetDoubleBuffered(true);
-
 	// Bind Events
 	Bind(wxEVT_PAINT, &MapPreviewCanvas::onPaint, this);
 	Bind(wxEVT_SIZE, [this](wxSizeEvent&) { Refresh(); });

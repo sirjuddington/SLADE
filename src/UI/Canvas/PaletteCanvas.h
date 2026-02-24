@@ -1,8 +1,10 @@
 #pragma once
 
+#include "Canvas.h"
+
 namespace slade
 {
-class PaletteCanvas : public wxPanel
+class PaletteCanvas : public ui::Canvas
 {
 public:
 	enum class SelectionType

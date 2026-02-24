@@ -40,6 +40,7 @@
 #include "OpenGL/OpenGL.h"
 
 using namespace slade;
+using namespace ui;
 
 
 // -----------------------------------------------------------------------------
@@ -47,7 +48,45 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, use_gl_canvas, true, CVar::Save)
+CVAR(Bool, canvas_use_opengl, true, CVar::Save)
+CVAR(Float, canvas_scale_factor, 0.0f, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// Canvas Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Canvas class constructor
+// -----------------------------------------------------------------------------
+Canvas::Canvas(wxWindow* parent) : wxPanel(parent)
+{
+	wxWindow::SetDoubleBuffered(true);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the configured canvas scale factor.
+// If 0, the default wxWidgets scaling factor will be used instead.
+// -----------------------------------------------------------------------------
+double Canvas::scaleFactor()
+{
+	return canvas_scale_factor;
+}
+
+// ----------------------------------------------------------------------------
+// Override of GetContentScaleFactor to use the configured canvas scale factor,
+// if set. Otherwise just use the default wxWidgets-detected scaling factor.
+// -----------------------------------------------------------------------------
+double Canvas::GetContentScaleFactor() const
+{
+	if (canvas_scale_factor > 0)
+		return canvas_scale_factor;
+
+	return wxPanel::GetContentScaleFactor();
+}
 
 
 // -----------------------------------------------------------------------------
@@ -63,7 +102,7 @@ namespace slade::ui
 // -----------------------------------------------------------------------------
 wxWindow* createMapPreviewCanvas(wxWindow* parent, MapPreviewData* data, bool allow_zoom, bool allow_pan)
 {
-	if (gl::contextCreationFailed() || !use_gl_canvas)
+	if (gl::contextCreationFailed() || !canvas_use_opengl)
 		return new MapPreviewCanvas(parent, data);
 	else
 		return new MapPreviewGLCanvas(parent, data, allow_zoom, allow_pan);
@@ -75,7 +114,7 @@ wxWindow* createMapPreviewCanvas(wxWindow* parent, MapPreviewData* data, bool al
 // -----------------------------------------------------------------------------
 GfxCanvasBase* createGfxCanvas(wxWindow* parent)
 {
-	if (gl::contextCreationFailed() || !use_gl_canvas)
+	if (gl::contextCreationFailed() || !canvas_use_opengl)
 		return new GfxCanvas(parent);
 	else
 		return new GfxGLCanvas(parent);
@@ -87,7 +126,7 @@ GfxCanvasBase* createGfxCanvas(wxWindow* parent)
 // -----------------------------------------------------------------------------
 CTextureCanvasBase* createCTextureCanvas(wxWindow* parent)
 {
-	if (gl::contextCreationFailed() || !use_gl_canvas)
+	if (gl::contextCreationFailed() || !canvas_use_opengl)
 		return new CTextureCanvas(parent);
 	else
 		return new CTextureGLCanvas(parent);

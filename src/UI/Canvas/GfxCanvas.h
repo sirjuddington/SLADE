@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Canvas.h"
 #include "GfxCanvasBase.h"
 #include "OpenGL/View.h"
 
@@ -10,7 +11,7 @@ namespace wxgfx
 	struct Context;
 }
 
-class GfxCanvas : public wxPanel, public GfxCanvasBase
+class GfxCanvas : public ui::Canvas, public GfxCanvasBase
 {
 public:
 	using View     = GfxView;

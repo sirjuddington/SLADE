@@ -8,6 +8,18 @@ struct MapPreviewData;
 
 namespace ui
 {
+	class Canvas : public wxPanel
+	{
+	public:
+		Canvas(wxWindow* parent);
+		~Canvas() override = default;
+
+		static double scaleFactor();
+
+	private:
+		double GetContentScaleFactor() const override;
+	};
+
 	wxWindow* createMapPreviewCanvas(
 		wxWindow*       parent,
 		MapPreviewData* data,
