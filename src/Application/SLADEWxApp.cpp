@@ -256,6 +256,13 @@ bool SLADEWxApp::singleInstanceCheck()
 // -----------------------------------------------------------------------------
 bool SLADEWxApp::OnInit()
 {
+	// Set application name (for wx directory stuff)
+#ifdef __WINDOWS__
+	SetAppName(wxS("SLADE3"));
+#else
+	SetAppName(wxS("slade3"));
+#endif
+
 	// Check if an instance of SLADE is already running
 	if (!singleInstanceCheck())
 	{
@@ -272,13 +279,6 @@ bool SLADEWxApp::OnInit()
 
 	// Setup system options
 	wxSystemOptions::SetOption(wxS("mac.listctrl.always_use_generic"), 1);
-
-	// Set application name (for wx directory stuff)
-#ifdef __WINDOWS__
-	SetAppName(wxS("SLADE3"));
-#else
-	SetAppName(wxS("slade3"));
-#endif
 
 	// Handle exceptions using wxDebug stuff, but only in release mode
 #ifdef NDEBUG

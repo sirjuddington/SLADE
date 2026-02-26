@@ -56,7 +56,8 @@ namespace app
 		Data,
 		Executable,
 		Resources,
-		Temp
+		Temp,
+		OldUser // For migrating 3.2.x config files to 3.3.0 (the user config directory is changed on linux)
 	};
 	string path(string_view filename, Dir dir);
 

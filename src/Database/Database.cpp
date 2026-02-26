@@ -76,7 +76,7 @@ void migrateWindowLayout(string_view filename, const char* window_id)
 {
 	// Open layout file
 	Tokenizer tz;
-	if (!tz.openFile(app::path(filename, app::Dir::User)))
+	if (!tz.openFile(app::path(filename, app::Dir::OldUser)))
 		return;
 
 	// Parse layout
@@ -279,7 +279,7 @@ void database::migrateConfigs()
 
 	// Migrate various things from pre-3.3.0 config
 	Tokenizer tz;
-	if (!tz.openFile(app::path("slade3.cfg", app::Dir::User)))
+	if (!tz.openFile(app::path("slade3.cfg", app::Dir::OldUser)))
 		return;
 	while (!tz.atEnd())
 	{

@@ -274,7 +274,7 @@ void executables::init()
 	else
 	{
 		// No json config found, try pre-3.3.0 executables.cfg
-		if (MemChunk mc; mc.importFile(app::path("executables.cfg", app::Dir::User)))
+		if (MemChunk mc; mc.importFile(app::path("executables.cfg", app::Dir::OldUser)))
 		{
 			Parser p;
 			p.parseText(mc, "user execuatbles.cfg");

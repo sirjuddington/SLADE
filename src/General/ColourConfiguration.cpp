@@ -333,7 +333,7 @@ bool colourconfig::init()
 		readConfiguration(j);
 
 	// Check for pre-3.3.0 configuration
-	else if (MemChunk mc; mc.importFile(app::path("colours.cfg", app::Dir::User)))
+	else if (MemChunk mc; mc.importFile(app::path("colours.cfg", app::Dir::OldUser)))
 		readOldConfiguration(mc);
 
 	return true;

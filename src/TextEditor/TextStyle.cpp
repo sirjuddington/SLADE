@@ -643,7 +643,7 @@ void StyleSet::initCurrent()
 	}
 
 	// Try pre-3.3.0 'current.sss'
-	if (Tokenizer tz; tz.openFile(app::path("current.sss", app::Dir::User)))
+	if (Tokenizer tz; tz.openFile(app::path("current.sss", app::Dir::OldUser)))
 	{
 		// Parse it
 		ParseTreeNode root;

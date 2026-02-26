@@ -224,7 +224,7 @@ bool game::loadCustomSpecialPresets()
 	// JSON special presets file not found - look for pre-3.3.0 config file
 
 	// Check file exists
-	auto cfg_file = app::path("special_presets.cfg", app::Dir::User);
+	auto cfg_file = app::path("special_presets.cfg", app::Dir::OldUser);
 	if (!wxFileExists(wxString::FromUTF8(cfg_file)))
 		return true;
 

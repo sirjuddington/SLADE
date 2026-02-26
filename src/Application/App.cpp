@@ -96,6 +96,7 @@ Version version_num{ 3, 3, 0, 1000 };
 bool   dirs_portable = false;
 string dir_data;
 string dir_user;
+string dir_user_old;
 string dir_app;
 string dir_res;
 string dir_temp;
@@ -214,6 +215,10 @@ bool initDirectories()
 	wxStandardPaths::Get().SetInstallPrefix(INSTALL_PREFIX);
 #endif // defined(__UNIX__) && defined(INSTALL_PREFIX)
 
+#ifdef __WXGTK__
+	wxStandardPaths::Get().SetFileLayout(wxStandardPathsBase::FileLayout_XDG);
+#endif
+
 	// Setup app dir
 	dir_app = strutil::Path::pathOf(wxStandardPaths::Get().GetExecutablePath().utf8_string(), false);
 
@@ -221,16 +226,27 @@ bool initDirectories()
 	if (dirs_portable || fileutil::fileExists(path("portable", Dir::Executable)))
 	{
 		// Setup portable user/data dirs
-		dir_data = dir_app;
-		dir_res  = dir_app;
-		dir_user = dir_app + dir_separator + "config";
+		dir_data      = dir_app;
+		dir_res       = dir_app;
+		dir_user      = dir_app + dir_separator + "config";
+		dir_user_old  = dir_user;
+		dirs_portable = true;
 	}
 	else
 	{
 		// Setup standard user/data dirs
+#ifdef __WXGTK__
+		dir_user = wxStandardPaths::Get()
+					   .GetUserConfigDir()
+					   .Append(dir_separator)
+					   .Append(wxTheApp->GetAppName())
+					   .utf8_string();
+#else
 		dir_user = wxStandardPaths::Get().GetUserDataDir().utf8_string();
-		dir_data = wxStandardPaths::Get().GetDataDir().utf8_string();
-		dir_res  = wxStandardPaths::Get().GetResourcesDir().utf8_string();
+#endif
+		dir_user_old = wxStandardPaths::Get().GetUserDataDir().utf8_string();
+		dir_data     = wxStandardPaths::Get().GetDataDir().utf8_string();
+		dir_res      = wxStandardPaths::Get().GetResourcesDir().utf8_string();
 	}
 
 	// Create user dir if necessary
@@ -271,7 +287,7 @@ bool initDirectories()
 void readOldConfigFile()
 {
 	Tokenizer tz;
-	if (!tz.openFile(path("slade3.cfg", Dir::User)))
+	if (!tz.openFile(path("slade3.cfg", Dir::OldUser)))
 		return;
 
 	// Go through the file with the tokenizer
@@ -858,6 +874,7 @@ string app::path(string_view filename, Dir dir)
 	case Dir::Executable: return fmt::format("{}{}{}", dir_app, dir_separator, filename);
 	case Dir::Resources:  return fmt::format("{}{}{}", dir_res, dir_separator, filename);
 	case Dir::Temp:       return fmt::format("{}{}{}", dir_temp, dir_separator, filename);
+	case Dir::OldUser:    return fmt::format("{}{}{}", dir_user_old, dir_separator, filename);
 	default:              return string{ filename };
 	}
 }
