@@ -36,11 +36,13 @@
 #include "MapEditor/Item.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/Camera.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/View.h"
 #include "Quad3D.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/SLADEMap.h"
 
 using namespace slade;
@@ -63,6 +65,9 @@ struct Ray
 	glm::vec2 dir_2d;
 };
 } // namespace
+
+
+EXTERN_CVAR(Int, map3d_things)
 
 
 // -----------------------------------------------------------------------------
@@ -303,54 +308,44 @@ Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View
 	// else
 	//	item_dist_ = math::round(min_dist);
 
-#if 0
 	// Check things (if visible)
-	if (render_3d_things == 0)
+	if (map3d_things == 0)
 		return current;
-	double halfwidth, theight;
-	for (unsigned a = 0; a < map_->nThings(); a++)
+	for (const auto& group : thing_groups_)
 	{
-		// Ignore if no sprite
-		if (!things_[a].sprite)
-			continue;
-
-		// Ignore if not visible
-		auto thing = map_->thing(a);
-		if (math::lineSide(thing->position(), strafe) > 0)
-			continue;
-
 		// Ignore if not shown
-		if (!things_[a].type->decoration() && render_3d_things == 2)
+		if (!group.decoration && map3d_things == 2)
 			continue;
 
-		// Find distance to thing sprite
-		auto& tex_info = gl::Texture::info(things_[a].sprite);
-		halfwidth      = tex_info.size.x * 0.5;
-		if (things_[a].flags & ICON)
-			halfwidth = render_thing_icon_size * 0.5;
-		dist = math::distanceRayLine(
-			cam_position_.get2d(),
-			(cam_position_ + cam_dir3d_).get2d(),
-			thing->position() - cam_strafe_.get2d() * halfwidth,
-			thing->position() + cam_strafe_.get2d() * halfwidth);
-
-		// Ignore if no intersection or something was closer
-		if (dist < 0 || dist >= min_dist)
-			continue;
-
-		// Check intersection height
-		theight = tex_info.size.y;
-		height  = cam_position_.z + cam_dir3d_.z * dist;
-		if (things_[a].flags & ICON)
-			theight = render_thing_icon_size;
-		if (height >= things_[a].z && height <= things_[a].z + theight)
+		for (const auto& ti : group.things)
 		{
-			current.index = a;
-			current.type  = mapeditor::ItemType::Thing;
-			min_dist      = dist;
+			// Ignore if not visible
+			auto thing = map_->thing(ti.index);
+			// if (geometry::lineSide(thing->position(), camera.strafeLine()) < 0)
+			//	continue;
+
+			// Find distance to thing sprite
+			const auto halfwidth = static_cast<double>(group.sprite_size.x) * 0.5;
+			dist                 = geometry::distanceRayLine(
+                ray.origin_2d,
+                ray.origin_2d + ray.dir_2d,
+                thing->position() - camera.strafeVector().xy() * halfwidth,
+                thing->position() + camera.strafeVector().xy() * halfwidth);
+
+			// Ignore if no intersection or something was closer
+			if (dist < 0 || dist >= min_dist)
+				continue;
+
+			// Check intersection height
+			height = camera.position().z + camera.directionVector().z * dist;
+			if (height >= ti.z && height <= ti.z + group.sprite_size.y)
+			{
+				current.index = ti.index;
+				current.type  = ItemType::Thing;
+				min_dist      = dist;
+			}
 		}
 	}
-#endif
 
 	// TODO Update item distance
 	// if (min_dist >= 9999999 || min_dist < 0)

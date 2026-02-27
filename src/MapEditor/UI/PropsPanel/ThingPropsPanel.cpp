@@ -95,7 +95,7 @@ private:
 class slade::SpriteTexCanvas : public GLCanvas
 {
 public:
-	SpriteTexCanvas(wxWindow* parent) : GLCanvas(parent)
+	SpriteTexCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
 	{
 		wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
 		SetInitialSize(FromDIP(wxSize(128, 128)));
@@ -381,6 +381,8 @@ void ThingDirCanvas::onPaint(wxPaintEvent& e)
 		auto point = dir_points_[point_sel_] * static_cast<double>(radius);
 		gc->DrawEllipse(half_size + point.x - pr, half_size + point.y - pr, pr * 2, pr * 2);
 	}
+
+	delete gc;
 }
 } // namespace slade
 

@@ -22,6 +22,7 @@ class ItemSelection;
 class MapGeometryBuffer3D;
 class Renderer;
 class Skybox;
+class SpriteBuffer3D;
 enum class RenderPass : u8;
 struct Flat3D;
 struct Item;
@@ -72,6 +73,7 @@ private:
 	Renderer*              renderer_ = nullptr;
 	unique_ptr<gl::Shader> shader_3d_;
 	unique_ptr<gl::Shader> shader_3d_alphatest_;
+	unique_ptr<gl::Shader> shader_3d_sprite_;
 	unique_ptr<Skybox>     skybox_;
 	bool                   fullbright_ = false;
 	bool                   fog_        = true;
@@ -116,6 +118,24 @@ private:
 	bool                force_update_flat_groups_ = false;
 	bool                force_update_quad_groups_ = false;
 
+	// Things
+	struct Thing
+	{
+		unsigned index = 0;
+		float    z     = 0.0f;
+	};
+	struct ThingGroup
+	{
+		int                        type    = -1;
+		unsigned                   texture = 0;
+		Vec2f                      sprite_size;
+		bool                       decoration = false;
+		bool                       icon       = false;
+		vector<Thing>              things;
+		unique_ptr<SpriteBuffer3D> sprite_buffer_;
+	};
+	vector<ThingGroup> thing_groups_;
+
 	// Highlighted/selected items
 	bool                        highlight_enabled_ = true;
 	bool                        selection_enabled_ = true;
@@ -128,6 +148,7 @@ private:
 
 	void updateFlats(bool vis_check = false);
 	void updateWalls(bool vis_check = false);
+	void updateThings(bool vis_check = false);
 
 	void renderSkyFlatsQuads() const;
 	void renderGroups(
@@ -135,6 +156,7 @@ private:
 		const vector<RenderGroup>& groups,
 		const gl::Shader&          shader,
 		RenderPass                 pass);
+	void renderSprites(const gl::Shader& shader, bool decorations_only = false) const;
 
 	void addFlatOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const;
 	void addQuadOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const;

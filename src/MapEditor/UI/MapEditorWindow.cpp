@@ -553,15 +553,18 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 			return true;
 	}
 
+	// Clear current map
+	closeMap();
+
+	// Clear current map data
+	map_data_.clear();
+
 	// Show blank map
 	Show(true);
 	map_canvas_->Refresh();
 	Layout();
 	Update();
 	Refresh();
-
-	// Clear current map data
-	map_data_.clear();
 
 	// Get map parent archive
 	Archive* archive = nullptr;
@@ -587,9 +590,6 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 
 	// Set texture manager archive
 	textureManager().setArchive(app::archiveManager().shareArchive(archive));
-
-	// Clear current map
-	closeMap();
 
 	// Attempt to open map
 	ui::showSplash("Loading Map", true, this);

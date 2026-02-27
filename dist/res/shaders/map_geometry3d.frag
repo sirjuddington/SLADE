@@ -4,6 +4,7 @@ in VertexData
 	float brightness;
 	vec3  normal;
 	vec3  view_pos;
+	vec4  colour;
 } vertex_in;
 
 out vec4 f_colour;
@@ -40,7 +41,7 @@ void main()
 #endif
 
 	// Apply brightness and overall colour
-	frag_colour = frag_colour * colour * vec4(vec3(vertex_in.brightness), 1.0);
+	frag_colour = frag_colour * vertex_in.colour * colour * vec4(vec3(vertex_in.brightness), 1.0);
 
 	// Apply fog
 	f_colour = vec4(mix(fog_colour, frag_colour.rgb, fogFactor()), frag_colour.a);

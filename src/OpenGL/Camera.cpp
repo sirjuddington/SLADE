@@ -49,8 +49,8 @@ using namespace gl;
 //
 // -----------------------------------------------------------------------------
 CVAR(Bool, map3d_mlook_invert_y, false, CVar::Flag::Save)
-CVAR(Float, map3d_mlook_sensitivity_x, 1.0f, CVar::Flag::Save)
-CVAR(Float, map3d_mlook_sensitivity_y, 1.0f, CVar::Flag::Save)
+CVAR(Float, map3d_mlook_sensitivity_x, 1.0, CVar::Flag::Save)
+CVAR(Float, map3d_mlook_sensitivity_y, 1.0, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -63,7 +63,7 @@ CVAR(Float, map3d_mlook_sensitivity_y, 1.0f, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // Camera class constructor
 // -----------------------------------------------------------------------------
-Camera::Camera(const Vec3f& world_up) : world_up_{ world_up }
+Camera::Camera(const Vec3d& world_up) : world_up_{ world_up }
 {
 	updateVectors();
 	updateProjection();
@@ -72,7 +72,7 @@ Camera::Camera(const Vec3f& world_up) : world_up_{ world_up }
 // -----------------------------------------------------------------------------
 // Sets the camera's [pitch]
 // -----------------------------------------------------------------------------
-void Camera::setPitch(float pitch)
+void Camera::setPitch(double pitch)
 {
 	pitch_ = pitch;
 
@@ -83,7 +83,7 @@ void Camera::setPitch(float pitch)
 // -----------------------------------------------------------------------------
 // Moves the camera to [position]
 // -----------------------------------------------------------------------------
-void Camera::setPosition(const Vec3f& position)
+void Camera::setPosition(const Vec3d& position)
 {
 	position_ = position;
 }
@@ -91,7 +91,7 @@ void Camera::setPosition(const Vec3f& position)
 // -----------------------------------------------------------------------------
 // Sets the camera [direction]
 // -----------------------------------------------------------------------------
-void Camera::setDirection(const Vec2f& direction)
+void Camera::setDirection(const Vec2d& direction)
 {
 	direction_ = direction;
 
@@ -102,12 +102,12 @@ void Camera::setDirection(const Vec2f& direction)
 // -----------------------------------------------------------------------------
 // Sets the camera position to [position], facing [direction]
 // -----------------------------------------------------------------------------
-void Camera::set(const Vec3f& position, const Vec2f& direction)
+void Camera::set(const Vec3d& position, const Vec2d& direction)
 {
 	// Set camera position/direction
 	position_  = position;
 	direction_ = direction;
-	pitch_     = 0;
+	pitch_     = 0.0;
 
 	// Update camera vectors
 	updateVectors();
@@ -116,7 +116,7 @@ void Camera::set(const Vec3f& position, const Vec2f& direction)
 // -----------------------------------------------------------------------------
 // Sets the camera's horizontal field of view to [fov]
 // -----------------------------------------------------------------------------
-void Camera::setFov(float fov)
+void Camera::setFov(double fov)
 {
 	fov_ = fov;
 	updateProjection();
@@ -125,7 +125,7 @@ void Camera::setFov(float fov)
 // -----------------------------------------------------------------------------
 // Sets the camera's aspect ratio to [aspect]
 // -----------------------------------------------------------------------------
-void Camera::setAspectRatio(float aspect)
+void Camera::setAspectRatio(double aspect)
 {
 	aspect_ = aspect;
 	updateProjection();
@@ -134,7 +134,7 @@ void Camera::setAspectRatio(float aspect)
 // -----------------------------------------------------------------------------
 // Sets the camera's far clipping plane to [far]
 // -----------------------------------------------------------------------------
-void Camera::setFar(float far)
+void Camera::setFar(double far)
 {
 	far_ = far;
 	updateProjection();
@@ -143,9 +143,9 @@ void Camera::setFar(float far)
 // -----------------------------------------------------------------------------
 // Sets the camera's projection matrix
 // -----------------------------------------------------------------------------
-void Camera::setProjection(float width, float height, float near, float far, float fov_h)
+void Camera::setProjection(double width, double height, double near, double far, double fov_h)
 {
-	aspect_ = (1.6f / 1.333333f) * (width / height);
+	aspect_ = (1.6 / 1.333333) * (width / height);
 	fov_    = 2 * atan(tan(geometry::degToRad(fov_h) / 2) / aspect_);
 	near_   = near;
 	far_    = far;
@@ -166,7 +166,7 @@ void Camera::enableReverseDepth(bool enable)
 // Calculates and returns a 'strafe line' from the camera position along the
 // strafe vector (length 1)
 // -----------------------------------------------------------------------------
-Seg2f Camera::strafeLine() const
+Seg2d Camera::strafeLine() const
 {
 	return { position_.xy(), (position_ + strafe_).xy() };
 }
@@ -175,7 +175,7 @@ Seg2f Camera::strafeLine() const
 // Moves the camera the direction it is facing by [distance].
 // If [z] is false it will only be moved along x/y axes
 // -----------------------------------------------------------------------------
-void Camera::move(float distance, bool z)
+void Camera::move(double distance, bool z)
 {
 	// Move along direction vector
 	if (z)
@@ -196,11 +196,11 @@ void Camera::move(float distance, bool z)
 // -----------------------------------------------------------------------------
 // Rotates the camera by [angle] around the z axis
 // -----------------------------------------------------------------------------
-void Camera::turn(float angle)
+void Camera::turn(double angle)
 {
 	// Find rotated view point
-	Vec2f cp2d(position_.x, position_.y);
-	Vec2f nd = geometry::rotatePoint(cp2d, cp2d + direction_, angle);
+	Vec2d cp2d(position_.x, position_.y);
+	Vec2d nd = geometry::rotatePoint(cp2d, cp2d + direction_, angle);
 
 	// Update direction
 	direction_.x = nd.x - position_.x;
@@ -213,7 +213,7 @@ void Camera::turn(float angle)
 // -----------------------------------------------------------------------------
 // Moves the camera along the z axis by [distance]
 // -----------------------------------------------------------------------------
-void Camera::moveUp(float distance)
+void Camera::moveUp(double distance)
 {
 	position_.z += distance;
 
@@ -223,7 +223,7 @@ void Camera::moveUp(float distance)
 // -----------------------------------------------------------------------------
 // Moves the camera along the strafe axis by [distance]
 // -----------------------------------------------------------------------------
-void Camera::strafe(float distance)
+void Camera::strafe(double distance)
 {
 	position_.x += strafe_.x * distance;
 	position_.y += strafe_.y * distance;
@@ -234,14 +234,14 @@ void Camera::strafe(float distance)
 // -----------------------------------------------------------------------------
 // Rotates the camera view around the strafe axis by [amount]
 // -----------------------------------------------------------------------------
-void Camera::pitch(float amount)
+void Camera::pitch(double amount)
 {
 	// Pitch camera
 	pitch_ += amount;
 
 	// Clamp
-	float rad90 = math::PI * 0.5f;
-	pitch_      = glm::clamp(pitch_, -rad90, rad90);
+	double rad90 = math::PI * 0.5;
+	pitch_       = glm::clamp(pitch_, -rad90, rad90);
 
 	// Update vectors
 	updateVectors();
@@ -250,13 +250,13 @@ void Camera::pitch(float amount)
 // -----------------------------------------------------------------------------
 // Moves the camera direction/pitch based on [xrel],[yrel]
 // -----------------------------------------------------------------------------
-void Camera::look(float xrel, float yrel)
+void Camera::look(double xrel, double yrel)
 {
-	turn(-xrel * 0.1f * map3d_mlook_sensitivity_x);
+	turn(-xrel * 0.1 * map3d_mlook_sensitivity_x);
 	if (map3d_mlook_invert_y)
-		pitch(yrel * 0.003f * map3d_mlook_sensitivity_y);
+		pitch(yrel * 0.003 * map3d_mlook_sensitivity_y);
 	else
-		pitch(-yrel * 0.003f * map3d_mlook_sensitivity_y);
+		pitch(-yrel * 0.003 * map3d_mlook_sensitivity_y);
 }
 
 // -----------------------------------------------------------------------------
@@ -264,14 +264,14 @@ void Camera::look(float xrel, float yrel)
 // to be [view_hight] above the floor.
 // Returns true if the camera position was changed
 // -----------------------------------------------------------------------------
-bool Camera::applyGravity(float floor_height, float view_height, float mult)
+bool Camera::applyGravity(double floor_height, double view_height, double mult)
 {
 	bool changed = false;
 	auto feet_z  = position_.z - view_height; // Camera 'feet' position
 	if (feet_z > floor_height)
 	{
 		auto diff = feet_z - floor_height;
-		position_.z -= diff * 0.2f * mult;
+		position_.z -= diff * 0.2 * mult;
 		if (position_.z - view_height < floor_height)
 			position_.z = floor_height + view_height;
 		changed = true;
@@ -280,7 +280,7 @@ bool Camera::applyGravity(float floor_height, float view_height, float mult)
 	else if (feet_z < floor_height)
 	{
 		auto diff = floor_height - feet_z;
-		position_.z += diff * 0.5f * mult;
+		position_.z += diff * 0.5 * mult;
 		if (position_.z - view_height > floor_height)
 			position_.z = floor_height + view_height;
 		changed = true;
@@ -294,9 +294,9 @@ bool Camera::applyGravity(float floor_height, float view_height, float mult)
 // -----------------------------------------------------------------------------
 // Checks if a 2D point is within the camera's frustum
 // -----------------------------------------------------------------------------
-bool Camera::pointInFrustum2d(const Vec2f& point) const
+bool Camera::pointInFrustum2d(const Vec2d& point) const
 {
-	double z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
+	auto z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
 
 	// Check against left/right planes
 	for (auto plane : { FrustumPlane::Left, FrustumPlane::Right })
@@ -311,7 +311,7 @@ bool Camera::pointInFrustum2d(const Vec2f& point) const
 // -----------------------------------------------------------------------------
 bool Camera::lineInFrustum2d(const Seg2d& line) const
 {
-	double z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
+	auto z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
 
 	// Check against left/right planes
 	for (auto plane : { FrustumPlane::Left, FrustumPlane::Right })
@@ -330,7 +330,7 @@ bool Camera::lineInFrustum2d(const Seg2d& line) const
 // -----------------------------------------------------------------------------
 bool Camera::bboxInFrustum2d(const BBox& bbox) const
 {
-	double z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
+	auto z = pitch_ < 0 ? position_.z - 4096.0 : position_.z + 4096.0;
 
 	// Check against left/right planes
 	for (auto plane : { FrustumPlane::Left, FrustumPlane::Right })
@@ -355,10 +355,10 @@ void Camera::updateVectors()
 	direction_ = glm::normalize(direction_);
 
 	// Calculate strafe vector
-	strafe_ = glm::normalize(glm::cross(Vec3f(direction_, 0), world_up_));
+	strafe_ = glm::normalize(glm::cross(Vec3d(direction_, 0), world_up_));
 
 	// Calculate 3d direction vector
-	dir3d_ = glm::normalize(geometry::rotateVector3D(Vec3f(direction_, 0), strafe_, pitch_));
+	dir3d_ = glm::normalize(geometry::rotateVector3D(Vec3d(direction_, 0), strafe_, pitch_));
 
 	// Calculate up vector
 	up_ = glm::normalize(glm::cross(strafe_, dir3d_));

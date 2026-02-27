@@ -54,9 +54,9 @@ namespace gl
 		bool setUniform(const string& name, float value) const;
 		bool setUniform(const string& name, double value) const { return setUniform(name, static_cast<float>(value)); }
 		bool setUniform(const string& name, uint16_t value) const;
-		bool setUniform(const string& name, const glm::vec2& value) const;
-		bool setUniform(const string& name, const glm::vec3& value) const;
-		bool setUniform(const string& name, const glm::vec4& value) const;
+		bool setUniform(const string& name, glm::vec2 value) const;
+		bool setUniform(const string& name, glm::vec3 value) const;
+		bool setUniform(const string& name, glm::vec4 value) const;
 		bool setUniform(const string& name, const glm::mat4& value) const;
 		bool setUniform(const string& name, const ColRGBA& value) const;
 

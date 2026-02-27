@@ -56,6 +56,7 @@
 #include "Quad3D.h"
 #include "Renderer.h"
 #include "Skybox.h"
+#include "SpriteBuffer3D.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -68,7 +69,6 @@ using namespace mapeditor;
 // -----------------------------------------------------------------------------
 CVAR(Float, map3d_max_render_dist, 0, CVar::Flag::Save)
 CVAR(Float, map3d_max_thing_dist, 0, CVar::Flag::Save)
-CVAR(Int, map3d_thing_icon_size, 16, CVar::Flag::Save)
 CVAR(Bool, map3d_render_sky, true, CVar::Flag::Save)
 CVAR(Int, map3d_things, 1, CVar::Flag::Save)
 CVAR(Int, map3d_things_style, 1, CVar::Flag::Save)
@@ -88,7 +88,12 @@ namespace
 // -----------------------------------------------------------------------------
 // Sets up common shader uniforms for the given 3d geometry [shader]
 // -----------------------------------------------------------------------------
-void setupShaderUniforms(const gl::Shader& shader, const gl::Camera& camera, bool fullbright, bool fog)
+void setupShaderUniforms(
+	const gl::Shader& shader,
+	const gl::Camera& camera,
+	bool              fullbright,
+	bool              fog,
+	bool              sprite_shader)
 {
 	// Set ModelView/Projection matrix uniforms from camera
 	shader.setUniform("modelview", camera.viewMatrix());
@@ -98,8 +103,17 @@ void setupShaderUniforms(const gl::Shader& shader, const gl::Camera& camera, boo
 	shader.setUniform("fullbright", fullbright);
 	shader.setUniform("fog_density", fog ? map3d_fog_density : 0.0f);
 	shader.setUniform("brightness_mult", map3d_brightness.value);
-	shader.setUniform("fake_contrast", map3d_fake_contrast);
 	shader.setUniform("max_dist", map3d_max_render_dist > 0.0f ? map3d_max_render_dist : 40000.0f);
+	if (sprite_shader)
+	{
+		// Uniforms for sprite shader
+		shader.setUniform("cam_right", static_cast<Vec3f>(camera.strafeVector()));
+	}
+	else
+	{
+		// Uniforms for non-sprite shaders
+		shader.setUniform("fake_contrast", map3d_fake_contrast);
+	}
 }
 } // namespace
 
@@ -155,6 +169,12 @@ void MapRenderer3D::render(const gl::Camera& camera)
 		shader_3d_alphatest_->define("ALPHA_TEST");
 		shader_3d_alphatest_->loadResourceEntries("map_geometry3d.vert", "map_geometry3d.frag");
 	}
+	if (!shader_3d_sprite_)
+	{
+		shader_3d_sprite_ = std::make_unique<gl::Shader>("map_3d_sprite");
+		shader_3d_sprite_->define("ALPHA_TEST");
+		shader_3d_sprite_->loadResourceEntries("map_sprite3d.vert", "map_geometry3d.frag");
+	}
 
 	// Setup GL stuff
 	glEnable(GL_DEPTH_TEST);
@@ -166,8 +186,9 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	gl::setBlend(gl::Blend::Normal);
 
 	// Setup shaders
-	setupShaderUniforms(*shader_3d_, camera, fullbright_, fog_);
-	setupShaderUniforms(*shader_3d_alphatest_, camera, fullbright_, fog_);
+	setupShaderUniforms(*shader_3d_, camera, fullbright_, fog_, false);
+	setupShaderUniforms(*shader_3d_alphatest_, camera, fullbright_, fog_, false);
+	setupShaderUniforms(*shader_3d_sprite_, camera, fullbright_, fog_, true);
 
 	// Update visibility if needed
 	if (map3d_max_render_dist > 0.0f)
@@ -179,6 +200,8 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	// Update flats and walls
 	updateFlats(map3d_max_render_dist > 0.0f);
 	updateWalls(map3d_max_render_dist > 0.0f);
+	if (map3d_things > 0)
+		updateThings();
 
 	// Render sky first if needed
 	shader_3d_->bind();
@@ -214,12 +237,17 @@ void MapRenderer3D::render(const gl::Camera& camera)
 		renderGroups(*vb_quads_, quad_groups_, *shader_3d_, RenderPass::Sky); // Walls
 	}
 
-	// Second pass, render masked flats/walls
+	// Second pass, render masked flats/walls and sprites
 	shader_3d_alphatest_->bind();
 	renderGroups(*vb_flats_, flat_groups_, *shader_3d_alphatest_, RenderPass::Masked); // Flats
 	renderGroups(*vb_quads_, quad_groups_, *shader_3d_alphatest_, RenderPass::Masked); // Walls
+	if (map3d_things > 0)
+	{
+		shader_3d_sprite_->bind();
+		renderSprites(*shader_3d_sprite_, map3d_things == 2);
+	}
 
-	// Third pass, render transparent flats/walls
+	// Third pass, render transparent flats/walls (TODO: transparent sprites)
 	shader_3d_->bind();
 	glDepthMask(GL_FALSE);
 	renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Transparent); // Flats
@@ -454,6 +482,9 @@ void MapRenderer3D::clearData()
 	vb_quads_->buffer().clear();
 	line_quads_.clear();
 	quad_groups_.clear();
+
+	// Things
+	thing_groups_.clear();
 
 	// Selection/Highlight
 	highlight_lines_.reset();

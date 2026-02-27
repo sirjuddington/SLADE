@@ -547,7 +547,7 @@ bool Shader::setUniform(const string& name, uint16_t value) const
 // -----------------------------------------------------------------------------
 // Sets the vec2 uniform [name] to [value]
 // -----------------------------------------------------------------------------
-bool Shader::setUniform(const string& name, const glm::vec2& value) const
+bool Shader::setUniform(const string& name, glm::vec2 value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{
@@ -562,7 +562,7 @@ bool Shader::setUniform(const string& name, const glm::vec2& value) const
 // -----------------------------------------------------------------------------
 // Sets the vec3 uniform [name] to [value]
 // -----------------------------------------------------------------------------
-bool Shader::setUniform(const string& name, const glm::vec3& value) const
+bool Shader::setUniform(const string& name, glm::vec3 value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{
@@ -577,7 +577,7 @@ bool Shader::setUniform(const string& name, const glm::vec3& value) const
 // -----------------------------------------------------------------------------
 // Sets the vec4 uniform [name] to [value]
 // -----------------------------------------------------------------------------
-bool Shader::setUniform(const string& name, const glm::vec4& value) const
+bool Shader::setUniform(const string& name, glm::vec4 value) const
 {
 	if (auto loc = uniformLocation(name); loc >= 0)
 	{

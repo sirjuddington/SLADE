@@ -1169,6 +1169,10 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		tokens.emplace_back(tz.current().text);
 		tz.adv();
+
+		// DB comments are treated as standalone statements
+		if (strutil::startsWith(tokens.back(), editor_comment_prefix))
+			return true;
 	}
 
 	// Block

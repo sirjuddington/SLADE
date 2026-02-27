@@ -9,6 +9,7 @@ out VertexData
 	float brightness;
 	vec3  normal;
 	vec3  view_pos;
+	vec4  colour;
 } vertex_out;
 
 uniform mat4  projection;
@@ -22,6 +23,7 @@ void main()
 {
 	vertex_out.tex_coord = in_tex_coord;
 	vertex_out.normal = in_normal;
+	vertex_out.colour = vec4(1.0);
 
 	if (fullbright)
 		vertex_out.brightness = 1.0;
