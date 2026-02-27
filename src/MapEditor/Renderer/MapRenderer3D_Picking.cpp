@@ -248,12 +248,6 @@ Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View
 	Ray   ray{
 		  .origin_3d = camera.position(), .origin_2d = camera.position().xy(), .dir_3d = ray_dir, .dir_2d = ray_dir.xy()
 	};
-	// Seg2d           strafe(camera.position().xy(), (camera.position() + camera.str).get2d());
-
-	// Check for required map structures
-	if (!map_ || line_quads_.size() != map_->nLines() || sector_flats_.size() != map_->nSectors()
-		/*|| things_.size() != map_->nThings()*/)
-		return current;
 
 	// Check lines
 	float height, dist;
@@ -282,12 +276,10 @@ Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View
 	}
 
 	// Check sectors
-	for (unsigned a = 0; a < map_->nSectors(); a++)
+	for (const auto& sf : sector_flats_)
 	{
 		// Find intersecting flat
-		if (auto [flat, dist] = findNearestIntersectingSectorFlat(
-				*map_->sector(a), sector_flats_[a].flats, ray, min_dist);
-			flat)
+		if (auto [flat, dist] = findNearestIntersectingSectorFlat(*sf.sector, sf.flats, ray, min_dist); flat)
 		{
 			// Found intersecting flat, update min distance
 			min_dist = dist;
@@ -321,23 +313,23 @@ Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View
 		{
 			// Ignore if not visible
 			auto thing = map_->thing(ti.index);
-			// if (geometry::lineSide(thing->position(), camera.strafeLine()) < 0)
-			//	continue;
+			if (geometry::lineSide(thing->position(), camera.strafeLine()) > 0)
+				continue;
 
 			// Find distance to thing sprite
 			const auto halfwidth = static_cast<double>(group.sprite_size.x) * 0.5;
 			dist                 = geometry::distanceRayLine(
                 ray.origin_2d,
                 ray.origin_2d + ray.dir_2d,
-                thing->position() - camera.strafeVector().xy() * halfwidth,
-                thing->position() + camera.strafeVector().xy() * halfwidth);
+                thing->position() + camera.strafeVector().xy() * halfwidth,
+                thing->position() - camera.strafeVector().xy() * halfwidth);
 
 			// Ignore if no intersection or something was closer
 			if (dist < 0 || dist >= min_dist)
 				continue;
 
 			// Check intersection height
-			height = camera.position().z + camera.directionVector().z * dist;
+			height = ray.origin_3d.z + ray.dir_3d.z * dist;
 			if (height >= ti.z && height <= ti.z + group.sprite_size.y)
 			{
 				current.index = ti.index;

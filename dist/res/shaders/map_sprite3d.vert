@@ -40,7 +40,7 @@ void main()
 	vec4 view_position = modelview * position;
 	vertex_out.view_pos = view_position.xyz;
 
-	vertex_out.tex_coord = vec2(0.5 + in_vertex.x, 1.0 - in_vertex.y);
+	vertex_out.tex_coord = vec2(0.5 - in_vertex.x, 1.0 - in_vertex.y);
 
 	gl_Position = projection * view_position;
 }
