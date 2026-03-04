@@ -808,6 +808,10 @@ void app::exit(bool save_config)
 	wxGetApp().Exit();
 }
 
+// -----------------------------------------------------------------------------
+// Handler for when an unhandled exception occurs - shows the exception dialog
+// with the current exception's stack trace and logs the error to the console
+// -----------------------------------------------------------------------------
 void app::handleException()
 {
 	static auto formatter = cpptrace::formatter{}
@@ -848,7 +852,6 @@ void app::handleException()
 	}
 }
 
-
 // ----------------------------------------------------------------------------
 // Returns the current version of SLADE
 // ----------------------------------------------------------------------------
@@ -879,6 +882,9 @@ string app::path(string_view filename, Dir dir)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Returns the platform SLADE is running on
+// -----------------------------------------------------------------------------
 app::Platform app::platform()
 {
 #ifdef __WXMSW__
@@ -892,12 +898,18 @@ app::Platform app::platform()
 #endif
 }
 
+// -----------------------------------------------------------------------------
+// Returns the filename of the application icon
+// -----------------------------------------------------------------------------
 const string& app::iconFile()
 {
 	static string icon = "slade.ico";
 	return icon;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if this is a 64-bit Windows build
+// -----------------------------------------------------------------------------
 bool app::isWin64Build()
 {
 #if defined(_WIN64)
@@ -907,11 +919,44 @@ bool app::isWin64Build()
 #endif
 }
 
+// -----------------------------------------------------------------------------
+// Returns a description of the operating system
+// -----------------------------------------------------------------------------
+string app::osDescription()
+{
+#if defined(__WXGTK__)
+	// On Linux, return the distribution name and version instead of just the linux kernel version
+	auto dist_info = wxGetLinuxDistributionInfo();
+	auto linux_ver = wxGetOsDescription().utf8_string();
+
+	if (strutil::startsWithCI(linux_ver, "Linux "))
+		linux_ver = linux_ver.substr(6); // Remove "Linux " from the start of the version string
+
+	// If the distribution code name is available, include it in the description
+	if (!dist_info.CodeName.empty())
+		return fmt::format(
+			"{} \"{}\" ({})",
+			dist_info.Description.utf8_string(),
+			dist_info.CodeName.Capitalize().utf8_string(),
+			linux_ver);
+
+	return fmt::format("{} ({})", dist_info.Description.utf8_string(), linux_ver);
+#else
+	return wxGetOsDescription().utf8_string();
+#endif
+}
+
+// ----------------------------------------------------------------------------
+// Returns the id of the main thread
+// -----------------------------------------------------------------------------
 std::thread::id app::mainThreadId()
 {
 	return main_thread_id;
 }
 
+// ----------------------------------------------------------------------------
+// Returns true if the system is using a dark theme
+// -----------------------------------------------------------------------------
 bool app::isDarkTheme()
 {
 	return wxSystemSettings::GetAppearance().IsDark();

@@ -165,7 +165,7 @@ void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace)
 	// System info
 	gl::Info gl_info = gl::sysInfo();
 	string   sys_info;
-	sys_info += fmt::format("Operating System: {}\n", wxGetOsDescription().utf8_string());
+	sys_info += fmt::format("Operating System: {}\n", app::osDescription());
 	sys_info += fmt::format("Graphics Vendor: {}\n", gl_info.vendor);
 	sys_info += fmt::format("Graphics Hardware: {}\n", gl_info.renderer);
 	sys_info += fmt::format("OpenGL Version: {}\n", gl_info.version);

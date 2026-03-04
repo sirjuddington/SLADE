@@ -72,6 +72,7 @@ namespace app
 	Platform      platform();
 	const string& iconFile();
 	bool          isWin64Build();
+	string        osDescription();
 
 	std::thread::id mainThreadId();
 	bool            isDarkTheme();
