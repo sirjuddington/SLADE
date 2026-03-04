@@ -44,6 +44,16 @@ using namespace ui;
 
 // -----------------------------------------------------------------------------
 //
+// Constants
+//
+// -----------------------------------------------------------------------------
+constexpr int MINIMAP_SMALL  = 80;
+constexpr int MINIMAP_MEDIUM = 110;
+constexpr int MINIMAP_LARGE  = 140;
+
+
+// -----------------------------------------------------------------------------
+//
 // External Variables
 //
 // -----------------------------------------------------------------------------
@@ -70,6 +80,7 @@ EXTERN_CVAR(Int, txed_line_extra_height)
 EXTERN_CVAR(Bool, txed_tab_spaces)
 EXTERN_CVAR(Int, txed_show_whitespace)
 EXTERN_CVAR(Bool, txed_calltips_argset_kb)
+EXTERN_CVAR(Int, txed_minimap_width)
 
 
 // -----------------------------------------------------------------------------
@@ -117,6 +128,9 @@ wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
         panel, { "Off", "Background", "Background+Underline" }, "Current line hilight:");
 	rbp_show_whitespace_ = new RadioButtonPanel(
 		panel, { "Off", "After indentation only", "Always" }, "Show whitespace:");
+#if wxCHECK_VERSION(3, 3, 2)
+	rbp_minimap_ = new RadioButtonPanel(panel, { "Off", "Small", "Medium", "Large" }, "Minimap:");
+#endif
 
 
 	// Create main sizer
@@ -156,6 +170,9 @@ wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 	gb_sizer->Add(spin_line_spacing_, { row++, 1 }, { 1, 1 });
 	gb_sizer->Add(rbp_line_hilight_, { row++, 0 }, { 1, 3 });
 	gb_sizer->Add(rbp_show_whitespace_, { row++, 0 }, { 1, 3 });
+#if wxCHECK_VERSION(3, 3, 2)
+	gb_sizer->Add(rbp_minimap_, { row++, 0 }, { 1, 3 });
+#endif
 
 	return panel;
 }
@@ -243,6 +260,17 @@ void TextEditorSettingsPanel::loadSettings()
 	cb_tab_spaces_->SetValue(txed_tab_spaces);
 	rbp_show_whitespace_->setSelection(txed_show_whitespace);
 
+#if wxCHECK_VERSION(3, 3, 2)
+	if (txed_minimap_width <= 0)
+		rbp_minimap_->setSelection(0);
+	else if (txed_minimap_width <= MINIMAP_SMALL)
+		rbp_minimap_->setSelection(1);
+	else if (txed_minimap_width <= MINIMAP_MEDIUM)
+		rbp_minimap_->setSelection(2);
+	else
+		rbp_minimap_->setSelection(3);
+#endif
+
 	style_panel_->loadSettings();
 }
 
@@ -273,6 +301,20 @@ void TextEditorSettingsPanel::applySettings()
 	txed_line_extra_height     = spin_line_spacing_->GetValue();
 	txed_tab_spaces            = cb_tab_spaces_->GetValue();
 	txed_show_whitespace       = rbp_show_whitespace_->getSelection();
+
+#if wxCHECK_VERSION(3, 3, 2)
+	// Apply minimap width (allowing for custom width values)
+	if (rbp_minimap_->getSelection() == 0)
+		txed_minimap_width = 0;
+	else if (rbp_minimap_->getSelection() == 1 && (txed_minimap_width <= 0 || txed_minimap_width > MINIMAP_SMALL))
+		txed_minimap_width = MINIMAP_SMALL;
+	else if (
+		rbp_minimap_->getSelection() == 2
+		&& (txed_minimap_width <= MINIMAP_SMALL || txed_minimap_width > MINIMAP_MEDIUM))
+		txed_minimap_width = MINIMAP_MEDIUM;
+	else if (rbp_minimap_->getSelection() == 3 && txed_minimap_width <= MINIMAP_MEDIUM)
+		txed_minimap_width = MINIMAP_LARGE;
+#endif
 
 	style_panel_->applySettings();
 }

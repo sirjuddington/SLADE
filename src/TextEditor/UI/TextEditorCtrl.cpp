@@ -57,7 +57,7 @@ using namespace slade;
 CVAR(Int, txed_tab_width, 4, CVar::Flag::Save)
 CVAR(Bool, txed_auto_indent, true, CVar::Flag::Save)
 CVAR(Bool, txed_syntax_hilight, true, CVar::Flag::Save)
-CVAR(Bool, txed_brace_match, false, CVar::Flag::Save)
+CVAR(Bool, txed_brace_match, true, CVar::Flag::Save)
 CVAR(Int, txed_edge_column, 80, CVar::Flag::Save)
 CVAR(Bool, txed_indent_guides, false, CVar::Flag::Save)
 CVAR(String, txed_style_set, "SLADE Default", CVar::Flag::Save)
@@ -83,6 +83,7 @@ CVAR(Int, txed_font_quality, wxSTC_EFF_QUALITY_DEFAULT, CVar::Flag::Save)
 CVAR(Bool, txed_fr_matchcase, false, CVar::Save)
 CVAR(Bool, txed_fr_matchword, false, CVar::Save)
 CVAR(Bool, txed_fr_matchword_start, false, CVar::Save)
+CVAR(Int, txed_minimap_width, 0, CVar::Flag::Save)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);

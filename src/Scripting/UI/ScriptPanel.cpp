@@ -40,8 +40,19 @@
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
+#if wxCHECK_VERSION(3, 3, 2)
+#include <wx/stc/minimap.h>
+#endif
 
 using namespace slade;
+
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(Int, txed_minimap_width)
 
 
 // -----------------------------------------------------------------------------
@@ -69,11 +80,25 @@ ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPa
 	sizer->AddSpacer(lh.padSmall());
 
 	// Text Editor
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setLanguage(TextLanguage::fromId("sladescript"));
 	if (script_)
 		text_editor_->SetText(wxString::FromUTF8(script_->text));
-	sizer->Add(text_editor_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	hbox->Add(text_editor_, wxSizerFlags(1).Expand());
+
+	// Create the minimap if enabled (and supported)
+#if wxCHECK_VERSION(3, 3, 2)
+	if (txed_minimap_width > 0)
+	{
+		auto minimap = new wxStyledTextCtrlMiniMap(this, text_editor_);
+		text_editor_->SetUseVerticalScrollBar(false);
+		minimap->SetUseVerticalScrollBar(true);
+		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
+		hbox->Add(minimap, wxSizerFlags().Expand());
+	}
+#endif
 
 	// Find+Replace panel
 	find_replace_panel_ = new FindReplacePanel(this, *text_editor_);

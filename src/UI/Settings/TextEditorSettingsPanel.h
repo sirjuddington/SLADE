@@ -41,6 +41,7 @@ private:
 	wxCheckBox*       cb_match_cursor_word_     = nullptr;
 	RadioButtonPanel* rbp_line_hilight_         = nullptr;
 	RadioButtonPanel* rbp_show_whitespace_      = nullptr;
+	RadioButtonPanel* rbp_minimap_              = nullptr;
 
 	TextEditorStyleSettingsPanel* style_panel_ = nullptr;
 

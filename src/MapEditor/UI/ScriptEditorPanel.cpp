@@ -44,6 +44,9 @@
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
+#if wxCHECK_VERSION(3, 3, 2)
+#include <wx/stc/minimap.h>
+#endif
 
 using namespace slade;
 
@@ -63,6 +66,7 @@ CVAR(Bool, script_word_wrap, false, CVar::Flag::Save)
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, txed_trim_whitespace)
+EXTERN_CVAR(Int, txed_minimap_width)
 
 
 // -----------------------------------------------------------------------------
@@ -99,9 +103,23 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	hbox->Add(vbox, wxSizerFlags(1).Expand());
 
+	auto tx_hbox = new wxBoxSizer(wxHORIZONTAL);
+	vbox->Add(tx_hbox, lh.sfWithBorder(1).Expand());
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setJumpToControl(choice_jump_to_);
-	vbox->Add(text_editor_, lh.sfWithBorder(1).Expand());
+	tx_hbox->Add(text_editor_, wxSizerFlags(1).Expand());
+
+	// Create the minimap if enabled (and supported)
+#if wxCHECK_VERSION(3, 3, 2)
+	if (txed_minimap_width > 0)
+	{
+		auto minimap = new wxStyledTextCtrlMiniMap(this, text_editor_);
+		text_editor_->SetUseVerticalScrollBar(false);
+		minimap->SetUseVerticalScrollBar(true);
+		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
+		tx_hbox->Add(minimap, wxSizerFlags().Expand());
+	}
+#endif
 
 	// Set language
 	auto lang = game::configuration().scriptLanguage();

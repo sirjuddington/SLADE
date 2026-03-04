@@ -410,6 +410,10 @@ void ArchivePanel::bindEvents(Archive* archive)
 		wxEVT_SPLITTER_SASH_POS_CHANGED,
 		[this](wxSplitterEvent& e)
 		{
+			// For some reason *any* child splitter will trigger this event
+			if (e.GetEventObject() != splitter_)
+				return;
+
 			if (auto archive = archive_.lock().get())
 			{
 				auto pos = ToDIP(e.GetSashPosition());

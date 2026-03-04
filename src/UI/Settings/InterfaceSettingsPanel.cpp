@@ -62,9 +62,40 @@ EXTERN_CVAR(Int, win_darkmode)
 
 // ----------------------------------------------------------------------------
 //
+// Functions
+//
+// ----------------------------------------------------------------------------
+namespace
+{
+// ----------------------------------------------------------------------------
+// Returns an appropriate icon size for the selected size option, allowing
+// custom size within range if one is currently set
+// ----------------------------------------------------------------------------
+int iconSize(int current, int selection)
+{
+	// Small (16), allow from 1-16
+	if (selection == 0 && current > 16)
+		return 16;
+
+	// Medium (24), allow from 17-24
+	if (selection == 1 && current > 24 || current <= 16)
+		return 24;
+
+	// Large (32), allow anything above 24
+	if (selection == 2 && current <= 24)
+		return 32;
+
+	return current;
+}
+} // namespace
+
+
+// ----------------------------------------------------------------------------
+//
 // InterfaceSettingsPanel Class Functions
 //
 // ----------------------------------------------------------------------------
+
 
 // ----------------------------------------------------------------------------
 // InterfaceSettingsPanel class constructor
@@ -138,23 +169,13 @@ void InterfaceSettingsPanel::applySettings()
 
 	// Toolbar icons
 	iconset_general = choice_toolbar_iconset_->GetString(choice_toolbar_iconset_->GetSelection()).utf8_string();
-	if (choice_toolbar_size_->GetSelection() == 0)
-		toolbar_size = 16;
-	else if (choice_toolbar_size_->GetSelection() == 1)
-		toolbar_size = 24;
-	else
-		toolbar_size = 32;
+	toolbar_size    = iconSize(toolbar_size, choice_toolbar_size_->GetSelection());
 
 	// Entry List
 	iconset_entry_list = choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()).utf8_string();
 	elist_icon_padding = spin_elist_icon_pad_->GetValue();
-	if (choice_elist_icon_size_->GetSelection() == 0)
-		elist_icon_size = 16;
-	else if (choice_elist_icon_size_->GetSelection() == 1)
-		elist_icon_size = 24;
-	else
-		elist_icon_size = 32;
-	elist_type_bgcol = cb_elist_bgcol_->GetValue();
+	elist_icon_size    = iconSize(elist_icon_size, choice_elist_icon_size_->GetSelection());
+	elist_type_bgcol   = cb_elist_bgcol_->GetValue();
 
 	colour_panel_->applySettings();
 }

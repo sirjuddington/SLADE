@@ -310,8 +310,7 @@ void MainWindow::setupLayout()
 	toolbar_->registerDropdownMenu("bookmarks", panel_archivemanager_->bookmarksMenu());
 
 	// Create toolbar from JSON definition
-	auto toolbar_entry = app::programResource()->entryAtPath("toolbars/main_window.json");
-	toolbar_->loadLayout(toolbar_entry->data().asString());
+	toolbar_->loadLayoutFromResource("main_window");
 
 	// Archive toolbar is initially disabled
 	toolbar_->enableGroup("Archive", false);
@@ -323,7 +322,6 @@ void MainWindow::setupLayout()
 			.ToolbarPane()
 			.Top()
 			.CaptionVisible(false)
-			.MinSize(-1, toolbar_->GetMinSize().y)
 			.Resizable(false)
 			.PaneBorder(false)
 			.Movable(false)

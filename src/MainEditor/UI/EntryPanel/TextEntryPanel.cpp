@@ -41,11 +41,15 @@
 #include "TextEditor/TextStyle.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
+#include "UI/Controls/Splitter.h"
 #include "UI/Dialogs/SettingsDialog.h"
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
+#if wxCHECK_VERSION(3, 3, 2)
+#include <wx/stc/minimap.h>
+#endif
 
 using namespace slade;
 
@@ -56,6 +60,7 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, txed_trim_whitespace)
+EXTERN_CVAR(Int, txed_minimap_width)
 
 
 // -----------------------------------------------------------------------------
@@ -71,8 +76,22 @@ EXTERN_CVAR(Bool, txed_trim_whitespace)
 TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 {
 	// Create the text area
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer_main_->Add(hbox, wxSizerFlags(1).Expand());
 	text_area_ = new TextEditorCtrl(this, -1);
-	sizer_main_->Add(text_area_, wxSizerFlags(1).Expand());
+	hbox->Add(text_area_, wxSizerFlags(1).Expand());
+
+	// Create the minimap if enabled (and supported)
+#if wxCHECK_VERSION(3, 3, 2)
+	if (txed_minimap_width > 0)
+	{
+		auto minimap = new wxStyledTextCtrlMiniMap(this, text_area_);
+		text_area_->SetUseVerticalScrollBar(false);
+		minimap->SetUseVerticalScrollBar(true);
+		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
+		hbox->Add(minimap, wxSizerFlags().Expand());
+	}
+#endif
 
 	// Create the find+replace panel
 	panel_fr_ = new FindReplacePanel(this, *text_area_);
