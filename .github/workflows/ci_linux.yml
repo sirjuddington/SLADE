@@ -1,6 +1,6 @@
 name: Continuous Integration (Linux)
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   build:
@@ -27,14 +27,14 @@ jobs:
             package_name: "linux_clang"
             artifact_path: build/*
 
-          - name: "Linux Clang (wx3.3, No WebView)"
+          - name: "Linux Clang (wx3.3)"
             os: ubuntu-24.04
             release_appimage: true
             build_wx33: true
             shell: bash
             extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ \
                             -DWITH_WXPATH=./wxWidgets/build-cmake"
-            package_name: "linux_clang_nowebview"
+            package_name: "linux_clang_wx33"
             artifact_path: build/*
 
     steps:
@@ -54,11 +54,11 @@ jobs:
       - name: Build wxWidgets 3.3
         if: ${{ matrix.config.build_wx33 }}
         run: |
-          git clone https://github.com/wxWidgets/wxWidgets --branch v3.3.1
+          git clone https://github.com/wxWidgets/wxWidgets --branch v3.3.2
           cd wxWidgets
           git submodule update --init --recursive
           mkdir build-cmake
-          cmake -G "Ninja" -B "build-cmake" -DwxBUILD_SHARED=ON -DwxUSE_OPENGL=ON -DwxUSE_WEBVIEW=ON .
+          cmake -G "Ninja" -B "build-cmake" -DwxBUILD_SHARED=ON -DwxUSE_OPENGL=ON .
           cmake --build "build-cmake" --config RelWithDebInfo
           sudo cmake --build "build-cmake" --target install --config RelWithDebInfo
           sudo ldconfig

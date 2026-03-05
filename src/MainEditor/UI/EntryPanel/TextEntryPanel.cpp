@@ -89,6 +89,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 		text_area_->SetUseVerticalScrollBar(false);
 		minimap->SetUseVerticalScrollBar(true);
 		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
+		minimap->SetDoubleBuffered(true);
 		hbox->Add(minimap, wxSizerFlags().Expand());
 	}
 #endif
