@@ -44,6 +44,7 @@
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/MathStuff.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -202,7 +203,7 @@ std::tuple<const Flat3D*, float> findNearestIntersectingSectorFlat(
 						 : flat.controlSector()->floor().plane;
 
 		dist = geometry::distanceRayPlane(ray.origin_3d, ray.dir_3d, plane);
-		if (dist <= 0 || dist >= min_dist)
+		if (dist < math::EPSILON || dist >= min_dist)
 			continue;
 
 		// Check if on the correct side of the plane
@@ -257,7 +258,7 @@ Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View
 		dist = geometry::distanceRayLine(ray.origin_2d, ray.origin_2d + ray.dir_2d, lq.line->start(), lq.line->end());
 
 		// Ignore if no intersection or something was closer
-		if (dist < 0 || dist >= min_dist)
+		if (dist < math::EPSILON || dist >= min_dist)
 			continue;
 
 		// Check side of camera
@@ -325,16 +326,17 @@ Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View
                 thing->position() - camera.strafeVector().xy() * halfwidth);
 
 			// Ignore if no intersection or something was closer
-			if (dist < 0 || dist >= min_dist)
+			if (dist < math::EPSILON || dist >= min_dist)
 				continue;
 
 			// Check intersection height
 			height = ray.origin_3d.z + ray.dir_3d.z * dist;
 			if (height >= ti.z && height <= ti.z + group.sprite_size.y)
 			{
-				current.index = ti.index;
-				current.type  = ItemType::Thing;
-				min_dist      = dist;
+				current.index      = ti.index;
+				current.real_index = ti.index;
+				current.type       = ItemType::Thing;
+				min_dist           = dist;
 			}
 		}
 	}

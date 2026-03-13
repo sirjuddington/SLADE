@@ -53,13 +53,29 @@
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/Shader.h"
+#include "OpenGL/VertexBuffer3D.h"
 #include "Quad3D.h"
 #include "Renderer.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "Skybox.h"
 #include "SpriteBuffer3D.h"
 
 using namespace slade;
 using namespace mapeditor;
+
+
+// -----------------------------------------------------------------------------
+//
+// Constants
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+constexpr int HL_NONE    = 0;
+constexpr int HL_OUTLINE = 1;
+constexpr int HL_FULL    = 2;
+constexpr int HL_GLOW    = 3;
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -72,7 +88,7 @@ CVAR(Float, map3d_max_thing_dist, 0, CVar::Flag::Save)
 CVAR(Bool, map3d_render_sky, true, CVar::Flag::Save)
 CVAR(Int, map3d_things, 1, CVar::Flag::Save)
 CVAR(Int, map3d_things_style, 1, CVar::Flag::Save)
-CVAR(Int, map3d_hilight, 3, CVar::Flag::Save)
+CVAR(Int, map3d_hilight, HL_GLOW, CVar::Flag::Save)
 CVAR(Float, map3d_brightness, 1, CVar::Flag::Save)
 CVAR(Float, map3d_fog_density, 1, CVar::Flag::Save)
 CVAR(Bool, map3d_fake_contrast, true, CVar::Flag::Save)
@@ -104,6 +120,7 @@ void setupShaderUniforms(
 	shader.setUniform("fog_density", fog ? map3d_fog_density : 0.0f);
 	shader.setUniform("brightness_mult", map3d_brightness.value);
 	shader.setUniform("max_dist", map3d_max_render_dist > 0.0f ? map3d_max_render_dist : 40000.0f);
+	shader.setUniform("colour", glm::vec4(1.0f));
 	if (sprite_shader)
 	{
 		// Uniforms for sprite shader
@@ -265,7 +282,7 @@ void MapRenderer3D::render(const gl::Camera& camera)
 // ----------------------------------------------------------------------------
 void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, const gl::View& view, float alpha)
 {
-	if (!highlight_enabled_ || map3d_hilight == 0)
+	if (!highlight_enabled_ || map3d_hilight == HL_NONE || item.index < 0)
 		return;
 
 	// Create buffers if needed
@@ -283,7 +300,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 	auto  hl_colour = def.colour.ampf(1.0f, 1.0f, 1.0f, alpha);
 
 	// Outline
-	if (map3d_hilight == 1 || map3d_hilight == 2)
+	if (map3d_hilight == HL_OUTLINE || map3d_hilight == HL_FULL)
 	{
 		// Update line buffer
 		highlight_lines_->buffer().clear();
@@ -291,6 +308,8 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 			addFlatOutline(item, *highlight_lines_, 1.0f);
 		else if (base_type == ItemType::Side)
 			addQuadOutline(item, *highlight_lines_, 1.0f);
+		else if (base_type == ItemType::Thing)
+			addSpriteOutline(item, *highlight_lines_, 1.0f, camera);
 		highlight_lines_->push();
 
 		// Draw outline
@@ -298,8 +317,8 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 		highlight_lines_->draw(camera, view.size(), hl_colour);
 	}
 
-	// Fill
-	if (map3d_hilight == 2 || map3d_hilight == 3)
+	// Fill (Wall/Flat)
+	if (base_type != ItemType::Thing && (map3d_hilight == HL_FULL || map3d_hilight == HL_GLOW))
 	{
 		// Setup fill buffer
 		MapGeometryBuffer3D* vertex_buffer = nullptr;
@@ -341,6 +360,60 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 		}
 	}
 
+	// Fill (Thing)
+	if (base_type == ItemType::Thing && (map3d_hilight == HL_FULL || map3d_hilight == HL_GLOW))
+	{
+		auto thing = item.asThing(*map_);
+		for (const auto& group : thing_groups_)
+		{
+			if (group.type != thing->type())
+				continue;
+
+			// Get z height
+			float z = thing->zPos();
+			for (const auto& ti : group.things)
+			{
+				if (ti.index == item.index)
+				{
+					z = ti.z;
+					break;
+				}
+			}
+
+			// Setup shader
+			shader_3d_sprite_->bind();
+			shader_3d_sprite_->setUniform("modelview", camera.viewMatrix());
+			shader_3d_sprite_->setUniform("projection", camera.projectionMatrix());
+			shader_3d_sprite_->setUniform("fullbright", true);
+			shader_3d_sprite_->setUniform("fog_density", 0.0f);
+			if (map3d_hilight == HL_FULL)
+			{
+				shader_3d_sprite_->setUniform("colour", hl_colour.ampf(1.0f, 1.0f, 1.0f, 0.15f));
+				gl::setBlend(def.blendMode());
+			}
+			else
+			{
+				shader_3d_sprite_->setUniform(
+					"colour", glm::vec4{ hl_colour.fr(), hl_colour.fg(), hl_colour.fb(), alpha * 0.75f });
+				gl::setBlend(gl::Blend::Additive);
+			}
+			shader_3d_sprite_->setUniform("cam_right", static_cast<Vec3f>(camera.strafeVector()));
+			shader_3d_sprite_->setUniform("sprite_size", group.sprite_size);
+
+			// Setup GL state
+			glEnable(GL_DEPTH_TEST);
+
+			// Create temp buffer for sprite
+			SpriteBuffer3D buffer;
+			buffer.add({ thing->position().x, thing->position().y, z }, 1.0f);
+			buffer.push();
+
+			// Draw buffer
+			gl::Texture::bind(map3d_hilight == HL_FULL ? gl::Texture::whiteTexture() : group.texture);
+			buffer.draw();
+		}
+	}
+
 	// Reset GL state
 	gl::setBlend(gl::Blend::Normal);
 	glDisable(GL_DEPTH_TEST);
@@ -366,6 +439,7 @@ void MapRenderer3D::populateSelectionOverlay(SelectionOverlay3D& overlay, const 
 		overlay.outline.reset();
 		overlay.fill_flats.reset();
 		overlay.fill_quads.reset();
+		overlay.fill_things.reset();
 		return;
 	}
 
@@ -392,10 +466,20 @@ void MapRenderer3D::populateSelectionOverlay(SelectionOverlay3D& overlay, const 
 			addQuadOutline(item, *overlay.outline, 1.0f);
 			addItemQuadIndices(item, indices_quads);
 		}
+		else if (base_type == ItemType::Thing)
+		{
+			if (!overlay.fill_things)
+				overlay.fill_things = std::make_unique<gl::VertexBuffer3D>();
+
+			addThingBoxOutline(item, *overlay.outline, 1.0f);
+			addThingBox(item, *overlay.fill_things);
+		}
 	}
 	overlay.outline->push();
 	overlay.fill_flats->upload(indices_flats);
 	overlay.fill_quads->upload(indices_quads);
+	if (overlay.fill_things)
+		overlay.fill_things->push();
 }
 
 // -----------------------------------------------------------------------------
@@ -445,6 +529,10 @@ void MapRenderer3D::renderSelectionOverlay(
 	gl::drawElements(gl::Primitive::Triangles, overlay.fill_quads->size(), GL_UNSIGNED_INT);
 	gl::bindEBO(0);
 	gl::bindVAO(0);
+
+	// Draw filled things
+	if (overlay.fill_things)
+		overlay.fill_things->draw();
 
 
 	// Reset GL state

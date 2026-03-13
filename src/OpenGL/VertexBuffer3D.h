@@ -30,6 +30,7 @@ public:
 
 	void add(const glm::vec3& position, const glm::vec2& uv = glm::vec2{ 0.0f });
 	void addQuad(const Vertex3D& tl, const Vertex3D& tr, const Vertex3D& bl, const Vertex3D& br);
+	void addBox(const glm::vec3& tl, const glm::vec3& br);
 
 private:
 	void initVAO() override;

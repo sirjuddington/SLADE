@@ -1623,7 +1623,7 @@ void Renderer::animateSelectionChange(const ItemSelection& selection)
 		}
 
 		// 2d mode thing
-		else if (change.first.type == ItemType::Thing)
+		else if (change.first.type == ItemType::Thing && context_->editMode() != Mode::Visual)
 		{
 			if (change.second)
 				things_selected.push_back(change.first.asThing(map));

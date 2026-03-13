@@ -32,11 +32,15 @@
 #include "Main.h"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
+#include "MapEditor/Item.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "MapRenderer3D.h"
+#include "OpenGL/Camera.h"
 #include "OpenGL/GLTexture.h"
+#include "OpenGL/LineBuffer.h"
 #include "OpenGL/Shader.h"
+#include "OpenGL/VertexBuffer3D.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
@@ -52,21 +56,6 @@ using namespace mapeditor;
 
 
 CVAR(Int, map3d_thing_icon_size, 16, CVar::Flag::Save)
-
-
-
-namespace
-{
-float thingZHeight(const MapThing& thing, const MapSector& sector, const game::ThingType& type)
-{
-	if (type.hanging())
-		return sector.ceiling().plane.heightAt(thing.position()) - thing.zPos();
-
-	return sector.floor().plane.heightAt(thing.position()) + thing.zPos();
-}
-} // namespace
-
-
 
 
 
@@ -171,5 +160,140 @@ void MapRenderer3D::renderSprites(const gl::Shader& shader, bool decorations_onl
 		gl::Texture::bind(group.texture);
 		shader.setUniform("sprite_size", group.sprite_size);
 		group.sprite_buffer_->draw();
+	}
+}
+
+void MapRenderer3D::addSpriteOutline(
+	const Item&       item,
+	gl::LineBuffer&   buffer,
+	float             line_width,
+	const gl::Camera& camera) const
+{
+	auto thing = item.asThing(*map_);
+
+	for (const auto& group : thing_groups_)
+	{
+		if (thing->type() != group.type)
+			continue;
+
+		// Get z height
+		float z = thing->zPos();
+		for (const auto& ti : group.things)
+		{
+			if (ti.index == item.index)
+			{
+				z = ti.z;
+				break;
+			}
+		}
+
+		// Add outline
+		float half_width = group.sprite_size.x * 0.5f;
+		auto  cam_right  = static_cast<Vec3f>(camera.strafeVector()) * half_width;
+		auto  colour     = glm::vec4(1.0f);
+		buffer.add3d(
+			glm::vec3{ thing->xPos(), thing->yPos(), z } - cam_right,
+			glm::vec3{ thing->xPos(), thing->yPos(), z } + cam_right,
+			colour,
+			line_width);
+		buffer.add3d(
+			glm::vec3{ thing->xPos(), thing->yPos(), z } + cam_right,
+			glm::vec3{ thing->xPos(), thing->yPos(), z } + cam_right + Vec3f{ 0.0f, 0.0f, group.sprite_size.y },
+			colour,
+			line_width);
+		buffer.add3d(
+			glm::vec3{ thing->xPos(), thing->yPos(), z } - cam_right,
+			glm::vec3{ thing->xPos(), thing->yPos(), z } - cam_right + Vec3f{ 0.0f, 0.0f, group.sprite_size.y },
+			colour,
+			line_width);
+		buffer.add3d(
+			glm::vec3{ thing->xPos(), thing->yPos(), z } - cam_right + Vec3f{ 0.0f, 0.0f, group.sprite_size.y },
+			glm::vec3{ thing->xPos(), thing->yPos(), z } + cam_right + Vec3f{ 0.0f, 0.0f, group.sprite_size.y },
+			colour,
+			line_width);
+
+		return;
+	}
+}
+
+void MapRenderer3D::addThingBoxOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const
+{
+	auto thing = item.asThing(*map_);
+
+	for (const auto& group : thing_groups_)
+	{
+		if (thing->type() != group.type)
+			continue;
+
+		// Get z height
+		float z = thing->zPos();
+		for (const auto& ti : group.things)
+		{
+			if (ti.index == item.index)
+			{
+				z = ti.z;
+				break;
+			}
+		}
+
+		float half_width = group.sprite_size.x * 0.5f;
+		float height     = group.sprite_size.y;
+		auto  colour     = glm::vec4(1.0f);
+
+		glm::vec3 tl{ thing->xPos() - half_width, thing->yPos() - half_width, z + height };
+		glm::vec3 br{ thing->xPos() + half_width, thing->yPos() + half_width, z };
+
+		// Top
+		buffer.add3d({ tl.x, tl.y, tl.z }, { br.x, tl.y, tl.z }, colour, line_width);
+		buffer.add3d({ br.x, tl.y, tl.z }, { br.x, br.y, tl.z }, colour, line_width);
+		buffer.add3d({ br.x, br.y, tl.z }, { tl.x, br.y, tl.z }, colour, line_width);
+		buffer.add3d({ tl.x, br.y, tl.z }, { tl.x, tl.y, tl.z }, colour, line_width);
+
+		// Bottom
+		buffer.add3d({ tl.x, tl.y, br.z }, { br.x, tl.y, br.z }, colour, line_width);
+		buffer.add3d({ br.x, tl.y, br.z }, { br.x, br.y, br.z }, colour, line_width);
+		buffer.add3d({ br.x, br.y, br.z }, { tl.x, br.y, br.z }, colour, line_width);
+		buffer.add3d({ tl.x, br.y, br.z }, { tl.x, tl.y, br.z }, colour, line_width);
+
+		// Sides
+		buffer.add3d({ tl.x, tl.y, tl.z }, { tl.x, tl.y, br.z }, colour, line_width);
+		buffer.add3d({ br.x, tl.y, tl.z }, { br.x, tl.y, br.z }, colour, line_width);
+		buffer.add3d({ br.x, br.y, tl.z }, { br.x, br.y, br.z }, colour, line_width);
+		buffer.add3d({ tl.x, br.y, tl.z }, { tl.x, br.y, br.z }, colour, line_width);
+
+		return;
+	}
+}
+
+void MapRenderer3D::addThingBox(const Item& item, gl::VertexBuffer3D& buffer) const
+{
+	auto thing = item.asThing(*map_);
+
+	for (const auto& group : thing_groups_)
+	{
+		if (thing->type() != group.type)
+			continue;
+
+		// Get z height
+		float z = thing->zPos();
+		for (const auto& ti : group.things)
+		{
+			if (ti.index == item.index)
+			{
+				z = ti.z;
+				break;
+			}
+		}
+
+		float half_width = group.sprite_size.x * 0.5f;
+		float height     = group.sprite_size.y;
+		auto  colour     = glm::vec4(1.0f);
+
+		glm::vec3 tl{ thing->xPos() - half_width, thing->yPos() - half_width, z + height };
+		glm::vec3 br{ thing->xPos() + half_width, thing->yPos() + half_width, z };
+
+		buffer.addBox(tl, br);
+
+		return;
 	}
 }

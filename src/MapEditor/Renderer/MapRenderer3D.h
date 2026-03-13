@@ -121,8 +121,9 @@ private:
 	// Things
 	struct Thing
 	{
-		unsigned index = 0;
-		float    z     = 0.0f;
+		unsigned index   = 0;
+		float    z       = 0.0f;
+		bool     visible = true;
 	};
 	struct ThingGroup
 	{
@@ -160,7 +161,10 @@ private:
 
 	void addFlatOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const;
 	void addQuadOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const;
+	void addSpriteOutline(const Item& item, gl::LineBuffer& buffer, float line_width, const gl::Camera& camera) const;
+	void addThingBoxOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const;
 	void addItemFlatIndices(const Item& item, vector<GLuint>& indices) const;
 	void addItemQuadIndices(const Item& item, vector<GLuint>& indices) const;
+	void addThingBox(const Item& item, gl::VertexBuffer3D& buffer) const;
 };
 } // namespace slade::mapeditor

@@ -47,6 +47,7 @@
 #include "OpenGL/PointSpriteBuffer.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
+#include "OpenGL/VertexBuffer3D.h"
 #include "OpenGL/View.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"

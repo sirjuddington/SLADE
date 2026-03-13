@@ -64,6 +64,59 @@ void VertexBuffer3D::addQuad(const Vertex3D& tl, const Vertex3D& tr, const Verte
 	vertices_.push_back(tr);
 }
 
+void VertexBuffer3D::addBox(const glm::vec3& tl, const glm::vec3& br)
+{
+	auto colour = glm::vec4{ 1.0f };
+
+	// Top
+	auto normal = glm::vec3{ 0.0f, 0.0f, 1.0f };
+	addQuad(
+		Vertex3D{ { br.x, tl.y, tl.z }, { 0.0f, 0.0f }, colour, normal },
+		Vertex3D{ { tl.x, tl.y, tl.z }, { 1.0f, 0.0f }, colour, normal },
+		Vertex3D{ { br.x, br.y, tl.z }, { 0.0f, 1.0f }, colour, normal },
+		Vertex3D{ { tl.x, br.y, tl.z }, { 1.0f, 1.0f }, colour, normal });
+
+	// Bottom
+	normal = glm::vec3{ 0.0f, 0.0f, -1.0f };
+	addQuad(
+		Vertex3D{ { tl.x, tl.y, br.z }, { 0.0f, 0.0f }, colour, normal },
+		Vertex3D{ { br.x, tl.y, br.z }, { 1.0f, 0.0f }, colour, normal },
+		Vertex3D{ { tl.x, br.y, br.z }, { 0.0f, 1.0f }, colour, normal },
+		Vertex3D{ { br.x, br.y, br.z }, { 1.0f, 1.0f }, colour, normal });
+
+	// -X
+	normal = glm::vec3{ -1.0f, 0.0f, 0.0f };
+	addQuad(
+		Vertex3D{ { tl.x, tl.y, tl.z }, { 0.0f, 0.0f }, colour, normal },
+		Vertex3D{ { tl.x, tl.y, br.z }, { 1.0f, 0.0f }, colour, normal },
+		Vertex3D{ { tl.x, br.y, tl.z }, { 0.0f, 1.0f }, colour, normal },
+		Vertex3D{ { tl.x, br.y, br.z }, { 1.0f, 1.0f }, colour, normal });
+
+	// +X
+	normal = glm::vec3{ 1.0f, 0.0f, 0.0f };
+	addQuad(
+		Vertex3D{ { br.x, tl.y, br.z }, { 0.0f, 0.0f }, colour, normal },
+		Vertex3D{ { br.x, tl.y, tl.z }, { 1.0f, 0.0f }, colour, normal },
+		Vertex3D{ { br.x, br.y, br.z }, { 0.0f, 1.0f }, colour, normal },
+		Vertex3D{ { br.x, br.y, tl.z }, { 1.0f, 1.0f }, colour, normal });
+
+	// -Y
+	normal = glm::vec3{ 0.0f, -1.0f, 0.0f };
+	addQuad(
+		Vertex3D{ { tl.x, tl.y, tl.z }, { 0.0f, 0.0f }, colour, normal },
+		Vertex3D{ { br.x, tl.y, tl.z }, { 1.0f, 0.0f }, colour, normal },
+		Vertex3D{ { tl.x, tl.y, br.z }, { 0.0f, 1.0f }, colour, normal },
+		Vertex3D{ { br.x, tl.y, br.z }, { 1.0f, 1.0f }, colour, normal });
+
+	// +Y
+	normal = glm::vec3{ 0.0f, 1.0f, 0.0f };
+	addQuad(
+		Vertex3D{ { br.x, br.y, tl.z }, { 0.0f, 0.0f }, colour, normal },
+		Vertex3D{ { tl.x, br.y, tl.z }, { 1.0f, 0.0f }, colour, normal },
+		Vertex3D{ { br.x, br.y, br.z }, { 0.0f, 1.0f }, colour, normal },
+		Vertex3D{ { tl.x, br.y, br.z }, { 1.0f, 1.0f }, colour, normal });
+}
+
 // -----------------------------------------------------------------------------
 // Initializes the VAO for this vertex buffer
 // -----------------------------------------------------------------------------

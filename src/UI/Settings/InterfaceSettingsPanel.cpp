@@ -78,7 +78,7 @@ int iconSize(int current, int selection)
 		return 16;
 
 	// Medium (24), allow from 17-24
-	if (selection == 1 && current > 24 || current <= 16)
+	if (selection == 1 && (current > 24 || current <= 16))
 		return 24;
 
 	// Large (32), allow anything above 24
