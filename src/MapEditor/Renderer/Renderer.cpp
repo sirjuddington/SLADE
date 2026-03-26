@@ -55,6 +55,7 @@
 #include "OpenGL/OpenGL.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
+#include "OpenGL/VertexBuffer3D.h"
 #include "OpenGL/View.h"
 #include "Overlays/MCOverlay.h"
 #include "SLADEMap/MapObject/MapLine.h"
