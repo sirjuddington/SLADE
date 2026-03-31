@@ -339,8 +339,7 @@ void Renderer::setCameraThing(const MapThing* thing) const
 {
 	// Determine position
 	Vec3d pos(thing->position(), 40);
-	auto  sector = context_->map().sectors().atPos(thing->position());
-	if (sector)
+	if (auto sector = context_->map().sectors().atPos(thing->position()))
 		pos.z += sector->floor().plane.heightAt(pos.x, pos.y);
 
 	// Set camera position & direction
@@ -1150,7 +1149,7 @@ void Renderer::drawMap3d() const
 	camera_->setProjection(view_->size().x, view_->size().y, 2.0f, 40000.0f, map3d_fov);
 
 	// Render map
-	renderer_3d_->render(*camera_);
+	renderer_3d_->render(*camera_, *view_);
 
 	// Render highlight
 	if (context_->input().mouseState() == Input::MouseState::Normal)

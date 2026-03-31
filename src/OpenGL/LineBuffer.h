@@ -25,13 +25,14 @@ public:
 		glm::vec4 v2_colour;
 	};
 
-	LineBuffer() = default;
+	LineBuffer(bool map_3d = false) : map_3d_{ map_3d } {}
 	~LineBuffer();
 
 	const Buffer<Line>& buffer() const { return buffer_; }
 	Buffer<Line>&       buffer() { return buffer_; }
 	float               widthMult() const { return width_mult_; }
 	glm::vec2           aaRadius() const { return aa_radius_; }
+	unsigned            queueSize() const { return lines_.size(); }
 
 	void setWidthMult(float width) { width_mult_ = width; }
 	void setAaRadius(float x, float y) { aa_radius_ = { x, y }; }
@@ -41,6 +42,7 @@ public:
 		dash_size_     = dash_size;
 		dash_gap_size_ = gap_size;
 	}
+	void setMaxDistance(float max_distance) { max_dist_ = max_distance; }
 
 	void add(const Line& line);
 	void add(const vector<Line>& lines);
@@ -60,8 +62,17 @@ public:
 		float        arrowhead_length = 0.0f,
 		float        arrowhead_angle  = 45.0f,
 		bool         arrowhead_both   = false);
+	void addArrow3d(
+		glm::vec3 start,
+		glm::vec3 end,
+		glm::vec4 colour,
+		float     width            = 1.0f,
+		float     arrowhead_length = 0.0f,
+		float     arrowhead_angle  = 45.0f,
+		bool      arrowhead_both   = false);
 
 	void push();
+	bool pull();
 
 	void draw(
 		const View*      view   = nullptr,
@@ -82,6 +93,8 @@ private:
 	bool      dashed_        = false;
 	float     dash_size_     = 6.0f;
 	float     dash_gap_size_ = 6.0f;
+	bool      map_3d_        = false; // If true this line buffer is for the map editor 3d mode (enable distance fade)
+	float     max_dist_      = 0.0f;
 
 	vector<Line> lines_;
 	Buffer<Line> buffer_;

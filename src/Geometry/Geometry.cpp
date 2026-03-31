@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Geometry.h"
+#include "BBox.h"
 #include "General/Console.h"
 #include "Plane.h"
 #include "Rect.h"
@@ -40,6 +41,9 @@
 using namespace slade;
 using namespace geometry;
 using namespace math;
+
+#undef near
+#undef far
 
 
 // -----------------------------------------------------------------------------
@@ -234,6 +238,74 @@ double geometry::distanceRayLine(const Vec2d& r1, const Vec2d& r2, const Vec2d& 
 		return u_ray;
 	else
 		return -1;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the distance between the ray from [ray_origin] along [ray_dir] and
+// axis-aligned bounding box [tl -> br]
+// -----------------------------------------------------------------------------
+double geometry::distanceRayBBox(const Vec3d& ray_origin, const Vec3d& ray_dir, const Vec3d& tl, const Vec3d& br)
+{
+	// Calculate the min and max points of the bounding box
+	Vec3d box_min = { glm::min(tl.x, br.x), glm::min(tl.y, br.y), glm::min(tl.z, br.z) };
+	Vec3d box_max = { glm::max(tl.x, br.x), glm::max(tl.y, br.y), glm::max(tl.z, br.z) };
+
+	double near = 0.0;
+	double far  = std::numeric_limits<double>::infinity();
+
+	// Check intersection for each axis
+	for (int i = 0; i < 3; ++i)
+	{
+		double origin  = ray_origin[i];
+		double dir     = ray_dir[i];
+		double min_val = box_min[i];
+		double max_val = box_max[i];
+
+		if (fabs(dir) < EPSILON)
+		{
+			// Ray is parallel to the slab
+			// No intersection if origin is outside the slab
+			if (origin < min_val || origin > max_val)
+				return -1;
+		}
+		else
+		{
+			// Compute intersection distances with the slab planes
+			double inv_dir = 1.0 / dir;
+			double t1      = (min_val - origin) * inv_dir;
+			double t2      = (max_val - origin) * inv_dir;
+
+			// Ensure t1 is the near intersection and t2 is the far
+			if (t1 > t2)
+			{
+				double temp = t1;
+				t1          = t2;
+				t2          = temp;
+			}
+
+			// Update the overall near and far intersection distances
+			near = glm::max(near, t1);
+			far  = glm::min(far, t2);
+
+			// If near > far, the ray misses the box
+			if (near > far)
+				return -1;
+		}
+	}
+
+	// If the near intersection is behind the ray origin, check if we're inside the box
+	if (near < 0)
+	{
+		// If far intersection is also behind, no valid intersection
+		if (far < 0)
+			return -1;
+
+		// Ray origin is inside the box, return 0
+		return 0;
+	}
+
+	// Return the distance to the near intersection
+	return near;
 }
 
 // -----------------------------------------------------------------------------

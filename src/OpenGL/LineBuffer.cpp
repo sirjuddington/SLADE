@@ -35,6 +35,7 @@
 #include "Geometry/Geometry.h"
 #include "Geometry/Plane.h"
 #include "Shader.h"
+#include "Utility/MathStuff.h"
 #include "Utility/Vector.h"
 #include "View.h"
 
@@ -55,6 +56,8 @@ float    quad_vertices[] = { 0.0, -1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 
 uint16_t quad_indices[]  = { 0, 1, 2, 0, 2, 3 };
 Shader   shader_lines{ "lines" };
 Shader   shader_lines_dashed{ "lines_dashed" };
+Shader   shader_lines_map3d{ "lines_map3d" };
+Shader   shader_lines_map3d_dashed{ "lines_map3d_dashed" };
 } // namespace
 
 
@@ -73,6 +76,11 @@ void initShader()
 	shader_lines.loadResourceEntries("lines.vert", "lines.frag");
 	shader_lines_dashed.define("DASHED_LINES");
 	shader_lines_dashed.loadResourceEntries("lines.vert", "lines.frag");
+	shader_lines_map3d.define("DISTANCE_FADE");
+	shader_lines_map3d.loadResourceEntries("lines.vert", "lines.frag");
+	shader_lines_map3d_dashed.define("DISTANCE_FADE");
+	shader_lines_map3d_dashed.define("DASHED_LINES");
+	shader_lines_map3d_dashed.loadResourceEntries("lines.vert", "lines.frag");
 }
 
 // -----------------------------------------------------------------------------
@@ -194,6 +202,67 @@ void LineBuffer::addArrow(
 		add2d(l.x1(), l.y1(), l.x2(), l.y2(), colour, width);
 }
 
+void LineBuffer::addArrow3d(
+	glm::vec3 start,
+	glm::vec3 end,
+	glm::vec4 colour,
+	float     width,
+	float     arrowhead_length,
+	float     arrowhead_angle,
+	bool      arrowhead_both)
+{
+	// Add main line
+	add3d(start, end, colour, width);
+
+	// Calculate reverse direction vector
+	auto direction = glm::normalize(start - end);
+	if (glm::length(direction) < math::EPSILON)
+		return; // Can't create an arrowhead for a 0-length line
+
+	// Calculate two perpendicular vectors to the direction
+	auto reference      = std::abs(direction.x) < 0.9f ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+	auto perpendicular1 = glm::normalize(glm::cross(direction, reference));
+	auto perpendicular2 = glm::normalize(glm::cross(direction, perpendicular1));
+
+	// Calculate arrowhead points
+	float angle_rad      = geometry::degToRad(arrowhead_angle);
+	float forward_scale  = arrowhead_length * std::cos(angle_rad);
+	float side_scale     = arrowhead_length * std::sin(angle_rad);
+	auto  arrowhead_base = end + direction * forward_scale;
+
+	// Two lines along the first perpendicular axis
+	auto arrow_p1a = arrowhead_base + perpendicular1 * side_scale;
+	auto arrow_p1b = arrowhead_base - perpendicular1 * side_scale;
+
+	// Two lines along the second perpendicular axis
+	auto arrow_p2a = arrowhead_base + perpendicular2 * side_scale;
+	auto arrow_p2b = arrowhead_base - perpendicular2 * side_scale;
+
+	// Add the 4 arrowhead lines
+	add3d(end, arrow_p1a, colour, width);
+	add3d(end, arrow_p1b, colour, width);
+	add3d(end, arrow_p2a, colour, width);
+	add3d(end, arrow_p2b, colour, width);
+
+	// Add additional arrowhead at the start if requested
+	if (arrowhead_both)
+	{
+		auto direction_start      = glm::normalize(end - start);
+		auto arrowhead_base_start = start + direction_start * forward_scale;
+
+		// Recalculate perpendiculars
+		auto arrow_s1a = arrowhead_base_start + perpendicular1 * side_scale;
+		auto arrow_s1b = arrowhead_base_start - perpendicular1 * side_scale;
+		auto arrow_s2a = arrowhead_base_start + perpendicular2 * side_scale;
+		auto arrow_s2b = arrowhead_base_start - perpendicular2 * side_scale;
+
+		add3d(start, arrow_s1a, colour, width);
+		add3d(start, arrow_s1b, colour, width);
+		add3d(start, arrow_s2a, colour, width);
+		add3d(start, arrow_s2b, colour, width);
+	}
+}
+
 void LineBuffer::push()
 {
 	if (!getContext())
@@ -205,6 +274,15 @@ void LineBuffer::push()
 
 	buffer_.upload(lines_);
 	lines_.clear();
+}
+
+bool LineBuffer::pull()
+{
+	if (!getContext() || buffer_.empty())
+		return false;
+
+	lines_ = buffer_.download();
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -258,7 +336,8 @@ void LineBuffer::draw(const Camera& camera, glm::vec2 viewport_size, const glm::
 	// Setup shader for drawing
 	if (!shader_lines.isValid())
 		initShader();
-	Shader& shader = dashed_ ? shader_lines_dashed : shader_lines;
+	Shader& shader = map_3d_ ? (dashed_ ? shader_lines_map3d_dashed : shader_lines_map3d)
+							 : (dashed_ ? shader_lines_dashed : shader_lines);
 	shader.bind();
 	shader.setUniform("aa_radius", aa_radius_);
 	shader.setUniform("line_width", width_mult_);
@@ -272,6 +351,8 @@ void LineBuffer::draw(const Camera& camera, glm::vec2 viewport_size, const glm::
 	// Setup camera matrix and view uniforms
 	shader.setUniform("mvp", camera.projectionMatrix() * camera.viewMatrix() * model);
 	shader.setUniform("viewport_size", viewport_size);
+	if (map_3d_)
+		shader.setUniform("max_dist", max_dist_);
 
 	bindVAO(vao_);
 	drawElementsInstanced(Primitive::Triangles, 6, GL_UNSIGNED_SHORT, buffer_.size());

@@ -725,7 +725,7 @@ void KeyBind::initBinds()
 	addBind("me3d_release_mouse", Keypress("tab"), "Release mouse cursor", group);
 	addBind("me3d_clear_selection", Keypress("C"), "Clear selection", group);
 	addBind("me3d_toggle_things", Keypress("T"), "Toggle thing display", group);
-	addBind("me3d_thing_style", Keypress("T", KPM_SHIFT), "Cycle thing render style", group);
+	addBind("me3d_thing_boxes", Keypress("T", KPM_SHIFT), "Toggle thing boxes", group);
 	addBind("me3d_toggle_hilight", Keypress("H"), "Toggle hilight", group);
 	addBind("me3d_copy_tex_type", Keypress("C", KPM_CTRL), "Copy texture or thing type", group);
 	addBind("me3d_copy_tex_type", Keypress("mouse3"));

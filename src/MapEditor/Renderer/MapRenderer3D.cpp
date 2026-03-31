@@ -66,32 +66,20 @@ using namespace mapeditor;
 
 // -----------------------------------------------------------------------------
 //
-// Constants
-//
-// -----------------------------------------------------------------------------
-namespace
-{
-constexpr int HL_NONE    = 0;
-constexpr int HL_OUTLINE = 1;
-constexpr int HL_FULL    = 2;
-constexpr int HL_GLOW    = 3;
-} // namespace
-
-
-// -----------------------------------------------------------------------------
-//
 // Variables
 //
 // -----------------------------------------------------------------------------
 CVAR(Float, map3d_max_render_dist, 0, CVar::Flag::Save)
 CVAR(Float, map3d_max_thing_dist, 0, CVar::Flag::Save)
 CVAR(Bool, map3d_render_sky, true, CVar::Flag::Save)
-CVAR(Int, map3d_things, 1, CVar::Flag::Save)
-CVAR(Int, map3d_things_style, 1, CVar::Flag::Save)
-CVAR(Int, map3d_hilight, HL_GLOW, CVar::Flag::Save)
 CVAR(Float, map3d_brightness, 1, CVar::Flag::Save)
 CVAR(Float, map3d_fog_density, 1, CVar::Flag::Save)
 CVAR(Bool, map3d_fake_contrast, true, CVar::Flag::Save)
+CVAR(Bool, map3d_highlight_enabled, true, CVar::Flag::Save)
+CVAR(Bool, map3d_highlight_fill, true, CVar::Flag::Save)
+CVAR(Bool, map3d_highlight_outline, false, CVar::Flag::Save)
+CVAR(Int, map3d_things, 1, CVar::Flag::Save)
+CVAR(Bool, map3d_things_boxes, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -168,7 +156,7 @@ void MapRenderer3D::setSkyTexture(string_view tex1, string_view tex2) const
 // -----------------------------------------------------------------------------
 // Renders the 3d view from the given [camera]'s perspective
 // -----------------------------------------------------------------------------
-void MapRenderer3D::render(const gl::Camera& camera)
+void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 {
 	// Clear to black
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -212,13 +200,14 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	{
 		updateFlatVisibility(camera, map3d_max_render_dist);
 		updateWallVisibility(camera, map3d_max_render_dist);
+		updateThingVisibility(camera, map3d_max_render_dist);
 	}
 
 	// Update flats and walls
 	updateFlats(map3d_max_render_dist > 0.0f);
 	updateWalls(map3d_max_render_dist > 0.0f);
 	if (map3d_things > 0)
-		updateThings();
+		updateThings(map3d_max_render_dist > 0.0f);
 
 	// Render sky first if needed
 	shader_3d_->bind();
@@ -270,6 +259,15 @@ void MapRenderer3D::render(const gl::Camera& camera)
 	renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Transparent); // Flats
 	renderGroups(*vb_quads_, quad_groups_, *shader_3d_, RenderPass::Transparent); // Walls
 
+	// Render thing boxes if enabled
+	if (map3d_things > 0 && map3d_things_boxes)
+	{
+		glDisable(GL_CULL_FACE);
+
+		renderThingBoxes(
+			camera, view, map3d_things == 2, map3d_max_render_dist > 0.0f ? map3d_max_render_dist : 40000.0f);
+	}
+
 	// Cleanup gl state
 	glDepthMask(GL_TRUE);
 	glDisable(GL_DEPTH_TEST);
@@ -282,7 +280,7 @@ void MapRenderer3D::render(const gl::Camera& camera)
 // ----------------------------------------------------------------------------
 void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, const gl::View& view, float alpha)
 {
-	if (!highlight_enabled_ || map3d_hilight == HL_NONE || item.index < 0)
+	if (!highlight_enabled_ || !map3d_highlight_enabled || item.index < 0)
 		return;
 
 	// Create buffers if needed
@@ -300,7 +298,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 	auto  hl_colour = def.colour.ampf(1.0f, 1.0f, 1.0f, alpha);
 
 	// Outline
-	if (map3d_hilight == HL_OUTLINE || map3d_hilight == HL_FULL)
+	if (map3d_highlight_outline)
 	{
 		// Update line buffer
 		highlight_lines_->buffer().clear();
@@ -308,7 +306,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 			addFlatOutline(item, *highlight_lines_, 1.0f);
 		else if (base_type == ItemType::Side)
 			addQuadOutline(item, *highlight_lines_, 1.0f);
-		else if (base_type == ItemType::Thing)
+		else if (base_type == ItemType::Thing && !map3d_things_boxes)
 			addSpriteOutline(item, *highlight_lines_, 1.0f, camera);
 		highlight_lines_->push();
 
@@ -317,8 +315,21 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 		highlight_lines_->draw(camera, view.size(), hl_colour);
 	}
 
+	// Thing box
+	if (base_type == ItemType::Thing && map3d_things_boxes)
+	{
+		// Update line buffer
+		highlight_lines_->buffer().clear();
+		addThingBoxOutline(item, *highlight_lines_, 1.5f);
+		highlight_lines_->push();
+
+		// Draw outline
+		gl::setBlend(def.blendMode());
+		highlight_lines_->draw(camera, view.size(), hl_colour);
+	}
+
 	// Fill (Wall/Flat)
-	if (base_type != ItemType::Thing && (map3d_hilight == HL_FULL || map3d_hilight == HL_GLOW))
+	if (base_type != ItemType::Thing && map3d_highlight_fill)
 	{
 		// Setup fill buffer
 		MapGeometryBuffer3D* vertex_buffer = nullptr;
@@ -345,7 +356,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 			shader_3d_->setUniform("projection", camera.projectionMatrix());
 			shader_3d_->setUniform("fullbright", true);
 			shader_3d_->setUniform("fog_density", 0.0f);
-			shader_3d_->setUniform("colour", hl_colour.ampf(1.0f, 1.0f, 1.0f, map3d_hilight == 2 ? 0.15f : 0.25f));
+			shader_3d_->setUniform("colour", hl_colour.ampf(1.0f, 1.0f, 1.0f, 0.25f));
 
 			// Setup GL state
 			glEnable(GL_DEPTH_TEST);
@@ -361,7 +372,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 	}
 
 	// Fill (Thing)
-	if (base_type == ItemType::Thing && (map3d_hilight == HL_FULL || map3d_hilight == HL_GLOW))
+	if (base_type == ItemType::Thing && map3d_highlight_fill)
 	{
 		auto thing = item.asThing(*map_);
 		for (const auto& group : thing_groups_)
@@ -386,17 +397,8 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 			shader_3d_sprite_->setUniform("projection", camera.projectionMatrix());
 			shader_3d_sprite_->setUniform("fullbright", true);
 			shader_3d_sprite_->setUniform("fog_density", 0.0f);
-			if (map3d_hilight == HL_FULL)
-			{
-				shader_3d_sprite_->setUniform("colour", hl_colour.ampf(1.0f, 1.0f, 1.0f, 0.15f));
-				gl::setBlend(def.blendMode());
-			}
-			else
-			{
-				shader_3d_sprite_->setUniform(
-					"colour", glm::vec4{ hl_colour.fr(), hl_colour.fg(), hl_colour.fb(), alpha * 0.75f });
-				gl::setBlend(gl::Blend::Additive);
-			}
+			shader_3d_sprite_->setUniform(
+				"colour", glm::vec4{ hl_colour.fr(), hl_colour.fg(), hl_colour.fb(), alpha * 0.75f });
 			shader_3d_sprite_->setUniform("cam_right", static_cast<Vec3f>(camera.strafeVector()));
 			shader_3d_sprite_->setUniform("sprite_size", group.sprite_size);
 
@@ -409,7 +411,8 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 			buffer.push();
 
 			// Draw buffer
-			gl::Texture::bind(map3d_hilight == HL_FULL ? gl::Texture::whiteTexture() : group.texture);
+			gl::setBlend(gl::Blend::Additive);
+			gl::Texture::bind(group.texture);
 			buffer.draw();
 		}
 	}
@@ -471,8 +474,8 @@ void MapRenderer3D::populateSelectionOverlay(SelectionOverlay3D& overlay, const 
 			if (!overlay.fill_things)
 				overlay.fill_things = std::make_unique<gl::VertexBuffer3D>();
 
-			addThingBoxOutline(item, *overlay.outline, 1.0f);
-			addThingBox(item, *overlay.fill_things);
+			addThingBoxOutline(item, *overlay.outline, 2.0f, 0.5f);
+			addThingBox(item, *overlay.fill_things, 0.5f);
 		}
 	}
 	overlay.outline->push();
@@ -573,6 +576,8 @@ void MapRenderer3D::clearData()
 
 	// Things
 	thing_groups_.clear();
+	thing_box_line_buffer_.reset();
+	thing_arrow_line_buffer_.reset();
 
 	// Selection/Highlight
 	highlight_lines_.reset();

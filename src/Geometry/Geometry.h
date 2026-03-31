@@ -4,8 +4,9 @@
 
 namespace slade
 {
+struct BBox;
 struct Plane;
-}
+} // namespace slade
 
 namespace slade::geometry
 {
@@ -16,6 +17,7 @@ double        distanceToLine(const Vec2d& point, const Seg2d& line);
 double        distanceToLineFast(const Vec2d& point, const Seg2d& line);
 bool          linesIntersect(const Seg2d& line1, const Seg2d& line2, Vec2d& out);
 double        distanceRayLine(const Vec2d& ray_origin, const Vec2d& ray_dir, const Vec2d& seg1, const Vec2d& seg2);
+double        distanceRayBBox(const Vec3d& ray_origin, const Vec3d& ray_dir, const Vec3d& tl, const Vec3d& br);
 double        angle2DRad(const Vec2d& p1, const Vec2d& p2, const Vec2d& p3);
 Vec2d         rotatePoint(const Vec2d& origin, const Vec2d& point, double angle);
 Vec3d         rotateVector3D(const Vec3d& vector, const Vec3d& axis, double angle);

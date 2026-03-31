@@ -14,7 +14,7 @@ class SpriteBuffer3D
 {
 public:
 	SpriteBuffer3D();
-	~SpriteBuffer3D() = default;
+	~SpriteBuffer3D();
 
 	void add(const glm::vec3& position, float brightness, const glm::vec4& colour = glm::vec4{ 1.0f });
 	void push();

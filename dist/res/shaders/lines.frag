@@ -8,6 +8,11 @@ uniform float dash_size = 6.0;
 uniform float gap_size = 6.0;
 #endif
 
+#ifdef DISTANCE_FADE
+uniform float max_dist = 40000.0;
+in /*noperspective*/ float v_view_depth;
+#endif
+
 in vec4 v_col;
 in /*noperspective*/ float v_u;
 in /*noperspective*/ float v_v;
@@ -29,4 +34,9 @@ void main()
 								1.0, abs(v_v / v_line_length));
 	f_colour = v_col * colour;
 	f_colour.a *= min(av, au);
+
+#ifdef DISTANCE_FADE
+	float alpha_fade = clamp((max_dist - v_view_depth) / 128.0, 0.0, 1.0);
+	f_colour.a *= alpha_fade;
+#endif
 }

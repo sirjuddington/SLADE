@@ -17,6 +17,10 @@ out /*noperspective*/ float v_v;
 out /*noperspective*/ float v_line_width;
 out /*noperspective*/ float v_line_length;
 
+#ifdef DISTANCE_FADE
+out /*noperspective*/ float v_view_depth;
+#endif
+
 void main()
 {
 	float v1_width = in_v1_pos_width.w * line_width;
@@ -60,4 +64,8 @@ void main()
 	vec2 dir_x = in_quad_pos.x * line_vector + (2.0 * in_quad_pos.x - 1.0) * extension;
 
 	gl_Position = vec4((ndc_pos_0 + dir_x + dir_y) * zw_part.y, zw_part);
+
+#ifdef DISTANCE_FADE
+	v_view_depth = (1.0 - in_quad_pos.x) * clip_pos_a.w + in_quad_pos.x * clip_pos_b.w;
+#endif
 }

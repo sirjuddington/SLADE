@@ -84,9 +84,9 @@ EXTERN_CVAR(Bool, map2d_show_selection_numbers)
 EXTERN_CVAR(Float, map3d_brightness)
 EXTERN_CVAR(Bool, map3d_gravity)
 EXTERN_CVAR(Int, map3d_things)
-EXTERN_CVAR(Int, map3d_things_style)
-EXTERN_CVAR(Int, map3d_hilight)
 EXTERN_CVAR(Bool, map3d_info_overlay)
+EXTERN_CVAR(Bool, map3d_highlight_enabled)
+EXTERN_CVAR(Bool, map3d_things_boxes)
 
 
 // -----------------------------------------------------------------------------
@@ -1117,40 +1117,30 @@ void Input::handleKeyBind3d(string_view name) const
 			context_->addEditorMessage("Things enabled: Decorations only");
 	}
 
-	// Change thing render style
-	else if (name == "me3d_thing_style")
+	// Toggle thing boxes
+	else if (name == "me3d_thing_boxes")
 	{
-		// Change thing display style
-		map3d_things_style = map3d_things_style + 1;
-		if (map3d_things_style > 2)
-			map3d_things_style = 0;
+		// Toggle
+		map3d_things_boxes = !map3d_things_boxes;
 
 		// Editor message
-		if (map3d_things_style == 0)
-			context_->addEditorMessage("Thing render style: Sprites only");
-		else if (map3d_things_style == 1)
-			context_->addEditorMessage("Thing render style: Sprites + Ground boxes");
+		if (map3d_things_boxes)
+			context_->addEditorMessage("Thing boxes enabled");
 		else
-			context_->addEditorMessage("Thing render style: Sprites + Full boxes");
+			context_->addEditorMessage("Thing boxes disabled");
 	}
 
 	// Toggle hilight
 	else if (name == "me3d_toggle_hilight")
 	{
-		// Change hilight type
-		map3d_hilight = map3d_hilight + 1;
-		if (map3d_hilight > 3)
-			map3d_hilight = 0;
+		// Toggle highlight
+		map3d_highlight_enabled = !map3d_highlight_enabled;
 
 		// Editor message
-		if (map3d_hilight == 0)
-			context_->addEditorMessage("Hilight disabled");
-		else if (map3d_hilight == 1)
-			context_->addEditorMessage("Hilight enabled: Outline");
-		else if (map3d_hilight == 2)
-			context_->addEditorMessage("Hilight enabled: Outline+Fill");
-		else if (map3d_hilight == 3)
-			context_->addEditorMessage("Hilight enabled: Fill");
+		if (map3d_highlight_enabled)
+			context_->addEditorMessage("Highlight enabled");
+		else
+			context_->addEditorMessage("Highlight disabled");
 	}
 
 	// Toggle info overlay

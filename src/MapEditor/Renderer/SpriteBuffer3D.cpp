@@ -42,6 +42,11 @@ SpriteBuffer3D::SpriteBuffer3D()
 	buffer_sprites_ = std::make_unique<gl::Buffer<Instance>>();
 }
 
+SpriteBuffer3D::~SpriteBuffer3D()
+{
+	gl::deleteVAO(vao_);
+}
+
 void SpriteBuffer3D::add(const glm::vec3& position, float brightness, const glm::vec4& colour)
 {
 	sprites_.emplace_back(position, brightness, colour);
