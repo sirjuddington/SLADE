@@ -30,10 +30,10 @@ struct Item
 	int real_index;   // The 'real' index of the item (eg. the sector the ExtraFloor is applied to)
 	int control_line; // The index of the relevant ExtraFloor control line
 
-	Item(int index = -1, ItemType type = ItemType::Any) :
+	Item(int index = -1, ItemType type = ItemType::Any, int real_index = -1) :
 		index{ index },
 		type{ type },
-		real_index{ -1 },
+		real_index{ real_index },
 		control_line{ -1 }
 	{
 	}

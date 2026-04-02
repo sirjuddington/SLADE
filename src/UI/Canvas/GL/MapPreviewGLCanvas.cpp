@@ -105,7 +105,7 @@ void MapPreviewGLCanvas::draw()
 	}
 
 	// Setup drawing
-	auto& shader = gl::LineBuffer::shader();
+	auto& shader = *lines_buffer_->shader();
 	view_.setupShader(shader);
 
 	// Draw lines

@@ -33,6 +33,8 @@ public:
 	float               widthMult() const { return width_mult_; }
 	glm::vec2           aaRadius() const { return aa_radius_; }
 	unsigned            queueSize() const { return lines_.size(); }
+	Shader*             shader(bool map_3d = false) const;
+	unsigned            vao() const { return vao_; }
 
 	void setWidthMult(float width) { width_mult_ = width; }
 	void setAaRadius(float x, float y) { aa_radius_ = { x, y }; }
@@ -43,6 +45,7 @@ public:
 		dash_gap_size_ = gap_size;
 	}
 	void setMaxDistance(float max_distance) { max_dist_ = max_distance; }
+	void setShaderUniforms(const Shader& shader) const;
 
 	void add(const Line& line);
 	void add(const vector<Line>& lines);
@@ -84,8 +87,6 @@ public:
 		glm::vec2        viewport_size,
 		const glm::vec4& colour = glm::vec4{ 1.0f },
 		const glm::mat4& model  = glm::mat4{ 1.0f }) const;
-
-	static const Shader& shader();
 
 private:
 	float     width_mult_    = 1.0f;

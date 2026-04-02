@@ -423,7 +423,7 @@ void CTextureGLCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 			lb_sprite_->push();
 		}
 
-		view_.setupShader(lb_sprite_->shader());
+		view_.setupShader(*lb_sprite_->shader());
 		lb_sprite_->draw();
 	}
 	else if (view_type_ == View::HUD)

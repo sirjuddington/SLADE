@@ -56,9 +56,8 @@
 #include "OpenGL/VertexBuffer3D.h"
 #include "Quad3D.h"
 #include "Renderer.h"
-#include "SLADEMap/MapObject/MapThing.h"
 #include "Skybox.h"
-#include "SpriteBuffer3D.h"
+#include "ThingRenderer3D.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -78,8 +77,6 @@ CVAR(Bool, map3d_fake_contrast, true, CVar::Flag::Save)
 CVAR(Bool, map3d_highlight_enabled, true, CVar::Flag::Save)
 CVAR(Bool, map3d_highlight_fill, true, CVar::Flag::Save)
 CVAR(Bool, map3d_highlight_outline, false, CVar::Flag::Save)
-CVAR(Int, map3d_things, 1, CVar::Flag::Save)
-CVAR(Bool, map3d_things_boxes, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -135,9 +132,10 @@ void setupShaderUniforms(
 // -----------------------------------------------------------------------------
 MapRenderer3D::MapRenderer3D(SLADEMap* map, Renderer* renderer) : map_{ map }, renderer_{ renderer }
 {
-	vb_flats_ = std::make_unique<MapGeometryBuffer3D>();
-	vb_quads_ = std::make_unique<MapGeometryBuffer3D>();
-	skybox_   = std::make_unique<Skybox>();
+	vb_flats_       = std::make_unique<MapGeometryBuffer3D>();
+	vb_quads_       = std::make_unique<MapGeometryBuffer3D>();
+	skybox_         = std::make_unique<Skybox>();
+	thing_renderer_ = std::make_unique<ThingRenderer3D>(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -200,14 +198,15 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	{
 		updateFlatVisibility(camera, map3d_max_render_dist);
 		updateWallVisibility(camera, map3d_max_render_dist);
-		updateThingVisibility(camera, map3d_max_render_dist);
+		thing_renderer_->updateVisibility(camera, map3d_max_render_dist);
 	}
+	else
+		thing_renderer_->updateVisibility(camera, 0.0f);
 
 	// Update flats and walls
 	updateFlats(map3d_max_render_dist > 0.0f);
 	updateWalls(map3d_max_render_dist > 0.0f);
-	if (map3d_things > 0)
-		updateThings(map3d_max_render_dist > 0.0f);
+	thing_renderer_->update(map3d_max_render_dist > 0.0f);
 
 	// Render sky first if needed
 	shader_3d_->bind();
@@ -247,11 +246,7 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	shader_3d_alphatest_->bind();
 	renderGroups(*vb_flats_, flat_groups_, *shader_3d_alphatest_, RenderPass::Masked); // Flats
 	renderGroups(*vb_quads_, quad_groups_, *shader_3d_alphatest_, RenderPass::Masked); // Walls
-	if (map3d_things > 0)
-	{
-		shader_3d_sprite_->bind();
-		renderSprites(*shader_3d_sprite_, map3d_things == 2);
-	}
+	thing_renderer_->renderSprites(*shader_3d_sprite_);
 
 	// Third pass, render transparent flats/walls (TODO: transparent sprites)
 	shader_3d_->bind();
@@ -259,14 +254,8 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Transparent); // Flats
 	renderGroups(*vb_quads_, quad_groups_, *shader_3d_, RenderPass::Transparent); // Walls
 
-	// Render thing boxes if enabled
-	if (map3d_things > 0 && map3d_things_boxes)
-	{
-		glDisable(GL_CULL_FACE);
-
-		renderThingBoxes(
-			camera, view, map3d_things == 2, map3d_max_render_dist > 0.0f ? map3d_max_render_dist : 40000.0f);
-	}
+	// Render thing boxes
+	thing_renderer_->renderThingBoxes(camera, view, map3d_max_render_dist > 0.0f ? map3d_max_render_dist : 40000.0f);
 
 	// Cleanup gl state
 	glDepthMask(GL_TRUE);
@@ -283,6 +272,19 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 	if (!highlight_enabled_ || !map3d_highlight_enabled || item.index < 0)
 		return;
 
+	// Determine item type and highlight colour
+	auto& def       = colourconfig::colDef("map_3d_hilight");
+	auto  hl_colour = def.colour.ampf(1.0f, 1.0f, 1.0f, alpha);
+	auto  base_type = baseItemType(item.type);
+
+	// Pass to thing renderer if thing
+	if (base_type == ItemType::Thing)
+	{
+		gl::setBlend(def.blendMode());
+		thing_renderer_->renderHighlight(item, camera, view, hl_colour, map3d_highlight_outline, map3d_highlight_fill);
+		return;
+	}
+
 	// Create buffers if needed
 	if (!highlight_lines_)
 	{
@@ -291,11 +293,6 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 
 		highlight_fill_ = std::make_unique<gl::IndexBuffer>();
 	}
-
-	// Determine item type and highlight colour
-	auto  base_type = baseItemType(item.type);
-	auto& def       = colourconfig::colDef("map_3d_hilight");
-	auto  hl_colour = def.colour.ampf(1.0f, 1.0f, 1.0f, alpha);
 
 	// Outline
 	if (map3d_highlight_outline)
@@ -306,21 +303,6 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 			addFlatOutline(item, *highlight_lines_, 1.0f);
 		else if (base_type == ItemType::Side)
 			addQuadOutline(item, *highlight_lines_, 1.0f);
-		else if (base_type == ItemType::Thing && !map3d_things_boxes)
-			addSpriteOutline(item, *highlight_lines_, 1.0f, camera);
-		highlight_lines_->push();
-
-		// Draw outline
-		gl::setBlend(def.blendMode());
-		highlight_lines_->draw(camera, view.size(), hl_colour);
-	}
-
-	// Thing box
-	if (base_type == ItemType::Thing && map3d_things_boxes)
-	{
-		// Update line buffer
-		highlight_lines_->buffer().clear();
-		addThingBoxOutline(item, *highlight_lines_, 1.5f);
 		highlight_lines_->push();
 
 		// Draw outline
@@ -368,52 +350,6 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 			gl::drawElements(gl::Primitive::Triangles, highlight_fill_->size(), GL_UNSIGNED_INT);
 			gl::bindEBO(0);
 			gl::bindVAO(0);
-		}
-	}
-
-	// Fill (Thing)
-	if (base_type == ItemType::Thing && map3d_highlight_fill)
-	{
-		auto thing = item.asThing(*map_);
-		for (const auto& group : thing_groups_)
-		{
-			if (group.type != thing->type())
-				continue;
-
-			// Get z height
-			float z = thing->zPos();
-			for (const auto& ti : group.things)
-			{
-				if (ti.index == item.index)
-				{
-					z = ti.z;
-					break;
-				}
-			}
-
-			// Setup shader
-			shader_3d_sprite_->bind();
-			shader_3d_sprite_->setUniform("modelview", camera.viewMatrix());
-			shader_3d_sprite_->setUniform("projection", camera.projectionMatrix());
-			shader_3d_sprite_->setUniform("fullbright", true);
-			shader_3d_sprite_->setUniform("fog_density", 0.0f);
-			shader_3d_sprite_->setUniform(
-				"colour", glm::vec4{ hl_colour.fr(), hl_colour.fg(), hl_colour.fb(), alpha * 0.75f });
-			shader_3d_sprite_->setUniform("cam_right", static_cast<Vec3f>(camera.strafeVector()));
-			shader_3d_sprite_->setUniform("sprite_size", group.sprite_size);
-
-			// Setup GL state
-			glEnable(GL_DEPTH_TEST);
-
-			// Create temp buffer for sprite
-			SpriteBuffer3D buffer;
-			buffer.add({ thing->position().x, thing->position().y, z }, 1.0f);
-			buffer.push();
-
-			// Draw buffer
-			gl::setBlend(gl::Blend::Additive);
-			gl::Texture::bind(group.texture);
-			buffer.draw();
 		}
 	}
 
@@ -474,8 +410,7 @@ void MapRenderer3D::populateSelectionOverlay(SelectionOverlay3D& overlay, const 
 			if (!overlay.fill_things)
 				overlay.fill_things = std::make_unique<gl::VertexBuffer3D>();
 
-			addThingBoxOutline(item, *overlay.outline, 2.0f, 0.5f);
-			addThingBox(item, *overlay.fill_things, 0.5f);
+			thing_renderer_->addToSelectionOverlay(overlay, item);
 		}
 	}
 	overlay.outline->push();
@@ -575,9 +510,7 @@ void MapRenderer3D::clearData()
 	quad_groups_.clear();
 
 	// Things
-	thing_groups_.clear();
-	thing_box_line_buffer_.reset();
-	thing_arrow_line_buffer_.reset();
+	thing_renderer_->clear();
 
 	// Selection/Highlight
 	highlight_lines_.reset();

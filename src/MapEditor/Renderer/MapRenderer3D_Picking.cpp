@@ -34,6 +34,7 @@
 #include "Flat3D.h"
 #include "Game/ThingType.h"
 #include "Geometry/Geometry.h"
+#include "Geometry/Ray.h"
 #include "MapEditor/Item.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/Camera.h"
@@ -45,6 +46,7 @@
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/SLADEMap.h"
+#include "ThingRenderer3D.h"
 #include "Utility/MathStuff.h"
 
 using namespace slade;
@@ -53,22 +55,9 @@ using namespace mapeditor;
 
 // -----------------------------------------------------------------------------
 //
-// Structs
+// External Variables
 //
 // -----------------------------------------------------------------------------
-namespace
-{
-// Simple struct to hold camera position + ray direction (in 3d and 2d)
-struct Ray
-{
-	glm::vec3 origin_3d;
-	glm::vec2 origin_2d;
-	glm::vec3 dir_3d;
-	glm::vec2 dir_2d;
-};
-} // namespace
-
-
 EXTERN_CVAR(Int, map3d_things)
 EXTERN_CVAR(Bool, map3d_things_boxes)
 
@@ -240,7 +229,7 @@ std::tuple<const Flat3D*, float> findNearestIntersectingSectorFlat(
 // Finds the map item at the cursor position [cursor_pos] in the given [camera]
 // and [view]
 // -----------------------------------------------------------------------------
-Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View& view, const Vec2i& cursor_pos)
+Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View& view, const Vec2i& cursor_pos) const
 {
 	// Calculate ray from camera through cursor position
 	auto ray_dir = calculateCursorRay(camera, view, cursor_pos);
@@ -248,9 +237,7 @@ Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View
 	// Init variables
 	float min_dist = 9999999.f;
 	Item  current;
-	Ray   ray{
-		  .origin_3d = camera.position(), .origin_2d = camera.position().xy(), .dir_3d = ray_dir, .dir_2d = ray_dir.xy()
-	};
+	Ray   ray{ camera.position(), ray_dir };
 
 	// Check lines
 	float dist;
@@ -306,68 +293,8 @@ Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View
 	// Check things (if visible)
 	if (map3d_things == 0)
 		return current;
-	for (const auto& group : thing_groups_)
-	{
-		// Ignore if not shown
-		if (!group.type_info->decoration() && map3d_things == 2)
-			continue;
-
-		auto radius = group.type_info->radius();
-		auto height = group.type_info->height();
-		if (height < 0)
-			height = group.sprite_size.y;
-
-		for (const auto& ti : group.things)
-		{
-			// Ignore if not visible
-			auto thing = map_->thing(ti.index);
-			if (geometry::lineSide(thing->position(), camera.strafeLine()) > 0)
-				continue;
-
-			// If thing boxes are enabled, check for intersection with the box,
-			// otherwise we check the billboarded sprite
-			if (map3d_things_boxes)
-			{
-				// Find distance to thing box
-				auto tl = Vec3d(thing->xPos() - radius, thing->yPos() - radius, ti.z + height);
-				auto br = Vec3d(thing->xPos() + radius, thing->yPos() + radius, ti.z);
-				dist    = geometry::distanceRayBBox(ray.origin_3d, ray.dir_3d, tl, br);
-
-				// Ignore if no intersection or something was closer
-				if (dist < math::EPSILON || dist >= min_dist)
-					continue;
-
-				current.index      = ti.index;
-				current.real_index = ti.index;
-				current.type       = ItemType::Thing;
-				min_dist           = dist;
-			}
-			else
-			{
-				// Find distance to thing sprite
-				const auto halfwidth = static_cast<double>(group.sprite_size.x) * 0.5;
-				dist                 = geometry::distanceRayLine(
-                    ray.origin_2d,
-                    ray.origin_2d + ray.dir_2d,
-                    thing->position() + camera.strafeVector().xy() * halfwidth,
-                    thing->position() - camera.strafeVector().xy() * halfwidth);
-
-				// Ignore if no intersection or something was closer
-				if (dist < math::EPSILON || dist >= min_dist)
-					continue;
-
-				// Check intersection height
-				auto height = ray.origin_3d.z + ray.dir_3d.z * dist;
-				if (height >= ti.z && height <= ti.z + group.sprite_size.y)
-				{
-					current.index      = ti.index;
-					current.real_index = ti.index;
-					current.type       = ItemType::Thing;
-					min_dist           = dist;
-				}
-			}
-		}
-	}
+	if (auto closest_thing = thing_renderer_->nearestIntersectingThing(camera, ray, min_dist); closest_thing)
+		current = *closest_thing;
 
 	// TODO Update item distance
 	// if (min_dist >= 9999999 || min_dist < 0)

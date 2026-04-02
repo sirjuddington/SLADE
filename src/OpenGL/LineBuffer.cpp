@@ -158,6 +158,34 @@ LineBuffer::~LineBuffer()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the appropriate shader for the current LineBuffer settings
+// -----------------------------------------------------------------------------
+Shader* LineBuffer::shader(bool map_3d) const
+{
+	if (!shader_lines.isValid())
+		initShader();
+
+	return map_3d ? (dashed_ ? &shader_lines_map3d_dashed : &shader_lines_map3d)
+				  : (dashed_ ? &shader_lines_dashed : &shader_lines);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the given [shader]'s uniforms for this LineBuffer's settings
+// -----------------------------------------------------------------------------
+void LineBuffer::setShaderUniforms(const Shader& shader) const
+{
+	shader.setUniform("aa_radius", aa_radius_);
+	shader.setUniform("line_width", width_mult_);
+	if (dashed_)
+	{
+		shader.setUniform("dash_size", dash_size_);
+		shader.setUniform("gap_size", dash_gap_size_);
+	}
+	if (map_3d_)
+		shader.setUniform("max_dist", max_dist_);
+}
+
+// -----------------------------------------------------------------------------
 // Adds a [line] to the buffer
 // -----------------------------------------------------------------------------
 void LineBuffer::add(const Line& line)
@@ -301,18 +329,20 @@ void LineBuffer::draw(const View* view, const glm::vec4& colour, const glm::mat4
 	// Setup shader for drawing
 	if (!shader_lines.isValid())
 		initShader();
-	Shader& shader = dashed_ ? shader_lines_dashed : shader_lines;
-	shader.bind();
-	shader.setUniform("aa_radius", aa_radius_);
-	shader.setUniform("line_width", width_mult_);
-	shader.setUniform("colour", colour);
+	auto shader = this->shader();
+	if (!shader)
+		return;
+	shader->bind();
+	shader->setUniform("aa_radius", aa_radius_);
+	shader->setUniform("line_width", width_mult_);
+	shader->setUniform("colour", colour);
 	if (dashed_)
 	{
-		shader.setUniform("dash_size", dash_size_);
-		shader.setUniform("gap_size", dash_gap_size_);
+		shader->setUniform("dash_size", dash_size_);
+		shader->setUniform("gap_size", dash_gap_size_);
 	}
 	if (view)
-		view->setupShader(shader, model);
+		view->setupShader(*shader, model);
 
 	bindVAO(vao_);
 	drawElementsInstanced(Primitive::Triangles, 6, GL_UNSIGNED_SHORT, buffer_.size());
@@ -357,15 +387,4 @@ void LineBuffer::draw(const Camera& camera, glm::vec2 viewport_size, const glm::
 	bindVAO(vao_);
 	drawElementsInstanced(Primitive::Triangles, 6, GL_UNSIGNED_SHORT, buffer_.size());
 	bindVAO(0);
-}
-
-// -----------------------------------------------------------------------------
-// Returns the shader used for drawing lines with this buffer
-// -----------------------------------------------------------------------------
-const Shader& LineBuffer::shader()
-{
-	if (!shader_lines.isValid())
-		initShader();
-
-	return shader_lines;
 }

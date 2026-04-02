@@ -26,11 +26,11 @@ class ItemSelection;
 class MapGeometryBuffer3D;
 class Renderer;
 class Skybox;
-class SpriteBuffer3D;
 enum class RenderPass : u8;
 struct Flat3D;
 struct Item;
 struct Quad3D;
+class ThingRenderer3D;
 } // namespace slade::mapeditor
 
 
@@ -42,8 +42,15 @@ public:
 	MapRenderer3D(SLADEMap* map, Renderer* renderer);
 	~MapRenderer3D();
 
-	bool fogEnabled() const { return fog_; }
-	bool fullbrightEnabled() const { return fullbright_; }
+	SLADEMap* map() const { return map_; }
+	bool      fogEnabled() const { return fog_; }
+	bool      fullbrightEnabled() const { return fullbright_; }
+
+	gl::Shader* shader(bool alpha_test = false) const
+	{
+		return alpha_test ? shader_3d_alphatest_.get() : shader_3d_.get();
+	}
+	gl::Shader* spriteShader() const { return shader_3d_sprite_.get(); }
 
 	void enableHighlight(bool enable = true) { highlight_enabled_ = enable; }
 	void enableSelection(bool enable = true) { selection_enabled_ = enable; }
@@ -66,21 +73,22 @@ public:
 
 	void clearData();
 
-	Item findHighlightedItem(const gl::Camera& camera, const gl::View& view, const Vec2i& cursor_pos);
+	Item findHighlightedItem(const gl::Camera& camera, const gl::View& view, const Vec2i& cursor_pos) const;
 
 	// Testing
 	unsigned flatsBufferSize() const;
 	unsigned quadsBufferSize() const;
 
 private:
-	SLADEMap*              map_      = nullptr;
-	Renderer*              renderer_ = nullptr;
-	unique_ptr<gl::Shader> shader_3d_;
-	unique_ptr<gl::Shader> shader_3d_alphatest_;
-	unique_ptr<gl::Shader> shader_3d_sprite_;
-	unique_ptr<Skybox>     skybox_;
-	bool                   fullbright_ = false;
-	bool                   fog_        = true;
+	SLADEMap*                   map_      = nullptr;
+	Renderer*                   renderer_ = nullptr;
+	unique_ptr<gl::Shader>      shader_3d_;
+	unique_ptr<gl::Shader>      shader_3d_alphatest_;
+	unique_ptr<gl::Shader>      shader_3d_sprite_;
+	unique_ptr<Skybox>          skybox_;
+	unique_ptr<ThingRenderer3D> thing_renderer_;
+	bool                        fullbright_ = false;
+	bool                        fog_        = true;
 
 	// Flats
 	struct SectorFlats
@@ -122,36 +130,6 @@ private:
 	bool                force_update_flat_groups_ = false;
 	bool                force_update_quad_groups_ = false;
 
-	// Things
-	struct Thing
-	{
-		unsigned index = 0;
-		float    z     = 0.0f;
-	};
-	struct ThingGroup
-	{
-		int                        type    = -1;
-		unsigned                   texture = 0;
-		Vec2f                      sprite_size;
-		bool                       icon = false;
-		const game::ThingType*     type_info;
-		vector<Thing>              things;
-		unique_ptr<SpriteBuffer3D> sprite_buffer_;
-		unsigned                   box_buffer_offset   = 1; // 1 is a safe 'invalid' offset here
-		unsigned                   arrow_buffer_offset = 1; // "
-
-		ThingGroup() = default;
-		ThingGroup(int type_id, const game::ThingType& type_info);
-
-		void addThing(const MapThing& thing);
-	};
-	vector<ThingGroup>         thing_groups_;
-	vector<u8>                 thing_visibility_;
-	unique_ptr<gl::LineBuffer> thing_arrow_line_buffer_;
-	unique_ptr<gl::LineBuffer> thing_box_line_buffer_;
-	long                       things_updated_            = 0;
-	bool                       force_update_thing_groups_ = false;
-
 	// Highlighted/selected items
 	bool                        highlight_enabled_ = true;
 	bool                        selection_enabled_ = true;
@@ -161,11 +139,9 @@ private:
 
 	void updateFlatVisibility(const gl::Camera& camera, float max_dist);
 	void updateWallVisibility(const gl::Camera& camera, float max_dist);
-	void updateThingVisibility(const gl::Camera& camera, float max_dist);
 
 	void updateFlats(bool vis_check = false);
 	void updateWalls(bool vis_check = false);
-	void updateThings(bool vis_check = false);
 
 	void renderSkyFlatsQuads() const;
 	void renderGroups(
@@ -173,19 +149,10 @@ private:
 		const vector<RenderGroup>& groups,
 		const gl::Shader&          shader,
 		RenderPass                 pass);
-	void renderSprites(const gl::Shader& shader, bool decorations_only = false) const;
-	void renderThingBoxes(
-		const gl::Camera& camera,
-		const gl::View&   view,
-		bool              decorations_only = false,
-		float             max_dist         = 0.0f);
 
 	void addFlatOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const;
 	void addQuadOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const;
-	void addSpriteOutline(const Item& item, gl::LineBuffer& buffer, float line_width, const gl::Camera& camera) const;
-	void addThingBoxOutline(const Item& item, gl::LineBuffer& buffer, float line_width, float pad = 0.0f) const;
 	void addItemFlatIndices(const Item& item, vector<GLuint>& indices) const;
 	void addItemQuadIndices(const Item& item, vector<GLuint>& indices) const;
-	void addThingBox(const Item& item, gl::VertexBuffer3D& buffer, float pad = 0.0f) const;
 };
 } // namespace slade::mapeditor
