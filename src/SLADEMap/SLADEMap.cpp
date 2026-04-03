@@ -206,14 +206,6 @@ void SLADEMap::setGeometryUpdated()
 }
 
 // -----------------------------------------------------------------------------
-// Sets the things last updated time to now
-// -----------------------------------------------------------------------------
-void SLADEMap::setThingsUpdated()
-{
-	things_updated_ = app::runTimer();
-}
-
-// -----------------------------------------------------------------------------
 // Sets the sector render info last updated time to now
 // -----------------------------------------------------------------------------
 void SLADEMap::setSectorRenderInfoUpdated()

@@ -42,11 +42,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapRenderer3D.h"
+#include "App.h"
 #include "Flat3D.h"
 #include "General/ColourConfiguration.h"
 #include "MCAnimations.h"
 #include "MapEditor/Item.h"
 #include "MapEditor/ItemSelection.h"
+#include "MapEditor/MapEditContext.h"
 #include "MapGeometryBuffer3D.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/GLTexture.h"
@@ -56,6 +58,7 @@
 #include "OpenGL/VertexBuffer3D.h"
 #include "Quad3D.h"
 #include "Renderer.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Skybox.h"
 #include "ThingRenderer3D.h"
 
@@ -130,7 +133,10 @@ void setupShaderUniforms(
 // -----------------------------------------------------------------------------
 // MapRenderer3D class constructor
 // -----------------------------------------------------------------------------
-MapRenderer3D::MapRenderer3D(SLADEMap* map, Renderer* renderer) : map_{ map }, renderer_{ renderer }
+MapRenderer3D::MapRenderer3D(MapEditContext* context, Renderer* renderer) :
+	context_{ context },
+	map_{ &context->map() },
+	renderer_{ renderer }
 {
 	vb_flats_       = std::make_unique<MapGeometryBuffer3D>();
 	vb_quads_       = std::make_unique<MapGeometryBuffer3D>();
@@ -372,6 +378,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 void MapRenderer3D::updateSelection(const ItemSelection& selection)
 {
 	populateSelectionOverlay(selection_overlay_, selection.selectedItems());
+	selection_overlay_updated_ = app::runTimer();
 }
 
 // -----------------------------------------------------------------------------
@@ -490,10 +497,17 @@ void MapRenderer3D::renderSelectionOverlay(
 // Renders the current selection overlay (if any) using the given [camera] and
 // [view]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::renderSelection(const gl::Camera& camera, const gl::View& view) const
+void MapRenderer3D::renderSelection(const gl::Camera& camera, const gl::View& view)
 {
 	if (!selection_enabled_)
 		return;
+
+	// Refresh selection if anything has been updated since the last selection
+	// overlay update
+	if (map_->typeLastUpdated(map::ObjectType::Thing) > selection_overlay_updated_
+		|| map_->geometryUpdated() > selection_overlay_updated_
+		|| map_->sectorRenderInfoUpdated() > selection_overlay_updated_)
+		updateSelection(context_->selection());
 
 	// Render selection overlay in selection colour
 	auto& def = colourconfig::colDef("map_3d_selection");

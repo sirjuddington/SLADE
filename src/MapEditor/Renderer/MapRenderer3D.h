@@ -22,6 +22,7 @@ struct Vertex3D;
 } // namespace slade::gl
 namespace slade::mapeditor
 {
+class MapEditContext;
 class ItemSelection;
 class MapGeometryBuffer3D;
 class Renderer;
@@ -39,7 +40,7 @@ namespace slade::mapeditor
 class MapRenderer3D
 {
 public:
-	MapRenderer3D(SLADEMap* map, Renderer* renderer);
+	MapRenderer3D(MapEditContext* context, Renderer* renderer);
 	~MapRenderer3D();
 
 	SLADEMap* map() const { return map_; }
@@ -66,7 +67,7 @@ public:
 		const SelectionOverlay3D& overlay,
 		glm::vec4                 colour,
 		float                     alpha = 1.0f) const;
-	void renderSelection(const gl::Camera& camera, const gl::View& view) const;
+	void renderSelection(const gl::Camera& camera, const gl::View& view);
 
 	void clearData();
 
@@ -78,6 +79,7 @@ public:
 
 private:
 	SLADEMap*                   map_      = nullptr;
+	MapEditContext*             context_  = nullptr;
 	Renderer*                   renderer_ = nullptr;
 	unique_ptr<gl::Shader>      shader_3d_;
 	unique_ptr<gl::Shader>      shader_3d_alphatest_;
@@ -134,6 +136,7 @@ private:
 	unique_ptr<gl::LineBuffer>  highlight_lines_;
 	unique_ptr<gl::IndexBuffer> highlight_fill_;
 	SelectionOverlay3D          selection_overlay_;
+	long                        selection_overlay_updated_ = 0;
 
 	void updateFlatVisibility(const gl::Camera& camera, float max_dist);
 	void updateWallVisibility(const gl::Camera& camera, float max_dist);

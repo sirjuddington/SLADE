@@ -527,9 +527,6 @@ bool MapObjectCollection::removeThing(unsigned index)
 	removeMapObject(things[index]);
 	things.remove(index);
 
-	if (parent_map_)
-		parent_map_->setThingsUpdated();
-
 	return true;
 }
 

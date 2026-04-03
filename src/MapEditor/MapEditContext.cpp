@@ -544,7 +544,7 @@ void MapEditContext::updateThingLists()
 {
 	pathed_things_.clear();
 	map_->things().putAllPathed(pathed_things_);
-	map_->setThingsUpdated();
+	map_->setTypeUpdated(map::ObjectType::Thing);
 }
 
 // -----------------------------------------------------------------------------

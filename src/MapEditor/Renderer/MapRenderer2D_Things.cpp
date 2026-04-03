@@ -155,7 +155,7 @@ void MapRenderer2D::renderThings(float alpha, bool force_dir)
 	if (alpha <= 0.01f || map_->nThings() == 0)
 		return;
 
-	if (thing_buffers_.empty() || map_->thingsUpdated() > things_updated_)
+	if (thing_buffers_.empty() || map_->typeLastUpdated(map::ObjectType::Thing) > things_updated_)
 		updateThingBuffers();
 
 	// Draw thing buffers
@@ -351,7 +351,7 @@ void MapRenderer2D::renderPathedThings(gl::draw2d::Context& dc, const vector<Map
 	bool update = false;
 	if (thing_paths_.empty())
 		update = true;
-	else if (map_->thingsUpdated() > thing_paths_updated_)
+	else if (map_->typeLastUpdated(map::ObjectType::Thing) > thing_paths_updated_)
 	{
 		for (auto& thing : things)
 		{

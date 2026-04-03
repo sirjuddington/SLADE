@@ -178,7 +178,7 @@ void addThingDirectionArrow(
 
 bool thingsNeedUpdate(long last_updated, const SLADEMap* map)
 {
-	if (last_updated < map->thingsUpdated() || last_updated < map->sectorRenderInfoUpdated())
+	if (last_updated < map->typeLastUpdated(map::ObjectType::Thing) || last_updated < map->sectorRenderInfoUpdated())
 		return true;
 
 	return false;

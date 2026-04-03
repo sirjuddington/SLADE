@@ -127,11 +127,11 @@ Renderer::Renderer(MapEditContext& context) : context_{ &context }
 	view_              = std::make_unique<View>(true, true);
 	view_screen_       = std::make_unique<View>(false, false);
 	renderer_2d_       = std::make_unique<MapRenderer2D>(&context.map(), view_.get());
-	renderer_3d_       = std::make_unique<MapRenderer3D>(&context.map(), this);
+	renderer_3d_       = std::make_unique<MapRenderer3D>(context_, this);
 	vb_grid_           = std::make_unique<VertexBuffer2D>();
 	lb_crosshair_      = std::make_unique<LineBuffer>();
 	lb_objectedit_box_ = std::make_unique<LineBuffer>();
-	camera_            = std::make_unique<gl::Camera>(Vec3f{ 0, 0, 1 });
+	camera_            = std::make_unique<Camera>(Vec3f{ 0, 0, 1 });
 }
 
 // -----------------------------------------------------------------------------
