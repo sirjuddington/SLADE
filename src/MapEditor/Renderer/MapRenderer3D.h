@@ -46,11 +46,8 @@ public:
 	bool      fogEnabled() const { return fog_; }
 	bool      fullbrightEnabled() const { return fullbright_; }
 
-	gl::Shader* shader(bool alpha_test = false) const
-	{
-		return alpha_test ? shader_3d_alphatest_.get() : shader_3d_.get();
-	}
-	gl::Shader* spriteShader() const { return shader_3d_sprite_.get(); }
+	gl::Shader* shader(bool alpha_test = false) const { return (alpha_test ? shader_3d_alphatest_ : shader_3d_).get(); }
+	gl::Shader* spriteShader(bool icon = false) const { return (icon ? shader_3d_icon_ : shader_3d_sprite_).get(); }
 
 	void enableHighlight(bool enable = true) { highlight_enabled_ = enable; }
 	void enableSelection(bool enable = true) { selection_enabled_ = enable; }
@@ -85,6 +82,7 @@ private:
 	unique_ptr<gl::Shader>      shader_3d_;
 	unique_ptr<gl::Shader>      shader_3d_alphatest_;
 	unique_ptr<gl::Shader>      shader_3d_sprite_;
+	unique_ptr<gl::Shader>      shader_3d_icon_;
 	unique_ptr<Skybox>          skybox_;
 	unique_ptr<ThingRenderer3D> thing_renderer_;
 	bool                        fullbright_ = false;

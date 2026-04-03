@@ -39,7 +39,7 @@ public:
 	void updateVisibility(const gl::Camera& camera, float max_dist);
 	void update(bool vis_check = false);
 
-	void renderSprites(const gl::Shader& shader) const;
+	void renderSprites(const gl::Shader& shader, bool icons = false) const;
 	void renderThingBoxes(const gl::Camera& camera, const gl::View& view, float max_dist = 0.0f) const;
 
 	void renderHighlight(
@@ -89,16 +89,9 @@ private:
 	long               groups_updated_      = 0;
 	bool               force_update_groups_ = false;
 
-	// unique_ptr<gl::LineBuffer> arrow_line_buffer_;
-	// unique_ptr<gl::LineBuffer> box_line_buffer_;
-
 	Item                       prev_highlight_;
 	unique_ptr<gl::LineBuffer> highlight_lines_;
 	unique_ptr<SpriteBuffer3D> highlight_fill_;
-
-	// void addSpriteOutline(const Item& item, gl::LineBuffer& buffer, float line_width, const gl::Camera& camera)
-	// const; void addThingBoxOutline(const Item& item, gl::LineBuffer& buffer, float line_width, float pad = 0.0f)
-	// const; void addThingBox(const Item& item, gl::VertexBuffer3D& buffer, float pad = 0.0f) const;
 
 	const ThingGroup* thingGroup(unsigned type) const;
 	ThingGroup*       thingGroup(unsigned type);

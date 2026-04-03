@@ -212,8 +212,12 @@ ThingRenderer3D::ThingGroup::ThingGroup(int type_id, const game::ThingType& type
 		icon = true;
 	}
 
+	// Still no sprite/icon, use blank icon
 	if (tex == 0)
-		tex = gl::Texture::missingTexture();
+	{
+		tex  = gl::Texture::whiteTexture();
+		icon = true;
+	}
 
 	// Create new thing group & buffers
 	type          = type_id;
@@ -430,15 +434,18 @@ void ThingRenderer3D::update(bool vis_check)
 		force_update_groups_ = true;
 }
 
-void ThingRenderer3D::renderSprites(const gl::Shader& shader) const
+void ThingRenderer3D::renderSprites(const gl::Shader& shader, bool icons) const
 {
 	if (map3d_things == SHOWTHINGS_NONE)
 		return;
 
 	for (const auto& group : groups_)
 	{
-		if (map3d_things == SHOWTHINGS_DECORONLY && !group.type_info->decoration())
+		if (map3d_things == SHOWTHINGS_DECORONLY && !group.type_info->decoration() || group.icon != icons)
 			continue;
+
+		if (icons)
+			shader.setUniform("colour", group.type_info->colour());
 
 		gl::Texture::bind(group.texture);
 		shader.setUniform("sprite_size", group.sprite_size);
@@ -448,7 +455,7 @@ void ThingRenderer3D::renderSprites(const gl::Shader& shader) const
 
 void ThingRenderer3D::renderThingBoxes(const gl::Camera& camera, const gl::View& view, float max_dist) const
 {
-	if (map3d_things == SHOWTHINGS_NONE)
+	if (map3d_things == SHOWTHINGS_NONE || !map3d_things_boxes)
 		return;
 
 	glDisable(GL_CULL_FACE);
@@ -479,7 +486,8 @@ void ThingRenderer3D::renderThingBoxes(const gl::Camera& camera, const gl::View&
 				addThingBoxOutline(
 					*group.line_buffer, *thing, ti.z, radius, height, 1.5f, -0.2f, group.type_info->colour());
 
-				addThingDirectionArrow(*group.line_buffer, *thing, ti.z, radius, height, 2.5f);
+				if (group.type_info->angled())
+					addThingDirectionArrow(*group.line_buffer, *thing, ti.z, radius, height, 2.5f);
 			}
 
 			line_buffer.push();
@@ -566,7 +574,7 @@ void ThingRenderer3D::renderHighlight(
 	if (fill && highlight_fill_)
 	{
 		// Setup shader
-		auto shader = renderer_->spriteShader();
+		auto shader = renderer_->spriteShader(group->icon);
 		shader->bind();
 		shader->setUniform("modelview", camera.viewMatrix());
 		shader->setUniform("projection", camera.projectionMatrix());

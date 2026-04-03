@@ -178,6 +178,12 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 		shader_3d_sprite_->define("ALPHA_TEST");
 		shader_3d_sprite_->loadResourceEntries("map_sprite3d.vert", "map_geometry3d.frag");
 	}
+	if (!shader_3d_icon_)
+	{
+		shader_3d_icon_ = std::make_unique<gl::Shader>("map_3d_sprite");
+		shader_3d_icon_->define("CIRCLE_MASK");
+		shader_3d_icon_->loadResourceEntries("map_sprite3d.vert", "map_geometry3d.frag");
+	}
 
 	// Setup GL stuff
 	glEnable(GL_DEPTH_TEST);
@@ -192,6 +198,7 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	setupShaderUniforms(*shader_3d_, camera, fullbright_, fog_, false);
 	setupShaderUniforms(*shader_3d_alphatest_, camera, fullbright_, fog_, false);
 	setupShaderUniforms(*shader_3d_sprite_, camera, fullbright_, fog_, true);
+	setupShaderUniforms(*shader_3d_icon_, camera, fullbright_, fog_, true);
 
 	// Update visibility if needed
 	if (map3d_max_render_dist > 0.0f)
@@ -246,7 +253,8 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	shader_3d_alphatest_->bind();
 	renderGroups(*vb_flats_, flat_groups_, *shader_3d_alphatest_, RenderPass::Masked); // Flats
 	renderGroups(*vb_quads_, quad_groups_, *shader_3d_alphatest_, RenderPass::Masked); // Walls
-	thing_renderer_->renderSprites(*shader_3d_sprite_);
+	thing_renderer_->renderSprites(*shader_3d_sprite_, false);                         // Sprites
+	thing_renderer_->renderSprites(*shader_3d_icon_, true);                            // Icons
 
 	// Third pass, render transparent flats/walls (TODO: transparent sprites)
 	shader_3d_->bind();
