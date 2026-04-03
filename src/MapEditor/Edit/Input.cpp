@@ -86,7 +86,7 @@ EXTERN_CVAR(Bool, map3d_gravity)
 EXTERN_CVAR(Int, map3d_things)
 EXTERN_CVAR(Bool, map3d_info_overlay)
 EXTERN_CVAR(Bool, map3d_highlight_enabled)
-EXTERN_CVAR(Bool, map3d_things_boxes)
+EXTERN_CVAR(Int, map3d_things_boxes)
 
 
 // -----------------------------------------------------------------------------
@@ -1120,14 +1120,18 @@ void Input::handleKeyBind3d(string_view name) const
 	// Toggle thing boxes
 	else if (name == "me3d_thing_boxes")
 	{
-		// Toggle
-		map3d_things_boxes = !map3d_things_boxes;
+		// Change thing box display type
+		map3d_things_boxes = map3d_things_boxes + 1;
+		if (map3d_things_boxes > 2)
+			map3d_things_boxes = 0;
 
 		// Editor message
-		if (map3d_things_boxes)
-			context_->addEditorMessage("Thing boxes enabled");
-		else
+		if (map3d_things_boxes == 0)
 			context_->addEditorMessage("Thing boxes disabled");
+		else if (map3d_things_boxes == 1)
+			context_->addEditorMessage("Thing boxes enabled: All");
+		else
+			context_->addEditorMessage("Thing boxes enabled: Solid objects only");
 	}
 
 	// Toggle hilight

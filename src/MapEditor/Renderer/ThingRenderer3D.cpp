@@ -71,10 +71,14 @@ namespace
 constexpr int SHOWTHINGS_NONE      = 0;
 constexpr int SHOWTHINGS_ALL       = 1;
 constexpr int SHOWTHINGS_DECORONLY = 2;
+
+constexpr int BOXES_NONE      = 0;
+constexpr int BOXES_ALL       = 1;
+constexpr int BOXES_SOLIDONLY = 2;
 } // namespace
 CVAR(Int, map3d_thing_icon_size, 16, CVar::Flag::Save)
 CVAR(Int, map3d_things, SHOWTHINGS_ALL, CVar::Flag::Save)
-CVAR(Bool, map3d_things_boxes, true, CVar::Flag::Save)
+CVAR(Int, map3d_things_boxes, BOXES_SOLIDONLY, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -187,6 +191,26 @@ bool thingNeedsUpdate(long last_updated, const MapThing* thing, const MapSector*
 
 	if (sector && (last_updated < sector->modifiedTime() || last_updated < sector->renderInfoLastUpdated()))
 		return true;
+
+	return false;
+}
+
+bool thingTypeEnabled(const game::ThingType& type_info)
+{
+	if (map3d_things == SHOWTHINGS_ALL)
+		return true;
+	if (map3d_things == SHOWTHINGS_DECORONLY)
+		return type_info.decoration();
+
+	return false;
+}
+
+bool boxesEnabled(const game::ThingType& type_info)
+{
+	if (map3d_things_boxes == BOXES_ALL)
+		return true;
+	if (map3d_things_boxes == BOXES_SOLIDONLY)
+		return type_info.solid();
 
 	return false;
 }
@@ -441,7 +465,7 @@ void ThingRenderer3D::renderSprites(const gl::Shader& shader, bool icons) const
 
 	for (const auto& group : groups_)
 	{
-		if (map3d_things == SHOWTHINGS_DECORONLY && !group.type_info->decoration() || group.icon != icons)
+		if (!thingTypeEnabled(*group.type_info) || group.icon != icons)
 			continue;
 
 		if (icons)
@@ -455,7 +479,7 @@ void ThingRenderer3D::renderSprites(const gl::Shader& shader, bool icons) const
 
 void ThingRenderer3D::renderThingBoxes(const gl::Camera& camera, const gl::View& view, float max_dist) const
 {
-	if (map3d_things == SHOWTHINGS_NONE || !map3d_things_boxes)
+	if (map3d_things == SHOWTHINGS_NONE || map3d_things_boxes == BOXES_NONE)
 		return;
 
 	glDisable(GL_CULL_FACE);
@@ -463,7 +487,7 @@ void ThingRenderer3D::renderThingBoxes(const gl::Camera& camera, const gl::View&
 	gl::Shader* shader = nullptr;
 	for (auto& group : groups_)
 	{
-		if (map3d_things == SHOWTHINGS_DECORONLY && !group.type_info->decoration())
+		if (!thingTypeEnabled(*group.type_info) || !boxesEnabled(*group.type_info))
 			continue;
 
 		// Populate line buffer if needed
@@ -549,7 +573,7 @@ void ThingRenderer3D::renderHighlight(
 		addThingDirectionArrow(*highlight_lines_, *thing, z, radius, height, 1.5f);
 
 		// Box or outline
-		if (map3d_things_boxes)
+		if (boxesEnabled(*group->type_info))
 			addThingBoxOutline(*highlight_lines_, *thing, z, radius, height, 1.5f, -0.2f);
 		else if (outline)
 			addSpriteOutline(*highlight_lines_, *thing, z, group->sprite_size, 1.0f, camera);
@@ -626,9 +650,10 @@ optional<Item> ThingRenderer3D::nearestIntersectingThing(const gl::Camera& camer
 	for (const auto& group : groups_)
 	{
 		// Ignore if not shown
-		if (map3d_things == SHOWTHINGS_DECORONLY && !group.type_info->decoration())
+		if (!thingTypeEnabled(*group.type_info))
 			continue;
 
+		auto box    = boxesEnabled(*group.type_info);
 		auto radius = group.type_info->radius();
 		auto height = group.type_info->height();
 		if (height < 0)
@@ -642,9 +667,9 @@ optional<Item> ThingRenderer3D::nearestIntersectingThing(const gl::Camera& camer
 				|| geometry::lineSide(thing->position(), camera.strafeLine()) > 0)
 				continue;
 
-			// If thing boxes are enabled, check for intersection with the box,
+			// If the thing has a box, check for intersection with the box,
 			// otherwise we check the billboarded sprite
-			if (map3d_things_boxes)
+			if (box)
 			{
 				// Find distance to thing box
 				auto tl   = Vec3d(thing->xPos() - radius, thing->yPos() - radius, ti.z + height);
