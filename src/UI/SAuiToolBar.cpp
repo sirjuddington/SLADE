@@ -520,6 +520,7 @@ void SAuiToolBar::createFromLayout()
 		custom_control.control->Hide();
 
 	// Add items from layout
+	bool stretch_spacer = false;
 	for (const auto& j_item : *layout_)
 	{
 		// Ignore if hidden
@@ -597,7 +598,10 @@ void SAuiToolBar::createFromLayout()
 
 		// Stretch spacer
 		else if (type == "stretch_spacer")
+		{
 			AddStretchSpacer(j_item.value("proportion", 1));
+			stretch_spacer = true;
+		}
 	}
 
 	// Remove extraneous separators
@@ -630,6 +634,11 @@ void SAuiToolBar::createFromLayout()
 			++i;
 		}
 	}
+
+	// Add stretch spacer at end if none exist in the toolbar,
+	// otherwise it won't span the full horizontal length
+	if (!stretch_spacer)
+		AddStretchSpacer();
 
 	Realize();
 	if (aui_mgr_)
