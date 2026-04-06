@@ -404,8 +404,7 @@ void WallRenderer3D::render(const gl::Shader& shader, RenderPass pass) const
 }
 
 // -----------------------------------------------------------------------------
-// Renders sky wall quads only (for filling the stencil buffer).
-// Caller is responsible for additional GL state setup/teardown.
+// Renders sky wall quads only (for filling the stencil buffer)
 // -----------------------------------------------------------------------------
 void WallRenderer3D::renderSkyGeometry() const
 {

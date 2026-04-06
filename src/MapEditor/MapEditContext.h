@@ -33,6 +33,7 @@ namespace map
 }
 namespace mapeditor
 {
+	class LoadingOverlay;
 	class Edit2D;
 	class Edit3D;
 	class Input;
@@ -152,6 +153,11 @@ public:
 	void       updateInfoOverlay() const;
 	void       drawInfoOverlay(gl::draw2d::Context& dc, float alpha) const;
 
+	// Loading overlay
+	bool            loadingOverlayActive() const;
+	LoadingOverlay& loadingOverlay();
+	void            closeLoadingOverlay() const;
+
 	// Player start swapping
 	void swapPlayerStart3d();
 	void swapPlayerStart2d(const Vec2d& pos);
@@ -243,7 +249,8 @@ private:
 	unique_ptr<Input> input_;
 
 	// Full-Screen Overlay
-	unique_ptr<MCOverlay> overlay_current_;
+	unique_ptr<MCOverlay>      overlay_current_;
+	unique_ptr<LoadingOverlay> loading_overlay_;
 
 	// Info overlays
 	bool                          info_showing_ = false;

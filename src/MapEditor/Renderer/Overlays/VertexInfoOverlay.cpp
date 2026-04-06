@@ -100,11 +100,12 @@ void VertexInfoOverlay::draw(gl::draw2d::Context& dc, float alpha) const
 
 	// Slide in/out animation
 	auto alpha_inv = 1.0f - alpha;
-	auto bottom    = dc.viewSize().y + 16.0f * alpha_inv * alpha_inv;
+	auto bottom    = dc.viewSize().y + height * alpha_inv * alpha_inv;
 
 	// Draw overlay background
 	dc.setColourFromConfig("map_overlay_background");
 	dc.colour.a *= alpha;
+	dc.texture = 0;
 	dc.drawRect({ 0.0f, bottom - height, dc.viewSize().x, bottom });
 
 	// Draw text

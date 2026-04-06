@@ -41,6 +41,7 @@ namespace mapeditor
 
 		void forceUpdate(bool update_2d = true, bool update_3d = true) const;
 		void clearTextureCache() const;
+		void clearData();
 
 		// View manipulation
 		void   setView(double map_x, double map_y) const;

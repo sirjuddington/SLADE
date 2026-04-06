@@ -62,6 +62,7 @@
 #include "OpenGL/Draw2D.h"
 #include "Renderer/3D/MapRenderer3D.h"
 #include "Renderer/Overlays/LineInfoOverlay.h"
+#include "Renderer/Overlays/LoadingOverlay.h"
 #include "Renderer/Overlays/SectorInfoOverlay.h"
 #include "Renderer/Overlays/ThingInfoOverlay.h"
 #include "Renderer/Overlays/VertexInfoOverlay.h"
@@ -1879,6 +1880,34 @@ void MapEditContext::drawInfoOverlay(gl::draw2d::Context& dc, float alpha) const
 	case Mode::Things:   info_thing_->draw(dc, alpha); return;
 	case Mode::Visual:   info_3d_->draw(dc, alpha); return;
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the loading overlay is currently active
+// -----------------------------------------------------------------------------
+bool MapEditContext::loadingOverlayActive() const
+{
+	return loading_overlay_ && loading_overlay_->isActive();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the loading overlay
+// -----------------------------------------------------------------------------
+LoadingOverlay& MapEditContext::loadingOverlay()
+{
+	if (!loading_overlay_)
+		loading_overlay_ = std::make_unique<LoadingOverlay>();
+
+	return *loading_overlay_;
+}
+
+// -----------------------------------------------------------------------------
+// Closes the loading overlay
+// -----------------------------------------------------------------------------
+void MapEditContext::closeLoadingOverlay() const
+{
+	if (loading_overlay_)
+		loading_overlay_->close(false);
 }
 
 // -----------------------------------------------------------------------------

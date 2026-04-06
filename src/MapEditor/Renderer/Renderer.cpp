@@ -57,6 +57,7 @@
 #include "OpenGL/VertexBuffer2D.h"
 #include "OpenGL/VertexBuffer3D.h"
 #include "OpenGL/View.h"
+#include "Overlays/LoadingOverlay.h"
 #include "Overlays/MCOverlay.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
@@ -157,6 +158,15 @@ void Renderer::forceUpdate(bool update_2d, bool update_3d) const
 void Renderer::clearTextureCache() const
 {
 	renderer_2d_->clearTextureCache();
+}
+
+// -----------------------------------------------------------------------------
+// Clears the 2d and 3d renderers' data
+// -----------------------------------------------------------------------------
+void Renderer::clearData()
+{
+	renderer_2d_ = std::make_unique<MapRenderer2D>(&context_->map(), view_.get());
+	renderer_3d_ = std::make_unique<MapRenderer3D>(context_, this);
 }
 
 // -----------------------------------------------------------------------------
@@ -1208,6 +1218,10 @@ void Renderer::draw() const
 	if (context_->currentOverlay() && anim_overlay_fade_ > 0.01f)
 		context_->currentOverlay()->draw(dc, anim_overlay_fade_);
 
+	// Draw loading overlay if active
+	if (anim_overlay_fade_ > 0.01f)
+		context_->loadingOverlay().draw(dc, anim_overlay_fade_);
+
 	// Editor messages
 	drawEditorMessages(dc);
 
@@ -1353,7 +1367,7 @@ void Renderer::updateAnimations(double mult)
 	}
 
 	// Fader for fullscreen overlay
-	if (context_->overlayActive())
+	if (context_->overlayActive() || context_->loadingOverlayActive())
 	{
 		if (updateFade(anim_overlay_fade_, 0.1f * mult, 0.0f, 1.0f))
 			animations_active_ = true;

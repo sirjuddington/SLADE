@@ -41,6 +41,8 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
+#include "MapEditor/Renderer/3D/MapRenderer3D.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "OpenGL/Draw2D.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -351,6 +353,8 @@ void QuickTextureOverlay3d::close(bool cancel)
 	{
 		bool recorded = editor_->endUndoRecord(true);
 		editor_->selection().lockHilight(false);
+		editor_->renderer().renderer3D().enableHighlight(true);
+		editor_->renderer().renderer3D().enableSelection(true);
 		if (cancel && recorded)
 			editor_->doUndo();
 	}

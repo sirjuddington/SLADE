@@ -558,6 +558,7 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 
 	// Clear current map data
 	map_data_.clear();
+	editContext().renderer().clearData();
 
 	// Show blank map
 	Show(true);

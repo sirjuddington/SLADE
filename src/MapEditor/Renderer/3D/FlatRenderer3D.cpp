@@ -399,8 +399,7 @@ void FlatRenderer3D::render(const gl::Shader& shader, RenderPass pass) const
 }
 
 // -----------------------------------------------------------------------------
-// Renders sky flats only (for filling the stencil buffer).
-// Caller is responsible for additional GL state setup/teardown.
+// Renders sky flats only (for filling the stencil buffer)
 // -----------------------------------------------------------------------------
 void FlatRenderer3D::renderSkyGeometry() const
 {

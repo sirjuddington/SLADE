@@ -50,6 +50,7 @@
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/Renderer/MCAnimations.h"
+#include "MapEditor/Renderer/Overlays/LoadingOverlay.h"
 #include "MapEditor/Renderer/Renderer.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/GLTexture.h"
@@ -130,31 +131,27 @@ void setupShaderUniforms(
 glm::vec3 calculateCursorRay(const gl::Camera& camera, const gl::View& view, const Vec2i& cursor_pos)
 {
 	// Convert cursor position to NDC (-1 to 1 range)
-	auto  viewport_size = view.size();
-	float ndc_x         = (2.0f * cursor_pos.x) / viewport_size.x - 1.0f;
-	float ndc_y         = 1.0f - (2.0f * cursor_pos.y) / viewport_size.y; // Flip Y
+	auto viewport_size = view.size();
+	auto ndc_x         = (2.0f * cursor_pos.x) / viewport_size.x - 1.0f;
+	auto ndc_y         = 1.0f - (2.0f * cursor_pos.y) / viewport_size.y; // Flip Y
 
 	// Create NDC points for near and far plane
-	glm::vec4 ray_clip_near(ndc_x, ndc_y, -1.0f, 1.0f); // Near plane
-	glm::vec4 ray_clip_far(ndc_x, ndc_y, 1.0f, 1.0f);   // Far plane
+	glm::vec4 ray_clip_near(ndc_x, ndc_y, -1.0f, 1.0f);
+	glm::vec4 ray_clip_far(ndc_x, ndc_y, 1.0f, 1.0f);
 
-	// Get inverse projection matrix
-	glm::mat4 inv_projection = glm::inverse(camera.projectionMatrix());
+	// Get inverse matrices
+	auto inv_projection = glm::inverse(camera.projectionMatrix());
+	auto inv_view       = glm::inverse(camera.viewMatrix());
 
 	// Transform to view space
-	glm::vec4 ray_view_near = inv_projection * ray_clip_near;
-	glm::vec4 ray_view_far  = inv_projection * ray_clip_far;
-
-	// Perspective divide
+	auto ray_view_near = inv_projection * ray_clip_near;
+	auto ray_view_far  = inv_projection * ray_clip_far;
 	ray_view_near /= ray_view_near.w;
 	ray_view_far /= ray_view_far.w;
 
-	// Get inverse view matrix
-	glm::mat4 inv_view = glm::inverse(camera.viewMatrix());
-
-	// Transform to world space
-	glm::vec4 ray_world_near = inv_view * ray_view_near;
-	glm::vec4 ray_world_far  = inv_view * ray_view_far;
+	// Then to world space
+	auto ray_world_near = inv_view * ray_view_near;
+	auto ray_world_far  = inv_view * ray_view_far;
 
 	// Calculate ray direction
 	return normalize(
@@ -266,9 +263,11 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	{
 		// Only update things once walls/flats are fully updated
 		// TODO: Partial updates for things
-		// TODO: 'Generating map geometry' overlay
 		thing_renderer_->update(map3d_max_render_dist > 0.0f);
+		context_->closeLoadingOverlay();
 	}
+	else
+		context_->loadingOverlay().setMessage("Generating map geometry...");
 
 	// Render sky first if needed
 	shader_3d_->bind();
@@ -512,7 +511,7 @@ void MapRenderer3D::renderSelectionOverlay(
 	shader_3d_->setUniform("projection", camera.projectionMatrix());
 	shader_3d_->setUniform("fullbright", true);
 	shader_3d_->setUniform("fog_density", 0.0f);
-	colour.a *= 0.15f;
+	colour.a *= 0.25f;
 	shader_3d_->setUniform("colour", colour);
 
 	// Setup GL state
