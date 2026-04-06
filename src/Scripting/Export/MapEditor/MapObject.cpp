@@ -229,7 +229,7 @@ void registerMapObject(lua_State* lua)
 	// -------------------------------------------------------------------------
 	lua_mapobject.addProperty("index", &MapObject::index);
 	lua_mapobject.addProperty("type", &MapObject::objType);
-	lua_mapobject.addProperty("typeName", &MapObject::typeName);
+	lua_mapobject.addProperty("typeName", [](MapObject& self) { return self.typeName(); });
 	// lua_mapobject["properties"] = sol::property(&MapObject::props); // TODO: Need to export MobjPropertyList first
 
 

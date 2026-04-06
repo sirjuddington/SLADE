@@ -73,6 +73,10 @@ public:
 	void changeTexture() const;
 	void deleteTexture() const;
 
+	void editWallProperties() const;
+	void editFlatProperties() const;
+	void editThingProperties() const;
+
 private:
 	MapEditContext*         context_ = nullptr;
 	unique_ptr<UndoManager> undo_manager_;

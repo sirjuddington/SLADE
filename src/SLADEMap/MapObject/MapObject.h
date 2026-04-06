@@ -44,7 +44,7 @@ public:
 	bool      isFiltered() const { return filtered_; }
 	long      modifiedTime() const { return modified_time_; }
 	unsigned  objId() const { return obj_id_; }
-	string    typeName() const;
+	string    typeName(bool plural = false) const;
 	void      setModified();
 	void      setIndex(unsigned index) { index_ = index; }
 

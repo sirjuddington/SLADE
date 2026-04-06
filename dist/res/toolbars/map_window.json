@@ -51,6 +51,14 @@
 
   "groups": [
     {
+      "name": "2D Flats",
+      "item_ids": [ "mapw_flat_none", "mapw_flat_untextured", "mapw_flat_textured" ]
+    },
+    {
+      "name": "2D Editing",
+      "item_ids": [ "mapw_draw_lines", "mapw_draw_shape", "mapw_edit_objects", "mapw_mirror_x", "mapw_mirror_y" ]
+    },
+    {
       "name": "Sectors Mode",
       "item_ids": [ "mapw_sectormode_normal", "mapw_sectormode_floor", "mapw_sectormode_ceiling" ]
     },

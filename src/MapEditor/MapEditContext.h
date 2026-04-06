@@ -89,7 +89,7 @@ public:
 	void cycleSectorEditMode();
 	void setCanvas(MapCanvas* canvas) { canvas_ = canvas; }
 	void lockMouse(bool lock);
-	void move3dCameraToCursor();
+	void move3dCameraToCursor() const;
 
 	// General
 	bool update(double frametime);
@@ -168,6 +168,7 @@ public:
 	void   updateThingLists();
 	void   setCursor(ui::MouseCursor cursor) const;
 	void   forceRefreshRenderer(bool r2d, bool r3d) const;
+	bool   populateContextMenu(wxMenu& menu) const;
 
 
 	// SAction handler

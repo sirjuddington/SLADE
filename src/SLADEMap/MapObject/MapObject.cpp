@@ -81,15 +81,15 @@ unsigned MapObject::index() const
 // -----------------------------------------------------------------------------
 // Returns a string representation of the object type
 // -----------------------------------------------------------------------------
-string MapObject::typeName() const
+string MapObject::typeName(bool plural) const
 {
 	switch (type_)
 	{
-	case Type::Vertex: return "Vertex";
-	case Type::Side:   return "Side";
-	case Type::Line:   return "Line";
-	case Type::Sector: return "Sector";
-	case Type::Thing:  return "Thing";
+	case Type::Vertex: return plural ? "Vertices" : "Vertex";
+	case Type::Side:   return plural ? "Sides" : "Side";
+	case Type::Line:   return plural ? "Lines" : "Line";
+	case Type::Sector: return plural ? "Sectors" : "Sector";
+	case Type::Thing:  return plural ? "Things" : "Thing";
 	default:           return "Unknown";
 	}
 }

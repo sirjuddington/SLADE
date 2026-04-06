@@ -78,7 +78,7 @@ public:
 			texture_ = 0;
 		else
 		{
-			auto texture = mapeditor::textureManager().texture(
+			auto& texture = mapeditor::textureManager().texture(
 				tex, game::configuration().featureSupported(game::Feature::MixTexFlats));
 
 			texture_ = texture.gl_id;

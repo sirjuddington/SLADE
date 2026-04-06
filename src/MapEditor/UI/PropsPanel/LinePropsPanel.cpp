@@ -348,7 +348,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 		for (unsigned a = 0; a < flags_udmf.size(); a++)
 		{
 			auto cb_flag = new wxCheckBox(
-				panel_flags,
+				sizer_flags->GetStaticBox(),
 				-1,
 				wxString::FromUTF8(flags_udmf[a].name()),
 				wxDefaultPosition,
@@ -378,7 +378,7 @@ wxPanel* LinePropsPanel::setupGeneralTab()
 				continue;
 
 			auto cb_flag = new wxCheckBox(
-				panel_flags,
+				sizer_flags->GetStaticBox(),
 				-1,
 				wxString::FromUTF8(game::configuration().lineFlag(a).name),
 				wxDefaultPosition,
@@ -478,13 +478,13 @@ wxPanel* LinePropsPanel::setupTexturesTab()
 	// Front side
 	auto sbs_front = new wxStaticBoxSizer(wxVERTICAL, panel, wxS("Front Side"));
 	sbs_front->AddSpacer(lh.padSmall());
-	sbs_front->Add(panel_side1_ = new SidePropsPanel(panel), wxSizerFlags(1).Expand());
+	sbs_front->Add(panel_side1_ = new SidePropsPanel(sbs_front->GetStaticBox()), wxSizerFlags(1).Expand());
 	sizer->Add(sbs_front, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Back side
 	auto sbs_back = new wxStaticBoxSizer(wxVERTICAL, panel, wxS("Back Side"));
 	sbs_back->AddSpacer(lh.padSmall());
-	sbs_back->Add(panel_side2_ = new SidePropsPanel(panel), wxSizerFlags(1).Expand());
+	sbs_back->Add(panel_side2_ = new SidePropsPanel(sbs_back->GetStaticBox()), wxSizerFlags(1).Expand());
 	sizer->Add(sbs_back, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	return panel;

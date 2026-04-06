@@ -190,76 +190,9 @@ void mapeditor::lockMouse(bool lock)
 // -----------------------------------------------------------------------------
 void mapeditor::openContextMenu()
 {
-	// Context menu
 	wxMenu menu_context;
-
-	// Set 3d camera
-	SAction::fromId("mapw_camera_set")->addToMenu(&menu_context, true);
-
-	// 3d mode at mouse cursor
-	SAction::fromId("mapw_mode_3d_at_mouse")->addToMenu(&menu_context, true);
-
-	// Run from here
-	SAction::fromId("mapw_run_map_here")->addToMenu(&menu_context, true);
-
-	// Mode-specific
-	bool object_selected = edit_context->selection().hasHilightOrSelection();
-	if (edit_context->editMode() == Mode::Vertices)
-	{
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_vertex_create")->addToMenu(&menu_context, true);
-	}
-	else if (edit_context->editMode() == Mode::Lines)
-	{
-		if (object_selected)
-		{
-			menu_context.AppendSeparator();
-			SAction::fromId("mapw_line_changetexture")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_changespecial")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_tagedit")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_flip")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_correctsectors")->addToMenu(&menu_context, true);
-		}
-	}
-	else if (edit_context->editMode() == Mode::Things)
-	{
-		menu_context.AppendSeparator();
-
-		if (object_selected)
-			SAction::fromId("mapw_thing_changetype")->addToMenu(&menu_context, true);
-
-		SAction::fromId("mapw_thing_create")->addToMenu(&menu_context, true);
-	}
-	else if (edit_context->editMode() == Mode::Sectors)
-	{
-		if (object_selected)
-		{
-			SAction::fromId("mapw_sector_changetexture")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_sector_changespecial")->addToMenu(&menu_context, true);
-			if (edit_context->selection().size() > 1)
-			{
-				SAction::fromId("mapw_sector_join")->addToMenu(&menu_context, true);
-				SAction::fromId("mapw_sector_join_keep")->addToMenu(&menu_context, true);
-			}
-		}
-
-		SAction::fromId("mapw_sector_create")->addToMenu(&menu_context, true);
-	}
-
-	if (object_selected)
-	{
-		// General edit
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_edit_objects")->addToMenu(&menu_context, true);
-		SAction::fromId("mapw_mirror_x")->addToMenu(&menu_context, true);
-		SAction::fromId("mapw_mirror_y")->addToMenu(&menu_context, true);
-
-		// Properties
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_item_properties")->addToMenu(&menu_context, true);
-	}
-
-	map_window->PopupMenu(&menu_context);
+	if (edit_context->populateContextMenu(menu_context))
+		map_window->PopupMenu(&menu_context);
 }
 
 // -----------------------------------------------------------------------------
@@ -353,8 +286,11 @@ int mapeditor::browseThingType(int init_type, SLADEMap& map)
 // -----------------------------------------------------------------------------
 bool mapeditor::editObjectProperties(vector<MapObject*>& list)
 {
+	if (list.empty())
+		return false;
+
 	string selsize;
-	string type = edit_context->modeString(false);
+	string type = list[0]->typeName();
 	if (list.size() == 1)
 		type += fmt::format(" #{}", list[0]->index());
 	else if (list.size() > 1)
@@ -364,7 +300,7 @@ bool mapeditor::editObjectProperties(vector<MapObject*>& list)
 	SDialog dlg(
 		mapeditor::window(),
 		fmt::format("{} Properties {}", type, selsize),
-		fmt::format("mobjprops_{}", edit_context->modeString(false)),
+		fmt::format("mobjprops_{}", list[0]->typeName()),
 		-1,
 		-1);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -373,12 +309,12 @@ bool mapeditor::editObjectProperties(vector<MapObject*>& list)
 	// Create/add properties panel
 	auto            lh          = ui::LayoutHelper(&dlg);
 	PropsPanelBase* panel_props = nullptr;
-	switch (edit_context->editMode())
+	switch (list[0]->objType())
 	{
-	case Mode::Lines:   panel_props = new LinePropsPanel(&dlg); break;
-	case Mode::Sectors: panel_props = new SectorPropsPanel(&dlg); break;
-	case Mode::Things:  panel_props = new ThingPropsPanel(&dlg); break;
-	default:            panel_props = new MapObjectPropsPanel(&dlg, true);
+	case MapObject::Type::Line:   panel_props = new LinePropsPanel(&dlg); break;
+	case MapObject::Type::Sector: panel_props = new SectorPropsPanel(&dlg); break;
+	case MapObject::Type::Thing:  panel_props = new ThingPropsPanel(&dlg); break;
+	default:                      panel_props = new MapObjectPropsPanel(&dlg, true); break;
 	}
 	sizer->Add(panel_props, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 

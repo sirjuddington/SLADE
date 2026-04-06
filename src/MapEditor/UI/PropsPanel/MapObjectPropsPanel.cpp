@@ -54,7 +54,7 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 CVAR(Bool, mobj_props_show_all, false, CVar::Flag::Save)
-CVAR(Bool, mobj_props_auto_apply, false, CVar::Flag::Save)
+CVAR(Bool, mobj_props_auto_apply, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------

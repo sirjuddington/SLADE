@@ -48,6 +48,7 @@
 #include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
+#include "Utility/Vector.h"
 #include <queue>
 #include <set>
 
@@ -1435,6 +1436,120 @@ void Edit3D::deleteTexture() const
 
 	// End undo level
 	context_->endUndoRecord();
+}
+
+// -----------------------------------------------------------------------------
+// Opens a dialog containing a MapObjectPropsPanel to edit properties for all
+// selected (or hilighted) walls' lines
+// -----------------------------------------------------------------------------
+void Edit3D::editWallProperties() const
+{
+	auto selection = context_->selection().selectedItems();
+	if (selection.empty() && context_->selection().hasHilight())
+		selection.push_back(context_->selection().hilight());
+	if (selection.empty())
+		return;
+
+	vector<MapObject*> lines;
+	for (auto item : selection)
+	{
+		if (item.type == ItemType::WallTop || item.type == ItemType::WallMiddle || item.type == ItemType::WallBottom)
+		{
+			if (auto side = item.asSide(context_->map()))
+				vectorAddUnique(lines, static_cast<MapObject*>(side->parentLine()));
+		}
+	}
+
+	// Begin recording undo level
+	context_->beginUndoRecord("Property Edit (Line)");
+	for (auto item : lines)
+		context_->recordPropertyChangeUndoStep(item);
+
+	bool done = mapeditor::editObjectProperties(lines);
+	if (done)
+	{
+		context_->renderer().forceUpdate();
+		context_->updateDisplay();
+	}
+
+	// End undo level
+	context_->endUndoRecord(done);
+}
+
+// -----------------------------------------------------------------------------
+// Opens a dialog containing a MapObjectPropsPanel to edit properties for all
+// selected (or hilighted) flats' sectors
+// -----------------------------------------------------------------------------
+void Edit3D::editFlatProperties() const
+{
+	auto selection = context_->selection().selectedItems();
+	if (selection.empty() && context_->selection().hasHilight())
+		selection.push_back(context_->selection().hilight());
+	if (selection.empty())
+		return;
+
+	vector<MapObject*> sectors;
+	for (auto item : selection)
+	{
+		if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
+		{
+			if (auto sector = item.asSector(context_->map()))
+				vectorAddUnique(sectors, static_cast<MapObject*>(sector));
+		}
+	}
+
+	// Begin recording undo level
+	context_->beginUndoRecord("Property Edit (Sector)");
+	for (auto item : sectors)
+		context_->recordPropertyChangeUndoStep(item);
+
+	bool done = mapeditor::editObjectProperties(sectors);
+	if (done)
+	{
+		context_->renderer().forceUpdate();
+		context_->updateDisplay();
+	}
+
+	// End undo level
+	context_->endUndoRecord(done);
+}
+
+// -----------------------------------------------------------------------------
+// Opens a dialog containing a MapObjectPropsPanel to edit properties for all
+// selected (or hilighted) things
+// -----------------------------------------------------------------------------
+void Edit3D::editThingProperties() const
+{
+	auto selection = context_->selection().selectedItems();
+	if (selection.empty() && context_->selection().hasHilight())
+		selection.push_back(context_->selection().hilight());
+	if (selection.empty())
+		return;
+
+	vector<MapObject*> things;
+	for (auto item : selection)
+	{
+		if (item.type == ItemType::Thing)
+		{
+			if (auto thing = item.asThing(context_->map()))
+				vectorAddUnique(things, static_cast<MapObject*>(thing));
+		}
+	}
+
+	// Begin recording undo level
+	context_->beginUndoRecord("Property Edit (Thing)");
+	for (auto item : things)
+		context_->recordPropertyChangeUndoStep(item);
+
+	bool done = mapeditor::editObjectProperties(things);
+	if (done)
+	{
+		context_->renderer().forceUpdate();
+		context_->updateDisplay();
+	}
+
+	// End undo level
+	context_->endUndoRecord(done);
 }
 
 // -----------------------------------------------------------------------------

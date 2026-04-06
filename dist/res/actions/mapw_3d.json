@@ -1,0 +1,17 @@
+{
+  "mapw_3d_wall_properties": {
+    "text": "Line Properties",
+    "icon": "properties",
+    "help_text": "Edit the currently selected wall (line) properties"
+  },
+  "mapw_3d_flat_properties": {
+    "text": "Sector Properties",
+    "icon": "properties",
+    "help_text": "Edit the currently selected flat (sector) properties"
+  },
+  "mapw_3d_thing_properties": {
+    "text": "Thing Properties",
+    "icon": "properties",
+    "help_text": "Edit the currently selected thing properties"
+  }
+}

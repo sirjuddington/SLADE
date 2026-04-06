@@ -112,6 +112,172 @@ EXTERN_CVAR(Bool, map2d_thing_preview_lights)
 
 // -----------------------------------------------------------------------------
 //
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Populates [menu] with context menu items for the given 2d [edit_mode] and
+// [selection]
+// -----------------------------------------------------------------------------
+void populateContextMenu2D(wxMenu& menu, Mode edit_mode, const ItemSelection& selection)
+{
+	// Set 3d camera
+	SAction::fromId("mapw_camera_set")->addToMenu(&menu, true);
+
+	// 3d mode at mouse cursor
+	SAction::fromId("mapw_mode_3d_at_mouse")->addToMenu(&menu, true);
+
+	// Run from here
+	SAction::fromId("mapw_run_map_here")->addToMenu(&menu, true);
+
+	// Mode-specific
+	bool object_selected = selection.hasHilightOrSelection();
+	if (edit_mode == Mode::Vertices)
+	{
+		menu.AppendSeparator();
+		SAction::fromId("mapw_vertex_create")->addToMenu(&menu, true);
+	}
+	else if (edit_mode == Mode::Lines)
+	{
+		if (object_selected)
+		{
+			menu.AppendSeparator();
+			SAction::fromId("mapw_line_changetexture")->addToMenu(&menu, true);
+			SAction::fromId("mapw_line_changespecial")->addToMenu(&menu, true);
+			SAction::fromId("mapw_line_tagedit")->addToMenu(&menu, true);
+			SAction::fromId("mapw_line_flip")->addToMenu(&menu, true);
+			SAction::fromId("mapw_line_correctsectors")->addToMenu(&menu, true);
+		}
+	}
+	else if (edit_mode == Mode::Things)
+	{
+		menu.AppendSeparator();
+
+		if (object_selected)
+			SAction::fromId("mapw_thing_changetype")->addToMenu(&menu, true);
+
+		SAction::fromId("mapw_thing_create")->addToMenu(&menu, true);
+	}
+	else if (edit_mode == Mode::Sectors)
+	{
+		if (object_selected)
+		{
+			SAction::fromId("mapw_sector_changetexture")->addToMenu(&menu, true);
+			SAction::fromId("mapw_sector_changespecial")->addToMenu(&menu, true);
+			if (selection.size() > 1)
+			{
+				SAction::fromId("mapw_sector_join")->addToMenu(&menu, true);
+				SAction::fromId("mapw_sector_join_keep")->addToMenu(&menu, true);
+			}
+		}
+
+		SAction::fromId("mapw_sector_create")->addToMenu(&menu, true);
+	}
+
+	if (object_selected)
+	{
+		// General edit
+		menu.AppendSeparator();
+		SAction::fromId("mapw_edit_objects")->addToMenu(&menu, true);
+		SAction::fromId("mapw_mirror_x")->addToMenu(&menu, true);
+		SAction::fromId("mapw_mirror_y")->addToMenu(&menu, true);
+
+		// Properties
+		menu.AppendSeparator();
+		SAction::fromId("mapw_item_properties")->addToMenu(&menu, true);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Populates [menu] with context menu items for the given 3d mode [selection]
+// -----------------------------------------------------------------------------
+bool populateContextMenu3D(wxMenu& menu, const ItemSelection& selection)
+{
+	if (!selection.hasHilightOrSelection())
+		return false;
+
+	// Get counts for each selected item type
+	int wall_count  = 0;
+	int flat_count  = 0;
+	int thing_count = 0;
+
+	auto countItem = [&](const Item& item)
+	{
+		if (item.type == ItemType::WallBottom || item.type == ItemType::WallMiddle || item.type == ItemType::WallTop)
+			wall_count++;
+		else if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
+			flat_count++;
+		else if (item.type == ItemType::Thing)
+			thing_count++;
+	};
+
+	if (selection.selectedItems().empty())
+		countItem(selection.hilight()); // No selection, just count highlight
+	else
+	{
+		for (const auto& item : selection.selectedItems())
+			countItem(item);
+	}
+
+	// Check if we have different item types selected
+	// (if we do we'll add a submenu for each type)
+	bool multi_type = (wall_count > 0 && flat_count > 0) || (wall_count > 0 && thing_count > 0)
+					  || (flat_count > 0 && thing_count > 0);
+
+	// Walls
+	if (wall_count > 0)
+	{
+		wxMenu* menu_wall = &menu;
+		if (multi_type)
+		{
+			menu_wall = new wxMenu();
+			menu.AppendSubMenu(menu_wall, WX_FMT("{} Wall(s)", wall_count));
+		}
+
+		// Properties
+		// menu.AppendSeparator();
+		SAction::fromId("mapw_3d_wall_properties")->addToMenu(menu_wall, true);
+	}
+
+	// Flats
+	if (flat_count > 0)
+	{
+		wxMenu* menu_flat = &menu;
+		if (multi_type)
+		{
+			menu_flat = new wxMenu();
+			menu.AppendSubMenu(menu_flat, WX_FMT("{} Flat(s)", flat_count));
+		}
+
+		// Properties
+		// menu.AppendSeparator();
+		SAction::fromId("mapw_3d_flat_properties")->addToMenu(menu_flat, true);
+	}
+
+	// Things
+	if (thing_count > 0)
+	{
+		wxMenu* menu_thing = &menu;
+		if (multi_type)
+		{
+			menu_thing = new wxMenu();
+			menu.AppendSubMenu(menu_thing, WX_FMT("{} Thing(s)", thing_count));
+		}
+
+		// Properties
+		// menu.AppendSeparator();
+		SAction::fromId("mapw_3d_thing_properties")->addToMenu(menu_thing, true);
+	}
+
+	return true;
+}
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
 // MapEditContext Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -206,17 +372,19 @@ void MapEditContext::setEditMode(Mode mode)
 
 	if (edit_mode_ != Mode::Visual)
 		updateDisplay();
+
 	updateStatusText();
 
 	// Unlock mouse
 	lockMouse(false);
 
+	// Show/hide relevant toolbar groups
+	window()->showToolbarGroup("Sectors Mode", mode == Mode::Sectors);
+	window()->showToolbarGroup("Things Mode", mode == Mode::Things);
+	window()->showToolbarGroup("2D Flats", mode != Mode::Visual);
+	window()->showToolbarGroup("2D Editing", mode != Mode::Visual);
+
 	// Update toolbar
-	if (mode != edit_mode_prev_)
-	{
-		mapeditor::window()->showToolbarGroup("Sectors Mode", false);
-		mapeditor::window()->showToolbarGroup("Things Mode", false);
-	}
 	if (mode == Mode::Vertices)
 		SAction::fromId("mapw_mode_vertices")->setChecked();
 	else if (mode == Mode::Lines)
@@ -224,31 +392,15 @@ void MapEditContext::setEditMode(Mode mode)
 	else if (mode == Mode::Sectors)
 	{
 		SAction::fromId("mapw_mode_sectors")->setChecked();
-
-		// Sector mode toolbar
-		if (edit_mode_prev_ != Mode::Sectors)
-			mapeditor::window()->showToolbarGroup("Sectors Mode");
-
-		// Toggle current sector mode
-		if (sector_mode_ == SectorMode::Both)
-			SAction::fromId("mapw_sectormode_normal")->setChecked();
-		else if (sector_mode_ == SectorMode::Floor)
-			SAction::fromId("mapw_sectormode_floor")->setChecked();
-		else if (sector_mode_ == SectorMode::Ceiling)
-			SAction::fromId("mapw_sectormode_ceiling")->setChecked();
+		SAction::fromId("mapw_sectormode_normal")->setChecked();
 	}
 	else if (mode == Mode::Things)
 	{
 		SAction::fromId("mapw_mode_things")->setChecked();
-
-		mapeditor::window()->showToolbarGroup("Things Mode");
-
 		SAction::fromId("mapw_thing_light_previews")->setChecked(map2d_thing_preview_lights);
 	}
 	else if (mode == Mode::Visual)
-	{
 		SAction::fromId("mapw_mode_3d")->setChecked();
-	}
 
 	// Setup for 3d mode if switching to it
 	if (mode == Mode::Visual)
@@ -270,6 +422,14 @@ void MapEditContext::setSectorEditMode(SectorMode mode)
 		addEditorMessage("Sectors mode (Floors)");
 	else
 		addEditorMessage("Sectors mode (Ceilings)");
+
+	// Update toolbar
+	if (sector_mode_ == SectorMode::Both)
+		SAction::fromId("mapw_sectormode_normal")->setChecked();
+	else if (sector_mode_ == SectorMode::Floor)
+		SAction::fromId("mapw_sectormode_floor")->setChecked();
+	else if (sector_mode_ == SectorMode::Ceiling)
+		SAction::fromId("mapw_sectormode_ceiling")->setChecked();
 
 	updateStatusText();
 	forceRefreshRenderer(true, false);
@@ -301,7 +461,7 @@ void MapEditContext::lockMouse(bool lock)
 // -----------------------------------------------------------------------------
 // Moves the 3d mode camera to the current mouse cursor position on the map
 // -----------------------------------------------------------------------------
-void MapEditContext::move3dCameraToCursor()
+void MapEditContext::move3dCameraToCursor() const
 {
 	auto pos    = Vec3d(input_->mousePosMap(), 0);
 	auto sector = map_->sectors().atPos(input_->mousePosMap());
@@ -572,6 +732,21 @@ void MapEditContext::forceRefreshRenderer(bool r2d, bool r3d) const
 		return;
 
 	renderer_->forceUpdate(r2d, r3d);
+}
+
+// -----------------------------------------------------------------------------
+// Populates [menu] with context menu items for the current edit mode
+// -----------------------------------------------------------------------------
+bool MapEditContext::populateContextMenu(wxMenu& menu) const
+{
+	// 3D Mode
+	if (edit_mode_ == Mode::Visual)
+		return populateContextMenu3D(menu, *selection_);
+
+	// 2D Mode(s)
+	populateContextMenu2D(menu, edit_mode_, *selection_);
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -2105,6 +2280,29 @@ bool MapEditContext::handleAction(string_view id)
 	else if (id == "mapw_sector_join_keep")
 	{
 		edit_2d_->joinSectors(true);
+		return true;
+	}
+
+	// --- 3DMode context menu ---
+
+	// Wall properties
+	else if (id == "mapw_3d_wall_properties")
+	{
+		edit_3d_->editWallProperties();
+		return true;
+	}
+
+	// Flat properties
+	else if (id == "mapw_3d_flat_properties")
+	{
+		edit_3d_->editFlatProperties();
+		return true;
+	}
+
+	// Thing properties
+	else if (id == "mapw_3d_thing_properties")
+	{
+		edit_3d_->editThingProperties();
 		return true;
 	}
 
