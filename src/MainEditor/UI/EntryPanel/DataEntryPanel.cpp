@@ -40,8 +40,19 @@
 #include "MainEditor/MainEditor.h"
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Int, edata_col_padding, 0, CVar::Flag::Save)
+CVAR(Int, edata_row_padding, 0, CVar::Flag::Save)
+CVAR(Bool, edata_font_monospace, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -924,6 +935,9 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), t
 
 	// Create grid
 	grid_data_ = new wxGrid(this, -1);
+	if (edata_font_monospace)
+		grid_data_->SetDefaultCellFont(wxutil::monospaceFont(grid_data_->GetDefaultCellFont()));
+	grid_data_->SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_CENTER);
 	vbox->Add(grid_data_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Setup toolbar
@@ -953,6 +967,18 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 	for (int a = 0; a < table_data_->GetNumberCols(); a++)
 		grid_data_->AutoSizeColLabelSize(a);
 	grid_data_->ForceRefresh();
+
+	// Apply column/row padding
+	if (edata_col_padding > 0)
+	{
+		for (int a = 0; a < table_data_->GetNumberCols(); a++)
+			grid_data_->SetColSize(a, grid_data_->GetColSize(a) + FromDIP(edata_col_padding * 2));
+	}
+	if (edata_row_padding > 0)
+	{
+		for (int a = 0; a < table_data_->GetNumberRows(); a++)
+			grid_data_->SetRowSize(a, grid_data_->GetRowSize(a) + FromDIP(edata_row_padding * 2));
+	}
 
 	Layout();
 
