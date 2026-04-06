@@ -1,9 +1,9 @@
 #pragma once
 
+#include "3D/SelectionOverlay3D.h"
 #include "Geometry/Plane.h"
 #include "Geometry/Rect.h"
 #include "MapEditor/Item.h"
-#include "SelectionOverlay3D.h"
 
 namespace slade
 {

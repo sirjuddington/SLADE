@@ -60,7 +60,7 @@
 #include "MapTextureManager.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/Draw2D.h"
-#include "Renderer/MapRenderer3D.h"
+#include "Renderer/3D/MapRenderer3D.h"
 #include "Renderer/Overlays/LineInfoOverlay.h"
 #include "Renderer/Overlays/SectorInfoOverlay.h"
 #include "Renderer/Overlays/ThingInfoOverlay.h"

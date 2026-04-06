@@ -5,8 +5,9 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    MapRenderer3D_Walls.cpp
-// Description: MapRenderer3D class - wall/quad related functions
+// Filename:    WallRenderer3D.cpp
+// Description: WallRenderer3D class - handles rendering of wall quads in 3D
+//              mode
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -30,23 +31,30 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "WallRenderer3D.h"
 #include "App.h"
 #include "Geometry/Geometry.h"
+#include "Geometry/Ray.h"
 #include "MapEditor/Item.h"
-#include "MapGeometry.h"
+#include "MapEditor/Renderer/MapGeometry.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "MapGeometryBuffer3D.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/Camera.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/LineBuffer.h"
+#include "OpenGL/Shader.h"
 #include "Quad3D.h"
-#include "Renderer.h"
+#include "RenderGroup.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/MathStuff.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -121,16 +129,39 @@ bool lineNeedsUpdate(long last_updated, const MapLine* line)
 
 // -----------------------------------------------------------------------------
 //
-// MapRenderer3D Class Functions
+// WallRenderer3D Class Functions
 //
 // -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
+// WallRenderer3D class constructor
+// -----------------------------------------------------------------------------
+WallRenderer3D::WallRenderer3D(MapRenderer3D* renderer) : renderer_{ renderer }
+{
+	vb_quads_ = std::make_unique<MapGeometryBuffer3D>();
+}
+
+// -----------------------------------------------------------------------------
+// WallRenderer3D class destructor
+// -----------------------------------------------------------------------------
+WallRenderer3D::~WallRenderer3D() = default;
+
+// -----------------------------------------------------------------------------
+// Clears all wall geometry data
+// -----------------------------------------------------------------------------
+void WallRenderer3D::clear()
+{
+	vb_quads_->buffer().clear();
+	line_quads_.clear();
+	quad_groups_.clear();
+}
+
+// -----------------------------------------------------------------------------
 // Updates wall quad visibility from the given [camera]. Any quads further than
 // [max_dist] from the camera will be hidden.
 // -----------------------------------------------------------------------------
-void MapRenderer3D::updateWallVisibility(const gl::Camera& camera, float max_dist)
+void WallRenderer3D::updateVisibility(const gl::Camera& camera, float max_dist)
 {
 	Vec2d cam_pos_2d = camera.position().xy();
 
@@ -153,17 +184,19 @@ void MapRenderer3D::updateWallVisibility(const gl::Camera& camera, float max_dis
 // -----------------------------------------------------------------------------
 // Updates wall quads and render groups as needed
 // -----------------------------------------------------------------------------
-bool MapRenderer3D::updateWalls(bool vis_check)
+bool WallRenderer3D::update(bool vis_check)
 {
 	using QuadFlags = Quad3D::Flags;
 
+	auto map = renderer_->map();
+
 	// Clear walls to be rebuilt if map geometry has been updated
-	if (map_->geometryUpdated() > quads_updated_)
+	if (map->geometryUpdated() > quads_updated_)
 	{
 		vb_quads_->buffer().clear();
 		line_quads_.clear();
 		quad_groups_.clear();
-		renderer_->clearAnimations();
+		renderer_->parentRenderer()->clearAnimations();
 	}
 
 	// Generate wall quads if needed
@@ -176,7 +209,7 @@ bool MapRenderer3D::updateWalls(bool vis_check)
 			vertex_index = quad_vb_processing_offset_; // Continue from previous partial update
 
 		auto start_time = app::runTimer();
-		for (auto* line : map_->lines())
+		for (auto* line : map->lines())
 		{
 			if (static_cast<int>(line->index()) <= line_quads_processed_)
 				continue;
@@ -209,9 +242,9 @@ bool MapRenderer3D::updateWalls(bool vis_check)
 		quads_updated_ = app::runTimer();
 		quad_groups_.clear();
 	}
-	else if (quadsNeedUpdate(quads_updated_, map_))
+	else if (quadsNeedUpdate(quads_updated_, map))
 	{
-		map_->mapSpecials().updateSpecials();
+		map->mapSpecials().updateSpecials();
 
 		// Check for lines that need an update
 		bool             updated = false;
@@ -267,7 +300,7 @@ bool MapRenderer3D::updateWalls(bool vis_check)
 		{
 			quads_updated_ = app::runTimer();
 			quad_groups_.clear();
-			renderer_->clearAnimations();
+			renderer_->parentRenderer()->clearAnimations();
 		}
 	}
 
@@ -339,12 +372,62 @@ bool MapRenderer3D::updateWalls(bool vis_check)
 }
 
 // -----------------------------------------------------------------------------
+// Renders wall quads for the given render [pass] using the specified [shader]
+// -----------------------------------------------------------------------------
+void WallRenderer3D::render(const gl::Shader& shader, RenderPass pass) const
+{
+	gl::bindVAO(vb_quads_->vao());
+
+	for (auto& group : quad_groups_)
+	{
+		// Ensure group is part of the correct render pass
+		if (group.render_pass != pass)
+			continue;
+
+		// Setup blending if needed
+		if (pass == RenderPass::Transparent)
+		{
+			if (group.trans_additive)
+				gl::setBlend(gl::Blend::Additive);
+			else
+				gl::setBlend(gl::Blend::Normal);
+		}
+
+		shader.setUniform("colour", group.colour);
+		gl::Texture::bind(group.texture);
+		group.index_buffer->bind();
+		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
+	}
+
+	gl::bindEBO(0);
+	gl::bindVAO(0);
+}
+
+// -----------------------------------------------------------------------------
+// Renders sky wall quads only (for filling the stencil buffer).
+// Caller is responsible for additional GL state setup/teardown.
+// -----------------------------------------------------------------------------
+void WallRenderer3D::renderSkyGeometry() const
+{
+	gl::bindVAO(vb_quads_->vao());
+
+	for (auto& group : quad_groups_)
+	{
+		if (group.render_pass != RenderPass::Sky)
+			continue;
+
+		group.index_buffer->bind();
+		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Adds an outline for a wall [item] to the given line [buffer].
 // Can add multiple outlines if the wall part is split by extrafloors
 // -----------------------------------------------------------------------------
-void MapRenderer3D::addQuadOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const
+void WallRenderer3D::addOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const
 {
-	auto real_side = item.realSide(*map_);
+	auto real_side = item.realSide(*renderer_->map());
 	if (!real_side)
 		return;
 
@@ -372,9 +455,9 @@ void MapRenderer3D::addQuadOutline(const Item& item, gl::LineBuffer& buffer, flo
 // [indices].
 // Can add multiple quads if the wall part is split by extrafloors
 // -----------------------------------------------------------------------------
-void MapRenderer3D::addItemQuadIndices(const Item& item, vector<GLuint>& indices) const
+void WallRenderer3D::addItemIndices(const Item& item, vector<GLuint>& indices) const
 {
-	auto real_side = item.realSide(*map_);
+	auto real_side = item.realSide(*renderer_->map());
 	if (!real_side)
 		return;
 
@@ -390,4 +473,90 @@ void MapRenderer3D::addItemQuadIndices(const Item& item, vector<GLuint>& indices
 				indices.push_back(vi++);
 		}
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns the VAO for the wall quad vertex buffer
+// -----------------------------------------------------------------------------
+unsigned WallRenderer3D::vao() const
+{
+	return vb_quads_->vao();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the size of the wall quad vertex buffer in bytes
+// -----------------------------------------------------------------------------
+unsigned WallRenderer3D::bufferSize() const
+{
+	return vb_quads_->buffer().size() * sizeof(MGVertex);
+}
+
+// -----------------------------------------------------------------------------
+// Finds the nearest wall intersected by the given [ray], up to [max_dist].
+// Returns the intersecting Item and the distance to it.
+// If no intersecting wall was found, the returned distance will be negative
+// -----------------------------------------------------------------------------
+std::pair<Item, float> WallRenderer3D::nearestIntersectingWall(const Ray& ray, float max_dist) const
+{
+	auto min_dist = max_dist;
+	bool found    = false;
+	Item nearest;
+
+	for (const auto& lq : line_quads_)
+	{
+		// Find (2d) distance to line
+		const auto dist = geometry::distanceRayLine(
+			ray.origin_2d, ray.origin_2d + ray.dir_2d, lq.line->start(), lq.line->end());
+
+		// Ignore if no intersection or something was closer
+		if (dist < math::EPSILON || dist >= min_dist)
+			continue;
+
+		// Check side of camera
+		const auto back_side = geometry::lineSide(ray.origin_2d, lq.line->seg()) < 0;
+
+		// Find quad intersected by the ray, if any
+		const auto intersection = ray.origin_3d + ray.dir_3d * static_cast<float>(dist);
+		for (const auto& quad : lq.quads)
+		{
+			if (quad.hasFlag(Quad3D::Flags::BackSide) != back_side)
+				continue;
+
+			const Vec2f seg_left  = back_side ? lq.line->end() : lq.line->start();
+			const Vec2f seg_right = back_side ? lq.line->start() : lq.line->end();
+
+			// Check intersection height (handles slopes)
+			const double dist_along = glm::length(intersection.xy() - seg_left) / glm::length(seg_right - seg_left);
+			const double top        = quad.height[0] + (quad.height[3] - quad.height[0]) * dist_along;
+			const double bottom     = quad.height[1] + (quad.height[2] - quad.height[1]) * dist_along;
+			if (bottom > intersection.z || intersection.z > top)
+				continue;
+
+			// Build item from the intersecting quad
+			Item item;
+			item.index = quad.side->index();
+			switch (quad.part)
+			{
+			case map::SidePart::Middle: item.type = ItemType::WallMiddle; break;
+			case map::SidePart::Upper:  item.type = ItemType::WallTop; break;
+			case map::SidePart::Lower:  item.type = ItemType::WallBottom; break;
+			default:                    break;
+			}
+			if (quad.hasFlag(Quad3D::Flags::ExtraFloor))
+			{
+				item.control_line = quad.side->parentLine()->index();
+				item.real_index   = back_side ? lq.line->s2Index() : lq.line->s1Index();
+			}
+
+			nearest  = item;
+			found    = true;
+			min_dist = dist;
+			break; // first matching quad on this line wins
+		}
+	}
+
+	if (found)
+		return { nearest, min_dist };
+
+	return { nearest, -1 };
 }

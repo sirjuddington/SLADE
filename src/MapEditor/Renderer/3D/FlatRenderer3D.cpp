@@ -5,8 +5,9 @@
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
-// Filename:    MapRenderer3D_Flats.cpp
-// Description: MapRenderer3D class - sector flat related functions
+// Filename:    FlatRenderer3D.cpp
+// Description: FlatRenderer3D class - handles rendering of sector flats
+//              (floors and ceilings) in 3D mode
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -30,17 +31,22 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "FlatRenderer3D.h"
 #include "App.h"
 #include "Flat3D.h"
 #include "Geometry/Geometry.h"
+#include "Geometry/Ray.h"
 #include "MapEditor/Item.h"
-#include "MapGeometry.h"
+#include "MapEditor/Renderer/MapGeometry.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "MapGeometryBuffer3D.h"
 #include "MapRenderer3D.h"
 #include "OpenGL/Camera.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/LineBuffer.h"
-#include "Renderer.h"
+#include "OpenGL/Shader.h"
+#include "RenderGroup.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -48,6 +54,8 @@
 #include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "SLADEMap/Types.h"
+#include "Utility/MathStuff.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -85,16 +93,39 @@ bool flatsNeedUpdate(long last_updated, const SLADEMap* map)
 
 // -----------------------------------------------------------------------------
 //
-// MapRenderer3D Class Functions
+// FlatRenderer3D Class Functions
 //
 // -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
+// FlatRenderer3D class constructor
+// -----------------------------------------------------------------------------
+FlatRenderer3D::FlatRenderer3D(MapRenderer3D* renderer) : renderer_{ renderer }
+{
+	vb_flats_ = std::make_unique<MapGeometryBuffer3D>();
+}
+
+// -----------------------------------------------------------------------------
+// FlatRenderer3D class destructor
+// -----------------------------------------------------------------------------
+FlatRenderer3D::~FlatRenderer3D() = default;
+
+// -----------------------------------------------------------------------------
+// Clears all flat geometry data
+// -----------------------------------------------------------------------------
+void FlatRenderer3D::clear()
+{
+	vb_flats_->buffer().clear();
+	sector_flats_.clear();
+	flat_groups_.clear();
+}
+
+// -----------------------------------------------------------------------------
 // Updates sector flat visibility from the given [camera]. Any flats further
 // than [max_dist] from the camera will be hidden.
 // -----------------------------------------------------------------------------
-void MapRenderer3D::updateFlatVisibility(const gl::Camera& camera, float max_dist)
+void FlatRenderer3D::updateVisibility(const gl::Camera& camera, float max_dist)
 {
 	Vec2d cam_pos_2d = camera.position().xy();
 
@@ -147,17 +178,19 @@ void MapRenderer3D::updateFlatVisibility(const gl::Camera& camera, float max_dis
 // -----------------------------------------------------------------------------
 // Updates sector flats/geometry and render groups if needed
 // -----------------------------------------------------------------------------
-bool MapRenderer3D::updateFlats(bool vis_check)
+bool FlatRenderer3D::update(bool vis_check)
 {
 	using FlatFlags = Flat3D::Flags;
 
+	auto map = renderer_->map();
+
 	// Clear flats to be rebuilt if map geometry has been updated
-	if (map_->geometryUpdated() > flats_updated_)
+	if (map->geometryUpdated() > flats_updated_)
 	{
 		vb_flats_->buffer().clear();
 		sector_flats_.clear();
 		flat_groups_.clear();
-		renderer_->clearAnimations();
+		renderer_->parentRenderer()->clearAnimations();
 	}
 
 	// Generate flats if needed
@@ -170,7 +203,7 @@ bool MapRenderer3D::updateFlats(bool vis_check)
 			vertex_index = sector_vb_processing_offset_; // Continue from previous partial update
 
 		auto start_time = app::runTimer();
-		for (auto* sector : map_->sectors())
+		for (auto* sector : map->sectors())
 		{
 			if (static_cast<int>(sector->index()) <= sector_flats_processed_)
 				continue;
@@ -203,9 +236,9 @@ bool MapRenderer3D::updateFlats(bool vis_check)
 		flats_updated_ = app::runTimer();
 		flat_groups_.clear();
 	}
-	else if (flatsNeedUpdate(flats_updated_, map_))
+	else if (flatsNeedUpdate(flats_updated_, map))
 	{
-		map_->mapSpecials().updateSpecials();
+		map->mapSpecials().updateSpecials();
 
 		// Check for sectors that need an update
 		bool             updated = false;
@@ -252,9 +285,9 @@ bool MapRenderer3D::updateFlats(bool vis_check)
 		// Upload new vertices to the buffer, if any
 		if (!add_vertices.empty())
 		{
-			vb_quads_->pull();                    // Pull data from GPU
-			vb_quads_->addVertices(add_vertices); // Append new vertex data
-			vb_quads_->push();                    // Push data back to GPU
+			vb_flats_->pull();                    // Pull data from GPU
+			vb_flats_->addVertices(add_vertices); // Append new vertex data
+			vb_flats_->push();                    // Push data back to GPU
 		}
 
 		// Clear flat groups to be rebuilt if any flats were updated
@@ -262,7 +295,7 @@ bool MapRenderer3D::updateFlats(bool vis_check)
 		{
 			flats_updated_ = app::runTimer();
 			flat_groups_.clear();
-			renderer_->clearAnimations();
+			renderer_->parentRenderer()->clearAnimations();
 		}
 	}
 
@@ -334,11 +367,62 @@ bool MapRenderer3D::updateFlats(bool vis_check)
 }
 
 // -----------------------------------------------------------------------------
-// Adds an outline for a sector floor/ceiling [item] to the given line [buffer].
+// Renders sector flats for the given render [pass] using the specified [shader]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::addFlatOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const
+void FlatRenderer3D::render(const gl::Shader& shader, RenderPass pass) const
 {
-	auto sector = item.asSector(*map_);
+	gl::bindVAO(vb_flats_->vao());
+
+	for (auto& group : flat_groups_)
+	{
+		// Ensure group is part of the correct render pass
+		if (group.render_pass != pass)
+			continue;
+
+		// Setup blending if needed
+		if (pass == RenderPass::Transparent)
+		{
+			if (group.trans_additive)
+				gl::setBlend(gl::Blend::Additive);
+			else
+				gl::setBlend(gl::Blend::Normal);
+		}
+
+		shader.setUniform("colour", group.colour);
+		gl::Texture::bind(group.texture);
+		group.index_buffer->bind();
+		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
+	}
+
+	gl::bindEBO(0);
+	gl::bindVAO(0);
+}
+
+// -----------------------------------------------------------------------------
+// Renders sky flats only (for filling the stencil buffer).
+// Caller is responsible for additional GL state setup/teardown.
+// -----------------------------------------------------------------------------
+void FlatRenderer3D::renderSkyGeometry() const
+{
+	gl::bindVAO(vb_flats_->vao());
+
+	for (auto& group : flat_groups_)
+	{
+		if (group.render_pass != RenderPass::Sky)
+			continue;
+
+		group.index_buffer->bind();
+		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Adds an outline for a sector floor/ceiling [item] to the given line [buffer]
+// -----------------------------------------------------------------------------
+void FlatRenderer3D::addOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const
+{
+	auto map    = renderer_->map();
+	auto sector = item.asSector(*map);
 	if (!sector)
 		return;
 
@@ -352,18 +436,18 @@ void MapRenderer3D::addFlatOutline(const Item& item, gl::LineBuffer& buffer, flo
 
 	auto colour = glm::vec4{ 1.0f };
 
-	for (auto side : item.realSector(*map_)->connectedSides())
+	for (auto side : item.realSector(*map)->connectedSides())
 		buffer.add3d(side->parentLine()->start(), side->parentLine()->end(), plane, colour, line_width);
 }
 
 // -----------------------------------------------------------------------------
 // Adds vertex indices for the flat representing [item] to the given list of
-// [indices].
+// [indices]
 // -----------------------------------------------------------------------------
-void MapRenderer3D::addItemFlatIndices(const Item& item, vector<GLuint>& indices) const
+void FlatRenderer3D::addItemIndices(const Item& item, vector<GLuint>& indices) const
 {
 	auto real_index = item.real_index >= 0 ? item.real_index : item.index;
-	if (real_index < 0 || real_index >= sector_flats_.size())
+	if (real_index < 0 || real_index >= static_cast<int>(sector_flats_.size()))
 		return;
 
 	// Find the sector flat for the item
@@ -378,4 +462,71 @@ void MapRenderer3D::addItemFlatIndices(const Item& item, vector<GLuint>& indices
 			break;
 		}
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns the VAO for the flat vertex buffer
+// -----------------------------------------------------------------------------
+unsigned FlatRenderer3D::vao() const
+{
+	return vb_flats_->vao();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the size of the flat vertex buffer in bytes
+// -----------------------------------------------------------------------------
+unsigned FlatRenderer3D::bufferSize() const
+{
+	return vb_flats_->buffer().size() * sizeof(MGVertex);
+}
+
+// -----------------------------------------------------------------------------
+// Finds the nearest flat intersected by the given [ray], up to [max_dist].
+// Returns the intersecting Item, or nullopt if no intersection.
+// -----------------------------------------------------------------------------
+std::pair<Item, float> FlatRenderer3D::nearestIntersectingFlat(const Ray& ray, float max_dist) const
+{
+	auto min_dist = max_dist;
+	bool found    = false;
+	Item nearest;
+
+	for (const auto& sf : sector_flats_)
+	{
+		for (const auto& flat : sf.flats)
+		{
+			const auto plane = flat.control_surface_type == map::SectorSurfaceType::Ceiling
+								   ? flat.controlSector()->ceiling().plane
+								   : flat.controlSector()->floor().plane;
+
+			const auto dist = geometry::distanceRayPlane(ray.origin_3d, ray.dir_3d, plane);
+			if (dist < math::EPSILON || dist >= min_dist)
+				continue;
+
+			// Check if on the correct side of the plane
+			const auto flat_z = plane.heightAt(ray.origin_3d.x, ray.origin_3d.y);
+			if (flat.surface_type == map::SectorSurfaceType::Ceiling && ray.origin_3d.z >= flat_z)
+				continue;
+			if (flat.surface_type == map::SectorSurfaceType::Floor && ray.origin_3d.z <= flat_z)
+				continue;
+
+			// Check if intersection is within sector
+			if (!sf.sector->containsPoint((ray.origin_3d + ray.dir_3d * static_cast<float>(dist)).xy()))
+				continue;
+
+			Item item;
+			item.index      = flat.control_sector->index();
+			item.real_index = flat.sector->index();
+			item.type       = flat.control_surface_type == map::SectorSurfaceType::Ceiling ? ItemType::Ceiling
+																						   : ItemType::Floor;
+
+			nearest  = item;
+			found    = true;
+			min_dist = dist;
+		}
+	}
+
+	if (found)
+		return { nearest, min_dist };
+
+	return { nearest, -1 };
 }

@@ -43,24 +43,26 @@
 #include "Main.h"
 #include "MapRenderer3D.h"
 #include "App.h"
-#include "Flat3D.h"
+#include "FlatRenderer3D.h"
 #include "General/ColourConfiguration.h"
-#include "MCAnimations.h"
+#include "Geometry/Ray.h"
 #include "MapEditor/Item.h"
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
-#include "MapGeometryBuffer3D.h"
+#include "MapEditor/Renderer/MCAnimations.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/IndexBuffer.h"
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer3D.h"
-#include "Quad3D.h"
-#include "Renderer.h"
+#include "RenderPass.h"
 #include "SLADEMap/SLADEMap.h"
+#include "SLADEMap/Types.h"
 #include "Skybox.h"
 #include "ThingRenderer3D.h"
+#include "WallRenderer3D.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -120,6 +122,47 @@ void setupShaderUniforms(
 		shader.setUniform("fake_contrast", map3d_fake_contrast);
 	}
 }
+
+// -----------------------------------------------------------------------------
+// Calculates a ray from the [camera] through the cursor position [cursor_pos]
+// in world space
+// -----------------------------------------------------------------------------
+glm::vec3 calculateCursorRay(const gl::Camera& camera, const gl::View& view, const Vec2i& cursor_pos)
+{
+	// Convert cursor position to NDC (-1 to 1 range)
+	auto  viewport_size = view.size();
+	float ndc_x         = (2.0f * cursor_pos.x) / viewport_size.x - 1.0f;
+	float ndc_y         = 1.0f - (2.0f * cursor_pos.y) / viewport_size.y; // Flip Y
+
+	// Create NDC points for near and far plane
+	glm::vec4 ray_clip_near(ndc_x, ndc_y, -1.0f, 1.0f); // Near plane
+	glm::vec4 ray_clip_far(ndc_x, ndc_y, 1.0f, 1.0f);   // Far plane
+
+	// Get inverse projection matrix
+	glm::mat4 inv_projection = glm::inverse(camera.projectionMatrix());
+
+	// Transform to view space
+	glm::vec4 ray_view_near = inv_projection * ray_clip_near;
+	glm::vec4 ray_view_far  = inv_projection * ray_clip_far;
+
+	// Perspective divide
+	ray_view_near /= ray_view_near.w;
+	ray_view_far /= ray_view_far.w;
+
+	// Get inverse view matrix
+	glm::mat4 inv_view = glm::inverse(camera.viewMatrix());
+
+	// Transform to world space
+	glm::vec4 ray_world_near = inv_view * ray_view_near;
+	glm::vec4 ray_world_far  = inv_view * ray_view_far;
+
+	// Calculate ray direction
+	return normalize(
+		glm::vec3(
+			ray_world_far.x - ray_world_near.x,
+			ray_world_far.y - ray_world_near.y,
+			ray_world_far.z - ray_world_near.z));
+}
 } // namespace
 
 
@@ -138,10 +181,10 @@ MapRenderer3D::MapRenderer3D(MapEditContext* context, Renderer* renderer) :
 	map_{ &context->map() },
 	renderer_{ renderer }
 {
-	vb_flats_       = std::make_unique<MapGeometryBuffer3D>();
-	vb_quads_       = std::make_unique<MapGeometryBuffer3D>();
 	skybox_         = std::make_unique<Skybox>();
 	thing_renderer_ = std::make_unique<ThingRenderer3D>(this);
+	wall_renderer_  = std::make_unique<WallRenderer3D>(this);
+	flat_renderer_  = std::make_unique<FlatRenderer3D>(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -209,16 +252,16 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	// Update visibility if needed
 	if (map3d_max_render_dist > 0.0f)
 	{
-		updateFlatVisibility(camera, map3d_max_render_dist);
-		updateWallVisibility(camera, map3d_max_render_dist);
+		flat_renderer_->updateVisibility(camera, map3d_max_render_dist);
+		wall_renderer_->updateVisibility(camera, map3d_max_render_dist);
 		thing_renderer_->updateVisibility(camera, map3d_max_render_dist);
 	}
 	else
 		thing_renderer_->updateVisibility(camera, 0.0f);
 
 	// Update flats and walls
-	auto update_done = updateFlats(map3d_max_render_dist > 0.0f);
-	update_done &= updateWalls(map3d_max_render_dist > 0.0f);
+	auto update_done = flat_renderer_->update(map3d_max_render_dist > 0.0f);
+	update_done &= wall_renderer_->update(map3d_max_render_dist > 0.0f);
 	if (update_done)
 	{
 		// Only update things once walls/flats are fully updated
@@ -252,27 +295,27 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	}
 
 	// First pass, render solid flats/walls
-	renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Normal); // Flats
-	renderGroups(*vb_quads_, quad_groups_, *shader_3d_, RenderPass::Normal); // Walls
+	flat_renderer_->render(*shader_3d_, RenderPass::Normal); // Flats
+	wall_renderer_->render(*shader_3d_, RenderPass::Normal); // Walls
 	if (!map3d_render_sky)
 	{
 		// Not rendering the skybox, render sky walls/flats as normal
-		renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Sky); // Flats
-		renderGroups(*vb_quads_, quad_groups_, *shader_3d_, RenderPass::Sky); // Walls
+		flat_renderer_->render(*shader_3d_, RenderPass::Sky); // Flats
+		wall_renderer_->render(*shader_3d_, RenderPass::Sky); // Walls
 	}
 
 	// Second pass, render masked flats/walls and sprites
 	shader_3d_alphatest_->bind();
-	renderGroups(*vb_flats_, flat_groups_, *shader_3d_alphatest_, RenderPass::Masked); // Flats
-	renderGroups(*vb_quads_, quad_groups_, *shader_3d_alphatest_, RenderPass::Masked); // Walls
-	thing_renderer_->renderSprites(*shader_3d_sprite_, false);                         // Sprites
-	thing_renderer_->renderSprites(*shader_3d_icon_, true);                            // Icons
+	flat_renderer_->render(*shader_3d_alphatest_, RenderPass::Masked); // Flats
+	wall_renderer_->render(*shader_3d_alphatest_, RenderPass::Masked); // Walls
+	thing_renderer_->renderSprites(*shader_3d_sprite_, false);         // Sprites
+	thing_renderer_->renderSprites(*shader_3d_icon_, true);            // Icons
 
 	// Third pass, render transparent flats/walls (TODO: transparent sprites)
 	shader_3d_->bind();
 	glDepthMask(GL_FALSE);
-	renderGroups(*vb_flats_, flat_groups_, *shader_3d_, RenderPass::Transparent); // Flats
-	renderGroups(*vb_quads_, quad_groups_, *shader_3d_, RenderPass::Transparent); // Walls
+	flat_renderer_->render(*shader_3d_, RenderPass::Transparent); // Flats
+	wall_renderer_->render(*shader_3d_, RenderPass::Transparent); // Walls
 
 	// Render thing boxes
 	thing_renderer_->renderThingBoxes(camera, view, map3d_max_render_dist > 0.0f ? map3d_max_render_dist : 40000.0f);
@@ -320,9 +363,9 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 		// Update line buffer
 		highlight_lines_->buffer().clear();
 		if (base_type == ItemType::Sector)
-			addFlatOutline(item, *highlight_lines_, 1.0f);
+			flat_renderer_->addOutline(item, *highlight_lines_, 1.0f);
 		else if (base_type == ItemType::Side)
-			addQuadOutline(item, *highlight_lines_, 1.0f);
+			wall_renderer_->addOutline(item, *highlight_lines_, 1.0f);
 		highlight_lines_->push();
 
 		// Draw outline
@@ -334,21 +377,21 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 	if (base_type != ItemType::Thing && map3d_highlight_fill)
 	{
 		// Setup fill buffer
-		MapGeometryBuffer3D* vertex_buffer = nullptr;
-		vector<GLuint>       indices;
+		unsigned       fill_vao = 0;
+		vector<GLuint> indices;
 		if (base_type == ItemType::Sector)
 		{
-			addItemFlatIndices(item, indices);
-			vertex_buffer = vb_flats_.get();
+			flat_renderer_->addItemIndices(item, indices);
+			fill_vao = flat_renderer_->vao();
 		}
 		else if (base_type == ItemType::Side)
 		{
-			addItemQuadIndices(item, indices);
-			vertex_buffer = vb_quads_.get();
+			wall_renderer_->addItemIndices(item, indices);
+			fill_vao = wall_renderer_->vao();
 		}
 
 		// Draw fill (if any)
-		if (vertex_buffer && !indices.empty())
+		if (fill_vao && !indices.empty())
 		{
 			highlight_fill_->upload(indices);
 
@@ -365,7 +408,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 
 			// Draw filled polygon(s)
 			gl::Texture::bind(gl::Texture::whiteTexture());
-			gl::bindVAO(vertex_buffer->vao());
+			gl::bindVAO(fill_vao);
 			highlight_fill_->bind();
 			gl::drawElements(gl::Primitive::Triangles, highlight_fill_->size(), GL_UNSIGNED_INT);
 			gl::bindEBO(0);
@@ -418,13 +461,13 @@ void MapRenderer3D::populateSelectionOverlay(SelectionOverlay3D& overlay, const 
 		auto base_type = baseItemType(item.type);
 		if (base_type == ItemType::Sector)
 		{
-			addFlatOutline(item, *overlay.outline, 1.0f);
-			addItemFlatIndices(item, indices_flats);
+			flat_renderer_->addOutline(item, *overlay.outline, 1.0f);
+			flat_renderer_->addItemIndices(item, indices_flats);
 		}
 		else if (base_type == ItemType::Side)
 		{
-			addQuadOutline(item, *overlay.outline, 1.0f);
-			addItemQuadIndices(item, indices_quads);
+			wall_renderer_->addOutline(item, *overlay.outline, 1.0f);
+			wall_renderer_->addItemIndices(item, indices_quads);
 		}
 		else if (base_type == ItemType::Thing)
 		{
@@ -478,12 +521,12 @@ void MapRenderer3D::renderSelectionOverlay(
 
 	// Draw filled flats
 	gl::Texture::bind(gl::Texture::whiteTexture());
-	gl::bindVAO(vb_flats_->vao());
+	gl::bindVAO(flat_renderer_->vao());
 	overlay.fill_flats->bind();
 	gl::drawElements(gl::Primitive::Triangles, overlay.fill_flats->size(), GL_UNSIGNED_INT);
 
 	// Draw filled quads
-	gl::bindVAO(vb_quads_->vao());
+	gl::bindVAO(wall_renderer_->vao());
 	overlay.fill_quads->bind();
 	gl::drawElements(gl::Primitive::Triangles, overlay.fill_quads->size(), GL_UNSIGNED_INT);
 	gl::bindEBO(0);
@@ -527,15 +570,8 @@ void MapRenderer3D::renderSelection(const gl::Camera& camera, const gl::View& vi
 // -----------------------------------------------------------------------------
 void MapRenderer3D::clearData()
 {
-	// Flats
-	vb_flats_->buffer().clear();
-	sector_flats_.clear();
-	flat_groups_.clear();
-
-	// Walls
-	vb_quads_->buffer().clear();
-	line_quads_.clear();
-	quad_groups_.clear();
+	flat_renderer_->clear();
+	wall_renderer_->clear();
 
 	// Things
 	thing_renderer_->clear();
@@ -546,11 +582,43 @@ void MapRenderer3D::clearData()
 }
 
 // -----------------------------------------------------------------------------
+// Finds the map item at the cursor position [cursor_pos] in the given [camera]
+// and [view]
+// -----------------------------------------------------------------------------
+Item MapRenderer3D::findHighlightedItem(const gl::Camera& camera, const gl::View& view, const Vec2i& cursor_pos) const
+{
+	Ray ray{ camera.position(), calculateCursorRay(camera, view, cursor_pos) };
+
+	float min_dist = 9999999.f;
+	Item  current;
+
+	// Check walls
+	if (auto [wall, dist] = wall_renderer_->nearestIntersectingWall(ray, min_dist); dist >= 0)
+	{
+		current  = wall;
+		min_dist = dist;
+	}
+
+	// Check flats
+	if (auto [flat, dist] = flat_renderer_->nearestIntersectingFlat(ray, min_dist); dist >= 0)
+	{
+		current  = flat;
+		min_dist = dist;
+	}
+
+	// Check things
+	if (auto closest_thing = thing_renderer_->nearestIntersectingThing(camera, ray, min_dist); closest_thing)
+		current = *closest_thing;
+
+	return current;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the size of the flats vertex buffer in bytes
 // -----------------------------------------------------------------------------
 unsigned MapRenderer3D::flatsBufferSize() const
 {
-	return vb_flats_->buffer().size() * sizeof(MGVertex);
+	return flat_renderer_->bufferSize();
 }
 
 // -----------------------------------------------------------------------------
@@ -558,7 +626,7 @@ unsigned MapRenderer3D::flatsBufferSize() const
 // -----------------------------------------------------------------------------
 unsigned MapRenderer3D::quadsBufferSize() const
 {
-	return vb_quads_->buffer().size() * sizeof(MGVertex);
+	return wall_renderer_->bufferSize();
 }
 
 // -----------------------------------------------------------------------------
@@ -570,67 +638,10 @@ void MapRenderer3D::renderSkyFlatsQuads() const
 	gl::Texture::bind(gl::Texture::whiteTexture());
 	shader_3d_->setUniform("colour", glm::vec4(0.0f));
 
-	// Render sky flats
-	gl::bindVAO(vb_flats_->vao());
-	for (auto& group : flat_groups_)
-	{
-		if (group.render_pass != RenderPass::Sky)
-			continue;
-
-		group.index_buffer->bind();
-		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
-	}
-
-	// Render sky quads
-	gl::bindVAO(vb_quads_->vao());
-	for (auto& group : quad_groups_)
-	{
-		if (group.render_pass != RenderPass::Sky)
-			continue;
-
-		group.index_buffer->bind();
-		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
-	}
+	flat_renderer_->renderSkyGeometry();
+	wall_renderer_->renderSkyGeometry();
 
 	shader_3d_->setUniform("colour", glm::vec4(1.0f));
-
-	gl::bindEBO(0);
-	gl::bindVAO(0);
-}
-
-// -----------------------------------------------------------------------------
-// Renders the given [groups] of geometry from the specified [buffer] using the
-// given [shader].
-// Only groups that match the specified render [pass] will be rendered
-// -----------------------------------------------------------------------------
-void MapRenderer3D::renderGroups(
-	const MapGeometryBuffer3D& buffer,
-	const vector<RenderGroup>& groups,
-	const gl::Shader&          shader,
-	RenderPass                 pass)
-{
-	gl::bindVAO(buffer.vao());
-
-	for (auto& group : groups)
-	{
-		// Ensure group is part of the correct render pass
-		if (group.render_pass != pass)
-			continue;
-
-		// Setup blending if needed
-		if (pass == RenderPass::Transparent)
-		{
-			if (group.trans_additive)
-				gl::setBlend(gl::Blend::Additive);
-			else
-				gl::setBlend(gl::Blend::Normal);
-		}
-
-		shader.setUniform("colour", group.colour);
-		gl::Texture::bind(group.texture);
-		group.index_buffer->bind();
-		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);
-	}
 
 	gl::bindEBO(0);
 	gl::bindVAO(0);

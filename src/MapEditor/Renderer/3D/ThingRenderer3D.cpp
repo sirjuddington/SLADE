@@ -644,6 +644,10 @@ void ThingRenderer3D::addToSelectionOverlay(SelectionOverlay3D& overlay, const I
 optional<Item> ThingRenderer3D::nearestIntersectingThing(const gl::Camera& camera, const Ray& ray, double max_dist)
 	const
 {
+	// Ignore if things are disabled
+	if (map3d_things == 0)
+		return std::nullopt;
+
 	auto           min_dist = max_dist;
 	optional<Item> closest;
 

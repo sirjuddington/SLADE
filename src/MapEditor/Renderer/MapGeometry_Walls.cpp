@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    MapGeometry_Walls.cpp
-// Description:
+// Description: Map geometry calculation for walls in the 3D renderer
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -30,14 +30,14 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "3D/MapGeometryBuffer3D.h"
+#include "3D/Quad3D.h"
 #include "Game/Configuration.h"
 #include "Geometry/Plane.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "MapGeometry.h"
-#include "MapGeometryBuffer3D.h"
 #include "OpenGL/GLTexture.h"
-#include "Quad3D.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
