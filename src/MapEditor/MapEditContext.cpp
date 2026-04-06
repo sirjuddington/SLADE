@@ -623,6 +623,11 @@ void MapEditContext::clearMap()
 	input_->setMouseState(Input::MouseState::Normal);
 	mapeditor::resetObjectPropertiesPanel();
 
+	// Reset edit mode
+	edit_mode_      = Mode::Lines;
+	edit_mode_prev_ = Mode::Lines;
+	sector_mode_    = SectorMode::Both;
+
 	// Clear undo manager
 	undo_manager_->clear();
 	last_undo_level_ = "";
@@ -631,6 +636,7 @@ void MapEditContext::clearMap()
 	updateTagged();
 	info_3d_->reset();
 	renderer_->clearAnimations();
+	renderer_->clearData();
 
 	// Clear map
 	map_->clearMap();

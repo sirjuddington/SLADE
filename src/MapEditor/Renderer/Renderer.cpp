@@ -1219,8 +1219,8 @@ void Renderer::draw() const
 		context_->currentOverlay()->draw(dc, anim_overlay_fade_);
 
 	// Draw loading overlay if active
-	if (anim_overlay_fade_ > 0.01f)
-		context_->loadingOverlay().draw(dc, anim_overlay_fade_);
+	if (context_->loadingOverlayActive())
+		context_->loadingOverlay().draw(dc, 1.0f);
 
 	// Editor messages
 	drawEditorMessages(dc);
