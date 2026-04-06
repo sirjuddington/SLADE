@@ -101,7 +101,9 @@ private:
 	};
 	vector<SectorFlats>             sector_flats_;
 	unique_ptr<MapGeometryBuffer3D> vb_flats_; // Vertex buffer for all flats
-	long                            flats_updated_ = 0;
+	long                            flats_updated_               = 0;
+	int                             sector_flats_processed_      = -1;
+	unsigned                        sector_vb_processing_offset_ = 0;
 
 	// Wall quads
 	struct LineQuads
@@ -114,7 +116,9 @@ private:
 	};
 	vector<LineQuads>               line_quads_;
 	unique_ptr<MapGeometryBuffer3D> vb_quads_; // Vertex buffer for all wall quads
-	long                            quads_updated_ = 0;
+	long                            quads_updated_             = 0;
+	int                             line_quads_processed_      = -1;
+	unsigned                        quad_vb_processing_offset_ = 0;
 
 	// Used to organise quads/flats into groups for rendering
 	struct RenderGroup
@@ -141,8 +145,8 @@ private:
 	void updateFlatVisibility(const gl::Camera& camera, float max_dist);
 	void updateWallVisibility(const gl::Camera& camera, float max_dist);
 
-	void updateFlats(bool vis_check = false);
-	void updateWalls(bool vis_check = false);
+	bool updateFlats(bool vis_check = false);
+	bool updateWalls(bool vis_check = false);
 
 	void renderSkyFlatsQuads() const;
 	void renderGroups(

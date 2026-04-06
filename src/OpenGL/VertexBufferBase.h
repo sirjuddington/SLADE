@@ -23,7 +23,7 @@ public:
 	void addVertex(const T& vertex) { vertices_.push_back(vertex); }
 	void addVertices(const vector<T>& vertices) { vectorConcat(vertices_, vertices); }
 
-	void push()
+	void push(bool clear = true)
 	{
 		if (!getContext())
 			return;
@@ -33,7 +33,8 @@ public:
 			initVAO();
 
 		buffer_.upload(vertices_);
-		vertices_.clear();
+		if (clear)
+			vertices_.clear();
 	}
 
 	bool pull()

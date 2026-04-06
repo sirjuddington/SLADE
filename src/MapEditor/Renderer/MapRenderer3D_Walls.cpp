@@ -153,7 +153,7 @@ void MapRenderer3D::updateWallVisibility(const gl::Camera& camera, float max_dis
 // -----------------------------------------------------------------------------
 // Updates wall quads and render groups as needed
 // -----------------------------------------------------------------------------
-void MapRenderer3D::updateWalls(bool vis_check)
+bool MapRenderer3D::updateWalls(bool vis_check)
 {
 	using QuadFlags = Quad3D::Flags;
 
@@ -167,11 +167,20 @@ void MapRenderer3D::updateWalls(bool vis_check)
 	}
 
 	// Generate wall quads if needed
-	if (line_quads_.empty())
+	bool update_complete = true;
+	if (line_quads_.empty() || line_quads_processed_ >= 0)
 	{
 		unsigned vertex_index = 0;
+
+		if (line_quads_processed_ >= 0)
+			vertex_index = quad_vb_processing_offset_; // Continue from previous partial update
+
+		auto start_time = app::runTimer();
 		for (auto* line : map_->lines())
 		{
+			if (static_cast<int>(line->index()) <= line_quads_processed_)
+				continue;
+
 			auto [quads, vertices] = generateLineQuads(*line, vertex_index);
 
 			line_quads_.push_back(
@@ -182,9 +191,23 @@ void MapRenderer3D::updateWalls(bool vis_check)
 
 			vb_quads_->addVertices(vertices);
 			vertex_index += vertices.size();
+
+			// Don't process walls for more than 200ms per frame
+			if (app::runTimer() - start_time > 200)
+			{
+				line_quads_processed_      = line->index();
+				quad_vb_processing_offset_ = vertex_index;
+				update_complete            = false;
+				break;
+			}
 		}
-		vb_quads_->push();
+
+		if (update_complete)
+			line_quads_processed_ = -1;
+
+		vb_quads_->push(update_complete);
 		quads_updated_ = app::runTimer();
+		quad_groups_.clear();
 	}
 	else if (quadsNeedUpdate(quads_updated_, map_))
 	{
@@ -311,6 +334,8 @@ void MapRenderer3D::updateWalls(bool vis_check)
 		if (vis_check)
 			force_update_quad_groups_ = true;
 	}
+
+	return update_complete;
 }
 
 // -----------------------------------------------------------------------------

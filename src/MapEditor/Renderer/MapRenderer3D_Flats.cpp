@@ -147,7 +147,7 @@ void MapRenderer3D::updateFlatVisibility(const gl::Camera& camera, float max_dis
 // -----------------------------------------------------------------------------
 // Updates sector flats/geometry and render groups if needed
 // -----------------------------------------------------------------------------
-void MapRenderer3D::updateFlats(bool vis_check)
+bool MapRenderer3D::updateFlats(bool vis_check)
 {
 	using FlatFlags = Flat3D::Flags;
 
@@ -161,11 +161,20 @@ void MapRenderer3D::updateFlats(bool vis_check)
 	}
 
 	// Generate flats if needed
-	if (sector_flats_.empty())
+	bool update_complete = true;
+	if (sector_flats_.empty() || sector_flats_processed_ >= 0)
 	{
 		unsigned vertex_index = 0;
+
+		if (sector_flats_processed_ >= 0)
+			vertex_index = sector_vb_processing_offset_; // Continue from previous partial update
+
+		auto start_time = app::runTimer();
 		for (auto* sector : map_->sectors())
 		{
+			if (static_cast<int>(sector->index()) <= sector_flats_processed_)
+				continue;
+
 			auto [flats, vertices] = generateSectorFlats(*sector, vertex_index);
 
 			sector_flats_.push_back(
@@ -176,9 +185,21 @@ void MapRenderer3D::updateFlats(bool vis_check)
 
 			vb_flats_->addVertices(vertices);
 			vertex_index += vertices.size();
+
+			// Don't process flats for more than 200ms per frame
+			if (app::runTimer() - start_time > 200)
+			{
+				sector_flats_processed_      = sector->index();
+				sector_vb_processing_offset_ = vertex_index;
+				update_complete              = false;
+				break;
+			}
 		}
 
-		vb_flats_->push();
+		if (update_complete)
+			sector_flats_processed_ = -1;
+
+		vb_flats_->push(update_complete);
 		flats_updated_ = app::runTimer();
 		flat_groups_.clear();
 	}
@@ -308,6 +329,8 @@ void MapRenderer3D::updateFlats(bool vis_check)
 		if (vis_check)
 			force_update_flat_groups_ = true;
 	}
+
+	return update_complete;
 }
 
 // -----------------------------------------------------------------------------

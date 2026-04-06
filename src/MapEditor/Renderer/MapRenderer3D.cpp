@@ -217,9 +217,15 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 		thing_renderer_->updateVisibility(camera, 0.0f);
 
 	// Update flats and walls
-	updateFlats(map3d_max_render_dist > 0.0f);
-	updateWalls(map3d_max_render_dist > 0.0f);
-	thing_renderer_->update(map3d_max_render_dist > 0.0f);
+	auto update_done = updateFlats(map3d_max_render_dist > 0.0f);
+	update_done &= updateWalls(map3d_max_render_dist > 0.0f);
+	if (update_done)
+	{
+		// Only update things once walls/flats are fully updated
+		// TODO: Partial updates for things
+		// TODO: 'Generating map geometry' overlay
+		thing_renderer_->update(map3d_max_render_dist > 0.0f);
+	}
 
 	// Render sky first if needed
 	shader_3d_->bind();
