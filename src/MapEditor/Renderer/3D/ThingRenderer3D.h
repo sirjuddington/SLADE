@@ -36,8 +36,9 @@ public:
 
 	void clear();
 
-	void updateVisibility(const gl::Camera& camera, float max_dist);
-	bool update(bool vis_check = false);
+	void  updateVisibility(const gl::Camera& camera, float max_dist);
+	bool  update(bool vis_check = false);
+	float updateProgress() const;
 
 	void renderSprites(const gl::Shader& shader, bool icons = false) const;
 	void renderThingBoxes(const gl::Camera& camera, const gl::View& view, float max_dist = 0.0f) const;

@@ -220,7 +220,7 @@ bool FlatRenderer3D::update(bool vis_check)
 			vertex_index += vertices.size();
 
 			// Don't process flats for more than 200ms per frame
-			if (app::runTimer() - start_time > 200)
+			if (app::runTimer() - start_time > 100)
 			{
 				sector_flats_processed_      = sector->index();
 				sector_vb_processing_offset_ = vertex_index;
@@ -364,6 +364,21 @@ bool FlatRenderer3D::update(bool vis_check)
 	}
 
 	return update_complete;
+}
+
+// -----------------------------------------------------------------------------
+// If flats have been partially updated, returns the progress so far
+// -----------------------------------------------------------------------------
+float FlatRenderer3D::updateProgress() const
+{
+	if (sector_flats_processed_ < 0)
+		return 1.0f;
+
+	auto map = renderer_->map();
+	if (map->nSectors() == 0)
+		return 1.0f;
+
+	return static_cast<float>(sector_flats_processed_) / static_cast<float>(map->nSectors());
 }
 
 // -----------------------------------------------------------------------------

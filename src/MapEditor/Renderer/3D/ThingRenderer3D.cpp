@@ -88,6 +88,12 @@ CVAR(Int, map3d_things_boxes, BOXES_SOLIDONLY, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 namespace
 {
+// -----------------------------------------------------------------------------
+// Adds lines to [buffer] to draw a box around the given [thing] at height [z]
+// with the given [radius] and [height].
+// Lines are drawn with the specified [line_width] and [colour].
+// The box is expanded by [pad] units in all directions.
+// -----------------------------------------------------------------------------
 void addThingBoxOutline(
 	gl::LineBuffer& buffer,
 	const MapThing& thing,
@@ -120,6 +126,11 @@ void addThingBoxOutline(
 	buffer.add3d({ tl.x, br.y, tl.z }, { tl.x, br.y, br.z }, colour, line_width);
 }
 
+// -----------------------------------------------------------------------------
+// Adds lines to [buffer] to draw an outline around the given [thing]'s
+// billboard sprite at height [z] with the given [sprite_size].
+// Lines are drawn with the specified [line_width] and [colour].
+// -----------------------------------------------------------------------------
 void addSpriteOutline(
 	gl::LineBuffer&   buffer,
 	const MapThing&   thing,
@@ -153,6 +164,11 @@ void addSpriteOutline(
 		line_width);
 }
 
+// -----------------------------------------------------------------------------
+// Adds vertices to [buffer] to draw a box around the given [thing] at height
+// [z] with the given [radius] and [height].
+// The box is expanded by [pad] units in all directions.
+// -----------------------------------------------------------------------------
 void addThingBox(gl::VertexBuffer3D& buffer, const MapThing& thing, float z, float radius, float height, float pad)
 {
 	glm::vec3 tl{ thing.xPos() - radius - pad, thing.yPos() - radius - pad, z + height + pad };
@@ -161,6 +177,11 @@ void addThingBox(gl::VertexBuffer3D& buffer, const MapThing& thing, float z, flo
 	buffer.addBox(tl, br);
 }
 
+// -----------------------------------------------------------------------------
+// Adds lines to [buffer] to draw an arrow indicating the direction of the given
+// [thing] at height [z] with the given [radius] and [height].
+// Lines are drawn with the specified [line_width].
+// -----------------------------------------------------------------------------
 void addThingDirectionArrow(
 	gl::LineBuffer& line_buffer,
 	const MapThing& thing,
@@ -176,6 +197,10 @@ void addThingDirectionArrow(
 	line_buffer.addArrow3d(start, end, glm::vec4{ 1.0f, 1.0f, 1.0f, 0.75f }, line_width, 8.0f, 30.0f);
 }
 
+// -----------------------------------------------------------------------------
+// Checks if any things need to be updated based on [last_updated] time and
+// related map thing/sector update times
+// -----------------------------------------------------------------------------
 bool thingsNeedUpdate(long last_updated, const SLADEMap* map)
 {
 	if (last_updated < map->typeLastUpdated(map::ObjectType::Thing) || last_updated < map->sectorRenderInfoUpdated())
@@ -184,6 +209,10 @@ bool thingsNeedUpdate(long last_updated, const SLADEMap* map)
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Checks if [thing] needs to be updated based on [last_updated] time and
+// related thing/sector update times
+// -----------------------------------------------------------------------------
 bool thingNeedsUpdate(long last_updated, const MapThing* thing, const MapSector* sector)
 {
 	if (last_updated < thing->modifiedTime())
@@ -195,6 +224,9 @@ bool thingNeedsUpdate(long last_updated, const MapThing* thing, const MapSector*
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Checks if the given thing type should be rendered with current settings
+// -----------------------------------------------------------------------------
 bool thingTypeEnabled(const game::ThingType& type_info)
 {
 	if (map3d_things == SHOWTHINGS_ALL)
@@ -205,6 +237,10 @@ bool thingTypeEnabled(const game::ThingType& type_info)
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Checks if thing boxes should be rendered for the given thing type with
+// current settings
+// -----------------------------------------------------------------------------
 bool boxesEnabled(const game::ThingType& type_info)
 {
 	if (map3d_things_boxes == BOXES_ALL)
@@ -224,6 +260,9 @@ bool boxesEnabled(const game::ThingType& type_info)
 // -----------------------------------------------------------------------------
 
 
+// -----------------------------------------------------------------------------
+// ThingGroup struct constructor
+// -----------------------------------------------------------------------------
 ThingRenderer3D::ThingGroup::ThingGroup(int type_id, const game::ThingType& type_info) : type_info{ &type_info }
 {
 	// Get thing sprite
@@ -260,6 +299,10 @@ ThingRenderer3D::ThingGroup::ThingGroup(int type_id, const game::ThingType& type
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Adds [thing] to this group, calculating its z position and lighting based on
+// its position and the sector it's in.
+// -----------------------------------------------------------------------------
 void ThingRenderer3D::ThingGroup::addThing(const MapThing& thing)
 {
 	auto map = thing.parentMap();
@@ -294,6 +337,9 @@ void ThingRenderer3D::ThingGroup::addThing(const MapThing& thing)
 	things.push_back({ .index = thing.index(), .z = z, .sector = sector });
 }
 
+// -----------------------------------------------------------------------------
+// Returns the z position of the thing with the given [index] in this group
+// -----------------------------------------------------------------------------
 float ThingRenderer3D::ThingGroup::thingZ(unsigned index) const
 {
 	for (const auto& ti : things)
@@ -303,6 +349,9 @@ float ThingRenderer3D::ThingGroup::thingZ(unsigned index) const
 	return 0.0f;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the sector of the thing with the given [index] in this group
+// -----------------------------------------------------------------------------
 const MapSector* ThingRenderer3D::ThingGroup::thingSector(unsigned index) const
 {
 	for (const auto& ti : things)
@@ -312,6 +361,10 @@ const MapSector* ThingRenderer3D::ThingGroup::thingSector(unsigned index) const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the height of things in this group based on their type info or sprite
+// size
+// -----------------------------------------------------------------------------
 float ThingRenderer3D::ThingGroup::height() const
 {
 	return type_info && type_info->height() >= 0 ? static_cast<float>(type_info->height()) : sprite_size.y;
@@ -325,15 +378,28 @@ float ThingRenderer3D::ThingGroup::height() const
 // -----------------------------------------------------------------------------
 
 
+// -----------------------------------------------------------------------------
+// ThingRenderer3D class constructor
+// -----------------------------------------------------------------------------
 ThingRenderer3D::ThingRenderer3D(MapRenderer3D* renderer) : renderer_{ renderer } {}
 
+// -----------------------------------------------------------------------------
+// ThingRenderer3D class destructor
+// -----------------------------------------------------------------------------
 ThingRenderer3D::~ThingRenderer3D() = default;
 
+// -----------------------------------------------------------------------------
+// Clears all thing groups and related data
+// -----------------------------------------------------------------------------
 void ThingRenderer3D::clear()
 {
 	groups_.clear();
 }
 
+// -----------------------------------------------------------------------------
+// Updates thing visibility from the given [camera]. Any things further than
+// [max_dist] from the camera will be hidden.
+// -----------------------------------------------------------------------------
 void ThingRenderer3D::updateVisibility(const gl::Camera& camera, float max_dist)
 {
 	if (max_dist == 0.0f)
@@ -357,6 +423,9 @@ void ThingRenderer3D::updateVisibility(const gl::Camera& camera, float max_dist)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Updates things and thing groups if needed
+// -----------------------------------------------------------------------------
 bool ThingRenderer3D::update(bool vis_check)
 {
 	// Ignore if things are disabled
@@ -398,7 +467,7 @@ bool ThingRenderer3D::update(bool vis_check)
 			group->addThing(*thing);
 
 			// Don't process things for more than 200ms per frame
-			if (app::runTimer() - start_time > 200)
+			if (app::runTimer() - start_time > 100)
 			{
 				things_processed_ = thing->index();
 				update_complete   = false;
@@ -479,6 +548,26 @@ bool ThingRenderer3D::update(bool vis_check)
 	return update_complete;
 }
 
+// -----------------------------------------------------------------------------
+// If things have been partially updated, returns the progress so far
+// -----------------------------------------------------------------------------
+float ThingRenderer3D::updateProgress() const
+{
+	if (things_processed_ < 0)
+		return 1.0f;
+
+	auto map = renderer_->map();
+	if (map->nThings() == 0)
+		return 1.0f;
+
+	return static_cast<float>(things_processed_) / static_cast<float>(map->nThings());
+}
+
+// -----------------------------------------------------------------------------
+// Renders thing sprites using the given [shader].
+// If [icons] is true, only things with icons will be rendered, otherwise only
+// things with sprites are rendered
+// -----------------------------------------------------------------------------
 void ThingRenderer3D::renderSprites(const gl::Shader& shader, bool icons) const
 {
 	if (map3d_things == SHOWTHINGS_NONE)
@@ -498,6 +587,9 @@ void ThingRenderer3D::renderSprites(const gl::Shader& shader, bool icons) const
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Renders thing boxes for visible things
+// -----------------------------------------------------------------------------
 void ThingRenderer3D::renderThingBoxes(const gl::Camera& camera, const gl::View& view, float max_dist) const
 {
 	if (map3d_things == SHOWTHINGS_NONE || map3d_things_boxes == BOXES_NONE)
@@ -513,7 +605,7 @@ void ThingRenderer3D::renderThingBoxes(const gl::Camera& camera, const gl::View&
 
 		// Populate line buffer if needed
 		auto& line_buffer = *group.line_buffer;
-		if (line_buffer.buffer().empty())
+		if (line_buffer.buffer().empty() && things_processed_ < 0)
 		{
 			// Get thing size info
 			auto radius = group.type_info->radius();
@@ -555,6 +647,11 @@ void ThingRenderer3D::renderThingBoxes(const gl::Camera& camera, const gl::View&
 	gl::bindVAO(0);
 }
 
+// -----------------------------------------------------------------------------
+// Renders a highlight for the given thing [item] using the specified [colour]
+// and [outline]/[fill] options.
+// The highlight is rendered using the given [camera] and [view].
+// -----------------------------------------------------------------------------
 void ThingRenderer3D::renderHighlight(
 	const Item&       item,
 	const gl::Camera& camera,
@@ -645,6 +742,9 @@ void ThingRenderer3D::renderHighlight(
 	prev_highlight_ = item;
 }
 
+// -----------------------------------------------------------------------------
+// Adds the given thing [item] to the selection [overlay]
+// -----------------------------------------------------------------------------
 void ThingRenderer3D::addToSelectionOverlay(SelectionOverlay3D& overlay, const Item& item) const
 {
 	auto thing = item.asThing(*renderer_->map());
@@ -662,6 +762,10 @@ void ThingRenderer3D::addToSelectionOverlay(SelectionOverlay3D& overlay, const I
 	addThingBox(*overlay.fill_things, *thing, z, radius, height, 0.5f);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the nearest thing intersecting with the given [ray] from the
+// [camera], within the specified [max_dist], or nullopt if no intersection.
+// -----------------------------------------------------------------------------
 optional<Item> ThingRenderer3D::nearestIntersectingThing(const gl::Camera& camera, const Ray& ray, double max_dist)
 	const
 {
@@ -736,6 +840,10 @@ optional<Item> ThingRenderer3D::nearestIntersectingThing(const gl::Camera& camer
 	return closest;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a pointer to the thing group for the given thing [type], or nullptr
+// if no group exists for that type
+// -----------------------------------------------------------------------------
 const ThingRenderer3D::ThingGroup* ThingRenderer3D::thingGroup(unsigned type) const
 {
 	for (auto& group : groups_)
@@ -745,6 +853,10 @@ const ThingRenderer3D::ThingGroup* ThingRenderer3D::thingGroup(unsigned type) co
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a pointer to the thing group for the given thing [type], or nullptr
+// if no group exists for that type
+// -----------------------------------------------------------------------------
 ThingRenderer3D::ThingGroup* ThingRenderer3D::thingGroup(unsigned type)
 {
 	for (auto& group : groups_)

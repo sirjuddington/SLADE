@@ -74,7 +74,7 @@ public:
 		float     arrowhead_angle  = 45.0f,
 		bool      arrowhead_both   = false);
 
-	void push();
+	void push(bool clear = true);
 	bool pull();
 
 	void draw(

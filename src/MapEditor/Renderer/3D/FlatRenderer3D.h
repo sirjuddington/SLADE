@@ -40,10 +40,14 @@ public:
 	~FlatRenderer3D();
 
 	void clear();
-	void updateVisibility(const gl::Camera& camera, float max_dist);
-	bool update(bool vis_check = false);
+
+	void  updateVisibility(const gl::Camera& camera, float max_dist);
+	bool  update(bool vis_check = false);
+	float updateProgress() const;
+
 	void render(const gl::Shader& shader, RenderPass pass) const;
 	void renderSkyGeometry() const;
+
 	void addOutline(const Item& item, gl::LineBuffer& buffer, float line_width) const;
 	void addItemIndices(const Item& item, vector<GLuint>& indices) const;
 

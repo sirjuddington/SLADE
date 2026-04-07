@@ -291,7 +291,7 @@ void LineBuffer::addArrow3d(
 	}
 }
 
-void LineBuffer::push()
+void LineBuffer::push(bool clear)
 {
 	if (!getContext())
 		return;
@@ -301,7 +301,9 @@ void LineBuffer::push()
 		vao_ = initVAO(buffer_);
 
 	buffer_.upload(lines_);
-	lines_.clear();
+
+	if (clear)
+		lines_.clear();
 }
 
 bool LineBuffer::pull()

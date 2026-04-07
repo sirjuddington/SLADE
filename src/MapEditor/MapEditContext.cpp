@@ -624,9 +624,9 @@ void MapEditContext::clearMap()
 	mapeditor::resetObjectPropertiesPanel();
 
 	// Reset edit mode
-	edit_mode_      = Mode::Lines;
 	edit_mode_prev_ = Mode::Lines;
 	sector_mode_    = SectorMode::Both;
+	setEditMode(Mode::Lines);
 
 	// Clear undo manager
 	undo_manager_->clear();

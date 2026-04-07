@@ -263,7 +263,13 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	if (update_done)
 		context_->closeLoadingOverlay();
 	else
-		context_->loadingOverlay().setMessage("Generating map geometry...");
+	{
+		auto total_progress = (flat_renderer_->updateProgress() + wall_renderer_->updateProgress()
+							   + thing_renderer_->updateProgress())
+							  / 3.0f;
+		int progress_percent = static_cast<int>(total_progress * 100.0f);
+		context_->loadingOverlay().setMessage(fmt::format("Building 3D geometry ({}%)...", progress_percent));
+	}
 
 	// Render sky first if needed
 	shader_3d_->bind();
