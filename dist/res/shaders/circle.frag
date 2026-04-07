@@ -10,7 +10,6 @@ out vec4 f_colour;
 
 uniform vec4 colour;
 uniform vec2 viewport_size;
-uniform float point_radius;
 
 in float i_radius;
 
@@ -25,7 +24,7 @@ void main()
 	float dist = distance(vertex_in.tex_coord, vec2(0.5));
 	float delta = fwidth(dist);
     float alpha_ol = smoothstep(0.499 - delta, 0.499, dist);
-	float outline_size = outline_width / (point_radius * i_radius);
+	float outline_size = outline_width / i_radius;
 	float alpha = smoothstep(0.499 - outline_size - delta, 0.499 - outline_size + delta, dist);
     
 	f_colour.rgb = colour.rgb;

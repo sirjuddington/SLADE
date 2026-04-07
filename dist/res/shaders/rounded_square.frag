@@ -12,7 +12,6 @@ out vec4 f_colour;
 
 uniform vec4 colour;
 uniform vec2 viewport_size;
-uniform float point_radius;
 
 const float corner_radius = 0.025;
 
@@ -28,7 +27,7 @@ uniform float fill_opacity = 0.0;
 
 void main()
 {
-	float outline_size = (outline_width / (point_radius * i_radius));
+	float outline_size = (outline_width / i_radius);
 
 	float dist = rounded_rect_dist(vertex_in.tex_coord - vec2(0.5), vec2(0.5 - outline_size), corner_radius);
 	float delta = fwidth(dist);// * 0.5;

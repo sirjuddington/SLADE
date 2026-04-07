@@ -344,9 +344,8 @@ void draw2d::Context::drawPointSprites(const vector<Vec2f>& points) const
 		ps_buffer = std::make_unique<PointSpriteBuffer>();
 
 	// Populate buffer
-	// TODO: Use glm::vec2 as input or add direct conversion from Vec2f to glm::vec2
 	for (const auto& point : points)
-		ps_buffer->add({ point.x, point.y });
+		ps_buffer->add(point);
 	ps_buffer->push();
 
 	draw2d::drawPointSprites(*this);

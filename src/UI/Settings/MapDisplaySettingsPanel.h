@@ -47,7 +47,6 @@ private:
 	wxCheckBox*       cb_thing_overlay_square_ = nullptr;
 	NumberSlider*     slider_thing_shadow_     = nullptr;
 	wxCheckBox*       cb_use_zeth_icons_       = nullptr;
-	NumberSlider*     slider_light_intensity_  = nullptr;
 
 	NumberSlider* slider_flat_brightness_  = nullptr;
 	wxCheckBox*   cb_flat_ignore_light_    = nullptr;

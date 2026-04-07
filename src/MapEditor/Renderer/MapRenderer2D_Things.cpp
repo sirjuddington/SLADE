@@ -63,7 +63,6 @@ CVAR(Bool, map2d_thing_sprites, true, CVar::Flag::Save)
 CVAR(Bool, map2d_thing_force_dir, false, CVar::Flag::Save)
 CVAR(Bool, map2d_thing_overlay_square, false, CVar::Flag::Save)
 CVAR(Bool, map2d_thing_preview_lights, true, CVar::Flag::Save)
-CVAR(Float, map2d_thing_light_intensity, 0.5f, CVar::Flag::Save)
 CVAR(Float, map2d_thing_shadow, 0.7f, CVar::Flag::Save)
 CVAR(Int, map2d_thing_halo_width, 4, CVar::Flag::Save)
 
@@ -477,12 +476,14 @@ void MapRenderer2D::renderPointLightPreviews(gl::draw2d::Context& dc, float alph
 	// Setup rendering
 	const auto& shader = gl::draw2d::defaultShader();
 	dc.texture         = textureManager().editorImage("thing/light_preview").gl_id;
-	dc.colour.set(255, 255, 255, static_cast<uint8_t>(alpha * (map2d_thing_light_intensity * 255.f)));
-	dc.blend = gl::Blend::Additive;
+	dc.colour.set(255, 255, 255, static_cast<uint8_t>(alpha * 255.0f));
+	dc.blend = gl::Blend::Ignore;
 	dc.setupToDraw(shader);
 
 	// Draw buffer
+	glBlendFuncSeparate(GL_DST_COLOR, GL_ONE, GL_SRC_ALPHA, GL_ONE);
 	thing_light_preview_buffer_->draw(gl::Primitive::Triangles);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// Draw hilight ring if needed
 	if (hl_radius > 0.0f)
@@ -490,8 +491,9 @@ void MapRenderer2D::renderPointLightPreviews(gl::draw2d::Context& dc, float alph
 		dc.pointsprite_type          = gl::PointSpriteType::CircleOutline;
 		dc.pointsprite_radius        = hl_radius;
 		dc.pointsprite_fill_opacity  = 0.0f;
-		dc.pointsprite_outline_width = std::min(2.0f / (float)view_->scale().x, 4.0f);
-		dc.colour.set(hl_colour.r * 255, hl_colour.g * 255, hl_colour.b * 255, alpha * 255);
+		dc.pointsprite_outline_width = std::min(1.5f / static_cast<float>(view_->scale().x), 8.0f);
+		dc.colour.set(hl_colour.r * 255, hl_colour.g * 255, hl_colour.b * 255, alpha * 0.75f * 255);
+		dc.blend = gl::Blend::Normal;
 		dc.drawPointSprites(vector{ Vec2f{ hl_position.x, hl_position.y } });
 		dc.pointsprite_radius = 1.0f;
 	}

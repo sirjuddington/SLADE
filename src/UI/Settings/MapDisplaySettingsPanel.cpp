@@ -77,7 +77,6 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 EXTERN_CVAR(Int, map2d_thing_halo_width)
 EXTERN_CVAR(Int, map2d_64grid_style)
 EXTERN_CVAR(Bool, map2d_grid_show_origin)
-EXTERN_CVAR(Float, map2d_thing_light_intensity)
 
 
 // -----------------------------------------------------------------------------
@@ -220,7 +219,6 @@ wxPanel* MapDisplaySettingsPanel::createThingsPanel(wxWindow* parent, const Layo
 	cb_thing_force_dir_      = new wxCheckBox(panel, -1, wxS("Always show direction arrows"));
 	cb_thing_overlay_square_ = new wxCheckBox(panel, -1, wxS("Force square hilight/selection overlay"));
 	cb_use_zeth_icons_       = new wxCheckBox(panel, -1, wxS("Use ZETH thing type icons"));
-	slider_light_intensity_  = new NumberSlider(panel, 1, 10, 1, true, 10);
 	rbp_things_always_       = new RadioButtonPanel(panel, { "Hide", "Show", "Fade" }, "When not in things mode:");
 
 	int row = 0;
@@ -235,7 +233,6 @@ wxPanel* MapDisplaySettingsPanel::createThingsPanel(wxWindow* parent, const Layo
 		{ row, 0 },
 		{ 1, 1 },
 		wxALIGN_CENTER_VERTICAL);
-	sizer->Add(slider_light_intensity_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 	sizer->Add(cb_thing_force_dir_, { row++, 0 }, { 1, 3 }, wxEXPAND);
 	sizer->Add(cb_thing_overlay_square_, { row++, 0 }, { 1, 3 }, wxEXPAND);
 	sizer->Add(cb_use_zeth_icons_, { row++, 0 }, { 1, 3 }, wxEXPAND);
@@ -303,7 +300,6 @@ void MapDisplaySettingsPanel::loadSettings()
 	cb_use_zeth_icons_->SetValue(use_zeth_icons);
 	rbp_grid_64_->setSelection(map2d_64grid_style);
 	cb_grid_show_origin_->SetValue(map2d_grid_show_origin);
-	slider_light_intensity_->setDecimalValue(map2d_thing_light_intensity);
 }
 
 // -----------------------------------------------------------------------------
@@ -311,34 +307,33 @@ void MapDisplaySettingsPanel::loadSettings()
 // -----------------------------------------------------------------------------
 void MapDisplaySettingsPanel::applySettings()
 {
-	map2d_grid_dashed           = cb_grid_dashed_->GetValue();
-	map2d_vertex_round          = cb_vertex_round_->GetValue();
-	map2d_vertex_size           = slider_vertex_size_->value();
-	map2d_line_width            = slider_line_width_->decimalValue();
-	map2d_line_smooth           = cb_line_smooth_->GetValue();
-	map2d_line_tabs_always      = cb_line_tabs_always_->GetValue();
-	map2d_thing_shape           = rbp_thing_shape_->getSelection();
-	map2d_thing_sprites         = cb_thing_sprites_->GetValue();
-	map2d_thing_force_dir       = cb_thing_force_dir_->GetValue();
-	map2d_thing_overlay_square  = cb_thing_overlay_square_->GetValue();
-	map2d_thing_shadow          = slider_thing_shadow_->decimalValue();
-	map2d_flat_brightness       = slider_flat_brightness_->decimalValue();
-	map2d_flat_ignore_light     = cb_flat_ignore_light_->GetValue();
-	map2d_sector_hilight_fill   = cb_sector_hilight_fill_->GetValue();
-	map2d_sector_selected_fill  = cb_sector_selected_fill_->GetValue();
-	map_animate_hilight         = cb_animate_hilight_->GetValue();
-	map_animate_selection       = cb_animate_selection_->GetValue();
-	map_animate_tagged          = cb_animate_tagged_->GetValue();
-	map2d_vertices_always       = rbp_vertices_always_->getSelection();
-	map2d_things_always         = rbp_things_always_->getSelection();
-	map2d_line_fade             = cb_line_fade_->GetValue();
-	map2d_flat_fade             = cb_flat_fade_->GetValue();
-	map2d_crosshair             = rbp_crosshair_->getSelection();
-	map2d_action_lines          = cb_action_lines_->GetValue();
-	map_show_help               = cb_show_help_->GetValue();
-	map_tex_filter              = rbp_tex_filter_->getSelection();
-	use_zeth_icons              = cb_use_zeth_icons_->GetValue();
-	map2d_64grid_style          = rbp_grid_64_->getSelection();
-	map2d_grid_show_origin      = cb_grid_show_origin_->GetValue();
-	map2d_thing_light_intensity = slider_light_intensity_->decimalValue();
+	map2d_grid_dashed          = cb_grid_dashed_->GetValue();
+	map2d_vertex_round         = cb_vertex_round_->GetValue();
+	map2d_vertex_size          = slider_vertex_size_->value();
+	map2d_line_width           = slider_line_width_->decimalValue();
+	map2d_line_smooth          = cb_line_smooth_->GetValue();
+	map2d_line_tabs_always     = cb_line_tabs_always_->GetValue();
+	map2d_thing_shape          = rbp_thing_shape_->getSelection();
+	map2d_thing_sprites        = cb_thing_sprites_->GetValue();
+	map2d_thing_force_dir      = cb_thing_force_dir_->GetValue();
+	map2d_thing_overlay_square = cb_thing_overlay_square_->GetValue();
+	map2d_thing_shadow         = slider_thing_shadow_->decimalValue();
+	map2d_flat_brightness      = slider_flat_brightness_->decimalValue();
+	map2d_flat_ignore_light    = cb_flat_ignore_light_->GetValue();
+	map2d_sector_hilight_fill  = cb_sector_hilight_fill_->GetValue();
+	map2d_sector_selected_fill = cb_sector_selected_fill_->GetValue();
+	map_animate_hilight        = cb_animate_hilight_->GetValue();
+	map_animate_selection      = cb_animate_selection_->GetValue();
+	map_animate_tagged         = cb_animate_tagged_->GetValue();
+	map2d_vertices_always      = rbp_vertices_always_->getSelection();
+	map2d_things_always        = rbp_things_always_->getSelection();
+	map2d_line_fade            = cb_line_fade_->GetValue();
+	map2d_flat_fade            = cb_flat_fade_->GetValue();
+	map2d_crosshair            = rbp_crosshair_->getSelection();
+	map2d_action_lines         = cb_action_lines_->GetValue();
+	map_show_help              = cb_show_help_->GetValue();
+	map_tex_filter             = rbp_tex_filter_->getSelection();
+	use_zeth_icons             = cb_use_zeth_icons_->GetValue();
+	map2d_64grid_style         = rbp_grid_64_->getSelection();
+	map2d_grid_show_origin     = cb_grid_show_origin_->GetValue();
 }
