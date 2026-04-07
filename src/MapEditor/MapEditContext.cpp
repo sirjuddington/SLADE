@@ -196,6 +196,37 @@ void populateContextMenu2D(wxMenu& menu, Mode edit_mode, const ItemSelection& se
 // -----------------------------------------------------------------------------
 bool populateContextMenu3D(wxMenu& menu, const ItemSelection& selection)
 {
+	if (!selection.hasHilight())
+		return false;
+
+	auto base_type = baseItemType(selection.hilight().type);
+
+	// Wall
+	if (base_type == ItemType::Side)
+	{
+		SAction::fromId("mapw_3d_change_texture")->addToMenu(&menu, 1);
+		menu.AppendSeparator();
+		SAction::fromId("mapw_3d_wall_properties")->addToMenu(&menu, 0);
+	}
+
+	// Flat
+	else if (base_type == ItemType::Sector)
+	{
+		SAction::fromId("mapw_3d_change_texture")->addToMenu(&menu, 1);
+		menu.AppendSeparator();
+		SAction::fromId("mapw_3d_flat_properties")->addToMenu(&menu, 0);
+	}
+
+	// Thing
+	else if (base_type == ItemType::Thing)
+	{
+		SAction::fromId("mapw_3d_thing_change_type")->addToMenu(&menu, 1);
+		menu.AppendSeparator();
+		SAction::fromId("mapw_3d_thing_properties")->addToMenu(&menu, 0);
+	}
+
+
+#if 0 // Don't like the submenus but will keep the code in case I change my mind
 	if (!selection.hasHilightOrSelection())
 		return false;
 
@@ -226,6 +257,12 @@ bool populateContextMenu3D(wxMenu& menu, const ItemSelection& selection)
 	// (if we do we'll add a submenu for each type)
 	bool multi_type = (wall_count > 0 && flat_count > 0) || (wall_count > 0 && thing_count > 0)
 					  || (flat_count > 0 && thing_count > 0);
+
+	// Walls/Flats shared actions
+	if (wall_count > 0 || flat_count > 0)
+	{
+		SAction::fromId("mapw_3d_change_texture")->addToMenu(&menu, 2);
+	}
 
 	// Walls
 	if (wall_count > 0)
@@ -271,6 +308,7 @@ bool populateContextMenu3D(wxMenu& menu, const ItemSelection& selection)
 		// menu.AppendSeparator();
 		SAction::fromId("mapw_3d_thing_properties")->addToMenu(menu_thing, true);
 	}
+#endif
 
 	return true;
 }
@@ -2295,6 +2333,8 @@ bool MapEditContext::handleAction(string_view id)
 				endUndoRecord();
 			}
 		}
+
+		return true;
 	}
 
 	// Create sector
@@ -2320,6 +2360,13 @@ bool MapEditContext::handleAction(string_view id)
 
 	// --- 3DMode context menu ---
 
+	// Change texture
+	else if (id == "mapw_3d_change_texture")
+	{
+		edit_3d_->changeTexture();
+		return true;
+	}
+
 	// Wall properties
 	else if (id == "mapw_3d_wall_properties")
 	{
@@ -2338,6 +2385,13 @@ bool MapEditContext::handleAction(string_view id)
 	else if (id == "mapw_3d_thing_properties")
 	{
 		edit_3d_->editThingProperties();
+		return true;
+	}
+
+	// Change thing type
+	else if (id == "mapw_3d_thing_change_type")
+	{
+		edit_3d_->changeThingType();
 		return true;
 	}
 

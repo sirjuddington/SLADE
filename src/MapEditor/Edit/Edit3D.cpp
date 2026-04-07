@@ -1111,6 +1111,49 @@ void Edit3D::floodFill(CopyType type) const
 }
 
 // -----------------------------------------------------------------------------
+// Opens the thing type browser for the currently selected 3d mode things
+// -----------------------------------------------------------------------------
+void Edit3D::changeThingType(bool force_highlight) const
+{
+	// Get things to edit
+	auto items = context_->selection().selectionOrHilight();
+	if (force_highlight && !vectorContains(items, context_->selection().hilight()))
+		if (context_->selection().hilight().type == ItemType::Thing)
+			items.push_back(context_->selection().hilight());
+
+	if (items.empty())
+		return;
+
+	// Browse for new thing type
+	auto first_thing = items[0].asThing(context_->map());
+	auto type        = first_thing->type();
+	if (int new_type = mapeditor::browseThingType(type, context_->map()); new_type >= 0)
+	{
+		// Begin undo level
+		context_->beginUndoRecordLocked("Change Thing Type", true, false, false);
+
+		// Go through items
+		for (auto& item : items)
+		{
+			if (auto thing = item.asThing(context_->map()))
+			{
+				context_->recordPropertyChangeUndoStep(thing);
+				thing->setType(new_type);
+			}
+		}
+
+		// End undo level
+		context_->endUndoRecord();
+
+		// Editor message
+		if (items.size() == 1)
+			context_->addEditorMessage("Thing type changed");
+		else
+			context_->addEditorMessage(fmt::format("{} Thing types changed", items.size()));
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Changes the Z height of selected 3d mode things by [amount]
 // -----------------------------------------------------------------------------
 void Edit3D::changeThingZ(int amount) const
@@ -1334,10 +1377,16 @@ void Edit3D::changeHeight(int amount) const
 // Opens the texture browser for the currently selected 3d mode walls and/or
 // floors
 // -----------------------------------------------------------------------------
-void Edit3D::changeTexture() const
+void Edit3D::changeTexture(bool force_highlight) const
 {
 	// Check for selection or hilight
 	auto selection = context_->selection().selectionOrHilight();
+	if (force_highlight && !vectorContains(selection, context_->selection().hilight()))
+	{
+		auto base_type = baseItemType(context_->selection().hilight().type);
+		if (base_type == ItemType::Side || base_type == ItemType::Sector)
+			selection.push_back(context_->selection().hilight());
+	}
 	if (selection.empty())
 		return;
 
@@ -1436,6 +1485,21 @@ void Edit3D::deleteTexture() const
 
 	// End undo level
 	context_->endUndoRecord();
+}
+
+// -----------------------------------------------------------------------------
+// Browse to change the current highlight's texture (if it's a wall or flat), or
+// type (if it's a thing)
+// -----------------------------------------------------------------------------
+void Edit3D::changeTextureOrType() const
+{
+	if (!context_->selection().hasHilight())
+		return;
+
+	if (auto hl = context_->selection().hilight(); hl.type == ItemType::Thing)
+		changeThingType(true);
+	else
+		changeTexture(true);
 }
 
 // -----------------------------------------------------------------------------

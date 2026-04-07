@@ -1,17 +1,33 @@
 {
+  "mapw_3d_change_texture": {
+    "text": "Change Texture",
+    "icon": "texture",
+    "help_text": "Change the texture of the currently selected wall(s) and/or flat(s)"
+  },
+
+  // Walls
   "mapw_3d_wall_properties": {
     "text": "Line Properties",
     "icon": "properties",
     "help_text": "Edit the currently selected wall (line) properties"
   },
+
+  // Flats
   "mapw_3d_flat_properties": {
     "text": "Sector Properties",
     "icon": "properties",
     "help_text": "Edit the currently selected flat (sector) properties"
   },
+
+  // Things
   "mapw_3d_thing_properties": {
     "text": "Thing Properties",
     "icon": "properties",
     "help_text": "Edit the currently selected thing properties"
+  },
+  "mapw_3d_thing_change_type": {
+    "text": "Change Type",
+    "icon": "thing",
+    "help_text": "Change the type of the currently selected thing(s)"
   }
 }

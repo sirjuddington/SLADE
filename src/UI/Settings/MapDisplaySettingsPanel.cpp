@@ -228,11 +228,6 @@ wxPanel* MapDisplaySettingsPanel::createThingsPanel(wxWindow* parent, const Layo
 	sizer->Add(
 		new wxStaticText(panel, -1, wxS("Thing shadow opacity: ")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(slider_thing_shadow_, { row++, 1 }, { 1, 2 }, wxEXPAND);
-	sizer->Add(
-		new wxStaticText(panel, -1, wxS("Point light preview intensity: ")),
-		{ row, 0 },
-		{ 1, 1 },
-		wxALIGN_CENTER_VERTICAL);
 	sizer->Add(cb_thing_force_dir_, { row++, 0 }, { 1, 3 }, wxEXPAND);
 	sizer->Add(cb_thing_overlay_square_, { row++, 0 }, { 1, 3 }, wxEXPAND);
 	sizer->Add(cb_use_zeth_icons_, { row++, 0 }, { 1, 3 }, wxEXPAND);

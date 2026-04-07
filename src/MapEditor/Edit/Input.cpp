@@ -274,8 +274,13 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 		// 3d mode
 		if (context_->editMode() == Mode::Visual)
 		{
+			// Double-click, change texture or thing type depending on current
+			// highlight
+			if (double_click)
+				context_->edit3D().changeTextureOrType();
+
 			// Shift down, select all matching adjacent structures
-			if (shift_down_)
+			else if (shift_down_)
 				context_->edit3D().selectAdjacent(context_->hilightItem());
 
 			// Otherwise toggle selection

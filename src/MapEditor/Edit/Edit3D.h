@@ -66,12 +66,14 @@ public:
 	void copy(CopyType type);
 	void paste(CopyType type) const;
 	void floodFill(CopyType type) const;
+	void changeThingType(bool force_highlight = false) const;
 	void changeThingZ(int amount) const;
 	void deleteThing() const;
 	void changeScale(double amount, bool x) const;
 	void changeHeight(int amount) const;
-	void changeTexture() const;
+	void changeTexture(bool force_highlight = false) const;
 	void deleteTexture() const;
+	void changeTextureOrType() const;
 
 	void editWallProperties() const;
 	void editFlatProperties() const;
