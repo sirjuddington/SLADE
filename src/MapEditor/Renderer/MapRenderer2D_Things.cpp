@@ -80,6 +80,59 @@ EXTERN_CVAR(Bool, map2d_action_lines)
 
 // -----------------------------------------------------------------------------
 //
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Returns point light information for the given thing as a vec4 (r,g,b for the
+// colour, alpha for the radius).
+// If the thing is not a point light, rgba will all be 0
+// -----------------------------------------------------------------------------
+glm::vec4 pointLightInfo(const MapThing& thing)
+{
+	const auto& ttype = game::configuration().thingType(thing.type());
+
+	// Not a point light
+	if (ttype.pointLight().empty())
+		return glm::vec4{ 0.0f };
+
+	auto light = glm::vec4{ 1.0f }; // Use alpha channel for radius
+
+	// ZDoom point light
+	if (ttype.pointLight() == "zdoom")
+	{
+		light.r = thing.arg(0) / 255.0f;
+		light.g = thing.arg(1) / 255.0f;
+		light.b = thing.arg(2) / 255.0f;
+		light.a = thing.arg(3);
+	}
+
+	// Vavoom point light
+	else if (ttype.pointLight() == "vavoom")
+	{
+		light.r = thing.arg(1) / 255.0f;
+		light.g = thing.arg(2) / 255.0f;
+		light.b = thing.arg(3) / 255.0f;
+		light.a = thing.arg(0);
+	}
+
+	// Vavoom white light
+	else if (ttype.pointLight() == "vavoom_white")
+	{
+		light.a = thing.arg(0);
+	}
+
+	light.a *= 2; // Doubling the radius value matches better with in-game results
+
+	return light;
+}
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
 // MapRenderer2D Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -213,6 +266,20 @@ void MapRenderer2D::renderThingHilight(gl::draw2d::Context& dc, int index, float
 	auto thing = map_->thing(index);
 	if (!thing)
 		return;
+
+	// Render light radius outline if the thing is a point light
+	auto light = pointLightInfo(*thing);
+	if (map2d_thing_preview_lights && light.a > 0.0f)
+	{
+		dc.pointsprite_type          = gl::PointSpriteType::CircleOutline;
+		dc.pointsprite_radius        = light.a;
+		dc.pointsprite_fill_opacity  = 0.0f;
+		dc.pointsprite_outline_width = std::min(1.2f / static_cast<float>(view_->scale().x), 8.0f);
+		dc.colour.set(light.r * 255, light.g * 255, light.b * 255, fade * 0.75f * 255);
+		dc.blend = gl::Blend::Normal;
+		dc.drawPointSprites(vector{ Vec2f{ thing->position() } });
+		dc.pointsprite_radius = 1.0f;
+	}
 
 	// Render the thing again (so it's drawn in front)
 	if (redraw_thing)
@@ -411,67 +478,30 @@ void MapRenderer2D::renderPathedThings(gl::draw2d::Context& dc, const vector<Map
 // -----------------------------------------------------------------------------
 // Renders point light previews
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderPointLightPreviews(gl::draw2d::Context& dc, float alpha, int hilight_index) const
+void MapRenderer2D::renderPointLightPreviews(gl::draw2d::Context& dc, float alpha)
 {
 	if (!map2d_thing_preview_lights)
 		return;
 
 	// Build light preview buffer
-	glm::vec2 hl_position;
-	glm::vec4 hl_colour;
-	float     hl_radius = 0.0f;
-	for (const auto& thing : map_->things())
+	if (!thing_light_preview_buffer_)
 	{
-		const auto& ttype = game::configuration().thingType(thing->type());
-
-		// Not a point light
-		if (ttype.pointLight().empty())
-			continue;
-
-		auto light_col    = glm::vec4{ 1.0f };
-		auto light_radius = 0.0f;
-
-		// ZDoom point light
-		if (ttype.pointLight() == "zdoom")
+		thing_light_preview_buffer_ = std::make_unique<gl::VertexBuffer2D>();
+		for (const auto& thing : map_->things())
 		{
-			light_col.r  = thing->arg(0) / 255.0f;
-			light_col.g  = thing->arg(1) / 255.0f;
-			light_col.b  = thing->arg(2) / 255.0f;
-			light_radius = thing->arg(3);
+			// Get point light info for thing
+			auto light_col = pointLightInfo(*thing);
+			if (light_col.a <= 0.0f)
+				continue; // Ignore if not a point light
+
+			// Add to buffer
+			thing_light_preview_buffer_->addQuadTriangles(
+				{ thing->xPos() - light_col.a, thing->yPos() - light_col.a },
+				{ thing->xPos() + light_col.a, thing->yPos() + light_col.a },
+				light_col);
 		}
-
-		// Vavoom point light
-		else if (ttype.pointLight() == "vavoom")
-		{
-			light_col.r  = thing->arg(1) / 255.0f;
-			light_col.g  = thing->arg(2) / 255.0f;
-			light_col.b  = thing->arg(3) / 255.0f;
-			light_radius = thing->arg(0);
-		}
-
-		// Vavoom white light
-		else if (ttype.pointLight() == "vavoom_white")
-		{
-			light_radius = thing->arg(0);
-		}
-
-		light_radius *= 2; // Doubling the radius value matches better with in-game results
-
-		// Add to buffer
-		thing_light_preview_buffer_->addQuadTriangles(
-			{ thing->xPos() - light_radius, thing->yPos() - light_radius },
-			{ thing->xPos() + light_radius, thing->yPos() + light_radius },
-			light_col);
-
-		// Set hilight infor if hilighted
-		if (thing->index() == hilight_index)
-		{
-			hl_colour   = light_col;
-			hl_position = glm::vec2{ thing->xPos(), thing->yPos() };
-			hl_radius   = light_radius;
-		}
+		thing_light_preview_buffer_->push();
 	}
-	thing_light_preview_buffer_->push();
 
 	// Setup rendering
 	const auto& shader = gl::draw2d::defaultShader();
@@ -484,19 +514,6 @@ void MapRenderer2D::renderPointLightPreviews(gl::draw2d::Context& dc, float alph
 	glBlendFuncSeparate(GL_DST_COLOR, GL_ONE, GL_SRC_ALPHA, GL_ONE);
 	thing_light_preview_buffer_->draw(gl::Primitive::Triangles);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	// Draw hilight ring if needed
-	if (hl_radius > 0.0f)
-	{
-		dc.pointsprite_type          = gl::PointSpriteType::CircleOutline;
-		dc.pointsprite_radius        = hl_radius;
-		dc.pointsprite_fill_opacity  = 0.0f;
-		dc.pointsprite_outline_width = std::min(1.5f / static_cast<float>(view_->scale().x), 8.0f);
-		dc.colour.set(hl_colour.r * 255, hl_colour.g * 255, hl_colour.b * 255, alpha * 0.75f * 255);
-		dc.blend = gl::Blend::Normal;
-		dc.drawPointSprites(vector{ Vec2f{ hl_position.x, hl_position.y } });
-		dc.pointsprite_radius = 1.0f;
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -505,6 +522,7 @@ void MapRenderer2D::renderPointLightPreviews(gl::draw2d::Context& dc, float alph
 void MapRenderer2D::updateThingBuffers()
 {
 	thing_buffers_.clear();
+	thing_light_preview_buffer_.reset();
 
 	std::unordered_map<int, gl::ThingBuffer2D*> buffers;
 

@@ -220,7 +220,7 @@ bool FlatRenderer3D::update(bool vis_check)
 			vertex_index += vertices.size();
 
 			// Don't process flats for more than 200ms per frame
-			if (app::runTimer() - start_time > 100)
+			if (app::runTimer() - start_time > 200)
 			{
 				sector_flats_processed_      = sector->index();
 				sector_vb_processing_offset_ = vertex_index;

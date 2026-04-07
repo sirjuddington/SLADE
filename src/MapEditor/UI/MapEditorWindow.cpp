@@ -276,8 +276,7 @@ void MapEditorWindow::setupLayout()
 
 	// Init toolbar state
 	SAction::fromId("mapw_mode_lines")->setChecked(); // Lines mode by default
-	toolbar_->showGroup("Sectors Mode", false);
-	toolbar_->showGroup("Things Mode", false);
+	toolbar_->showGroup("sectors_mode", false);
 
 	// Toggle current flat type
 	if (map2d_flat_drawtype == 0)

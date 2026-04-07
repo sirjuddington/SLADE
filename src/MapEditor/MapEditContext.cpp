@@ -418,10 +418,9 @@ void MapEditContext::setEditMode(Mode mode)
 	lockMouse(false);
 
 	// Show/hide relevant toolbar groups
-	window()->showToolbarGroup("Sectors Mode", mode == Mode::Sectors);
-	window()->showToolbarGroup("Things Mode", mode == Mode::Things);
-	window()->showToolbarGroup("2D Flats", mode != Mode::Visual);
-	window()->showToolbarGroup("2D Editing", mode != Mode::Visual);
+	window()->showToolbarGroup("sectors_mode", mode == Mode::Sectors);
+	window()->showToolbarGroup("display_2d", mode != Mode::Visual);
+	window()->showToolbarGroup("edit_2d", mode != Mode::Visual);
 
 	// Update toolbar
 	if (mode == Mode::Vertices)
@@ -434,10 +433,7 @@ void MapEditContext::setEditMode(Mode mode)
 		SAction::fromId("mapw_sectormode_normal")->setChecked();
 	}
 	else if (mode == Mode::Things)
-	{
 		SAction::fromId("mapw_mode_things")->setChecked();
-		SAction::fromId("mapw_thing_light_previews")->setChecked(map2d_thing_preview_lights);
-	}
 	else if (mode == Mode::Visual)
 		SAction::fromId("mapw_mode_3d")->setChecked();
 

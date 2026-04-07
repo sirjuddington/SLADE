@@ -71,7 +71,7 @@ public:
 	void renderTaggedThings(gl::draw2d::Context& dc, const vector<MapThing*>& things, float fade) const;
 	void renderTaggingThings(gl::draw2d::Context& dc, const vector<MapThing*>& things, float fade) const;
 	void renderPathedThings(gl::draw2d::Context& dc, const vector<MapThing*>& things);
-	void renderPointLightPreviews(gl::draw2d::Context& dc, float alpha, int hilight_index) const;
+	void renderPointLightPreviews(gl::draw2d::Context& dc, float alpha);
 
 	// Flats (sectors)
 	void renderFlats(bool ceilings, float alpha = 1.0f);

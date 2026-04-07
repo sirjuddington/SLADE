@@ -89,10 +89,9 @@ EXTERN_CVAR(Int, map2d_thing_shape)
 // -----------------------------------------------------------------------------
 MapRenderer2D::MapRenderer2D(SLADEMap* map, gl::View* view) : map_{ map }, view_{ view }
 {
-	temp_lines_buffer_          = std::make_unique<gl::LineBuffer>();
-	thing_overlay_buffer_       = std::make_unique<gl::PointSpriteBuffer>();
-	thing_light_preview_buffer_ = std::make_unique<gl::VertexBuffer2D>();
-	temp_things_buffer_         = std::make_unique<gl::ThingBuffer2D>();
+	temp_lines_buffer_    = std::make_unique<gl::LineBuffer>();
+	thing_overlay_buffer_ = std::make_unique<gl::PointSpriteBuffer>();
+	temp_things_buffer_   = std::make_unique<gl::ThingBuffer2D>();
 }
 
 // -----------------------------------------------------------------------------

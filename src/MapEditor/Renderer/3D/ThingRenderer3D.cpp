@@ -467,7 +467,7 @@ bool ThingRenderer3D::update(bool vis_check)
 			group->addThing(*thing);
 
 			// Don't process things for more than 200ms per frame
-			if (app::runTimer() - start_time > 100)
+			if (app::runTimer() - start_time > 200)
 			{
 				things_processed_ = thing->index();
 				update_complete   = false;
@@ -827,8 +827,8 @@ optional<Item> ThingRenderer3D::nearestIntersectingThing(const gl::Camera& camer
 					continue;
 
 				// Check intersection height
-				auto height = ray.origin_3d.z + ray.dir_3d.z * dist;
-				if (height >= ti.z && height <= ti.z + group.sprite_size.y)
+				auto i_height = ray.origin_3d.z + ray.dir_3d.z * dist;
+				if (i_height >= ti.z && i_height <= ti.z + group.sprite_size.y)
 				{
 					closest  = Item(ti.index, ItemType::Thing, ti.index);
 					min_dist = dist;

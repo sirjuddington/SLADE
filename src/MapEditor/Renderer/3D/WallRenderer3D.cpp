@@ -226,7 +226,7 @@ bool WallRenderer3D::update(bool vis_check)
 			vertex_index += vertices.size();
 
 			// Don't process walls for more than 200ms per frame
-			if (app::runTimer() - start_time > 100)
+			if (app::runTimer() - start_time > 200)
 			{
 				line_quads_processed_      = line->index();
 				quad_vb_processing_offset_ = vertex_index;
