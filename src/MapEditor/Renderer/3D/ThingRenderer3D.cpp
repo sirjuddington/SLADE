@@ -357,11 +357,11 @@ void ThingRenderer3D::updateVisibility(const gl::Camera& camera, float max_dist)
 	}
 }
 
-void ThingRenderer3D::update(bool vis_check)
+bool ThingRenderer3D::update(bool vis_check)
 {
 	// Ignore if things are disabled
 	if (map3d_things == SHOWTHINGS_NONE)
-		return;
+		return true;
 
 	auto map = renderer_->map();
 
@@ -373,10 +373,16 @@ void ThingRenderer3D::update(bool vis_check)
 	}
 
 	// (Re)Build all thing groups if none exist
-	if (groups_.empty())
+	bool update_complete = true;
+	if (groups_.empty() || things_processed_ >= 0)
 	{
+		auto start_time = app::runTimer();
 		for (const auto thing : map->things().all())
 		{
+			// Ignore if already processed
+			if (static_cast<int>(thing->index()) <= things_processed_)
+				continue;
+
 			// Ignore if not visible
 			if (vis_check && thing_visibility_[thing->index()] == 0)
 				continue;
@@ -390,13 +396,25 @@ void ThingRenderer3D::update(bool vis_check)
 
 			// Add thing to group
 			group->addThing(*thing);
+
+			// Don't process things for more than 200ms per frame
+			if (app::runTimer() - start_time > 200)
+			{
+				things_processed_ = thing->index();
+				update_complete   = false;
+				break;
+			}
 		}
+
+		if (update_complete)
+			things_processed_ = -1;
 
 		// Upload buffers
 		for (auto& group : groups_)
-			group.sprite_buffer->push();
+			group.sprite_buffer->push(update_complete);
 
 		groups_updated_ = app::runTimer();
+		prev_highlight_ = {}; // Ensure highlight is updated
 	}
 
 	else if (thingsNeedUpdate(groups_updated_, map))
@@ -450,12 +468,15 @@ void ThingRenderer3D::update(bool vis_check)
 		}
 
 		groups_updated_ = app::runTimer();
+		prev_highlight_ = {}; // Ensure highlight is updated
 	}
 
 
 	// Rebuild thing groups next frame if vis checking is enabled
 	if (vis_check)
 		force_update_groups_ = true;
+
+	return update_complete;
 }
 
 void ThingRenderer3D::renderSprites(const gl::Shader& shader, bool icons) const

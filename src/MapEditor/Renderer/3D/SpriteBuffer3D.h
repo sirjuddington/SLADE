@@ -17,7 +17,7 @@ public:
 	~SpriteBuffer3D();
 
 	void add(const glm::vec3& position, float brightness, const glm::vec4& colour = glm::vec4{ 1.0f });
-	void push();
+	void push(bool clear = true);
 	void draw() const;
 
 private:

@@ -52,13 +52,15 @@ void SpriteBuffer3D::add(const glm::vec3& position, float brightness, const glm:
 	sprites_.emplace_back(position, brightness, colour);
 }
 
-void SpriteBuffer3D::push()
+void SpriteBuffer3D::push(bool clear)
 {
 	if (!vao_)
 		initVAO();
 
 	buffer_sprites_->upload(sprites_);
-	sprites_.clear();
+
+	if (clear)
+		sprites_.clear();
 }
 
 void SpriteBuffer3D::draw() const

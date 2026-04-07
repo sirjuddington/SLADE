@@ -37,7 +37,7 @@ public:
 	void clear();
 
 	void updateVisibility(const gl::Camera& camera, float max_dist);
-	void update(bool vis_check = false);
+	bool update(bool vis_check = false);
 
 	void renderSprites(const gl::Shader& shader, bool icons = false) const;
 	void renderThingBoxes(const gl::Camera& camera, const gl::View& view, float max_dist = 0.0f) const;
@@ -87,6 +87,7 @@ private:
 
 	vector<ThingGroup> groups_;
 	long               groups_updated_      = 0;
+	int                things_processed_    = -1;
 	bool               force_update_groups_ = false;
 
 	Item                       prev_highlight_;

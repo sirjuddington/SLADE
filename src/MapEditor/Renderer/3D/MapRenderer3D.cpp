@@ -259,13 +259,9 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	// Update flats and walls
 	auto update_done = flat_renderer_->update(map3d_max_render_dist > 0.0f);
 	update_done &= wall_renderer_->update(map3d_max_render_dist > 0.0f);
+	update_done &= thing_renderer_->update(map3d_max_render_dist > 0.0f);
 	if (update_done)
-	{
-		// Only update things once walls/flats are fully updated
-		// TODO: Partial updates for things
-		thing_renderer_->update(map3d_max_render_dist > 0.0f);
 		context_->closeLoadingOverlay();
-	}
 	else
 		context_->loadingOverlay().setMessage("Generating map geometry...");
 
