@@ -511,7 +511,7 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 		}
 
 		// Sector
-		auto sector = map->sectors().atPos(thing->position());
+		auto sector = map->thingParentSector(*thing);
 		if (sector)
 			info2_.emplace_back(fmt::format("In Sector #{}", sector->index()));
 		else

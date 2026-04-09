@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -46,6 +46,7 @@
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "SlopeSpecials.h"
+#include "UI/UI.h"
 #include "Utility/Colour.h"
 #include "Utility/Vector.h"
 
@@ -266,19 +267,43 @@ void MapSpecials::processAllSpecials() const
 	extrafloor_specials_->clearSpecials();
 	render_specials_->clearSpecials();
 
+	// Setup splash message/progress
+	ui::setSplashProgressMessage("Processing map specials...");
+	ui::setSplashProgress(0.0f);
+	auto total = map_->nLines() + map_->nThings()
+				 + (map_->nSectors() * 2); // Lines + Things + Sectors (slopes and extrafloors)
+	int count = 0;
+
 	// Process all line specials
 	for (const auto line : map_->lines())
+	{
 		processLineSpecial(*line);
+		if (++count % 10 == 0)
+			ui::setSplashProgress(static_cast<float>(count) / total);
+	}
 
 	// Process all things
 	for (const auto thing : map_->things())
+	{
 		processThing(*thing);
+		if (++count % 10 == 0)
+			ui::setSplashProgress(static_cast<float>(count) / total);
+	}
 
 	// Update all sector info
 	for (const auto sector : map_->sectors())
-		slope_specials_->updateSectorPlanes(*sector); // All slopes first because they can affect extrafloors
+	{
+		// All slopes first because they can affect extrafloors
+		slope_specials_->updateSectorPlanes(*sector);
+		if (++count % 10 == 0)
+			ui::setSplashProgress(static_cast<float>(count) / total);
+	}
 	for (const auto sector : map_->sectors())
+	{
 		extrafloor_specials_->updateSectorExtraFloors(*sector);
+		if (++count % 10 == 0)
+			ui::setSplashProgress(static_cast<float>(count) / total);
+	}
 
 	specials_updated_ = app::runTimer();
 }

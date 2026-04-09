@@ -308,7 +308,7 @@ void ThingRenderer3D::ThingGroup::addThing(const MapThing& thing)
 	auto map = thing.parentMap();
 
 	float z;
-	auto  sector = map->sectors().atPos(thing.position());
+	auto  sector = map->thingParentSector(thing);
 	if (sector)
 	{
 		// Determine z position

@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapThing.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
 
@@ -265,6 +266,9 @@ void MapThing::move(const Vec2d& pos, bool modify)
 	}
 	else
 		position_ = pos;
+
+	if (parent_map_)
+		parent_map_->updateThingParentSector(*this);
 }
 
 // -----------------------------------------------------------------------------

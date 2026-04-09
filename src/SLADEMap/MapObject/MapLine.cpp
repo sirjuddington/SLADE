@@ -960,18 +960,12 @@ void MapLine::resetInternals() const
 	// Reset front sector internals
 	auto s1 = frontSector();
 	if (s1)
-	{
-		s1->resetPolygon();
-		s1->resetBBox();
-	}
+		s1->resetGeometryInfo();
 
 	// Reset back sector internals
 	auto s2 = backSector();
 	if (s2)
-	{
-		s2->resetPolygon();
-		s2->resetBBox();
-	}
+		s2->resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------

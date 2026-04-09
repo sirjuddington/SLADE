@@ -87,7 +87,7 @@ void SectorList::remove(unsigned index)
 	// The last sector just moved into the deleted sector's space.  Its geometry didn't change, but
 	// because its index did, its vertices are completely invalid now
 	if (index < objects_.size())
-		objects_[index]->resetPolygon();
+		objects_[index]->resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------
@@ -123,7 +123,7 @@ BBox SectorList::allSectorBounds() const
 	bbox = objects_[0]->boundingBox();
 	for (unsigned i = 1; i < count_; ++i)
 	{
-		auto sbb = objects_[i]->boundingBox();
+		auto sbb   = objects_[i]->boundingBox();
 		bbox.min.x = std::min(sbb.min.x, bbox.min.x);
 		bbox.min.y = std::min(sbb.min.y, bbox.min.y);
 		bbox.max.x = std::max(sbb.max.x, bbox.max.x);
@@ -143,7 +143,7 @@ void SectorList::initPolygons() const
 	for (unsigned i = 0; i < count_; ++i)
 	{
 		ui::setSplashProgress(i, count_);
-		objects_[i]->resetPolygon();
+		objects_[i]->resetGeometryInfo();
 		objects_[i]->polygonVertices();
 	}
 	ui::setSplashProgress(1.0f);

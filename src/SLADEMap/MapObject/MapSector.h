@@ -82,12 +82,10 @@ public:
 	bool                          floorHasSlope() const;
 
 	Vec2d                    getPoint(Point point) const override;
-	void                     resetBBox() const { bbox_.reset(); }
 	BBox                     boundingBox() const;
 	vector<MapSide*>&        connectedSides() { return connected_sides_; }
 	const vector<MapSide*>&  connectedSides() const { return connected_sides_; }
 	const vector<glm::vec2>& polygonVertices() const;
-	void                     resetPolygon() const { poly_needsupdate_ = true; }
 	bool                     containsPoint(const Vec2d& point) const;
 	double                   distanceTo(const Vec2d& point, double maxdist = -1) const;
 	bool                     putLines(vector<MapLine*>& list) const;
@@ -99,6 +97,7 @@ public:
 	long                     renderInfoLastUpdated() const { return renderinfo_updated_; }
 	void                     setRenderInfoUpdated() const;
 	void                     findTextPoint() const;
+	void                     resetGeometryInfo() const;
 
 	void connectSide(MapSide* side);
 	void disconnectSide(const MapSide* side);

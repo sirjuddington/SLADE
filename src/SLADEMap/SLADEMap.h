@@ -117,6 +117,8 @@ public:
 	MapSector* lineSideSector(MapLine* line, bool front = true);
 	bool       isModified() const;
 	void       setOpenedTime();
+	MapSector* thingParentSector(const MapThing& thing);
+	void       updateThingParentSector(const MapThing& thing);
 
 	// Editing
 	void       mergeVertices(unsigned vertex1, unsigned vertex2);
@@ -179,6 +181,7 @@ private:
 	long                         opened_time_ = 0;
 	unique_ptr<map::MapSpecials> map_specials_;
 	bool                         is_open_ = false;
+	vector<MapSector*>           thing_sectors_; // Cache of thing<->sector links
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras
 

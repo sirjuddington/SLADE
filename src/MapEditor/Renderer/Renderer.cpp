@@ -349,7 +349,7 @@ void Renderer::setCameraThing(const MapThing* thing) const
 {
 	// Determine position
 	Vec3d pos(thing->position(), 40);
-	if (auto sector = context_->map().sectors().atPos(thing->position()))
+	if (auto sector = context_->map().thingParentSector(*thing))
 		pos.z += sector->floor().plane.heightAt(pos.x, pos.y);
 
 	// Set camera position & direction

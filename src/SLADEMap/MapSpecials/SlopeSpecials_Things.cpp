@@ -59,7 +59,7 @@ void SlopeSpecials::addLineSlopeThing(const MapThing& thing, SectorSurfaceType s
 	}
 
 	// Get containing sector
-	lst.containing_sector = map_->sectors().atPos(thing.position());
+	lst.containing_sector = map_->thingParentSector(thing);
 	if (!lst.containing_sector)
 	{
 		log::warning("Line slope thing {} is not within a sector", thing.index());
@@ -118,7 +118,7 @@ void SlopeSpecials::addSectorTiltThing(const MapThing& thing, SectorSurfaceType 
 	stt.thing = &thing;
 
 	// Get containing (target) sector
-	stt.target = map_->sectors().atPos(thing.position());
+	stt.target = map_->thingParentSector(thing);
 	if (!stt.target)
 	{
 		log::warning("Sector Tilt slope thing {} is not within a sector", thing.index());
@@ -176,7 +176,7 @@ void SlopeSpecials::addVavoomSlopeThing(const MapThing& thing, SectorSurfaceType
 	vst.thing = &thing;
 
 	// Get containing (target) sector
-	vst.target = map_->sectors().atPos(thing.position());
+	vst.target = map_->thingParentSector(thing);
 	if (!vst.target)
 	{
 		log::warning("Vavoom slope thing {} is not within a sector", thing.index());
@@ -309,7 +309,7 @@ void SlopeSpecials::addCopySlopeThing(const MapThing& thing, SectorSurfaceType s
 	cst.thing = &thing;
 
 	// Get containing (target) sector
-	cst.target = map_->sectors().atPos(thing.position());
+	cst.target = map_->thingParentSector(thing);
 	if (!cst.target)
 	{
 		log::warning("Copy slope thing {} is not within a sector", thing.index());

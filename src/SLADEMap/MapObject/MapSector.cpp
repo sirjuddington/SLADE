@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -748,15 +748,23 @@ void MapSector::findTextPoint() const
 }
 
 // -----------------------------------------------------------------------------
+// Resets the sector geometry info (bounding box, polygon vertices, etc.)
+// -----------------------------------------------------------------------------
+void MapSector::resetGeometryInfo() const
+{
+	poly_needsupdate_ = true;
+	bbox_.reset();
+	setRenderInfoUpdated();
+}
+
+// -----------------------------------------------------------------------------
 // Adds [side] to the list of 'connected sides'
 // (sides that are part of this sector)
 // -----------------------------------------------------------------------------
 void MapSector::connectSide(MapSide* side)
 {
 	connected_sides_.push_back(side);
-	poly_needsupdate_ = true;
-	bbox_.reset();
-	setRenderInfoUpdated();
+	resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------
@@ -773,9 +781,7 @@ void MapSector::disconnectSide(const MapSide* side)
 		}
 	}
 
-	poly_needsupdate_ = true;
-	bbox_.reset();
-	setRenderInfoUpdated();
+	resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------
@@ -816,9 +822,7 @@ void MapSector::readBackup(Backup* backup)
 	parent_map_->sectors().updateTexUsage(ceiling_.texture, 1);
 
 	// Update geometry info
-	poly_needsupdate_ = true;
-	bbox_.reset();
-	setRenderInfoUpdated();
+	resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------

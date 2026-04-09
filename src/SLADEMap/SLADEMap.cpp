@@ -204,6 +204,7 @@ long SLADEMap::typeLastUpdated(map::ObjectType type) const
 void SLADEMap::setGeometryUpdated()
 {
 	geometry_updated_ = app::runTimer();
+	thing_sectors_.clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -273,8 +274,15 @@ bool SLADEMap::readMap(const MapDesc& map)
 
 	mapOpenChecks();
 
+	// Init sector geometry data
 	data_.sectors().initBBoxes();
 	data_.sectors().initPolygons();
+
+	// Init thing parent sector cache
+	for (auto thing : data_.things())
+		updateThingParentSector(*thing);
+
+	// Init specials
 	recomputeSpecials();
 
 	opened_time_ = app::runTimer() + 10;
@@ -336,17 +344,11 @@ void SLADEMap::updateGeometryInfo(long modified_time)
 
 				// Update front sector
 				if (line->frontSector())
-				{
-					line->frontSector()->resetPolygon();
-					line->frontSector()->updateBBox();
-				}
+					line->frontSector()->resetGeometryInfo();
 
 				// Update back sector
 				if (line->backSector())
-				{
-					line->backSector()->resetPolygon();
-					line->backSector()->updateBBox();
-				}
+					line->backSector()->resetGeometryInfo();
 			}
 		}
 	}
@@ -416,7 +418,7 @@ void SLADEMap::putThingsWithIdInSectorTag(int id, int tag, vector<MapThing*>& li
 	{
 		if (thing->id() == id)
 		{
-			auto* sector = data_.sectors().atPos(thing->position());
+			auto* sector = thingParentSector(*thing);
 			if (sector && sector->id() == tag)
 				list.push_back(thing);
 		}
@@ -605,6 +607,31 @@ bool SLADEMap::isModified() const
 void SLADEMap::setOpenedTime()
 {
 	opened_time_ = app::runTimer();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the sector containing [thing], or nullptr if not in a sector
+// -----------------------------------------------------------------------------
+MapSector* SLADEMap::thingParentSector(const MapThing& thing)
+{
+	// Refresh thing sector list if needed
+	if (thing_sectors_.size() != data_.things().size())
+	{
+		thing_sectors_.clear();
+		for (auto& t : data_.things())
+			thing_sectors_.push_back(data_.sectors().atPos(t->position()));
+	}
+
+	return thing_sectors_[thing.index()];
+}
+
+// -----------------------------------------------------------------------------
+// Updates the cached parent sector for [thing]
+// -----------------------------------------------------------------------------
+void SLADEMap::updateThingParentSector(const MapThing& thing)
+{
+	if (thing.index() < thing_sectors_.size())
+		thing_sectors_[thing.index()] = data_.sectors().atPos(thing.position());
 }
 
 // -----------------------------------------------------------------------------
@@ -869,19 +896,13 @@ MapLine* SLADEMap::splitLine(MapLine* line, MapVertex* vertex)
 	{
 		s1 = data_.duplicateSide(line->s1());
 		if (s1->sector())
-		{
-			s1->sector()->resetBBox();
-			s1->sector()->resetPolygon();
-		}
+			s1->sector()->resetGeometryInfo();
 	}
 	if (line->s2())
 	{
 		s2 = data_.duplicateSide(line->s2());
 		if (s2->sector())
-		{
-			s2->sector()->resetBBox();
-			s2->sector()->resetPolygon();
-		}
+			s2->sector()->resetGeometryInfo();
 	}
 
 	// Create and add new line
@@ -958,8 +979,8 @@ bool SLADEMap::setLineSector(unsigned line_index, unsigned sector_index, bool fr
 		game::configuration().setLineBasicFlag("blocking", line, current_format_, !twosided);
 		game::configuration().setLineBasicFlag("twosided", line, current_format_, twosided);
 
-		// Invalidate sector polygon
-		sector->resetPolygon();
+		// Invalidate sector geometry
+		sector->resetGeometryInfo();
 		setGeometryUpdated();
 
 		return true;
