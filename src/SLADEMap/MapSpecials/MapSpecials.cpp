@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2024 Simon Judd
@@ -36,6 +36,7 @@
 #include "ExtraFloorSpecials.h"
 #include "Game/Configuration.h"
 #include "LineTranslucency.h"
+#include "PointLights.h"
 #include "RenderSpecials.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
@@ -68,6 +69,7 @@ MapSpecials::MapSpecials(SLADEMap& map) : map_{ &map }
 	slope_specials_      = std::make_unique<SlopeSpecials>(map);
 	extrafloor_specials_ = std::make_unique<ExtraFloorSpecials>(map, *this);
 	render_specials_     = std::make_unique<RenderSpecials>(map);
+	point_lights_        = std::make_unique<PointLights>(map);
 
 	// Flag objects as updated when they're modified, so that specials will be
 	// reprocessed for them on next access
@@ -257,6 +259,23 @@ ColRGBA MapSpecials::sideColour(const MapSide& side, SidePart where, bool fullbr
 	return colour.ampf(mult, mult, mult, 1.0f);
 }
 
+const vector<PointLight>& MapSpecials::pointLights() const
+{
+	updateSpecials();
+	return point_lights_->pointLights();
+}
+
+const PointLight* MapSpecials::pointLightForThing(const MapThing& thing) const
+{
+	for (const auto& pl : point_lights_->pointLights())
+	{
+		if (pl.thing == &thing)
+			return &pl;
+	}
+
+	return nullptr;
+}
+
 // -----------------------------------------------------------------------------
 // (Re-)Process all specials in the map
 // -----------------------------------------------------------------------------
@@ -266,6 +285,7 @@ void MapSpecials::processAllSpecials() const
 	slope_specials_->clearSpecials();
 	extrafloor_specials_->clearSpecials();
 	render_specials_->clearSpecials();
+	point_lights_->clear();
 
 	// Setup splash message/progress
 	ui::setSplashProgressMessage("Processing map specials...");
@@ -349,6 +369,7 @@ void MapSpecials::updateSpecials() const
 		{
 			auto thing = dynamic_cast<MapThing*>(obj);
 			updated |= slope_specials_->thingUpdated(*thing, false);
+			point_lights_->thingUpdated(*thing);
 			break;
 		}
 		}
@@ -373,4 +394,5 @@ void MapSpecials::processLineSpecial(const MapLine& line) const
 void MapSpecials::processThing(const MapThing& thing) const
 {
 	slope_specials_->processThing(thing);
+	point_lights_->processThing(thing);
 }

@@ -13,6 +13,8 @@ class SlopeSpecials;
 class ExtraFloorSpecials;
 struct ExtraFloor;
 struct LineTranslucency;
+struct PointLight;
+class PointLights;
 
 class MapSpecials
 {
@@ -37,6 +39,9 @@ public:
 
 	ColRGBA sideColour(const MapSide& side, SidePart where, bool fullbright = false) const;
 
+	const vector<PointLight>& pointLights() const;
+	const PointLight*         pointLightForThing(const MapThing& thing) const;
+
 	void processAllSpecials() const;
 	void updateSpecials() const;
 
@@ -47,6 +52,7 @@ private:
 	unique_ptr<SlopeSpecials>      slope_specials_;
 	unique_ptr<ExtraFloorSpecials> extrafloor_specials_;
 	unique_ptr<RenderSpecials>     render_specials_;
+	unique_ptr<PointLights>        point_lights_;
 	mutable vector<MapObject*>     updated_objects_;
 	mutable long                   specials_updated_ = 0;
 	ScopedConnectionList           connections_;

@@ -612,7 +612,7 @@ void SLADEMap::setOpenedTime()
 // -----------------------------------------------------------------------------
 // Returns the sector containing [thing], or nullptr if not in a sector
 // -----------------------------------------------------------------------------
-MapSector* SLADEMap::thingParentSector(const MapThing& thing)
+MapSector* SLADEMap::thingParentSector(const MapThing& thing) const
 {
 	// Refresh thing sector list if needed
 	if (thing_sectors_.size() != data_.things().size())
@@ -628,7 +628,7 @@ MapSector* SLADEMap::thingParentSector(const MapThing& thing)
 // -----------------------------------------------------------------------------
 // Updates the cached parent sector for [thing]
 // -----------------------------------------------------------------------------
-void SLADEMap::updateThingParentSector(const MapThing& thing)
+void SLADEMap::updateThingParentSector(const MapThing& thing) const
 {
 	if (thing.index() < thing_sectors_.size())
 		thing_sectors_[thing.index()] = data_.sectors().atPos(thing.position());
