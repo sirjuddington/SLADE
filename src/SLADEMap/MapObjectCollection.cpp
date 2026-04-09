@@ -89,8 +89,11 @@ MapObjectCollection::MapObjectCollection(SLADEMap* parent_map) : parent_map_{ pa
 // -----------------------------------------------------------------------------
 void MapObjectCollection::addMapObject(unique_ptr<MapObject> object)
 {
-	object->obj_id_     = objects_.size();
-	object->parent_map_ = parent_map_;
+	object->addToMap(objects_.size(), parent_map_);
+
+	if (parent_map_)
+		parent_map_->sendObjectCreatedSignal(object.get());
+
 	objects_.emplace_back(std::move(object), true);
 }
 
@@ -100,7 +103,10 @@ void MapObjectCollection::addMapObject(unique_ptr<MapObject> object)
 // -----------------------------------------------------------------------------
 void MapObjectCollection::removeMapObject(const MapObject* object)
 {
-	objects_[object->obj_id_].in_map = false;
+	objects_[object->objId()].in_map = false;
+
+	if (parent_map_)
+		parent_map_->sendObjectDeletedSignal(objects_[object->objId()].object.get());
 }
 
 // -----------------------------------------------------------------------------
@@ -111,27 +117,27 @@ void MapObjectCollection::putObjectIdList(MapObject::Type type, vector<unsigned>
 	if (type == MapObject::Type::Vertex)
 	{
 		for (auto& vertex : *vertices_)
-			list.push_back(vertex->obj_id_);
+			list.push_back(vertex->objId());
 	}
 	else if (type == MapObject::Type::Line)
 	{
 		for (auto& line : *lines_)
-			list.push_back(line->obj_id_);
+			list.push_back(line->objId());
 	}
 	else if (type == MapObject::Type::Side)
 	{
 		for (auto& side : *sides_)
-			list.push_back(side->obj_id_);
+			list.push_back(side->objId());
 	}
 	else if (type == MapObject::Type::Sector)
 	{
 		for (auto& sector : *sectors_)
-			list.push_back(sector->obj_id_);
+			list.push_back(sector->objId());
 	}
 	else if (type == MapObject::Type::Thing)
 	{
 		for (auto& thing : *things_)
-			list.push_back(thing->obj_id_);
+			list.push_back(thing->objId());
 	}
 }
 
@@ -147,7 +153,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 
 		// Clear
 		for (auto& vertex : vertices)
-			objects_[vertex->obj_id_].in_map = false;
+			objects_[vertex->objId()].in_map = false;
 		vertices.clear();
 
 		// Restore
@@ -155,7 +161,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 		{
 			objects_[id].in_map = true;
 			vertices.add(dynamic_cast<MapVertex*>(objects_[id].object.get()));
-			vertices.last()->index_ = vertices.size() - 1;
+			vertices.last()->setIndex(vertices.size() - 1);
 		}
 	}
 	else if (type == MapObject::Type::Line)
@@ -164,7 +170,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 
 		// Clear
 		for (auto& line : lines)
-			objects_[line->obj_id_].in_map = false;
+			objects_[line->objId()].in_map = false;
 		lines.clear();
 
 		// Restore
@@ -172,7 +178,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 		{
 			objects_[id].in_map = true;
 			lines.add(dynamic_cast<MapLine*>(objects_[id].object.get()));
-			lines.back()->index_ = lines.size() - 1;
+			lines.back()->setIndex(lines.size() - 1);
 		}
 	}
 	else if (type == MapObject::Type::Side)
@@ -181,7 +187,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 
 		// Clear
 		for (auto& side : sides)
-			objects_[side->obj_id_].in_map = false;
+			objects_[side->objId()].in_map = false;
 		sides.clear();
 
 		// Restore
@@ -189,7 +195,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 		{
 			objects_[id].in_map = true;
 			sides.add(dynamic_cast<MapSide*>(objects_[id].object.get()));
-			sides.back()->index_ = sides.size() - 1;
+			sides.back()->setIndex(sides.size() - 1);
 		}
 	}
 	else if (type == MapObject::Type::Sector)
@@ -198,7 +204,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 
 		// Clear
 		for (auto& sector : sectors)
-			objects_[sector->obj_id_].in_map = false;
+			objects_[sector->objId()].in_map = false;
 		sectors.clear();
 
 		// Restore
@@ -206,7 +212,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 		{
 			objects_[id].in_map = true;
 			sectors.add(dynamic_cast<MapSector*>(objects_[id].object.get()));
-			sectors.back()->index_ = sectors.size() - 1;
+			sectors.back()->setIndex(sectors.size() - 1);
 		}
 	}
 	else if (type == MapObject::Type::Thing)
@@ -215,7 +221,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 
 		// Clear
 		for (auto& thing : things)
-			objects_[thing->obj_id_].in_map = false;
+			objects_[thing->objId()].in_map = false;
 		things.clear();
 
 		// Restore
@@ -223,7 +229,7 @@ void MapObjectCollection::restoreObjectIdList(MapObject::Type type, const vector
 		{
 			objects_[id].in_map = true;
 			things.add(dynamic_cast<MapThing*>(objects_[id].object.get()));
-			things.back()->index_ = things.size() - 1;
+			things.back()->setIndex(things.size() - 1);
 		}
 	}
 }
@@ -235,23 +241,23 @@ void MapObjectCollection::refreshIndices() const
 {
 	// Vertex indices
 	for (unsigned a = 0; a < vertices_->size(); a++)
-		(*vertices_)[a]->index_ = a;
+		(*vertices_)[a]->setIndex(a);
 
 	// Side indices
 	for (unsigned a = 0; a < sides_->size(); a++)
-		(*sides_)[a]->index_ = a;
+		(*sides_)[a]->setIndex(a);
 
 	// Line indices
 	for (unsigned a = 0; a < lines_->size(); a++)
-		(*lines_)[a]->index_ = a;
+		(*lines_)[a]->setIndex(a);
 
 	// Sector indices
 	for (unsigned a = 0; a < sectors_->size(); a++)
-		(*sectors_)[a]->index_ = a;
+		(*sectors_)[a]->setIndex(a);
 
 	// Thing indices
 	for (unsigned a = 0; a < things_->size(); a++)
-		(*things_)[a]->index_ = a;
+		(*things_)[a]->setIndex(a);
 }
 
 // -----------------------------------------------------------------------------
@@ -282,7 +288,7 @@ bool MapObjectCollection::removeVertex(const MapVertex* vertex, bool merge_lines
 	if (!vertex)
 		return false;
 
-	return removeVertex(vertex->index_, merge_lines);
+	return removeVertex(vertex->index(), merge_lines);
 }
 
 // -----------------------------------------------------------------------------
@@ -312,7 +318,6 @@ bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
 		removeLine(l_second);
 
 		// Connect first connected line to other end vertex
-		l_first->setModified();
 		if (l_first->v1() == vertex)
 			l_first->setV1(v_end);
 		else
@@ -362,7 +367,7 @@ bool MapObjectCollection::removeLine(const MapLine* line)
 	if (!line)
 		return false;
 
-	return removeLine(line->index_);
+	return removeLine(line->index());
 }
 
 // -----------------------------------------------------------------------------
@@ -376,7 +381,7 @@ bool MapObjectCollection::removeLine(unsigned index)
 	if (index >= lines.size())
 		return false;
 
-	log::info(4, "id {}  index {}  objindex {}", lines[index]->obj_id_, index, lines[index]->index_);
+	log::info(4, "id {}  index {}  objindex {}", lines[index]->objId(), index, lines[index]->index());
 
 	// Init
 	auto line = lines[index];
@@ -411,7 +416,7 @@ bool MapObjectCollection::removeSide(const MapSide* side, bool remove_from_line)
 	if (!side)
 		return false;
 
-	return removeSide(side->index_, remove_from_line);
+	return removeSide(side->index(), remove_from_line);
 }
 
 // -----------------------------------------------------------------------------
@@ -429,7 +434,6 @@ bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 	{
 		// Remove from parent line
 		auto l = sides[index]->parentLine();
-		l->setModified();
 		if (l->s1() == sides[index])
 			l->setS1(nullptr);
 		if (l->s2() == sides[index])
@@ -479,7 +483,7 @@ bool MapObjectCollection::removeSector(const MapSector* sector)
 	if (!sector)
 		return false;
 
-	return removeSector(sector->index_);
+	return removeSector(sector->index());
 }
 
 // -----------------------------------------------------------------------------
@@ -509,7 +513,7 @@ bool MapObjectCollection::removeThing(const MapThing* thing)
 	if (!thing)
 		return false;
 
-	return removeThing(thing->index_);
+	return removeThing(thing->index());
 }
 
 // -----------------------------------------------------------------------------
@@ -535,7 +539,7 @@ bool MapObjectCollection::removeThing(unsigned index)
 // -----------------------------------------------------------------------------
 MapVertex* MapObjectCollection::addVertex(unique_ptr<MapVertex> vertex)
 {
-	vertex->index_ = vertices_->size();
+	vertex->setIndex(vertices_->size());
 	vertices_->add(vertex.get());
 	addMapObject(std::move(vertex));
 	return vertices_->back();
@@ -546,7 +550,7 @@ MapVertex* MapObjectCollection::addVertex(unique_ptr<MapVertex> vertex)
 // -----------------------------------------------------------------------------
 MapSide* MapObjectCollection::addSide(unique_ptr<MapSide> side)
 {
-	side->index_ = sides_->size();
+	side->setIndex(sides_->size());
 	sides_->add(side.get());
 	addMapObject(std::move(side));
 	return sides_->back();
@@ -557,7 +561,7 @@ MapSide* MapObjectCollection::addSide(unique_ptr<MapSide> side)
 // -----------------------------------------------------------------------------
 MapLine* MapObjectCollection::addLine(unique_ptr<MapLine> line)
 {
-	line->index_ = lines_->size();
+	line->setIndex(lines_->size());
 	lines_->add(line.get());
 	addMapObject(std::move(line));
 	return lines_->back();
@@ -568,7 +572,7 @@ MapLine* MapObjectCollection::addLine(unique_ptr<MapLine> line)
 // -----------------------------------------------------------------------------
 MapSector* MapObjectCollection::addSector(unique_ptr<MapSector> sector)
 {
-	sector->index_ = sectors_->size();
+	sector->setIndex(sectors_->size());
 	sectors_->add(sector.get());
 	addMapObject(std::move(sector));
 	return sectors_->back();
@@ -579,7 +583,7 @@ MapSector* MapObjectCollection::addSector(unique_ptr<MapSector> sector)
 // -----------------------------------------------------------------------------
 MapThing* MapObjectCollection::addThing(unique_ptr<MapThing> thing)
 {
-	thing->index_ = things_->size();
+	thing->setIndex(things_->size());
 	things_->add(thing.get());
 	addMapObject(std::move(thing));
 	return things_->back();
@@ -630,7 +634,7 @@ vector<MapObject*> MapObjectCollection::allModifiedObjects(long since) const
 
 	for (auto& holder : objects_)
 	{
-		if (holder.object && holder.object->modified_time_ >= since)
+		if (holder.object && holder.object->modifiedTime() >= since)
 			modified_objects.push_back(holder.object.get());
 	}
 
@@ -646,8 +650,8 @@ long MapObjectCollection::lastModifiedTime() const
 
 	for (auto& holder : objects_)
 	{
-		if (holder.object && holder.object->modified_time_ > mod_time)
-			mod_time = holder.object->modified_time_;
+		if (holder.object && holder.object->modifiedTime() > mod_time)
+			mod_time = holder.object->modifiedTime();
 	}
 
 	return mod_time;

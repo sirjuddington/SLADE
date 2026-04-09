@@ -10,8 +10,6 @@ class Debuggable;
 
 class MapLine : public MapObject
 {
-	friend class SLADEMap;
-
 public:
 	// Line parts
 	enum Part
@@ -104,7 +102,7 @@ public:
 	double length() const;
 	bool   doubleSector() const;
 	Vec2d  frontVector() const;
-	Vec2d  dirTabPoint(double tab_length = 0.);
+	Vec2d  dirTabPoint(double tab_length = 0.) const;
 	double distanceTo(const Vec2d& point) const;
 	int    needsTexture() const;
 	bool   overlaps(const MapLine* other) const;
@@ -116,7 +114,7 @@ public:
 	int highestFloor() const;
 
 	void clearUnneededTextures() const;
-	void resetInternals();
+	void resetInternals() const;
 	void flip(bool sides = true);
 
 	void writeBackup(Backup* backup) override;

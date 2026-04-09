@@ -30,11 +30,10 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-
+#include "MapSide.h"
 #include "Game/Configuration.h"
 #include "MapLine.h"
 #include "MapSector.h"
-#include "MapSide.h"
 #include "SLADEMap/MapObjectList/SideList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
@@ -123,8 +122,7 @@ void MapSide::copy(MapObject* c)
 	if (c->objType() != Type::Side)
 		return;
 
-	// Update modified time
-	setModified();
+	beginModify();
 
 	// Copy properties
 	auto side = dynamic_cast<MapSide*>(c);
@@ -134,6 +132,8 @@ void MapSide::copy(MapObject* c)
 	tex_offset_ = side->tex_offset_;
 
 	MapObject::copy(c);
+
+	endModify();
 }
 
 
@@ -142,7 +142,7 @@ void MapSide::copy(MapObject* c)
 // -----------------------------------------------------------------------------
 bool MapSide::isFrontSide() const
 {
-	return parentLine()->s1() == this;
+	return parent_ && parent_->s1() == this;
 }
 
 // -----------------------------------------------------------------------------
@@ -150,10 +150,13 @@ bool MapSide::isFrontSide() const
 // -----------------------------------------------------------------------------
 MapVertex* MapSide::startVertex() const
 {
+	if (!parent_)
+		return nullptr;
+
 	if (isFrontSide())
-		return parentLine()->v1();
+		return parent_->v1();
 	else
-		return parentLine()->v2();
+		return parent_->v2();
 }
 
 // -----------------------------------------------------------------------------
@@ -161,10 +164,13 @@ MapVertex* MapSide::startVertex() const
 // -----------------------------------------------------------------------------
 MapVertex* MapSide::endVertex() const
 {
+	if (!parent_)
+		return nullptr;
+
 	if (isFrontSide())
-		return parentLine()->v2();
+		return parent_->v2();
 	else
-		return parentLine()->v1();
+		return parent_->v1();
 }
 
 // -----------------------------------------------------------------------------
@@ -250,7 +256,7 @@ void MapSide::changeLight(int amount)
 void MapSide::setTexUpper(string_view tex, bool modify)
 {
 	if (modify)
-		setModified();
+		beginModify();
 
 	if (parent_map_)
 	{
@@ -259,6 +265,9 @@ void MapSide::setTexUpper(string_view tex, bool modify)
 	}
 
 	tex_upper_ = tex;
+
+	if (modify)
+		endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -267,7 +276,7 @@ void MapSide::setTexUpper(string_view tex, bool modify)
 void MapSide::setTexMiddle(string_view tex, bool modify)
 {
 	if (modify)
-		setModified();
+		beginModify();
 
 	if (parent_map_)
 	{
@@ -276,6 +285,8 @@ void MapSide::setTexMiddle(string_view tex, bool modify)
 	}
 
 	tex_middle_ = tex;
+	if (modify)
+		endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -284,7 +295,7 @@ void MapSide::setTexMiddle(string_view tex, bool modify)
 void MapSide::setTexLower(string_view tex, bool modify)
 {
 	if (modify)
-		setModified();
+		beginModify();
 
 	if (parent_map_)
 	{
@@ -293,6 +304,9 @@ void MapSide::setTexLower(string_view tex, bool modify)
 	}
 
 	tex_lower_ = tex;
+
+	if (modify)
+		endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -300,8 +314,9 @@ void MapSide::setTexLower(string_view tex, bool modify)
 // -----------------------------------------------------------------------------
 void MapSide::setTexOffsetX(int offset)
 {
-	setModified();
+	beginModify();
 	tex_offset_.x = offset;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -309,8 +324,9 @@ void MapSide::setTexOffsetX(int offset)
 // -----------------------------------------------------------------------------
 void MapSide::setTexOffsetY(int offset)
 {
-	setModified();
+	beginModify();
 	tex_offset_.y = offset;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -325,12 +341,11 @@ void MapSide::setSector(MapSector* sector)
 	if (sector_)
 		sector_->disconnectSide(this);
 
-	// Update modified time
-	setModified();
-
 	// Add side to new sector
+	beginModify();
 	sector_ = sector;
 	sector->connectSide(this);
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -358,15 +373,12 @@ int MapSide::intProperty(string_view key) const
 // -----------------------------------------------------------------------------
 void MapSide::setIntProperty(string_view key, int value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_SECTOR && parent_map_)
 		setSector(parent_map_->sector(value));
 	else if (key == PROP_OFFSETX)
-		tex_offset_.x = value;
+		setTexOffsetX(value);
 	else if (key == PROP_OFFSETY)
-		tex_offset_.y = value;
+		setTexOffsetY(value);
 	else
 		MapObject::setIntProperty(key, value);
 }
@@ -391,15 +403,12 @@ string MapSide::stringProperty(string_view key) const
 // -----------------------------------------------------------------------------
 void MapSide::setStringProperty(string_view key, string_view value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_TEXUPPER)
-		setTexUpper(value, false);
+		setTexUpper(value);
 	else if (key == PROP_TEXMIDDLE)
-		setTexMiddle(value, false);
+		setTexMiddle(value);
 	else if (key == PROP_TEXLOWER)
-		setTexLower(value, false);
+		setTexLower(value);
 	else
 		MapObject::setStringProperty(key, value);
 }

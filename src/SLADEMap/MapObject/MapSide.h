@@ -6,10 +6,6 @@ namespace slade
 {
 class MapSide : public MapObject
 {
-	friend class SLADEMap;
-	friend class MapLine;
-	friend class SideList;
-
 public:
 	inline static const string TEX_NONE = "-";
 
@@ -50,6 +46,7 @@ public:
 	uint8_t       light() const;
 
 	void setSector(MapSector* sector);
+	void setParent(MapLine* parent) { parent_ = parent; }
 	void changeLight(int amount);
 	void setTexUpper(string_view tex, bool modify = true);
 	void setTexMiddle(string_view tex, bool modify = true);

@@ -9,9 +9,6 @@ class VertexList;
 
 class MapVertex : public MapObject
 {
-	friend class SLADEMap;
-	friend class VertexList;
-
 public:
 	inline static const string PROP_X = "x";
 	inline static const string PROP_Y = "y";
@@ -23,6 +20,8 @@ public:
 	double xPos() const { return position_.x; }
 	double yPos() const { return position_.y; }
 	Vec2d  position() const { return position_; }
+
+	void copy(MapObject* c) override;
 
 	Vec2d getPoint(Point point) const override;
 

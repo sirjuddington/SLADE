@@ -90,7 +90,7 @@ MapVertex* VertexList::vertexAt(double x, double y) const
 	// Go through all vertices
 	for (auto& vertex : objects_)
 	{
-		if (vertex->position_.x == x && vertex->position_.y == y)
+		if (vertex->xPos() == x && vertex->yPos() == y)
 			return vertex;
 	}
 

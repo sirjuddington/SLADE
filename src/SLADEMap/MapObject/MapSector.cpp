@@ -126,9 +126,6 @@ void MapSector::copy(MapObject* obj)
 	if (obj->objType() != Type::Sector)
 		return;
 
-	// Update modified time
-	setModified();
-
 	// Update texture counts (decrement previous)
 	if (parent_map_)
 	{
@@ -137,6 +134,7 @@ void MapSector::copy(MapObject* obj)
 	}
 
 	// Basic variables
+	beginModify();
 	auto sector      = dynamic_cast<MapSector*>(obj);
 	floor_.texture   = sector->floor_.texture;
 	ceiling_.texture = sector->ceiling_.texture;
@@ -157,6 +155,8 @@ void MapSector::copy(MapObject* obj)
 
 	// Other properties
 	MapObject::copy(obj);
+
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -261,19 +261,16 @@ void MapSector::setFloatProperty(string_view key, double value)
 // -----------------------------------------------------------------------------
 void MapSector::setIntProperty(string_view key, int value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_HEIGHTFLOOR)
 		setFloorHeight(value);
 	else if (key == PROP_HEIGHTCEILING)
 		setCeilingHeight(value);
 	else if (key == PROP_LIGHTLEVEL)
-		light_ = value;
+		setLightLevel(value);
 	else if (key == PROP_SPECIAL)
-		special_ = value;
+		setSpecial(value);
 	else if (key == PROP_ID)
-		id_ = value;
+		setTag(value);
 	else
 		MapObject::setIntProperty(key, value);
 }
@@ -283,12 +280,13 @@ void MapSector::setIntProperty(string_view key, int value)
 // -----------------------------------------------------------------------------
 void MapSector::setFloorTexture(string_view tex)
 {
-	setModified();
+	beginModify();
 	if (parent_map_)
 		parent_map_->sectors().updateTexUsage(floor_.texture, -1);
 	floor_.texture = tex;
 	if (parent_map_)
 		parent_map_->sectors().updateTexUsage(floor_.texture, 1);
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -296,12 +294,13 @@ void MapSector::setFloorTexture(string_view tex)
 // -----------------------------------------------------------------------------
 void MapSector::setCeilingTexture(string_view tex)
 {
-	setModified();
+	beginModify();
 	if (parent_map_)
 		parent_map_->sectors().updateTexUsage(ceiling_.texture, -1);
 	ceiling_.texture = tex;
 	if (parent_map_)
 		parent_map_->sectors().updateTexUsage(ceiling_.texture, 1);
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -309,9 +308,10 @@ void MapSector::setCeilingTexture(string_view tex)
 // -----------------------------------------------------------------------------
 void MapSector::setFloorHeight(short height)
 {
-	setModified();
+	beginModify();
 	floor_.height = height;
 	setFloorPlane(Plane::flat(height));
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -319,9 +319,10 @@ void MapSector::setFloorHeight(short height)
 // -----------------------------------------------------------------------------
 void MapSector::setCeilingHeight(short height)
 {
-	setModified();
+	beginModify();
 	ceiling_.height = height;
 	setCeilingPlane(Plane::flat(height));
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -349,8 +350,9 @@ void MapSector::setCeilingPlane(const Plane& p)
 // -----------------------------------------------------------------------------
 void MapSector::setLightLevel(int light)
 {
-	setModified();
+	beginModify();
 	light_ = light;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -358,8 +360,9 @@ void MapSector::setLightLevel(int light)
 // -----------------------------------------------------------------------------
 void MapSector::setSpecial(int special)
 {
-	setModified();
+	beginModify();
 	special_ = special;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -367,8 +370,9 @@ void MapSector::setSpecial(int special)
 // -----------------------------------------------------------------------------
 void MapSector::setTag(int tag)
 {
-	setModified();
+	beginModify();
 	id_ = tag;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -657,10 +661,7 @@ void MapSector::changeLight(int amount, SectorPart where)
 		setIntProperty("lightceiling", cur + amount);
 	}
 	else
-	{
-		setModified();
-		light_ = ll + amount;
-	}
+		setLightLevel(ll + amount);
 }
 
 // -----------------------------------------------------------------------------
@@ -752,7 +753,6 @@ void MapSector::findTextPoint() const
 // -----------------------------------------------------------------------------
 void MapSector::connectSide(MapSide* side)
 {
-	setModified();
 	connected_sides_.push_back(side);
 	poly_needsupdate_ = true;
 	bbox_.reset();
@@ -764,7 +764,6 @@ void MapSector::connectSide(MapSide* side)
 // -----------------------------------------------------------------------------
 void MapSector::disconnectSide(const MapSide* side)
 {
-	setModified();
 	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
 		if (connected_sides_[a] == side)

@@ -153,6 +153,23 @@ public:
 	void updateThingTypeUsage(int type, int adjust);
 	int  thingTypeUsageCount(int type);
 
+	// Bulk operations
+	void beginBulkOperation();
+	void endBulkOperation();
+
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<const vector<MapObject*>&> object_created;
+		sigslot::signal<const vector<MapObject*>&> object_modified;
+		sigslot::signal<const vector<MapObject*>&> object_deleted;
+	};
+	Signals  signals_;
+	Signals& signals() { return signals_; }
+	void     sendObjectCreatedSignal(MapObject* object);
+	void     sendObjectModifiedSignal(MapObject* object);
+	void     sendObjectDeletedSignal(MapObject* object);
+
 private:
 	MapObjectCollection          data_;
 	string                       udmf_namespace_;
@@ -171,5 +188,15 @@ private:
 
 	// Usage counts
 	std::map<int, int> usage_thing_type_;
+
+	// Bulk operations
+	struct BulkOperation
+	{
+		vector<MapObject*> created;
+		vector<MapObject*> modified;
+		vector<MapObject*> deleted;
+	};
+	unique_ptr<BulkOperation> current_bulk_operation_;
+	unsigned                  bulk_operation_depth_ = 0;
 };
 } // namespace slade

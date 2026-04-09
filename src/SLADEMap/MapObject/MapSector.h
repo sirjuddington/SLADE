@@ -14,9 +14,6 @@ class MapSector : public MapObject
 	using SurfaceType = map::SectorSurfaceType;
 	using SectorPart  = map::SectorPart;
 
-	friend class SLADEMap;
-	friend class MapSide;
-
 public:
 	struct Surface
 	{

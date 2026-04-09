@@ -1616,6 +1616,7 @@ void MapEditContext::beginUndoRecord(string_view name, bool mod, bool create, bo
 	manager->beginRecord(name);
 
 	// Init map/objects for recording
+	map_->beginBulkOperation();
 	if (undo_modified_)
 		MapObject::beginPropBackup(app::runTimer());
 	if (undo_deleted_ || undo_created_)
@@ -1654,7 +1655,7 @@ bool MapEditContext::endUndoRecord(bool success)
 	if (manager->currentlyRecording())
 	{
 		// Record necessary undo steps
-		MapObject::beginPropBackup(-1);
+		MapObject::endPropBackup();
 		bool modified        = false;
 		bool created_deleted = false;
 		if (undo_modified_)
@@ -1669,6 +1670,7 @@ bool MapEditContext::endUndoRecord(bool success)
 		// End recording
 		recorded = success && (modified || created_deleted);
 		manager->endRecord(success && (modified || created_deleted));
+		map_->endBulkOperation();
 	}
 	updateThingLists();
 	us_create_delete_.reset(nullptr);

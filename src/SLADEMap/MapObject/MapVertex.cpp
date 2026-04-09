@@ -71,6 +71,17 @@ MapVertex::MapVertex(const Vec2d& pos, const ParseTreeNode* udmf_def) : MapObjec
 }
 
 // -----------------------------------------------------------------------------
+// Copies another MapVertex object [c]
+// -----------------------------------------------------------------------------
+void MapVertex::copy(MapObject* c)
+{
+	beginModify();
+	position_ = static_cast<MapVertex*>(c)->position_;
+	MapObject::copy(c);
+	endModify();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the object point [point].
 // Currently for vertices this is always the vertex position
 // -----------------------------------------------------------------------------
@@ -85,9 +96,10 @@ Vec2d MapVertex::getPoint(Point point) const
 void MapVertex::move(double nx, double ny)
 {
 	// Move the vertex
-	setModified();
+	beginModify();
 	position_.x = nx;
 	position_.y = ny;
+	endModify();
 
 	// Reset all attached lines' geometry info
 	for (auto& connected_line : connected_lines_)
@@ -127,18 +139,21 @@ double MapVertex::floatProperty(string_view key) const
 // -----------------------------------------------------------------------------
 void MapVertex::setIntProperty(string_view key, int value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_X)
 	{
+		beginModify();
 		position_.x = value;
+		endModify();
+
 		for (auto& connected_line : connected_lines_)
 			connected_line->resetInternals();
 	}
 	else if (key == PROP_Y)
 	{
+		beginModify();
 		position_.y = value;
+		endModify();
+
 		for (auto& connected_line : connected_lines_)
 			connected_line->resetInternals();
 	}
@@ -151,13 +166,18 @@ void MapVertex::setIntProperty(string_view key, int value)
 // -----------------------------------------------------------------------------
 void MapVertex::setFloatProperty(string_view key, double value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_X)
+	{
+		beginModify();
 		position_.x = value;
+		endModify();
+	}
 	else if (key == PROP_Y)
+	{
+		beginModify();
 		position_.y = value;
+		endModify();
+	}
 	else
 		return MapObject::setFloatProperty(key, value);
 }

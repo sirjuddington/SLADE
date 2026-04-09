@@ -95,11 +95,10 @@ string MapObject::typeName(bool plural) const
 }
 
 // -----------------------------------------------------------------------------
-// Sets the object as modified.
-// Despite the name, THIS MUST BE CALLED **BEFORE** MODIFYING THE OBJECT --
-// this is where the backup for the undo system is made!
+// Begins a modification operation on the object
+// This will create a backup of the object for the undo system if needed
 // -----------------------------------------------------------------------------
-void MapObject::setModified()
+void MapObject::beginModify()
 {
 	// Backup current properties if required
 	if (obj_id_ > 0 && modified_time_ < prop_backup_time)
@@ -107,14 +106,18 @@ void MapObject::setModified()
 		obj_backup_ = std::make_unique<Backup>();
 		backupTo(obj_backup_.get());
 	}
+}
 
+// -----------------------------------------------------------------------------
+// Ends a modification operation on the object
+// Sets the object as modified and notifies the parent map (if any)
+// -----------------------------------------------------------------------------
+void MapObject::endModify()
+{
 	modified_time_ = app::runTimer();
 
 	if (parent_map_ && parent_map_->isOpen())
-	{
-		parent_map_->setTypeUpdated(type_);
-		parent_map_->mapSpecials().objectUpdated(*this);
-	}
+		parent_map_->sendObjectModifiedSignal(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -125,9 +128,6 @@ void MapObject::copy(MapObject* c)
 	// Can't copy an object of a different type
 	if (c->type_ != type_)
 		return;
-
-	// Update modified time
-	setModified();
 
 	// Reset properties
 	properties_.clear();
@@ -214,11 +214,9 @@ string MapObject::stringProperty(string_view key) const
 // -----------------------------------------------------------------------------
 void MapObject::setBoolProperty(string_view key, bool value)
 {
-	// Update modified time
-	setModified();
-
-	// Set property
+	beginModify();
 	properties_[key] = value;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -226,11 +224,9 @@ void MapObject::setBoolProperty(string_view key, bool value)
 // -----------------------------------------------------------------------------
 void MapObject::setIntProperty(string_view key, int value)
 {
-	// Update modified time
-	setModified();
-
-	// Set property
+	beginModify();
 	properties_[key] = value;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -238,11 +234,9 @@ void MapObject::setIntProperty(string_view key, int value)
 // -----------------------------------------------------------------------------
 void MapObject::setFloatProperty(string_view key, double value)
 {
-	// Update modified time
-	setModified();
-
-	// Set property
+	beginModify();
 	properties_[key] = value;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -250,11 +244,9 @@ void MapObject::setFloatProperty(string_view key, double value)
 // -----------------------------------------------------------------------------
 void MapObject::setStringProperty(string_view key, string_view value)
 {
-	// Update modified time
-	setModified();
-
-	// Set property
+	beginModify();
 	properties_[key] = string{ value };
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -292,14 +284,15 @@ void MapObject::loadFromBackup(Backup* backup)
 		return;
 	}
 
-	// Update modified time
-	setModified();
+	beginModify();
 
 	// Load general properties from list
 	properties_ = backup->properties;
 
 	// Object-specific properties
 	readBackup(backup);
+
+	endModify();
 }
 
 // -----------------------------------------------------------------------------

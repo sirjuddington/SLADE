@@ -176,35 +176,32 @@ double MapThing::floatProperty(string_view key) const
 // -----------------------------------------------------------------------------
 void MapThing::setIntProperty(string_view key, int value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_TYPE)
-		type_ = value;
+		setType(value);
 	else if (key == PROP_X)
-		position_.x = value;
+		move({ value, position_.y });
 	else if (key == PROP_Y)
-		position_.y = value;
+		move({ position_.x, value });
 	else if (key == PROP_Z)
-		z_ = value;
+		setZ(value);
 	else if (key == PROP_ANGLE)
-		angle_ = value;
+		setAngle(value);
 	else if (key == PROP_FLAGS)
-		flags_ = value;
+		setFlags(value);
 	else if (key == PROP_ARG0)
-		args_[0] = value;
+		setArg(0, value);
 	else if (key == PROP_ARG1)
-		args_[1] = value;
+		setArg(1, value);
 	else if (key == PROP_ARG2)
-		args_[2] = value;
+		setArg(2, value);
 	else if (key == PROP_ARG3)
-		args_[3] = value;
+		setArg(3, value);
 	else if (key == PROP_ARG4)
-		args_[4] = value;
+		setArg(4, value);
 	else if (key == PROP_ID)
-		id_ = value;
+		setId(value);
 	else if (key == PROP_SPECIAL)
-		special_ = value;
+		setSpecial(value);
 	else
 		return MapObject::setIntProperty(key, value);
 }
@@ -214,15 +211,12 @@ void MapThing::setIntProperty(string_view key, int value)
 // -----------------------------------------------------------------------------
 void MapThing::setFloatProperty(string_view key, double value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_X)
-		position_.x = value;
+		move({ value, position_.x });
 	else if (key == PROP_Y)
-		position_.y = value;
+		move({ position_.x, value });
 	else if (key == PROP_Z)
-		z_ = value;
+		setZ(value);
 	else
 		return MapObject::setFloatProperty(key, value);
 }
@@ -236,8 +230,7 @@ void MapThing::copy(MapObject* c)
 	if (c->objType() != Type::Thing)
 		return;
 
-	// Update modified time
-	setModified();
+	beginModify();
 
 	// Basic variables
 	auto thing  = dynamic_cast<MapThing*>(c);
@@ -254,6 +247,8 @@ void MapThing::copy(MapObject* c)
 
 	// Other properties
 	MapObject::copy(c);
+
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -263,8 +258,13 @@ void MapThing::copy(MapObject* c)
 void MapThing::move(const Vec2d& pos, bool modify)
 {
 	if (modify)
-		setModified();
-	position_ = pos;
+	{
+		beginModify();
+		position_ = pos;
+		endModify();
+	}
+	else
+		position_ = pos;
 }
 
 // -----------------------------------------------------------------------------
@@ -272,8 +272,9 @@ void MapThing::move(const Vec2d& pos, bool modify)
 // -----------------------------------------------------------------------------
 void MapThing::setZ(double z)
 {
-	setModified();
+	beginModify();
 	z_ = z;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -281,8 +282,9 @@ void MapThing::setZ(double z)
 // -----------------------------------------------------------------------------
 void MapThing::setType(int type)
 {
-	setModified();
+	beginModify();
 	type_ = type;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -292,8 +294,13 @@ void MapThing::setType(int type)
 void MapThing::setAngle(int angle, bool modify)
 {
 	if (modify)
-		setModified();
-	angle_ = angle;
+	{
+		beginModify();
+		angle_ = angle;
+		endModify();
+	}
+	else
+		angle_ = angle;
 }
 
 // -----------------------------------------------------------------------------
@@ -328,9 +335,7 @@ void MapThing::setAnglePoint(const Vec2d& point, bool modify)
 		angle = 315;
 
 	// Set thing angle
-	if (modify)
-		setModified();
-	angle_ = angle;
+	setAngle(angle, modify);
 }
 
 // -----------------------------------------------------------------------------
@@ -338,8 +343,9 @@ void MapThing::setAnglePoint(const Vec2d& point, bool modify)
 // -----------------------------------------------------------------------------
 void MapThing::setId(int id)
 {
-	setModified();
+	beginModify();
 	id_ = id;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -347,8 +353,9 @@ void MapThing::setId(int id)
 // -----------------------------------------------------------------------------
 void MapThing::setFlags(int flags)
 {
-	setModified();
+	beginModify();
 	flags_ = flags;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -356,8 +363,9 @@ void MapThing::setFlags(int flags)
 // -----------------------------------------------------------------------------
 void MapThing::setFlag(int flag)
 {
-	setModified();
+	beginModify();
 	flags_ |= flag;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -365,8 +373,9 @@ void MapThing::setFlag(int flag)
 // -----------------------------------------------------------------------------
 void MapThing::clearFlag(int flag)
 {
-	setModified();
+	beginModify();
 	flags_ = flags_ & ~flag;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -376,8 +385,9 @@ void MapThing::setArg(unsigned index, int value)
 {
 	if (index < 5)
 	{
-		setModified();
+		beginModify();
 		args_[index] = value;
+		endModify();
 	}
 }
 
@@ -386,8 +396,9 @@ void MapThing::setArg(unsigned index, int value)
 // -----------------------------------------------------------------------------
 void MapThing::setSpecial(int special)
 {
-	setModified();
+	beginModify();
 	special_ = special;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------

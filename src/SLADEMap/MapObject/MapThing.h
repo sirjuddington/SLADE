@@ -9,8 +9,6 @@ class Debuggable;
 
 class MapThing : public MapObject
 {
-	friend class SLADEMap;
-
 public:
 	// UDMF property names
 	inline static const string PROP_X       = "x";

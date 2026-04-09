@@ -79,9 +79,9 @@ MapLine::MapLine(
 
 	// Connect to sides
 	if (s1)
-		s1->parent_ = this;
+		s1->setParent(this);
 	if (s2)
-		s2->parent_ = this;
+		s2->setParent(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -102,9 +102,9 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, const P
 
 	// Connect to sides
 	if (s1)
-		s1->parent_ = this;
+		s1->setParent(this);
 	if (s2)
-		s2->parent_ = this;
+		s2->setParent(this);
 
 	// Set properties from UDMF definition
 	ParseTreeNode* prop;
@@ -164,7 +164,7 @@ bool MapLine::hasId(int id) const
 // -----------------------------------------------------------------------------
 MapSector* MapLine::frontSector() const
 {
-	return side1_ ? side1_->sector_ : nullptr;
+	return side1_ ? side1_->sector() : nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -172,7 +172,7 @@ MapSector* MapLine::frontSector() const
 // -----------------------------------------------------------------------------
 MapSector* MapLine::backSector() const
 {
-	return side2_ ? side2_->sector_ : nullptr;
+	return side2_ ? side2_->sector() : nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -380,7 +380,7 @@ void MapLine::setIntProperty(string_view key, int value)
 	}
 
 	// Back side property
-	else if (strutil::startsWith(key, "side2."))
+	if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			side2_->setIntProperty(key.substr(6), value);
@@ -388,7 +388,7 @@ void MapLine::setIntProperty(string_view key, int value)
 	}
 
 	// Mark as modified only if a line prop, not a side prop, is changing
-	setModified();
+	beginModify();
 
 	// Vertices
 	if (key == PROP_V1)
@@ -454,7 +454,12 @@ void MapLine::setIntProperty(string_view key, int value)
 
 	// Line property
 	else
+	{
 		MapObject::setIntProperty(key, value);
+		return;
+	}
+
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -518,27 +523,27 @@ bool MapLine::scriptCanModifyProp(string_view key) const
 }
 
 // -----------------------------------------------------------------------------
-// Sets the front side of the line to [side]
+// Sets the front side of the line to [side].
+// This just sets the side without doing any other processing, for a safe way
+// of changing the side, use SLADEMap::setLineSide instead
 // -----------------------------------------------------------------------------
 void MapLine::setS1(MapSide* side)
 {
-	if (!side)
-		side1_ = nullptr;
-
-	else if (!side1_ && parent_map_)
-		parent_map_->setLineSide(this, side, true);
+	beginModify();
+	side1_ = side;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
-// Sets the back side of the line to [side]
+// Sets the back side of the line to [side].
+// This just sets the side without doing any other processing, for a safe way
+// of changing the side, use SLADEMap::setLineSide instead
 // -----------------------------------------------------------------------------
 void MapLine::setS2(MapSide* side)
 {
-	if (!side)
-		side2_ = nullptr;
-
-	else if (!side2_ && parent_map_)
-		parent_map_->setLineSide(this, side, false);
+	beginModify();
+	side2_ = side;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -546,14 +551,15 @@ void MapLine::setS2(MapSide* side)
 // -----------------------------------------------------------------------------
 void MapLine::setV1(MapVertex* vertex)
 {
-	if (!vertex)
+	if (!vertex || vertex == vertex1_)
 		return;
 
-	setModified();
+	beginModify();
 	vertex1_->disconnectLine(this);
 	vertex1_ = vertex;
 	vertex1_->connectLine(this);
 	resetInternals();
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -564,11 +570,12 @@ void MapLine::setV2(MapVertex* vertex)
 	if (!vertex)
 		return;
 
-	setModified();
+	beginModify();
 	vertex2_->disconnectLine(this);
 	vertex2_ = vertex;
 	vertex2_->connectLine(this);
 	resetInternals();
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -576,8 +583,9 @@ void MapLine::setV2(MapVertex* vertex)
 // -----------------------------------------------------------------------------
 void MapLine::setSpecial(int special)
 {
-	setModified();
+	beginModify();
 	special_ = special;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -585,8 +593,9 @@ void MapLine::setSpecial(int special)
 // -----------------------------------------------------------------------------
 void MapLine::setId(int id)
 {
-	setModified();
+	beginModify();
 	id_ = id;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -594,8 +603,9 @@ void MapLine::setId(int id)
 // -----------------------------------------------------------------------------
 void MapLine::setFlags(int flags)
 {
-	setModified();
+	beginModify();
 	flags_ = flags;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -603,8 +613,9 @@ void MapLine::setFlags(int flags)
 // -----------------------------------------------------------------------------
 void MapLine::setFlag(int flag)
 {
-	setModified();
+	beginModify();
 	flags_ |= flag;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -612,8 +623,9 @@ void MapLine::setFlag(int flag)
 // -----------------------------------------------------------------------------
 void MapLine::clearFlag(int flag)
 {
-	setModified();
+	beginModify();
 	flags_ = flags_ & ~flag;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -623,8 +635,9 @@ void MapLine::setArg(unsigned index, int value)
 {
 	if (index < 5)
 	{
-		setModified();
+		beginModify();
 		args_[index] = value;
+		endModify();
 	}
 }
 
@@ -711,7 +724,7 @@ Vec2d MapLine::frontVector() const
 // Calculates and returns the end point of the 'direction tab' for the line
 // (used as a front side indicator for 2d map display)
 // -----------------------------------------------------------------------------
-Vec2d MapLine::dirTabPoint(double tab_length)
+Vec2d MapLine::dirTabPoint(double tab_length) const
 {
 	// Calculate midpoint
 	Vec2d mid(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
@@ -938,7 +951,7 @@ void MapLine::clearUnneededTextures() const
 // -----------------------------------------------------------------------------
 // Resets all calculated internal values for the line and sectors
 // -----------------------------------------------------------------------------
-void MapLine::resetInternals()
+void MapLine::resetInternals() const
 {
 	// Reset line internals
 	length_    = -1;
@@ -966,7 +979,7 @@ void MapLine::resetInternals()
 // -----------------------------------------------------------------------------
 void MapLine::flip(bool sides)
 {
-	setModified();
+	beginModify();
 
 	// Flip vertices
 	auto v   = vertex1_;
@@ -980,6 +993,7 @@ void MapLine::flip(bool sides)
 		side1_ = side2_;
 		side2_ = s;
 	}
+	endModify();
 
 	resetInternals();
 	if (parent_map_)
@@ -1047,9 +1061,9 @@ void MapLine::readBackup(Backup* backup)
 	side1_  = dynamic_cast<MapSide*>(s1);
 	side2_  = dynamic_cast<MapSide*>(s2);
 	if (side1_)
-		side1_->parent_ = this;
+		side1_->setParent(this);
 	if (side2_)
-		side2_->parent_ = this;
+		side2_->setParent(this);
 
 	// Flags
 	flags_ = backup->props_internal.get<int>(PROP_FLAGS);
@@ -1072,8 +1086,7 @@ void MapLine::copy(MapObject* c)
 	if (objType() != c->objType())
 		return;
 
-	// Update modified time
-	setModified();
+	beginModify();
 
 	MapObject::copy(c);
 
@@ -1093,6 +1106,8 @@ void MapLine::copy(MapObject* c)
 	args_[2] = l->args_[2];
 	args_[3] = l->args_[3];
 	args_[4] = l->args_[4];
+
+	endModify();
 }
 
 // -----------------------------------------------------------------------------

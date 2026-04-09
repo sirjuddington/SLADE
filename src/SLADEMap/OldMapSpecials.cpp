@@ -186,8 +186,8 @@ bool OldMapSpecials::tagFadeColoursSet() const
 // -----------------------------------------------------------------------------
 void OldMapSpecials::setModified(const SLADEMap* map, int tag) const
 {
-	for (auto& sector : map->sectors().allWithId(tag))
-		sector->setModified();
+	// for (auto& sector : map->sectors().allWithId(tag))
+	//	sector->endModify();
 }
 
 // -----------------------------------------------------------------------------

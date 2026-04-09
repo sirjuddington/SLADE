@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "General/Sigslot.h"
 #include "Geometry/Plane.h"
 
 namespace slade::map
@@ -39,9 +40,6 @@ public:
 	void processAllSpecials() const;
 	void updateSpecials() const;
 
-	void objectUpdated(MapObject& object) const;
-	void objectsUpdated(const vector<MapObject*>& objects) const;
-
 	long specialsLastUpdated() const { return specials_updated_; }
 
 private:
@@ -51,6 +49,7 @@ private:
 	unique_ptr<RenderSpecials>     render_specials_;
 	mutable vector<MapObject*>     updated_objects_;
 	mutable long                   specials_updated_ = 0;
+	ScopedConnectionList           connections_;
 
 	void processLineSpecial(const MapLine& line) const;
 	void processThing(const MapThing& thing) const;

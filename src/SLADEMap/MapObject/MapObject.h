@@ -22,9 +22,6 @@ namespace map
 
 class MapObject
 {
-	friend class SLADEMap;
-	friend class MapObjectCollection;
-
 public:
 	using Type   = map::ObjectType;
 	using Point  = map::ObjectPoint;
@@ -32,6 +29,12 @@ public:
 
 	MapObject(Type type = Type::Object, SLADEMap* parent = nullptr);
 	virtual ~MapObject() = default;
+
+	void addToMap(unsigned obj_id, SLADEMap* parent)
+	{
+		obj_id_     = obj_id;
+		parent_map_ = parent;
+	}
 
 	virtual void readUDMF(ParseTreeNode* def) {}
 
@@ -45,7 +48,6 @@ public:
 	long      modifiedTime() const { return modified_time_; }
 	unsigned  objId() const { return obj_id_; }
 	string    typeName(bool plural = false) const;
-	void      setModified();
 	void      setIndex(unsigned index) { index_ = index; }
 
 	PropertyList& props() { return properties_; }
@@ -94,6 +96,9 @@ protected:
 	long               modified_time_ = 0;
 	unsigned           obj_id_        = 0;
 	unique_ptr<Backup> obj_backup_;
+
+	void beginModify();
+	void endModify();
 
 private:
 	Type type_ = Type::Object;

@@ -67,6 +67,15 @@ MapSpecials::MapSpecials(SLADEMap& map) : map_{ &map }
 	slope_specials_      = std::make_unique<SlopeSpecials>(map);
 	extrafloor_specials_ = std::make_unique<ExtraFloorSpecials>(map, *this);
 	render_specials_     = std::make_unique<RenderSpecials>(map);
+
+	// Flag objects as updated when they're modified, so that specials will be
+	// reprocessed for them on next access
+	connections_ += map.signals().object_modified.connect(
+		[&](const vector<MapObject*>& objects)
+		{
+			for (auto obj : objects)
+				vectorAddUnique(updated_objects_, obj);
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -142,6 +151,7 @@ SectorLighting MapSpecials::sectorLightingAt(
 	if (where == SectorPart::Ceiling)
 		return { .brightness = sector.lightAt(where), .colour = sectorColour(sector, where), .fog = ColRGBA::BLACK };
 
+	updateSpecials();
 	auto extrafloors = extrafloor_specials_->extraFloors(sector);
 
 	if (where == SectorPart::Floor)
@@ -326,17 +336,6 @@ void MapSpecials::updateSpecials() const
 		specials_updated_ = app::runTimer();
 
 	updated_objects_.clear();
-}
-
-void MapSpecials::objectUpdated(MapObject& object) const
-{
-	vectorAddUnique(updated_objects_, &object);
-}
-
-void MapSpecials::objectsUpdated(const vector<MapObject*>& objects) const
-{
-	for (auto obj : objects)
-		vectorAddUnique(updated_objects_, obj);
 }
 
 void MapSpecials::processLineSpecial(const MapLine& line) const
