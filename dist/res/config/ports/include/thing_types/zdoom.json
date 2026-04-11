@@ -53,32 +53,36 @@
           "type": 9810,
           "name": "Additive Point Light",
           "arg4": "Radius",
-          "arg5": "Arg5"
+          "arg5": "Arg5",
+          "point_light": "zdoom_additive"
         },
-        { "type": 9811, "name": "Pulsing Additive Point Light" },
-        { "type": 9812, "name": "Flickering Additive Point Light" },
+        { "type": 9811, "name": "Pulsing Additive Point Light", "point_light": "zdoom_additive" },
+        { "type": 9812, "name": "Flickering Additive Point Light", "point_light": "zdoom_additive" },
         {
           "type": 9813,
           "name": "Sector-Sync'ed Additive Point Light",
           "arg4": "Scale",
-          "arg5": "Arg5"
+          "arg5": "Arg5",
+          "point_light": "zdoom_additive"
         },
-        { "type": 9814, "name": "Randomly Flickering Additive Point Light" },
+        { "type": 9814, "name": "Randomly Flickering Additive Point Light", "point_light": "zdoom_additive" },
         {
           "type": 9820,
           "name": "Subtractive Point Light",
           "arg4": "Radius",
-          "arg5": "Arg5"
+          "arg5": "Arg5",
+          "point_light": "zdoom_subtractive"
         },
-        { "type": 9821, "name": "Pulsing Subtractive Point Light" },
-        { "type": 9822, "name": "Flickering Point Light" },
+        { "type": 9821, "name": "Pulsing Subtractive Point Light", "point_light": "zdoom_subtractive" },
+        { "type": 9822, "name": "Flickering Subtractive Point Light", "point_light": "zdoom_subtractive" },
         {
           "type": 9823,
           "name": "Sector-Sync'ed Subtractive Point Light",
           "arg4": "Scale",
-          "arg5": "Arg5"
+          "arg5": "Arg5",
+          "point_light": "zdoom_subtractive"
         },
-        { "type": 9824, "name": "Randomly Flickering Subtractive Point Light" },
+        { "type": 9824, "name": "Randomly Flickering Subtractive Point Light", "point_light": "zdoom_subtractive" },
         {
           "type": 9825,
           "name": "Vavoom Light",
@@ -92,17 +96,19 @@
           "type": 9830,
           "name": "Attenuated Point Light",
           "arg4": "Radius",
-          "arg5": "Arg5"
+          "arg5": "Arg5",
+          "point_light": "zdoom_attenuated"
         },
-        { "type": 9831, "name": "Attenuated Pulsing Point Light" },
-        { "type": 9832, "name": "Attenuated Flickering Point Light" },
+        { "type": 9831, "name": "Attenuated Pulsing Point Light", "point_light": "zdoom_attenuated" },
+        { "type": 9832, "name": "Attenuated Flickering Point Light", "point_light": "zdoom_attenuated" },
         {
           "type": 9833,
           "name": "Attenuated Sector-Sync'd Point Light",
           "arg4": "Scale",
-          "arg5": "Arg5"
+          "arg5": "Arg5",
+          "point_light": "zdoom_attenuated"
         },
-        { "type": 9834, "name": "Attenuated Randomly Flickering Point Light" }
+        { "type": 9834, "name": "Attenuated Randomly Flickering Point Light", "point_light": "zdoom_attenuated" }
       ]
     },
 

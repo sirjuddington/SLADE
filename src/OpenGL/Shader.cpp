@@ -117,10 +117,12 @@ bool loadShader(const string& shader_text, GLenum type, GLuint& shader_id, const
 	glGetShaderiv(shader_id, GL_COMPILE_STATUS, &success);
 	if (!success)
 	{
-		char log[512];
-		glGetShaderInfoLog(shader_id, 512, nullptr, log);
+		GLint log_length = 0;
+		glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &log_length);
+		auto log = std::make_unique<char[]>(log_length > 0 ? log_length : 1);
+		glGetShaderInfoLog(shader_id, log_length, nullptr, log.get());
 		log::error("Error compiling {} shader, see below:", shader_types[type]);
-		log::error(log);
+		log::error(log.get());
 		return false;
 	}
 
@@ -215,6 +217,27 @@ Shader::Shader(string_view name, const string& vertex_text, const string& fragme
 	link();
 
 	loaded_shaders.emplace_back(this, name);
+}
+
+// -----------------------------------------------------------------------------
+// Shader class destructor
+// -----------------------------------------------------------------------------
+Shader::~Shader()
+{
+	// Remove this shader from loaded_shaders
+	if (auto it = std::ranges::find_if(loaded_shaders, [this](const LoadedShader& ls) { return ls.shader == this; });
+		it != loaded_shaders.end())
+		loaded_shaders.erase(it);
+
+	// Clean up OpenGL resources
+	if (id_ > 0)
+		glDeleteProgram(id_);
+	if (id_vertex_ > 0)
+		glDeleteShader(id_vertex_);
+	if (id_fragment_ > 0)
+		glDeleteShader(id_fragment_);
+	if (id_geometry_ > 0)
+		glDeleteShader(id_geometry_);
 }
 
 // -----------------------------------------------------------------------------

@@ -150,19 +150,29 @@ static void addFlatVertices(
 	auto  tti      = getSectorTextureTransformInfo(
         *flat.control_sector, flat.control_sector_surface == SurfaceType::Ceiling, texture.scale);
 	auto brightness = static_cast<float>(flat.lighting.brightness) / 255.0f;
+	auto normal     = flat.plane.normal();
 
 	if (flat.surface_type == SurfaceType::Ceiling)
 	{
+		// Ensure normal is facing the right direction
+		if (normal.z > 0.0f)
+			normal = -normal;
+
 		for (auto& vertex : context.sector->polygonVertices())
 		{
 			context.vertices.emplace_back(
 				glm::vec3(vertex, flat.plane.heightAt(vertex)),
 				polygon::calculateTexCoords(vertex, tex_info.size, tti),
-				brightness);
+				brightness,
+				normal);
 		}
 	}
 	else
 	{
+		// Ensure normal is facing the right direction
+		if (normal.z < 0.0f)
+			normal = -normal;
+
 		// Floor polygons need to be flipped
 		for (int i = context.sector->polygonVertices().size(); i > 0; --i)
 		{
@@ -170,7 +180,8 @@ static void addFlatVertices(
 			context.vertices.emplace_back(
 				glm::vec3(vertex, flat.plane.heightAt(vertex)),
 				polygon::calculateTexCoords(vertex, tex_info.size, tti),
-				brightness);
+				brightness,
+				normal);
 		}
 	}
 

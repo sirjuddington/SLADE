@@ -36,6 +36,7 @@
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace map;
@@ -59,7 +60,7 @@ void PointLights::processThing(const MapThing& thing)
 		position.z += sector->floor().plane.heightAt(position.x, position.y);
 
 	// ZDoom point light
-	if (ttype.pointLight() == "zdoom")
+	if (strutil::startsWith(ttype.pointLight(), "zdoom"))
 	{
 		point_lights_.push_back(
 			PointLight{ .thing    = &thing,
@@ -67,7 +68,16 @@ void PointLights::processThing(const MapThing& thing)
 						.r        = static_cast<u8>(thing.arg(0)),
 						.g        = static_cast<u8>(thing.arg(1)),
 						.b        = static_cast<u8>(thing.arg(2)),
-						.radius   = static_cast<u8>(thing.arg(3)) });
+						.radius   = static_cast<u8>(thing.arg(3)),
+						.type     = PointLight::Type::Normal });
+
+		// Check for non-normal types
+		if (ttype.pointLight() == "zdoom_additive")
+			point_lights_.back().type = PointLight::Type::Additive;
+		else if (ttype.pointLight() == "zdoom_subtractive")
+			point_lights_.back().type = PointLight::Type::Subtractive;
+		else if (ttype.pointLight() == "zdoom_attenuated")
+			point_lights_.back().type = PointLight::Type::Attenuated;
 	}
 
 	// Vavoom point light
@@ -79,7 +89,8 @@ void PointLights::processThing(const MapThing& thing)
 						.r        = static_cast<u8>(thing.arg(1)),
 						.g        = static_cast<u8>(thing.arg(2)),
 						.b        = static_cast<u8>(thing.arg(3)),
-						.radius   = static_cast<u8>(thing.arg(0)) });
+						.radius   = static_cast<u8>(thing.arg(0)),
+						.type     = PointLight::Type::Normal });
 	}
 
 	// Vavoom white light
@@ -91,7 +102,8 @@ void PointLights::processThing(const MapThing& thing)
 						.r        = 255,
 						.g        = 255,
 						.b        = 255,
-						.radius   = static_cast<u8>(thing.arg(0)) });
+						.radius   = static_cast<u8>(thing.arg(0)),
+						.type     = PointLight::Type::Normal });
 	}
 }
 

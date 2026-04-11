@@ -212,7 +212,7 @@ static void addQuad(
 		y1     = info.line->y2();
 		x2     = info.line->x1();
 		y2     = info.line->y1();
-		normal = { -front_vec.x, -front_vec.y, 0.0f };
+		normal = { front_vec.x, front_vec.y, 0.0f };
 	}
 	else
 	{
@@ -220,7 +220,7 @@ static void addQuad(
 		y1     = info.line->y1();
 		x2     = info.line->x2();
 		y2     = info.line->y2();
-		normal = { front_vec.x, front_vec.y, 0.0f };
+		normal = { -front_vec.x, -front_vec.y, 0.0f };
 	}
 	if (info.midtex)
 	{

@@ -347,6 +347,19 @@ bool Camera::bboxInFrustum2d(const BBox& bbox) const
 }
 
 // -----------------------------------------------------------------------------
+// Checks if a sphere at [center] with [radius] is within the camera's frustum
+// -----------------------------------------------------------------------------
+bool Camera::sphereInFrustum(const Vec3d& center, double radius) const
+{
+	// Check against all planes
+	for (const auto& plane : frustum_planes_)
+		if (plane.distanceTo(center) < -radius)
+			return false;
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
 // Updates the strafe, direction and up vectors for the camera
 // -----------------------------------------------------------------------------
 void Camera::updateVectors()

@@ -67,6 +67,7 @@ public:
 	bool pointInFrustum2d(const Vec2d& point) const;
 	bool lineInFrustum2d(const Seg2d& line) const;
 	bool bboxInFrustum2d(const BBox& bbox) const;
+	bool sphereInFrustum(const Vec3d& center, double radius) const;
 
 private:
 	// View

@@ -11,10 +11,13 @@ namespace gl
 	public:
 		Shader(string_view name);
 		Shader(string_view name, const string& vertex_text, const string& fragment_text);
+		~Shader();
 
-		// Non-copyable
-		Shader(const Shader&)      = delete;
-		Shader& operator=(Shader&) = delete;
+		// Non-copyable and non-movable
+		Shader(const Shader&)            = delete;
+		Shader& operator=(const Shader&) = delete;
+		Shader(Shader&&)                 = delete;
+		Shader& operator=(Shader&&)      = delete;
 
 		unsigned id() const { return id_; }
 		bool     isValid() const { return id_ > 0; }

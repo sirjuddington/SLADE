@@ -12,6 +12,7 @@ out VertexData
 	float brightness;
 	vec3  normal;
 	vec3  view_pos;
+	vec3  world_pos;
 	vec4  colour;
 } vertex_out;
 
@@ -39,6 +40,7 @@ void main()
 	vec4 position = vec4(in_position - right + up, 1.0);
 	vec4 view_position = modelview * position;
 	vertex_out.view_pos = view_position.xyz;
+	vertex_out.world_pos = position.xyz;
 
 	vertex_out.tex_coord = vec2(0.5 - in_vertex.x, 1.0 - in_vertex.y);
 

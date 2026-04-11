@@ -4,10 +4,19 @@ namespace slade::map
 {
 struct PointLight
 {
+	enum class Type : u8
+	{
+		Normal,
+		Attenuated,
+		Additive,
+		Subtractive
+	};
+
 	const MapThing* thing;
 	Vec3d           position;
 	u8              r, g, b;
 	unsigned        radius;
+	Type            type;
 };
 
 class PointLights
