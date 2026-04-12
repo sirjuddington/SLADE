@@ -470,6 +470,26 @@ bool Shader::link()
 }
 
 // -----------------------------------------------------------------------------
+// Associates the named uniform block [block_name] with [binding_point] in this
+// shader
+// -----------------------------------------------------------------------------
+bool Shader::bindUniformBlock(const string& block_name, unsigned binding_point) const
+{
+	if (!isValid())
+		return false;
+
+	const auto index = glGetUniformBlockIndex(id_, block_name.c_str());
+	if (index == GL_INVALID_INDEX)
+	{
+		log::warning("Uniform block '{}' not found in shader '{}'", block_name, name_);
+		return false;
+	}
+
+	glUniformBlockBinding(id_, index, binding_point);
+	return true;
+}
+
+// -----------------------------------------------------------------------------
 // Binds this shader for use in OpenGL
 // -----------------------------------------------------------------------------
 void Shader::bind() const

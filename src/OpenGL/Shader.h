@@ -63,6 +63,8 @@ namespace gl
 		bool setUniform(const string& name, const glm::mat4& value) const;
 		bool setUniform(const string& name, const ColRGBA& value) const;
 
+		bool bindUniformBlock(const string& block_name, unsigned binding_point) const;
+
 		static void          unbind();
 		static const Shader* currentShader();
 

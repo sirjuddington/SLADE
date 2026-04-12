@@ -1,6 +1,20 @@
 #pragma once
 
+#include "OpenGL/UniformBuffer.h"
 #include "SelectionOverlay3D.h"
+
+// Point lights are stored in a UBO with the following structure
+inline constexpr int MAX_POINT_LIGHTS = 512; // Maximum point lights in the UBO
+struct PointLightsUBOData
+{
+	struct alignas(16) Light
+	{
+		glm::vec4 position_type; // .xyz = world position, .w = type (cast to float)
+		glm::vec4 colour_radius; // .xyz = RGB [0,1],      .w = radius
+	};
+
+	Light lights[MAX_POINT_LIGHTS];
+};
 
 // Forward declarations
 namespace slade
@@ -88,6 +102,9 @@ private:
 	unique_ptr<gl::Shader> shader_3d_alphatest_;
 	unique_ptr<gl::Shader> shader_3d_sprite_;
 	unique_ptr<gl::Shader> shader_3d_icon_;
+
+	// Point lights UBO
+	gl::UniformBuffer<PointLightsUBOData> point_lights_ubo_;
 
 	// Render handlers
 	unique_ptr<Skybox>          skybox_;

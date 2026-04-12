@@ -33,45 +33,46 @@ uniform sampler2D tex_unit;
 
 // Point lights ----------------------------------------------------------------
 
-#ifndef MAX_POINT_LIGHTS
-#define MAX_POINT_LIGHTS 32
-#endif
-
 struct PointLight
 {
-	vec3  position;
-	vec3  colour;
-	float radius;
-	int   type; // 0 = normal, 1 = attenuated, 2 = additive, 3 = subtractive
+	vec4  position_type; // .xyz = world position; .w = type (0=normal, 1=attenuated, 2=additive, 3=subtractive)
+	vec4  colour_radius; // .xyz = RGB colour;     .w = radius
 };
-uniform PointLight point_lights[MAX_POINT_LIGHTS];
-uniform int num_point_lights = 0;
+
+layout(std140) uniform PointLightsBlock
+{
+	PointLight lights[MAX_POINT_LIGHTS];
+};
+
+uniform int   num_point_lights      = 0;
 uniform float point_light_intensity = 1.0;
 
 void applyPointLights(inout vec3 light, inout vec3 additive_light)
 {
 	for (int i = 0; i < num_point_lights; ++i)
 	{
-		PointLight pl = point_lights[i];
+		PointLight pl = lights[i];
 
-		vec3 to_light = pl.position - vertex_in.world_pos;
+		vec3  to_light = pl.position_type.xyz - vertex_in.world_pos;
+		float radius   = pl.colour_radius.w;
+		int   type     = int(pl.position_type.w);
 
 		// Quick distance check to avoid sqrt below when not needed
 		float dist_sq = dot(to_light, to_light);
-		if (dist_sq > pl.radius * pl.radius)
+		if (dist_sq > radius * radius)
 			continue;
 
 		// Find distance to light and intensity (1.0 at centre, 0.0 at radius)
 		float dist = sqrt(dist_sq);
-		float t = 1.0 - (dist / pl.radius);
+		float t = 1.0 - (dist / radius);
 
 #ifdef SPRITE
 		// Don't attenuate on sprites
 		// (they are billboarded so we don't have a normal)
-		vec3 lc = pl.colour * t * point_light_intensity;
-		if (pl.type == 2)
+		vec3 lc = pl.colour_radius.xyz * t * point_light_intensity;
+		if (type == 2)
 			additive_light += lc * 0.2;
-		else if (pl.type == 3)
+		else if (type == 3)
 			light -= lc;
 		else
 			light += lc;
@@ -84,17 +85,17 @@ void applyPointLights(inout vec3 light, inout vec3 additive_light)
 			continue;
 
 		// Calculate final intensity (with attenuation if type 1) and colour
-		float intensity = (pl.type == 1) ? t * max(nl, 0.0) / dist : t;
-		vec3 lc = pl.colour * intensity * point_light_intensity;
+		float intensity = (type == 1) ? t * max(nl, 0.0) / dist : t;
+		vec3  lc        = pl.colour_radius.xyz * intensity * point_light_intensity;
 
-		if (pl.type == 2)
+		if (type == 2)
 		{
 			// Additive lights are added separately after the texture is applied
 			additive_light += lc * 0.2; // scaled by 0.2 to match *ZDoom
 		}
 		else
 		{
-			if (pl.type == 3)
+			if (type == 3)
 				light -= lc; // Subtractive
 			else
 				light += lc; // Normal/attenuated

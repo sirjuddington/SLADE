@@ -86,7 +86,7 @@ CVAR(Bool, map3d_highlight_enabled, true, CVar::Flag::Save)
 CVAR(Bool, map3d_highlight_fill, true, CVar::Flag::Save)
 CVAR(Bool, map3d_highlight_outline, false, CVar::Flag::Save)
 CVAR(Bool, map3d_lights_enabled, true, CVar::Flag::Save)
-CVAR(Int, map3d_lights_max, 64, CVar::Flag::Save)
+CVAR(Int, map3d_lights_max, 128, CVar::Flag::Save)
 CVAR(Float, map3d_lights_intensity, 1.0f, CVar::Flag::Save)
 
 
@@ -126,12 +126,12 @@ vector<map::PointLight> visiblePointLights(const SLADEMap& map, const gl::Camera
 // Sets up common shader uniforms for the given 3d geometry [shader]
 // -----------------------------------------------------------------------------
 void setupShaderUniforms(
-	const gl::Shader&              shader,
-	const gl::Camera&              camera,
-	bool                           fullbright,
-	bool                           fog,
-	bool                           sprite_shader,
-	const vector<map::PointLight>& point_lights = {})
+	const gl::Shader& shader,
+	const gl::Camera& camera,
+	bool              fullbright,
+	bool              fog,
+	bool              sprite_shader,
+	int               num_point_lights = 0)
 {
 	// Set ModelView/Projection matrix uniforms from camera
 	shader.setUniform("modelview", camera.viewMatrix());
@@ -154,24 +154,10 @@ void setupShaderUniforms(
 		shader.setUniform("fake_contrast", map3d_fake_contrast);
 	}
 
-	// Set point light uniforms
-	if (!point_lights.empty())
-	{
-		auto num_lights = std::min(map3d_lights_max.value, static_cast<int>(point_lights.size()));
-		shader.setUniform("num_point_lights", num_lights);
+	// Set point light count
+	shader.setUniform("num_point_lights", num_point_lights);
+	if (num_point_lights > 0)
 		shader.setUniform("point_light_intensity", map3d_lights_intensity.value);
-		for (int i = 0; i < num_lights; ++i)
-		{
-			const auto& pl = point_lights[i];
-			shader.setUniform(fmt::format("point_lights[{}].position", i), glm::vec3(pl.position));
-			shader.setUniform(
-				fmt::format("point_lights[{}].colour", i), glm::vec3(pl.r / 255.0f, pl.g / 255.0f, pl.b / 255.0f));
-			shader.setUniform(fmt::format("point_lights[{}].radius", i), static_cast<float>(pl.radius * 2));
-			shader.setUniform(fmt::format("point_lights[{}].type", i), static_cast<int>(pl.type));
-		}
-	}
-	else
-		shader.setUniform("num_point_lights", 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -259,26 +245,31 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	// Create shaders if needed
 	if (!shader_3d_)
 	{
-		auto max_pl_str = fmt::format("{}", map3d_lights_max.value);
+		auto max_point_lights = fmt::format("{}", MAX_POINT_LIGHTS);
 
 		shader_3d_ = std::make_unique<gl::Shader>("map_3d");
-		shader_3d_->define("MAX_POINT_LIGHTS", max_pl_str);
+		shader_3d_->define("MAX_POINT_LIGHTS", max_point_lights);
 		shader_3d_->loadResourceEntries("map_geometry3d.vert", "map_geometry3d.frag");
+		shader_3d_->bindUniformBlock("PointLightsBlock", 0);
 
 		shader_3d_alphatest_ = std::make_unique<gl::Shader>("map_3d_alphatest");
-		shader_3d_alphatest_->define("MAX_POINT_LIGHTS", max_pl_str);
 		shader_3d_alphatest_->define("ALPHA_TEST");
+		shader_3d_alphatest_->define("MAX_POINT_LIGHTS", max_point_lights);
 		shader_3d_alphatest_->loadResourceEntries("map_geometry3d.vert", "map_geometry3d.frag");
+		shader_3d_alphatest_->bindUniformBlock("PointLightsBlock", 0);
 
 		shader_3d_sprite_ = std::make_unique<gl::Shader>("map_3d_sprite");
-		shader_3d_sprite_->define("MAX_POINT_LIGHTS", max_pl_str);
 		shader_3d_sprite_->define("ALPHA_TEST");
 		shader_3d_sprite_->define("SPRITE");
+		shader_3d_sprite_->define("MAX_POINT_LIGHTS", max_point_lights);
 		shader_3d_sprite_->loadResourceEntries("map_sprite3d.vert", "map_geometry3d.frag");
+		shader_3d_sprite_->bindUniformBlock("PointLightsBlock", 0);
 
-		shader_3d_icon_ = std::make_unique<gl::Shader>("map_3d_sprite");
+		shader_3d_icon_ = std::make_unique<gl::Shader>("map_3d_icon");
 		shader_3d_icon_->define("CIRCLE_MASK");
+		shader_3d_icon_->define("MAX_POINT_LIGHTS", max_point_lights);
 		shader_3d_icon_->loadResourceEntries("map_sprite3d.vert", "map_geometry3d.frag");
+		shader_3d_icon_->bindUniformBlock("PointLightsBlock", 0);
 	}
 
 	// Setup GL stuff
@@ -290,11 +281,28 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	glDepthMask(GL_TRUE);
 	gl::setBlend(gl::Blend::Normal);
 
-	// Setup shaders
+	// Build and upload the point lights UBO
 	auto point_lights = visiblePointLights(*map_, camera);
-	setupShaderUniforms(*shader_3d_, camera, fullbright_, fog_, false, point_lights);
-	setupShaderUniforms(*shader_3d_alphatest_, camera, fullbright_, fog_, false, point_lights);
-	setupShaderUniforms(*shader_3d_sprite_, camera, fullbright_, fog_, true, point_lights);
+	auto num_lights   = 0;
+	if (!point_lights.empty() && map3d_lights_enabled)
+	{
+		num_lights = std::min(map3d_lights_max.value, static_cast<int>(point_lights.size()));
+		PointLightsUBOData ubo_data{};
+		for (int i = 0; i < num_lights; ++i)
+		{
+			const auto& pl                   = point_lights[i];
+			ubo_data.lights[i].position_type = glm::vec4(glm::vec3(pl.position), static_cast<float>(pl.type));
+			ubo_data.lights[i].colour_radius = glm::vec4(
+				pl.r / 255.0f, pl.g / 255.0f, pl.b / 255.0f, static_cast<float>(pl.radius * 2));
+		}
+		point_lights_ubo_.upload(ubo_data);
+		point_lights_ubo_.bindTo(0);
+	}
+
+	// Setup per-shader uniforms
+	setupShaderUniforms(*shader_3d_, camera, fullbright_, fog_, false, num_lights);
+	setupShaderUniforms(*shader_3d_alphatest_, camera, fullbright_, fog_, false, num_lights);
+	setupShaderUniforms(*shader_3d_sprite_, camera, fullbright_, fog_, true, num_lights);
 	setupShaderUniforms(*shader_3d_icon_, camera, fullbright_, fog_, true); // No lights on icons
 
 	// Update visibility if needed
