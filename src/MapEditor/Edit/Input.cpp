@@ -287,7 +287,7 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 			else
 				context_->selection().toggleCurrent();
 
-			return false;
+			return true;
 		}
 
 		// Line drawing state, add line draw point

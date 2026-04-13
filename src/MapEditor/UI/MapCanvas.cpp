@@ -484,6 +484,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 	{
 		// Set focus
 		SetFocus();
+		SetFocusFromKbd();
 
 		e.Skip();
 	}

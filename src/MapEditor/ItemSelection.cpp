@@ -47,6 +47,7 @@
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -589,15 +590,43 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 	case Mode::Lines:    type = MapObject::Type::Line; break;
 	case Mode::Sectors:  type = MapObject::Type::Sector; break;
 	case Mode::Things:   type = MapObject::Type::Thing; break;
-	default:             return {};
+	case Mode::Visual:
+		// In 3D mode we can have multiple types selected, so use the current
+		// highlight to determine the type
+		if (hilight_.index >= 0)
+		{
+			switch (baseItemType(hilight_.type))
+			{
+			case ItemType::Vertex: type = MapObject::Type::Vertex; break;
+			case ItemType::Side:   type = MapObject::Type::Side; break;
+			case ItemType::Sector: type = MapObject::Type::Sector; break;
+			case ItemType::Thing:  type = MapObject::Type::Thing; break;
+			default:               return {};
+			}
+		}
+		else
+			return {};
+		break;
+	default: return {};
 	}
 
 	// Get selected objects
 	vector<MapObject*> list;
 	MapObject*         o;
-	for (auto& item : selection_)
-		if ((o = context_->map().object(type, item.index)))
-			list.push_back(o);
+	if (type == MapObject::Type::Side)
+	{
+		// For sides (3d mode walls), we need to get the parent line of each
+		// selected side
+		for (auto& item : selection_)
+			if (auto side = context_->map().side(item.index))
+				vectorAddUnique(list, static_cast<MapObject*>(side->parentLine()));
+	}
+	else
+	{
+		for (auto& item : selection_)
+			if ((o = context_->map().object(type, item.index)))
+				list.push_back(o);
+	}
 
 	// If no objects were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0)

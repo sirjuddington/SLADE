@@ -556,6 +556,19 @@ bool MapEditContext::update(double frametime)
 					else
 						info_showing_ = false;
 
+					// Update properties panel if no selection
+					if (selection_->empty())
+					{
+						switch (baseItemType(hl.type))
+						{
+						case ItemType::Vertex: mapeditor::openObjectProperties(map().vertex(hl.index)); break;
+						case ItemType::Side:   mapeditor::openObjectProperties(map().side(hl.index)->parentLine()); break;
+						case ItemType::Sector: mapeditor::openObjectProperties(map().sector(hl.index)); break;
+						case ItemType::Thing:  mapeditor::openObjectProperties(map().thing(hl.index)); break;
+						default:               break;
+						}
+					}
+
 					// Animation
 					renderer_->animateHilightChange(old_hl);
 				}
