@@ -107,7 +107,6 @@ string dir_separator = "/";
 #endif
 
 // App objects (managers, etc.)
-Console         console_main;
 PaletteManager  palette_manager;
 ArchiveManager  archive_manager;
 Clipboard       clip_board;
@@ -452,14 +451,6 @@ vector<string> processCommandLine(const vector<string>& args)
 bool app::isInitialised()
 {
 	return init_ok;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the global Console
-// -----------------------------------------------------------------------------
-Console* app::console()
-{
-	return &console_main;
 }
 
 // -----------------------------------------------------------------------------

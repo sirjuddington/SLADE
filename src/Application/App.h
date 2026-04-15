@@ -6,7 +6,6 @@ namespace slade
 {
 class Archive;
 class ArchiveManager;
-class Console;
 class PaletteManager;
 class Clipboard;
 class ResourceManager;
@@ -14,7 +13,6 @@ class ResourceManager;
 namespace app
 {
 	bool             isInitialised();
-	Console*         console();
 	PaletteManager*  paletteManager();
 	long             runTimer();
 	bool             isExiting();

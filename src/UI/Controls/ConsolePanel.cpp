@@ -203,7 +203,7 @@ void ConsolePanel::focusInput() const
 // -----------------------------------------------------------------------------
 void ConsolePanel::onCommandEnter(wxCommandEvent& e)
 {
-	app::console()->execute(e.GetString().utf8_string());
+	Console::instance().execute(e.GetString().utf8_string());
 	update();
 	text_command_->Clear();
 	cmd_log_index_ = 0;
@@ -216,18 +216,17 @@ void ConsolePanel::onCommandKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_UP)
 	{
-		text_command_->SetValue(wxString::FromUTF8(app::console()->prevCommand(cmd_log_index_)));
+		text_command_->SetValue(wxString::FromUTF8(Console::instance().prevCommand(cmd_log_index_)));
 		text_command_->SetInsertionPointEnd();
-		if (cmd_log_index_ < app::console()->numPrevCommands() - 1)
+		if (cmd_log_index_ < Console::instance().numPrevCommands() - 1)
 			cmd_log_index_++;
 	}
 	else if (e.GetKeyCode() == WXK_DOWN)
 	{
 		cmd_log_index_--;
-		text_command_->SetValue(wxString::FromUTF8(app::console()->prevCommand(cmd_log_index_)));
+		text_command_->SetValue(wxString::FromUTF8(Console::instance().prevCommand(cmd_log_index_)));
 		text_command_->SetInsertionPointEnd();
-		if (cmd_log_index_ < 0)
-			cmd_log_index_ = 0;
+		cmd_log_index_ = std::max(cmd_log_index_, 0);
 	}
 	else
 		e.Skip();

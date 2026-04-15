@@ -42,6 +42,8 @@ public:
 	string prevCommand(int index);
 	int    numPrevCommands() const { return cmd_log_.size(); }
 
+	static Console& instance();
+
 private:
 	vector<ConsoleCommand> commands_;
 	vector<string>         cmd_log_;
@@ -50,6 +52,6 @@ private:
 
 // Define for neat console command definitions
 #define CONSOLE_COMMAND(name, min_args, show_in_list)              \
-	void           c_##name(const vector<string>& args);           \
-	ConsoleCommand name(#name, &c_##name, min_args, show_in_list); \
-	void           c_##name(const vector<string>& args)
+	void           cc_##name(const vector<string>& args);           \
+	ConsoleCommand name(#name, &cc_##name, min_args, show_in_list); \
+	void           cc_##name(const vector<string>& args)
