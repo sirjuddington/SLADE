@@ -537,7 +537,8 @@
         "icon": "platform",
         "zeth": 36,
         "angle": false,
-        "colour": "rgb(120, 120, 200)"
+        "colour": "rgb(120, 120, 200)",
+        "solid": true
       },
       "things": [
         { "type": 5061, "name": "Invisible Bridge 32x8" },
@@ -578,7 +579,7 @@
           "type": 9026,
           "name": "Spark",
           "arg1": { "name": "Sparks", "description": "Number of sparks (0 = 32 sparks)" },
-          "angl": true,
+          "angle": true,
           "zeth": 19
         },
         {

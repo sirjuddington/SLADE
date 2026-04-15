@@ -51,6 +51,7 @@
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/MapSpecials/MapSpecials.h"
+#include "SLADEMap/MapSpecials/PointLights.h"
 #include "SLADEMap/MapSpecials/SectorLighting.h"
 #include "SLADEMap/SLADEMap.h"
 #include "SpriteBuffer3D.h"
@@ -88,6 +89,24 @@ CVAR(Int, map3d_things_boxes, BOXES_SOLIDONLY, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 namespace
 {
+// -----------------------------------------------------------------------------
+// Returns the radius and height to use for the thing box of the given [type]
+// with the specified [sprite_size]
+// -----------------------------------------------------------------------------
+std::tuple<int, int> thingTypeSize(const game::ThingType& type, const Vec2f& sprite_size)
+{
+	// Icon-only and non-solid, just use configured 3d thing icon size
+	if (type.sprite().empty() && !type.icon().empty() && !type.solid())
+		return { map3d_thing_icon_size / 2, map3d_thing_icon_size };
+
+	auto radius = type.radius();
+	auto height = type.height();
+	if (height < 0)
+		height = sprite_size.y;
+
+	return { radius, height };
+}
+
 // -----------------------------------------------------------------------------
 // Adds lines to [buffer] to draw a box around the given [thing] at height [z]
 // with the given [radius] and [height].
@@ -194,7 +213,7 @@ void addThingDirectionArrow(
 	Vec2f dir   = geometry::vectorAngle(geometry::degToRad(thing.angle()));
 	auto  start = glm::vec3{ thing.xPos(), thing.yPos(), z + height * 0.5f };
 	auto  end   = start + glm::vec3(dir * (radius + 8.0f), 0.0f);
-	line_buffer.addArrow3d(start, end, glm::vec4{ 1.0f, 1.0f, 1.0f, 0.75f }, line_width, 8.0f, 30.0f);
+	line_buffer.addArrow3d(start, end, glm::vec4{ 1.0f, 1.0f, 1.0f, 0.85f }, line_width, 8.0f, 30.0f);
 }
 
 // -----------------------------------------------------------------------------
@@ -244,7 +263,7 @@ bool thingTypeEnabled(const game::ThingType& type_info)
 bool boxesEnabled(const game::ThingType& type_info)
 {
 	if (map3d_things_boxes == BOXES_ALL)
-		return true;
+		return type_info.sprite().empty() ? type_info.solid() : true; // If thing is icon-only, only show box if solid
 	if (map3d_things_boxes == BOXES_SOLIDONLY)
 		return type_info.solid();
 
@@ -325,6 +344,14 @@ void ThingRenderer3D::ThingGroup::addThing(const MapThing& thing)
 
 		if (type_info->fullbright())
 			light.brightness = 255;
+
+		// Point light - fullbright and coloured
+		if (!type_info->pointLight().empty())
+		{
+			light.brightness = 255;
+			if (auto pl = map->mapSpecials().pointLightForThing(thing))
+				light.colour.set(pl->r, pl->g, pl->b);
+		}
 
 		sprite_buffer->add(glm::vec3{ thing.xPos(), thing.yPos(), z }, light.brightness / 255.0f, light.colour);
 	}
@@ -596,6 +623,7 @@ void ThingRenderer3D::renderThingBoxes(const gl::Camera& camera, const gl::View&
 		return;
 
 	glDisable(GL_CULL_FACE);
+	gl::setBlend(gl::Blend::Normal);
 
 	gl::Shader* shader = nullptr;
 	for (auto& group : groups_)
@@ -607,11 +635,7 @@ void ThingRenderer3D::renderThingBoxes(const gl::Camera& camera, const gl::View&
 		auto& line_buffer = *group.line_buffer;
 		if (line_buffer.buffer().empty() && things_processed_ < 0)
 		{
-			// Get thing size info
-			auto radius = group.type_info->radius();
-			auto height = group.type_info->height();
-			if (height < 0)
-				height = group.sprite_size.y;
+			auto [radius, height] = thingTypeSize(*group.type_info, group.sprite_size);
 
 			// Add group thing outlines
 			for (const auto& ti : group.things)
@@ -637,7 +661,7 @@ void ThingRenderer3D::renderThingBoxes(const gl::Camera& camera, const gl::View&
 			line_buffer.setShaderUniforms(*shader);
 			shader->setUniform("mvp", camera.projectionMatrix() * camera.viewMatrix());
 			shader->setUniform("viewport_size", view.size());
-			shader->setUniform("colour", glm::vec4{ 1.0f });
+			shader->setUniform("colour", glm::vec4{ 1.0f, 1.0f, 1.0f, 0.75f });
 		}
 
 		gl::bindVAO(line_buffer.vao());
@@ -683,9 +707,8 @@ void ThingRenderer3D::renderHighlight(
 	if (update)
 	{
 		highlight_lines_->buffer().clear();
-		auto z      = group->thingZ(thing->index());
-		auto radius = group->type_info->radius();
-		auto height = group->height();
+		auto z                = group->thingZ(thing->index());
+		auto [radius, height] = thingTypeSize(*group->type_info, group->sprite_size);
 
 		// Arrow
 		addThingDirectionArrow(*highlight_lines_, *thing, z, radius, height, 1.5f);
@@ -754,9 +777,8 @@ void ThingRenderer3D::addToSelectionOverlay(SelectionOverlay3D& overlay, const I
 	if (!group)
 		return;
 
-	auto z      = group->thingZ(thing->index());
-	auto radius = group->type_info->radius();
-	auto height = group->height();
+	auto z                = group->thingZ(thing->index());
+	auto [radius, height] = thingTypeSize(*group->type_info, group->sprite_size);
 
 	addThingBoxOutline(*overlay.outline, *thing, z, radius, height, 2.0f, 0.5f);
 	addThingBox(*overlay.fill_things, *thing, z, radius, height, 0.5f);
@@ -782,11 +804,8 @@ optional<Item> ThingRenderer3D::nearestIntersectingThing(const gl::Camera& camer
 		if (!thingTypeEnabled(*group.type_info))
 			continue;
 
-		auto box    = boxesEnabled(*group.type_info);
-		auto radius = group.type_info->radius();
-		auto height = group.type_info->height();
-		if (height < 0)
-			height = group.sprite_size.y;
+		auto box              = boxesEnabled(*group.type_info);
+		auto [radius, height] = thingTypeSize(*group.type_info, group.sprite_size);
 
 		for (const auto& ti : group.things)
 		{

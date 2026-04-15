@@ -282,21 +282,24 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	gl::setBlend(gl::Blend::Normal);
 
 	// Build and upload the point lights UBO
-	auto point_lights = visiblePointLights(*map_, camera);
-	auto num_lights   = 0;
-	if (!point_lights.empty() && map3d_lights_enabled)
+	auto num_lights = 0;
+	if (map3d_lights_enabled)
 	{
-		num_lights = std::min(map3d_lights_max.value, static_cast<int>(point_lights.size()));
-		PointLightsUBOData ubo_data{};
-		for (int i = 0; i < num_lights; ++i)
+		auto point_lights = visiblePointLights(*map_, camera);
+		if (!point_lights.empty())
 		{
-			const auto& pl                   = point_lights[i];
-			ubo_data.lights[i].position_type = glm::vec4(glm::vec3(pl.position), static_cast<float>(pl.type));
-			ubo_data.lights[i].colour_radius = glm::vec4(
-				pl.r / 255.0f, pl.g / 255.0f, pl.b / 255.0f, static_cast<float>(pl.radius * 2));
+			num_lights = std::min(map3d_lights_max.value, static_cast<int>(point_lights.size()));
+			PointLightsUBOData ubo_data{};
+			for (int i = 0; i < num_lights; ++i)
+			{
+				const auto& pl                   = point_lights[i];
+				ubo_data.lights[i].position_type = glm::vec4(glm::vec3(pl.position), static_cast<float>(pl.type));
+				ubo_data.lights[i].colour_radius = glm::vec4(
+					pl.r / 255.0f, pl.g / 255.0f, pl.b / 255.0f, static_cast<float>(pl.radius * 2));
+			}
+			point_lights_ubo_.upload(ubo_data);
+			point_lights_ubo_.bindTo(0);
 		}
-		point_lights_ubo_.upload(ubo_data);
-		point_lights_ubo_.bindTo(0);
 	}
 
 	// Setup per-shader uniforms
