@@ -73,6 +73,7 @@ public:
 	static const vector<string>& history();
 	static vector<string>        lastPerformed(int n);
 	static string                current();
+	static SAction*              invalidAction();
 
 private:
 	// The id associated with this action - to keep things consistent, it should be of the format xxxx_*,
@@ -94,8 +95,5 @@ private:
 
 	// Internal functions
 	void fromJson(const Json& j);
-
-	// Static functions
-	static SAction* invalidAction();
 };
 } // namespace slade

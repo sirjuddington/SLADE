@@ -508,6 +508,12 @@
     "texeditor": {
       "svg": "icons/general/texeditor.svg"
     },
+    "thing_box": {
+      "svg": "icons/general/thing_box.svg"
+    },
+    "thing_vis": {
+      "svg": "icons/general/thing_vis.svg"
+    },
     "things": {
       "svg": "icons/general/things.svg"
     },

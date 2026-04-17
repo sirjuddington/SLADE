@@ -79,6 +79,7 @@
 #include "SLADEMap/SLADEMap.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/UI.h"
 #include "UndoSteps.h"
 #include "Utility/StringUtils.h"
@@ -109,6 +110,8 @@ CVAR(Bool, map3d_info_overlay, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, map2d_flat_drawtype)
 EXTERN_CVAR(Bool, map2d_thing_preview_lights)
+EXTERN_CVAR(Int, map3d_things)
+EXTERN_CVAR(Int, map3d_things_boxes)
 
 
 // -----------------------------------------------------------------------------
@@ -409,33 +412,12 @@ void MapEditContext::setEditMode(Mode mode)
 	case Mode::Visual:   addEditorMessage("3d mode"); break;
 	}
 
-	if (edit_mode_ != Mode::Visual)
-		updateDisplay();
-
+	updateDisplay();
 	updateStatusText();
+	updateToolbar();
 
 	// Unlock mouse
 	lockMouse(false);
-
-	// Show/hide relevant toolbar groups
-	window()->showToolbarGroup("sectors_mode", mode == Mode::Sectors);
-	window()->showToolbarGroup("display_2d", mode != Mode::Visual);
-	window()->showToolbarGroup("edit_2d", mode != Mode::Visual);
-
-	// Update toolbar
-	if (mode == Mode::Vertices)
-		SAction::fromId("mapw_mode_vertices")->setChecked();
-	else if (mode == Mode::Lines)
-		SAction::fromId("mapw_mode_lines")->setChecked();
-	else if (mode == Mode::Sectors)
-	{
-		SAction::fromId("mapw_mode_sectors")->setChecked();
-		SAction::fromId("mapw_sectormode_normal")->setChecked();
-	}
-	else if (mode == Mode::Things)
-		SAction::fromId("mapw_mode_things")->setChecked();
-	else if (mode == Mode::Visual)
-		SAction::fromId("mapw_mode_3d")->setChecked();
 
 	// Setup for 3d mode if switching to it
 	if (mode == Mode::Visual)
@@ -652,6 +634,7 @@ bool MapEditContext::openMap(const MapDesc& map)
 
 	updateStatusText();
 	updateThingLists();
+	updateToolbar();
 
 	return true;
 }
@@ -1610,6 +1593,34 @@ void MapEditContext::updateStatusText() const
 	mapeditor::setStatusText(grid, 2);
 }
 
+void MapEditContext::updateToolbar() const
+{
+	// Show/hide relevant toolbar groups
+	window()->showToolbarGroup("sectors_mode", edit_mode_ == Mode::Sectors);
+	window()->showToolbarGroup("display_2d", edit_mode_ != Mode::Visual);
+	window()->showToolbarGroup("edit_2d", edit_mode_ != Mode::Visual);
+	window()->showToolbarGroup("display_3d", edit_mode_ == Mode::Visual);
+
+	// Update toolbar items
+	if (edit_mode_ == Mode::Vertices)
+		SAction::fromId("mapw_mode_vertices")->setChecked();
+	else if (edit_mode_ == Mode::Lines)
+		SAction::fromId("mapw_mode_lines")->setChecked();
+	else if (edit_mode_ == Mode::Sectors)
+	{
+		SAction::fromId("mapw_mode_sectors")->setChecked();
+		SAction::fromId("mapw_sectormode_normal")->setChecked();
+	}
+	else if (edit_mode_ == Mode::Things)
+		SAction::fromId("mapw_mode_things")->setChecked();
+	else if (edit_mode_ == Mode::Visual)
+	{
+		SAction::fromId("mapw_mode_3d")->setChecked();
+		window()->toolbar()->setItemChecked("mapw_3d_toggle_things", map3d_things > 0);
+		window()->toolbar()->setItemChecked("mapw_3d_toggle_thing_boxes", map3d_things_boxes > 0);
+	}
+}
+
 // -----------------------------------------------------------------------------
 // Begins recording undo level [name]. [mod] is true if the operation about to
 // begin will modify object properties, [create/del] are true if it will create
@@ -2184,11 +2195,17 @@ bool MapEditContext::handleAction(string_view id)
 
 	// Increment grid
 	else if (id == "mapw_grid_increment")
+	{
 		incrementGrid();
+		return true;
+	}
 
 	// Decrement grid
 	else if (id == "mapw_grid_decrement")
+	{
 		decrementGrid();
+		return true;
+	}
 
 	// Toggle grid snap
 	else if (id == "mapw_grid_snap")
@@ -2199,6 +2216,51 @@ bool MapEditContext::handleAction(string_view id)
 		else
 			addEditorMessage("Grid Snapping Off");
 		updateStatusText();
+
+		return true;
+	}
+
+	// 3d Mode thing visibility
+	else if (id == "mapw_3d_toggle_things")
+	{
+		// TODO: This won't remember the previous value, might need to
+		//       change it to 2 cvars (for 'enabled' and 'decoration only')
+		map3d_things = map3d_things == 0 ? 1 : 0;
+		window()->toolbar()->setItemChecked("mapw_3d_toggle_things", map3d_things > 0);
+		return true;
+	}
+	else if (id == "mapw_3d_things_all")
+	{
+		map3d_things = 1;
+		window()->toolbar()->setItemChecked("mapw_3d_toggle_things", true);
+		return true;
+	}
+	else if (id == "mapw_3d_things_decoration")
+	{
+		map3d_things = 2;
+		window()->toolbar()->setItemChecked("mapw_3d_toggle_things", true);
+		return true;
+	}
+
+	// 3d Mode thing box visibility
+	else if (id == "mapw_3d_toggle_thing_boxes")
+	{
+		// TODO: Similar situation to map3d_things
+		map3d_things_boxes = map3d_things_boxes == 0 ? 1 : 0;
+		window()->toolbar()->setItemChecked("mapw_3d_toggle_thing_boxes", map3d_things_boxes > 0);
+		return true;
+	}
+	else if (id == "mapw_3d_thing_boxes_all")
+	{
+		map3d_things_boxes = 1;
+		window()->toolbar()->setItemChecked("mapw_3d_toggle_thing_boxes", true);
+		return true;
+	}
+	else if (id == "mapw_3d_thing_boxes_solid")
+	{
+		map3d_things_boxes = 2;
+		window()->toolbar()->setItemChecked("mapw_3d_toggle_thing_boxes", true);
+		return true;
 	}
 
 

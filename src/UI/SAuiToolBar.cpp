@@ -94,7 +94,8 @@ SAuiToolBar::SAuiToolBar(wxWindow* parent, bool vertical, bool main_toolbar, wxA
 	}
 #endif
 
-	// Popup associated menu when a dropdown button is clicked
+	// Popup associated menu when a dropdown button is clicked.
+	// For split buttons, only show the menu when the dropdown arrow is clicked
 	Bind(
 		wxEVT_AUITOOLBAR_TOOL_DROPDOWN,
 		[this](wxAuiToolBarEvent& e)
@@ -102,6 +103,12 @@ SAuiToolBar::SAuiToolBar(wxWindow* parent, bool vertical, bool main_toolbar, wxA
 			auto id = e.GetId();
 			if (auto item = itemByWxId(id); item && item->menu)
 			{
+				if (item->split_button && !e.IsDropDownClicked())
+				{
+					// Button part clicked, let wxEVT_MENU handle the action
+					e.Skip();
+					return;
+				}
 				PopupMenu(item->menu, e.GetItemRect().GetBottomLeft());
 				SetPressedItem(nullptr); // Need to clear this or the button will stay pressed after the menu closes
 			}
@@ -133,24 +140,76 @@ SAuiToolBar::SAuiToolBar(wxWindow* parent, bool vertical, bool main_toolbar, wxA
 				Refresh();
 			}
 		});
+
+	// Track which split button's dropdown arrow the mouse is over so we can
+	// draw the correct per-half highlight
+	Bind(
+		wxEVT_MOTION,
+		[this](wxMouseEvent& e)
+		{
+			// Find hovered split button (if any) and whether it's the button or
+			// dropdown part
+			int  new_hover     = -1;
+			auto pos           = e.GetPosition();
+			auto dropdown_size = GetArtProvider()->GetElementSize(wxAUI_TBART_DROPDOWN_SIZE) + FromDIP(2);
+			for (const auto& item : items_)
+			{
+				if (!item.split_button || !item.menu)
+					continue;
+
+				auto item_rect = GetToolRect(item.wx_id);
+				if (!item_rect.Contains(pos))
+					continue;
+
+				if (pos.x >= item_rect.x + item_rect.width - dropdown_size)
+					new_hover = item.wx_id;
+
+				break;
+			}
+
+			// Update if changed
+			if (new_hover != dropdown_hover_wx_id_)
+			{
+				dropdown_hover_wx_id_ = new_hover;
+				Refresh();
+			}
+
+			e.Skip();
+		});
+
+	// Clear hovered dropdown button on mouse leave so the highlight doesn't get
+	// stuck
+	Bind(
+		wxEVT_LEAVE_WINDOW,
+		[this](wxMouseEvent& e)
+		{
+			if (dropdown_hover_wx_id_ != -1)
+			{
+				dropdown_hover_wx_id_ = -1;
+				Refresh();
+			}
+			e.Skip();
+		});
 }
 
 // -----------------------------------------------------------------------------
 // SAuiToolBar class destructor
 // -----------------------------------------------------------------------------
-SAuiToolBar::~SAuiToolBar() {}
+SAuiToolBar::~SAuiToolBar() = default;
 
 // -----------------------------------------------------------------------------
 // Adds an SAction [action_id] to the toolbar.
 // If [show_name] is true, the action's name will be shown beside the icon.
 // If [icon] is non-empty, it will be used as the icon instead of the action's
 // default icon.
+// If [menu] is set, the button will be split with a dropdown arrow which shows
+// the menu when clicked.
 // -----------------------------------------------------------------------------
-wxAuiToolBarItem* SAuiToolBar::addAction(const string& action_id, bool show_name, string_view icon)
+wxAuiToolBarItem* SAuiToolBar::addAction(const string& action_id, bool show_name, string_view icon, wxMenu* menu)
 {
 	// Get SAction to add
 	auto sa = SAction::fromId(action_id);
-	if (!sa)
+	if (sa == SAction::invalidAction())
 	{
 		log::warning("SAuiToolBar::addAction: Action '{}' not found", action_id);
 		return nullptr;
@@ -190,7 +249,17 @@ wxAuiToolBarItem* SAuiToolBar::addAction(const string& action_id, bool show_name
 
 	setItemChecked(tool, sa->isChecked());
 
-	items_.push_back({ .id = action_id, .action = sa, .aui_item = tool, .wx_id = sa->wxId(), .show_text = show_name });
+	if (menu)
+		tool->SetHasDropDown(true);
+
+	items_.push_back(
+		{ .id           = action_id,
+		  .action       = sa,
+		  .aui_item     = tool,
+		  .menu         = menu,
+		  .wx_id        = sa->wxId(),
+		  .show_text    = show_name,
+		  .split_button = !!menu });
 
 	return tool;
 }
@@ -203,6 +272,8 @@ wxAuiToolBarItem* SAuiToolBar::addAction(const string& action_id, bool show_name
 // [help_text] is shown in the status bar when the button is hovered.
 // [menu] is an optional dropdown menu for the button.
 // If [show_name] is true, the button [text] will be shown beside the icon.
+// If [split_button] is true and [menu] is set, the button is displayed as a
+//   split button, with a dropdown for the menu on the right
 // -----------------------------------------------------------------------------
 wxAuiToolBarItem* SAuiToolBar::addButton(
 	const string& button_id,
@@ -210,7 +281,8 @@ wxAuiToolBarItem* SAuiToolBar::addButton(
 	string_view   icon,
 	string_view   help_text,
 	wxMenu*       menu,
-	bool          show_name)
+	bool          show_name,
+	bool          split_button)
 {
 	auto id       = SAction::nextWxId();
 	auto icon_bmp = icons::getIcon(icons::Type::Any, icon, toolbar_size);
@@ -227,7 +299,13 @@ wxAuiToolBarItem* SAuiToolBar::addButton(
 	if (menu)
 		tool->SetHasDropDown(true);
 
-	items_.push_back({ .id = button_id, .aui_item = tool, .menu = menu, .wx_id = id, .show_text = show_name });
+	items_.push_back(
+		{ .id           = button_id,
+		  .aui_item     = tool,
+		  .menu         = menu,
+		  .wx_id        = id,
+		  .show_text    = show_name,
+		  .split_button = split_button });
 
 	return tool;
 }
@@ -514,6 +592,7 @@ void SAuiToolBar::createFromLayout()
 	// Clear existing items
 	Clear();
 	items_.clear();
+	dropdown_hover_wx_id_ = -1;
 
 	// Hide all custom controls
 	for (const auto& custom_control : custom_controls_)
@@ -527,7 +606,7 @@ void SAuiToolBar::createFromLayout()
 		if (j_item.value("hidden", false))
 			continue;
 
-		auto type = j_item.at("type").get<string>();
+		auto type = strutil::lower(j_item.at("type").get<string>());
 
 		// Action
 		if (type == "action")
@@ -535,14 +614,31 @@ void SAuiToolBar::createFromLayout()
 			if (j_item.contains("label"))
 				AddLabel(-1, wxString::FromUTF8(j_item.at("label").get<string>()));
 
+			wxMenu* menu = nullptr;
+			if (j_item.contains("menu"))
+			{
+				// Menu specified directly in item definition, must be an
+				// array of strings, each being either an action id or
+				// "separator"
+				menu = new wxMenu();
+				for (const auto& j_menu_item : j_item.at("menu"))
+				{
+					auto menu_item = j_menu_item.get<string>();
+					if (auto sa = SAction::fromId(menu_item); sa)
+						sa->addToMenu(menu);
+					else if (menu_item == "separator")
+						menu->AppendSeparator();
+				}
+			}
+
 			auto aui_item = addAction(
-				j_item.at("id").get<string>(), j_item.value("show_text", false), j_item.value("icon", ""));
+				j_item.at("id").get<string>(), j_item.value("show_text", false), j_item.value("icon", ""), menu);
 
 			EnableTool(aui_item->GetId(), j_item.value("enabled", true));
 		}
 
 		// Button
-		else if (type == "button")
+		else if (type == "button" || type == "split_button")
 		{
 			if (j_item.contains("label"))
 				AddLabel(-1, wxString::FromUTF8(j_item.at("label").get<string>()));
@@ -550,9 +646,24 @@ void SAuiToolBar::createFromLayout()
 			auto button_id = j_item.at("id").get<string>();
 
 			wxMenu* menu = nullptr;
-			for (const auto& dm : dropdown_menus_)
-				if (dm.item_id == button_id)
-					menu = dm.menu;
+			if (j_item.contains("menu"))
+			{
+				menu = new wxMenu();
+				for (const auto& j_menu_item : j_item.at("menu"))
+				{
+					auto menu_item = j_menu_item.get<string>();
+					if (auto sa = SAction::fromId(menu_item); sa)
+						sa->addToMenu(menu);
+					else if (menu_item == "separator")
+						menu->AppendSeparator();
+				}
+			}
+			else
+			{
+				for (const auto& dm : dropdown_menus_)
+					if (dm.item_id == button_id)
+						menu = dm.menu;
+			}
 
 			auto aui_item = addButton(
 				button_id,
@@ -560,7 +671,8 @@ void SAuiToolBar::createFromLayout()
 				j_item.at("icon").get<string>(),
 				j_item.value("help_text", ""),
 				menu,
-				j_item.value("show_text", false));
+				j_item.value("show_text", false),
+				type == "split_button");
 
 			EnableTool(aui_item->GetId(), j_item.value("enabled", true));
 		}
@@ -608,7 +720,7 @@ void SAuiToolBar::createFromLayout()
 	constexpr auto wxITEM_SPACER = 6; // Hopefully this doesn't change
 	for (int i = m_items.size() - 1; i >= 0; i--)
 	{
-		if (m_items.empty() || m_items[i].GetKind() != wxITEM_SEPARATOR)
+		if (m_items.empty() || i >= m_items.size() || m_items[i].GetKind() != wxITEM_SEPARATOR)
 			continue;
 
 		// Separator at start or end
@@ -731,7 +843,7 @@ void SAuiToolBar::setItemChecked(wxAuiToolBarItem* item, bool checked)
 // -----------------------------------------------------------------------------
 // Returns true if [item] is enabled, false if disabled or null.
 // -----------------------------------------------------------------------------
-bool SAuiToolBar::itemEnabled(wxAuiToolBarItem* item) const
+bool SAuiToolBar::itemEnabled(const wxAuiToolBarItem* item) const
 {
 	if (!item)
 		return false;

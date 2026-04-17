@@ -1,6 +1,5 @@
 #pragma once
 
-#include "General/JsonFwd.h"
 #include <wx/aui/auibar.h>
 
 namespace slade
@@ -14,14 +13,19 @@ public:
 	SAuiToolBar(wxWindow* parent, bool vertical = false, bool main_toolbar = false, wxAuiManager* aui_mgr = nullptr);
 	~SAuiToolBar() override;
 
-	wxAuiToolBarItem* addAction(const string& action_id, bool show_name = false, string_view icon = {});
+	wxAuiToolBarItem* addAction(
+		const string& action_id,
+		bool          show_name = false,
+		string_view   icon      = {},
+		wxMenu*       menu      = nullptr);
 	wxAuiToolBarItem* addButton(
 		const string& button_id,
 		string_view   text,
 		string_view   icon,
 		string_view   help_text,
-		wxMenu*       menu      = nullptr,
-		bool          show_name = false);
+		wxMenu*       menu         = nullptr,
+		bool          show_name    = false,
+		bool          split_button = false);
 
 	void groupItems(string_view group_name, const vector<string>& item_ids);
 
@@ -51,11 +55,12 @@ private:
 	struct Item
 	{
 		string            id;
-		SAction*          action    = nullptr;
-		wxAuiToolBarItem* aui_item  = nullptr;
-		wxMenu*           menu      = nullptr;
-		int               wx_id     = -1;
-		bool              show_text = false;
+		SAction*          action       = nullptr;
+		wxAuiToolBarItem* aui_item     = nullptr;
+		wxMenu*           menu         = nullptr;
+		int               wx_id        = -1;
+		bool              show_text    = false;
+		bool              split_button = false;
 	};
 
 	struct Group
@@ -84,6 +89,7 @@ private:
 	unique_ptr<Json>           layout_;
 	wxAuiManager*              aui_mgr_ = nullptr;
 	sigslot::scoped_connection sc_saction_checked_;
+	int                        dropdown_hover_wx_id_ = -1; // wx id of split button whose dropdown arrow is hovered
 
 	const Item* itemByWxId(int wx_id) const;
 	Item*       itemByWxId(int wx_id);
@@ -92,6 +98,6 @@ private:
 	Group*      groupByName(string_view name);
 
 	void setItemChecked(wxAuiToolBarItem* item, bool checked);
-	bool itemEnabled(wxAuiToolBarItem* item) const;
+	bool itemEnabled(const wxAuiToolBarItem* item) const;
 };
 } // namespace slade

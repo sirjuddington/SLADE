@@ -385,21 +385,21 @@ string SAction::current()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the SAction signals struct
-// -----------------------------------------------------------------------------
-SAction::Signals& SAction::signals()
-{
-	static Signals signals;
-	return signals;
-}
-
-// -----------------------------------------------------------------------------
 // Returns the global 'invalid' SAction, creating it if necessary
 // -----------------------------------------------------------------------------
 SAction* SAction::invalidAction()
 {
 	static SAction action_invalid{ "invalid", "Invalid Action", "", "Something's gone wrong here" };
 	return &action_invalid;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the SAction signals struct
+// -----------------------------------------------------------------------------
+SAction::Signals& SAction::signals()
+{
+	static Signals signals;
+	return signals;
 }
 
 

@@ -98,7 +98,7 @@ std::pair<string, string> Tokenizer::parseEditorComment(string_view token)
 	strutil::trimIP(value);
 
 	// Strip quotes, if present
-	if (value.front() == '"' && value.back() == '"')
+	if (!value.empty() && value.front() == '"' && value.back() == '"')
 	{
 		value.erase(value.begin());
 		value.pop_back();

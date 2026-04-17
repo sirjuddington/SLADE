@@ -171,6 +171,7 @@ public:
 	bool   handleKeyBind(string_view key, Vec2d position);
 	void   updateDisplay() const;
 	void   updateStatusText() const;
+	void   updateToolbar() const;
 	void   updateThingLists();
 	void   setCursor(ui::MouseCursor cursor) const;
 	void   forceRefreshRenderer(bool r2d, bool r3d) const;

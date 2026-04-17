@@ -269,6 +269,7 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 {
 	auto s_item         = toolbar_ ? toolbar_->itemByWxId(item.GetId()) : nullptr;
 	auto item_show_text = s_item && s_item->show_text;
+	auto split_button   = s_item && s_item->split_button;
 	int  text_width = 0, text_height = 0;
 
 	// Determine text size if it's being drawn
@@ -280,6 +281,18 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 		dc.GetTextExtent(wxT("ABCDHgj"), &tx, &text_height);
 		dc.GetTextExtent(item.GetLabel(), &text_width, &ty);
 	}
+
+	// Get dropdown size
+#if wxCHECK_VERSION(3, 3, 0)
+	int dropdown_size = GetElementSizeForWindow(wxAUI_TBART_DROPDOWN_SIZE, wnd) + wnd->FromDIP(4);
+#else
+	int dropdown_size = GetElementSize(wxAUI_TBART_DROPDOWN_SIZE) + wnd->FromDIP(4);
+#endif
+
+	// For split buttons, calculate separate rectangles for button and dropdown
+	wxRect button_rect = rect;
+	if (split_button)
+		button_rect.width -= dropdown_size;
 
 	// Determine icon (and text) position and size
 	int             bmp_x = 0, bmp_y = 0;
@@ -319,19 +332,42 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 		bmp_buffer.Create(rect.width, rect.height, 32);
 		bmp_buffer.UseAlpha(true);
 		wxGCDC gcdc{ bmp_buffer };
-		auto   gc = gcdc.GetGraphicsContext();
+		auto   gc     = gcdc.GetGraphicsContext();
+		auto   radius = 3.0 * wnd->GetDPIScaleFactor();
 
 		// Draw background on mouseover
 		if (hover || pressed)
 		{
-			// Determine background colour
-			auto col = app::isDarkTheme() ? col_background.ChangeLightness(pressed ? 125 : 115)
-										  : col_background.ChangeLightness(pressed ? 70 : 80);
+			auto col_full = app::isDarkTheme() ? col_background.ChangeLightness(pressed ? 125 : 115)
+											   : col_background.ChangeLightness(pressed ? 70 : 80);
 
-			// Draw background
-			gcdc.SetBrush(col);
 			gcdc.SetPen(*wxTRANSPARENT_PEN);
-			gcdc.DrawRoundedRectangle(0, 0, rect.width, rect.height, 3.0 * wnd->GetDPIScaleFactor());
+
+			if (split_button)
+			{
+				// For split buttons, use the hover state tracked by the toolbar
+				// via mouse events
+				bool btn_hovered = !toolbar_ || toolbar_->dropdown_hover_wx_id_ != item.GetId();
+
+				auto col_dim = app::isDarkTheme() ? col_background.ChangeLightness(pressed ? 112 : 108)
+												  : col_background.ChangeLightness(pressed ? 85 : 90);
+
+				// Draw dimmed highlight across entire button
+				gcdc.SetBrush(col_dim);
+				gcdc.DrawRoundedRectangle(0, 0, rect.width, rect.height, radius);
+
+				// Full highlight for hovered part only
+				gcdc.SetBrush(col_full);
+				if (btn_hovered)
+					gcdc.DrawRoundedRectangle(0, 0, button_rect.width, rect.height, radius);
+				else
+					gcdc.DrawRoundedRectangle(button_rect.width, 0, dropdown_size, rect.height, radius);
+			}
+			else
+			{
+				gcdc.SetBrush(col_full);
+				gcdc.DrawRoundedRectangle(0, 0, rect.width, rect.height, radius);
+			}
 		}
 
 		// Draw checked outline
@@ -340,7 +376,7 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 			gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
 			gcdc.SetPen(wxPen(col_hilight, 2));
 			auto px = wnd->FromDIP(1);
-			gcdc.DrawRoundedRectangle(px, px, rect.width - px, rect.height - px, 3.0 * wnd->GetDPIScaleFactor());
+			gcdc.DrawRoundedRectangle(px, px, rect.width - px, rect.height - px, radius);
 		}
 
 		// Draw buffer contents
@@ -364,11 +400,12 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 		dc.DrawText(item.GetLabel(), text_x, text_y);
 
 	// Draw dropdown arrow
-	auto arrow_down = icons::getInterfaceIcon("arrow-down").GetBitmap(wxDefaultSize);
+	auto arrow_down   = icons::getInterfaceIcon("arrow-down").GetBitmap(wxDefaultSize);
+	auto arrow_offset = wnd->FromDIP(split_button ? 1 : 3);
 	if (arrow_down.IsOk())
 		dc.DrawBitmap(
 			disabled ? disabledBitmap(arrow_down, bgcol) : arrow_down,
-			rect.x + rect.width - arrow_down.GetWidth() - wnd->FromDIP(3),
+			rect.x + rect.width - arrow_down.GetWidth() - arrow_offset,
 			rect.y + (rect.height / 2) - (arrow_down.GetHeight() / 2),
 			true);
 }

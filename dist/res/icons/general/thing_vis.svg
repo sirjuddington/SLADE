@@ -1,0 +1,32 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    width="16px"
+    height="16px"
+    style="-ms-transform:rotate(360deg);-webkit-transform:rotate(360deg)"
+    viewBox="0 0 24 24"
+    transform="rotate(360)">
+    <ellipse
+        cx="12"
+        cy="12"
+        rx="11"
+        ry="11"
+        fill="#CC0000"
+    />
+	<ellipse
+		cx="12"
+		cy="12"
+		rx="7"
+		ry="4"
+		fill="#550000"
+	/>
+	<g transform="translate(3, 20.5)">
+        <g transform="scale(0.75, -0.75)">
+			<path
+				d="M12 9a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3m0 8a5 5 0 0 1-5-5a5 5 0 0 1 5-5a5 5 0 0 1 5 5a5 5 0 0 1-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z"
+				fill="#FFCCCC"
+				fill-opacity="1.75"
+			/>
+		</g>
+    </g>
+</svg>

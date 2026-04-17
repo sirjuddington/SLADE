@@ -7,6 +7,12 @@
 
     { "type": "separator" },
 
+    // Run
+    { "type": "action", "id": "mapw_run_map" },
+    { "type": "action", "id": "mapw_quick_run_map" },
+
+    { "type": "separator" },
+
     // Mode
     { "type": "action", "id": "mapw_mode_vertices" },
     { "type": "action", "id": "mapw_mode_lines" },
@@ -43,9 +49,18 @@
 
     { "type": "separator" },
 
-    // Misc
-    { "type": "action", "id": "mapw_run_map" },
-    { "type": "action", "id": "mapw_quick_run_map" }
+    // Display Options (3D)
+    {
+      "type": "action",
+      "id": "mapw_3d_toggle_things",
+      "menu": [ "mapw_3d_things_all", "mapw_3d_things_decoration" ]
+    },
+    {
+      "type": "action",
+      "id": "mapw_3d_toggle_thing_boxes",
+      "menu": [ "mapw_3d_thing_boxes_all", "mapw_3d_thing_boxes_solid" ]
+    },
+    { "type": "action", "id": "mapw_3d_toggle_point_lights" }
   ],
 
   "groups": [
@@ -60,6 +75,10 @@
     {
       "name": "sectors_mode",
       "item_ids": [ "mapw_sectormode_normal", "mapw_sectormode_floor", "mapw_sectormode_ceiling" ]
+    },
+    {
+      "name": "display_3d",
+      "item_ids": [ "mapw_3d_toggle_point_lights", "mapw_3d_toggle_things", "mapw_3d_toggle_thing_boxes" ]
     }
   ]
 }

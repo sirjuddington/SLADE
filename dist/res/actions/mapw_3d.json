@@ -5,6 +5,46 @@
     "help_text": "Change the texture of the currently selected wall(s) and/or flat(s)"
   },
 
+  "mapw_3d_toggle_point_lights": {
+    "text": "Point Lights",
+    "icon": "lightbulb",
+    "help_text": "Toggle point light previews",
+    "type": "check",
+    "linked_cvar": "map3d_lights_enabled"
+  },
+
+  "mapw_3d_toggle_things": {
+    "text": "Show Things",
+    "icon": "thing_vis",
+    "help_text": "Toggle thing visibility"
+  },
+
+  "mapw_3d_things_all": {
+    "text": "All",
+    "help_text": "Show all things"
+  },
+
+  "mapw_3d_things_decoration": {
+    "text": "Decorations",
+    "help_text": "Show decoration things only"
+  },
+
+  "mapw_3d_toggle_thing_boxes": {
+    "text": "Show Thing Boxes",
+    "icon": "thing_box",
+    "help_text": "Toggle thing box visibility"
+  },
+
+  "mapw_3d_thing_boxes_all": {
+    "text": "All",
+    "help_text": "Show boxes for all things"
+  },
+
+  "mapw_3d_thing_boxes_solid": {
+    "text": "Solid Only",
+    "help_text": "Show boxes for solid things only"
+  },
+
   // Walls
   "mapw_3d_wall_properties": {
     "text": "Line Properties",
