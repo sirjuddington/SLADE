@@ -16,7 +16,8 @@
   "mapw_3d_toggle_things": {
     "text": "Show Things",
     "icon": "thing_vis",
-    "help_text": "Toggle thing visibility"
+    "help_text": "Toggle thing visibility",
+    "shortcut": "kb:me3d_toggle_things"
   },
 
   "mapw_3d_things_all": {
@@ -32,7 +33,8 @@
   "mapw_3d_toggle_thing_boxes": {
     "text": "Show Thing Boxes",
     "icon": "thing_box",
-    "help_text": "Toggle thing box visibility"
+    "help_text": "Toggle thing box visibility",
+    "shortcut": "kb:me3d_thing_boxes"
   },
 
   "mapw_3d_thing_boxes_all": {
@@ -43,6 +45,20 @@
   "mapw_3d_thing_boxes_solid": {
     "text": "Solid Only",
     "help_text": "Show boxes for solid things only"
+  },
+
+  "mapw_3d_toggle_fog": {
+    "text": "Depth Fog",
+    "icon": "fog",
+    "help_text": "Toggle depth fog approximation preview",
+    "shortcut": "kb:me3d_toggle_fog"
+  },
+
+  "mapw_3d_toggle_fullbright": {
+    "text": "Fullbright",
+    "icon": "fullbright",
+    "help_text": "Toggle fullbright rendering",
+    "shortcut": "kb:me3d_toggle_fullbright"
   },
 
   // Walls

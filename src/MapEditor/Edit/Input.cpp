@@ -1060,34 +1060,18 @@ void Input::handleKeyBind3d(string_view name) const
 
 	// Toggle fog
 	else if (name == "me3d_toggle_fog")
-	{
-		bool fog = context_->renderer().renderer3D().fogEnabled();
-		context_->renderer().renderer3D().enableFog(!fog);
-		if (fog)
-			context_->addEditorMessage("Fog disabled");
-		else
-			context_->addEditorMessage("Fog enabled");
-	}
+		context_->toggle3DFog();
 
 	// Toggle fullbright
 	else if (name == "me3d_toggle_fullbright")
-	{
-		bool fb = context_->renderer().renderer3D().fullbrightEnabled();
-		context_->renderer().renderer3D().enableFullbright(!fb);
-		if (fb)
-			context_->addEditorMessage("Fullbright disabled");
-		else
-			context_->addEditorMessage("Fullbright enabled");
-	}
+		context_->toggle3DFullbright();
 
 	// Adjust brightness
 	else if (name == "me3d_adjust_brightness")
 	{
 		map3d_brightness = map3d_brightness + 0.1;
 		if (map3d_brightness > 2.0)
-		{
 			map3d_brightness = 1.0;
-		}
 		context_->addEditorMessage(fmt::format("Brightness set to {:1.1f}", static_cast<double>(map3d_brightness)));
 	}
 
@@ -1109,34 +1093,22 @@ void Input::handleKeyBind3d(string_view name) const
 	else if (name == "me3d_toggle_things")
 	{
 		// Change thing display type
-		map3d_things = map3d_things + 1;
-		if (map3d_things > 2)
-			map3d_things = 0;
+		auto val = map3d_things + 1;
+		if (val > 2)
+			val = 0;
 
-		// Editor message
-		if (map3d_things == 0)
-			context_->addEditorMessage("Things disabled");
-		else if (map3d_things == 1)
-			context_->addEditorMessage("Things enabled: All");
-		else
-			context_->addEditorMessage("Things enabled: Decorations only");
+		context_->set3DThingVisibility(val);
 	}
 
 	// Toggle thing boxes
 	else if (name == "me3d_thing_boxes")
 	{
 		// Change thing box display type
-		map3d_things_boxes = map3d_things_boxes + 1;
-		if (map3d_things_boxes > 2)
-			map3d_things_boxes = 0;
+		auto val = map3d_things_boxes + 1;
+		if (val > 2)
+			val = 0;
 
-		// Editor message
-		if (map3d_things_boxes == 0)
-			context_->addEditorMessage("Thing boxes disabled");
-		else if (map3d_things_boxes == 1)
-			context_->addEditorMessage("Thing boxes enabled: All");
-		else
-			context_->addEditorMessage("Thing boxes enabled: Solid objects only");
+		context_->set3DThingBoxes(val);
 	}
 
 	// Toggle hilight
@@ -1177,7 +1149,8 @@ bool Input::updateCamera3d(double mult) const
 	auto   sector = context_->map().sectors().atPos({ camera.position().x, camera.position().y });
 
 	// Camera forward
-	if (KeyBind::isPressed("me3d_camera_forward"))
+	if (KeyBind::isPressed("me3d_camera_forward")
+		|| (mouse_button_down_[Left] && mouse_state_ == MouseState::MouseLook))
 	{
 		camera.move(speed, !map3d_gravity || !sector);
 		moving = true;

@@ -63,7 +63,7 @@ public:
 	bool isHilighted(const Item& item) const { return item == hilight_; }
 
 	bool updateHilight(const Vec2d& mouse_pos, double dist_scale);
-	void clear();
+	bool clear();
 
 	void select(const Item& item, bool select = true, bool new_change = true);
 	void select(const vector<Item>& items, bool select = true, bool new_change = true);

@@ -198,10 +198,14 @@ bool ItemSelection::updateHilight(const Vec2d& mouse_pos, double dist_scale)
 }
 
 // -----------------------------------------------------------------------------
-// Clears the current selection
+// Clears the current selection. Returns true if the selection was changed
 // -----------------------------------------------------------------------------
-void ItemSelection::clear()
+bool ItemSelection::clear()
 {
+	// Ignore if no selection
+	if (selection_.empty())
+		return false;
+
 	// Update change set
 	last_change_.clear();
 	for (auto& item : selection_)
@@ -212,6 +216,8 @@ void ItemSelection::clear()
 
 	if (context_)
 		context_->selectionUpdated();
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -291,8 +297,7 @@ bool ItemSelection::toggleCurrent(bool clear_none)
 		// Clear selection if specified
 		if (clear_none)
 		{
-			clear();
-			if (context_)
+			if (clear() && context_)
 			{
 				context_->selectionUpdated();
 				context_->addEditorMessage("Selection cleared");

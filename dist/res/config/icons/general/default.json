@@ -200,6 +200,12 @@
     "flip": {
       "svg": "icons/general/flip.svg"
     },
+    "fog": {
+      "svg": "icons/general/fog.svg"
+    },
+    "fullbright": {
+      "svg": "icons/general/fullbright.svg"
+    },
     "gfx_drag": {
       "svg_light": "icons/general/gfx_drag.svg",
       "svg_dark": "icons/general/dark/gfx_drag.svg"

@@ -165,6 +165,10 @@ public:
 
 	// Renderer
 	gl::Camera& camera3d() const;
+	void        set3DThingVisibility(int visibility);
+	void        set3DThingBoxes(int visibility);
+	void        toggle3DFog();
+	void        toggle3DFullbright();
 
 	// Misc
 	string modeString(bool plural = true) const;
@@ -178,6 +182,7 @@ public:
 	bool   populateContextMenu(wxMenu& menu) const;
 
 
+protected:
 	// SAction handler
 	bool handleAction(string_view id) override;
 

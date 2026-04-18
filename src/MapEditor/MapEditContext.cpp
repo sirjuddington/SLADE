@@ -1289,8 +1289,8 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 		// Clear selection
 		else if (key == "me2d_clear_selection")
 		{
-			selection_->clear();
-			addEditorMessage("Selection cleared");
+			if (selection_->clear())
+				addEditorMessage("Selection cleared");
 		}
 
 		// Lock/unlock hilight
@@ -1375,8 +1375,8 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 		// Clear selection
 		if (key == "me3d_clear_selection")
 		{
-			selection_->clear();
-			addEditorMessage("Selection cleared");
+			if (selection_->clear())
+				addEditorMessage("Selection cleared");
 		}
 
 		// Toggle linked light levels
@@ -1618,6 +1618,8 @@ void MapEditContext::updateToolbar() const
 		SAction::fromId("mapw_mode_3d")->setChecked();
 		window()->toolbar()->setItemChecked("mapw_3d_toggle_things", map3d_things > 0);
 		window()->toolbar()->setItemChecked("mapw_3d_toggle_thing_boxes", map3d_things_boxes > 0);
+		window()->toolbar()->setItemChecked("mapw_3d_toggle_fog", renderer_->renderer3D().fogEnabled());
+		window()->toolbar()->setItemChecked("mapw_3d_toggle_fullbright", renderer_->renderer3D().fullbrightEnabled());
 	}
 }
 
@@ -1868,6 +1870,74 @@ gl::Camera& MapEditContext::camera3d() const
 }
 
 // -----------------------------------------------------------------------------
+// Sets the 3d mode thing [visibility]
+// -----------------------------------------------------------------------------
+void MapEditContext::set3DThingVisibility(int visibility)
+{
+	map3d_things = visibility;
+
+	// Update toolbar
+	window()->toolbar()->setItemChecked("mapw_3d_toggle_things", map3d_things > 0);
+
+	// Editor message
+	if (map3d_things == 0)
+		addEditorMessage("Things disabled");
+	else if (map3d_things == 1)
+		addEditorMessage("Things enabled: All");
+	else
+		addEditorMessage("Things enabled: Decorations only");
+}
+
+// -----------------------------------------------------------------------------
+// Sets the 3d mode thing box [visibility]
+// -----------------------------------------------------------------------------
+void MapEditContext::set3DThingBoxes(int visibility)
+{
+	map3d_things_boxes = visibility;
+
+	// Update toolbar
+	window()->toolbar()->setItemChecked("mapw_3d_toggle_thing_boxes", map3d_things_boxes > 0);
+
+	// Editor message
+	if (map3d_things_boxes == 0)
+		addEditorMessage("Thing boxes disabled");
+	else if (map3d_things_boxes == 1)
+		addEditorMessage("Thing boxes enabled: All");
+	else
+		addEditorMessage("Thing boxes enabled: Solid objects only");
+}
+
+// -----------------------------------------------------------------------------
+// Toggles 3d mode fog on/off
+// -----------------------------------------------------------------------------
+void MapEditContext::toggle3DFog()
+{
+	bool fog = renderer_->renderer3D().fogEnabled();
+	renderer_->renderer3D().enableFog(!fog);
+
+	// Update toolbar
+	window()->toolbar()->setItemChecked("mapw_3d_toggle_fog", !fog);
+
+	// Editor message
+	addEditorMessage(fog ? "Fog disabled" : "Fog enabled");
+}
+
+// -----------------------------------------------------------------------------
+// Toggles 3d mode fullbright on/off
+// -----------------------------------------------------------------------------
+void MapEditContext::toggle3DFullbright()
+{
+	bool fullbright = renderer_->renderer3D().fullbrightEnabled();
+	renderer_->renderer3D().enableFullbright(!fullbright);
+
+	// Update toolbar
+	window()->toolbar()->setItemChecked("mapw_3d_toggle_fullbright", !fullbright);
+
+	// Editor message
+	addEditorMessage(fullbright ? "Fullbright disabled" : "Fullbright enabled");
+}
+
+// -----------------------------------------------------------------------------
 // Opens the sector texture selection overlay
 // -----------------------------------------------------------------------------
 void MapEditContext::openSectorTextureOverlay(const vector<MapSector*>& sectors)
@@ -2084,8 +2154,8 @@ bool MapEditContext::handleAction(string_view id)
 	// Clear selection
 	else if (id == "mapw_clear_selection")
 	{
-		selection_->clear();
-		addEditorMessage("Selection cleared");
+		if (selection_->clear())
+			addEditorMessage("Selection cleared");
 	}
 
 	// Begin line drawing
@@ -2225,20 +2295,17 @@ bool MapEditContext::handleAction(string_view id)
 	{
 		// TODO: This won't remember the previous value, might need to
 		//       change it to 2 cvars (for 'enabled' and 'decoration only')
-		map3d_things = map3d_things == 0 ? 1 : 0;
-		window()->toolbar()->setItemChecked("mapw_3d_toggle_things", map3d_things > 0);
+		set3DThingVisibility(map3d_things == 0 ? 1 : 0);
 		return true;
 	}
 	else if (id == "mapw_3d_things_all")
 	{
-		map3d_things = 1;
-		window()->toolbar()->setItemChecked("mapw_3d_toggle_things", true);
+		set3DThingVisibility(1);
 		return true;
 	}
 	else if (id == "mapw_3d_things_decoration")
 	{
-		map3d_things = 2;
-		window()->toolbar()->setItemChecked("mapw_3d_toggle_things", true);
+		set3DThingVisibility(2);
 		return true;
 	}
 
@@ -2246,20 +2313,31 @@ bool MapEditContext::handleAction(string_view id)
 	else if (id == "mapw_3d_toggle_thing_boxes")
 	{
 		// TODO: Similar situation to map3d_things
-		map3d_things_boxes = map3d_things_boxes == 0 ? 1 : 0;
-		window()->toolbar()->setItemChecked("mapw_3d_toggle_thing_boxes", map3d_things_boxes > 0);
+		set3DThingBoxes(map3d_things_boxes == 0 ? 1 : 0);
 		return true;
 	}
 	else if (id == "mapw_3d_thing_boxes_all")
 	{
-		map3d_things_boxes = 1;
-		window()->toolbar()->setItemChecked("mapw_3d_toggle_thing_boxes", true);
+		set3DThingBoxes(1);
 		return true;
 	}
 	else if (id == "mapw_3d_thing_boxes_solid")
 	{
-		map3d_things_boxes = 2;
-		window()->toolbar()->setItemChecked("mapw_3d_toggle_thing_boxes", true);
+		set3DThingBoxes(2);
+		return true;
+	}
+
+	// Toggle 3D fog
+	else if (id == "mapw_3d_toggle_fog")
+	{
+		toggle3DFog();
+		return true;
+	}
+
+	// Toggle 3D fullbright
+	else if (id == "mapw_3d_toggle_fullbright")
+	{
+		toggle3DFullbright();
 		return true;
 	}
 
