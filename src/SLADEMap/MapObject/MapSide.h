@@ -43,6 +43,7 @@ public:
 	short         texOffsetY() const { return tex_offset_.y; }
 	Vec2i         texOffset() const { return tex_offset_; }
 	Vec2d         texOffset(map::SidePart part) const;
+	Vec2d         texScale(map::SidePart part) const;
 	uint8_t       light() const;
 
 	void setSector(MapSector* sector);

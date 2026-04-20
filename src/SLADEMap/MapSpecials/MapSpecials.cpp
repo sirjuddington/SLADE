@@ -233,7 +233,7 @@ optional<LineTranslucency> MapSpecials::lineTranslucency(const MapLine& line) co
 		}
 
 		// Check for "add" renderstyle property
-		if (line.hasProp("renderstyle") && strutil::equalCI(line.stringProperty("renderstyle"), "additive"))
+		if (line.hasProp("renderstyle") && strutil::equalCI(line.stringProperty("renderstyle"), "add"))
 			translucency.additive = true;
 
 		return translucency;

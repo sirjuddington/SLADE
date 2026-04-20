@@ -212,6 +212,28 @@ Vec2d MapSide::texOffset(map::SidePart part) const
 	return offsets;
 }
 
+Vec2d MapSide::texScale(map::SidePart part) const
+{
+	if (parent_map_->currentFormat() == MapFormat::UDMF
+		&& game::configuration().featureSupported(game::UDMFFeature::TextureScaling))
+	{
+		switch (part)
+		{
+		case map::SidePart::Upper:
+			return Vec2d{ hasProp("scalex_top") ? 1.0 / floatProperty("scalex_top") : 1.0,
+						  hasProp("scaley_top") ? 1.0 / floatProperty("scaley_top") : 1.0 };
+		case map::SidePart::Lower:
+			return Vec2d{ hasProp("scalex_bottom") ? 1.0 / floatProperty("scalex_bottom") : 1.0,
+						  hasProp("scaley_bottom") ? 1.0 / floatProperty("scaley_bottom") : 1.0 };
+		case map::SidePart::Middle:
+			return Vec2d{ hasProp("scalex_mid") ? 1.0 / floatProperty("scalex_mid") : 1.0,
+						  hasProp("scaley_mid") ? 1.0 / floatProperty("scaley_mid") : 1.0 };
+		}
+	}
+
+	return Vec2d{ 1.0, 1.0 };
+}
+
 // -----------------------------------------------------------------------------
 // Returns the light level of the given side
 // TODO: Upper/Mid/Lower light levels (UDMF)

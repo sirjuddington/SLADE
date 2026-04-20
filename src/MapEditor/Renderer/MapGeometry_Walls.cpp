@@ -87,12 +87,18 @@ struct QuadInfo
 	const gl::Texture* gl_texture = nullptr;
 	MGVertex           tl, tr, bl, br;
 	Vec2d              offsets;
-	int                line_length  = 0;
-	int                tex_y_origin = 0; // Absolute height to align texture y origin to
-	bool               back_side    = false;
-	bool               midtex       = false; // If true, the quad is clipped to the height of the texture
-	bool               sky          = false;
-	bool               extrafloor   = false; // If true, the quad is part of an ExtraFloor
+	Vec2d              tex_scale;
+	int                line_length      = 0;
+	int                tex_y_origin     = 0; // Absolute height to align texture y origin to
+	bool               back_side        = false;
+	bool               midtex           = false; // If true, the quad is clipped to the height of the texture
+	bool               sky              = false;
+	bool               extrafloor       = false; // If true, the quad is part of an ExtraFloor
+	int                height_top_v1    = 0;     // Per-vertex heights for sloped mid textures
+	int                height_bottom_v1 = 0;
+	int                height_top_v2    = 0;
+	int                height_bottom_v2 = 0;
+	bool               slope_midtex     = false;
 };
 } // namespace
 
@@ -148,15 +154,18 @@ static void setupQuadTexCoords(QuadInfo& info)
 	float bl_diff = info.height_bottom - info.bl.position.z;
 	float br_diff = info.height_bottom - info.br.position.z;
 
+	auto tex_size = Vec2f{ static_cast<float>(info.gl_texture->size.x) * info.tex_scale.x,
+						   static_cast<float>(info.gl_texture->size.y) * info.tex_scale.y };
+
 	// Set uv tex coords
-	info.tl.uv.x = x1 / static_cast<float>(info.gl_texture->size.x);
-	info.tl.uv.y = (y1 + tl_diff) / static_cast<float>(info.gl_texture->size.y);
-	info.tr.uv.x = x2 / static_cast<float>(info.gl_texture->size.x);
-	info.tr.uv.y = (y1 + tr_diff) / static_cast<float>(info.gl_texture->size.y);
-	info.bl.uv.x = x1 / static_cast<float>(info.gl_texture->size.x);
-	info.bl.uv.y = (y2 + bl_diff) / static_cast<float>(info.gl_texture->size.y);
-	info.br.uv.x = x2 / static_cast<float>(info.gl_texture->size.x);
-	info.br.uv.y = (y2 + br_diff) / static_cast<float>(info.gl_texture->size.y);
+	info.tl.uv.x = x1 / tex_size.x;
+	info.tl.uv.y = (y1 + tl_diff) / tex_size.y;
+	info.tr.uv.x = x2 / tex_size.x;
+	info.tr.uv.y = (y1 + tr_diff) / tex_size.y;
+	info.bl.uv.x = x1 / tex_size.x;
+	info.bl.uv.y = (y2 + bl_diff) / tex_size.y;
+	info.br.uv.x = x2 / tex_size.x;
+	info.br.uv.y = (y2 + br_diff) / tex_size.y;
 }
 
 static void addQuad(
@@ -224,11 +233,26 @@ static void addQuad(
 	}
 	if (info.midtex)
 	{
-		// Midtextures ignore slopes
-		info.tl = { glm::vec3{ x1, y1, info.height_top }, {}, quad.brightness, normal };
-		info.tr = { glm::vec3{ x2, y2, info.height_top }, {}, quad.brightness, normal };
-		info.bl = { glm::vec3{ x1, y1, info.height_bottom }, {}, quad.brightness, normal };
-		info.br = { glm::vec3{ x2, y2, info.height_bottom }, {}, quad.brightness, normal };
+		if (info.slope_midtex)
+		{
+			// For back side, line start (v1) maps to x2,y2 and line end (v2) maps to x1,y1
+			const float top1 = info.back_side ? info.height_top_v2 : info.height_top_v1;
+			const float top2 = info.back_side ? info.height_top_v1 : info.height_top_v2;
+			const float bot1 = info.back_side ? info.height_bottom_v2 : info.height_bottom_v1;
+			const float bot2 = info.back_side ? info.height_bottom_v1 : info.height_bottom_v2;
+			info.tl          = { glm::vec3{ x1, y1, top1 }, {}, quad.brightness, normal };
+			info.tr          = { glm::vec3{ x2, y2, top2 }, {}, quad.brightness, normal };
+			info.bl          = { glm::vec3{ x1, y1, bot1 }, {}, quad.brightness, normal };
+			info.br          = { glm::vec3{ x2, y2, bot2 }, {}, quad.brightness, normal };
+		}
+		else
+		{
+			// Midtextures on flat sectors: use uniform height, slopes not applicable
+			info.tl = { glm::vec3{ x1, y1, info.height_top }, {}, quad.brightness, normal };
+			info.tr = { glm::vec3{ x2, y2, info.height_top }, {}, quad.brightness, normal };
+			info.bl = { glm::vec3{ x1, y1, info.height_bottom }, {}, quad.brightness, normal };
+			info.br = { glm::vec3{ x2, y2, info.height_bottom }, {}, quad.brightness, normal };
+		}
 	}
 	else
 	{
@@ -272,6 +296,7 @@ void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, b
 						.texture       = &texture,
 						.gl_texture    = &gl_tex,
 						.offsets       = { 0, 0 },
+						.tex_scale     = { 1, 1 },
 						.line_length   = static_cast<int>(context.line->length()),
 						.tex_y_origin  = ef.height,
 						.back_side     = front, // Show on back side of line if extrafloor is on front
@@ -384,19 +409,66 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 		.back_side     = (side == line->s2()),
 	};
 
+	// Apply texture scale
+	quad_info.tex_scale = texture.scale;
+	if (!texture.world_panning)
+	{
+		quad_info.offsets.x *= fabs(texture.scale.x);
+		quad_info.offsets.y *= fabs(texture.scale.y);
+	}
+
+	// Apply side texture scale
+	auto side_scale = side->texScale(side_part);
+	quad_info.tex_scale *= side_scale;
+	quad_info.offsets.x *= fabs(side_scale.x);
+	quad_info.offsets.y *= fabs(side_scale.y);
+
 	// Handle 2-sided midtextures
 	if ((part == MapLine::FrontMiddle || part == MapLine::BackMiddle) && line->s2())
 	{
+		auto tex_height = static_cast<int>(gl_tex.size.y * fabs(quad_info.tex_scale.y));
+
 		// Set tex_y_origin to where the top of the mid texture would be
 		if (context.lower_unpegged)
-			quad_info.tex_y_origin = quad_info.height_bottom + gl_tex.size.y;
+			quad_info.tex_y_origin = quad_info.height_bottom + tex_height;
 		quad_info.tex_y_origin += quad_info.offsets.y;
 
 		// Clip to sector heights
 		quad_info.height_top    = std::min(quad_info.tex_y_origin, quad_info.height_top);
-		quad_info.height_bottom = std::max(quad_info.tex_y_origin - gl_tex.size.y, quad_info.height_bottom);
+		quad_info.height_bottom = std::max(quad_info.tex_y_origin - tex_height, quad_info.height_bottom);
 
 		quad_info.midtex = true;
+
+		// Handle sloped sectors: tex_y_origin stays fixed (already computed
+		// above from flat heights) slopes only change where the texture is
+		// clipped at each end of the line.
+		if (side->sector()->floorHasSlope() || side->sector()->ceilingHasSlope() || side_back->sector()->floorHasSlope()
+			|| side_back->sector()->ceilingHasSlope())
+		{
+			// Heights at line start
+			const auto height_top_start    = static_cast<int>(std::min(
+                side->sector()->ceiling().plane.heightAt(line->start()),
+                side_back->sector()->ceiling().plane.heightAt(line->start())));
+			const auto height_bottom_start = static_cast<int>(std::max(
+				side->sector()->floor().plane.heightAt(line->start()),
+				side_back->sector()->floor().plane.heightAt(line->start())));
+
+			// Heights at line end
+			const auto height_top_end    = static_cast<int>(std::min(
+                side->sector()->ceiling().plane.heightAt(line->end()),
+                side_back->sector()->ceiling().plane.heightAt(line->end())));
+			const auto height_bottom_end = static_cast<int>(std::max(
+				side->sector()->floor().plane.heightAt(line->end()),
+				side_back->sector()->floor().plane.heightAt(line->end())));
+
+			// Clip to per-vertex sector heights
+			quad_info.height_top_v1    = std::min(quad_info.tex_y_origin, height_top_start);
+			quad_info.height_bottom_v1 = std::max(quad_info.tex_y_origin - tex_height, height_bottom_start);
+			quad_info.height_top_v2    = std::min(quad_info.tex_y_origin, height_top_end);
+			quad_info.height_bottom_v2 = std::max(quad_info.tex_y_origin - tex_height, height_bottom_end);
+
+			quad_info.slope_midtex = true;
+		}
 	}
 
 	// Check for sky quad
