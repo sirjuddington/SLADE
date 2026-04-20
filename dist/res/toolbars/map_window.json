@@ -50,6 +50,7 @@
     { "type": "separator" },
 
     // Display Options (3D)
+    { "type": "action", "id": "mapw_3d_toggle_highlight" },
     {
       "type": "action",
       "id": "mapw_3d_toggle_things",
@@ -81,6 +82,7 @@
     {
       "name": "display_3d",
       "item_ids": [
+        "mapw_3d_toggle_highlight",
         "mapw_3d_toggle_point_lights",
         "mapw_3d_toggle_things",
         "mapw_3d_toggle_thing_boxes",

@@ -110,6 +110,7 @@ CVAR(Bool, map3d_info_overlay, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, map2d_flat_drawtype)
 EXTERN_CVAR(Bool, map2d_thing_preview_lights)
+EXTERN_CVAR(Bool, map3d_highlight_enabled)
 EXTERN_CVAR(Int, map3d_things)
 EXTERN_CVAR(Int, map3d_things_boxes)
 
@@ -2287,6 +2288,13 @@ bool MapEditContext::handleAction(string_view id)
 			addEditorMessage("Grid Snapping Off");
 		updateStatusText();
 
+		return true;
+	}
+
+	// 3D Mode highlight (handled by linked cvar)
+	else if (id == "mapw_3d_toggle_highlight")
+	{
+		addEditorMessage(map3d_highlight_enabled ? "Highlight enabled" : "Highlight disabled");
 		return true;
 	}
 

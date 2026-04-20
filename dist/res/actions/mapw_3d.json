@@ -61,6 +61,15 @@
     "shortcut": "kb:me3d_toggle_fullbright"
   },
 
+  "mapw_3d_toggle_highlight": {
+    "text": "Highlight",
+    "icon": "highlight",
+    "help_text": "Toggle item highlighting",
+    "shortcut": "kb:me3d_toggle_hilight",
+    "type": "check",
+    "linked_cvar": "map3d_highlight_enabled"
+  },
+
   // Walls
   "mapw_3d_wall_properties": {
     "text": "Line Properties",

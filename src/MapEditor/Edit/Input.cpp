@@ -1113,16 +1113,7 @@ void Input::handleKeyBind3d(string_view name) const
 
 	// Toggle hilight
 	else if (name == "me3d_toggle_hilight")
-	{
-		// Toggle highlight
-		map3d_highlight_enabled = !map3d_highlight_enabled;
-
-		// Editor message
-		if (map3d_highlight_enabled)
-			context_->addEditorMessage("Highlight enabled");
-		else
-			context_->addEditorMessage("Highlight disabled");
-	}
+		SActionHandler::doAction("mapw_3d_toggle_highlight");
 
 	// Toggle info overlay
 	else if (name == "me3d_toggle_info")

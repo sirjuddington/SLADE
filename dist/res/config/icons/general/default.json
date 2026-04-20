@@ -229,6 +229,10 @@
     "gradient": {
       "svg": "icons/general/gradient.svg"
     },
+    "highlight": {
+      "svg_light": "icons/general/highlight.svg",
+      "svg_dark": "icons/general/dark/highlight.svg"
+    },
     "homefolder": {
       "svg": "icons/general/homefolder.svg"
     },
