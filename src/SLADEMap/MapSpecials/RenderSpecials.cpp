@@ -35,6 +35,7 @@
 #include "LineTranslucency.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/SLADEMap.h"
 
 using namespace slade;
@@ -68,7 +69,7 @@ optional<LineTranslucency> RenderSpecials::lineTranslucency(const MapLine& line)
 	}
 
 	// Since the translucency specials are sorted by line index descending,
-	// we can just apply the first one we find
+	// we can just return the first one we find
 	for (const auto& special : line_transparency_specials_)
 	{
 		if (special.target == &line)
@@ -78,6 +79,34 @@ optional<LineTranslucency> RenderSpecials::lineTranslucency(const MapLine& line)
 	return std::nullopt;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the fade colour for [sector] if any fade special applies
+// -----------------------------------------------------------------------------
+ColRGBA RenderSpecials::sectorFadeColour(const MapSector& sector)
+{
+	// Sort by line index (descending) if needed
+	if (!sector_fade_specials_sorted_)
+	{
+		std::ranges::sort(
+			sector_fade_specials_, [](const auto& a, const auto& b) { return a.line->index() > b.line->index(); });
+		sector_fade_specials_sorted_ = true;
+	}
+
+	// Since the fade specials are sorted by line index descending,
+	// we can just return the first one we find
+	for (const auto& special : sector_fade_specials_)
+	{
+		if (special.target == &sector)
+			return special.colour;
+	}
+
+	return ColRGBA{ 0, 0, 0, 0 };
+}
+
+// -----------------------------------------------------------------------------
+// Checks if [line] has a special that affects rendering and adds it to the
+// relevant list(s)
+// -----------------------------------------------------------------------------
 void RenderSpecials::processLineSpecial(const MapLine& line)
 {
 	// ZDoom
@@ -86,6 +115,7 @@ void RenderSpecials::processLineSpecial(const MapLine& line)
 		switch (line.special())
 		{
 		case 208: addTranslucentLine(line, true); break;
+		case 213: addSectorFade(line); break;
 		default:  break;
 		}
 	}
@@ -101,20 +131,35 @@ void RenderSpecials::processLineSpecial(const MapLine& line)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Clears all stored specials
+// -----------------------------------------------------------------------------
 void RenderSpecials::clearSpecials()
 {
 	line_transparency_specials_.clear();
+	sector_fade_specials_.clear();
 }
 
+// -----------------------------------------------------------------------------
+// Updates specials for [line]
+// -----------------------------------------------------------------------------
 void RenderSpecials::lineUpdated(const MapLine& line)
 {
 	// Remove existing specials for line
 	removeTranslucentLine(line);
+	removeSectorFade(line);
 
 	// Re-process
 	processLineSpecial(line);
 }
 
+// -----------------------------------------------------------------------------
+// Adds a translucency special for [line]
+// If [zdoom] is true, the line special is a ZDoom translucency special, and
+// [alpha] and [additive] are determined by the line's arguments.
+// Otherwise, it's a Boom translucency special, and [alpha] and [additive] are
+// used as passed
+// -----------------------------------------------------------------------------
 void RenderSpecials::addTranslucentLine(const MapLine& line, bool zdoom, u8 alpha, bool additive)
 {
 	// Get target lines
@@ -138,6 +183,9 @@ void RenderSpecials::addTranslucentLine(const MapLine& line, bool zdoom, u8 alph
 	line_transparency_specials_sorted_ = false;
 }
 
+// -----------------------------------------------------------------------------
+// Removes any translucency special links for [line]
+// -----------------------------------------------------------------------------
 void RenderSpecials::removeTranslucentLine(const MapLine& line)
 {
 	for (unsigned i = 0; i < line_transparency_specials_.size();)
@@ -145,6 +193,37 @@ void RenderSpecials::removeTranslucentLine(const MapLine& line)
 		if (line_transparency_specials_[i].line == &line)
 		{
 			line_transparency_specials_.erase(line_transparency_specials_.begin() + i);
+			continue;
+		}
+
+		++i;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Adds a sector fade special for [line]
+// -----------------------------------------------------------------------------
+void RenderSpecials::addSectorFade(const MapLine& line)
+{
+	auto    target_sectors = map_->sectors().allWithId(line.arg(0));
+	ColRGBA colour{ static_cast<u8>(line.arg(1)), static_cast<u8>(line.arg(2)), static_cast<u8>(line.arg(3)), 0 };
+
+	for (auto target : target_sectors)
+		sector_fade_specials_.push_back({ .line = &line, .target = target, .colour = colour });
+
+	sector_fade_specials_sorted_ = false;
+}
+
+// -----------------------------------------------------------------------------
+// Removes any sector fade special links for [line]
+// -----------------------------------------------------------------------------
+void RenderSpecials::removeSectorFade(const MapLine& line)
+{
+	for (unsigned i = 0; i < sector_fade_specials_.size();)
+	{
+		if (sector_fade_specials_[i].line == &line)
+		{
+			sector_fade_specials_.erase(sector_fade_specials_.begin() + i);
 			continue;
 		}
 

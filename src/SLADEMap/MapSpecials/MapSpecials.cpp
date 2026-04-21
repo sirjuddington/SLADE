@@ -123,6 +123,30 @@ ColRGBA MapSpecials::sectorColour(const MapSector& sector, SectorPart where) con
 }
 
 // -----------------------------------------------------------------------------
+// Returns the fade colour for the given [sector]
+// -----------------------------------------------------------------------------
+ColRGBA MapSpecials::sectorFadeColour(const MapSector& sector) const
+{
+	// Check for UDMF
+	if (map_->currentFormat() == MapFormat::UDMF)
+	{
+		// Get sector fade colour (if supported and specified)
+		if (game::configuration().featureSupported(game::UDMFFeature::SectorFog) && sector.hasProp("fadecolor"))
+		{
+			auto colour = colour::fromInt(sector.intProperty("fadecolor"));
+			colour.a    = sector.lightAt(SectorPart::Interior); // TODO: fogdensity
+			return colour;
+		}
+	}
+
+	updateSpecials();
+	auto colour = render_specials_->sectorFadeColour(sector);
+	colour.a    = sector.lightAt(SectorPart::Interior);
+
+	return colour;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the floor height at [pos] in the given [sector], taking into account
 // any ExtraFloors
 // -----------------------------------------------------------------------------
@@ -145,6 +169,10 @@ float MapSpecials::sectorFloorHeightAt(const MapSector& sector, Vec3d pos) const
 	return height;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the lighting info for the given [sector] at [where], taking into
+// account any ExtraFloors
+// -----------------------------------------------------------------------------
 SectorLighting MapSpecials::sectorLightingAt(
 	const MapSector& sector,
 	SectorPart       where,
@@ -152,7 +180,9 @@ SectorLighting MapSpecials::sectorLightingAt(
 	bool             below_plane) const
 {
 	if (where == SectorPart::Ceiling)
-		return { .brightness = sector.lightAt(where), .colour = sectorColour(sector, where), .fog = ColRGBA::BLACK };
+		return { .brightness = sector.lightAt(where),
+				 .colour     = sectorColour(sector, where),
+				 .fog        = sectorFadeColour(sector) };
 
 	updateSpecials();
 	auto extrafloors = extrafloor_specials_->extraFloors(sector);
@@ -164,13 +194,15 @@ SectorLighting MapSpecials::sectorLightingAt(
 			return extrafloors.back().lighting_below.value();
 
 		// No ExtraFloor lighting, return sector floor lighting
-		return { .brightness = sector.lightAt(where), .colour = sectorColour(sector, where), .fog = ColRGBA::BLACK };
+		return { .brightness = sector.lightAt(where),
+				 .colour     = sectorColour(sector, where),
+				 .fog        = sectorFadeColour(sector) };
 	}
 
 	// Interior - if no ExtraFloors or no plane given just return sector interior lighting
 	auto lighting_interior = SectorLighting{ .brightness = sector.lightAt(SectorPart::Interior),
 											 .colour     = sectorColour(sector, SectorPart::Interior),
-											 .fog        = ColRGBA::BLACK };
+											 .fog        = sectorFadeColour(sector) };
 	if (extrafloors.empty() || !plane.has_value())
 		return lighting_interior;
 
@@ -196,11 +228,9 @@ SectorLighting MapSpecials::sectorLightingAt(
 		return lighting_interior; // Shouldn't happen
 
 	// Determine if we're underneath or inside the nearest ExtraFloor
-	bool underneath = false;
-	if (nearest->hasFlag(ExtraFloor::Flags::FlatAtCeiling))
-		underneath = true;
-	else
-		underneath = plane_height < nearest->plane_bottom.heightAt(sector.getPoint(MapObject::Point::Mid));
+	auto underneath = nearest->hasFlag(ExtraFloor::Flags::FlatAtCeiling)
+						  ? true
+						  : plane_height < nearest->plane_bottom.heightAt(sector.getPoint(MapObject::Point::Mid));
 
 	// Return appropriate lighting
 	if (underneath && nearest->lighting_below.has_value())
@@ -330,10 +360,11 @@ void MapSpecials::processAllSpecials() const
 
 void MapSpecials::updateSpecials() const
 {
-	if (updated_objects_.empty())
+	if (updated_objects_.empty() || specials_updating_)
 		return;
 
 	bool updated = false;
+	specials_updating_ = true;
 	for (auto obj : updated_objects_)
 	{
 		switch (obj->objType())
@@ -382,6 +413,7 @@ void MapSpecials::updateSpecials() const
 		specials_updated_ = app::runTimer();
 
 	updated_objects_.clear();
+	specials_updating_ = false;
 }
 
 void MapSpecials::processLineSpecial(const MapLine& line) const

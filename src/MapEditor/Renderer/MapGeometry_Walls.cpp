@@ -186,6 +186,7 @@ static void addQuad(
 				 .vertex_offset = context.vertex_index,
 				 .brightness    = static_cast<float>(lighting.brightness) / 255.0f,
 				 .colour        = lighting.colour,
+				 .fade_colour   = lighting.fog,
 				 .texture       = info.texture->gl_id };
 
 	// Determine render pass
@@ -442,7 +443,9 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 		// Handle sloped sectors: tex_y_origin stays fixed (already computed
 		// above from flat heights) slopes only change where the texture is
 		// clipped at each end of the line.
-		if (side->sector()->floorHasSlope() || side->sector()->ceilingHasSlope() || side_back->sector()->floorHasSlope()
+		if (side->sector()->floorHasSlope()
+			|| side->sector()->ceilingHasSlope()
+			|| side_back->sector()->floorHasSlope()
 			|| side_back->sector()->ceilingHasSlope())
 		{
 			// Heights at line start

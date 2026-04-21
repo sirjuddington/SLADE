@@ -112,8 +112,8 @@ void ExtraFloorSpecials::updateSectorExtraFloors(const MapSector& sector)
 			if (!ef.hasFlag(ExtraFloor::Flags::DisableLighting))
 			{
 				ef.lighting_inside = { .brightness = ef.control_sector->lightAt(SectorPart::Interior),
-									   .colour     = map_specials_->sectorColour(
-                                           *ef.control_sector, SectorPart::Interior) };
+									   .colour = map_specials_->sectorColour(*ef.control_sector, SectorPart::Interior),
+									   .fog    = map_specials_->sectorFadeColour(*ef.control_sector) };
 			}
 			else
 				ef.lighting_inside = lighting;

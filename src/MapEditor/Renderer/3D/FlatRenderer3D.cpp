@@ -350,6 +350,7 @@ bool FlatRenderer3D::update(bool vis_check)
 			flat_groups_.push_back(
 				{ .texture        = fp1.flat->texture,
 				  .colour         = fp1.flat->colour,
+				  .fade_colour    = fp1.flat->fade_colour.rgb(),
 				  .index_buffer   = std::make_unique<gl::IndexBuffer>(),
 				  .render_pass    = fp1.flat->render_pass,
 				  .trans_additive = fp1.flat->hasFlag(FlatFlags::Additive) });
@@ -404,6 +405,7 @@ void FlatRenderer3D::render(const gl::Shader& shader, RenderPass pass) const
 		}
 
 		shader.setUniform("colour", group.colour);
+		shader.setUniform("fog_colour", group.fade_colour);
 		gl::Texture::bind(group.texture);
 		group.index_buffer->bind();
 		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);

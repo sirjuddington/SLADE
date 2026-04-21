@@ -14,6 +14,7 @@ struct RenderGroup
 {
 	unsigned                    texture;
 	glm::vec4                   colour;
+	glm::vec3                   fade_colour;
 	unique_ptr<gl::IndexBuffer> index_buffer;
 	RenderPass                  render_pass;
 	bool                        trans_additive = false;

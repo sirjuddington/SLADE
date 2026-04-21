@@ -29,6 +29,7 @@ struct Quad3D
 	float      height[4]; // Heights of each vertex (TL, BL, BR, TR)
 	float      brightness   = 1.0f;
 	glm::vec4  colour       = glm::vec4{ 1.0f };
+	glm::vec4  fade_colour  = glm::vec4{ 0.0f, 0.0f, 0.0f, -1.0f }; // Negative alpha: use brightness for density
 	glm::vec3  normal       = glm::vec3{ 0.0f, 0.0f, 1.0f };
 	unsigned   texture      = 0;
 	long       updated_time = 0;
@@ -39,9 +40,11 @@ struct Quad3D
 	void setFlag(Flags flag) { flags |= static_cast<u8>(flag); }
 	bool operator==(const Quad3D& other) const
 	{
-		return texture == other.texture && colour == other.colour && render_pass == other.render_pass
+		return texture == other.texture
+			   && colour == other.colour
+			   && fade_colour == other.fade_colour
+			   && render_pass == other.render_pass
 			   && hasFlag(Flags::Additive) == other.hasFlag(Flags::Additive);
 	}
-	bool operator==(int _cpp_par_) const;
 };
 } // namespace slade::mapeditor

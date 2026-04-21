@@ -202,7 +202,8 @@ static void addFlat(SectorFlatsContext& context, FlatInfo& flat)
 					.control_surface_type = flat.control_sector_surface,
 					.vertex_offset        = context.vertex_offset,
 					.texture              = texture.gl_id,
-					.colour               = flat.lighting.colour };
+					.colour               = flat.lighting.colour,
+					.fade_colour          = flat.lighting.fog };
 
 	// Determine render pass/flags
 	if (strutil::equalCI(tex_name, game::configuration().skyFlat())) // Check for sky flat

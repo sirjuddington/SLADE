@@ -31,6 +31,7 @@ struct Flat3D
 	unsigned   texture = 0;
 	u8         flags   = 0;
 	glm::vec4  colour{ 1.0f };
+	glm::vec4  fade_colour = glm::vec4{ 0.0f, 0.0f, 0.0f, -1.0f }; // Negative alpha: use brightness for density
 	RenderPass render_pass = RenderPass::Normal;
 
 	bool             hasFlag(Flags flag) const { return flags & static_cast<u8>(flag); }
@@ -39,7 +40,10 @@ struct Flat3D
 
 	bool operator==(const Flat3D& other) const
 	{
-		return texture == other.texture && colour == other.colour && render_pass == other.render_pass
+		return texture == other.texture
+			   && colour == other.colour
+			   && fade_colour == other.fade_colour
+			   && render_pass == other.render_pass
 			   && hasFlag(Flags::Additive) == other.hasFlag(Flags::Additive);
 	}
 };

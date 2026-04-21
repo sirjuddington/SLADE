@@ -355,6 +355,7 @@ bool WallRenderer3D::update(bool vis_check)
 			quad_groups_.push_back(
 				{ .texture        = quad->texture,
 				  .colour         = quad->colour,
+				  .fade_colour    = quad->fade_colour.rgb(),
 				  .index_buffer   = std::make_unique<gl::IndexBuffer>(),
 				  .render_pass    = quad->render_pass,
 				  .trans_additive = quad->hasFlag(QuadFlags::Additive) });
@@ -409,6 +410,7 @@ void WallRenderer3D::render(const gl::Shader& shader, RenderPass pass) const
 		}
 
 		shader.setUniform("colour", group.colour);
+		shader.setUniform("fog_colour", group.fade_colour);
 		gl::Texture::bind(group.texture);
 		group.index_buffer->bind();
 		gl::drawElements(gl::Primitive::Triangles, group.index_buffer->size(), GL_UNSIGNED_INT);

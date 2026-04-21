@@ -28,6 +28,7 @@ public:
 	const vector<ExtraFloor>& sectorExtraFloors(const MapSector* sector) const;
 	bool                      sectorHasExtraFloors(const MapSector* sector) const;
 	ColRGBA                   sectorColour(const MapSector& sector, SectorPart where) const;
+	ColRGBA                   sectorFadeColour(const MapSector& sector) const;
 	float                     sectorFloorHeightAt(const MapSector& sector, Vec3d pos) const;
 	SectorLighting            sectorLightingAt(
 				   const MapSector& sector,
@@ -55,6 +56,7 @@ private:
 	unique_ptr<PointLights>        point_lights_;
 	mutable vector<MapObject*>     updated_objects_;
 	mutable long                   specials_updated_ = 0;
+	mutable bool                   specials_updating_ = false;
 	ScopedConnectionList           connections_;
 
 	void processLineSpecial(const MapLine& line) const;
