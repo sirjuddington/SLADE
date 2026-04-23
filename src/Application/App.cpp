@@ -325,10 +325,6 @@ void readOldConfigFile()
 			tz.adv(); // Skip ending }
 		}
 
-		// Read keybinds
-		if (tz.advIf("keys", 2))
-			KeyBind::readOldBinds(tz);
-
 		// Read nodebuilder paths
 		if (tz.advIf("nodebuilder_paths", 2))
 		{

@@ -666,7 +666,7 @@ void KeyBind::initBinds()
 	addBind("me2d_mode_things", Keypress("T"), "Things mode", group);
 	addBind("me2d_mode_3d_at_mouse", Keypress("Q", KPM_SHIFT), "Enter 3d mode at the mouse cursor position", group);
 	addBind("me2d_flat_type", Keypress("F", KPM_CTRL), "Cycle flat type", group);
-	addBind("me2d_split_line", Keypress("S", KPM_CTRL | KPM_SHIFT), "Split nearest line", group);
+	addBind("me2d_split_line", Keypress("S", KPM_SHIFT), "Split nearest line", group);
 	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock hilight", group);
 	addBind("me2d_begin_linedraw", Keypress("space"), "Begin line drawing", group);
 	addBind("me2d_begin_shapedraw", Keypress("space", KPM_SHIFT), "Begin shape drawing", group);
@@ -746,10 +746,12 @@ void KeyBind::initBinds()
 	addBind("me3d_camera_back", Keypress("S"), "Camera backward", group, true);
 	addBind("me3d_camera_left", Keypress("A"), "Camera strafe left", group, true);
 	addBind("me3d_camera_right", Keypress("D"), "Camera strafe right", group, true);
-	addBind("me3d_camera_up", Keypress("up"), "Camera move up", group, true);
-	addBind("me3d_camera_down", Keypress("down"), "Camera move down", group, true);
+	addBind("me3d_camera_up", Keypress("up"), "Camera move or look up", group, true);
+	addBind("me3d_camera_down", Keypress("down"), "Camera move or look down", group, true);
 	addBind("me3d_camera_turn_left", Keypress("left"), "Camera turn left", group, true);
 	addBind("me3d_camera_turn_right", Keypress("right"), "Camera turn right", group, true);
+	addBind("me3d_camera_look_up", Keypress("up", KPM_ALT), "Camera look up", group, true);
+	addBind("me3d_camera_look_down", Keypress("down", KPM_ALT), "Camera look down", group, true);
 
 	// Map Editor 3D Light (me3d_light*)
 	group = "Map Editor 3D Mode Light";

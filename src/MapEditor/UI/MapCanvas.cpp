@@ -608,5 +608,9 @@ void MapCanvas::onRefreshTimer(wxTimerEvent& e)
 void MapCanvas::onFocus(wxFocusEvent& e)
 {
 	if (e.GetEventType() == wxEVT_KILL_FOCUS)
+	{
 		context_->lockMouse(false);
+		context_->input().mouseLeave();
+		mouse_looking_ = false;
+	}
 }

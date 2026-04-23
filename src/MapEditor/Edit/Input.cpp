@@ -517,6 +517,12 @@ void Input::mouseLeave()
 		panning_ = false;
 		context_->setCursor(ui::MouseCursor::Normal);
 	}
+
+	// Reset mouse state
+	for (bool& i : mouse_button_down_)
+		i = false;
+	mouse_drag_  = DragType::None;
+	mouse_state_ = MouseState::Normal;
 }
 
 // -----------------------------------------------------------------------------
@@ -1171,14 +1177,20 @@ bool Input::updateCamera3d(double mult) const
 	// Camera up
 	if (KeyBind::isPressed("me3d_camera_up"))
 	{
-		camera.moveUp(speed);
+		if (map3d_gravity)
+			camera.look(0.0, -speed);
+		else
+			camera.moveUp(speed);
 		moving = true;
 	}
 
 	// Camera down
 	if (KeyBind::isPressed("me3d_camera_down"))
 	{
-		camera.moveUp(-speed);
+		if (map3d_gravity)
+			camera.look(0.0, speed);
+		else
+			camera.moveUp(-speed);
 		moving = true;
 	}
 
@@ -1193,6 +1205,20 @@ bool Input::updateCamera3d(double mult) const
 	if (KeyBind::isPressed("me3d_camera_turn_right"))
 	{
 		camera.turn(shift_down_ ? -mult * 2 : -mult);
+		moving = true;
+	}
+
+	// Camera look up
+	if (KeyBind::isPressed("me3d_camera_look_up"))
+	{
+		camera.look(0, -speed);
+		moving = true;
+	}
+
+	// Camera look down
+	if (KeyBind::isPressed("me3d_camera_look_down"))
+	{
+		camera.look(0, speed);
 		moving = true;
 	}
 
