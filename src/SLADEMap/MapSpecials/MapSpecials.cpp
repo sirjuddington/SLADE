@@ -247,11 +247,15 @@ SectorLighting MapSpecials::sectorLightingAt(
 // -----------------------------------------------------------------------------
 optional<LineTranslucency> MapSpecials::lineTranslucency(const MapLine& line) const
 {
-	// First, check for UDMF alpha/renderstyle properties (this will override specials)
-	// TODO: Does it override? Can alpha/renderstyle be mixed and matched with translucency line specials?
+	// First, check with render specials (will override UDMF properties if both are present)
+	updateSpecials();
+	if (auto t = render_specials_->lineTranslucency(line); t.has_value())
+		return t;
+
+	// Check for UDMF alpha/renderstyle properties
 	if (map_->currentFormat() == MapFormat::UDMF
 		&& game::configuration().featureSupported(game::UDMFFeature::LineTransparency)
-		&& (line.hasProp("translucency") || line.hasProp("alpha")))
+		&& (line.hasProp("alpha") || line.hasProp("renderstyle")))
 	{
 		LineTranslucency translucency;
 
@@ -269,9 +273,8 @@ optional<LineTranslucency> MapSpecials::lineTranslucency(const MapLine& line) co
 		return translucency;
 	}
 
-	// Otherwise check with render specials
-	updateSpecials();
-	return render_specials_->lineTranslucency(line);
+	// No translucency
+	return std::nullopt;
 }
 
 // -----------------------------------------------------------------------------

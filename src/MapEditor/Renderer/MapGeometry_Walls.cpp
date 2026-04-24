@@ -99,6 +99,8 @@ struct QuadInfo
 	int                height_top_v2    = 0;
 	int                height_bottom_v2 = 0;
 	bool               slope_midtex     = false;
+
+	optional<map::LineTranslucency> translucency;
 };
 } // namespace
 
@@ -193,12 +195,12 @@ static void addQuad(
 	bool masked = info.midtex || info.extrafloor; // Midtextures and extrafloor sides are always masked
 	if (info.sky)
 		quad.render_pass = RenderPass::Sky;
-	else if (masked && context.translucency.has_value())
+	else if (masked && info.translucency.has_value())
 	{
 		// Transparency only applies to mid textures and extrafloor sides
-		if (context.translucency->additive)
+		if (info.translucency->additive)
 			quad.setFlag(Quad3D::Flags::Additive);
-		quad.colour.a *= context.translucency->alpha;
+		quad.colour.a *= info.translucency->alpha;
 		quad.render_pass = RenderPass::Transparent;
 	}
 	else if (masked)
@@ -303,6 +305,12 @@ void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, b
 						.back_side     = front, // Show on back side of line if extrafloor is on front
 						.extrafloor    = true };
 
+	// Apply translucency if needed
+	if (ef.alpha < 1.0f || ef.hasFlag(ExtraFloor::Flags::AdditiveTransparency))
+		quad_info.translucency = map::LineTranslucency{
+			.alpha = ef.alpha, .additive = ef.hasFlag(ExtraFloor::Flags::AdditiveTransparency)
+		};
+
 	auto side = front ? context.line->s2() : context.line->s1();
 
 	// Skip if the quad is completely below the floor
@@ -396,19 +404,18 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 	// Setup base quad info
 	auto&    texture = textureManager().texture(tex_name, context.mix_tex_flats);
 	auto&    gl_tex  = gl::Texture::info(texture.gl_id);
-	QuadInfo quad_info{
-		.line          = line,
-		.height_top    = height_top,
-		.plane_top     = plane_top,
-		.height_bottom = height_bottom,
-		.plane_bottom  = plane_bottom,
-		.texture       = &texture,
-		.gl_texture    = &gl_tex,
-		.offsets       = side->texOffset(side_part),
-		.line_length   = static_cast<int>(line->length()),
-		.tex_y_origin  = tex_y_origin,
-		.back_side     = (side == line->s2()),
-	};
+	QuadInfo quad_info{ .line          = line,
+						.height_top    = height_top,
+						.plane_top     = plane_top,
+						.height_bottom = height_bottom,
+						.plane_bottom  = plane_bottom,
+						.texture       = &texture,
+						.gl_texture    = &gl_tex,
+						.offsets       = side->texOffset(side_part),
+						.line_length   = static_cast<int>(line->length()),
+						.tex_y_origin  = tex_y_origin,
+						.back_side     = (side == line->s2()),
+						.translucency  = context.translucency };
 
 	// Apply texture scale
 	quad_info.tex_scale = texture.scale;
