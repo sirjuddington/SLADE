@@ -13,7 +13,7 @@
         "colour": "rgb(200, 200, 200)",
         "shrink": true,
         "angle": false,
-        "point_light": "zdoom"
+        "dynamic_light": true
       },
       "things": [
         {
@@ -22,17 +22,15 @@
           "arg1": "Radius",
           "arg2": "Arg2",
           "arg3": "Arg3",
-          "arg4": "Arg4",
-          "point_light": "vavoom_white"
+          "arg4": "Arg4"
         },
         {
           "type": 1503,
-          "name": "Vavoom Colored Light",
+          "name": "Vavoom Coloured Light",
           "arg1": "Radius",
           "arg2": "Red",
           "arg3": "Green",
-          "arg4": "Blue",
-          "point_light": "vavoom"
+          "arg4": "Blue"
         },
         {
           "type": 9800,
@@ -53,36 +51,32 @@
           "type": 9810,
           "name": "Additive Point Light",
           "arg4": "Radius",
-          "arg5": "Arg5",
-          "point_light": "zdoom_additive"
+          "arg5": "Arg5"
         },
-        { "type": 9811, "name": "Pulsing Additive Point Light", "point_light": "zdoom_additive" },
-        { "type": 9812, "name": "Flickering Additive Point Light", "point_light": "zdoom_additive" },
+        { "type": 9811, "name": "Pulsing Additive Point Light" },
+        { "type": 9812, "name": "Flickering Additive Point Light" },
         {
           "type": 9813,
           "name": "Sector-Sync'ed Additive Point Light",
           "arg4": "Scale",
-          "arg5": "Arg5",
-          "point_light": "zdoom_additive"
+          "arg5": "Arg5"
         },
-        { "type": 9814, "name": "Randomly Flickering Additive Point Light", "point_light": "zdoom_additive" },
+        { "type": 9814, "name": "Randomly Flickering Additive Point Light" },
         {
           "type": 9820,
           "name": "Subtractive Point Light",
           "arg4": "Radius",
-          "arg5": "Arg5",
-          "point_light": "zdoom_subtractive"
+          "arg5": "Arg5"
         },
-        { "type": 9821, "name": "Pulsing Subtractive Point Light", "point_light": "zdoom_subtractive" },
-        { "type": 9822, "name": "Flickering Subtractive Point Light", "point_light": "zdoom_subtractive" },
+        { "type": 9821, "name": "Pulsing Subtractive Point Light" },
+        { "type": 9822, "name": "Flickering Subtractive Point Light" },
         {
           "type": 9823,
           "name": "Sector-Sync'ed Subtractive Point Light",
           "arg4": "Scale",
-          "arg5": "Arg5",
-          "point_light": "zdoom_subtractive"
+          "arg5": "Arg5"
         },
-        { "type": 9824, "name": "Randomly Flickering Subtractive Point Light", "point_light": "zdoom_subtractive" },
+        { "type": 9824, "name": "Randomly Flickering Subtractive Point Light" },
         {
           "type": 9825,
           "name": "Vavoom Light",
@@ -96,19 +90,17 @@
           "type": 9830,
           "name": "Attenuated Point Light",
           "arg4": "Radius",
-          "arg5": "Arg5",
-          "point_light": "zdoom_attenuated"
+          "arg5": "Arg5"
         },
-        { "type": 9831, "name": "Attenuated Pulsing Point Light", "point_light": "zdoom_attenuated" },
-        { "type": 9832, "name": "Attenuated Flickering Point Light", "point_light": "zdoom_attenuated" },
+        { "type": 9831, "name": "Attenuated Pulsing Point Light" },
+        { "type": 9832, "name": "Attenuated Flickering Point Light" },
         {
           "type": 9833,
           "name": "Attenuated Sector-Sync'd Point Light",
           "arg4": "Scale",
-          "arg5": "Arg5",
-          "point_light": "zdoom_attenuated"
+          "arg5": "Arg5"
         },
-        { "type": 9834, "name": "Attenuated Randomly Flickering Point Light", "point_light": "zdoom_attenuated" }
+        { "type": 9834, "name": "Attenuated Randomly Flickering Point Light" }
       ]
     },
 

@@ -36,7 +36,6 @@
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace map;
@@ -47,63 +46,67 @@ PointLights::~PointLights() = default;
 
 void PointLights::processThing(const MapThing& thing)
 {
-	const auto& ttype = game::configuration().thingType(thing.type());
-
-	// Not a point light
-	if (ttype.pointLight().empty())
+	// Currently only zdoom types are implemented
+	if (game::configuration().currentPort() != "zdoom")
 		return;
 
-	// Determine z position
-	auto sector   = map_->thingParentSector(thing);
-	auto position = Vec3d{ thing.xPos(), thing.yPos(), thing.zPos() };
-	if (sector)
-		position.z += sector->floor().plane.heightAt(position.x, position.y);
+	// Check type is marked as a dynamic light
+	auto& tt = game::configuration().thingType(thing.type());
+	if (!tt.dynamicLight())
+		return;
 
-	// ZDoom point light
-	if (strutil::startsWith(ttype.pointLight(), "zdoom"))
+	auto type = thing.type();
+	switch (type)
 	{
-		point_lights_.push_back(
-			PointLight{ .thing    = &thing,
-						.position = position,
-						.r        = static_cast<u8>(thing.arg(0)),
-						.g        = static_cast<u8>(thing.arg(1)),
-						.b        = static_cast<u8>(thing.arg(2)),
-						.radius   = static_cast<u8>(thing.arg(3)),
-						.type     = PointLight::Type::Normal });
+		// Vavoom
+	case 1502: // White
+		addPointLight(thing, 255, 255, 255, thing.arg(0));
+		break;
+	case 1503: // Coloured
+		addPointLight(thing, thing.arg(1), thing.arg(2), thing.arg(3), thing.arg(0));
+		break;
 
-		// Check for non-normal types
-		if (ttype.pointLight() == "zdoom_additive")
-			point_lights_.back().type = PointLight::Type::Additive;
-		else if (ttype.pointLight() == "zdoom_subtractive")
-			point_lights_.back().type = PointLight::Type::Subtractive;
-		else if (ttype.pointLight() == "zdoom_attenuated")
-			point_lights_.back().type = PointLight::Type::Attenuated;
-	}
+		// Point Light
+	case 9800: // Static
+	case 9801: // Pulsing
+	case 9802: // Flickering
+	case 9803: // Sector-Synced
+	case 9804: // Random Flickering
+		addPointLight(
+			thing, thing.arg(0), thing.arg(1), thing.arg(2), thing.arg(3), PointLight::Type::Normal, type == 9803);
+		break;
 
-	// Vavoom point light
-	else if (ttype.pointLight() == "vavoom")
-	{
-		point_lights_.push_back(
-			PointLight{ .thing    = &thing,
-						.position = position,
-						.r        = static_cast<u8>(thing.arg(1)),
-						.g        = static_cast<u8>(thing.arg(2)),
-						.b        = static_cast<u8>(thing.arg(3)),
-						.radius   = static_cast<u8>(thing.arg(0)),
-						.type     = PointLight::Type::Normal });
-	}
+		// Additive Point Light
+	case 9810: // Static
+	case 9811: // Pulsing
+	case 9812: // Flickering
+	case 9813: // Sector-Synced
+	case 9814: // Random Flickering
+		addPointLight(
+			thing, thing.arg(0), thing.arg(1), thing.arg(2), thing.arg(3), PointLight::Type::Additive, type == 9813);
+		break;
 
-	// Vavoom white light
-	else if (ttype.pointLight() == "vavoom_white")
-	{
-		point_lights_.push_back(
-			PointLight{ .thing    = &thing,
-						.position = position,
-						.r        = 255,
-						.g        = 255,
-						.b        = 255,
-						.radius   = static_cast<u8>(thing.arg(0)),
-						.type     = PointLight::Type::Normal });
+		// Subtractive Point Light
+	case 9820: // Static
+	case 9821: // Pulsing
+	case 9822: // Flickering
+	case 9823: // Sector-Synced
+	case 9824: // Random Flickering
+		addPointLight(
+			thing, thing.arg(0), thing.arg(1), thing.arg(2), thing.arg(3), PointLight::Type::Subtractive, type == 9823);
+		break;
+
+		// Attenuated Point Light
+	case 9830: // Static
+	case 9831: // Pulsing
+	case 9832: // Flickering
+	case 9833: // Sector-Synced
+	case 9834: // Random Flickering
+		addPointLight(
+			thing, thing.arg(0), thing.arg(1), thing.arg(2), thing.arg(3), PointLight::Type::Attenuated, type == 9833);
+		break;
+
+	default: break;
 	}
 }
 
@@ -125,4 +128,27 @@ void PointLights::thingDeleted(const MapThing& thing)
 		}
 		i++;
 	}
+}
+
+void PointLights::addPointLight(
+	const MapThing&  thing,
+	u8               r,
+	u8               g,
+	u8               b,
+	unsigned         radius,
+	PointLight::Type type,
+	bool             radius_sector_sync)
+{
+	// Determine z position
+	auto sector   = map_->thingParentSector(thing);
+	auto position = Vec3d{ thing.xPos(), thing.yPos(), thing.zPos() };
+	if (sector)
+		position.z += sector->floor().plane.heightAt(position.x, position.y);
+
+	// Adjust radius by sector light level if needed
+	if (radius_sector_sync && sector)
+		radius = static_cast<unsigned>(radius / 8.0 * sector->lightLevel());
+
+	point_lights_.push_back(
+		PointLight{ .thing = &thing, .position = position, .r = r, .g = g, .b = b, .radius = radius, .type = type });
 }

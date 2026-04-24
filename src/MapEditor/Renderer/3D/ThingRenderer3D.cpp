@@ -345,8 +345,8 @@ void ThingRenderer3D::ThingGroup::addThing(const MapThing& thing)
 		if (type_info->fullbright())
 			light.brightness = 255;
 
-		// Point light - fullbright and coloured
-		if (!type_info->pointLight().empty())
+		// Dynamic light - fullbright and coloured
+		if (type_info->dynamicLight())
 		{
 			light.brightness = 255;
 			if (auto pl = map->mapSpecials().pointLightForThing(thing))

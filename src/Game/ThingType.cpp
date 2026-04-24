@@ -95,7 +95,7 @@ void ThingType::copy(const ThingType& copy)
 	translation_       = copy.translation_;
 	palette_           = copy.palette_;
 	z_height_absolute_ = copy.z_height_absolute_;
-	point_light_       = copy.point_light_;
+	dynamic_light_     = copy.dynamic_light_;
 }
 
 // -----------------------------------------------------------------------------
@@ -136,7 +136,7 @@ void ThingType::reset()
 	flags_             = 0;
 	tagged_            = TagType::None;
 	z_height_absolute_ = false;
-	point_light_       = "";
+	dynamic_light_     = false;
 
 	// Reset args
 	args_.count = 0;
@@ -291,8 +291,8 @@ void ThingType::parse(const ParseTreeNode* node)
 			z_height_absolute_ = child->boolValue();
 
 		// Thing is a point light
-		else if (name == "point_light")
-			point_light_ = strutil::lower(child->stringValue());
+		else if (name == "dynamic_light")
+			dynamic_light_ = child->boolValue();
 
 		// Parse arg definition if it was one
 		if (arg >= 0)
@@ -548,8 +548,8 @@ void ThingType::fromJson(const Json& j)
 			z_height_absolute_ = j.at("z_height_absolute").get<bool>();
 
 		// Thing is a point light
-		if (j.contains("point_light"))
-			point_light_ = strutil::lower(j.at("point_light").get<string>());
+		if (j.contains("dynamic_light"))
+			dynamic_light_ = j.at("dynamic_light").get<bool>();
 
 
 		// Args

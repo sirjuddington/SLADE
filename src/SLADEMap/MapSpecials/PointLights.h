@@ -37,5 +37,14 @@ public:
 private:
 	const SLADEMap*    map_ = nullptr;
 	vector<PointLight> point_lights_;
+
+	void addPointLight(
+		const MapThing&  thing,
+		u8               r,
+		u8               g,
+		u8               b,
+		unsigned         radius,
+		PointLight::Type type               = PointLight::Type::Normal,
+		bool             radius_sector_sync = false);
 };
 } // namespace slade::map
