@@ -17,6 +17,7 @@ enum class ArchiveFormat
 	Grp,
 	GZip,
 	Hog,
+	Lab,
 	Lfd,
 	Lib,
 	Pak,

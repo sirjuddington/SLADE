@@ -23,7 +23,7 @@
             // { "udmf": "blocksight", "name": "Blocks Monster Sight" },
             { "udmf": "zoneboundary", "name": "Reverb Zone Boundary" },
             { "udmf": "clipmidtex", "name": "Clip MidTex" },
-            // { "udmf": "wrapmidtex", "name": "Wrap MidTex" },
+            { "udmf": "wrapmidtex", "name": "Wrap MidTex" },
             { "udmf": "midtex3dimpassible", "name": "3D Midtex Allows Projectiles Through" }
           ]
         },
@@ -160,6 +160,22 @@
           ]
         },
         {
+          "name": "Scaling",
+          "defaults": {
+            "type": "float",
+            "default": 1.0,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "scalex_top", "name": "Upper X Scale" },
+            { "udmf": "scaley_top", "name": "Upper Y Scale" },
+            { "udmf": "scalex_mid", "name": "Middle X Scale" },
+            { "udmf": "scaley_mid", "name": "Middle Y Scale" },
+            { "udmf": "scalex_bottom", "name": "Lower X Scale" },
+            { "udmf": "scaley_bottom", "name": "Lower Y Scale" }
+          ]
+        },
+        {
           "name": "Skew",
           "defaults": {
             "type": "string",
@@ -172,20 +188,6 @@
             { "udmf": "skew_bottom_type", "name": "Bottom Skew Type" }
           ]
         },
-
-        // {
-        //   "name": "Scaling",
-        //   "defaults": {
-        //     "type": "float",
-        //     "default": 1.0,
-        //     "show_always": false
-        //   },
-        //   "properties": [
-        //     { "udmf": "scalex", "name": "X Scale" },
-        //     { "udmf": "scaley", "name": "Y Scale" }
-        //   ]
-        // },
-
         {
           "name": "Lighting",
           "defaults": {

@@ -51,13 +51,14 @@ vector<Named<ArchiveFormat>> formats = { { "adat", ArchiveFormat::ADat }, { "bsp
 										 { "dat", ArchiveFormat::Dat },   { "folder", ArchiveFormat::Dir },
 										 { "disk", ArchiveFormat::Disk }, { "gob", ArchiveFormat::Gob },
 										 { "grp", ArchiveFormat::Grp },   { "gzip", ArchiveFormat::GZip },
-										 { "hog", ArchiveFormat::Hog },   { "lfd", ArchiveFormat::Lfd },
-										 { "lib", ArchiveFormat::Lib },   { "pak", ArchiveFormat::Pak },
-										 { "pod", ArchiveFormat::Pod },   { "res", ArchiveFormat::Res },
-										 { "rff", ArchiveFormat::Rff },   { "sin", ArchiveFormat::SiN },
-										 { "tar", ArchiveFormat::Tar },   { "wad", ArchiveFormat::Wad },
-										 { "wadj", ArchiveFormat::WadJ }, { "wad2", ArchiveFormat::Wad2 },
-										 { "wolf", ArchiveFormat::Wolf }, { "zip", ArchiveFormat::Zip } };
+										 { "lab", ArchiveFormat::Lab },   { "hog", ArchiveFormat::Hog },
+										 { "lfd", ArchiveFormat::Lfd },   { "lib", ArchiveFormat::Lib },
+										 { "pak", ArchiveFormat::Pak },   { "pod", ArchiveFormat::Pod },
+										 { "res", ArchiveFormat::Res },   { "rff", ArchiveFormat::Rff },
+										 { "sin", ArchiveFormat::SiN },   { "tar", ArchiveFormat::Tar },
+										 { "wad", ArchiveFormat::Wad },   { "wadj", ArchiveFormat::WadJ },
+										 { "wad2", ArchiveFormat::Wad2 }, { "wolf", ArchiveFormat::Wolf },
+										 { "zip", ArchiveFormat::Zip } };
 
 std::map<ArchiveFormat, ArchiveFormatInfo> format_info;
 } // namespace slade::archive
@@ -129,7 +130,7 @@ vector<ArchiveFormatInfo>& archive::allFormatsInfo()
 
 	if (all_formats_vec.empty() && !format_info.empty())
 	{
-		for (auto [format, info] : format_info)
+		for (const auto& info : format_info | std::views::values)
 			all_formats_vec.push_back(info);
 	}
 
@@ -149,7 +150,7 @@ const ArchiveFormatInfo& archive::formatInfo(ArchiveFormat format)
 // -----------------------------------------------------------------------------
 const ArchiveFormatInfo& archive::formatInfoFromId(string_view id)
 {
-	for (auto& [format, info] : format_info)
+	for (auto& info : format_info | std::views::values)
 		if (info.id == id)
 			return info;
 
@@ -187,9 +188,9 @@ ArchiveFormat archive::formatFromExtension(string_view extension)
 {
 	for (const auto& [format, info] : format_info)
 	{
-		for (const auto& ext : info.extensions)
+		for (const auto& key : info.extensions | std::views::keys)
 		{
-			if (strutil::equalCI(ext.first, extension))
+			if (strutil::equalCI(key, extension))
 				return format;
 		}
 	}

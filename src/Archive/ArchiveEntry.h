@@ -32,8 +32,10 @@ public:
 	// Accessors
 	const string&            name() const { return name_; }
 	string_view              nameNoExt() const;
+	string_view              ext() const;
 	const string&            upperName() const { return upper_name_; }
 	string_view              upperNameNoExt() const;
+	string_view              upperExt() const;
 	uint32_t                 size() const { return data_.size(); }
 	const MemChunk&          data() const { return data_; }
 	const uint8_t*           rawData() const { return data_.data(); }

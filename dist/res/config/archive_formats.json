@@ -163,6 +163,18 @@
       }
     ]
   },
+  "lab": {
+    "name": "Outlaws LAB",
+    "names_extensions": true,
+    "supports_dirs": false,
+    "entry_format": "archive_lab",
+    "extensions": [
+      {
+        "extension": "lab",
+        "name": "Outlaws LAB"
+      }
+    ]
+  },
   "lfd": {
     "name": "Dark Forces LFD",
     "supports_dirs": false,

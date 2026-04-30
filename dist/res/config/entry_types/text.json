@@ -478,7 +478,7 @@
   },
   "jedi_model": {
     "inherits": "text",
-    "name": "DF Model",
+    "name": "DF/OL Model",
     "match_ext": [ "3do" ]
   },
   "jedi_vue": {
@@ -488,7 +488,7 @@
   },
   "jedi_inf": {
     "inherits": "text",
-    "name": "DF Script",
+    "name": "DF/OL Script",
     "match_ext": [ "inf" ]
   },
   "jedi_objects": {
@@ -608,6 +608,36 @@
     "name": "Demo Loop",
     "match_name": [ "demoloop" ],
     "text_language": "json"
+  },
+  "ol_level": {
+    "inherits": "text",
+    "name": "OL Level",
+    "match_ext": [ "lvt" ]
+  },
+  "ol_objects": {
+    "inherits": "text",
+    "name": "OL Objects",
+    "match_ext": [ "obt" ]
+  },
+  "ol_items": {
+    "inherits": "text",
+    "name": "OL Items",
+    "match_ext": [ "itm" ]
+  },
+  "ol_physics": {
+    "inherits": "text",
+    "name": "OL Physics",
+    "match_ext": [ "phy" ]
+  },
+  "ol_campaign": {
+    "inherits": "text",
+    "name": "OL Campaign",
+    "match_ext": [ "rcm", "rca", "rcs" ]
+  },
+  "ol_script": {
+    "inherits": "text",
+    "name": "OL Script",
+    "match_ext": [ "msc" ]
   },
   "txt": {
     "inherits": "text",

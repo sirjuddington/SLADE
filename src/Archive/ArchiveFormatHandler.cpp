@@ -1116,6 +1116,7 @@ unique_ptr<ArchiveFormatHandler> archive::formatHandler(ArchiveFormat format)
 	case ArchiveFormat::Grp:      return std::make_unique<GrpArchiveHandler>();
 	case ArchiveFormat::GZip:     return std::make_unique<GZipArchiveHandler>();
 	case ArchiveFormat::Hog:      return std::make_unique<HogArchiveHandler>();
+	case ArchiveFormat::Lab:      return std::make_unique<LabArchiveHandler>();
 	case ArchiveFormat::Lfd:      return std::make_unique<LfdArchiveHandler>();
 	case ArchiveFormat::Lib:      return std::make_unique<LibArchiveHandler>();
 	case ArchiveFormat::Pak:      return std::make_unique<PakArchiveHandler>();
