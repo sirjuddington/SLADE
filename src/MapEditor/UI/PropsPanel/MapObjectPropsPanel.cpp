@@ -78,7 +78,12 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	// Add item label
+	// 'No selection' label
+	label_no_object_ = new wxStaticText(this, -1, wxS("No item(s) selected"));
+	sizer->Add(label_no_object_, lh.sfWithBorder(1).Center());
+	label_no_object_->Hide();
+
+	// Show All checkbox
 	cb_show_all_ = new wxCheckBox(this, -1, wxS("Show All"));
 	cb_show_all_->SetValue(mobj_props_show_all);
 	sizer->Add(cb_show_all_, lh.sfWithBorder().Expand());
@@ -104,13 +109,16 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	hbox->Add(btn_add_, lh.sfWithBorder(0, wxRIGHT).Expand());
 	hbox->AddStretchSpacer(1);
 
-	// Reset button
-	btn_reset_ = new SIconButton(this, "close", "Discard Changes");
-	hbox->Add(btn_reset_, lh.sfWithBorder(0, wxRIGHT).Expand());
+	if (!no_apply)
+	{
+		// Reset button
+		btn_reset_ = new SIconButton(this, "close", "Discard Changes");
+		hbox->Add(btn_reset_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
-	// Apply button
-	btn_apply_ = new SIconButton(this, "tick", "Apply Changes");
-	hbox->Add(btn_apply_, wxSizerFlags().Expand());
+		// Apply button
+		btn_apply_ = new SIconButton(this, "tick", "Apply Changes");
+		hbox->Add(btn_apply_, wxSizerFlags().Expand());
+	}
 
 	wxPGCell cell;
 	cell.SetText(wxS("<multiple values>"));
@@ -120,8 +128,11 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	pg_props_side2_->GetGrid()->SetUnspecifiedValueAppearance(cell);
 
 	// Bind events
-	btn_apply_->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnApply, this);
-	btn_reset_->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnReset, this);
+	if (!no_apply)
+	{
+		btn_apply_->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnApply, this);
+		btn_reset_->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnReset, this);
+	}
 	cb_show_all_->Bind(wxEVT_CHECKBOX, &MapObjectPropsPanel::onShowAllToggled, this);
 	btn_add_->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnAdd, this);
 	pg_properties_->Bind(wxEVT_PG_CHANGED, &MapObjectPropsPanel::onPropertyChanged, this);
@@ -872,6 +883,16 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	// Check any objects were given
 	if (objects.empty() || objects[0] == nullptr)
 	{
+		// Update control visibility
+		stc_sections_->Hide();
+		cb_show_all_->Hide();
+		btn_add_->Hide();
+		if (btn_reset_)
+			btn_reset_->Hide();
+		if (btn_apply_)
+			btn_apply_->Hide();
+		label_no_object_->Show();
+
 		objects_.clear();
 		pg_properties_->DisableProperty(pg_properties_->GetGrid()->GetRoot());
 		pg_properties_->SetPropertyValueUnspecified(pg_properties_->GetGrid()->GetRoot());
@@ -880,6 +901,8 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		pg_props_side2_->DisableProperty(pg_props_side2_->GetGrid()->GetRoot());
 		pg_props_side2_->SetPropertyValueUnspecified(pg_props_side2_->GetGrid()->GetRoot());
 
+		Layout();
+
 		pg_properties_->Thaw();
 		pg_props_side1_->Thaw();
 		pg_props_side2_->Thaw();
@@ -887,7 +910,21 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		return;
 	}
 	else
+	{
 		pg_properties_->EnableProperty(pg_properties_->GetGrid()->GetRoot());
+
+		// Update control visibility
+		stc_sections_->Show();
+		cb_show_all_->Show();
+		btn_add_->Show();
+		if (btn_reset_ && !mobj_props_auto_apply)
+			btn_reset_->Show();
+		if (btn_apply_ && !mobj_props_auto_apply)
+			btn_apply_->Show();
+		label_no_object_->Hide();
+
+		Layout();
+	}
 
 	// Show all groups initially
 	for (auto group : groups_)

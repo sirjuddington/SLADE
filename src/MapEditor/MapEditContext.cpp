@@ -519,6 +519,7 @@ bool MapEditContext::update(double frametime)
 		{
 			selection_->clearHilight();
 			info_showing_ = false;
+			mapeditor::openObjectProperties(nullptr);
 		}
 		else
 		{
@@ -548,7 +549,7 @@ bool MapEditContext::update(double frametime)
 						case ItemType::Side:   mapeditor::openObjectProperties(map().side(hl.index)->parentLine()); break;
 						case ItemType::Sector: mapeditor::openObjectProperties(map().sector(hl.index)); break;
 						case ItemType::Thing:  mapeditor::openObjectProperties(map().thing(hl.index)); break;
-						default:               break;
+						default:               mapeditor::openObjectProperties(nullptr); break;
 						}
 					}
 

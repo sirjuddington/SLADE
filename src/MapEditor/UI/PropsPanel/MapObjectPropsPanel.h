@@ -61,6 +61,7 @@ private:
 	bool                  no_apply_     = false;
 	bool                  udmf_         = false;
 	vector<wxPGProperty*> groups_;
+	wxStaticText*         label_no_object_ = nullptr;
 
 	// Hide properties
 	bool           hide_flags_    = false;

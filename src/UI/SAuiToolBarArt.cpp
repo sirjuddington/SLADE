@@ -124,7 +124,7 @@ wxSize SAuiToolBarArt::GetToolSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiT
 			width += dropdownWidth + wnd->FromDIP(4);
 		}
 
-		return wxSize(width, height);
+		return { width, height };
 	}
 
 	return wxAuiGenericToolBarArt::GetToolSize(dc, wnd, item);
@@ -234,7 +234,12 @@ void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem&
 		// Draw checked outline
 		if (checked)
 		{
-			gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
+			// Draw checked background if not already drawn by hover/pressed state
+			if (!hover && !pressed)
+				gcdc.SetBrush(wxColour(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), 80));
+			else
+				gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
+			
 			gcdc.SetPen(wxPen(col_hilight, 2));
 			auto px = wnd->FromDIP(1);
 			gcdc.DrawRoundedRectangle(px, px, rect.width - px, rect.height - px, 3.0 * wnd->GetDPIScaleFactor());
@@ -373,7 +378,12 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 		// Draw checked outline
 		if (checked)
 		{
-			gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
+			// Draw checked background if not already drawn by hover/pressed state
+			if (!hover && !pressed)
+				gcdc.SetBrush(wxColour(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), 80));
+			else
+				gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
+
 			gcdc.SetPen(wxPen(col_hilight, 2));
 			auto px = wnd->FromDIP(1);
 			gcdc.DrawRoundedRectangle(px, px, rect.width - px, rect.height - px, radius);
