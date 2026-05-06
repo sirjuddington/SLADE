@@ -39,6 +39,7 @@
 
     // Base resource
     { "type": "custom_control", "id": "base_resource_chooser", "label": "Base Resource:" },
+    { "type": "action", "id": "main_setbra", "icon": "settings" },
 
     { "type": "separator" },
 
