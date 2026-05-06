@@ -163,7 +163,11 @@ void MapRenderer2D::renderThings(float alpha, bool force_dir)
 	gl::setBlend(gl::Blend::Normal);
 	for (auto& buffer : thing_buffers_)
 		buffer->draw(
-			view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, map2d_thing_shape == 1, map2d_thing_force_dir || force_dir);
+			view_,
+			glm::vec4{ 1.0f, 1.0f, 1.0f, alpha },
+			map2d_thing_shape == 1,
+			map2d_thing_shape == 2,
+			map2d_thing_force_dir || force_dir);
 }
 
 // -----------------------------------------------------------------------------
@@ -198,7 +202,11 @@ void MapRenderer2D::renderThings(const vector<MapThing*>& things, float alpha, c
 
 		// Render
 		temp_things_buffer_->draw(
-			view_, glm::vec4{ 1.0f, 1.0f, 1.0f, alpha }, map2d_thing_shape == 1, map2d_thing_force_dir);
+			view_,
+			glm::vec4{ 1.0f, 1.0f, 1.0f, alpha },
+			map2d_thing_shape == 1,
+			map2d_thing_shape == 2,
+			map2d_thing_force_dir);
 
 		// Continue
 		types_rendered.push_back(ttype);

@@ -59,9 +59,10 @@ enum class TexType
 struct ThingShader
 {
 	unique_ptr<Shader> shader;
-	bool               square    = false;
-	TexType            tex_type  = TexType::None;
-	bool               direction = false;
+	bool               square      = false;
+	TexType            tex_type    = TexType::None;
+	bool               direction   = false;
+	bool               sprite_only = false;
 };
 vector<ThingShader> thing_shaders;
 } // namespace
@@ -80,19 +81,25 @@ namespace
 // instead of round
 // [textured] - the type of texture to use for things (none, icon or sprite)
 // [direction] - if true, shader will render an arrow indicating thing direction
+// [sprite_only] - if true, only render the sprite (at actual size)
 // -----------------------------------------------------------------------------
-Shader* thingShader(bool square, TexType textured, bool direction)
+Shader* thingShader(bool square, TexType textured, bool direction, bool sprite_only = false)
 {
 	// Check if already loaded
 	for (const auto& shader : thing_shaders)
 	{
-		if (shader.square == square && shader.tex_type == textured && shader.direction == direction)
+		if (shader.square == square
+			&& shader.tex_type == textured
+			&& shader.direction == direction
+			&& shader.sprite_only == sprite_only)
 			return shader.shader.get();
 	}
 
 	// Build shader name
 	string shader_name = "thing2d";
-	if (square)
+	if (sprite_only)
+		shader_name += "_sprite_only";
+	else if (square)
 		shader_name += "_square";
 	else
 		shader_name += "_round";
@@ -104,17 +111,26 @@ Shader* thingShader(bool square, TexType textured, bool direction)
 		shader_name += "_arrow";
 
 	// Load the shader with requested properties
-	thing_shaders.push_back({ std::make_unique<Shader>(shader_name), square, textured, direction });
+	thing_shaders.push_back({ std::make_unique<Shader>(shader_name), square, textured, direction, sprite_only });
 	auto shader = thing_shaders.back().shader.get();
-	if (square)
-		shader->define("SQUARE");
-	if (textured == TexType::Icon)
-		shader->define("ICON");
-	else if (textured == TexType::Sprite)
-		shader->define("SPRITE");
-	if (direction)
-		shader->define("ARROW");
-	shader->loadResourceEntries("thing2d.vert", "thing2d.frag");
+	if (sprite_only)
+	{
+		if (direction)
+			shader->define("ARROW");
+		shader->loadResourceEntries("thing2d_spriteonly.vert", "thing2d_spriteonly.frag");
+	}
+	else
+	{
+		if (square)
+			shader->define("SQUARE");
+		if (textured == TexType::Icon)
+			shader->define("ICON");
+		else if (textured == TexType::Sprite)
+			shader->define("SPRITE");
+		if (direction)
+			shader->define("ARROW");
+		shader->loadResourceEntries("thing2d.vert", "thing2d.frag");
+	}
 
 	return shader;
 }
@@ -161,6 +177,8 @@ void ThingBuffer2D::setTexture(unsigned texture, bool sprite)
 	{
 		const auto& tex = Texture::info(texture_);
 
+		sprite_size_ = glm::vec2{ static_cast<float>(tex.size.x), static_cast<float>(tex.size.y) };
+
 		if (tex.size.x > tex.size.y)
 		{
 			tex_size_.x = 1.0f;
@@ -176,7 +194,10 @@ void ThingBuffer2D::setTexture(unsigned texture, bool sprite)
 		tex_size_.y = 1.0f / (tex_size_.y * 0.75f);
 	}
 	else
+	{
 		tex_size_ = glm::vec2{ 1.0f };
+		sprite_size_ = { -1.0f, -1.0f };
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -207,7 +228,8 @@ void ThingBuffer2D::push()
 // If [force_arrow] is true, things will be drawn with an arrow indicating their
 // direction, regardless of the thing type's angled property
 // -----------------------------------------------------------------------------
-void ThingBuffer2D::draw(const View* view, const glm::vec4& colour, bool square, bool force_arrow) const
+void ThingBuffer2D::draw(const View* view, const glm::vec4& colour, bool square, bool sprite_only, bool force_arrow)
+	const
 {
 	if (!getContext())
 		return;
@@ -216,27 +238,46 @@ void ThingBuffer2D::draw(const View* view, const glm::vec4& colour, bool square,
 	if (buffer_things_->empty())
 		return;
 
-	// Determine radius
-	auto radius = radius_;
-	if (shrink_on_zoom_ && view)
-	{
-		if (view->scale().x > 1.0)
-			radius /= view->scale().x;
-	}
-
 	// Setup shader
-	auto shader = thingShader(
-		square, texture_ > 0 ? (sprite_ ? TexType::Sprite : TexType::Icon) : TexType::None, arrow_ || force_arrow);
-	shader->bind();
-	if (view)
-		view->setupShader(*shader);
-	shader->setUniform("colour", colour_ * colour);
-	shader->setUniform("radius", radius);
-	if (sprite_ && !square)
-		shader->setUniform("tex_size", tex_size_ * 1.2f); // Smaller sprite if round background
+	Shader* shader;
+	if (sprite_only && sprite_size_.x >= 0.0f)
+	{
+		const bool draw_arrow = arrow_ || force_arrow;
+		shader                = thingShader(false, TexType::Sprite, draw_arrow, true);
+		shader->bind();
+		if (view)
+			view->setupShader(*shader);
+		shader->setUniform("tex_size", sprite_size_);
+		shader->setUniform("colour", colour_ * colour);
+		if (draw_arrow)
+		{
+			shader->setUniform("radius", std::max({ 32.0f, sprite_size_.x, sprite_size_.y }));
+			shader->setUniform("shadow_opacity", shadow_opacity_);
+		}
+	}
 	else
-		shader->setUniform("tex_size", tex_size_);
-	shader->setUniform("shadow_opacity", shadow_opacity_);
+	{
+		// Determine radius
+		auto radius = radius_;
+		if (shrink_on_zoom_ && view)
+		{
+			if (view->scale().x > 1.0)
+				radius /= view->scale().x;
+		}
+
+		shader = thingShader(
+			square, texture_ > 0 ? (sprite_ ? TexType::Sprite : TexType::Icon) : TexType::None, arrow_ || force_arrow);
+		shader->bind();
+		if (view)
+			view->setupShader(*shader);
+		shader->setUniform("colour", colour_ * colour);
+		shader->setUniform("radius", radius);
+		if (sprite_ && !square)
+			shader->setUniform("tex_size", tex_size_ * 1.2f); // Smaller sprite if round background
+		else
+			shader->setUniform("tex_size", tex_size_);
+		shader->setUniform("shadow_opacity", shadow_opacity_);
+	}
 
 	gl::bindVAO(vao_);
 	gl::Texture::bind(texture_);

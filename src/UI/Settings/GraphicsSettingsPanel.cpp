@@ -269,12 +269,17 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.padLarge());
 	vbox->Add(gb_sizer, lh.sfWithBorder(0, wxLEFT));
 	auto row = 0;
-	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Preset:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, wxS("Preset:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gb_sizer->Add(choice_presets_, { row++, 1 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Colours:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(
+		new wxStaticText(panel, -1, wxS("Colours:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gb_sizer->Add(lh.layoutHorizontally({ cp_colour1_, cp_colour2_ }), { row++, 1 }, { 1, 2 });
 	gb_sizer->Add(
-		new wxStaticText(panel, -1, wxS("Browser Background:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		new wxStaticText(panel, -1, wxS("Browser Background:")),
+		{ row, 0 },
+		{ 1, 1 },
+		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	gb_sizer->Add(choice_browser_bg_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Hud Offsets View

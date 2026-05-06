@@ -286,10 +286,15 @@ wxSizer* InterfaceSettingsPanel::layoutEntryListSettings(wxWindow* panel) const
 	auto sizer = new wxGridBagSizer(pad(panel), padLarge(panel));
 
 	auto row = 0;
-	sizer->Add(new wxStaticText(panel, -1, wxS("Icon set:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(
+		new wxStaticText(panel, -1, wxS("Icon set:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	sizer->Add(choice_iconset_entry_, { row, 1 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(choice_elist_icon_size_, { row++, 2 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(new wxStaticText(panel, -1, wxS("Row padding:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(
+		new wxStaticText(panel, -1, wxS("Row padding:")),
+		{ row, 0 },
+		{ 1, 1 },
+		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	sizer->Add(spin_elist_icon_pad_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 	sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 3 }, wxALIGN_CENTER_VERTICAL);
 

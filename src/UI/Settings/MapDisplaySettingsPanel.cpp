@@ -215,7 +215,7 @@ wxPanel* MapDisplaySettingsPanel::createThingsPanel(wxWindow* parent, const Layo
 	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// Create controls
-	rbp_thing_shape_         = new RadioButtonPanel(panel, { "Round", "Square" });
+	rbp_thing_shape_         = new RadioButtonPanel(panel, { "Round", "Square", "Sprite Only" });
 	cb_thing_sprites_        = new wxCheckBox(panel, -1, wxS("Show Sprites"));
 	slider_thing_shadow_     = new NumberSlider(panel, 0, 10, 1, true, 10);
 	cb_thing_force_dir_      = new wxCheckBox(panel, -1, wxS("Always show direction arrows"));
@@ -224,11 +224,18 @@ wxPanel* MapDisplaySettingsPanel::createThingsPanel(wxWindow* parent, const Layo
 	rbp_things_always_       = new RadioButtonPanel(panel, { "Hide", "Show", "Fade" }, "When not in things mode:");
 
 	int row = 0;
-	sizer->Add(new wxStaticText(panel, -1, wxS("Thing shape: ")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(
+		new wxStaticText(panel, -1, wxS("Thing shape:")),
+		{ row, 0 },
+		{ 1, 1 },
+		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	sizer->Add(rbp_thing_shape_, { row, 1 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(cb_thing_sprites_, { row++, 2 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(
-		new wxStaticText(panel, -1, wxS("Thing shadow opacity: ")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		new wxStaticText(panel, -1, wxS("Thing shadow opacity:")),
+		{ row, 0 },
+		{ 1, 1 },
+		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	sizer->Add(slider_thing_shadow_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 	sizer->Add(cb_thing_force_dir_, { row++, 0 }, { 1, 3 }, wxEXPAND);
 	sizer->Add(cb_thing_overlay_square_, { row++, 0 }, { 1, 3 }, wxEXPAND);

@@ -80,7 +80,11 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 
 	// Render distance
 	int row = 0;
-	gbsizer->Add(new wxStaticText(this, -1, wxS("Render distance:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(
+		new wxStaticText(this, -1, wxS("Render distance:")),
+		{ row, 0 },
+		{ 1, 1 },
+		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	slider_max_render_dist_ = new NumberSlider(this, 500, 20 * 500, 500);
 	gbsizer->Add(slider_max_render_dist_, { row, 1 }, { 1, 2 }, wxEXPAND);
 	cb_distance_unlimited_ = new wxCheckBox(this, -1, wxS("Unlimited"));
@@ -88,13 +92,20 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	gbsizer->AddGrowableCol(1, 1);
 
 	// FOV
-	gbsizer->Add(new wxStaticText(this, -1, wxS("Camera FOV:")), { ++row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(
+		new wxStaticText(this, -1, wxS("Camera FOV:")),
+		{ ++row, 0 },
+		{ 1, 1 },
+		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	slider_fov_ = new NumberSlider(this, 70, 120, 5);
 	gbsizer->Add(slider_fov_, { row, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Max. dynamic lights
 	gbsizer->Add(
-		new wxStaticText(this, -1, wxS("Max. dynamic lights:")), { ++row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		new wxStaticText(this, -1, wxS("Max. dynamic lights:")),
+		{ ++row, 0 },
+		{ 1, 1 },
+		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	slider_max_lights_ = new NumberSlider(this, 32, 512, 32);
 	gbsizer->Add(slider_max_lights_, { row, 1 }, { 1, 2 }, wxEXPAND);
 

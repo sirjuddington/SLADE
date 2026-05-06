@@ -75,12 +75,13 @@ NodeBuildersSettingsPanel::NodeBuildersSettingsPanel(wxWindow* parent) : Setting
 			sel = a;
 	}
 	choice_nodebuilder_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, builders);
-	sizer->Add(new wxStaticText(this, -1, wxS("Node Builder:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(
+		new wxStaticText(this, -1, wxS("Node Builder:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	sizer->Add(choice_nodebuilder_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Nodebuilder path text
 	text_path_ = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
-	sizer->Add(new wxStaticText(this, -1, wxS("Path:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(new wxStaticText(this, -1, wxS("Path:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	sizer->Add(text_path_, { 1, 1 }, { 1, 1 }, wxEXPAND);
 
 	// Browse nodebuilder path button

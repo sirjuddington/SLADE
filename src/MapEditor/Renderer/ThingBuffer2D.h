@@ -35,6 +35,7 @@ namespace gl
 			const View*      view        = nullptr,
 			const glm::vec4& colour      = glm::vec4{ 1.0f },
 			bool             square      = false,
+			bool             sprite_only = false,
 			bool             force_arrow = false) const;
 
 	private:
@@ -59,6 +60,7 @@ namespace gl
 		bool                  shrink_on_zoom_ = false;
 		float                 shadow_opacity_ = 0.7f;
 		glm::vec2             tex_size_       = glm::vec2{ 1.0f };
+		glm::vec2             sprite_size_    = glm::vec2{ 1.0f };
 		vector<ThingInstance> things_;
 
 		unsigned                          vao_ = 0;
