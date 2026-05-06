@@ -107,7 +107,7 @@ MapDisplaySettingsPanel::MapDisplaySettingsPanel(wxWindow* parent) : SettingsPan
 	tabs->AddPage(createLinesPanel(tabs, lh), wxS("Lines"));
 	tabs->AddPage(createThingsPanel(tabs, lh), wxS("Things"));
 	tabs->AddPage(createSectorsPanel(tabs, lh), wxS("Sectors"));
-	tabs->AddPage(map3d_panel_ = new Map3DSettingsPanel(this), wxS("3D"));
+	tabs->AddPage(map3d_panel_ = new Map3DSettingsPanel(tabs), wxS("3D"));
 
 	wxWindowBase::Layout();
 }
