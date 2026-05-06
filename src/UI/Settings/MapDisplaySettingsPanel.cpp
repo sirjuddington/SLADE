@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapDisplaySettingsPanel.h"
+#include "Map3DSettingsPanel.h"
 #include "UI/Controls/NumberSlider.h"
 #include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Controls/STabCtrl.h"
@@ -106,6 +107,7 @@ MapDisplaySettingsPanel::MapDisplaySettingsPanel(wxWindow* parent) : SettingsPan
 	tabs->AddPage(createLinesPanel(tabs, lh), wxS("Lines"));
 	tabs->AddPage(createThingsPanel(tabs, lh), wxS("Things"));
 	tabs->AddPage(createSectorsPanel(tabs, lh), wxS("Sectors"));
+	tabs->AddPage(map3d_panel_ = new Map3DSettingsPanel(this), wxS("3D"));
 
 	wxWindowBase::Layout();
 }
@@ -295,6 +297,8 @@ void MapDisplaySettingsPanel::loadSettings()
 	cb_use_zeth_icons_->SetValue(use_zeth_icons);
 	rbp_grid_64_->setSelection(map2d_64grid_style);
 	cb_grid_show_origin_->SetValue(map2d_grid_show_origin);
+
+	map3d_panel_->loadSettings();
 }
 
 // -----------------------------------------------------------------------------
@@ -331,4 +335,6 @@ void MapDisplaySettingsPanel::applySettings()
 	use_zeth_icons             = cb_use_zeth_icons_->GetValue();
 	map2d_64grid_style         = rbp_grid_64_->getSelection();
 	map2d_grid_show_origin     = cb_grid_show_origin_->GetValue();
+
+	map3d_panel_->applySettings();
 }

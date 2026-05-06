@@ -58,6 +58,7 @@ EXTERN_CVAR(Int, max_map_backups)
 EXTERN_CVAR(Bool, map_merge_lines_on_delete_vertex)
 EXTERN_CVAR(Bool, map_split_auto_offset)
 EXTERN_CVAR(Bool, save_archive_with_map)
+EXTERN_CVAR(Bool, map3d_mlook_invert_y)
 
 
 // -----------------------------------------------------------------------------
@@ -75,11 +76,9 @@ MapGeneralSettingsPanel::MapGeneralSettingsPanel(wxWindow* parent) : SettingsPan
 	SetSizer(sizer);
 
 	nodebuilders_panel_ = new NodeBuildersSettingsPanel(this);
-	map3d_panel_        = new Map3DSettingsPanel(this);
 
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createGeneralPanel(tabs), wxS("General"));
-	tabs->AddPage(wxutil::createPadPanel(tabs, map3d_panel_, padLarge()), wxS("3D Mode"));
 	tabs->AddPage(wxutil::createPadPanel(tabs, nodebuilders_panel_, padLarge()), wxS("Node Builders"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
@@ -99,9 +98,9 @@ void MapGeneralSettingsPanel::loadSettings()
 	cb_split_auto_offset_->SetValue(map_split_auto_offset);
 	text_max_backups_->setNumber(max_map_backups);
 	cb_save_archive_with_map_->SetValue(save_archive_with_map);
+	cb_3d_invert_y_->SetValue(map3d_mlook_invert_y);
 
 	nodebuilders_panel_->loadSettings();
-	map3d_panel_->loadSettings();
 }
 
 // -----------------------------------------------------------------------------
@@ -119,9 +118,9 @@ void MapGeneralSettingsPanel::applySettings()
 	map_split_auto_offset            = cb_split_auto_offset_->GetValue();
 	max_map_backups                  = text_max_backups_->number();
 	save_archive_with_map            = cb_save_archive_with_map_->GetValue();
+	map3d_mlook_invert_y             = cb_3d_invert_y_->GetValue();
 
 	nodebuilders_panel_->applySettings();
-	map3d_panel_->applySettings();
 }
 
 // -----------------------------------------------------------------------------
@@ -145,6 +144,7 @@ wxPanel* MapGeneralSettingsPanel::createGeneralPanel(wxWindow* parent)
 	cb_merge_lines_vertex_delete_ = new wxCheckBox(panel, -1, wxS("Merge lines when deleting a vertex"));
 	cb_split_auto_offset_         = new wxCheckBox(panel, -1, wxS("Automatically offset split lines"));
 	text_max_backups_             = new NumberTextCtrl(panel);
+	cb_3d_invert_y_               = new wxCheckBox(panel, -1, wxS("Invert mouse Y axis in 3D mode"));
 
 	// Layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -161,13 +161,17 @@ wxPanel* MapGeneralSettingsPanel::createGeneralPanel(wxWindow* parent)
 	sizer->Add(wxutil::createSectionSeparator(panel, "Editing"), lh.sfWithBorder(0, wxBOTTOM).Expand());
 	lh.layoutVertically(
 		sizer,
-		{ cb_merge_undo_step_, cb_remove_invalid_lines_, cb_merge_lines_vertex_delete_, cb_split_auto_offset_ },
+		{ cb_merge_undo_step_,
+		  cb_remove_invalid_lines_,
+		  cb_merge_lines_vertex_delete_,
+		  cb_split_auto_offset_,
+		  cb_props_auto_apply_ },
 		lh.sfWithBorder(0, wxLEFT));
 
-	// Property Edit
+	// Controls
 	sizer->AddSpacer(lh.padXLarge());
-	sizer->Add(wxutil::createSectionSeparator(panel, "Property Edit"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(sizer, { cb_property_edit_dclick_, cb_props_auto_apply_ }, lh.sfWithBorder(0, wxLEFT));
+	sizer->Add(wxutil::createSectionSeparator(panel, "Controls"), lh.sfWithBorder(0, wxBOTTOM).Expand());
+	lh.layoutVertically(sizer, { cb_property_edit_dclick_, cb_3d_invert_y_ }, lh.sfWithBorder(0, wxLEFT));
 
 	// Backups
 	sizer->AddSpacer(lh.padXLarge());

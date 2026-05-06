@@ -8,7 +8,6 @@ class NumberTextCtrl;
 namespace ui
 {
 	class NodeBuildersSettingsPanel;
-	class Map3DSettingsPanel;
 } // namespace ui
 } // namespace slade
 
@@ -36,9 +35,9 @@ private:
 	wxCheckBox*     cb_split_auto_offset_         = nullptr;
 	NumberTextCtrl* text_max_backups_             = nullptr;
 	wxCheckBox*     cb_save_archive_with_map_     = nullptr;
+	wxCheckBox*     cb_3d_invert_y_               = nullptr;
 
 	NodeBuildersSettingsPanel* nodebuilders_panel_ = nullptr;
-	Map3DSettingsPanel*        map3d_panel_        = nullptr;
 
 	wxPanel* createGeneralPanel(wxWindow* parent);
 };

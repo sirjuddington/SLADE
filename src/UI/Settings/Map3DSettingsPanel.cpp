@@ -31,6 +31,7 @@
 #include "Main.h"
 #include "Map3DSettingsPanel.h"
 #include "UI/Controls/NumberSlider.h"
+#include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Layout.h"
 
 using namespace slade;
@@ -43,12 +44,13 @@ using namespace ui;
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Float, map3d_max_render_dist)
-EXTERN_CVAR(Float, map3d_max_thing_dist)
 EXTERN_CVAR(Bool, map3d_render_sky)
 EXTERN_CVAR(Bool, map3d_crosshair_show_distance)
-EXTERN_CVAR(Bool, map3d_mlook_invert_y)
 EXTERN_CVAR(Bool, map3d_fake_contrast)
 EXTERN_CVAR(Int, map3d_fov)
+EXTERN_CVAR(Int, map3d_lights_max)
+EXTERN_CVAR(Bool, map3d_highlight_fill)
+EXTERN_CVAR(Bool, map3d_highlight_outline)
 
 
 // -----------------------------------------------------------------------------
@@ -63,43 +65,46 @@ EXTERN_CVAR(Int, map3d_fov)
 // -----------------------------------------------------------------------------
 Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
+	auto lh = LayoutHelper(this);
+
+	// Create border sizer
+	auto border = new wxBoxSizer(wxVERTICAL);
+	SetSizer(border);
+
 	// Create sizer
 	auto psizer = new wxBoxSizer(wxVERTICAL);
-	SetSizer(psizer);
+	border->Add(psizer, lh.sfWithLargeBorder(1).Expand());
 
-	auto lh      = ui::LayoutHelper(this);
 	auto gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	psizer->Add(gbsizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Render distance
-	gbsizer->Add(new wxStaticText(this, -1, wxS("Render distance:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	int row = 0;
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Render distance:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_max_render_dist_ = new NumberSlider(this, 500, 20 * 500, 500);
-	gbsizer->Add(slider_max_render_dist_, { 0, 1 }, { 1, 2 }, wxEXPAND);
+	gbsizer->Add(slider_max_render_dist_, { row, 1 }, { 1, 2 }, wxEXPAND);
 	cb_distance_unlimited_ = new wxCheckBox(this, -1, wxS("Unlimited"));
-	gbsizer->Add(cb_distance_unlimited_, { 0, 3 }, { 1, 1 }, wxEXPAND);
-
-	// Thing Render distance
-	gbsizer->Add(
-		new wxStaticText(this, -1, wxS("Thing render distance:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	slider_max_thing_dist_ = new NumberSlider(this, 500, 20 * 500, 500);
-	gbsizer->Add(slider_max_thing_dist_, { 1, 1 }, { 1, 2 }, wxEXPAND);
-	cb_max_thing_dist_lock_ = new wxCheckBox(this, -1, wxS("Lock"));
-	gbsizer->Add(cb_max_thing_dist_lock_, { 1, 3 }, { 1, 1 }, wxEXPAND);
+	gbsizer->Add(cb_distance_unlimited_, { row, 3 }, { 1, 1 }, wxEXPAND);
 	gbsizer->AddGrowableCol(1, 1);
 
 	// FOV
-	gbsizer->Add(new wxStaticText(this, -1, wxS("FOV:")), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gbsizer->Add(new wxStaticText(this, -1, wxS("Camera FOV:")), { ++row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	slider_fov_ = new NumberSlider(this, 70, 120, 5);
-	gbsizer->Add(slider_fov_, { 2, 1 }, { 1, 2 }, wxEXPAND);
+	gbsizer->Add(slider_fov_, { row, 1 }, { 1, 2 }, wxEXPAND);
 
-	psizer->Add(new wxStaticLine(this, -1), lh.sfWithLargeBorder(0, wxTOP | wxBOTTOM).Expand());
+	// Max. dynamic lights
+	gbsizer->Add(
+		new wxStaticText(this, -1, wxS("Max. dynamic lights:")), { ++row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	slider_max_lights_ = new NumberSlider(this, 32, 512, 32);
+	gbsizer->Add(slider_max_lights_, { row, 1 }, { 1, 2 }, wxEXPAND);
 
+	// Other rendering options
 	lh.layoutVertically(
 		psizer,
 		{ cb_render_sky_       = new wxCheckBox(this, -1, wxS("Render sky preview")),
 		  cb_show_distance_    = new wxCheckBox(this, -1, wxS("Show distance under crosshair")),
-		  cb_invert_y_         = new wxCheckBox(this, -1, wxS("Invert mouse Y axis")),
-		  cb_shade_orthogonal_ = new wxCheckBox(this, -1, wxS("Fake contrast on orthogonal walls")) },
+		  cb_shade_orthogonal_ = new wxCheckBox(this, -1, wxS("Fake contrast on orthogonal walls")),
+		  rbp_highlight_       = new RadioButtonPanel(this, { "Fill", "Outline", "Both" }, "Item highlight:") },
 		wxSizerFlags(0).Expand());
 
 	// Bind events
@@ -107,19 +112,9 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 		wxEVT_SLIDER,
 		[&](wxCommandEvent& e)
 		{
-			if (cb_max_thing_dist_lock_->GetValue())
-				slider_max_thing_dist_->setValue(slider_max_render_dist_->value());
 			updateDistanceControls();
 			e.Skip();
 		});
-	slider_max_thing_dist_->Bind(
-		wxEVT_SLIDER,
-		[&](wxCommandEvent& e)
-		{
-			updateDistanceControls();
-			e.Skip();
-		});
-	cb_max_thing_dist_lock_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDistanceControls(); });
 	cb_distance_unlimited_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDistanceControls(); });
 	slider_fov_->Bind(
 		wxEVT_SLIDER,
@@ -146,19 +141,18 @@ void Map3DSettingsPanel::loadSettings()
 		cb_distance_unlimited_->SetValue(false);
 	}
 
-	if (map3d_max_thing_dist <= 0)
-		cb_max_thing_dist_lock_->SetValue(true);
-	else
-	{
-		slider_max_thing_dist_->setValue(map3d_max_thing_dist);
-		cb_max_thing_dist_lock_->SetValue(false);
-	}
-
 	slider_fov_->setValue(map3d_fov);
 	cb_render_sky_->SetValue(map3d_render_sky);
 	cb_show_distance_->SetValue(map3d_crosshair_show_distance);
-	cb_invert_y_->SetValue(map3d_mlook_invert_y);
 	cb_shade_orthogonal_->SetValue(map3d_fake_contrast);
+	slider_max_lights_->setValue(map3d_lights_max);
+
+	if (map3d_highlight_fill && map3d_highlight_outline)
+		rbp_highlight_->setSelection(2);
+	else if (map3d_highlight_outline)
+		rbp_highlight_->setSelection(1);
+	else
+		rbp_highlight_->setSelection(0);
 
 	updateDistanceControls();
 }
@@ -168,17 +162,7 @@ void Map3DSettingsPanel::loadSettings()
 // -----------------------------------------------------------------------------
 void Map3DSettingsPanel::updateDistanceControls() const
 {
-	// Render distance
 	slider_max_render_dist_->Enable(!cb_distance_unlimited_->GetValue());
-
-	// Thing distance
-	if (cb_max_thing_dist_lock_->GetValue())
-	{
-		slider_max_thing_dist_->Enable(false);
-		slider_max_thing_dist_->setValue(slider_max_render_dist_->value());
-	}
-	else
-		slider_max_thing_dist_->Enable();
 }
 
 // -----------------------------------------------------------------------------
@@ -192,16 +176,27 @@ void Map3DSettingsPanel::applySettings()
 	else
 		map3d_max_render_dist = slider_max_render_dist_->value();
 
-	// Max thing distance
-	if (cb_max_thing_dist_lock_->GetValue())
-		map3d_max_thing_dist = 0.0f;
-	else
-		map3d_max_thing_dist = slider_max_thing_dist_->value();
+	// Highlight
+	switch (rbp_highlight_->getSelection())
+	{
+	case 1:
+		map3d_highlight_fill    = false;
+		map3d_highlight_outline = true;
+		break;
+	case 2:
+		map3d_highlight_fill    = true;
+		map3d_highlight_outline = true;
+		break;
+	default:
+		map3d_highlight_fill    = true;
+		map3d_highlight_outline = false;
+		break;
+	}
 
 	// Other
 	map3d_render_sky              = cb_render_sky_->GetValue();
 	map3d_crosshair_show_distance = cb_show_distance_->GetValue();
-	map3d_mlook_invert_y          = cb_invert_y_->GetValue();
 	map3d_fov                     = slider_fov_->value();
 	map3d_fake_contrast           = cb_shade_orthogonal_->GetValue();
+	map3d_lights_max              = slider_max_lights_->value();
 }

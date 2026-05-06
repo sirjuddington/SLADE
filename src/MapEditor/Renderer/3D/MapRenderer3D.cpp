@@ -77,7 +77,6 @@ using namespace mapeditor;
 //
 // -----------------------------------------------------------------------------
 CVAR(Float, map3d_max_render_dist, 0, CVar::Flag::Save)
-CVAR(Float, map3d_max_thing_dist, 0, CVar::Flag::Save)
 CVAR(Bool, map3d_render_sky, true, CVar::Flag::Save)
 CVAR(Float, map3d_brightness, 1, CVar::Flag::Save)
 CVAR(Float, map3d_fog_density, 1, CVar::Flag::Save)

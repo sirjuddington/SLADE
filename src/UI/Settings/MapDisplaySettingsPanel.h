@@ -4,6 +4,7 @@
 
 namespace slade::ui
 {
+class Map3DSettingsPanel;
 struct LayoutHelper;
 class RadioButtonPanel;
 class NumberSlider;
@@ -53,6 +54,8 @@ private:
 	wxCheckBox*   cb_sector_hilight_fill_  = nullptr;
 	wxCheckBox*   cb_flat_fade_            = nullptr;
 	wxCheckBox*   cb_sector_selected_fill_ = nullptr;
+
+	Map3DSettingsPanel* map3d_panel_ = nullptr;
 
 	wxPanel* createGeneralPanel(wxWindow* parent, const LayoutHelper& lh);
 	wxPanel* createVerticesPanel(wxWindow* parent, const LayoutHelper& lh);

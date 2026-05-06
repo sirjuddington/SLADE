@@ -58,6 +58,9 @@ EXTERN_CVAR(Bool, tabs_condensed)
 EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
 EXTERN_CVAR(Int, win_darkmode)
+EXTERN_CVAR(Int, edata_col_padding)
+EXTERN_CVAR(Int, edata_row_padding)
+EXTERN_CVAR(Bool, edata_font_monospace)
 
 
 // ----------------------------------------------------------------------------
@@ -155,6 +158,10 @@ void InterfaceSettingsPanel::loadSettings()
 
 	rbp_windows_darkmode_->setSelection(win_darkmode);
 
+	spin_grid_row_pad_->SetValue(edata_row_padding);
+	spin_grid_col_pad_->SetValue(edata_col_padding);
+	cb_grid_monospace_->SetValue(edata_font_monospace);
+
 	colour_panel_->loadSettings();
 }
 
@@ -176,6 +183,11 @@ void InterfaceSettingsPanel::applySettings()
 	elist_icon_padding = spin_elist_icon_pad_->GetValue();
 	elist_icon_size    = iconSize(elist_icon_size, choice_elist_icon_size_->GetSelection());
 	elist_type_bgcol   = cb_elist_bgcol_->GetValue();
+
+	// Data Grid
+	edata_col_padding    = spin_grid_col_pad_->GetValue();
+	edata_row_padding    = spin_grid_row_pad_->GetValue();
+	edata_font_monospace = cb_grid_monospace_->GetValue();
 
 	colour_panel_->applySettings();
 }
@@ -211,6 +223,13 @@ wxPanel* InterfaceSettingsPanel::createInterfacePanel(wxWindow* parent)
 		panel, -1, wxS("1"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 0, 4, 1);
 	vector<string> tree_styles = { "Tree", "Flat List" };
 
+	// Data Grid
+	spin_grid_row_pad_ = new wxSpinCtrl(
+		panel, -1, wxS("0"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 0, 4, 0);
+	spin_grid_col_pad_ = new wxSpinCtrl(
+		panel, -1, wxS("0"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 0, 4, 0);
+	cb_grid_monospace_ = new wxCheckBox(panel, -1, wxS("Use monospace font in data grid"));
+
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
@@ -225,6 +244,11 @@ wxPanel* InterfaceSettingsPanel::createInterfacePanel(wxWindow* parent)
 	vbox->AddSpacer(lh.padXLarge());
 	vbox->Add(wxutil::createSectionSeparator(panel, "Entry List"), lh.sfWithBorder(0, wxBOTTOM).Expand());
 	vbox->Add(layoutEntryListSettings(panel), lh.sfWithBorder(0, wxLEFT));
+
+	// Data Grid settings
+	vbox->AddSpacer(lh.padXLarge());
+	vbox->Add(wxutil::createSectionSeparator(panel, "Data Grid"), lh.sfWithBorder(0, wxBOTTOM).Expand());
+	vbox->Add(layoutDataGridSettings(panel), lh.sfWithBorder(0, wxLEFT));
 
 	return panel;
 }
@@ -265,11 +289,28 @@ wxSizer* InterfaceSettingsPanel::layoutEntryListSettings(wxWindow* panel) const
 	sizer->Add(new wxStaticText(panel, -1, wxS("Icon set:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(choice_iconset_entry_, { row, 1 }, { 1, 1 }, wxEXPAND);
 	sizer->Add(choice_elist_icon_size_, { row++, 2 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(new wxStaticText(panel, -1, wxS("Row spacing:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(new wxStaticText(panel, -1, wxS("Row padding:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(spin_elist_icon_pad_, { row++, 1 }, { 1, 2 }, wxEXPAND);
 	sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 3 }, wxALIGN_CENTER_VERTICAL);
 
 	sizer->AddGrowableCol(1);
+
+	return sizer;
+}
+
+// -----------------------------------------------------------------------------
+// Creates layout sizer for the Data Grid settings
+// -----------------------------------------------------------------------------
+wxSizer* InterfaceSettingsPanel::layoutDataGridSettings(wxWindow* panel) const
+{
+	auto sizer = new wxGridBagSizer(pad(panel), padLarge(panel));
+
+	auto row = 0;
+	sizer->Add(new wxStaticText(panel, -1, wxS("Row padding:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(spin_grid_row_pad_, { row, 1 }, { 1, 1 }, wxEXPAND);
+	sizer->Add(new wxStaticText(panel, -1, wxS("Column padding:")), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(spin_grid_col_pad_, { row, 3 }, { 1, 1 }, wxEXPAND);
+	sizer->Add(cb_grid_monospace_, { ++row, 0 }, { 1, 3 }, wxALIGN_CENTER_VERTICAL);
 
 	return sizer;
 }
