@@ -44,6 +44,9 @@ protected:
 	bool loadEntry(ArchiveEntry* entry, int index);
 	bool writeEntry(ArchiveEntry& entry) override;
 
+	// Toolbar
+	void toolbarButtonClick(const string& action_id) override;
+
 private:
 	bool                    alph_                = false;
 	bool                    trns_                = false;
@@ -64,9 +67,6 @@ private:
 	wxStaticText*    text_imgoutof_      = nullptr;
 	wxMenu*          menu_brushes_       = nullptr;
 	ui::ZoomControl* zc_zoom_            = nullptr;
-
-	// Toolbar
-	void toolbarButtonClick(const string& action_id) override;
 
 	// Signal connections
 	sigslot::scoped_connection sc_palette_changed_;

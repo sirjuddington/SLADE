@@ -1,0 +1,32 @@
+{
+  "items": [
+    {
+      "type": "button",
+      "id": "tool_view",
+      "text": "View",
+      "icon": "eye",
+      "help_text": "View only"
+    },
+    {
+      "type": "button",
+      "id": "tool_edit",
+      "text": "Edit",
+      "icon": "edit",
+      "help_text": "Edit the ANSI screen by selecting and modifying characters"
+    },
+    {
+      "type": "button",
+      "id": "tool_paint",
+      "text": "Paint",
+      "icon": "gfx_draw",
+      "help_text": "Paint on to the ANSI screen using the mouse"
+    },
+    {
+      "type": "button",
+      "id": "tool_text",
+      "text": "Text",
+      "icon": "text",
+      "help_text": "Type text on to the ANSI screen"
+    }
+  ]
+}

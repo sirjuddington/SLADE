@@ -32,6 +32,7 @@ public:
 	bool     write(const void* buffer, unsigned count) override;
 
 	bool hasData() const;
+	bool empty() const { return !hasData(); }
 
 	bool clear();
 	bool reSize(u32 new_size, bool preserve_data = true);

@@ -37,7 +37,6 @@ public:
 	void           nullEntry() { entry_.reset(); }
 	virtual bool   undo() { return false; }
 	virtual bool   redo() { return false; }
-	virtual void   toolbarButtonClick(const string& action_id) {}
 
 protected:
 	MemChunk               entry_data_;
@@ -58,6 +57,7 @@ protected:
 	virtual bool writeEntry(ArchiveEntry& entry) { return false; }
 	virtual bool handleEntryPanelAction(string_view id) { return false; }
 	void         onToolbarButton(wxCommandEvent& e);
+	virtual void toolbarButtonClick(const string& action_id) {}
 
 private:
 	bool   modified_ = false;
