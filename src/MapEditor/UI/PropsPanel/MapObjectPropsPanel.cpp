@@ -144,7 +144,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	pg_props_side2_->Show(false);
 
 	// Hide apply button if needed
-	if (no_apply || mobj_props_auto_apply)
+	if (no_apply || mobj_props_auto_apply && btn_apply_)
 	{
 		btn_apply_->Show(false);
 		btn_reset_->Show(false);

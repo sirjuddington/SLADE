@@ -203,6 +203,7 @@ void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem&
 	// Get colours
 	auto col_hilight    = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 	auto col_background = wnd->GetBackgroundColour();
+	bool dark_theme     = app::isDarkTheme();
 
 	// Draw button background
 	bool checked = item.GetState() & wxAUI_BUTTON_STATE_CHECKED;
@@ -222,7 +223,7 @@ void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem&
 		if (hover || pressed)
 		{
 			// Determine background colour
-			auto col = app::isDarkTheme() ? col_background.ChangeLightness(pressed ? 125 : 115)
+			auto col = dark_theme ? col_background.ChangeLightness(pressed ? 125 : 115)
 										  : col_background.ChangeLightness(pressed ? 70 : 80);
 
 			// Draw background
@@ -236,7 +237,8 @@ void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem&
 		{
 			// Draw checked background if not already drawn by hover/pressed state
 			if (!hover && !pressed)
-				gcdc.SetBrush(wxColour(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), 80));
+				gcdc.SetBrush(
+					wxColour(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), dark_theme ? 80 : 40));
 			else
 				gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
 			
@@ -324,6 +326,7 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 	// Get colours
 	auto col_hilight    = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
 	auto col_background = wnd->GetBackgroundColour();
+	bool dark_theme     = app::isDarkTheme();
 
 	// Draw button background
 	bool checked = item.GetState() & wxAUI_BUTTON_STATE_CHECKED;
@@ -343,7 +346,7 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 		// Draw background on mouseover
 		if (hover || pressed)
 		{
-			auto col_full = app::isDarkTheme() ? col_background.ChangeLightness(pressed ? 125 : 115)
+			auto col_full = dark_theme ? col_background.ChangeLightness(pressed ? 125 : 115)
 											   : col_background.ChangeLightness(pressed ? 70 : 80);
 
 			gcdc.SetPen(*wxTRANSPARENT_PEN);
@@ -354,7 +357,7 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 				// via mouse events
 				bool btn_hovered = !toolbar_ || toolbar_->dropdown_hover_wx_id_ != item.GetId();
 
-				auto col_dim = app::isDarkTheme() ? col_background.ChangeLightness(pressed ? 112 : 108)
+				auto col_dim = dark_theme ? col_background.ChangeLightness(pressed ? 112 : 108)
 												  : col_background.ChangeLightness(pressed ? 85 : 90);
 
 				// Draw dimmed highlight across entire button
@@ -380,7 +383,8 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 		{
 			// Draw checked background if not already drawn by hover/pressed state
 			if (!hover && !pressed)
-				gcdc.SetBrush(wxColour(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), 80));
+				gcdc.SetBrush(
+					wxColour(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), dark_theme ? 80 : 40));
 			else
 				gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
 
