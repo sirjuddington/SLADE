@@ -15,10 +15,11 @@
           },
           "properties": [
             { "udmf": "midtex3d", "name": "3D Middle Texture" },
-            // { "udmf": "blockplayers", "name": "Blocks Players" },
+            { "udmf": "blockplayers", "name": "Blocks Players" },
             // { "udmf": "blockprojectiles", "name": "Blocks Projectiles" },
             { "udmf": "blockeverything", "name": "Blocks Everything" },
             { "udmf": "blockfloaters", "name": "Blocks Floaters" },
+            { "udmf": "blocklandmonsters", "name": "Blocks Land Monsters" },
             // { "udmf": "blockuse", "name": "Blocks Use" },
             // { "udmf": "blocksight", "name": "Blocks Monster Sight" },
             { "udmf": "zoneboundary", "name": "Reverb Zone Boundary" },
@@ -53,14 +54,14 @@
           },
           "properties": [
             { "udmf": "playeruse", "name": "Player Use" },
-            // { "udmf": "playerpush", "name": "Player Bump" },
+            { "udmf": "playerpush", "name": "Player Bump" },
             { "udmf": "playercross", "name": "Player Cross" },
             { "udmf": "monsteruse", "name": "Monster Use" },
-            // { "udmf": "monsterpush", "name": "Monster Bump" },
+            { "udmf": "monsterpush", "name": "Monster Bump" },
             { "udmf": "monstercross", "name": "Monster Cross" },
             { "udmf": "missilecross", "name": "Missile Cross" },
             // { "udmf": "anycross", "name": "Anything Cross" },
-            { "udmf": "impact", "name": "Attack Hit" },
+            { "udmf": "impact", "name": "Player Shoot" },
             { "udmf": "polycross", "name": "Polyobj Cross" }
           ]
         },
@@ -183,9 +184,21 @@
             "show_always": false
           },
           "properties": [
-            { "udmf": "skew_top_type", "name": "Upper Skew Type" },
-            { "udmf": "skew_middle_type", "name": "Middle Skew Type" },
-            { "udmf": "skew_bottom_type", "name": "Bottom Skew Type" }
+            { 
+              "udmf": "skew_top_type",
+              "name": "Upper Skew Type",
+              "values": [ "none", "front_floor", "front_ceiling", "back_floor", "back_ceiling" ]
+            },
+            {
+              "udmf": "skew_middle_type",
+              "name": "Middle Skew Type",
+              "values": [ "none", "front_floor", "front_ceiling", "back_floor", "back_ceiling" ]
+            },
+            {
+              "udmf": "skew_bottom_type",
+              "name": "Bottom Skew Type",
+              "values": [ "none", "front_floor", "front_ceiling", "back_floor", "back_ceiling" ]
+            }
           ]
         },
         {
