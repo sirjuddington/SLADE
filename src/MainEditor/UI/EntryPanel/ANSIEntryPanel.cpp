@@ -37,7 +37,7 @@
 #include "Archive/ArchiveManager.h"
 #include "Graphics/ANSIScreen.h"
 #include "Graphics/WxGfx.h"
-#include "UI/Canvas/AnsiCanvas.h"
+#include "UI/Canvas/ANSICanvas.h"
 #include "UI/SAuiToolBar.h"
 #include "UI/State.h"
 #include "Utility/CodePages.h"
