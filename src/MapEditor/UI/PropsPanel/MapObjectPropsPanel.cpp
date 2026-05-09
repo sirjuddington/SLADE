@@ -109,16 +109,13 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	hbox->Add(btn_add_, lh.sfWithBorder(0, wxRIGHT).Expand());
 	hbox->AddStretchSpacer(1);
 
-	if (!no_apply)
-	{
-		// Reset button
-		btn_reset_ = new SIconButton(this, "close", "Discard Changes");
-		hbox->Add(btn_reset_, lh.sfWithBorder(0, wxRIGHT).Expand());
+	// Reset button
+	btn_reset_ = new SIconButton(this, "close", "Discard Changes");
+	hbox->Add(btn_reset_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
-		// Apply button
-		btn_apply_ = new SIconButton(this, "tick", "Apply Changes");
-		hbox->Add(btn_apply_, wxSizerFlags().Expand());
-	}
+	// Apply button
+	btn_apply_ = new SIconButton(this, "tick", "Apply Changes");
+	hbox->Add(btn_apply_, wxSizerFlags().Expand());
 
 	wxPGCell cell;
 	cell.SetText(wxS("<multiple values>"));
@@ -128,11 +125,8 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	pg_props_side2_->GetGrid()->SetUnspecifiedValueAppearance(cell);
 
 	// Bind events
-	if (!no_apply)
-	{
-		btn_apply_->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnApply, this);
-		btn_reset_->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnReset, this);
-	}
+	btn_apply_->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnApply, this);
+	btn_reset_->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnReset, this);
 	cb_show_all_->Bind(wxEVT_CHECKBOX, &MapObjectPropsPanel::onShowAllToggled, this);
 	btn_add_->Bind(wxEVT_BUTTON, &MapObjectPropsPanel::onBtnAdd, this);
 	pg_properties_->Bind(wxEVT_PG_CHANGED, &MapObjectPropsPanel::onPropertyChanged, this);
@@ -142,13 +136,6 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	// Hide side property grids
 	pg_props_side1_->Show(false);
 	pg_props_side2_->Show(false);
-
-	// Hide apply button if needed
-	if (no_apply || mobj_props_auto_apply && btn_apply_)
-	{
-		btn_apply_->Show(false);
-		btn_reset_->Show(false);
-	}
 
 	wxWindowBase::Layout();
 }
@@ -887,10 +874,8 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		stc_sections_->Hide();
 		cb_show_all_->Hide();
 		btn_add_->Hide();
-		if (btn_reset_)
-			btn_reset_->Hide();
-		if (btn_apply_)
-			btn_apply_->Hide();
+		btn_reset_->Hide();
+		btn_apply_->Hide();
 		label_no_object_->Show();
 
 		objects_.clear();
@@ -917,9 +902,9 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		stc_sections_->Show();
 		cb_show_all_->Show();
 		btn_add_->Show();
-		if (btn_reset_ && !mobj_props_auto_apply)
+		if (!mobj_props_auto_apply)
 			btn_reset_->Show();
-		if (btn_apply_ && !mobj_props_auto_apply)
+		if (!mobj_props_auto_apply)
 			btn_apply_->Show();
 		label_no_object_->Hide();
 
@@ -1057,7 +1042,7 @@ void MapObjectPropsPanel::updateArgs(MOPGIntWithArgsProperty* source)
 	{
 		if (prop->type() == MOPGProperty::Type::ThingType || prop->type() == MOPGProperty::Type::ActionSpecial)
 		{
-			prop_with_args = static_cast<MOPGIntWithArgsProperty*>(prop);
+			prop_with_args = dynamic_cast<MOPGIntWithArgsProperty*>(prop);
 
 			if (!prop_with_args->IsValueUnspecified() && prop_with_args->GetValue().GetInteger() != 0
 				&& prop_with_args->hasArgs())
