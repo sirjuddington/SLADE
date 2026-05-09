@@ -100,7 +100,7 @@ namespace game
 		int     number_ = -1;
 		string  class_name_;
 		bool    z_height_absolute_ = false;
-		bool    dynamic_light_;
+		bool    dynamic_light_     = false;
 
 		static ThingType unknown_;
 	};
