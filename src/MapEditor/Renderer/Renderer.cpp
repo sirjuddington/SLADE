@@ -70,6 +70,7 @@
 #include "Utility/MathStuff.h"
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
+#include <cmath>
 #include <deque>
 #include <numeric>
 
@@ -1330,29 +1331,27 @@ void Renderer::updateAnimations(double mult)
 	}
 
 	// Flashing animation for hilight
-	// Pulsates between 0.5-1.0f (multiplied with hilight alpha)
-	constexpr float flash_min = 0.5f;
-	constexpr float flash_max = 1.0f;
+	// Pulsates between 0.5-1.0f (multiplied with hilight alpha) using a sine wave
+	constexpr float flash_min   = 0.5f;
+	constexpr float flash_max   = 1.0f;
+	constexpr float flash_mid   = (flash_min + flash_max) * 0.5f;
+	constexpr float flash_amp   = (flash_max - flash_min) * 0.5f;
+	constexpr float flash_speed = 4.0f;
 	if (anim_flash_inc_)
 	{
 		if (anim_flash_level_ < flash_min)
 			anim_flash_level_ += 0.053 * mult; // Initial fade in
 		else
-			anim_flash_level_ += 0.015f * mult;
-		if (anim_flash_level_ >= flash_max)
 		{
-			anim_flash_inc_   = false;
-			anim_flash_level_ = flash_max;
+			// Transition to sine: align anim_flash_time_ so sine starts at current level
+			anim_flash_time_ = std::asin((anim_flash_level_ - flash_mid) / flash_amp);
+			anim_flash_inc_  = false;
 		}
 	}
 	else
 	{
-		anim_flash_level_ -= 0.015f * mult;
-		if (anim_flash_level_ <= flash_min)
-		{
-			anim_flash_inc_   = true;
-			anim_flash_level_ = flash_min;
-		}
+		anim_flash_time_ += flash_speed * (mult / 60.0f);
+		anim_flash_level_ = flash_mid + flash_amp * std::sin(anim_flash_time_);
 	}
 
 	// Fader for info overlay

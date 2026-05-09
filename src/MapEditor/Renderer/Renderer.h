@@ -98,6 +98,7 @@ namespace mapeditor
 		float  fade_lines_           = 1.f;
 		float  anim_flash_level_     = 0.5f;
 		bool   anim_flash_inc_       = true;
+		float  anim_flash_time_      = 0.0f;
 		float  anim_info_fade_       = 0.f;
 		float  anim_overlay_fade_    = 0.f;
 		float  anim_help_fade_       = 0.f;

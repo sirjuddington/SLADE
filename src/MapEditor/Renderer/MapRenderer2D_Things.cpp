@@ -272,7 +272,7 @@ void MapRenderer2D::renderThingHilight(gl::draw2d::Context& dc, int index, float
 	}
 
 	// Otherwise draw point sprite overlay
-	renderThingOverlays(dc, { map_->thing(index) }); //, /*4.0f * */1.0f + fade);
+	renderThingOverlays(dc, { map_->thing(index) }, fade * 3.0);
 }
 
 // -----------------------------------------------------------------------------
