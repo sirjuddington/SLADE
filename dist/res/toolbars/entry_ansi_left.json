@@ -25,7 +25,7 @@
       "type": "button",
       "id": "tool_text",
       "text": "Text",
-      "icon": "text",
+      "icon": "tool_text",
       "help_text": "Type text on to the ANSI screen"
     }
   ]

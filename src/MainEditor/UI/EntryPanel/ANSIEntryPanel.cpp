@@ -48,6 +48,14 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Int, ansi_charmap_scale, 2, CVar::Save)
+
+
+// -----------------------------------------------------------------------------
+//
 // Constants
 //
 // -----------------------------------------------------------------------------
@@ -66,13 +74,14 @@ namespace slade
 class CharMapPanel : public wxPanel
 {
 public:
-	CharMapPanel(wxWindow* parent, const uint8_t* fontdata, int char_height) :
+	CharMapPanel(wxWindow* parent, const uint8_t* fontdata, u8 char_height) :
 		wxPanel(parent),
-		fontdata_(fontdata),
-		char_h_(char_height)
+		fontdata_{ fontdata },
+		char_h_{ char_height }
 	{
 		SetDoubleBuffered(true);
 
+		scale_      = ansi_charmap_scale;
 		auto cell_w = char_w_ * scale_ + PADDING;
 		auto cell_h = char_h_ * scale_ + PADDING;
 		SetMinSize(wxSize(16 * cell_w + PADDING, 16 * cell_h + PADDING));
@@ -94,11 +103,11 @@ private:
 	const uint8_t* fontdata_    = nullptr;
 	u8             char_h_      = 8;
 	u8             char_w_      = 8;
-	u8             scale_       = 2;
+	u8             scale_       = 1;
 	i32            hover_ch_    = -1;
 	i32            selected_ch_ = -1;
 
-	static constexpr u8 PADDING = 2;
+	static constexpr u8 PADDING = 1;
 
 	// -------------------------------------------------------------------------
 	// Called when the panel needs to be repainted
