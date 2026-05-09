@@ -297,7 +297,7 @@ void LineDraw::begin(bool shape)
 void LineDraw::end(bool apply)
 {
 	// Hide shape draw panel
-	mapeditor::showShapeDrawPanel(true);
+	mapeditor::showShapeDrawPanel(false);
 
 	// Do nothing if we don't need to create any lines
 	if (!apply || draw_points_.size() <= 1)

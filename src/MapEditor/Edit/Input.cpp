@@ -521,8 +521,9 @@ void Input::mouseLeave()
 	// Reset mouse state
 	for (bool& i : mouse_button_down_)
 		i = false;
-	mouse_drag_  = DragType::None;
-	mouse_state_ = MouseState::Normal;
+	mouse_drag_ = DragType::None;
+	if (mouse_state_ == MouseState::Selection || mouse_state_ == MouseState::MouseLook)
+		mouse_state_ = MouseState::Normal;
 }
 
 // -----------------------------------------------------------------------------
