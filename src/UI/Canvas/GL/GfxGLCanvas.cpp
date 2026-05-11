@@ -277,6 +277,7 @@ void GfxGLCanvas::drawImageTiled() const
 	vb_tiled.add({ { 0.f, heightf }, { 1.f, 1.f, 1.f, 1.f }, { 0.f, heightf / i_heightf } });
 	vb_tiled.add({ { widthf, heightf }, { 1.f, 1.f, 1.f, 1.f }, { widthf / i_widthf, heightf / i_heightf } });
 	vb_tiled.add({ { widthf, 0.f }, { 1.f, 1.f, 1.f, 1.f }, { widthf / i_widthf, 0.f } });
+	vb_tiled.push();
 
 	// Calculate view matrix (no offset/panning)
 	auto view_matrix = glm::translate(glm::mat4(1.f), { 0.375f, 0.375f, 0.f });
