@@ -51,7 +51,7 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-vector<string> type_names          = { "Empty (Marker)", "Text", "Palette", "Boom ANIMATED", "Boom SWITCHES" };
+vector<string> type_names = { "Empty (Marker)", "Text", "Palette", "Boom ANIMATED", "Boom SWITCHES", "ANSI Text" };
 int            selected_entry_type = 0;
 } // namespace slade::ui
 

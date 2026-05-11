@@ -95,7 +95,9 @@
     "name": "ANSI Text",
     "size": [ 4000 ],
     "match_name": [ "endoom", "endtext", "endstrf", "loading", "endboom", "doomerr", "duke3d" ],
-    "export_ext": "bin",
+    "match_ext": [ "ans" ],
+    "match_extorname": true,
+    "export_ext": "ans",
     "icon": "gfx",
     "editor": "ansi",
     "colour": "rgb(255,180,0)"

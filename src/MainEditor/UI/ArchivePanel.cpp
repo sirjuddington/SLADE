@@ -825,6 +825,12 @@ bool ArchivePanel::newEntry()
 			new_entry->setExtensionByType();
 			break;
 
+		case NewEntry::ANSI:
+			new_entry->setType(EntryType::fromId("ansi"));
+			new_entry->resize(4000, false);
+			new_entry->setExtensionByType();
+			break;
+
 		default: break;
 		}
 	}

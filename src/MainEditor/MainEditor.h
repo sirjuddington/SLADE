@@ -17,7 +17,8 @@ namespace maineditor
 		Text,
 		Palette,
 		Animated,
-		Switches
+		Switches,
+		ANSI
 	};
 
 	bool init();
