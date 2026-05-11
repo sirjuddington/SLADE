@@ -44,6 +44,7 @@
 #include "MapObjectList/ThingList.h"
 #include "MapObjectList/VertexList.h"
 #include "SLADEMap.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
 
@@ -282,19 +283,19 @@ void MapObjectCollection::clear()
 // -----------------------------------------------------------------------------
 // Removes [vertex] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeVertex(const MapVertex* vertex, bool merge_lines)
+bool MapObjectCollection::removeVertex(const MapVertex* vertex, bool merge_lines, bool bulk)
 {
 	// Check vertex was given
 	if (!vertex)
 		return false;
 
-	return removeVertex(vertex->index(), merge_lines);
+	return removeVertex(vertex->index(), merge_lines, bulk);
 }
 
 // -----------------------------------------------------------------------------
 // Removes the vertex at [index] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
+bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines, bool bulk)
 {
 	auto& vertices = *vertices_;
 
@@ -315,15 +316,13 @@ bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
 			v_end = l_second->v1();
 
 		// Remove second connected line
-		removeLine(l_second);
+		removeLine(l_second, true);
 
 		// Connect first connected line to other end vertex
 		if (l_first->v1() == vertex)
 			l_first->setV1(v_end);
 		else
 			l_first->setV2(v_end);
-		vertex->disconnectLine(l_first);
-		v_end->connectLine(l_first);
 		l_first->resetInternals();
 
 		// Check if we ended up with overlapping lines (ie. there was a triangle)
@@ -332,7 +331,7 @@ bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
 			if (l_first->overlaps(line))
 			{
 				// Overlap found, remove line
-				removeLine(l_first);
+				removeLine(l_first, true);
 				break;
 			}
 		}
@@ -342,15 +341,34 @@ bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
 
 	if (!merged)
 	{
-		// Remove all connected lines
-		auto& clines = vertex->connectedLines();
+		// Remove all connected lines (copy first: removeLine calls disconnectLine, mutating the vertex's connected
+		// lines)
+		const auto clines = vertex->connectedLines();
 		for (auto& line : clines)
-			removeLine(line);
+			removeLine(line, true);
 	}
 
-	// Remove the vertex
-	removeMapObject(vertex);
-	vertices.remove(index);
+	// Mark for removal
+	vectorAddUnique(remove_vertices_, index);
+
+	// Finalize removals if not part of a bulk removal
+	if (!bulk)
+	{
+		removeMarkedObjects();
+
+		if (parent_map_)
+			parent_map_->setGeometryUpdated();
+	}
+
+	return true;
+}
+
+bool MapObjectCollection::removeVertices(const vector<unsigned>& indices, bool merge_lines)
+{
+	for (auto index : indices)
+		removeVertex(index, merge_lines, true);
+
+	removeMarkedObjects();
 
 	if (parent_map_)
 		parent_map_->setGeometryUpdated();
@@ -361,19 +379,19 @@ bool MapObjectCollection::removeVertex(unsigned index, bool merge_lines)
 // -----------------------------------------------------------------------------
 // Removes [line] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeLine(const MapLine* line)
+bool MapObjectCollection::removeLine(const MapLine* line, bool bulk)
 {
 	// Check line was given
 	if (!line)
 		return false;
 
-	return removeLine(line->index());
+	return removeLine(line->index(), bulk);
 }
 
 // -----------------------------------------------------------------------------
 // Removes the line at [index] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeLine(unsigned index)
+bool MapObjectCollection::removeLine(unsigned index, bool bulk)
 {
 	auto& lines = *lines_;
 
@@ -389,17 +407,35 @@ bool MapObjectCollection::removeLine(unsigned index)
 
 	// Remove the line's sides
 	if (line->s1())
-		removeSide(line->s1(), false);
+		removeSide(line->s1(), false, true);
 	if (line->s2())
-		removeSide(line->s2(), false);
+		removeSide(line->s2(), false, true);
 
 	// Disconnect from vertices
 	line->v1()->disconnectLine(line);
 	line->v2()->disconnectLine(line);
 
-	// Remove the line
-	removeMapObject(line);
-	lines.remove(index);
+	// Mark for removal
+	vectorAddUnique(remove_lines_, index);
+
+	// Finalize removals if not part of a bulk removal
+	if (!bulk)
+	{
+		removeMarkedObjects();
+
+		if (parent_map_)
+			parent_map_->setGeometryUpdated();
+	}
+
+	return true;
+}
+
+bool MapObjectCollection::removeLines(const vector<unsigned>& indices)
+{
+	for (auto index : indices)
+		removeLine(index, true);
+
+	removeMarkedObjects();
 
 	if (parent_map_)
 		parent_map_->setGeometryUpdated();
@@ -410,19 +446,19 @@ bool MapObjectCollection::removeLine(unsigned index)
 // -----------------------------------------------------------------------------
 // Removes [side] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeSide(const MapSide* side, bool remove_from_line)
+bool MapObjectCollection::removeSide(const MapSide* side, bool remove_from_line, bool bulk)
 {
 	// Check side was given
 	if (!side)
 		return false;
 
-	return removeSide(side->index(), remove_from_line);
+	return removeSide(side->index(), remove_from_line, bulk);
 }
 
 // -----------------------------------------------------------------------------
 // Removes the side at [index] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
+bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line, bool bulk)
 {
 	auto& sides = *sides_;
 
@@ -460,16 +496,32 @@ bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 
 				// Remove sector if all its sides are gone
 				if (connected_sides.empty())
-					removeSector(sector);
+					removeSector(sector, true);
 
 				break;
 			}
 		}
 	}
 
-	// Remove the side
-	removeMapObject(sides[index]);
-	sides.remove(index);
+	// Mark for removal
+	vectorAddUnique(remove_sides_, index);
+
+	// Finalize removals if not part of a bulk removal
+	if (!bulk)
+		removeMarkedObjects();
+
+	return true;
+}
+
+bool MapObjectCollection::removeSides(const vector<unsigned>& indices, bool remove_from_line)
+{
+	for (auto index : indices)
+		removeSide(index, remove_from_line, true);
+
+	removeMarkedObjects();
+
+	if (parent_map_)
+		parent_map_->setGeometryUpdated();
 
 	return true;
 }
@@ -477,19 +529,19 @@ bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line)
 // -----------------------------------------------------------------------------
 // Removes [sector] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeSector(const MapSector* sector)
+bool MapObjectCollection::removeSector(const MapSector* sector, bool bulk)
 {
 	// Check sector was given
 	if (!sector)
 		return false;
 
-	return removeSector(sector->index());
+	return removeSector(sector->index(), bulk);
 }
 
 // -----------------------------------------------------------------------------
 // Removes the sector at [index] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeSector(unsigned index)
+bool MapObjectCollection::removeSector(unsigned index, bool bulk)
 {
 	auto& sectors = *sectors_;
 
@@ -497,9 +549,25 @@ bool MapObjectCollection::removeSector(unsigned index)
 	if (index >= sectors.size())
 		return false;
 
-	// Remove the sector
-	removeMapObject(sectors[index]);
-	sectors.remove(index);
+	// Mark for removal
+	vectorAddUnique(remove_sectors_, index);
+
+	// Finalize removals if not part of a bulk removal
+	if (!bulk)
+		removeMarkedObjects();
+
+	return true;
+}
+
+bool MapObjectCollection::removeSectors(const vector<unsigned>& indices)
+{
+	for (auto index : indices)
+		removeSector(index, true);
+
+	removeMarkedObjects();
+
+	if (parent_map_)
+		parent_map_->setGeometryUpdated();
 
 	return true;
 }
@@ -507,19 +575,19 @@ bool MapObjectCollection::removeSector(unsigned index)
 // -----------------------------------------------------------------------------
 // Removes [thing] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeThing(const MapThing* thing)
+bool MapObjectCollection::removeThing(const MapThing* thing, bool bulk)
 {
 	// Check thing was given
 	if (!thing)
 		return false;
 
-	return removeThing(thing->index());
+	return removeThing(thing->index(), bulk);
 }
 
 // -----------------------------------------------------------------------------
 // Removes the thing at [index] from the map
 // -----------------------------------------------------------------------------
-bool MapObjectCollection::removeThing(unsigned index)
+bool MapObjectCollection::removeThing(unsigned index, bool bulk)
 {
 	auto& things = *things_;
 
@@ -527,11 +595,54 @@ bool MapObjectCollection::removeThing(unsigned index)
 	if (index >= things.size())
 		return false;
 
-	// Remove the thing
-	removeMapObject(things[index]);
-	things.remove(index);
+	// Mark for removal
+	vectorAddUnique(remove_things_, index);
+
+	// Finalize removals if not part of a bulk removal
+	if (!bulk)
+		removeMarkedObjects();
 
 	return true;
+}
+
+bool MapObjectCollection::removeThings(const vector<unsigned>& indices)
+{
+	for (auto index : indices)
+		removeThing(index, true);
+
+	removeMarkedObjects();
+
+	if (parent_map_)
+		parent_map_->setGeometryUpdated();
+
+	return true;
+}
+
+void MapObjectCollection::removeMarkedObjects()
+{
+#define REMOVE_MARKED(marked_list, object_list)                                  \
+	if (!(marked_list).empty())                                                  \
+	{                                                                            \
+		auto& objects = *(object_list);                                          \
+		std::sort((marked_list).begin(), (marked_list).end(), std::greater<>()); \
+		for (auto index : (marked_list))                                         \
+		{                                                                        \
+			removeMapObject(objects[index]);                                     \
+			objects.remove(index);                                               \
+		}                                                                        \
+		for (auto i = (marked_list).back(); i < objects.size(); i++)             \
+			objects[i]->setIndex(i);                                             \
+                                                                                 \
+		(marked_list).clear();                                                   \
+	}
+
+	REMOVE_MARKED(remove_vertices_, vertices_)
+	REMOVE_MARKED(remove_sides_, sides_)
+	REMOVE_MARKED(remove_lines_, lines_)
+	REMOVE_MARKED(remove_sectors_, sectors_)
+	REMOVE_MARKED(remove_things_, things_)
+
+#undef REMOVE_MARKED
 }
 
 // -----------------------------------------------------------------------------

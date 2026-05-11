@@ -817,7 +817,8 @@ void SLADEMap::mergeVertices(unsigned vertex1, unsigned vertex2)
 
 	// Disconnect all lines from v2, connect to v1 instead
 	vector<MapLine*> zlines;
-	for (auto line : v2->connectedLines())
+	const auto       v2_lines = v2->connectedLines();
+	for (auto line : v2_lines)
 	{
 		// Change first vertex if needed
 		if (line->v1() == v2)
