@@ -35,6 +35,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "UI/UI.h"
 #include "Utility/FileUtils.h"
@@ -55,6 +56,47 @@ namespace
 constexpr unsigned short default_perm     = 0644;
 constexpr unsigned short default_perm_dir = 0755;
 const string             perm_key         = "7zPermissions";
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
+// Structs
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// RAII wrapper for libarchive archive handles
+// Automatically closes and frees the handle when it goes out of scope
+// -----------------------------------------------------------------------------
+struct ArchiveWrapper
+{
+	struct archive* handle;
+	bool            write;
+
+	ArchiveWrapper(bool write = false) : write{ write }
+	{
+		if (write)
+			handle = archive_write_new();
+		else
+			handle = archive_read_new();
+	}
+
+	~ArchiveWrapper()
+	{
+		if (write)
+		{
+			archive_write_close(handle);
+			archive_write_free(handle);
+		}
+		else
+		{
+			archive_read_close(handle);
+			archive_read_free(handle);
+		}
+	}
+};
 } // namespace
 
 
@@ -150,12 +192,15 @@ bool read7z(ArchiveFormatHandler& handler, Archive& archive, struct archive* arc
 			ndir->addEntry(new_entry, true);
 
 			// Read entry data
-			if (readToMemChunk(archive_7z, data))
+			if (new_entry->size() > 0 && readToMemChunk(archive_7z, data))
 				new_entry->importMemChunk(data, 0, new_entry->size());
 
 			// Set entry info
 			new_entry->exProp("ZipIndex") = index;
 			new_entry->exProp(perm_key)   = static_cast<int>(archive_entry_perm(entry_7z));
+
+			// Determine its type
+			EntryType::detectEntryType(*new_entry);
 		}
 		else
 		{
@@ -164,10 +209,6 @@ bool read7z(ArchiveFormatHandler& handler, Archive& archive, struct archive* arc
 		}
 	}
 	ui::updateSplash();
-
-	// Clean up libarchive stuff
-	archive_read_close(archive_7z);
-	archive_read_free(archive_7z);
 
 	// Set all entries/directories to unmodified
 	vector<ArchiveEntry*> entry_list;
@@ -193,6 +234,7 @@ bool read7z(ArchiveFormatHandler& handler, Archive& archive, struct archive* arc
 //
 // -----------------------------------------------------------------------------
 
+
 // -----------------------------------------------------------------------------
 // Reads 7z data from a file
 // Returns true if successful, false otherwise
@@ -200,17 +242,17 @@ bool read7z(ArchiveFormatHandler& handler, Archive& archive, struct archive* arc
 bool Zip7ArchiveHandler::open(Archive& archive, string_view filename)
 {
 	// Open file with libarchive
-	struct archive* archive_7z = archive_read_new();
-	archive_read_set_format(archive_7z, ARCHIVE_FORMAT_7ZIP); // Only 7z format
-	archive_read_support_filter_all(archive_7z);              // Any compression
-	if (archive_read_open_filename(archive_7z, string{ filename }.c_str(), 10240) != ARCHIVE_OK)
+	ArchiveWrapper archive_7z;
+	archive_read_set_format(archive_7z.handle, ARCHIVE_FORMAT_7ZIP); // Only 7z format
+	archive_read_support_filter_all(archive_7z.handle);              // Any compression
+	if (archive_read_open_filename(archive_7z.handle, string{ filename }.c_str(), 10240) != ARCHIVE_OK)
 	{
 		global::error = "Unable to open 7zip file";
 		return false;
 	}
 
 	// Open from libarchive archive
-	return read7z(*this, archive, archive_7z);
+	return read7z(*this, archive, archive_7z.handle);
 }
 
 // -----------------------------------------------------------------------------
@@ -220,17 +262,17 @@ bool Zip7ArchiveHandler::open(Archive& archive, string_view filename)
 bool Zip7ArchiveHandler::open(Archive& archive, const MemChunk& mc)
 {
 	// Open 7z file data with libarchive
-	struct archive* archive_7z = archive_read_new();
-	archive_read_set_format(archive_7z, ARCHIVE_FORMAT_7ZIP); // Only 7z format
-	archive_read_support_filter_all(archive_7z);              // Any compression
-	if (archive_read_open_memory(archive_7z, mc.data(), mc.size()) != ARCHIVE_OK)
+	ArchiveWrapper archive_7z;
+	archive_read_set_format(archive_7z.handle, ARCHIVE_FORMAT_7ZIP); // Only 7z format
+	archive_read_support_filter_all(archive_7z.handle);              // Any compression
+	if (archive_read_open_memory(archive_7z.handle, mc.data(), mc.size()) != ARCHIVE_OK)
 	{
 		global::error = "Unable to open 7zip file";
 		return false;
 	}
 
 	// Open from libarchive archive
-	return read7z(*this, archive, archive_7z);
+	return read7z(*this, archive, archive_7z.handle);
 }
 
 // -----------------------------------------------------------------------------
@@ -273,11 +315,11 @@ bool Zip7ArchiveHandler::write(Archive& archive, string_view filename)
 	}
 
 	// Open 7z file to write to
-	struct archive* archive_7z = archive_write_new();
-	archive_write_set_format_7zip(archive_7z);
-	if (archive_write_open_filename(archive_7z, string{ filename }.c_str()) != ARCHIVE_OK)
+	ArchiveWrapper archive_7z(true);
+	archive_write_set_format_7zip(archive_7z.handle);
+	if (archive_write_open_filename(archive_7z.handle, string{ filename }.c_str()) != ARCHIVE_OK)
 	{
-		global::error = archive_error_string(archive_7z);
+		global::error = archive_error_string(archive_7z.handle);
 		return false;
 	}
 
@@ -309,8 +351,8 @@ bool Zip7ArchiveHandler::write(Archive& archive, string_view filename)
 		archive_entry_set_perm(entry_7z, permissions);
 
 		// Write to archive
-		archive_write_header(archive_7z, entry_7z);
-		archive_write_data(archive_7z, entry->rawData(), entry->size());
+		archive_write_header(archive_7z.handle, entry_7z);
+		archive_write_data(archive_7z.handle, entry->rawData(), entry->size());
 
 		archive_entry_clear(entry_7z);
 
@@ -321,8 +363,6 @@ bool Zip7ArchiveHandler::write(Archive& archive, string_view filename)
 	}
 
 	// Clean up
-	archive_write_close(archive_7z);
-	archive_write_free(archive_7z);
 	archive_entry_free(entry_7z);
 
 	ui::setSplashProgressMessage("");
@@ -348,10 +388,10 @@ bool Zip7ArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* ent
 	}
 
 	// Open file with libarchive
-	struct archive* archive_7z = archive_read_new();
-	archive_read_set_format(archive_7z, ARCHIVE_FORMAT_7ZIP); // Only 7z format
-	archive_read_support_filter_all(archive_7z);              // Any compression
-	if (archive_read_open_filename(archive_7z, archive.filename().c_str(), 10240) != ARCHIVE_OK)
+	ArchiveWrapper archive_7z;
+	archive_read_set_format(archive_7z.handle, ARCHIVE_FORMAT_7ZIP); // Only 7z format
+	archive_read_support_filter_all(archive_7z.handle);              // Any compression
+	if (archive_read_open_filename(archive_7z.handle, archive.filename().c_str(), 10240) != ARCHIVE_OK)
 	{
 		log::error("Zip7ArchiveHandler::loadEntryData: Unable to open 7zip file");
 		return false;
@@ -359,19 +399,20 @@ bool Zip7ArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* ent
 
 	// Skip to entry in 7z
 	archive_entry* entry_7z;
-	archive_read_next_header(archive_7z, &entry_7z);
+	archive_read_next_header(archive_7z.handle, &entry_7z);
 	for (int index = 1; index <= zip_index; ++index)
-		archive_read_next_header(archive_7z, &entry_7z);
+		archive_read_next_header(archive_7z.handle, &entry_7z);
 
-	// Read entry data
-	out.reSize(archive_entry_size(entry_7z));
-	auto success = readToMemChunk(archive_7z, out);
+	// Read entry data if any
+	if (auto size = archive_entry_size(entry_7z); size > 0)
+	{
+		out.reSize(size);
+		return readToMemChunk(archive_7z.handle, out);
+	}
 
-	// Clean up libarchive stuff
-	archive_read_close(archive_7z);
-	archive_read_free(archive_7z);
-
-	return success;
+	// No data
+	out.clear();
+	return true;
 }
 
 // -----------------------------------------------------------------------------
