@@ -34,7 +34,12 @@ jobs:
       - name: Configure
         run: |
           mkdir build
-          cmake -G Ninja -B build ${{ matrix.config.extra_options }} .
+          BREW_PREFIX="$(brew --prefix)"
+          cmake -G Ninja -B build \
+          -DCMAKE_PREFIX_PATH="$BREW_PREFIX" \
+          -DCMAKE_INCLUDE_PATH="$BREW_PREFIX/include" \
+          -DCMAKE_LIBRARY_PATH="$BREW_PREFIX/lib" \
+          ${{ matrix.config.extra_options }} .
 
       - name: Build
         run: |
