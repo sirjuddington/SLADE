@@ -2,16 +2,16 @@
 
 ### Mandatory build-time requirements
 
-* C++17 compiler (e.g. g++ 8.x)
+* C++17 compiler (e.g. g++ >= 8.x)
 * bzip2 library
-* FreeImage
-* ftgl, an OpenGL font managing library
-* GTK 2.x/3.x
-* mpg123 library
+* glm
+* mpg123 library >= 1.28.1
 * OpenGL
 * SFML
-* wxWidgets 3.x
+* wxWidgets >= 3.3.1 (it may build with lesser, but that is not recommended due
+  to known bugs)
 * zlib
+* libwebp
 
 ### Optional build-time requirements
 
@@ -29,8 +29,8 @@ SLADE can be built on Windows using [Visual Studio](https://visualstudio.microso
 
 ### Required vcpkg libraries
 
-* freeimage
-* ftgl
+* glm
+* libwebp
 * lua
 * mpg123
 * opengl

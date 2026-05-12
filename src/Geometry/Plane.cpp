@@ -1,7 +1,6 @@
-
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -98,6 +97,16 @@ double Plane::heightAt(const Vec2d& point) const
 double Plane::heightAt(double x, double y) const
 {
 	return ((-a * x) + (-b * y) + d) / c;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the distance from the plane to [point].
+// Positive distance means the point is in front of the plane, negative means
+// it's behind.
+// -----------------------------------------------------------------------------
+double Plane::distanceTo(const Vec3d& point) const
+{
+	return a * point.x + b * point.y + c * point.z - d;
 }
 
 // -----------------------------------------------------------------------------

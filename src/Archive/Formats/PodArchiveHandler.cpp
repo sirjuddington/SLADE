@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,8 +35,8 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "General/Console.h"
-#include "General/UI.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -244,7 +244,7 @@ bool PodArchiveHandler::isThisFormat(const MemChunk& mc)
 bool PodArchiveHandler::isThisFormat(const string& filename)
 {
 	wxFile file;
-	if (!file.Open(filename))
+	if (!file.Open(wxString::FromUTF8(filename)))
 		return false;
 
 	file.SeekEnd(0);

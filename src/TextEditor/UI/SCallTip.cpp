@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,9 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SCallTip.h"
-#include "General/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -86,20 +86,16 @@ SCallTip::SCallTip(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 // Sets the font [face] and [size]
 // -----------------------------------------------------------------------------
-void SCallTip::setFont(const wxString& face, int size)
+void SCallTip::setFont(string_view face, int size)
 {
 	if (face.empty())
 	{
 		font_.SetFaceName(GetFont().GetFaceName());
-#if wxCHECK_VERSION(3, 1, 6)
 		font_.SetPointSize(FromDIP(GetFont().GetPointSize()));
-#else
-		font_.SetPointSize(GetFont().GetPointSize());
-#endif
 	}
 	else
 	{
-		font_.SetFaceName(face);
+		font_.SetFaceName(wxutil::strFromView(face));
 		font_.SetPointSize(size);
 	}
 }
@@ -161,7 +157,7 @@ void SCallTip::prevArgSet()
 void SCallTip::updateSize()
 {
 	updateBuffer();
-	SetSize(buffer_.GetWidth() + ui::scalePx(24), buffer_.GetHeight() + ui::scalePx(16));
+	SetSize(buffer_.GetWidth() + FromDIP(24), buffer_.GetHeight() + FromDIP(16));
 
 	// Get screen bounds and window bounds
 	auto      index = static_cast<unsigned>(wxDisplay::GetFromWindow(this->GetParent()));
@@ -185,9 +181,9 @@ void SCallTip::updateSize()
 // Using [dc], draw [text] at [left,top], writing the bounds of the drawn text
 // to [bounds]
 // -----------------------------------------------------------------------------
-int SCallTip::drawText(wxDC& dc, const wxString& text, int left, int top, wxRect* bounds) const
+int SCallTip::drawText(wxDC& dc, const string& text, int left, int top, wxRect* bounds) const
 {
-	dc.DrawLabel(text, wxNullBitmap, wxRect(left, top, 900, 900), 0, -1, bounds);
+	dc.DrawLabel(wxString::FromUTF8(text), wxNullBitmap, wxRect(left, top, 900, 900), 0, -1, bounds);
 	return bounds->GetRight() + 1;
 }
 
@@ -203,12 +199,12 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	// Draw deprecated message
 	if (!context.deprecated_v.empty() || !context.deprecated_f.empty())
 	{
-		wxString deprecated_msg = "[ Deprecated";
+		string deprecated_msg = "[ Deprecated";
 		if (!context.deprecated_v.empty())
-			deprecated_msg = wxString::Format("%s v%s", deprecated_msg, context.deprecated_v);
+			deprecated_msg = fmt::format("{} v{}", deprecated_msg, context.deprecated_v);
 		if (!context.deprecated_f.empty())
-			deprecated_msg = wxString::Format("%s, use \'%s()\'", deprecated_msg, context.deprecated_f);
-		deprecated_msg = wxString::Format("%s ] ", deprecated_msg);
+			deprecated_msg = fmt::format("{}, use \'{}()\'", deprecated_msg, context.deprecated_f);
+		deprecated_msg = fmt::format("{} ] ", deprecated_msg);
 
 		dc.SetTextForeground(*wxRED);
 		drawText(dc, deprecated_msg, left, top, &rect);
@@ -227,7 +223,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	// Draw function return type
 	if (!context.return_type.empty())
 	{
-		wxString ftype = wxString::Format("%s ", context.return_type);
+		auto ftype = fmt::format("{} ", context.return_type);
 		dc.SetTextForeground(wxcol_type);
 		left = drawText(dc, ftype, left, top, &rect);
 	}
@@ -236,17 +232,17 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	if (!context.context.empty())
 	{
 		dc.SetTextForeground(wxcol_fg);
-		left = drawText(dc, wxString::Format("%s.", context.context), left, top, &rect);
+		left = drawText(dc, fmt::format("{}.", context.context), left, top, &rect);
 	}
 
 	// Draw function name
-	wxString fname = function_->name();
+	auto fname = function_->name();
 	dc.SetTextForeground(col_func_);
 	left = drawText(dc, fname, left, top, &rect);
 
 	// Draw opening bracket
 	dc.SetTextForeground(wxcol_fg);
-	left = drawText(dc, " (", left, top, &rect);
+	drawText(dc, " (", left, top, &rect);
 
 	return { { rect_left, top }, rect.GetBottomRight() };
 }
@@ -269,33 +265,33 @@ wxRect SCallTip::drawArgs(
 	int args_left = left;
 	int args_top  = top;
 
-	size_t params_lenght = 0;
+	size_t params_length = 0;
 
 	for (const auto& param : context.params)
 	{
 		// Count param name + space length
 		if (!param.type.empty())
-			params_lenght += param.name.size() + 1;
+			params_length += param.name.size() + 1;
 
 		// Count param type + space length
 		if (!param.type.empty())
-			params_lenght += param.type.size() + 1;
+			params_length += param.type.size() + 1;
 
 		// Count param default_value + " = " length
 		if (!param.default_value.empty())
-			params_lenght += param.default_value.size() + 3;
+			params_length += param.default_value.size() + 3;
 
 		// Count brackets for optional params
 		if (param.optional)
-			params_lenght += 2;
+			params_length += 2;
 	}
 
 	if (context.params.empty())
-		params_lenght = 4; // void
+		params_length = 4; // void
 
-	params_lenght *= ui::scalePx(font_.GetPixelSize().GetWidth());
+	params_length *= FromDIP(font_.GetPixelSize().GetWidth());
 
-	bool long_params = (args_left + params_lenght) > MAX_WIDTH;
+	bool long_params = (args_left + params_length) > MAX_WIDTH;
 
 	for (int a = 0; a < static_cast<int>(context.params.size()); a++)
 	{
@@ -305,7 +301,7 @@ wxRect SCallTip::drawArgs(
 		if ((a != 0 && (long_params && !(a % 2))) || left > MAX_WIDTH)
 		{
 			left = args_left;
-			top  = rect.GetBottom() + ui::scalePx(2);
+			top  = rect.GetBottom() + FromDIP(2);
 		}
 
 		// Set highlight colour if current arg
@@ -322,7 +318,7 @@ wxRect SCallTip::drawArgs(
 		// Type
 		if (!arg.type.empty())
 		{
-			wxString arg_type = arg.type == "void" ? "void" : wxString::Format("%s ", arg.type);
+			string arg_type = arg.type == "void" ? "void" : fmt::format("{} ", arg.type);
 			if (a != arg_current_)
 				dc.SetTextForeground(wxcol_type);
 			left = drawText(dc, arg_type, left, top, &rect);
@@ -335,7 +331,7 @@ wxRect SCallTip::drawArgs(
 
 		// Default value
 		if (!arg.default_value.empty())
-			left = drawText(dc, wxString::Format(" = %s", arg.default_value), left, top, &rect);
+			left = drawText(dc, fmt::format(" = {}", arg.default_value), left, top, &rect);
 
 		// Optional closing bracket
 		if (arg.optional && !txed_calltips_dim_optional)
@@ -382,35 +378,35 @@ wxRect SCallTip::drawFunctionContext(
 // Draws function description text [desc] at [left,top].
 // Returns a rect of the bounds of the drawn text
 // -----------------------------------------------------------------------------
-wxRect SCallTip::drawFunctionDescription(wxDC& dc, const wxString& desc, int left, int top) const
+wxRect SCallTip::drawFunctionDescription(wxDC& dc, const string& desc, int left, int top) const
 {
 	auto   italic = font_.Italic();
 	wxRect rect(left, top, 0, 0);
 	dc.SetFont(italic);
 	int max_right = 0;
-	if (dc.GetTextExtent(desc).x > MAX_WIDTH)
+	if (dc.GetTextExtent(wxString::FromUTF8(desc)).x > MAX_WIDTH)
 	{
 		// Description is too long, split into multiple lines
-		vector<wxString> desc_lines;
-		wxString         line = desc;
-		wxArrayInt       extents;
+		vector<string> desc_lines;
+		auto           line = desc;
+		wxArrayInt     extents;
 		while (true)
 		{
-			dc.GetPartialTextExtents(line, extents);
+			dc.GetPartialTextExtents(wxString::FromUTF8(line), extents);
 			bool split = false;
 			for (unsigned a = 0; a < extents.size(); a++)
 			{
 				if (extents[a] > MAX_WIDTH)
 				{
 					// Try to split in phrases first.
-					size_t eol = static_cast<size_t>(line.SubString(0, a).Last('.')) + 1;
-					eol        = line[eol] == ' ' ? eol : -1;
+					auto eol = line.substr(0, a).find_last_of('.') + 1;
+					eol      = line[eol] == ' ' ? eol : -1;
 					if (eol <= 0 || eol > MAX_WIDTH)
-						eol = static_cast<size_t>(line.SubString(0, a).Last(',')) + 1;
+						eol = line.substr(0, a).find_last_of(',') + 1;
 					if (eol <= 0 || eol > MAX_WIDTH)
-						eol = static_cast<size_t>(line.SubString(0, a).Last(' '));
-					desc_lines.push_back(line.SubString(0, eol));
-					line  = line.SubString(eol + 1, line.Length());
+						eol = line.substr(0, a).find_last_of(' ');
+					desc_lines.push_back(line.substr(0, eol));
+					line  = line.substr(eol + 1, line.size());
 					split = true;
 					break;
 				}
@@ -423,7 +419,7 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, const wxString& desc, int lef
 			}
 		}
 
-		int bottom = rect.GetBottom() + ui::scalePx(font_.GetPixelSize().GetHeight());
+		int bottom = rect.GetBottom() + FromDIP(font_.GetPixelSize().GetHeight());
 		for (const auto& desc_line : desc_lines)
 		{
 			drawText(dc, desc_line, 0, bottom, &rect);
@@ -434,7 +430,7 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, const wxString& desc, int lef
 	}
 	else
 	{
-		drawText(dc, desc, 0, rect.GetBottom() + ui::scalePx(font_.GetPixelSize().GetHeight()), &rect);
+		drawText(dc, desc, 0, rect.GetBottom() + FromDIP(font_.GetPixelSize().GetHeight()), &rect);
 		if (rect.GetRight() > max_right)
 			max_right = rect.GetRight();
 	}
@@ -496,12 +492,12 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 				wxString::FromUTF8("\xE2\x96\xB2"), wxNullBitmap, wxRect(xoff, yoff, 100, 100), 0, -1, &rect_btn_up_);
 
 			// Arg set
-			int width = dc.GetTextExtent("X/X").x;
+			int width = dc.GetTextExtent(wxS("X/X")).x;
 			dc.SetTextForeground(wxcol_fg);
 			dc.DrawLabel(
-				wxString::Format("%lu/%lu", context_current_ + 1, function_->contexts().size()),
+				WX_FMT("{}/{}", context_current_ + 1, function_->contexts().size()),
 				wxNullBitmap,
-				wxRect(rect_btn_up_.GetRight() + ui::scalePx(4), yoff, width, 900),
+				wxRect(rect_btn_up_.GetRight() + FromDIP(4), yoff, width, 900),
 				wxALIGN_CENTER_HORIZONTAL);
 
 			// Down arrow
@@ -509,14 +505,14 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			dc.DrawLabel(
 				wxString::FromUTF8("\xE2\x96\xBC"),
 				wxNullBitmap,
-				wxRect(rect_btn_up_.GetRight() + width + ui::scalePx(8), yoff, 900, 900),
+				wxRect(rect_btn_up_.GetRight() + width + FromDIP(8), yoff, 900, 900),
 				0,
 				-1,
 				&rect_btn_down_);
 
-			left = rect_btn_down_.GetRight() + ui::scalePx(8);
-			rect_btn_up_.Offset(wxutil::scaledPoint(12, 8));
-			rect_btn_down_.Offset(wxutil::scaledPoint(12, 8));
+			left = rect_btn_down_.GetRight() + FromDIP(8);
+			rect_btn_up_.Offset(FromDIP(wxPoint(12, 8)));
+			rect_btn_down_.Offset(FromDIP(wxPoint(12, 8)));
 
 			// Draw function (current context)
 			rect      = drawFunctionContext(dc, context_, left, yoff, wxcol_faded, bold);
@@ -546,9 +542,8 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 					dc.DrawLine(xoff, bottom + 5, 2000, bottom + 5);
 				}
 
-				rect = drawFunctionContext(
-					dc, context, xoff, bottom + (first ? 0 : ui::scalePx(11)), wxcol_faded, bold);
-				bottom    = static_cast<int>(round(rect.GetBottom() + ui::scaleFactor()));
+				rect   = drawFunctionContext(dc, context, xoff, bottom + (first ? 0 : FromDIP(11)), wxcol_faded, bold);
+				bottom = static_cast<int>(round(rect.GetBottom()));
 				max_right = std::max(max_right, rect.GetRight());
 				first     = false;
 			}
@@ -559,11 +554,11 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 				dc.SetTextForeground(wxcol_faded);
 				drawText(
 					dc,
-					wxString::Format("... %lu more", function_->contexts().size() - num),
+					fmt::format("... {} more", function_->contexts().size() - num),
 					xoff,
-					bottom + ui::scalePx(11),
+					bottom + FromDIP(11),
 					&rect);
-				bottom = static_cast<int>(round(rect.GetBottom() + ui::scaleFactor()));
+				bottom = static_cast<int>(round(rect.GetBottom()));
 			}
 
 			if (num > 1)
@@ -578,8 +573,8 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		}
 
 		// Size buffer bitmap to fit
-		ct_size.SetWidth(static_cast<int>(round(max_right + ui::scaleFactor())));
-		ct_size.SetHeight(static_cast<int>(round(bottom + ui::scaleFactor())));
+		ct_size.SetWidth(static_cast<int>(round(max_right)));
+		ct_size.SetHeight(static_cast<int>(round(bottom)));
 	}
 	else
 	{
@@ -653,7 +648,7 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	// so just draw the entire calltip again in this case
 	drawCallTip(dc, 12, 8);
 #else
-	dc.DrawBitmap(buffer_, ui::scalePx(12), ui::scalePx(8), true);
+	dc.DrawBitmap(buffer_, FromDIP(12), FromDIP(8), true);
 #endif
 
 	// Draw border

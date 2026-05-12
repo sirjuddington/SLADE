@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -127,7 +127,7 @@ bool BZip2ArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* en
 	}
 
 	// Open archive file
-	wxFile file(filename_);
+	wxFile file(wxString::FromUTF8(filename_));
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -151,7 +151,7 @@ bool BZip2ArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* en
 // Returns the entry if it matches the search criteria in [options],
 // or null otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* BZip2ArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* BZip2ArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	strutil::upperIP(options.match_name);
@@ -191,7 +191,7 @@ ArchiveEntry* BZip2ArchiveHandler::findFirst(Archive& archive, ArchiveSearchOpti
 // -----------------------------------------------------------------------------
 // Same as findFirst since there's just one entry
 // -----------------------------------------------------------------------------
-ArchiveEntry* BZip2ArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* BZip2ArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	return findFirst(archive, options);
 }
@@ -199,7 +199,7 @@ ArchiveEntry* BZip2ArchiveHandler::findLast(Archive& archive, ArchiveSearchOptio
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> BZip2ArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> BZip2ArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	vector<ArchiveEntry*> ret;
@@ -234,7 +234,7 @@ bool BZip2ArchiveHandler::isThisFormat(const MemChunk& mc)
 bool BZip2ArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < 14)

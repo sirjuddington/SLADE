@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -124,8 +124,8 @@ bool compression::genericDeflate(const MemChunk& in, MemChunk& out, int level, i
 			out.write(bout, have);
 		} while (strm.avail_out == 0);
 		assert(strm.avail_in == 0); /* all input will be used */
-	} while (flush != Z_FINISH);    /* done when last data in file processed */
-	assert(ret == Z_STREAM_END);    /* stream will be complete */
+	} while (flush != Z_FINISH); /* done when last data in file processed */
+	assert(ret == Z_STREAM_END); /* stream will be complete */
 
 	/* clean up and return */
 	deflateEnd(&strm);

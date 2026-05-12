@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -159,7 +159,7 @@ void TextStyle::applyTo(wxStyledTextCtrl* stc) const
 		if (!txed_override_font.value.empty())
 			stc->StyleSetFaceName(wx_style, txed_override_font);
 		else if (!font_.empty())
-			stc->StyleSetFaceName(wx_style, font_);
+			stc->StyleSetFaceName(wx_style, wxString::FromUTF8(font_));
 
 		// Set font size
 		if (txed_override_font_size > 0)
@@ -218,43 +218,53 @@ bool TextStyle::copyStyle(const TextStyle* copy)
 }
 
 // -----------------------------------------------------------------------------
-// Returns a formatted string defining this style
+// Reads text style information from a JSON object [j]
 // -----------------------------------------------------------------------------
-string TextStyle::textDefinition(unsigned tabs) const
+void TextStyle::fromJson(const Json& j)
 {
-	fmt::memory_buffer mem_buf;
-	auto               buf = fmt::appender(mem_buf);
-	string             indent(tabs, '\t');
+	if (j.contains("font"))
+		font_ = j["font"].get<string>();
+	if (j.contains("size"))
+		size_ = j["size"].get<int>();
+	if (j.contains("bold"))
+		bold_ = j["bold"].get<bool>() ? 1 : 0;
+	if (j.contains("italic"))
+		italic_ = j["italic"].get<bool>() ? 1 : 0;
+	if (j.contains("underlined"))
+		underlined_ = j["underlined"].get<bool>() ? 1 : 0;
+	if (j.contains("foreground"))
+	{
+		foreground_ = colour::fromString(j["foreground"].get<string>());
+		fg_defined_ = true;
+	}
+	if (j.contains("background"))
+	{
+		background_ = colour::fromString(j["background"].get<string>());
+		bg_defined_ = true;
+	}
+}
 
-	// Write font
+// -----------------------------------------------------------------------------
+// Converts the text style to a JSON object
+// -----------------------------------------------------------------------------
+Json TextStyle::toJson() const
+{
+	json j;
 	if (!font_.empty())
-		fmt::format_to(buf, "{}font = \"{}\";\n", indent, font_);
-
-	// Write size
+		j["font"] = font_;
 	if (size_ >= 0)
-		fmt::format_to(buf, "{}size = {};\n", indent, size_);
-
-	// Write foreground
-	if (fg_defined_)
-		fmt::format_to(buf, "{}foreground = {}, {}, {};\n", indent, foreground_.r, foreground_.g, foreground_.b);
-
-	// Write background
-	if (bg_defined_)
-		fmt::format_to(buf, "{}background = {}, {}, {};\n", indent, background_.r, background_.g, background_.b);
-
-	// Write bold
+		j["size"] = size_;
 	if (bold_ >= 0)
-		fmt::format_to(buf, "{}bold = {};\n", indent, bold_);
-
-	// Write italic
+		j["bold"] = bold_ != 0;
 	if (italic_ >= 0)
-		fmt::format_to(buf, "{}italic = {};\n", indent, italic_);
-
-	// Write underlined
+		j["italic"] = italic_ != 0;
 	if (underlined_ >= 0)
-		fmt::format_to(buf, "{}underlined = {};\n", indent, underlined_);
-
-	return fmt::to_string(mem_buf);
+		j["underlined"] = underlined_ != 0;
+	if (fg_defined_)
+		j["foreground"] = colour::toString(foreground_, colour::StringFormat::RGB);
+	if (bg_defined_)
+		j["background"] = colour::toString(background_, colour::StringFormat::RGB);
+	return j;
 }
 
 
@@ -274,7 +284,7 @@ StyleSet::StyleSet(string_view name) :
 {
 	// Init default style
 	wxFont f(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
-	ts_default_.font_ = f.GetFaceName();
+	ts_default_.font_ = f.GetFaceName().utf8_string();
 	ts_default_.size_ = 10;
 	ts_default_.foreground_.set(0, 0, 0, 255);
 	ts_default_.fg_defined_ = true;
@@ -317,7 +327,7 @@ StyleSet::StyleSet(string_view name) :
 // -----------------------------------------------------------------------------
 // Reads style set info from a parse tree
 // -----------------------------------------------------------------------------
-bool StyleSet::parseSet(const ParseTreeNode* root)
+bool StyleSet::parseOldSet(const ParseTreeNode* root)
 {
 	if (!root)
 		return false;
@@ -382,6 +392,65 @@ bool StyleSet::parseSet(const ParseTreeNode* root)
 }
 
 // -----------------------------------------------------------------------------
+// Reads style set info from a JSON object [j]
+// -----------------------------------------------------------------------------
+void StyleSet::readSet(const Json& j)
+{
+	// Get name
+	j["name"].get_to(name_);
+
+	// Parse styles
+	ts_default_.fromJson(j["default"]);     // Default style
+	ts_selection_.fromJson(j["selection"]); // Selection style
+	for (auto& style : styles_)             // Other styles
+	{
+		// Check if style is defined in JSON
+		if (j.contains(style.name_))
+			style.fromJson(j[style.name_]);
+
+		// Not defined - do special handling for certain styles
+		else if (style.name_ == "foldmargin")
+		{
+			// No 'foldmargin' style defined, copy it from line numbers style
+			style.foreground_ = styleForeground("linenum");
+			style.background_ = styleBackground("linenum");
+			style.fg_defined_ = true;
+			style.bg_defined_ = true;
+		}
+		else if (style.name_ == "guides")
+		{
+			// No 'guides' style defined, use the default foreground colour
+			style.foreground_ = ts_default_.foreground();
+			style.fg_defined_ = true;
+		}
+		else if (style.name_ == "type" || style.name_ == "property")
+		{
+			// No 'type' or 'property' style defined, copy it from keyword style
+			style.copyStyle(this->style("keyword"));
+		}
+		else if (style.name_ == "comment_doc")
+		{
+			// No 'comment_doc' style defined, copy it from comment style
+			style.copyStyle(this->style("comment"));
+		}
+		else if (style.name_ == "current_line")
+		{
+			int fgm = -20;
+			int bgm = -10;
+			if (colour::greyscale(ts_default_.background_).r < 100)
+			{
+				fgm = 30;
+				bgm = 15;
+			}
+			style.foreground_ = ts_default_.background().amp(fgm, fgm, fgm, 0);
+			style.fg_defined_ = true;
+			style.background_ = ts_default_.background().amp(bgm, bgm, bgm, 0);
+			style.bg_defined_ = true;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Applies all the styles in this set to the text styles in scintilla text
 // control [stc]
 // -----------------------------------------------------------------------------
@@ -409,13 +478,13 @@ void StyleSet::applyToWx(wxStyledTextCtrl* stc)
 	if (ts_selection_.hasBackground())
 		stc->SetSelBackground(true, ts_selection_.background_);
 	else
-		stc->SetSelBackground(false, wxColour("red"));
+		stc->SetSelBackground(false, wxColour(wxS("red")));
 
 	// Set selection foreground if customised
 	if (ts_selection_.hasForeground())
 		stc->SetSelForeground(true, ts_selection_.foreground_);
 	else
-		stc->SetSelForeground(false, wxColour("red"));
+		stc->SetSelForeground(false, wxColour(wxS("red")));
 
 	// Set caret colour to text foreground colour
 	stc->SetCaretForeground(ts_default_.foreground_);
@@ -488,47 +557,21 @@ TextStyle* StyleSet::style(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
-// Writes this style set as a text definition to a file [filename]
+// Writes this style set as JSON to a file [filename]
 // -----------------------------------------------------------------------------
 bool StyleSet::writeFile(string_view filename) const
 {
-	// Open file for writing
-	wxFile file(wxString{ filename.data(), filename.size() }, wxFile::write);
+	// Build JSON
+	ordered_json j;
+	j["name"]      = name_;                  // Name
+	j["default"]   = ts_default_.toJson();   // Default style
+	j["selection"] = ts_selection_.toJson(); // Selection style
+	for (const auto& style : styles_)        // Other styles
+		if (auto js = style.toJson(); !js.is_null())
+			j[style.name_] = js;
 
-	if (!file.IsOpened())
-		return false;
-
-	// Write opening
-	file.Write("styleset {\n");
-
-	// Name
-	file.Write(wxString::Format("\tname = \"%s\";\n\n", name_));
-
-	// Default style
-	file.Write("\tdefault {\n");
-	file.Write(ts_default_.textDefinition(2));
-	file.Write("\t}\n\n");
-
-	// Selection style
-	file.Write("\tselection {\n");
-	file.Write(ts_selection_.textDefinition(2));
-	file.Write("\t}\n\n");
-
-	// Other styles
-	for (auto& style : styles_)
-	{
-		file.Write(wxString::Format("\t%s {\n", style.name_));
-		file.Write(style.textDefinition(2));
-		file.Write("\t}\n\n");
-	}
-
-	// Write end
-	file.Write("}\n");
-
-	// Close file
-	file.Close();
-
-	return true;
+	// Write to file
+	return jsonutil::writeFile(j, filename);
 }
 
 // -----------------------------------------------------------------------------
@@ -579,8 +622,8 @@ int StyleSet::defaultFontSize()
 
 
 // -----------------------------------------------------------------------------
-// Initialises the 'current' style set from the previously saved 'current.sss'
-// file, or uses the default set if the file does not exist
+// Initialises the 'current' style set from the previously saved
+// text_style_current file, or uses the default set if the file does not exist
 // -----------------------------------------------------------------------------
 void StyleSet::initCurrent()
 {
@@ -588,14 +631,20 @@ void StyleSet::initCurrent()
 	ss_current        = new StyleSet();
 	ss_current->name_ = "<current styleset>";
 
-	// First up, check if "<userdir>/current.sss" exists
-	auto path = app::path("current.sss", app::Dir::User);
+	// First up, check if "<userdir>/text_style_current.json" exists
+	auto path = app::path("text_style_current.json", app::Dir::User);
 	if (fileutil::fileExists(path))
 	{
-		// Read it in
-		Tokenizer tz;
-		tz.openFile(path);
+		if (auto j = jsonutil::parseFile(path); !j.is_discarded())
+		{
+			ss_current->readSet(j);
+			return;
+		}
+	}
 
+	// Try pre-3.3.0 'current.sss'
+	if (Tokenizer tz; tz.openFile(app::path("current.sss", app::Dir::OldUser)))
+	{
 		// Parse it
 		ParseTreeNode root;
 		root.allowDup(true);
@@ -604,27 +653,26 @@ void StyleSet::initCurrent()
 		// Find definition
 		auto node = root.childPTN("styleset");
 		if (node)
-		{
-			// If found, load it into the current set
-			ss_current->parseSet(node);
-			return;
-		}
+			ss_current->parseOldSet(node);
 	}
 
-	// Unable to load from userdir, just load first styleset (should be default)
-	if (!style_sets.empty())
+	// Unable to load from userdir, just load default styleset depending on
+	// overall app theme
+	if (app::isDarkTheme())
 		ss_current->copySet(style_sets[0].get());
+	else
+		ss_current->copySet(style_sets[1].get());
 }
 
 // -----------------------------------------------------------------------------
-// Writes the current style set to the 'current.sss' file
+// Writes the current style set to the text_style_current file
 // -----------------------------------------------------------------------------
 void StyleSet::saveCurrent()
 {
 	if (!ss_current)
 		return;
 
-	ss_current->writeFile(app::path("current.sss", app::Dir::User));
+	ss_current->writeFile(app::path("text_style_current.json", app::Dir::User));
 }
 
 // -----------------------------------------------------------------------------
@@ -714,6 +762,22 @@ StyleSet* StyleSet::set(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the style set matching [name], or nullptr if no match was found
+// -----------------------------------------------------------------------------
+StyleSet* StyleSet::set(string_view name)
+{
+	// Search for set matching name
+	for (auto& style_set : style_sets)
+	{
+		if (strutil::equalCI(style_set->name_, name))
+			return style_set.get();
+	}
+
+	// Not found
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
 // Adds [stc] to the current list of text editors
 // -----------------------------------------------------------------------------
 void StyleSet::addEditor(TextEditorCtrl* stc)
@@ -781,56 +845,18 @@ bool StyleSet::loadResourceStyles()
 		return false;
 	}
 
-	// Read default style set first
-	auto default_style = dir->entry("default.sss");
-	if (default_style)
-	{
-		// Read entry data into tokenizer
-		Tokenizer tz;
-		tz.openMem(default_style->data(), default_style->name());
-
-		// Parse it
-		ParseTreeNode root;
-		root.allowDup(true);
-		root.parse(tz);
-
-		// Read any styleset definitions
-		auto nodes = root.children("styleset");
-		for (auto& node : nodes)
-		{
-			auto newset       = std::make_unique<StyleSet>();
-			newset->built_in_ = true;
-			if (newset->parseSet(dynamic_cast<ParseTreeNode*>(node)))
-				style_sets.push_back(std::move(newset));
-		}
-	}
-
 	// Go through all entries within it
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 	{
 		auto entry = dir->entryAt(a);
 
-		// Skip default
-		if (entry->nameNoExt() == "default")
-			continue;
-
-		// Read entry data into tokenizer
-		Tokenizer tz;
-		tz.openMem(entry->data(), entry->name());
-
-		// Parse it
-		ParseTreeNode root;
-		root.allowDup(true);
-		root.parse(tz);
-
-		// Read any styleset definitions
-		auto nodes = root.children("styleset");
-		for (auto& node : nodes)
+		// Parse JSON styleset and add it
+		if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
 		{
 			auto newset       = std::make_unique<StyleSet>();
 			newset->built_in_ = true;
-			if (newset->parseSet(dynamic_cast<ParseTreeNode*>(node)))
-				style_sets.push_back(std::move(newset));
+			newset->readSet(j);
+			style_sets.push_back(std::move(newset));
 		}
 	}
 
@@ -844,10 +870,33 @@ bool StyleSet::loadCustomStyles()
 {
 	// If the custom stylesets directory doesn't exist, create it
 	auto custom_dir = app::path("text_styles", app::Dir::User);
-	fileutil::createDir(custom_dir);
+	if (!fileutil::dirExists(custom_dir))
+		fileutil::createDir(custom_dir);
 
-	// Go through each file in the directory
-	for (const auto& path : fileutil::allFilesInDir(custom_dir))
+	// Go through each file in the directory, get list of json and sss files
+	vector<string> json_files;
+	vector<string> sss_files;
+	for (const auto& path : fileutil::allFilesInDir(custom_dir, true, true))
+	{
+		if (strutil::Path::extensionOf(path) == "json")
+			json_files.push_back(path);
+		else if (strutil::Path::extensionOf(path) == "sss")
+			sss_files.push_back(path);
+	}
+
+	// Load JSON stylesets
+	for (const auto& path : json_files)
+	{
+		if (auto j = jsonutil::parseFile(path); !j.is_discarded())
+		{
+			auto newset = std::make_unique<StyleSet>();
+			newset->readSet(j);
+			style_sets.push_back(std::move(newset));
+		}
+	}
+
+	// Load any old sss stylesets (if not already loaded) and convert to json
+	for (const auto& path : sss_files)
 	{
 		// Read file into tokenizer
 		Tokenizer tz;
@@ -863,8 +912,18 @@ bool StyleSet::loadCustomStyles()
 		for (auto& node : nodes)
 		{
 			auto newset = std::make_unique<StyleSet>();
-			if (newset->parseSet(dynamic_cast<ParseTreeNode*>(node)))
+			if (newset->parseOldSet(dynamic_cast<ParseTreeNode*>(node)))
+			{
+				// Check the set isn't already loaded
+				if (set(newset->name_))
+					continue;
+
+				// Write to JSON styleset
+				auto filename = fmt::format("text_styles/{}.json", strutil::replace(newset->name_, " ", "_"));
+				newset->writeFile(app::path(filename, app::Dir::User));
+
 				style_sets.push_back(std::move(newset));
+			}
 		}
 	}
 

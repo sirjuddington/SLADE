@@ -14,7 +14,7 @@ class MapObjectPropsPanel;
 class MOPGProperty
 {
 public:
-	MOPGProperty(const wxString& prop_name) : propname_{ prop_name } {}
+	MOPGProperty(const string& prop_name) : propname_{ prop_name } {}
 	virtual ~MOPGProperty() = default;
 
 	enum class Type
@@ -35,7 +35,7 @@ public:
 		Id,
 	};
 
-	wxString     propName() const { return propname_; }
+	string       propName() const { return propname_; }
 	void         setParent(MapObjectPropsPanel* parent) { parent_ = parent; }
 	virtual void setUDMFProp(game::UDMFProperty* prop) { udmf_prop_ = prop; }
 
@@ -44,12 +44,14 @@ public:
 	virtual void updateVisibility()                       = 0;
 	virtual void applyValue() {}
 	virtual void resetValue();
+	virtual void clearValue() = 0;
 
 protected:
 	MapObjectPropsPanel* parent_    = nullptr;
 	bool                 noupdate_  = false;
 	game::UDMFProperty*  udmf_prop_ = nullptr;
-	wxString             propname_;
+	string               propname_;
+	bool                 object_has_prop_ = false;
 };
 
 class MOPGBoolProperty : public MOPGProperty, public wxBoolProperty
@@ -61,6 +63,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGIntProperty : public MOPGProperty, public wxIntProperty
@@ -72,6 +75,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGFloatProperty : public MOPGProperty, public wxFloatProperty
@@ -83,6 +87,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGStringProperty : public MOPGProperty, public wxStringProperty
@@ -96,6 +101,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGIntWithArgsProperty : public MOPGIntProperty
@@ -128,8 +134,12 @@ public:
 	Type type() override { return Type::ActionSpecial; }
 
 	// wxPGProperty overrides
+#if wxCHECK_VERSION(3, 3, 0)
+	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
+#else
 	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
-	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
+#endif
+	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 
 class MOPGThingTypeProperty : public MOPGIntWithArgsProperty
@@ -146,8 +156,12 @@ public:
 	Type type() override { return Type::ThingType; }
 
 	// wxPGProperty overrides
+#if wxCHECK_VERSION(3, 3, 0)
+	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
+#else
 	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
-	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
+#endif
+	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 
 class MOPGLineFlagProperty : public MOPGBoolProperty
@@ -185,9 +199,14 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 
 	// wxPGProperty overrides
-	wxString ValueToString(wxVariant& value, int arg_flags = 0) const override;
+#if wxCHECK_VERSION(3, 3, 0)
+	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
+#else
+	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
+#endif
 };
 
 class MOPGColourProperty : public MOPGProperty, public wxColourProperty
@@ -199,6 +218,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGTextureProperty : public MOPGStringProperty
@@ -228,6 +248,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateVisibility() override;
 	void applyValue() override;
+	void clearValue() override;
 };
 
 class MOPGTagProperty : public MOPGIntProperty
@@ -261,7 +282,11 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 
 	// wxPGProperty overrides
+#if wxCHECK_VERSION(3, 3, 0)
+	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
+#else
 	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
-	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
+#endif
+	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 } // namespace slade

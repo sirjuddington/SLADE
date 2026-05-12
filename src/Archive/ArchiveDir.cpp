@@ -1,7 +1,7 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,8 +35,8 @@
 #include "Archive.h"
 #include "ArchiveEntry.h"
 #include "EntryType/EntryType.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
-#include <filesystem>
 
 using namespace slade;
 
@@ -79,7 +79,7 @@ ArchiveDir::ArchiveDir(string_view name, const shared_ptr<ArchiveDir>& parent, A
 	// Init dir entry
 	dir_entry_          = std::make_unique<ArchiveEntry>(name);
 	dir_entry_->type_   = EntryType::folderType();
-	dir_entry_->parent_ = parent.get();
+	dir_entry_->parent_ = parent;
 
 	if (parent)
 		allow_duplicate_names_ = parent->allow_duplicate_names_;
@@ -312,9 +312,9 @@ bool ArchiveDir::addEntry(shared_ptr<ArchiveEntry> entry, bool ignore_requiremen
 		return false;
 
 	// Set entry's parent to this dir
-	if (entry->parent_)
-		entry->parent_->removeEntry(entry->index());
-	entry->parent_ = this;
+	if (!entry->parent_.expired())
+		entry->parent_.lock()->removeEntry(entry->index());
+	entry->parent_ = getShared(this);
 
 	// Check index
 	if (index >= entries_.size())
@@ -340,7 +340,7 @@ bool ArchiveDir::removeEntry(unsigned index)
 		return false;
 
 	// De-parent entry
-	entries_[index]->parent_ = nullptr;
+	entries_[index]->parent_.reset();
 
 	// Remove it from the entry list
 	entries_.erase(entries_.begin() + index);
@@ -497,8 +497,8 @@ shared_ptr<ArchiveDir> ArchiveDir::clone(shared_ptr<ArchiveDir> parent)
 bool ArchiveDir::exportTo(string_view path) const
 {
 	// Create directory if needed
-	if (!std::filesystem::exists(path))
-		std::filesystem::create_directory(path);
+	if (!fileutil::dirExists(path))
+		fileutil::createDir(path);
 
 	// Export entries as files
 	for (auto& entry : entries_)
@@ -556,10 +556,11 @@ void ArchiveDir::ensureUniqueName(ArchiveEntry* entry) const
 }
 
 // -----------------------------------------------------------------------------
-// Returns the first entry in the directory that has the same name as another,
-// or nullptr if all names are unique
+// Returns the first* entry in the directory that has the same name as another,
+// or nullptr if all names are unique.
+// *If [ignore_first] is true, returns the second of any duplicates found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveDir::findDuplicateEntryName() const
+ArchiveEntry* ArchiveDir::findDuplicateEntryName(bool ignore_first) const
 {
 	unsigned   i1        = 0;
 	const auto n_entries = entries_.size();
@@ -571,7 +572,7 @@ ArchiveEntry* ArchiveDir::findDuplicateEntryName() const
 		while (i2 < n_entries)
 		{
 			if (strutil::equalCI(name, entries_[i2]->name()))
-				return entries_[i1].get();
+				return entries_[ignore_first ? i2 : i1].get();
 
 			++i2;
 		}
@@ -582,12 +583,29 @@ ArchiveEntry* ArchiveDir::findDuplicateEntryName() const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Ensures all entries in this directory have unique names by renaming any
+// duplicates.
+// Writes a log of any renames to [log]
+// -----------------------------------------------------------------------------
+void ArchiveDir::resolveDuplicateEntryNames(string& log) const
+{
+	ArchiveEntry* dup_entry;
+	while ((dup_entry = findDuplicateEntryName(true)) != nullptr)
+	{
+		string prev_name = dup_entry->name();
+		ensureUniqueName(dup_entry);
+		log += fmt::format("In \"{}\", renamed entry \"{}\" to \"{}\"\n", path(), prev_name, dup_entry->name());
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 //
 // ArchiveDir Class Static Functions
 //
 // -----------------------------------------------------------------------------
+
 
 // -----------------------------------------------------------------------------
 // Returns the subdir at [path] within the directory [root].

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,16 +34,25 @@
 #include "ScriptPanel.h"
 #include "App.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "Scripting/ScriptManager.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
+#if wxCHECK_VERSION(3, 3, 2)
+#include <wx/stc/minimap.h>
+#endif
 
 using namespace slade;
+
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(Int, txed_minimap_width)
 
 
 // -----------------------------------------------------------------------------
@@ -58,27 +67,42 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPanel(parent, -1), script_{ script }
 {
-	wxPanel::SetName("script");
+	wxPanel::SetName(wxS("script"));
+	auto lh = ui::LayoutHelper(this);
 
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Toolbar
 	auto toolbar = setupToolbar();
-	sizer->AddSpacer(ui::padMin());
-	sizer->Add(toolbar, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
-	sizer->AddSpacer(ui::padMin());
+	sizer->AddSpacer(lh.padSmall());
+	sizer->Add(toolbar, lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
+	sizer->AddSpacer(lh.padSmall());
 
 	// Text Editor
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setLanguage(TextLanguage::fromId("sladescript"));
 	if (script_)
-		text_editor_->SetText(script_->text);
-	sizer->Add(text_editor_, wxutil::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		text_editor_->SetText(wxString::FromUTF8(script_->text));
+	hbox->Add(text_editor_, wxSizerFlags(1).Expand());
+
+	// Create the minimap if enabled (and supported)
+#if wxCHECK_VERSION(3, 3, 2)
+	if (txed_minimap_width > 0)
+	{
+		auto minimap = new wxStyledTextCtrlMiniMap(this, text_editor_);
+		text_editor_->SetUseVerticalScrollBar(false);
+		minimap->SetUseVerticalScrollBar(true);
+		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
+		hbox->Add(minimap, wxSizerFlags().Expand());
+	}
+#endif
 
 	// Find+Replace panel
 	find_replace_panel_ = new FindReplacePanel(this, *text_editor_);
-	sizer->Add(find_replace_panel_, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(find_replace_panel_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	find_replace_panel_->Show(false);
 
 	text_editor_->setFindReplacePanel(find_replace_panel_);
@@ -91,7 +115,7 @@ ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPa
 // -----------------------------------------------------------------------------
 string ScriptPanel::currentText() const
 {
-	return text_editor_->GetText().ToStdString();
+	return text_editor_->GetText().utf8_string();
 }
 
 // -----------------------------------------------------------------------------
@@ -110,7 +134,7 @@ bool ScriptPanel::close()
 {
 	if (modified() && !script_->read_only)
 	{
-		auto response = wxMessageBox("Save changes to script?", "Close", wxYES_NO | wxCANCEL);
+		auto response = wxMessageBox(wxS("Save changes to script?"), wxS("Close"), wxYES_NO | wxCANCEL);
 		if (response == wxCANCEL)
 			return false;
 		if (response == wxYES)
@@ -129,7 +153,7 @@ bool ScriptPanel::save()
 
 	if (script_ && !script_->read_only)
 	{
-		script_->text = text_editor_->GetText();
+		script_->text = text_editor_->GetText().utf8_string();
 		return true;
 	}
 
@@ -182,15 +206,14 @@ bool ScriptPanel::handleAction(string_view id)
 // -----------------------------------------------------------------------------
 // Creates and returns the toolbar for this script panel
 // -----------------------------------------------------------------------------
-SToolBar* ScriptPanel::setupToolbar()
+SAuiToolBar* ScriptPanel::setupToolbar()
 {
-	auto toolbar = new SToolBar(this);
+	auto toolbar = new SAuiToolBar(this);
 
-	// Create Script toolbar
-	auto tbg_script = new SToolBarGroup(toolbar, "_Script");
-	tbg_script->addActionButton("scrm_run", "", true);
-	tbg_script->addActionButton("scrm_save", "", true)->Enable(!script_->read_only);
-	toolbar->addGroup(tbg_script);
+	toolbar->addAction("scrm_run", true);
+	toolbar->addAction("scrm_save", true);
+	toolbar->enableItem("scrm_save", !script_->read_only);
+	toolbar->Realize();
 
 	return toolbar;
 }

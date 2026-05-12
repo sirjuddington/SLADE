@@ -4,8 +4,8 @@
 
 namespace slade
 {
+class Archive;
 class ArchiveManager;
-class Console;
 class PaletteManager;
 class Clipboard;
 class ResourceManager;
@@ -13,17 +13,18 @@ class ResourceManager;
 namespace app
 {
 	bool             isInitialised();
-	Console*         console();
 	PaletteManager*  paletteManager();
 	long             runTimer();
 	bool             isExiting();
 	ArchiveManager&  archiveManager();
 	Clipboard&       clipboard();
 	ResourceManager& resources();
+	Archive*         programResource();
 
-	bool init(const vector<string>& args, double ui_scale = 1.);
+	bool init(const vector<string>& args);
 	void saveConfigFile();
 	void exit(bool save_config);
+	void handleException();
 
 	// Version
 	struct Version
@@ -53,7 +54,8 @@ namespace app
 		Data,
 		Executable,
 		Resources,
-		Temp
+		Temp,
+		OldUser // For migrating 3.2.x config files to 3.3.0 (the user config directory is changed on linux)
 	};
 	string path(string_view filename, Dir dir);
 
@@ -68,7 +70,9 @@ namespace app
 	Platform      platform();
 	const string& iconFile();
 	bool          isWin64Build();
+	string        osDescription();
 
 	std::thread::id mainThreadId();
+	bool            isDarkTheme();
 } // namespace app
 } // namespace slade

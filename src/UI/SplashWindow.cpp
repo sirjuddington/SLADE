@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,8 +36,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "General/UI.h"
-#include "MainEditor/MainEditor.h"
+#include <wx/app.h>
 
 using namespace slade;
 
@@ -55,6 +54,12 @@ int      img_height = 204;
 bool     init_done  = false;
 } // namespace
 
+//#ifdef __WXGTK__
+//CVAR(Int, splash_refresh_ms, 100, CVar::Flag::Save)
+//#else
+CVAR(Int, splash_refresh_ms, 20, CVar::Flag::Save)
+//#endif
+
 
 // -----------------------------------------------------------------------------
 //
@@ -66,12 +71,15 @@ bool     init_done  = false;
 // -----------------------------------------------------------------------------
 // SplashWindow class constructor
 // -----------------------------------------------------------------------------
-SplashWindow::SplashWindow() :
-	wxMiniFrame{ nullptr, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE }
+SplashWindow::SplashWindow(wxWindow* parent) :
+	wxMiniFrame{ parent,        -1,
+				 wxEmptyString, wxDefaultPosition,
+				 wxDefaultSize, wxBORDER_NONE | (parent ? wxFRAME_FLOAT_ON_PARENT : 0) }
 {
 	// Init
 	wxMiniFrame::SetBackgroundStyle(wxBG_STYLE_PAINT);
 	wxMiniFrame::SetBackgroundColour(wxColour(180, 186, 200));
+	wxMiniFrame::SetDoubleBuffered(true);
 
 	// Bind events
 	Bind(wxEVT_PAINT, &SplashWindow::onPaint, this);
@@ -83,7 +91,7 @@ SplashWindow::SplashWindow() :
 // -----------------------------------------------------------------------------
 // Changes the splash window message
 // -----------------------------------------------------------------------------
-void SplashWindow::setMessage(const wxString& message)
+void SplashWindow::setMessage(string_view message)
 {
 	message_ = message;
 	forceRedraw();
@@ -92,7 +100,7 @@ void SplashWindow::setMessage(const wxString& message)
 // -----------------------------------------------------------------------------
 // Changes the progress bar message
 // -----------------------------------------------------------------------------
-void SplashWindow::setProgressMessage(const wxString& message)
+void SplashWindow::setProgressMessage(string_view message)
 {
 	message_progress_ = message;
 	forceRedraw();
@@ -108,15 +116,15 @@ void SplashWindow::setProgress(float progress)
 {
 	progress_ = progress;
 
-	// Refresh if last redraw was > 20ms ago
-	if (timer_.Time() >= 20)
-		forceRedraw();
+	// Refresh if last redraw was > [splash_refresh_ms] ago
+	if (timer_.Time() >= splash_refresh_ms)
+		forceRedraw(false);
 }
 
 // -----------------------------------------------------------------------------
 // Sets up the splash window
 // -----------------------------------------------------------------------------
-void SplashWindow::init()
+void SplashWindow::init() const
 {
 	if (init_done)
 		return;
@@ -129,18 +137,19 @@ void SplashWindow::init()
 		logo->exportFile(tempfile);
 
 		wxImage img;
-		img.LoadFile(tempfile, wxBITMAP_TYPE_PNG);
-		if (ui::scaleFactor() != 1.)
-			img = img.Scale(ui::scalePx(img.GetWidth()), ui::scalePx(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
+		img.LoadFile(wxString::FromUTF8(tempfile), wxBITMAP_TYPE_PNG);
+#ifndef wxHAS_DPI_INDEPENDENT_PIXELS
+		img = img.Scale(FromDIP(img.GetWidth()), FromDIP(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
+#endif
 
 		bm_logo = wxBitmap(img);
 	}
 
-	img_width  = ui::scalePx(300);
-	img_height = ui::scalePx(204);
+	img_width  = FromDIP(300);
+	img_height = FromDIP(204);
 
 	// Clean up
-	wxRemoveFile(tempfile);
+	wxRemoveFile(wxString::FromUTF8(tempfile));
 	init_done = true;
 }
 
@@ -148,7 +157,7 @@ void SplashWindow::init()
 // Shows the splash window with [message].
 // If [progress] is true, a progress bar will also be shown
 // -----------------------------------------------------------------------------
-void SplashWindow::show(const wxString& message, bool progress, wxWindow* parent)
+void SplashWindow::show(string_view message, bool progress)
 {
 	// Setup progress bar
 	int rheight = img_height;
@@ -156,22 +165,16 @@ void SplashWindow::show(const wxString& message, bool progress, wxWindow* parent
 	{
 		show_progress_ = true;
 		setProgress(0.0f);
-		rheight += ui::scalePx(10);
+		rheight += FromDIP(10);
 	}
 	else
 		show_progress_ = false;
 
-	// Set parent
-	if (!parent && app::isInitialised())
-		SetParent(maineditor::windowWx());
-	else
-		SetParent(parent);
-
-		// Show & init window
+	// Show & init window
 #ifndef __WXGTK__
 	SetInitialSize({ img_width, rheight });
 #else
-	SetInitialSize({ img_width + ui::scalePx(6), rheight + ui::scalePx(6) });
+	SetInitialSize({ img_width + FromDIP(6), rheight + FromDIP(6) });
 #endif
 	setMessage(message);
 	Show();
@@ -192,10 +195,14 @@ void SplashWindow::hide()
 // -----------------------------------------------------------------------------
 // Forces the splash window to redraw itself
 // -----------------------------------------------------------------------------
-void SplashWindow::forceRedraw()
+void SplashWindow::forceRedraw(bool yield_for_ui)
 {
 	Refresh();
 	Update();
+
+	// Spin the event loop once, to ensure we get our paint events.
+	if (yield_for_ui)
+		wxTheApp->SafeYieldFor(nullptr, wxEVT_CATEGORY_UI);
 }
 
 
@@ -224,30 +231,31 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 		dc.DrawBitmap(bm_logo, 0, 0, true);
 
 	// Setup text
-	wxFont font(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, "Calibri");
+	wxFont font(8, wxFONTFAMILY_SWISS, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL, false, wxS("Calibri"));
 	dc.SetFont(font);
+	dc.SetTextForeground(*wxBLACK);
 
 	// Draw version
-	wxString vers      = "v" + app::version().toString();
-	auto     text_size = dc.GetTextExtent(vers);
-	auto     x         = img_width - text_size.GetWidth() - ui::scalePx(8);
-	auto     y         = ui::scalePx(190) - text_size.GetHeight();
-	dc.DrawText(vers, x, y);
+	string vers      = "v" + app::version().toString();
+	auto   text_size = dc.GetTextExtent(wxString::FromUTF8(vers));
+	auto   x         = img_width - text_size.GetWidth() - FromDIP(8);
+	auto   y         = FromDIP(190) - text_size.GetHeight();
+	dc.DrawText(wxString::FromUTF8(vers), x, y);
 
 	// Draw message
 	font.SetPointSize(10);
 	font.SetWeight(wxFONTWEIGHT_BOLD);
 	dc.SetFont(font);
-	text_size = dc.GetTextExtent(message_);
+	text_size = dc.GetTextExtent(wxString::FromUTF8(message_));
 	x         = (img_width * 0.5) - static_cast<int>(static_cast<double>(text_size.GetWidth()) * 0.5);
 	y         = (img_height - 4) - text_size.GetHeight();
-	dc.DrawText(message_, x, y);
+	dc.DrawText(wxString::FromUTF8(message_), x, y);
 
 	// Draw progress bar if necessary
 	if (show_progress_)
 	{
 		// Setup progress bar
-		wxRect rect_pbar(0, img_height - ui::scalePx(4), img_width, ui::scalePx(14));
+		wxRect rect_pbar(0, img_height - FromDIP(4), img_width, FromDIP(14));
 
 		// Draw background
 		dc.SetBrush(wxBrush(wxColour(40, 40, 56)));
@@ -287,11 +295,11 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 		// Draw text
 		font.SetPointSize(8);
 		dc.SetFont(font);
-		text_size = dc.GetTextExtent(message_progress_);
+		text_size = dc.GetTextExtent(wxString::FromUTF8(message_progress_));
 		x         = (img_width * 0.5) - static_cast<int>(static_cast<double>(text_size.GetWidth()) * 0.5);
-		y         = img_height - ui::scalePx(4);
+		y         = img_height - FromDIP(4);
 		dc.SetTextForeground(wxColour(200, 210, 255));
-		dc.DrawText(message_progress_, x, y);
+		dc.DrawText(wxString::FromUTF8(message_progress_), x, y);
 	}
 
 	timer_.Start();

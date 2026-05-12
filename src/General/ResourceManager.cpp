@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -264,7 +264,7 @@ void ResourceManager::addArchive(Archive* archive)
 	archive->signals().entry_added.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, false, true); });
 	archive->signals().entry_removed.connect([this](Archive&, ArchiveDir&, ArchiveEntry& e)
 											 { updateEntry(e, true, false); });
-	archive->signals().entry_state_changed.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, true, true); });
+	archive->signals().entry_data_changed.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, true, true); });
 
 	// Update entries from the archive when renamed
 	archive->signals().entry_renamed.connect(
@@ -770,7 +770,8 @@ CTexture* ResourceManager::getTexture(
 	}
 
 	// Return the most relevant texture
-	if (parent != ignore)
+	if (parent != ignore
+		&& (!type.empty() ? tex->type() == type : true)) // Ensure the returned texture is of requested type (if any)
 		return tex;
 	else
 		return nullptr;

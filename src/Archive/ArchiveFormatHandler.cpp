@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -436,12 +436,12 @@ bool ArchiveFormatHandler::save(Archive& archive, string_view filename)
 			// No filename is given, but the archive has a filename, so overwrite it (and make a backup)
 
 			// Create backup
-			if (backup_archives && wxFileName::FileExists(archive.filename_) && Archive::save_backup)
+			if (backup_archives && fileutil::fileExists(archive.filename_) && Archive::save_backup)
 			{
 				// Copy current file contents to new backup file
 				const auto bakfile = archive.filename_ + ".bak";
 				log::info("Creating backup {}", bakfile);
-				wxCopyFile(archive.filename_, bakfile, true);
+				fileutil::copyFile(archive.filename_, bakfile, true);
 			}
 
 			// Write it to the file
@@ -480,18 +480,18 @@ bool ArchiveFormatHandler::loadEntryData(Archive& archive, const ArchiveEntry* e
 		return false;
 
 	// Open archive file
-	wxFile file(archive.filename_);
+	SFile file(archive.filename_);
 
 	// Check it opened
-	if (!file.IsOpened())
+	if (!file.isOpen())
 	{
 		log::error("loadEntryData: Unable to open archive file {}", archive.filename_);
 		return false;
 	}
 
 	// Seek to entry offset in file and read it in
-	file.Seek(offset, wxFromStart);
-	out.importFileStreamWx(file, size);
+	file.seekFromStart(offset);
+	out.importFileStream(file, size);
 
 	return true;
 }
@@ -630,7 +630,6 @@ shared_ptr<ArchiveEntry> ArchiveFormatHandler::addEntry(
 
 // -----------------------------------------------------------------------------
 // Adds [entry] to the end of the namespace matching [add_namespace].
-// If [copy] is true a copy of the entry is added.
 // Returns the added entry or NULL if the entry is invalid
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> ArchiveFormatHandler::addEntry(
@@ -810,7 +809,7 @@ bool ArchiveFormatHandler::renameEntry(Archive& archive, ArchiveEntry* entry, st
 // Returns the MapDesc information about the map beginning at [maphead].
 // To be implemented in Archive sub-classes.
 // -----------------------------------------------------------------------------
-MapDesc ArchiveFormatHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
+MapDesc ArchiveFormatHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead)
 {
 	return {};
 }
@@ -819,7 +818,7 @@ MapDesc ArchiveFormatHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 // Returns the MapDesc information about all maps in the Archive.
 // To be implemented in Archive sub-classes.
 // -----------------------------------------------------------------------------
-vector<MapDesc> ArchiveFormatHandler::detectMaps(Archive& archive)
+vector<MapDesc> ArchiveFormatHandler::detectMaps(const Archive& archive)
 {
 	return {};
 }
@@ -827,7 +826,7 @@ vector<MapDesc> ArchiveFormatHandler::detectMaps(Archive& archive)
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-string ArchiveFormatHandler::detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir)
+string ArchiveFormatHandler::detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir)
 {
 	if (dir && index < dir->numEntries())
 		return detectNamespace(archive, dir->entryAt(index));
@@ -838,7 +837,7 @@ string ArchiveFormatHandler::detectNamespace(Archive& archive, unsigned index, A
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string ArchiveFormatHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
+string ArchiveFormatHandler::detectNamespace(const Archive& archive, ArchiveEntry* entry)
 {
 	// Check entry
 	if (!archive.checkEntry(entry))
@@ -864,7 +863,7 @@ string ArchiveFormatHandler::detectNamespace(Archive& archive, ArchiveEntry* ent
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveFormatHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ArchiveFormatHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -933,7 +932,7 @@ ArchiveEntry* ArchiveFormatHandler::findFirst(Archive& archive, ArchiveSearchOpt
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveFormatHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ArchiveFormatHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1001,7 +1000,7 @@ ArchiveEntry* ArchiveFormatHandler::findLast(Archive& archive, ArchiveSearchOpti
 // -----------------------------------------------------------------------------
 // Returns a list of entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveFormatHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> ArchiveFormatHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
@@ -1118,6 +1117,7 @@ unique_ptr<ArchiveFormatHandler> archive::formatHandler(ArchiveFormat format)
 	case ArchiveFormat::Grp:      return std::make_unique<GrpArchiveHandler>();
 	case ArchiveFormat::GZip:     return std::make_unique<GZipArchiveHandler>();
 	case ArchiveFormat::Hog:      return std::make_unique<HogArchiveHandler>();
+	case ArchiveFormat::Lab:      return std::make_unique<LabArchiveHandler>();
 	case ArchiveFormat::Lfd:      return std::make_unique<LfdArchiveHandler>();
 	case ArchiveFormat::Lib:      return std::make_unique<LibArchiveHandler>();
 	case ArchiveFormat::Pak:      return std::make_unique<PakArchiveHandler>();

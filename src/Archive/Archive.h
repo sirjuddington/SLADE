@@ -28,7 +28,7 @@ struct ArchiveSearchOptions
 	}
 };
 
-class Archive
+class Archive : public std::enable_shared_from_this<Archive>
 {
 	friend class ArchiveFormatHandler;
 
@@ -37,7 +37,7 @@ public:
 
 	Archive(string_view format = "");
 	Archive(ArchiveFormat format);
-	virtual ~Archive();
+	~Archive();
 
 	string                 filename(bool full = true) const;
 	ArchiveEntry*          parentEntry() const { return parent_.lock().get(); }
@@ -51,6 +51,7 @@ public:
 
 	void setModified(bool modified);
 	void setFilename(string_view filename) { filename_ = filename; }
+	void setReadOnly() { read_only_ = true; }
 
 	// Entry retrieval/info
 	bool                     checkEntry(const ArchiveEntry* entry) const;
@@ -85,12 +86,17 @@ public:
 	unsigned numEntries() const;
 	void     close();
 	void     entryStateChanged(ArchiveEntry* entry);
+	void     entryDataChanged(ArchiveEntry* entry);
 	void     putEntryTreeAsList(vector<ArchiveEntry*>& list, const ArchiveDir* start = nullptr) const;
 	void     putEntryTreeAsList(vector<shared_ptr<ArchiveEntry>>& list, const ArchiveDir* start = nullptr) const;
 	bool     canSave() const { return parent_.lock() || on_disk_; }
 	bool     paste(ArchiveDir* tree, unsigned position = 0xFFFFFFFF, shared_ptr<ArchiveDir> base = nullptr);
-	bool     importDir(string_view directory, bool ignore_hidden = false, shared_ptr<ArchiveDir> base = nullptr);
-	bool     hasFlatHack() { return false; }
+	bool     importDir(
+			string_view            directory,
+			bool                   ignore_hidden = false,
+			shared_ptr<ArchiveDir> base          = nullptr,
+			bool                   set_filepath  = false);
+	bool hasFlatHack() { return false; }
 
 	// Directory stuff
 	ArchiveDir*            dirAtPath(string_view path, ArchiveDir* base = nullptr) const;
@@ -103,10 +109,7 @@ public:
 		shared_ptr<ArchiveEntry> entry,
 		unsigned                 position = 0xFFFFFFFF,
 		ArchiveDir*              dir      = nullptr);
-	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
-	{
-		return addEntry(entry, 0xFFFFFFFF, nullptr);
-	} // By default, add to the 'global' namespace (ie root dir)
+	shared_ptr<ArchiveEntry> addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace);
 	shared_ptr<ArchiveEntry> addNewEntry(
 		string_view name     = "",
 		unsigned    position = 0xFFFFFFFF,
@@ -121,11 +124,11 @@ public:
 
 	// Entry modification
 	bool renameEntry(ArchiveEntry* entry, string_view name, bool force = false);
-	bool revertEntry(ArchiveEntry* entry);
+	bool revertEntry(ArchiveEntry* entry, bool force = false);
 
 	// Detection
 	MapDesc         mapDesc(ArchiveEntry* maphead);
-	vector<MapDesc> detectMaps();
+	vector<MapDesc> detectMaps() const;
 	string          detectNamespace(ArchiveEntry* entry);
 	string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr);
 
@@ -144,6 +147,7 @@ public:
 		sigslot::signal<Archive&, ArchiveEntry&>                   entry_added;
 		sigslot::signal<Archive&, ArchiveDir&, ArchiveEntry&>      entry_removed; // Archive, Parent Dir, Removed Entry
 		sigslot::signal<Archive&, ArchiveEntry&>                   entry_state_changed;
+		sigslot::signal<Archive&, ArchiveEntry&>                   entry_data_changed;
 		sigslot::signal<Archive&, ArchiveEntry&, string_view>      entry_renamed;
 		sigslot::signal<Archive&, ArchiveDir&, unsigned, unsigned> entries_swapped; // Archive, Dir, Index 1, Index 2
 		sigslot::signal<Archive&, ArchiveDir&>                     dir_added;
@@ -152,21 +156,19 @@ public:
 	Signals& signals() { return signals_; }
 	void     blockModificationSignals(bool block = true);
 
-protected:
+private:
 	string                 filename_;
 	weak_ptr<ArchiveEntry> parent_;
 	bool   on_disk_       = false; // Specifies whether the archive exists on disk (as opposed to being newly created)
 	bool   read_only_     = false; // If true, the archive cannot be modified
 	time_t file_modified_ = 0;
-
-	// Helpers
-	void detectAllEntryTypes() const;
-
-private:
-	bool                             modified_ = true;
+	bool   modified_      = true;
 	shared_ptr<ArchiveDir>           dir_root_;
 	Signals                          signals_;
 	unique_ptr<ArchiveFormatHandler> format_handler_;
+
+	// Helpers
+	void detectAllEntryTypes() const;
 };
 
 // Simple class that will block and unblock modification signals for an archive via RAII

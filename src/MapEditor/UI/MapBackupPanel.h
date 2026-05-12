@@ -2,7 +2,7 @@
 
 namespace slade
 {
-class MapPreviewCanvas;
+struct MapPreviewData;
 class ListView;
 
 class MapBackupPanel : public wxPanel
@@ -13,14 +13,15 @@ public:
 
 	Archive* selectedMapData() const { return archive_mapdata_.get(); }
 
-	bool loadBackups(wxString archive_name, const wxString& map_name);
+	bool loadBackups(string archive_name, string_view map_name);
 	void updateMapPreview();
 
 private:
-	MapPreviewCanvas*   canvas_map_   = nullptr;
-	ListView*           list_backups_ = nullptr;
-	unique_ptr<Archive> archive_backups_;
-	unique_ptr<Archive> archive_mapdata_;
-	ArchiveDir*         dir_current_ = nullptr;
+	unique_ptr<MapPreviewData> map_data_;
+	wxWindow*                  canvas_map_   = nullptr;
+	ListView*                  list_backups_ = nullptr;
+	unique_ptr<Archive>        archive_backups_;
+	unique_ptr<Archive>        archive_mapdata_;
+	ArchiveDir*                dir_current_ = nullptr;
 };
 } // namespace slade

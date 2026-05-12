@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -30,10 +30,10 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-
-#include "Game/Configuration.h"
-#include "MapSector.h"
 #include "MapSide.h"
+#include "Game/Configuration.h"
+#include "MapLine.h"
+#include "MapSector.h"
 #include "SLADEMap/MapObjectList/SideList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Parser.h"
@@ -122,8 +122,7 @@ void MapSide::copy(MapObject* c)
 	if (c->objType() != Type::Side)
 		return;
 
-	// Update modified time
-	setModified();
+	beginModify();
 
 	// Copy properties
 	auto side = dynamic_cast<MapSide*>(c);
@@ -133,12 +132,113 @@ void MapSide::copy(MapObject* c)
 	tex_offset_ = side->tex_offset_;
 
 	MapObject::copy(c);
+
+	endModify();
+}
+
+
+// -----------------------------------------------------------------------------
+// Determine whether this is the front side of the line
+// -----------------------------------------------------------------------------
+bool MapSide::isFrontSide() const
+{
+	return parent_ && parent_->s1() == this;
+}
+
+// -----------------------------------------------------------------------------
+// Get the start vertex of this side
+// -----------------------------------------------------------------------------
+MapVertex* MapSide::startVertex() const
+{
+	if (!parent_)
+		return nullptr;
+
+	if (isFrontSide())
+		return parent_->v1();
+	else
+		return parent_->v2();
+}
+
+// -----------------------------------------------------------------------------
+// Get the end vertex of this side
+// -----------------------------------------------------------------------------
+MapVertex* MapSide::endVertex() const
+{
+	if (!parent_)
+		return nullptr;
+
+	if (isFrontSide())
+		return parent_->v2();
+	else
+		return parent_->v1();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the texture offset of the given side [part], including UDMF offsets
+// if supported
+// -----------------------------------------------------------------------------
+Vec2d MapSide::texOffset(map::SidePart part) const
+{
+	// Get base offsets
+	auto offsets = Vec2d{ static_cast<double>(tex_offset_.x), static_cast<double>(tex_offset_.y) };
+
+	// Apply UDMF offsets if supported
+	if (parent_map_->currentFormat() == MapFormat::UDMF
+		&& game::configuration().featureSupported(game::UDMFFeature::TextureOffsets))
+	{
+		switch (part)
+		{
+		case map::SidePart::Upper:
+			if (hasProp("offsetx_top"))
+				offsets.x += floatProperty("offsetx_top");
+			if (hasProp("offsety_top"))
+				offsets.y += floatProperty("offsety_top");
+			break;
+		case map::SidePart::Lower:
+			if (hasProp("offsetx_bottom"))
+				offsets.x += floatProperty("offsetx_bottom");
+			if (hasProp("offsety_bottom"))
+				offsets.y += floatProperty("offsety_bottom");
+			break;
+		case map::SidePart::Middle:
+			if (hasProp("offsetx_mid"))
+				offsets.x += floatProperty("offsetx_mid");
+			if (hasProp("offsety_mid"))
+				offsets.y += floatProperty("offsety_mid");
+			break;
+		}
+	}
+
+	return offsets;
+}
+
+Vec2d MapSide::texScale(map::SidePart part) const
+{
+	if (parent_map_->currentFormat() == MapFormat::UDMF
+		&& game::configuration().featureSupported(game::UDMFFeature::TextureScaling))
+	{
+		switch (part)
+		{
+		case map::SidePart::Upper:
+			return Vec2d{ hasProp("scalex_top") ? 1.0 / floatProperty("scalex_top") : 1.0,
+						  hasProp("scaley_top") ? 1.0 / floatProperty("scaley_top") : 1.0 };
+		case map::SidePart::Lower:
+			return Vec2d{ hasProp("scalex_bottom") ? 1.0 / floatProperty("scalex_bottom") : 1.0,
+						  hasProp("scaley_bottom") ? 1.0 / floatProperty("scaley_bottom") : 1.0 };
+		case map::SidePart::Middle:
+			return Vec2d{ hasProp("scalex_mid") ? 1.0 / floatProperty("scalex_mid") : 1.0,
+						  hasProp("scaley_mid") ? 1.0 / floatProperty("scaley_mid") : 1.0 };
+		}
+	}
+
+	return Vec2d{ 1.0, 1.0 };
 }
 
 // -----------------------------------------------------------------------------
 // Returns the light level of the given side
+// TODO: Upper/Mid/Lower light levels (UDMF)
 // -----------------------------------------------------------------------------
-uint8_t MapSide::light()
+uint8_t MapSide::light() const
 {
 	int  light          = 0;
 	bool include_sector = true;
@@ -152,7 +252,7 @@ uint8_t MapSide::light()
 	}
 
 	if (include_sector && sector_)
-		light += sector_->lightAt(0);
+		light += sector_->lightAt(map::SectorPart::Interior);
 
 	// Clamp range
 	if (light > 255)
@@ -178,7 +278,7 @@ void MapSide::changeLight(int amount)
 void MapSide::setTexUpper(string_view tex, bool modify)
 {
 	if (modify)
-		setModified();
+		beginModify();
 
 	if (parent_map_)
 	{
@@ -187,6 +287,9 @@ void MapSide::setTexUpper(string_view tex, bool modify)
 	}
 
 	tex_upper_ = tex;
+
+	if (modify)
+		endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -195,7 +298,7 @@ void MapSide::setTexUpper(string_view tex, bool modify)
 void MapSide::setTexMiddle(string_view tex, bool modify)
 {
 	if (modify)
-		setModified();
+		beginModify();
 
 	if (parent_map_)
 	{
@@ -204,6 +307,8 @@ void MapSide::setTexMiddle(string_view tex, bool modify)
 	}
 
 	tex_middle_ = tex;
+	if (modify)
+		endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -212,7 +317,7 @@ void MapSide::setTexMiddle(string_view tex, bool modify)
 void MapSide::setTexLower(string_view tex, bool modify)
 {
 	if (modify)
-		setModified();
+		beginModify();
 
 	if (parent_map_)
 	{
@@ -221,6 +326,9 @@ void MapSide::setTexLower(string_view tex, bool modify)
 	}
 
 	tex_lower_ = tex;
+
+	if (modify)
+		endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -228,8 +336,9 @@ void MapSide::setTexLower(string_view tex, bool modify)
 // -----------------------------------------------------------------------------
 void MapSide::setTexOffsetX(int offset)
 {
-	setModified();
+	beginModify();
 	tex_offset_.x = offset;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -237,8 +346,9 @@ void MapSide::setTexOffsetX(int offset)
 // -----------------------------------------------------------------------------
 void MapSide::setTexOffsetY(int offset)
 {
-	setModified();
+	beginModify();
 	tex_offset_.y = offset;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -253,18 +363,17 @@ void MapSide::setSector(MapSector* sector)
 	if (sector_)
 		sector_->disconnectSide(this);
 
-	// Update modified time
-	setModified();
-
 	// Add side to new sector
+	beginModify();
 	sector_ = sector;
 	sector->connectSide(this);
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapSide::intProperty(string_view key)
+int MapSide::intProperty(string_view key) const
 {
 	if (key == PROP_SECTOR)
 	{
@@ -286,15 +395,12 @@ int MapSide::intProperty(string_view key)
 // -----------------------------------------------------------------------------
 void MapSide::setIntProperty(string_view key, int value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_SECTOR && parent_map_)
 		setSector(parent_map_->sector(value));
 	else if (key == PROP_OFFSETX)
-		tex_offset_.x = value;
+		setTexOffsetX(value);
 	else if (key == PROP_OFFSETY)
-		tex_offset_.y = value;
+		setTexOffsetY(value);
 	else
 		MapObject::setIntProperty(key, value);
 }
@@ -302,7 +408,7 @@ void MapSide::setIntProperty(string_view key, int value)
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-string MapSide::stringProperty(string_view key)
+string MapSide::stringProperty(string_view key) const
 {
 	if (key == PROP_TEXUPPER)
 		return tex_upper_;
@@ -319,15 +425,12 @@ string MapSide::stringProperty(string_view key)
 // -----------------------------------------------------------------------------
 void MapSide::setStringProperty(string_view key, string_view value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_TEXUPPER)
-		setTexUpper(value, false);
+		setTexUpper(value);
 	else if (key == PROP_TEXMIDDLE)
-		setTexMiddle(value, false);
+		setTexMiddle(value);
 	else if (key == PROP_TEXLOWER)
-		setTexLower(value, false);
+		setTexLower(value);
 	else
 		MapObject::setStringProperty(key, value);
 }
@@ -335,7 +438,7 @@ void MapSide::setStringProperty(string_view key, string_view value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapSide::scriptCanModifyProp(string_view key)
+bool MapSide::scriptCanModifyProp(string_view key) const
 {
 	return key != PROP_SECTOR;
 }

@@ -1,0 +1,172 @@
+// Doom 2 thing types
+{
+  "groups": [
+    {
+      "name": "Monsters",
+      "defaults": {
+        "colour": "rgb(200, 0, 0)",
+        "solid": true
+      },
+      "things": [
+        {
+          "type": 65,
+          "name": "Chaingunner",
+          "radius": 20,
+          "sprite": "CPOSA?"
+        },
+        {
+          "type": 69,
+          "name": "Hell Knight",
+          "radius": 24,
+          "sprite": "BOS2A?"
+        },
+        {
+          "type": 68,
+          "name": "Arachnotron",
+          "radius": 64,
+          "sprite": "BSPIA?"
+        },
+        {
+          "type": 71,
+          "name": "Pain Elemental",
+          "radius": 32,
+          "sprite": "PAINA?"
+        },
+        {
+          "type": 66,
+          "name": "Revenant",
+          "radius": 20,
+          "sprite": "SKELB?"
+        },
+        {
+          "type": 67,
+          "name": "Mancubus",
+          "radius": 48,
+          "sprite": "FATTC?"
+        },
+        {
+          "type": 64,
+          "name": "Arch-Vile",
+          "radius": 20,
+          "sprite": "VILEB?"
+        },
+        {
+          "type": 88,
+          "name": "Boss Brain",
+          "radius": 20,
+          "sprite": "BBRNA?"
+        },
+        {
+          "type": 89,
+          "name": "Boss Shooter",
+          "radius": 20,
+          "sprite": "BOSFC?"
+        },
+        {
+          "type": 87,
+          "name": "Boss Spawn Spot",
+          "radius": 20,
+          "colour": "rgb(255, 255, 0)",
+          "sprite": "BOSFB?"
+        },
+        {
+          "type": 72,
+          "name": "Hanging Keen",
+          "colour": "rgb(200, 200, 200)",
+          "radius": 16,
+          "sprite": "KEENA?",
+          "angle": false
+        },
+        {
+          "type": 84,
+          "name": "Wolfenstein 3D SS",
+          "radius": 20,
+          "sprite": "SSWVA?"
+        }
+      ]
+    },
+
+    {
+      "name": "Weapons",
+      "things": [
+        {
+          "type": 82,
+          "name": "Super Shotgun",
+          "radius": 20,
+          "colour": "rgb(220, 180, 100)",
+          "sprite": "SGN2A?",
+          "angle": false,
+          "icon": "weapon"
+        }
+      ]
+    },
+
+    {
+      "name": "Powerups",
+      "things": [
+        {
+          "type": 83,
+          "name": "Megasphere",
+          "radius": 16,
+          "colour": "rgb(220, 100, 220)",
+          "sprite": "MEGAA?",
+          "angle": false,
+          "icon": "powerup"
+        }
+      ]
+    },
+
+    {
+      "name": "Gore/Hanging & Impaled Bodies",
+      "defaults": {
+        "colour": "rgb(120, 0, 0)",
+        "radius": 16,
+        "angle": false,
+        "hanging": true,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 73, "name": "Hanging Body, Guts Removed", "sprite": "HDB1A?" },
+        { "type": 74, "name": "Hanging Body, Guts & Brain Removed", "sprite": "HDB2A?" },
+        { "type": 75, "name": "Hanging Torso, Looking Down", "sprite": "HDB3A?" },
+        { "type": 76, "name": "Hanging Torso, Open Skull", "sprite": "HDB4A?" },
+        { "type": 77, "name": "Hanging Torso, Looking Up", "sprite": "HDB5A?" },
+        { "type": 78, "name": "Hanging Torso, Brain Removed", "sprite": "HDB6A?" }
+      ]
+    },
+
+    {
+      "name": "Gore/Blood & Stuff",
+      "defaults": {
+        "colour": "rgb(160, 0, 0)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true
+      },
+      "things": [
+        { "type": 79, "name": "Pool Of Blood 2", "sprite": "POB1A?" },
+        { "type": 80, "name": "Pool Of Blood 3", "sprite": "POB2A?" },
+        { "type": 81, "name": "Pool Of Brains", "sprite": "BRS1A?" }
+      ]
+    },
+
+    {
+      "name": "Lighting",
+      "defaults": {
+        "colour": "rgb(220, 220, 200)",
+        "radius": 16,
+        "angle": false,
+        "icon": "light",
+        "fullbright": true,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 85, "name": "Tall Techno Lamp", "sprite": "TLMPA?" },
+        { "type": 86, "name": "Short Techno Lamp", "sprite": "TLP2A?" },
+        { "type": 70, "name": "Burning Barrel", "sprite": "FCANA?" }
+      ]
+    }
+  ]
+}

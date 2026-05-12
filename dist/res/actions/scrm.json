@@ -1,0 +1,82 @@
+{
+  "scrm_newscript_editor": {
+    "text": "New Editor Script",
+    "icon": "text",
+    "help_text": "Create a new Editor Script"
+  },
+  "scrm_run": {
+    "text": "&Run",
+    "icon": "run",
+    "help_text": "Run the current script",
+    "shortcut": "Ctrl+R"
+  },
+  "scrm_save": {
+    "text": "&Save",
+    "icon": "save",
+    "help_text": "Save the current script",
+    "shortcut": "Ctrl+S"
+  },
+  "scrm_rename": {
+    "text": "&Rename Script",
+    "icon": "rename",
+    "help_text": "Rename the selected script"
+  },
+  "scrm_delete": {
+    "text": "&Delete Script",
+    "icon": "delete",
+    "help_text": "Delete the selected script"
+  },
+  "scrm_showscripts": {
+    "text": "&Scripts",
+    "icon": "folder",
+    "help_text": "Toggle the Scripts window",
+    "shortcut": "Ctrl+1"
+  },
+  "scrm_showconsole": {
+    "text": "&Console",
+    "icon": "console",
+    "help_text": "Toggle the Console window",
+    "shortcut": "Ctrl+2"
+  },
+  "scrm_showdocs": {
+    "text": "SLADE Scripting &Documentation",
+    "icon": "wiki",
+    "help_text": "Open the SLADE Scripting Documentation page",
+    "shortcut": "F1"
+  },
+  "scrm_wrap": {
+    "text": "Word Wrapping",
+    "help_text": "Toggle word wrapping",
+    "type": "check",
+    "linked_cvar": "txed_word_wrap"
+  },
+  "scrm_find_replace": {
+    "text": "Find+Replace...",
+    "help_text": "Find and (optionally) replace text",
+    "shortcut": "kb:ted_findreplace"
+  },
+  "scrm_fold_foldall": {
+    "text": "Fold All",
+    "icon": "minus",
+    "help_text": "Fold all possible code",
+    "shortcut": "kb:ted_fold_foldall"
+  },
+  "scrm_fold_unfoldall": {
+    "text": "Unfold All",
+    "icon": "plus",
+    "help_text": "Unfold all folded code",
+    "shortcut": "kb:ted_fold_unfoldall"
+  },
+  "scrm_jump_to_line": {
+    "text": "Jump To Line...",
+    "icon": "up",
+    "help_text": "Jump to a specific line number",
+    "shortcut": "kb:ted_jumptoline"
+  },
+  "scrm_close": {
+    "text": "&Close",
+    "icon": "close",
+    "help_text": "Close the tab or window",
+    "shortcut": "Ctrl+W"
+  }
+}

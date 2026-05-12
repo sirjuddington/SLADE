@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Geometry/Rect.h"
-#include "Utility/ColRGBA.h"
 
 namespace slade
 {

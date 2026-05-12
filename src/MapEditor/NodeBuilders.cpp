@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,8 +36,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "Utility/Parser.h"
-#include "Utility/StringUtils.h"
+#include "Utility/FileUtils.h"
 
 using namespace slade;
 
@@ -77,56 +76,48 @@ void nodebuilders::init()
 
 	// Get nodebuilders configuration from slade.pk3
 	auto archive = app::archiveManager().programResourceArchive();
-	auto config  = archive->entryAtPath("config/nodebuilders.cfg");
+	auto config  = archive->entryAtPath("config/nodebuilders.json");
 	if (!config)
 		return;
 
 	// Parse it
-	Parser parser;
-	parser.parseText(config->data(), "nodebuilders.cfg");
-
-	// Get 'nodebuilders' block
-	auto root = parser.parseTreeRoot()->childPTN("nodebuilders");
-	if (!root)
-		return;
-
-	// Go through child block
-	for (unsigned a = 0; a < root->nChildren(); a++)
+	if (auto j = jsonutil::parse(config->data()); !j.is_discarded())
 	{
-		auto n_builder = root->childPTN(a);
-
-		// Parse builder block
-		Builder builder;
-		builder.id = n_builder->name();
-		for (unsigned b = 0; b < n_builder->nChildren(); b++)
+		for (auto& [id, j_builder] : j.items())
 		{
-			auto node = n_builder->childPTN(b);
+			Builder builder;
+			builder.id      = id;
+			builder.name    = j_builder["name"];
+			builder.command = j_builder["command"];
+			builder.exe     = j_builder["executable"];
 
-			// Option
-			if (strutil::equalCI(node->type(), "option"))
+			if (j_builder.contains("options"))
 			{
-				builder.options.push_back(node->name());
-				builder.option_desc.push_back(node->stringValue());
+				for (auto& option : j_builder["options"])
+				{
+					builder.options.push_back(option["parameter"]);
+					builder.option_desc.push_back(option["description"]);
+				}
 			}
 
-			// Builder name
-			else if (strutil::equalCI(node->name(), "name"))
-				builder.name = node->stringValue();
-
-			// Builder command
-			else if (strutil::equalCI(node->name(), "command"))
-				builder.command = node->stringValue();
-
-			// Builder executable
-			else if (strutil::equalCI(node->name(), "executable"))
-				builder.exe = node->stringValue();
+			builders.push_back(builder);
 		}
-		builders.push_back(builder);
 	}
 
 	// Set builder paths
 	for (unsigned a = 0; a < builder_paths.size(); a += 2)
 		builder(builder_paths[a]).path = builder_paths[a + 1];
+
+	// Try to find any builder executables not already set
+	for (auto& builder : builders)
+	{
+		if (builder.path.empty())
+		{
+			auto found_path = fileutil::findExecutable(builder.exe, "nodebuilders");
+			if (!found_path.empty())
+				builder.path = found_path;
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -139,18 +130,16 @@ void nodebuilders::addBuilderPath(string_view builder, string_view path)
 }
 
 // -----------------------------------------------------------------------------
-// Writes builder paths to [file]
+// Writes builder paths to [json]
 // -----------------------------------------------------------------------------
-void nodebuilders::saveBuilderPaths(wxFile& file)
+void nodebuilders::writeBuilderPaths(Json& json)
 {
-	file.Write("nodebuilder_paths\n{\n");
 	for (auto& builder : builders)
 	{
 		auto path = builder.path;
 		std::replace(path.begin(), path.end(), '\\', '/');
-		file.Write(wxString::Format("\t%s \"%s\"\n", builder.id, path), wxConvUTF8);
+		json["nodebuilder_paths"][builder.id] = path;
 	}
-	file.Write("}\n");
 }
 
 // -----------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,9 +33,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SectorList.h"
-#include "General/UI.h"
+
 #include "SLADEMap/MapObject/MapSector.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
+#include <algorithm>
 
 using namespace slade;
 
@@ -81,6 +83,11 @@ void SectorList::remove(unsigned index)
 	usage_tex_[strutil::upper(objects_[index]->ceiling().texture)] -= 1;
 
 	MapObjectList::remove(index);
+
+	// The last sector just moved into the deleted sector's space.  Its geometry didn't change, but
+	// because its index did, its vertices are completely invalid now
+	if (index < objects_.size())
+		objects_[index]->resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------
@@ -116,15 +123,11 @@ BBox SectorList::allSectorBounds() const
 	bbox = objects_[0]->boundingBox();
 	for (unsigned i = 1; i < count_; ++i)
 	{
-		auto sbb = objects_[i]->boundingBox();
-		if (sbb.min.x < bbox.min.x)
-			bbox.min.x = sbb.min.x;
-		if (sbb.min.y < bbox.min.y)
-			bbox.min.y = sbb.min.y;
-		if (sbb.max.x > bbox.max.x)
-			bbox.max.x = sbb.max.x;
-		if (sbb.max.y > bbox.max.y)
-			bbox.max.y = sbb.max.y;
+		auto sbb   = objects_[i]->boundingBox();
+		bbox.min.x = std::min(sbb.min.x, bbox.min.x);
+		bbox.min.y = std::min(sbb.min.y, bbox.min.y);
+		bbox.max.x = std::max(sbb.max.x, bbox.max.x);
+		bbox.max.y = std::max(sbb.max.y, bbox.max.y);
 	}
 
 	return bbox;
@@ -140,7 +143,8 @@ void SectorList::initPolygons() const
 	for (unsigned i = 0; i < count_; ++i)
 	{
 		ui::setSplashProgress(i, count_);
-		objects_[i]->polygon();
+		objects_[i]->resetGeometryInfo();
+		objects_[i]->polygonVertices();
 	}
 	ui::setSplashProgress(1.0f);
 }
@@ -160,7 +164,7 @@ void SectorList::initBBoxes() const
 void SectorList::putAllWithId(int id, vector<MapSector*>& list) const
 {
 	for (auto& sector : objects_)
-		if (sector->tag() == id)
+		if (sector->hasId(id))
 			list.push_back(sector);
 }
 
@@ -180,7 +184,7 @@ vector<MapSector*> SectorList::allWithId(int id) const
 MapSector* SectorList::firstWithId(int id) const
 {
 	for (auto& sector : objects_)
-		if (sector->tag() == id)
+		if (sector->hasId(id))
 			return sector;
 
 	return nullptr;
@@ -194,7 +198,7 @@ int SectorList::firstFreeId() const
 	int id = 1;
 	for (unsigned i = 0; i < count_; ++i)
 	{
-		if (objects_[i]->tag() == id)
+		if (objects_[i]->hasId(id))
 		{
 			id++;
 			i = 0;

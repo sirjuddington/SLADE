@@ -17,7 +17,8 @@ namespace maineditor
 		Text,
 		Palette,
 		Animated,
-		Switches
+		Switches,
+		ANSI
 	};
 
 	bool init();
@@ -31,7 +32,7 @@ namespace maineditor
 	ArchivePanel*         currentArchivePanel();
 	EntryPanel*           currentEntryPanel();
 
-	void openTextureEditor(const Archive* archive, const ArchiveEntry* entry = nullptr);
+	void openTextureEditor(const Archive* archive, ArchiveEntry* entry = nullptr);
 	void openMapEditor(Archive* archive);
 	void openArchiveTab(const Archive* archive);
 	void openEntry(ArchiveEntry* entry);

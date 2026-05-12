@@ -1,0 +1,103 @@
+{
+  "items": [
+    // Map
+    { "type": "action", "id": "mapw_save" },
+    { "type": "action", "id": "mapw_saveas" },
+    { "type": "action", "id": "mapw_preferences" },
+
+    { "type": "separator" },
+
+    // Run
+    { "type": "action", "id": "mapw_run_map" },
+    { "type": "action", "id": "mapw_quick_run_map" },
+
+    { "type": "separator" },
+
+    // Mode
+    { "type": "action", "id": "mapw_mode_vertices" },
+    { "type": "action", "id": "mapw_mode_lines" },
+    { "type": "action", "id": "mapw_mode_sectors" },
+    { "type": "action", "id": "mapw_mode_things" },
+    { "type": "action", "id": "mapw_mode_3d" },
+
+    { "type": "separator" },
+
+    // Sectors Mode
+    { "type": "action", "id": "mapw_sectormode_normal" },
+    { "type": "action", "id": "mapw_sectormode_floor" },
+    { "type": "action", "id": "mapw_sectormode_ceiling" },
+
+    { "type": "separator" },
+
+    // Display Options (2D)
+    { "type": "action", "id": "mapw_flat_none" },
+    { "type": "action", "id": "mapw_flat_untextured" },
+    { "type": "action", "id": "mapw_flat_textured" },
+
+    { "type": "separator" },
+
+    { "type": "action", "id": "mapw_thing_light_previews" },
+
+    { "type": "separator" },
+
+    // Edit (2D)
+    { "type": "action", "id": "mapw_draw_lines" },
+    { "type": "action", "id": "mapw_draw_shape" },
+    { "type": "action", "id": "mapw_edit_objects" },
+    { "type": "action", "id": "mapw_mirror_x" },
+    { "type": "action", "id": "mapw_mirror_y" },
+
+    { "type": "separator" },
+
+    // Display Options (3D)
+    { "type": "action", "id": "mapw_3d_toggle_highlight" },
+    { "type": "action", "id": "mapw_3d_toggle_fog" },
+    { "type": "action", "id": "mapw_3d_toggle_fullbright" },
+    { "type": "action", "id": "mapw_3d_toggle_point_lights" },
+
+    { "type": "separator" },
+
+    // Thing display options (3D)
+    {
+      "type": "action",
+      "id": "mapw_3d_toggle_things",
+      "menu": [ "mapw_3d_things_all", "mapw_3d_things_decoration" ]
+    },
+    {
+      "type": "action",
+      "id": "mapw_3d_toggle_thing_boxes",
+      "menu": [ "mapw_3d_thing_boxes_all", "mapw_3d_thing_boxes_solid" ]
+    },
+
+    { "type": "separator" },
+
+    { "type": "custom_control", "id": "view_distance", "label": "View Distance:" }
+  ],
+
+  "groups": [
+    {
+      "name": "display_2d",
+      "item_ids": [ "mapw_flat_none", "mapw_flat_untextured", "mapw_flat_textured", "mapw_thing_light_previews" ]
+    },
+    {
+      "name": "edit_2d",
+      "item_ids": [ "mapw_draw_lines", "mapw_draw_shape", "mapw_edit_objects", "mapw_mirror_x", "mapw_mirror_y" ]
+    },
+    {
+      "name": "sectors_mode",
+      "item_ids": [ "mapw_sectormode_normal", "mapw_sectormode_floor", "mapw_sectormode_ceiling" ]
+    },
+    {
+      "name": "display_3d",
+      "item_ids": [
+        "mapw_3d_toggle_highlight",
+        "mapw_3d_toggle_point_lights",
+        "mapw_3d_toggle_things",
+        "mapw_3d_toggle_thing_boxes",
+        "mapw_3d_toggle_fog",
+        "mapw_3d_toggle_fullbright" ,
+        "view_distance"
+      ]
+    }
+  ]
+}

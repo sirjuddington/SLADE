@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "BaseResourceWizardPage.h"
-#include "UI/Dialogs/Preferences/BaseResourceArchivesPanel.h"
+#include "UI/Settings/BaseResourceArchiveSettingsPanel.h"
 
 using namespace slade;
 
@@ -53,10 +53,11 @@ BaseResourceWizardPage::BaseResourceWizardPage(wxWindow* parent) : WizardPageBas
 	SetSizer(sizer);
 
 	// Add Base Resource Archive panel
-	bra_panel_ = new BaseResourceArchivesPanel(this);
-	bra_panel_->init();
+	bra_panel_ = new ui::BaseResourceArchiveSettingsPanel(this);
+	bra_panel_->loadSettings();
 	bra_panel_->autodetect();
 	sizer->Add(bra_panel_, wxSizerFlags(1).Expand());
+	bra_panel_->Show();
 }
 
 // -----------------------------------------------------------------------------
@@ -64,13 +65,13 @@ BaseResourceWizardPage::BaseResourceWizardPage(wxWindow* parent) : WizardPageBas
 // -----------------------------------------------------------------------------
 void BaseResourceWizardPage::applyChanges()
 {
-	bra_panel_->applyPreferences();
+	bra_panel_->applySettings();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the description for the wizard page
 // -----------------------------------------------------------------------------
-wxString BaseResourceWizardPage::description()
+string BaseResourceWizardPage::description()
 {
 	return "Add 'Base Resource' archives to the list. "
 		   "These can be selected from the dropdown in the toolbar, and will be used as a base (eg. IWAD) for editing. "

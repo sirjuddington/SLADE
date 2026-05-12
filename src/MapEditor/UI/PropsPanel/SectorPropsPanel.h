@@ -5,11 +5,11 @@
 
 namespace slade
 {
+class FlatComboBox;
 class SectorSpecialPanel;
 class MapObjectPropsPanel;
 class NumberTextCtrl;
 class FlatTexCanvas;
-class FlatComboBox;
 
 class SectorPropsPanel : public PropsPanelBase
 {

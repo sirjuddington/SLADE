@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,8 +34,9 @@
 #include "SpecialPresetDialog.h"
 #include "Game/Configuration.h"
 #include "Game/SpecialPreset.h"
-#include "General/UI.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -98,8 +99,8 @@ public:
 
 		// 64 is an arbitrary fudge factor -- should be at least the width of a
 		// scrollbar plus the expand icons plus any extra padding
-		int min_width = textsize.GetWidth() + GetIndent() + ui::scalePx(64);
-		wxWindowBase::SetMinSize(wxSize(min_width, ui::scalePx(200)));
+		int min_width = textsize.GetWidth() + GetIndent() + 64;
+		wxWindowBase::SetMinSize(FromDIP(wxSize(min_width, 200)));
 	}
 
 	game::SpecialPreset selectedPreset() const
@@ -120,13 +121,13 @@ private:
 
 	struct Group
 	{
-		wxString       name;
+		string         name;
 		wxDataViewItem item;
-		Group(wxDataViewItem item, const wxString& name) : name{ name }, item{ item } {}
+		Group(wxDataViewItem item, const string& name) : name{ name }, item{ item } {}
 	};
 	vector<Group> groups_;
 
-	wxDataViewItem getGroup(const wxString& group)
+	wxDataViewItem getGroup(const string& group)
 	{
 		// Check if group was already made
 		for (auto& g : groups_)
@@ -136,11 +137,11 @@ private:
 		}
 
 		// Split group into subgroups
-		auto path = wxSplit(group, '/');
+		auto path = strutil::splitV(group, '/');
 
 		// Create group needed
-		auto     current  = root_;
-		wxString fullpath = "";
+		auto   current = root_;
+		string fullpath;
 		for (unsigned p = 0; p < path.size(); p++)
 		{
 			if (p > 0)
@@ -160,7 +161,7 @@ private:
 
 			if (!found)
 			{
-				current = AppendContainer(current, path[p], -1, 1);
+				current = AppendContainer(current, wxutil::strFromView(path[p]));
 				groups_.emplace_back(current, fullpath);
 			}
 		}
@@ -172,9 +173,9 @@ private:
 	{
 		for (auto& preset : presets)
 		{
-			auto item = AppendItem(getGroup(preset.group), preset.name);
+			auto item = AppendItem(getGroup(preset.group), wxString::FromUTF8(preset.name));
 			SetItemData(item, new SpecialPresetData(preset));
-			textsize.IncTo(dc.GetTextExtent(preset.name));
+			textsize.IncTo(dc.GetTextExtent(wxString::FromUTF8(preset.name)));
 		}
 	}
 };
@@ -193,26 +194,30 @@ private:
 // -----------------------------------------------------------------------------
 SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "Special Presets", "special_presets" }
 {
+	auto lh    = ui::LayoutHelper(this);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Presets tree
 	tree_presets_ = new SpecialPresetTreeView(this);
 	tree_presets_->setParentDialog(this);
-	sizer->Add(tree_presets_, wxutil::sfWithLargeBorder(1).Expand());
+	sizer->Add(tree_presets_, lh.sfWithLargeBorder(1).Expand());
 
 	// OK button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	hbox->AddStretchSpacer(1);
-	auto btn_ok = new wxButton(this, -1, "OK");
-	hbox->Add(btn_ok, wxutil::sfWithBorder(0, wxRIGHT).Expand());
+	auto btn_ok = new wxButton(this, -1, wxS("OK"));
+	hbox->Add(btn_ok, lh.sfWithBorder(0, wxRIGHT).Expand());
 	btn_ok->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_OK); });
 
 	// Cancel button
-	auto btn_cancel = new wxButton(this, -1, "Cancel");
+	auto btn_cancel = new wxButton(this, -1, wxS("Cancel"));
 	hbox->Add(btn_cancel, wxSizerFlags().Expand());
 	btn_cancel->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_CANCEL); });
+
+	wxWindowBase::SetMinClientSize(sizer->GetMinSize());
+	CenterOnParent();
 }
 
 // -----------------------------------------------------------------------------

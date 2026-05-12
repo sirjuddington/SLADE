@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -254,7 +254,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 				// If no second value, it's just a colour string
 				if (!tz.checkNext(","))
 				{
-					col.Set(first);
+					col.Set(wxString::FromUTF8(first));
 					colour_.set(col);
 				}
 				else
@@ -266,7 +266,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 					// If no third value, it's an alpha value
 					if (!tz.checkNext(","))
 					{
-						col.Set(first);
+						col.Set(wxString::FromUTF8(first));
 						colour_.set(col);
 						colour_.a  = static_cast<uint8_t>(second * 255.0);
 						blendtype_ = BlendType::Tint;
@@ -344,7 +344,7 @@ string CTPatchEx::asText()
 	if (blendtype_ == BlendType::Blend || blendtype_ == BlendType::Tint)
 	{
 		wxColour col(colour_.r, colour_.g, colour_.b);
-		text += fmt::format("\t\tBlend \"{}\"", col.GetAsString(wxC2S_HTML_SYNTAX).ToStdString());
+		text += fmt::format("\t\tBlend \"{}\"", col.GetAsString(wxC2S_HTML_SYNTAX).utf8_string());
 
 		if (blendtype_ == BlendType::Tint)
 			text += fmt::format(", {:1.1f}\n", static_cast<double>(colour_.a) / 255.0);
@@ -432,6 +432,24 @@ void CTexture::copyTexture(const CTexture& tex, bool keep_type)
 		else
 			addPatch(patch->name(), patch->xOffset(), patch->yOffset());
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns the texture's scale as a multiplication factor
+// -----------------------------------------------------------------------------
+Vec2d CTexture::scaleFactor() const
+{
+	Vec2d scale = scale_;
+	if (scale.x == 0.0)
+		scale.x = 1.0;
+	else
+		scale.x = 1.0 / scale.x;
+	if (scale.y == 0.0)
+		scale.y = 1.0;
+	else
+		scale.y = 1.0 / scale.y;
+
+	return scale;
 }
 
 // -----------------------------------------------------------------------------
@@ -856,8 +874,24 @@ bool CTexture::convertRegular()
 // Generates a SImage representation of this texture, using patches from
 // [parent] primarily, and the palette [pal]
 // -----------------------------------------------------------------------------
-bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_rgba)
+bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool force_rgba, bool offsets)
 {
+	// Limit recursion to fix circular references causing a crash
+	static int recursion_depth = 0;
+	if (recursion_depth > 8)
+	{
+		log::warning(
+			"Maximum recursion depth reached when generating image for texture '{}' (probable circular reference)",
+			name_);
+		return false;
+	}
+	recursion_depth++;
+	struct RecursionGuard // Ensure recursion_depth is decreased on function exit
+	{
+		~RecursionGuard() { recursion_depth--; }
+	} guard;
+
+
 	// Init image
 	image.clear();
 	image.resize(size_.x, size_.y);
@@ -971,6 +1005,10 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 		}
 	}
 
+	// Apply offsets if needed
+	if (offsets && extended_)
+		image.setOffsets({ offset_.x, offset_.y });
+
 	return true;
 }
 
@@ -978,7 +1016,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 // Loads the image for the patch at [pindex] into [image].
 // Can deal with textures-as-patches
 // -----------------------------------------------------------------------------
-bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette* pal, bool force_rgba) const
+bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, const Palette* pal, bool force_rgba)
+	const
 {
 	// Check patch index
 	if (pindex >= patches_.size())
@@ -1005,7 +1044,8 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 				if (strutil::equalCI(tex->name(), patch->name()))
 				{
 					// Load texture to image
-					return tex->toImage(image, parent, pal, force_rgba);
+					if (tex->toImage(image, parent, pal, force_rgba))
+						return true;
 				}
 			}
 		}
@@ -1013,22 +1053,22 @@ bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, P
 		// Otherwise, try the resource manager
 		// TODO: Something has to be ignored here. The entire archive or just the current list?
 		auto* tex = app::resources().getTexture(patch->name(), "", parent);
-		if (tex)
-			return tex->toImage(image, parent, pal, force_rgba);
+		if (tex && tex->toImage(image, parent, pal, force_rgba))
+			return true;
 	}
 
 	// Get patch entry
 	auto* entry = patch->patchEntry(parent);
 
 	// Load entry to image if valid
-	if (entry)
-		return misc::loadImageFromEntry(&image, entry);
+	if (entry && misc::loadImageFromEntry(&image, entry))
+		return true;
 
 	// Maybe it's a texture?
 	entry = app::resources().getTextureEntry(patch->name(), "", parent);
 
-	if (entry)
-		return misc::loadImageFromEntry(&image, entry);
+	if (entry && misc::loadImageFromEntry(&image, entry))
+		return true;
 
 	return false;
 }

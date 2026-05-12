@@ -1,0 +1,218 @@
+// Heretic+Hexen port thing types
+{
+  "heretic": {
+    "groups": [
+      {
+        "name": "Monsters",
+        "defaults": {
+          "colour": "rgb(200, 0, 0)"
+        },
+        "things": [
+          {
+            "type": 3103,
+            "name": "Chaos Serpent",
+            "radius": 32,
+            "height": 64,
+            "sprite": "DEMNA1"
+          },
+          {
+            "type": 3101,
+            "name": "Draugr",
+            "radius": 16,
+            "height": 62,
+            "sprite": "MUM2A1"
+          },
+          {
+            "type": 3102,
+            "name": "Troll",
+            "radius": 24,
+            "height": 62,
+            "sprite": "TROLA1"
+          }
+        ]
+      },
+
+      {
+        "name": "Weapons",
+        "defaults": {
+          "colour": "rgb(220, 180, 100)"
+        },
+        "things": [
+          {
+            "type": 3104,
+            "name": "Tempest Wand",
+            "sprite": "WSWNA0"
+          }
+        ]
+      }
+    ]
+  },
+
+  "hexen": {
+    "groups": [
+      {
+        "name": "Puzzle Items",
+        "defaults": {
+          "angle": false,
+          "colour": "rgb(114, 54, 0)"
+        },
+        "things": [
+          { "type": 3117, "name": "Dragon Crest", "sprite": "ARTIACRD" },
+          { "type": 3118, "name": "Wolf Crest", "sprite": "ARTIACRW" },
+          { "type": 3119, "name": "Griffin Crest", "sprite": "ARTIACRG" },
+          { "type": 3120, "name": "Death Mask", "sprite": "ARTIAMSI" },
+          { "type": 3121, "name": "Fetid Mask", "sprite": "ARTIAMSS" },
+          { "type": 3122, "name": "Coiled Chalice", "sprite": "ARTIACH1" },
+          { "type": 3123, "name": "Gilded Chalice", "sprite": "ARTIACH2" },
+          { "type": 3124, "name": "Earthen Chalice", "sprite": "ARTIACH3" },
+          { "type": 3125, "name": "Molten Chalice", "sprite": "ARTIACH4" },
+          { "type": 3126, "name": "Rimed Chalice", "sprite": "ARTIACH5" },
+          { "type": 3127, "name": "Skull Idol", "sprite": "ARTIAID1" },
+          { "type": 3128, "name": "Demon Idol", "sprite": "ARTIAID2" },
+          { "type": 3129, "name": "Dragon Idol", "sprite": "ARTIAID3" },
+          { "type": 3130, "name": "Lurid Atlas", "sprite": "ARTIBOK3" },
+          { "type": 3131, "name": "Malum Vulgata", "sprite": "ARTIBOK4" }
+        ]
+      },
+
+      {
+        "name": "Scripted Objects",
+        "defaults": {
+          "icon": "spot",
+          "angle": false,
+          "colour": "rgb(114, 54, 0)"
+        },
+        "things": [
+          {
+            "type": 3222,
+            "name": "Coiled Pedestal",
+            "sprite": "PCH1A?",
+            "radius": 12,
+            "height": 24
+          },
+          {
+            "type": 3223,
+            "name": "Gilded Pedestal",
+            "sprite": "PCH2A?",
+            "radius": 12,
+            "height": 24
+          },
+          {
+            "type": 3224,
+            "name": "Earthen Pedestal",
+            "sprite": "PCH3A?",
+            "radius": 12,
+            "height": 24
+          },
+          {
+            "type": 3225,
+            "name": "Molten Pedestal",
+            "sprite": "PCH4A?",
+            "radius": 12,
+            "height": 24
+          },
+          {
+            "type": 3226,
+            "name": "Rimed Pedestal",
+            "sprite": "PCH5A?",
+            "radius": 12,
+            "height": 24
+          },
+          {
+            "type": 3227,
+            "name": "Skull Pedestal",
+            "sprite": "PID1A?",
+            "radius": 10,
+            "height": 40
+          },
+          {
+            "type": 3228,
+            "name": "Demon Pedestal",
+            "sprite": "PID2A?",
+            "radius": 10,
+            "height": 40
+          },
+          {
+            "type": 3229,
+            "name": "Dragon Pedestal",
+            "sprite": "PID3A?",
+            "radius": 10,
+            "height": 40
+          },
+          {
+            "type": 112,
+            "name": "Little Fly",
+            "sprite": "AFLYA?"
+          },
+          {
+            "type": 3104,
+            "name": "Hexen Chronicles",
+            "sprite": "CRONA?",
+            "radius": 10,
+            "height": 40
+          }
+        ]
+      },
+
+      {
+        "name": "Decorations/Dungeon",
+        "defaults": { "angle": false },
+        "things": [
+          {
+            "type": 3105,
+            "name": "Blood Fountain",
+            "sprite": "BLFNA?",
+            "radius": 40,
+            "height": 60
+          }
+        ]
+      },
+
+      {
+        "name": "Decorations/Plants",
+        "defaults": {
+          "angle": false,
+          "colour": "rgb(80, 160, 80)"
+        },
+        "things": [
+          {
+            "type": 3101,
+            "name": "Lush Evergreen Tree",
+            "sprite": "XMS2A?",
+            "radius": 11
+          },
+          {
+            "type": 3102,
+            "name": "Lush Shrub",
+            "sprite": "SHB3A?",
+            "radius": 8
+          },
+          {
+            "type": 3103,
+            "name": "Lush Shrub 2",
+            "sprite": "SHB4A?",
+            "radius": 16
+          }
+        ]
+      },
+
+      {
+        "name": "Decorations/Special Effects/Map Spots",
+        "defaults": {
+          "angle": false,
+          "colour": "rgb(120, 120, 200)",
+          "icon": "spot",
+          "shrink": true
+        },
+        "things": [
+          {
+            "type": 3200,
+            "name": "Map Marker",
+            "sprite": "MARKA?"
+          },
+          { "type": 3300, "name": "Teleport Other Spot" }
+        ]
+      }
+    ]
+  }
+}

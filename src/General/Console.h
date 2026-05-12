@@ -7,9 +7,9 @@ class ConsoleCommand
 public:
 	ConsoleCommand(
 		string_view name,
-		void        (*command_func)(const vector<string>&),
-		int         min_args,
-		bool        show_in_list = true);
+		void (*command_func)(const vector<string>&),
+		int  min_args,
+		bool show_in_list = true);
 	~ConsoleCommand() = default;
 
 	string name() const { return name_; }
@@ -22,7 +22,7 @@ public:
 
 private:
 	string name_;
-	void   (*command_func_)(const vector<string>&);
+	void (*command_func_)(const vector<string>&);
 	size_t min_args_;
 	bool   show_in_list_;
 };
@@ -42,6 +42,8 @@ public:
 	string prevCommand(int index);
 	int    numPrevCommands() const { return cmd_log_.size(); }
 
+	static Console& instance();
+
 private:
 	vector<ConsoleCommand> commands_;
 	vector<string>         cmd_log_;
@@ -50,6 +52,6 @@ private:
 
 // Define for neat console command definitions
 #define CONSOLE_COMMAND(name, min_args, show_in_list)              \
-	void           c_##name(const vector<string>& args);           \
-	ConsoleCommand name(#name, &c_##name, min_args, show_in_list); \
-	void           c_##name(const vector<string>& args)
+	void           cc_##name(const vector<string>& args);           \
+	ConsoleCommand name(#name, &cc_##name, min_args, show_in_list); \
+	void           cc_##name(const vector<string>& args)

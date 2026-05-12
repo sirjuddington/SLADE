@@ -54,26 +54,30 @@ namespace strutil
 
 	// String transformations
 	// IP = In-Place
-	string  escapedString(string_view str, bool swap_backslash = false, bool escape_backslash = true);
-	string& replaceIP(string& str, string_view from, string_view to);
-	string  replace(string_view str, string_view from, string_view to);
-	string& replaceFirstIP(string& str, string_view from, string_view to);
-	string  replaceFirst(string_view str, string_view from, string_view to);
-	string& lowerIP(string& str);
-	string& upperIP(string& str);
-	string  lower(string_view str);
-	string  upper(string_view str);
-	string& ltrimIP(string& str);
-	string& rtrimIP(string& str);
-	string& trimIP(string& str);
-	string  ltrim(string_view str);
-	string  rtrim(string_view str);
-	string  trim(string_view str);
-	string& capitalizeIP(string& str);
-	string  capitalize(string_view str);
-	string  wildcardToRegex(string_view str);
-	string  prepend(string_view str, string_view prefix);
-	string& prependIP(string& str, string_view prefix);
+	string      escapedString(string_view str, bool swap_backslash = false, bool escape_backslash = true);
+	string&     replaceIP(string& str, string_view from, string_view to);
+	string      replace(string_view str, string_view from, string_view to);
+	string&     replaceFirstIP(string& str, string_view from, string_view to);
+	string      replaceFirst(string_view str, string_view from, string_view to);
+	string&     lowerIP(string& str);
+	string&     upperIP(string& str);
+	string      lower(string_view str);
+	string      upper(string_view str);
+	string&     ltrimIP(string& str);
+	string&     rtrimIP(string& str);
+	string&     trimIP(string& str);
+	string      ltrim(string_view str);
+	string      rtrim(string_view str);
+	string      trim(string_view str);
+	string_view ltrimV(string_view str);
+	string_view rtrimV(string_view str);
+	string_view trimV(string_view str);
+	string&     capitalizeIP(string& str);
+	string      capitalize(string_view str);
+	string      wildcardToRegex(string_view str);
+	string      prepend(string_view str, string_view prefix);
+	string&     prependIP(string& str, string_view prefix);
+	string      surround(string_view str, string_view with);
 
 	// Substrings
 	string              left(string_view str, unsigned n);
@@ -81,15 +85,23 @@ namespace strutil
 	string              right(string_view str, unsigned n);
 	string_view         rightV(string_view str, unsigned n);
 	string              afterLast(string_view str, char chr);
+	string              afterLast(string_view str, string_view token);
 	string_view         afterLastV(string_view str, char chr);
+	string_view         afterLastV(string_view str, string_view token);
 	string              afterFirst(string_view str, char chr);
+	string              afterFirst(string_view str, string_view token);
 	string_view         afterFirstV(string_view str, char chr);
+	string_view         afterFirstV(string_view str, string_view token);
 	string              beforeLast(string_view str, char chr);
+	string              beforeLast(string_view str, string_view token);
 	string_view         beforeLastV(string_view str, char chr);
+	string_view         beforeLastV(string_view str, string_view token);
 	string              beforeFirst(string_view str, char chr);
+	string              beforeFirst(string_view str, string_view token);
 	string_view         beforeFirstV(string_view str, char chr);
-	vector<string>      split(string_view str, char separator);
-	vector<string_view> splitV(string_view str, char separator);
+	string_view         beforeFirstV(string_view str, string_view token);
+	vector<string>      split(string_view str, char separator, bool skip_duplicates = false);
+	vector<string_view> splitV(string_view str, char separator, bool skip_duplicates = false);
 	string              truncate(string_view str, unsigned length);
 	string&             truncateIP(string& str, unsigned length);
 	string              removeLast(string_view str, unsigned n);
@@ -100,8 +112,9 @@ namespace strutil
 	string&             removeSuffixIP(string& str, char suffix);
 
 	// Misc
-	void processIncludes(const string& filename, string& out);
-	void processIncludes(const ArchiveEntry* entry, string& out, bool use_res = true);
+	void   processIncludes(const string& filename, string& out);
+	void   processIncludes(const ArchiveEntry* entry, string& out, bool use_res = true);
+	string join(const vector<string>& strings, string_view separator);
 
 	// Conversion
 	int         asInt(string_view str, int base = 10);
@@ -116,19 +129,9 @@ namespace strutil
 	string      toString(string_view str);
 	string_view viewFromChars(const char* chars, unsigned max_length);
 
-	// Joins all given args into a single string
-	template<typename... Args> string join(const Args&... args)
-	{
-		std::ostringstream stream;
-
-		int a[] = { 0, ((void)(stream << args), 0)... };
-
-		return stream.str();
-	}
-
 	// Encoding
-	string toUTF8(string_view str);
-	string fromUTF8(string_view str);
+	// string toUTF8(string_view str);
+	// string fromUTF8(string_view str);
 
 	// Path class
 	class Path
@@ -143,6 +146,7 @@ namespace strutil
 		string_view         extension() const;
 		vector<string_view> pathParts() const;
 		bool                hasExtension() const;
+		bool                extensionIs(string_view ext) const;
 
 		void set(string_view full_path);
 		void setPath(string_view path);
@@ -169,7 +173,7 @@ namespace strutil
 		string str;
 
 		Transformer(string_view init) : str{ init } {}
-		Transformer(const wxString& init) : str{ init.data(), init.size() } {}
+		Transformer(const wxString& init) : str{ init.utf8_string() } {}
 
 		// Case
 		Transformer& upper()
@@ -252,19 +256,19 @@ namespace strutil
 namespace wxStringUtils
 {
 	// Static common strings
-	static wxString FULLSTOP             = ".";
-	static wxString COMMA                = ",";
-	static wxString COLON                = ":";
-	static wxString SEMICOLON            = ";";
-	static wxString SLASH_FORWARD        = "/";
-	static wxString SLASH_BACK           = "\\";
-	static wxString QUOTE_SINGLE         = "'";
-	static wxString QUOTE_DOUBLE         = "\"";
-	static wxString CARET                = "^";
-	static wxString ESCAPED_QUOTE_DOUBLE = "\\\"";
-	static wxString ESCAPED_SLASH_BACK   = "\\\\";
-	static wxString CURLYBRACE_OPEN      = "{";
-	static wxString CURLYBRACE_CLOSE     = "}";
+	static wxString FULLSTOP             = wxS(".");
+	static wxString COMMA                = wxS(",");
+	static wxString COLON                = wxS(":");
+	static wxString SEMICOLON            = wxS(";");
+	static wxString SLASH_FORWARD        = wxS("/");
+	static wxString SLASH_BACK           = wxS("\\");
+	static wxString QUOTE_SINGLE         = wxS("'");
+	static wxString QUOTE_DOUBLE         = wxS("\"");
+	static wxString CARET                = wxS("^");
+	static wxString ESCAPED_QUOTE_DOUBLE = wxS("\\\"");
+	static wxString ESCAPED_SLASH_BACK   = wxS("\\\\");
+	static wxString CURLYBRACE_OPEN      = wxS("{");
+	static wxString CURLYBRACE_CLOSE     = wxS("}");
 
 	wxString escapedString(const wxString& str, bool swap_backslash = false);
 

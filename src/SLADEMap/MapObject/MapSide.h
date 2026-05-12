@@ -6,10 +6,6 @@ namespace slade
 {
 class MapSide : public MapObject
 {
-	friend class SLADEMap;
-	friend class MapLine;
-	friend class SideList;
-
 public:
 	inline static const string TEX_NONE = "-";
 
@@ -37,15 +33,21 @@ public:
 
 	MapSector*    sector() const { return sector_; }
 	MapLine*      parentLine() const { return parent_; }
+	bool          isFrontSide() const;
+	MapVertex*    startVertex() const;
+	MapVertex*    endVertex() const;
 	const string& texUpper() const { return tex_upper_; }
 	const string& texMiddle() const { return tex_middle_; }
 	const string& texLower() const { return tex_lower_; }
 	short         texOffsetX() const { return tex_offset_.x; }
 	short         texOffsetY() const { return tex_offset_.y; }
 	Vec2i         texOffset() const { return tex_offset_; }
-	uint8_t       light();
+	Vec2d         texOffset(map::SidePart part) const;
+	Vec2d         texScale(map::SidePart part) const;
+	uint8_t       light() const;
 
 	void setSector(MapSector* sector);
+	void setParent(MapLine* parent) { parent_ = parent; }
 	void changeLight(int amount);
 	void setTexUpper(string_view tex, bool modify = true);
 	void setTexMiddle(string_view tex, bool modify = true);
@@ -53,11 +55,11 @@ public:
 	void setTexOffsetX(int offset);
 	void setTexOffsetY(int offset);
 
-	int    intProperty(string_view key) override;
+	int    intProperty(string_view key) const override;
 	void   setIntProperty(string_view key, int value) override;
-	string stringProperty(string_view key) override;
+	string stringProperty(string_view key) const override;
 	void   setStringProperty(string_view key, string_view value) override;
-	bool   scriptCanModifyProp(string_view key) override;
+	bool   scriptCanModifyProp(string_view key) const override;
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;

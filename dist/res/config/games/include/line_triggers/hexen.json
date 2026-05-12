@@ -1,0 +1,10 @@
+{
+  "flags": [
+    { "value": 0, "name": "Player Cross", "udmf": [ "playercross" ] },
+    { "value": 1, "name": "Player Use", "udmf": [ "playeruse" ] },
+    { "value": 2, "name": "Monster Cross", "udmf": [ "monstercross" ] },
+    { "value": 3, "name": "Attack Hit", "udmf": [ "impact" ] },
+    { "value": 4, "name": "Player Bump", "udmf": [ "playerpush" ] },
+    { "value": 5, "name": "Missile Cross", "udmf": [ "missilecross" ] }
+  ]
+}

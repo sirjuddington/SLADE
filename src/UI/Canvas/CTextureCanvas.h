@@ -1,91 +1,45 @@
 #pragma once
 
-#include "OGLCanvas.h"
-
-wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);
+#include "CTextureCanvasBase.h"
+#include "Canvas.h"
+#include "OpenGL/View.h"
 
 namespace slade
 {
-class CTexture;
-namespace ui
+namespace wxgfx
 {
-	class ZoomControl;
+	struct Context;
 }
 
-class CTextureCanvas : public OGLCanvas
+class CTextureCanvas : public ui::Canvas, public CTextureCanvasBase
 {
 public:
-	enum class View
-	{
-		Normal,
-		Sprite,
-		HUD
-	};
+	CTextureCanvas(wxWindow* parent);
+	~CTextureCanvas() override;
 
-	CTextureCanvas(wxWindow* parent, int id);
-	~CTextureCanvas() override = default;
+	wxWindow* window() override { return this; }
 
-	CTexture* texture() const { return texture_; }
-	View      viewType() const { return view_type_; }
-	void      setScale(double scale) { scale_ = scale; }
-	void      setViewType(View type) { view_type_ = type; }
-	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
-	Vec2i     mousePrevPos() const { return mouse_prev_; }
-	bool      isDragging() const { return dragging_; }
-	bool      showGrid() const { return show_grid_; }
-	void      showGrid(bool show = true) { show_grid_ = show; }
-	void      setBlendRGBA(bool rgba) { blend_rgba_ = rgba; }
-	bool      blendRGBA() const { return blend_rgba_; }
-	bool      applyTexScale() const { return tex_scale_; }
-	void      applyTexScale(bool apply) { tex_scale_ = apply; }
+	gl::View&       view() override { return view_; }
+	const gl::View& view() const override { return view_; }
 
-	void selectPatch(int index);
-	void deSelectPatch(int index);
-	bool patchSelected(int index);
+	Palette* palette() override { return palette_.get(); }
+	void     setPalette(const Palette* pal) override;
 
-	void clearTexture();
-	void clearPatchTextures();
-	void updatePatchTextures();
-	void updateTexturePreview();
-	bool openTexture(CTexture* tex, Archive* parent);
-	void draw() override;
-	void drawTexture();
-	void drawPatch(int num, bool outside = false);
-	void drawTextureBorder() const;
-	void drawOffsetLines() const;
-	void resetOffsets() { offset_.x = offset_.y = 0; }
-	void redraw(bool update_tex = false);
-
-	Vec2i screenToTexPosition(int x, int y) const;
-	Vec2i texToScreenPosition(int x, int y) const;
-	int   patchAt(int x, int y) const;
-
-	bool swapPatches(size_t p1, size_t p2);
-
-	void linkZoomControl(ui::ZoomControl* zoom_control) { linked_zoom_control_ = zoom_control; }
+	void refreshPatch(unsigned index) override;
 
 private:
-	CTexture*        texture_ = nullptr;
-	Archive*         parent_  = nullptr;
-	vector<unsigned> patch_textures_;
-	unsigned         tex_preview_ = 0;
-	vector<bool>     selected_patches_;
-	int              hilight_patch_ = -1;
-	Vec2d            offset_;
-	Vec2i            mouse_prev_;
-	double           scale_               = 1.;
-	bool             draw_outside_        = true;
-	bool             dragging_            = false;
-	bool             show_grid_           = false;
-	bool             blend_rgba_          = false;
-	bool             tex_scale_           = false;
-	View             view_type_           = View::Normal;
-	ui::ZoomControl* linked_zoom_control_ = nullptr;
+	unique_ptr<Palette> palette_;
+	gl::View            view_;
 
-	// Signal connections
-	sigslot::scoped_connection sc_patches_modified_;
+	vector<wxBitmap> patch_bitmaps_;
+	wxBitmap         background_bitmap_;
+	wxBitmap         tex_bitmap_;
+
+	void drawTexture(wxgfx::Context& ctx, Vec2d scale, Vec2i offset, bool draw_patches);
+	void drawTextureBorder(wxgfx::Context& ctx, Vec2d scale, Vec2i offset) const;
+	void drawPatch(const wxgfx::Context& ctx, int index);
 
 	// Events
-	void onMouseEvent(wxMouseEvent& e);
+	void onPaint(wxPaintEvent& e);
 };
 } // namespace slade

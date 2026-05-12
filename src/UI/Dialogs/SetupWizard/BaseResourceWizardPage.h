@@ -4,19 +4,23 @@
 
 namespace slade
 {
-class BaseResourceArchivesPanel;
+namespace ui
+{
+	class BaseResourceArchiveSettingsPanel;
+}
+
 class BaseResourceWizardPage : public WizardPageBase
 {
 public:
 	BaseResourceWizardPage(wxWindow* parent);
 	~BaseResourceWizardPage() override = default;
 
-	bool     canGoNext() override { return true; }
-	void     applyChanges() override;
-	wxString title() override { return "Base Resource Archives"; }
-	wxString description() override;
+	bool   canGoNext() override { return true; }
+	void   applyChanges() override;
+	string title() override { return "Base Resource Archives"; }
+	string description() override;
 
 private:
-	BaseResourceArchivesPanel* bra_panel_ = nullptr;
+	ui::BaseResourceArchiveSettingsPanel* bra_panel_ = nullptr;
 };
 } // namespace slade

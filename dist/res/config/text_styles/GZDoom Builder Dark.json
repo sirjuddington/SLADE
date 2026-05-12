@@ -1,0 +1,82 @@
+{
+  "name": "GZDoom Builder Dark",
+  "default": {
+    "background": "rgb(34, 40, 42)",
+    "bold": false,
+    "font": "Courier New",
+    "foreground": "rgb(241, 242, 243)",
+    "italic": false,
+    "size": 10,
+    "underlined": false
+  },
+  "selection": {
+    "background": "rgb(71, 71, 71)",
+    "foreground": "rgb(255, 255, 255)"
+  },
+  "preprocessor": {
+    "foreground": "rgb(160, 130, 189)"
+  },
+  "comment": {
+    "foreground": "rgb(102, 116, 123)"
+  },
+  "comment_doc": {
+    "foreground": "rgb(102, 116, 123)"
+  },
+  "string": {
+    "foreground": "rgb(236, 118, 0)"
+  },
+  "character": {
+    "foreground": "rgb(236, 118, 0)"
+  },
+  "keyword": {
+    "foreground": "rgb(135, 206, 250)"
+  },
+  "constant": {
+    "foreground": "rgb(147, 199, 99)"
+  },
+  "type": {
+    "foreground": "rgb(135, 206, 250)"
+  },
+  "property": {
+    "foreground": "rgb(135, 206, 250)"
+  },
+  "function": {
+    "foreground": "rgb(103, 140, 177)"
+  },
+  "number": {
+    "foreground": "rgb(255, 205, 34)"
+  },
+  "operator": {
+    "foreground": "rgb(241, 242, 243)"
+  },
+  "bracematch": {
+    "background": "rgb(135, 211, 85)",
+    "foreground": "rgb(241, 242, 243)"
+  },
+  "bracebad": {
+    "background": "rgb(150, 58, 70)",
+    "foreground": "rgb(241, 242, 243)"
+  },
+  "linenum": {
+    "background": "rgb(34, 40, 42)",
+    "foreground": "rgb(63, 78, 73)"
+  },
+  "calltip": {
+    "background": "rgb(255, 255, 255)",
+    "foreground": "rgb(60, 60, 60)"
+  },
+  "calltip_hl": {
+    "foreground": "rgb(0, 0, 160)"
+  },
+  "foldmargin": {
+    "background": "rgb(34, 40, 42)",
+    "foreground": "rgb(37, 92, 111)"
+  },
+  "guides": {
+    "foreground": "rgb(37, 92, 111)"
+  },
+  "current_line": {
+    "background": "rgb(49, 55, 57)",
+    "foreground": "rgb(64, 70, 72)"
+  }
+}

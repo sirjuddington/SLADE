@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,15 +33,16 @@
 #include "TextureEditorPanel.h"
 #include "General/KeyBind.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
+#include "OpenGL/View.h"
 #include "TextureXEditor.h"
-#include "UI/Canvas/CTextureCanvas.h"
+#include "UI/Canvas/CTextureCanvasBase.h"
+#include "UI/Canvas/Canvas.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -52,12 +53,6 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace
-{
-// Hack to stop the drag event being erroneously triggered when
-// double-clicking a patch in the patch browser to select it
-bool hack_nodrag = false;
-} // namespace
 CVAR(Bool, tx_apply_scale, true, CVar::Flag::Save)
 CVAR(Bool, tx_show_outside, true, CVar::Flag::Save)
 
@@ -85,14 +80,14 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 	tx_editor_{ tx_editor }
 {
 	// Create controls
-	tex_canvas_      = new CTextureCanvas(this, -1);
+	tex_canvas_      = ui::createCTextureCanvas(this);
 	zc_zoom_         = new ui::ZoomControl(this, tex_canvas_);
-	cb_tex_scale_    = new wxCheckBox(this, -1, "Apply Scale");
-	cb_tex_arc_      = new wxCheckBox(this, -1, "Aspect Ratio Correction");
-	cb_draw_outside_ = new wxCheckBox(this, -1, "Show Outside");
+	cb_tex_scale_    = new wxCheckBox(this, -1, wxS("Apply Scale"));
+	cb_tex_arc_      = new wxCheckBox(this, -1, wxS("Aspect Ratio Correction"));
+	cb_draw_outside_ = new wxCheckBox(this, -1, wxS("Show Outside"));
 	choice_viewtype_ = new wxChoice(this, -1);
-	label_viewtype_  = new wxStaticText(this, -1, "Offset Type:");
-	cb_blend_rgba_   = new wxCheckBox(this, -1, "Truecolour Preview");
+	label_viewtype_  = new wxStaticText(this, -1, wxS("Offset Type:"));
+	cb_blend_rgba_   = new wxCheckBox(this, -1, wxS("Truecolour Preview"));
 }
 
 // -----------------------------------------------------------------------------
@@ -101,16 +96,16 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::setupLayout()
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	// Init controls
 	cb_tex_scale_->SetValue(tx_apply_scale);
 	cb_tex_arc_->SetValue(tx_arc);
 	cb_draw_outside_->SetValue(tx_show_outside);
 	choice_viewtype_->SetSelection(0);
-	tex_canvas_->setViewType(CTextureCanvas::View::Normal);
+	tex_canvas_->setViewType(CTextureView::Normal);
 	cb_blend_rgba_->SetValue(false);
-	choice_viewtype_->Set(wxutil::arrayString({ "None", "Sprite", "HUD" }));
+	choice_viewtype_->Set(wxutil::arrayStringStd({ "None", "Sprite", "HUD" }));
 
 	// Only show these on ZTextureEditorPanel
 	cb_blend_rgba_->Show(false);
@@ -123,24 +118,28 @@ void TextureEditorPanel::setupLayout()
 
 	// Setup left section (view controls + texture canvas + texture controls)
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(vbox, wx::sfWithBorder(1, wxRIGHT).Expand());
+	sizer->Add(vbox, lh.sfWithBorder(1, wxRIGHT).Expand());
 
 	// Add view controls
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(hbox, wx::sfWithMinBorder(0, wxBOTTOM | wxTOP).Expand());
-	hbox->Add(zc_zoom_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	vbox->Add(hbox, lh.sfWithSmallBorder(0, wxBOTTOM | wxTOP).Expand());
+	hbox->Add(zc_zoom_, lh.sfWithBorder(0, wxRIGHT).Expand());
 	hbox->AddStretchSpacer();
-	hbox->Add(cb_tex_scale_, wx::sfWithBorder(0, wxRIGHT).Expand());
-	hbox->Add(cb_tex_arc_, wx::sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(cb_tex_scale_, lh.sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(cb_tex_arc_, lh.sfWithBorder(0, wxRIGHT).Expand());
 	hbox->Add(cb_draw_outside_, wxSizerFlags().Expand());
 
 	// Add texture canvas
-	vbox->Add(tex_canvas_, wxSizerFlags(1).Expand());
+	vbox->Add(tex_canvas_->window(), wxSizerFlags(1).Expand());
+
+	// Apply texture canvas options
+	tex_canvas_->applyTexScale(tx_apply_scale);
+	tex_canvas_->drawOutside(tx_show_outside);
 
 	// Add extra view controls
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	vbox->Add(hbox, wx::sfWithBorder(0, wxBOTTOM | wxTOP).Expand());
-	hbox->Add(label_viewtype_, wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	vbox->Add(hbox, lh.sfWithBorder(0, wxBOTTOM | wxTOP).Expand());
+	hbox->Add(label_viewtype_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(choice_viewtype_, wxSizerFlags().Expand());
 	hbox->AddStretchSpacer();
 	hbox->Add(cb_blend_rgba_, wxSizerFlags().Expand());
@@ -158,13 +157,13 @@ void TextureEditorPanel::setupLayout()
 
 	// Bind events
 	cb_draw_outside_->Bind(wxEVT_CHECKBOX, &TextureEditorPanel::onDrawOutsideChanged, this);
-	tex_canvas_->Bind(wxEVT_LEFT_DOWN, &TextureEditorPanel::onTexCanvasMouseEvent, this);
-	tex_canvas_->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexCanvasMouseEvent, this);
-	tex_canvas_->Bind(wxEVT_LEFT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
-	tex_canvas_->Bind(wxEVT_RIGHT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
-	tex_canvas_->Bind(wxEVT_MOTION, &TextureEditorPanel::onTexCanvasMouseEvent, this);
-	tex_canvas_->Bind(EVT_DRAG_END, &TextureEditorPanel::onTexCanvasDragEnd, this);
-	tex_canvas_->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
+	tex_canvas_->window()->Bind(wxEVT_LEFT_DOWN, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_LEFT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_RIGHT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_MOTION, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(EVT_DRAG_END, &TextureEditorPanel::onTexCanvasDragEnd, this);
+	tex_canvas_->window()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
 	text_tex_name_->Bind(wxEVT_TEXT, &TextureEditorPanel::onTexNameChanged, this);
 	spin_tex_width_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexWidthChanged, this);
 	spin_tex_height_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexHeightChanged, this);
@@ -188,40 +187,45 @@ void TextureEditorPanel::setupLayout()
 // -----------------------------------------------------------------------------
 wxPanel* TextureEditorPanel::createTextureControls(wxWindow* parent)
 {
-	// Create controls
-	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
-	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
-	auto           panel     = new wxPanel(parent, -1);
-	text_tex_name_           = new wxTextCtrl(panel, -1);
-	text_tex_name_->SetMaxLength(8);
-	spin_tex_width_    = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
-	spin_tex_height_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, SHRT_MAX);
-	spin_tex_scalex_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
-	spin_tex_scaley_   = new wxSpinCtrl(panel, -1, wxEmptyString, wxDefaultPosition, spinsize, spinflags, 0, UCHAR_MAX);
-	label_scaled_size_ = new wxStaticText(panel, -1, "Scaled Size: N/A");
-	cb_tex_world_panning_ = new wxCheckBox(panel, -1, "World Panning");
+	auto lh = ui::LayoutHelper(parent);
 
 	// Setup tex controls panel sizer
+	auto panel = new wxPanel(parent, -1);
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	panel->SetSizer(sizer);
 
 	// "Texture Properties" frame
-	auto frame      = new wxStaticBox(panel, -1, "Texture Properties");
+	auto frame      = new wxStaticBox(panel, -1, wxS("Texture Properties"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, wxSizerFlags(1).Expand());
 
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, wxutil::sfWithBorder(1));
+	// Create controls
+	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
+	text_tex_name_           = new wxTextCtrl(frame, -1);
+	text_tex_name_->SetMaxLength(8);
+	spin_tex_width_ = new wxSpinCtrl(
+		frame, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, 0, SHRT_MAX);
+	spin_tex_height_ = new wxSpinCtrl(
+		frame, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, 0, SHRT_MAX);
+	spin_tex_scalex_ = new wxSpinCtrl(
+		frame, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, 0, UCHAR_MAX);
+	spin_tex_scaley_ = new wxSpinCtrl(
+		frame, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, 0, UCHAR_MAX);
+	label_scaled_size_    = new wxStaticText(frame, -1, wxS("Scaled Size: N/A"));
+	cb_tex_world_panning_ = new wxCheckBox(frame, -1, wxS("World Panning"));
+
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1));
 
 	// Layout
-	gb_sizer->Add(new wxStaticText(panel, -1, "Name:"), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Name:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(text_tex_name_, { 0, 1 }, { 1, 1 }, wxEXPAND);
-	gb_sizer->Add(new wxStaticText(panel, -1, "Size:"), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(spin_tex_width_, { 0, 3 }, { 1, 1 });
-	gb_sizer->Add(spin_tex_height_, { 0, 4 }, { 1, 1 });
-	gb_sizer->Add(new wxStaticText(panel, -1, "Scale:"), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(spin_tex_scalex_, { 1, 3 }, { 1, 1 });
-	gb_sizer->Add(spin_tex_scaley_, { 1, 4 }, { 1, 1 });
+	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Size:")), { 0, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(spin_tex_width_, { 0, 3 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(spin_tex_height_, { 0, 4 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(new wxStaticText(frame, -1, wxS("Scale:")), { 1, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	gb_sizer->Add(spin_tex_scalex_, { 1, 3 }, { 1, 1 }, wxEXPAND);
+	gb_sizer->Add(spin_tex_scaley_, { 1, 4 }, { 1, 1 }, wxEXPAND);
 	gb_sizer->Add(label_scaled_size_, { 1, 5 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(cb_tex_world_panning_, { 1, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL);
 
@@ -244,7 +248,7 @@ void TextureEditorPanel::updateTextureControls()
 		return;
 
 	bool modified = tex_modified_;
-	text_tex_name_->SetValue(tex_current_->name());
+	text_tex_name_->SetValue(wxString::FromUTF8(tex_current_->name()));
 	spin_tex_width_->SetValue(tex_current_->width());
 	spin_tex_height_->SetValue(tex_current_->height());
 	spin_tex_scalex_->SetValue(tex_current_->scaleX() * 8);
@@ -275,7 +279,7 @@ void TextureEditorPanel::updateTextureScaleLabel()
 		scaled_y /= tex_current_->scaleY();
 
 	// Update the label
-	label_scaled_size_->SetLabel(wxString::Format("Scaled Size: %dx%d", scaled_x, scaled_y));
+	label_scaled_size_->SetLabel(WX_FMT("Scaled Size: {}x{}", scaled_x, scaled_y));
 }
 
 // -----------------------------------------------------------------------------
@@ -283,7 +287,7 @@ void TextureEditorPanel::updateTextureScaleLabel()
 // -----------------------------------------------------------------------------
 wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(parent);
 
 	auto panel = new wxPanel(parent, -1);
 
@@ -292,52 +296,46 @@ wxPanel* TextureEditorPanel::createPatchControls(wxWindow* parent)
 	panel->SetSizer(sizer);
 
 	// -- Texture Patches frame --
-	auto frame      = new wxStaticBox(panel, -1, "Patches");
+	auto frame      = new wxStaticBox(panel, -1, wxS("Patches"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	sizer->Add(framesizer, wx::sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(framesizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Create patches list
-	list_patches_ = new ListView(panel, -1);
+	list_patches_ = new ListView(frame, -1);
 	list_patches_->enableSizeUpdate(false);
 
 	// Create patches toolbar
-	tb_patches_ = new SToolBar(panel, false, wxVERTICAL);
-	tb_patches_->addActionGroup(
-		"_Patch",
-		{ "txed_patch_add",
-		  "txed_patch_remove",
-		  "txed_patch_back",
-		  "txed_patch_forward",
-		  "txed_patch_replace",
-		  "txed_patch_duplicate" });
-	tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
-	tb_patches_->findActionButton("txed_patch_add")->Enable();
+	tb_patches_ = new SAuiToolBar(frame, true);
+	tb_patches_->loadLayoutFromResource("texturex_patches");
+	tb_patches_->enableGroup("Patch", false);
+	tb_patches_->enableItem("txed_patch_add", true);
 
 	// Layout
-	list_patches_->SetInitialSize(wxutil::scaledSize(100, tb_patches_->group("_Patch")->GetBestSize().y));
-	framesizer->Add(list_patches_, wx::sfWithBorder(1, wxLEFT | wxTOP | wxBOTTOM).Expand());
-	framesizer->Add(tb_patches_, wx::sfWithMinBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
+	list_patches_->SetInitialSize({ FromDIP(100), tb_patches_->GetBestSize().y });
+	framesizer->Add(list_patches_, lh.sfWithBorder(1, wxLEFT | wxTOP | wxBOTTOM).Expand());
+	framesizer->Add(tb_patches_, lh.sfWithSmallBorder(0, wxLEFT | wxTOP | wxBOTTOM).Expand());
 
 
 	// -- Patch Properties frame --
-	frame      = new wxStaticBox(panel, -1, "Patch Properties");
+	frame      = new wxStaticBox(panel, -1, wxS("Patch Properties"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
 	sizer->Add(framesizer, wxSizerFlags(1).Expand());
 
 	// X Position
-	const auto     spinsize  = wxSize{ ui::px(ui::Size::SpinCtrlWidth), -1 };
 	constexpr auto spinflags = wxSP_ARROW_KEYS | wxALIGN_RIGHT | wxTE_PROCESS_ENTER;
 	auto           hbox      = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, 0, wxEXPAND | wxALL, ui::pad());
-	spin_patch_left_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, "X Position:"), wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	framesizer->Add(hbox, lh.sfWithBorder().Expand());
+	spin_patch_left_ = new wxSpinCtrl(
+		frame, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
+	hbox->Add(new wxStaticText(frame, -1, wxS("X Position:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(spin_patch_left_, 1);
 
 	// Y Position
 	hbox = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
-	spin_patch_top_ = new wxSpinCtrl(panel, -1, "", wxDefaultPosition, spinsize, spinflags, SHRT_MIN, SHRT_MAX);
-	hbox->Add(new wxStaticText(panel, -1, "Y Position:"), wx::sfWithBorder(0, wxRIGHT).CenterVertical());
+	framesizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	spin_patch_top_ = new wxSpinCtrl(
+		frame, -1, wxEmptyString, wxDefaultPosition, lh.spinSize(), spinflags, SHRT_MIN, SHRT_MAX);
+	hbox->Add(new wxStaticText(frame, -1, wxS("Y Position:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 	hbox->Add(spin_patch_top_, 1);
 
 	return panel;
@@ -353,7 +351,7 @@ void TextureEditorPanel::populatePatchList()
 	list_patches_->Show(false);
 
 	// Add columns
-	list_patches_->InsertColumn(0, "Name");
+	list_patches_->InsertColumn(0, wxS("Name"));
 
 	// Check a texture is currently opened for editing
 	if (!tex_current_)
@@ -414,9 +412,9 @@ void TextureEditorPanel::updatePatchControls()
 // ----------------------------------------------------------------------------
 // Updates the texture name textbox with [new_name]
 // ----------------------------------------------------------------------------
-void TextureEditorPanel::updateTextureName(const wxString& new_name) const
+void TextureEditorPanel::updateTextureName(const string& new_name) const
 {
-	text_tex_name_->SetValue(new_name);
+	text_tex_name_->SetValue(wxString::FromUTF8(new_name));
 }
 
 // ----------------------------------------------------------------------------
@@ -474,16 +472,16 @@ void TextureEditorPanel::clearTexture()
 void TextureEditorPanel::setPalette(const Palette* pal) const
 {
 	tex_canvas_->setPalette(pal);
-	tex_canvas_->updatePatchTextures();
-	tex_canvas_->Refresh();
+	tex_canvas_->refreshTexturePreview();
+	tex_canvas_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the texture canvas' palette
 // -----------------------------------------------------------------------------
-Palette* TextureEditorPanel::palette() const
+const Palette* TextureEditorPanel::palette() const
 {
-	return &tex_canvas_->palette();
+	return tex_canvas_->palette();
 }
 
 // -----------------------------------------------------------------------------
@@ -641,11 +639,12 @@ void TextureEditorPanel::replacePatch()
 		return;
 
 	// Get first selected patch name (for browser)
-	wxString pname = tex_canvas_->texture()->patch(selection[0])->name();
+	auto pname = tex_canvas_->texture()->patch(selection[0])->name();
 
 	// Browse for patch
 	tx_editor_->setFullPath(false);
-	int patch = tx_editor_->browsePatchTable(pname);
+	ignore_drag_ = true;
+	int patch   = tx_editor_->browsePatchTable(pname);
 	if (patch >= 0)
 	{
 		// Go through selection and replace each patch
@@ -770,7 +769,8 @@ void TextureEditorPanel::onDrawOutsideChanged(wxCommandEvent& e)
 void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 {
 	// Get mouse position relative to texture
-	auto pos = tex_canvas_->screenToTexPosition(e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
+	auto pos = tex_canvas_->view().canvasPos(
+		{ e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor() });
 
 	// Get patch that the mouse is over (if any)
 	int patch = tex_canvas_->patchAt(pos.x, pos.y);
@@ -840,7 +840,7 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 		SAction::fromId("txed_patch_forward")->addToMenu(&popup, true);
 		SAction::fromId("txed_patch_duplicate")->addToMenu(&popup, true);
 
-		hack_nodrag = true;
+		ignore_drag_ = true;
 		PopupMenu(&popup);
 	}
 
@@ -848,17 +848,17 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 	else if (e.Dragging())
 	{
 		// Drag selected patches if left button is down and any patch is selected
-		if (hack_nodrag)
-			hack_nodrag = false;
+		if (ignore_drag_)
+			ignore_drag_ = false;
 		else if (e.LeftIsDown())
 		{
 			if (list_patches_->GetSelectedItemCount() > 0)
 			{
 				// Get drag amount according to texture
-				Vec2i tex_cur = tex_canvas_->screenToTexPosition(
-					e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
-				Vec2i tex_prev = tex_canvas_->screenToTexPosition(
-					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
+				Vec2i tex_cur = tex_canvas_->view().canvasPos(
+					{ e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor() });
+				Vec2i tex_prev = tex_canvas_->view().canvasPos(
+					{ tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y });
 				Vec2i diff = tex_cur - tex_prev;
 
 				// Move any selected patches
@@ -879,14 +879,13 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				tex_canvas_->showGrid(true);
 				tex_canvas_->redraw(false);
 			}
-			else if (
-				tex_current_ && tex_current_->isExtended() && tex_canvas_->viewType() != CTextureCanvas::View::Normal)
+			else if (tex_current_ && tex_current_->isExtended() && tex_canvas_->viewType() != CTextureView::Normal)
 			{
 				// Get drag amount according to texture
-				Vec2i tex_cur = tex_canvas_->screenToTexPosition(
-					e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor());
-				Vec2i tex_prev = tex_canvas_->screenToTexPosition(
-					tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y);
+				Vec2i tex_cur = tex_canvas_->view().canvasPos(
+					{ e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor() });
+				Vec2i tex_prev = tex_canvas_->view().canvasPos(
+					{ tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y });
 				Vec2i diff = tex_cur - tex_prev;
 
 				// Modify offsets
@@ -961,7 +960,7 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		// Add patch
 		else if (name == "txed_patch_add")
 		{
-			hack_nodrag = true;
+			ignore_drag_ = true;
 			addPatch();
 			handled = true;
 		}
@@ -976,7 +975,7 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		// Replace patch
 		else if (name == "txed_patch_replace")
 		{
-			hack_nodrag = true;
+			ignore_drag_ = true;
 			replacePatch();
 			handled = true;
 		}
@@ -1044,7 +1043,7 @@ void TextureEditorPanel::onTexNameChanged(wxCommandEvent& e)
 {
 	// Change texture name
 	if (tex_current_)
-		tex_current_->setName(wxutil::strToView(text_tex_name_->GetValue()));
+		tex_current_->setName(text_tex_name_->GetValue().utf8_string());
 
 	tex_modified_ = true;
 }
@@ -1129,7 +1128,7 @@ void TextureEditorPanel::onTexWorldPanningChanged(wxCommandEvent& e)
 void TextureEditorPanel::onPatchListSelect(wxListEvent& e)
 {
 	if (list_patches_->GetSelectedItemCount() > 0)
-		tb_patches_->group("_Patch")->setAllButtonsEnabled(true);
+		tb_patches_->enableGroup("Patch", true);
 
 	// Select the patch on the texture canvas
 	tex_canvas_->selectPatch(e.GetIndex());
@@ -1146,8 +1145,8 @@ void TextureEditorPanel::onPatchListDeSelect(wxListEvent& e)
 {
 	if (list_patches_->GetSelectedItemCount() == 0)
 	{
-		tb_patches_->group("_Patch")->setAllButtonsEnabled(false);
-		tb_patches_->findActionButton("txed_patch_add")->Enable();
+		tb_patches_->enableGroup("Patch", false);
+		tb_patches_->enableItem("txed_patch_add", true);
 	}
 
 	// Deselect the patch on the texture canvas

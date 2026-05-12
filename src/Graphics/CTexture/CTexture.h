@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Utility/ColRGBA.h"
-
 namespace slade
 {
 class SImage;
@@ -74,6 +72,7 @@ public:
 	void setUseOffsets(bool use) { use_offsets_ = use; }
 	void setRotation(int16_t rot) { rotation_ = rot; }
 	void setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a) { colour_.set(r, g, b, a); }
+	void setColour(const ColRGBA& colour) { colour_ = colour; }
 	void setAlpha(float a) { alpha_ = a; }
 	void setStyle(string_view style) { style_ = style; }
 	void setBlendType(BlendType type) { blendtype_ = type; }
@@ -129,6 +128,7 @@ public:
 	double         scaleX() const { return scale_.x; }
 	double         scaleY() const { return scale_.y; }
 	Vec2d          scale() const { return scale_; }
+	Vec2d          scaleFactor() const;
 	int16_t        offsetX() const { return offset_.x; }
 	int16_t        offsetY() const { return offset_.y; }
 	bool           worldPanning() const { return world_panning_; }
@@ -177,12 +177,17 @@ public:
 	bool convertExtended();
 	bool convertRegular();
 	bool loadPatchImage(
-		unsigned pindex,
-		SImage&  image,
-		Archive* parent     = nullptr,
-		Palette* pal        = nullptr,
-		bool     force_rgba = false) const;
-	bool toImage(SImage& image, Archive* parent = nullptr, Palette* pal = nullptr, bool force_rgba = false);
+		unsigned       pindex,
+		SImage&        image,
+		Archive*       parent     = nullptr,
+		const Palette* pal        = nullptr,
+		bool           force_rgba = false) const;
+	bool toImage(
+		SImage&        image,
+		Archive*       parent     = nullptr,
+		const Palette* pal        = nullptr,
+		bool           force_rgba = false,
+		bool           offsets    = true);
 
 	// Signals
 	struct Signals

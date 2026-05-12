@@ -47,10 +47,17 @@ struct CVar
 	}
 
 	// Static functions
-	static string writeAll();
-	static void   set(const string& cvar_name, const string& value);
-	static CVar*  get(const string& cvar_name);
-	static void   putList(vector<string>& list);
+	static vector<CVar*> allCvars(bool sorted = true);
+	static void          set(const string& cvar_name, const string& value);
+	static void          setBool(const string& cvar_name, bool value);
+	static void          setInt(const string& cvar_name, int value);
+	static void          setFloat(const string& cvar_name, double value);
+	static CVar*         get(const string& cvar_name);
+	static bool          getBool(const string& cvar_name);
+	static int           getInt(const string& cvar_name);
+	static double        getFloat(const string& cvar_name);
+	static string        getString(const string& cvar_name);
+	static void          putList(vector<string>& list);
 };
 
 struct CIntCVar : CVar
@@ -61,7 +68,7 @@ struct CIntCVar : CVar
 	~CIntCVar() override = default;
 
 	// Operators so the cvar name can be used like a normal variable
-		operator int() const { return value; }
+	operator int() const { return value; }
 	int operator*() const { return value; }
 
 	int operator=(int val)
@@ -85,7 +92,7 @@ struct CBoolCVar : CVar
 	CBoolCVar(string_view name, bool defval, uint16_t flags);
 	~CBoolCVar() override = default;
 
-		 operator bool() const { return value; }
+	operator bool() const { return value; }
 	bool operator*() const { return value; }
 
 	bool operator=(bool val)
@@ -109,7 +116,7 @@ struct CFloatCVar : CVar
 	CFloatCVar(string_view name, double defval, uint16_t flags);
 	~CFloatCVar() override = default;
 
-		   operator double() const { return value; }
+	operator double() const { return value; }
 	double operator*() const { return value; }
 
 	double operator=(double val)
@@ -135,10 +142,10 @@ struct CStringCVar : CVar
 
 	bool empty() const { return value.empty(); }
 
-		   operator string() const { return value; }
+	operator string() const { return value; }
 	string operator*() const { return value; }
-		   operator string_view() const { return value; }
-		   operator wxString() const { return value; }
+	operator string_view() const { return value; }
+	operator wxString() const { return wxString::FromUTF8(value); }
 
 	CStringCVar& operator=(string_view val)
 	{

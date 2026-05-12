@@ -1,0 +1,329 @@
+// Audio entry types
+{
+  "music": {
+    "icon": "e_music",
+    "category": "Audio",
+    "colour": "rgb(255, 0, 255)",
+    "detectable": false
+  },
+  "midi_mus": {
+    "inherits": "music",
+    "name": "Music (MUS)",
+    "format": "midi_mus",
+    "export_ext": "mus",
+    "editor": "audio"
+  },
+  "midi_smf": {
+    "inherits": "music",
+    "name": "Music (MIDI)",
+    "format": "midi_smf",
+    "export_ext": "mid",
+    "editor": "audio"
+  },
+  "midi_xmi": {
+    "inherits": "music",
+    "name": "Music (XMI)",
+    "format": "midi_xmi",
+    "export_ext": "xmi",
+    "reliability": 100,
+    "editor": "audio"
+  },
+  "midi_hmi": {
+    "inherits": "music",
+    "name": "Music (HMI)",
+    "format": "midi_hmi",
+    "export_ext": "hmi",
+    "reliability": 100,
+    "editor": "audio"
+  },
+  "midi_hmp": {
+    "inherits": "music",
+    "name": "Music (HMP)",
+    "format": "midi_hmp",
+    "export_ext": "hmp",
+    "reliability": 100,
+    "editor": "audio"
+  },
+  "midi_gmid": {
+    "inherits": "music",
+    "name": "Music (GMID)",
+    "format": "midi_gmid",
+    "export_ext": "gmd",
+    "reliability": 75,
+    "editor": "audio"
+  },
+  "midi_rmid": {
+    "inherits": "music",
+    "name": "Music (RMID)",
+    "format": "midi_rmid",
+    "export_ext": "rmi",
+    "reliability": 100,
+    "editor": "audio"
+  },
+  "mod_it": {
+    "inherits": "music",
+    "name": "Music (IT Module)",
+    "format": "mod_it",
+    "export_ext": "it",
+    "editor": "audio"
+  },
+  "mod_xm": {
+    "inherits": "music",
+    "name": "Music (XM Module)",
+    "format": "mod_xm",
+    "export_ext": "xm",
+    "editor": "audio"
+  },
+  "mod_s3m": {
+    "inherits": "music",
+    "name": "Music (S3M Module)",
+    "format": "mod_s3m",
+    "export_ext": "s3m",
+    "editor": "audio"
+  },
+  "mod_mod": {
+    "inherits": "music",
+    "name": "Music (MOD Module)",
+    "format": "mod_mod",
+    "export_ext": "mod",
+    "editor": "audio"
+  },
+  "mod_okt": {
+    "inherits": "music",
+    "name": "Music (OKT Module)",
+    "format": "mod_okt",
+    "export_ext": "okt",
+    "editor": "audio"
+  },
+  "gme_ay": {
+    "inherits": "music",
+    "name": "Music (AY)",
+    "format": "gme_ay",
+    "export_ext": "ay",
+    "editor": "audio"
+  },
+  "gme_gbs": {
+    "inherits": "music",
+    "name": "Music (GBS)",
+    "format": "gme_gbs",
+    "export_ext": "gbs",
+    "editor": "audio"
+  },
+  "gme_gym": {
+    "inherits": "music",
+    "name": "Music (GYM)",
+    "format": "gme_gym",
+    "export_ext": "gym",
+    "editor": "audio"
+  },
+  "gme_hes": {
+    "inherits": "music",
+    "name": "Music (HES)",
+    "format": "gme_hes",
+    "export_ext": "hes",
+    "editor": "audio"
+  },
+  "gme_kss": {
+    "inherits": "music",
+    "name": "Music (KSS)",
+    "format": "gme_kss",
+    "export_ext": "kss",
+    "editor": "audio"
+  },
+  "gme_nsf": {
+    "inherits": "music",
+    "name": "Music (NSF)",
+    "format": "gme_nsf",
+    "export_ext": "nsf",
+    "editor": "audio"
+  },
+  "gme_sap": {
+    "inherits": "music",
+    "name": "Music (SAP)",
+    "format": "gme_sap",
+    "export_ext": "sap",
+    "editor": "audio"
+  },
+  "gme_spc": {
+    "inherits": "music",
+    "name": "Music (SPC)",
+    "format": "gme_spc",
+    "export_ext": "spc",
+    "editor": "audio"
+  },
+  "gme_vgm": {
+    "inherits": "music",
+    "name": "Music (VGM)",
+    "format": "gme_vgm",
+    "export_ext": "vgm",
+    "editor": "audio"
+  },
+  "gme_vgz": {
+    "inherits": "music",
+    "name": "Music (VGZ)",
+    "format": "gme_vgz",
+    "export_ext": "vgz",
+    "editor": "audio"
+  },
+  "sound": {
+    "icon": "e_sound",
+    "category": "Audio",
+    "colour": "rgb(255, 0, 0)",
+    "detectable": false
+  },
+  "snd_doom": {
+    "inherits": "sound",
+    "name": "Sound (Doom Format)",
+    "format": "snd_doom",
+    "reliability": 200,
+    "export_ext": "lmp",
+    "editor": "audio"
+  },
+  "snd_doom_mac": {
+    "inherits": "sound",
+    "name": "Sound (Mac Doom Format)",
+    "format": "snd_doom_mac",
+    "reliability": 190,
+    "export_ext": "lmp",
+    "editor": "audio"
+  },
+  "snd_jaguar": {
+    "inherits": "sound",
+    "name": "Sound (Jaguar Format)",
+    "format": "snd_jaguar",
+    "reliability": 100,
+    "export_ext": "lmp",
+    "editor": "audio"
+  },
+  "opl_imf": {
+    "inherits": "music",
+    "name": "IMF OPL File",
+    "format": "opl_imf",
+    "reliability": 120,
+    "export_ext": "imf",
+    "editor": "audio"
+  },
+  "opl_imf_raw": {
+    "inherits": "music",
+    "name": "IMF OPL Data",
+    "format": "opl_imf_raw",
+    "reliability": 60,
+    "export_ext": "imf",
+    "editor": "audio"
+  },
+  "opl_raw": {
+    "inherits": "music",
+    "name": "RDOS OPL File",
+    "format": "opl_raw",
+    "reliability": 120,
+    "export_ext": "raw",
+    "editor": "audio"
+  },
+  "opl_dro": {
+    "inherits": "music",
+    "name": "DOSBox OPL File",
+    "format": "opl_dro",
+    "reliability": 120,
+    "export_ext": "dro",
+    "editor": "audio"
+  },
+  "snd_wolf": {
+    "inherits": "sound",
+    "name": "Sound (Wolf3D PCM)",
+    "format": "snd_wolf",
+    "match_name": [ "SND0*" ],
+    "match_archive": [ "archive_wolf" ],
+    "reliability": 10,
+    "export_ext": "swp",
+    "editor": "audio"
+  },
+  "snd_audiot": {
+    "inherits": "sound",
+    "name": "Sound (AudioT PC FX)",
+    "format": "snd_audiot",
+    "reliability": 10,
+    "export_ext": "tpc",
+    "editor": "audio"
+  },
+  "opl_audiot": {
+    "inherits": "sound",
+    "name": "Sound (AudioT Adlib FX)",
+    "format": "opl_audiot",
+    "reliability": 10,
+    "export_ext": "tad",
+    "editor": "audio"
+  },
+  // This is used to interpret a raw sample
+  "snd_bloodsfx": {
+    "inherits": "sound",
+    "name": "Sound (Blood Format)",
+    "format": "snd_bloodsfx",
+    "match_ext": [ "SFX" ],
+    "export_ext": "sfx",
+    "editor": "audio"
+  },
+  "snd_speaker": {
+    "inherits": "sound",
+    "name": "Sound (PC Speaker)",
+    "format": "snd_speaker",
+    "export_ext": "lmp",
+    "reliability": 100,
+    "editor": "audio"
+  },
+  "snd_wav": {
+    "inherits": "sound",
+    "name": "Sound (Wav Format)",
+    "format": "snd_wav",
+    "export_ext": "wav",
+    "editor": "audio"
+  },
+  "snd_voc": {
+    "inherits": "sound",
+    "name": "Sound (Creative)",
+    "format": "snd_voc",
+    "export_ext": "voc",
+    "editor": "audio"
+  },
+  "snd_sun": {
+    "inherits": "sound",
+    "name": "Sound (Sun/NeXT)",
+    "format": "snd_sun",
+    "export_ext": "snd",
+    "editor": "audio"
+  },
+  "snd_aiff": {
+    "inherits": "sound",
+    "name": "Sound (AIFF)",
+    "format": "snd_aiff",
+    "export_ext": "aif",
+    "editor": "audio"
+  },
+  "snd_ogg": {
+    "inherits": "sound",
+    "name": "Sound (Ogg Vorbis)",
+    "format": "snd_ogg",
+    "export_ext": "ogg",
+    "editor": "audio"
+  },
+  "snd_flac": {
+    "inherits": "sound",
+    "name": "Sound (FLAC)",
+    "format": "snd_flac",
+    "export_ext": "flac",
+    "editor": "audio"
+  },
+  "snd_mp2": {
+    "inherits": "sound",
+    "name": "Sound (MP2)",
+    "format": "snd_mp2",
+    "export_ext": "mp2",
+    "editor": "audio"
+  },
+  "snd_mp3": {
+    "inherits": "sound",
+    "name": "Sound (MP3)",
+    "format": "snd_mp3",
+    "export_ext": "mp3",
+    "editor": "audio"
+  }
+}

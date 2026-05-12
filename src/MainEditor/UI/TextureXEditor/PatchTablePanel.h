@@ -6,10 +6,9 @@ namespace slade
 {
 class PatchTable;
 class PatchTableListView;
-class GfxCanvas;
+class GfxCanvasBase;
 class TextureXEditor;
-class SToolBar;
-
+class SAuiToolBar;
 namespace ui
 {
 	class ZoomControl;
@@ -21,17 +20,18 @@ public:
 	PatchTablePanel(wxWindow* parent, PatchTable* patch_table, TextureXEditor* tx_editor = nullptr);
 	~PatchTablePanel() override = default;
 
+	void setupLayout();
+
 private:
 	PatchTable*         patch_table_      = nullptr;
 	PatchTableListView* list_patches_     = nullptr;
 	TextureXEditor*     parent_           = nullptr;
-	GfxCanvas*          patch_canvas_     = nullptr;
+	GfxCanvasBase*      patch_canvas_     = nullptr;
 	wxStaticText*       label_dimensions_ = nullptr;
 	wxStaticText*       label_textures_   = nullptr;
 	ui::ZoomControl*    zc_zoom_          = nullptr;
-	SToolBar*           toolbar_          = nullptr;
+	SAuiToolBar*        toolbar_          = nullptr;
 
-	void setupLayout();
 	void updateDisplay();
 
 	void addPatch();

@@ -1,0 +1,13 @@
+{
+  "flags": [
+    { "value": 1, "name": "Easy Skill", "udmf": [ "skill1", "skill2" ] },
+    { "value": 2, "name": "Medium Skill", "udmf": [ "skill3" ] },
+    { "value": 4, "name": "Hard Skill", "udmf": [ "skill4", "skill5" ] },
+    { "value": 8, "name": "Stand Still", "udmf": [ "standing" ] },
+    { "value": 16, "name": "Multiplayer Only", "udmf": [ "!single" ] },
+    { "value": 32, "name": "Ambush", "udmf": [ "ambush" ] },
+    { "value": 64, "name": "Ally", "udmf": [ "strifeally" ] },
+    { "value": 128, "name": "Translucent", "udmf": [ "translucent" ] },
+    { "value": 256, "name": "Invisible", "udmf": [ "invisible" ] }
+  ]
+}

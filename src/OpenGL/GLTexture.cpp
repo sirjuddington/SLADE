@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2019 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,7 +34,6 @@
 #include "Geometry/Rect.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL.h"
-#include "Utility/ColRGBA.h"
 
 using namespace slade;
 
@@ -46,11 +45,13 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 CVAR(String, bgtx_colour1, "#404050", CVar::Flag::Save)
 CVAR(String, bgtx_colour2, "#505060", CVar::Flag::Save)
+CVAR(Int, gl_texture_anisotropy, 16, CVar::Flag::Save)
 namespace
 {
 std::map<unsigned, gl::Texture> textures;
 gl::Texture                     tex_missing;
 gl::Texture                     tex_background;
+gl::Texture                     tex_white;
 unsigned                        last_bound_tex = 0;
 } // namespace
 
@@ -156,8 +157,16 @@ unsigned gl::Texture::create(TexFilter filter, bool tiling)
 		return 0;
 
 	// Generate the texture id
-	unsigned id;
+	unsigned id = 0;
 	glGenTextures(1, &id);
+
+	// Check it generated ok
+	if (id == 0)
+	{
+		wxFAIL_MSG("Failed to generate GL texture id - most likely because there is no active context");
+		log::error("Failed to generate OpenGL texture id");
+		return 0;
+	}
 
 	// Set texture info
 	textures[id].id     = id;
@@ -190,7 +199,7 @@ unsigned gl::Texture::createFromData(
 // -----------------------------------------------------------------------------
 // Creates a new OpenGL texture from [image], using [pal] if necessary
 // -----------------------------------------------------------------------------
-unsigned gl::Texture::createFromImage(const SImage& image, Palette* pal, TexFilter filter, bool tiling)
+unsigned gl::Texture::createFromImage(const SImage& image, const Palette* pal, TexFilter filter, bool tiling)
 {
 	auto id = create(filter, tiling);
 	if (!loadImage(id, image, pal))
@@ -236,8 +245,23 @@ bool gl::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, uns
 	}
 	else
 	{
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+	}
+
+	// Anisotropic filtering
+	if (gl_texture_anisotropy > 1)
+	{
+		// Check max supported level
+		static float max_anisotropy = 0.0f;
+		if (max_anisotropy == 0.0f)
+			glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_anisotropy);
+
+		// Set anisotropic level
+		float anisotrpoic_level = gl_texture_anisotropy;
+		if (anisotrpoic_level > max_anisotropy)
+			anisotrpoic_level = max_anisotropy;
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, anisotrpoic_level);
 	}
 
 	// Generate the texture
@@ -245,35 +269,74 @@ bool gl::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, uns
 	{
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 	else if (tex_info.filter == TexFilter::Mipmap || tex_info.filter == TexFilter::LinearMipmap)
 	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else if (tex_info.filter == TexFilter::NearestMipmap)
 	{
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-		gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width, height, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else if (tex_info.filter == TexFilter::NearestLinearMin)
 	{
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 	else
 	{
 		// Default to NEAREST
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 	}
 
 	tex_info.size = { static_cast<int>(width), static_cast<int>(height) };
+
+	return true;
+}
+
+bool gl::Texture::loadAlphaData(unsigned id, const uint8_t* data, unsigned width, unsigned height)
+{
+	// Check OpenGL is initialised
+	if (!gl::isInitialised())
+		return false;
+
+	// Check given id
+	if (id == 0 || id == tex_missing.id || id == tex_background.id)
+	{
+		log::warning("Unable to load OpenGL texture with id {} - invalid or built-in texture", id);
+		return false;
+	}
+
+	// Check image dimensions
+	if (!validTexDimension(width) || !validTexDimension(height))
+	{
+		log::warning("Attempt to create OpenGL texture of invalid size {}x{}", width, height);
+		return false;
+	}
+
+	static GLint swizzle_mask[] = { GL_ZERO, GL_ZERO, GL_ZERO, GL_RED };
+
+	bind(id);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle_mask);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+
+	textures[id].tiling = false;
+	textures[id].filter = TexFilter::Linear;
+	textures[id].size   = { static_cast<int>(width), static_cast<int>(height) };
 
 	return true;
 }
@@ -436,6 +499,27 @@ void gl::Texture::bind(unsigned id, bool force)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the 'plain white' texture id
+// Used to simulate something being untextured since by default sampling a
+// non-existant texture results in all black (and 0 alpha)
+// -----------------------------------------------------------------------------
+unsigned gl::Texture::whiteTexture()
+{
+	if (!gl::isInitialised())
+		return 0;
+
+	// Create the 'white' texture if necessary
+	if (tex_white.id == 0)
+	{
+		auto id = create();
+		genChequeredTexture(id, 8, ColRGBA::WHITE, ColRGBA::WHITE);
+		tex_white = textures[id];
+	}
+
+	return tex_white.id;
+}
+
+// -----------------------------------------------------------------------------
 // Deletes the OpenGL texture [id]
 // -----------------------------------------------------------------------------
 void gl::Texture::clear(unsigned id)
@@ -461,4 +545,29 @@ void gl::Texture::clearAll()
 	textures.clear();
 	tex_missing    = {};
 	tex_background = {};
+}
+
+// -----------------------------------------------------------------------------
+// Sets texture [id]'s [tiling] flag (ie. GL_TEXTURE_WRAP_* value)
+// -----------------------------------------------------------------------------
+void gl::Texture::setTiling(unsigned id, bool tiling)
+{
+	auto& tex_info = textures[id];
+	if (tex_info.tiling == tiling)
+		return;
+
+	bind(id);
+
+	if (tiling)
+	{
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	}
+	else
+	{
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	}
+
+	tex_info.tiling = tiling;
 }

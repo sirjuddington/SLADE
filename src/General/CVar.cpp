@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Utility/StringUtils.h"
-#include <fmt/format.h>
 
 using namespace slade;
 
@@ -136,6 +135,50 @@ CVar* CVar::get(const string& name)
 }
 
 // -----------------------------------------------------------------------------
+// Gets the value of the boolean CVar with matching [name]
+// -----------------------------------------------------------------------------
+bool CVar::getBool(const string& cvar_name)
+{
+	if (auto* cvar = get(cvar_name); cvar && cvar->type == Type::Boolean)
+		return *dynamic_cast<CBoolCVar*>(cvar);
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Gets the value of the integer CVar with matching [name]
+// -----------------------------------------------------------------------------
+int CVar::getInt(const string& cvar_name)
+{
+	if (auto* cvar = get(cvar_name); cvar && cvar->type == Type::Integer)
+		return *dynamic_cast<CIntCVar*>(cvar);
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------------
+// Gets the value of the float CVar with matching [name]
+// -----------------------------------------------------------------------------
+double CVar::getFloat(const string& cvar_name)
+{
+	if (auto* cvar = get(cvar_name); cvar && cvar->type == Type::Float)
+		return *dynamic_cast<CFloatCVar*>(cvar);
+
+	return 0.0;
+}
+
+// -----------------------------------------------------------------------------
+// Gets the value of the string CVar with matching [name]
+// -----------------------------------------------------------------------------
+string CVar::getString(const string& cvar_name)
+{
+	if (auto* cvar = get(cvar_name); cvar && cvar->type == Type::String)
+		return *dynamic_cast<CStringCVar*>(cvar);
+
+	return "";
+}
+
+// -----------------------------------------------------------------------------
 // Adds all cvar names to a vector of strings
 // -----------------------------------------------------------------------------
 void CVar::putList(vector<string>& list)
@@ -148,60 +191,19 @@ void CVar::putList(vector<string>& list)
 }
 
 // -----------------------------------------------------------------------------
-// Saves cvars to a config file
+// Returns a vector of all CVars, optionally [sorted] by name
 // -----------------------------------------------------------------------------
-string CVar::writeAll()
+vector<CVar*> CVar::allCvars(bool sorted)
 {
-	vector<CVar*> all_cvars;
+	vector<CVar*> cvarlist;
+
 	for (unsigned i = 0; i < n_cvars; ++i)
-		all_cvars.push_back(cvars[i]);
+		cvarlist.push_back(cvars[i]);
 
-	std::sort(
-		all_cvars.begin(),
-		all_cvars.end(),
-		[](const CVar* left, const CVar* right) { return left->name < right->name; });
+	if (sorted)
+		std::ranges::sort(cvarlist, [](const CVar* a, const CVar* b) { return a->name < b->name; });
 
-	uint32_t max_size = 0;
-	for (auto* cvar : all_cvars)
-	{
-		if (cvar->name.size() > max_size)
-			max_size = cvar->name.size();
-	}
-
-	fmt::memory_buffer mem_buf;
-	auto               buf = fmt::appender(mem_buf);
-	format_to(buf, "cvars\n{{\n");
-
-	for (auto* cvar : all_cvars)
-	{
-		if (cvar->flags & Flag::Save)
-		{
-			format_to(buf, "\t{} ", cvar->name);
-
-			int spaces = max_size - cvar->name.size();
-			for (int a = 0; a < spaces; a++)
-				mem_buf.push_back(' ');
-
-			if (cvar->type == Type::Integer)
-				format_to(buf, "{}\n", cvar->getValue().Int);
-
-			if (cvar->type == Type::Boolean)
-				format_to(buf, "{}\n", cvar->getValue().Bool);
-
-			if (cvar->type == Type::Float)
-				format_to(buf, "{:1.5f}\n", cvar->getValue().Float);
-
-			if (cvar->type == Type::String)
-			{
-				auto value = strutil::escapedString(dynamic_cast<CStringCVar*>(cvar)->value, true);
-				format_to(buf, "\"{}\"\n", value);
-			}
-		}
-	}
-
-	format_to(buf, "}}\n\n");
-
-	return to_string(mem_buf);
+	return cvarlist;
 }
 
 // -----------------------------------------------------------------------------
@@ -225,6 +227,54 @@ void CVar::set(const string& name, const string& value)
 
 			if (cvar->type == Type::String)
 				*dynamic_cast<CStringCVar*>(cvar) = value;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads [value] into the boolean CVar with matching [name],
+// or does nothing if no boolean CVar [name] exists
+// -----------------------------------------------------------------------------
+void CVar::setBool(const string& cvar_name, bool value)
+{
+	for (unsigned i = 0; i < n_cvars; ++i)
+	{
+		if (auto* cvar = cvars[i]; cvar_name == cvar->name && cvar->type == Type::Boolean)
+		{
+			*dynamic_cast<CBoolCVar*>(cvar) = value;
+			return;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads [value] into the integer CVar with matching [name],
+// or does nothing if no integer CVar [name] exists
+// -----------------------------------------------------------------------------
+void CVar::setInt(const string& cvar_name, int value)
+{
+	for (unsigned i = 0; i < n_cvars; ++i)
+	{
+		if (auto* cvar = cvars[i]; cvar_name == cvar->name && cvar->type == Type::Integer)
+		{
+			*dynamic_cast<CIntCVar*>(cvar) = value;
+			return;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads [value] into the float CVar with matching [name],
+// or does nothing if no float CVar [name] exists
+// -----------------------------------------------------------------------------
+void CVar::setFloat(const string& cvar_name, double value)
+{
+	for (unsigned i = 0; i < n_cvars; ++i)
+	{
+		if (auto* cvar = cvars[i]; cvar_name == cvar->name && cvar->type == Type::Float)
+		{
+			*dynamic_cast<CFloatCVar*>(cvar) = value;
+			return;
 		}
 	}
 }

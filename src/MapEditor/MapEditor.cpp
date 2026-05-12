@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,7 +33,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "ItemSelection.h"
 #include "MapBackupManager.h"
 #include "MapEditContext.h"
@@ -45,6 +44,7 @@
 #include "MapTextureManager.h"
 #include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Browser/BrowserItem.h"
+#include "UI/Layout.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UI/PropsPanel/MapObjectPropsPanel.h"
@@ -190,73 +190,9 @@ void mapeditor::lockMouse(bool lock)
 // -----------------------------------------------------------------------------
 void mapeditor::openContextMenu()
 {
-	// Context menu
 	wxMenu menu_context;
-
-	// Set 3d camera
-	SAction::fromId("mapw_camera_set")->addToMenu(&menu_context, true);
-
-	// Run from here
-	SAction::fromId("mapw_run_map_here")->addToMenu(&menu_context, true);
-
-	// Mode-specific
-	bool object_selected = edit_context->selection().hasHilightOrSelection();
-	if (edit_context->editMode() == Mode::Vertices)
-	{
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_vertex_create")->addToMenu(&menu_context, true);
-	}
-	else if (edit_context->editMode() == Mode::Lines)
-	{
-		if (object_selected)
-		{
-			menu_context.AppendSeparator();
-			SAction::fromId("mapw_line_changetexture")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_changespecial")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_tagedit")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_flip")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_correctsectors")->addToMenu(&menu_context, true);
-		}
-	}
-	else if (edit_context->editMode() == Mode::Things)
-	{
-		menu_context.AppendSeparator();
-
-		if (object_selected)
-			SAction::fromId("mapw_thing_changetype")->addToMenu(&menu_context, true);
-
-		SAction::fromId("mapw_thing_create")->addToMenu(&menu_context, true);
-	}
-	else if (edit_context->editMode() == Mode::Sectors)
-	{
-		if (object_selected)
-		{
-			SAction::fromId("mapw_sector_changetexture")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_sector_changespecial")->addToMenu(&menu_context, true);
-			if (edit_context->selection().size() > 1)
-			{
-				SAction::fromId("mapw_sector_join")->addToMenu(&menu_context, true);
-				SAction::fromId("mapw_sector_join_keep")->addToMenu(&menu_context, true);
-			}
-		}
-
-		SAction::fromId("mapw_sector_create")->addToMenu(&menu_context, true);
-	}
-
-	if (object_selected)
-	{
-		// General edit
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_edit_objects")->addToMenu(&menu_context, true);
-		SAction::fromId("mapw_mirror_x")->addToMenu(&menu_context, true);
-		SAction::fromId("mapw_mirror_y")->addToMenu(&menu_context, true);
-
-		// Properties
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_item_properties")->addToMenu(&menu_context, true);
-	}
-
-	map_window->PopupMenu(&menu_context);
+	if (edit_context->populateContextMenu(menu_context))
+		map_window->PopupMenu(&menu_context);
 }
 
 // -----------------------------------------------------------------------------
@@ -303,7 +239,7 @@ string mapeditor::browseTexture(string_view init_texture, TextureType tex_type, 
 		edit_context->lockMouse(false);
 
 	// Setup texture browser
-	MapTextureBrowser browser(map_window, tex_type, wxString{ init_texture.data(), init_texture.size() }, &map);
+	MapTextureBrowser browser(map_window, tex_type, init_texture, &map);
 	browser.SetTitle(wxutil::strFromView(title));
 
 	// Get selected texture
@@ -350,38 +286,41 @@ int mapeditor::browseThingType(int init_type, SLADEMap& map)
 // -----------------------------------------------------------------------------
 bool mapeditor::editObjectProperties(vector<MapObject*>& list)
 {
-	wxString selsize = "";
-	wxString type    = edit_context->modeString(false);
+	if (list.empty())
+		return false;
+
+	string selsize;
+	string type = list[0]->typeName();
 	if (list.size() == 1)
-		type += wxString::Format(" #%d", list[0]->index());
+		type += fmt::format(" #{}", list[0]->index());
 	else if (list.size() > 1)
-		selsize = wxString::Format("(%lu selected)", list.size());
+		selsize = fmt::format("({} selected)", list.size());
 
 	// Create dialog for properties panel
 	SDialog dlg(
 		mapeditor::window(),
-		wxString::Format("%s Properties %s", type, selsize),
-		wxString::Format("mobjprops_%s", edit_context->modeString(false)),
+		fmt::format("{} Properties {}", type, selsize),
+		fmt::format("mobjprops_{}", list[0]->typeName()),
 		-1,
 		-1);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 
 	// Create/add properties panel
+	auto            lh          = ui::LayoutHelper(&dlg);
 	PropsPanelBase* panel_props = nullptr;
-	switch (edit_context->editMode())
+	switch (list[0]->objType())
 	{
-	case Mode::Lines:   panel_props = new LinePropsPanel(&dlg); break;
-	case Mode::Sectors: panel_props = new SectorPropsPanel(&dlg); break;
-	case Mode::Things:  panel_props = new ThingPropsPanel(&dlg); break;
-	default:            panel_props = new MapObjectPropsPanel(&dlg, true);
+	case MapObject::Type::Line:   panel_props = new LinePropsPanel(&dlg); break;
+	case MapObject::Type::Sector: panel_props = new SectorPropsPanel(&dlg); break;
+	case MapObject::Type::Thing:  panel_props = new ThingPropsPanel(&dlg); break;
+	default:                      panel_props = new MapObjectPropsPanel(&dlg, true); break;
 	}
-	sizer->Add(panel_props, wxutil::sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
+	sizer->Add(panel_props, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Add dialog buttons
-	sizer->AddSpacer(ui::pad());
-	sizer->Add(
-		dlg.CreateButtonSizer(wxOK | wxCANCEL), wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->AddSpacer(lh.pad());
+	sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Open current selection
 	panel_props->openObjects(list);

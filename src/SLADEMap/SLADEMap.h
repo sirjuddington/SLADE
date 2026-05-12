@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Geometry/BBox.h"
 #include "MapObjectCollection.h"
@@ -6,12 +6,15 @@
 
 namespace slade
 {
-class MapSpecials;
 struct MapDesc;
 enum class MapFormat;
-namespace Game
+namespace game
 {
 	enum class TagType;
+}
+namespace map
+{
+	class MapSpecials;
 }
 
 class SLADEMap
@@ -35,11 +38,14 @@ public:
 	string                     udmfNamespace() const { return udmf_namespace_; }
 	MapFormat                  currentFormat() const { return current_format_; }
 	long                       geometryUpdated() const { return geometry_updated_; }
-	long                       thingsUpdated() const { return things_updated_; }
+	long                       sectorRenderInfoUpdated() const { return sector_renderinfo_updated_; }
+	long                       typeLastUpdated(map::ObjectType type) const;
 	const MapObjectCollection& mapData() const { return data_; }
+	bool                       isOpen() const { return is_open_; }
 
 	void setGeometryUpdated();
-	void setThingsUpdated();
+	void setSectorRenderInfoUpdated();
+	void setTypeUpdated(map::ObjectType type);
 
 	// MapObject access
 	MapVertex*        vertex(unsigned index) const;
@@ -64,8 +70,8 @@ public:
 	bool readMap(const MapDesc& map);
 	void clearMap();
 
-	MapSpecials* mapSpecials() const { return map_specials_.get(); }
-	void         recomputeSpecials();
+	map::MapSpecials& mapSpecials() const { return *map_specials_; }
+	void              recomputeSpecials() const;
 
 	// Map saving
 	bool writeMap(vector<ArchiveEntry*>& map_entries) const;
@@ -111,6 +117,8 @@ public:
 	MapSector* lineSideSector(MapLine* line, bool front = true);
 	bool       isModified() const;
 	void       setOpenedTime();
+	MapSector* thingParentSector(const MapThing& thing) const;
+	void       updateThingParentSector(const MapThing& thing) const;
 
 	// Editing
 	void       mergeVertices(unsigned vertex1, unsigned vertex2);
@@ -131,8 +139,8 @@ public:
 	void mapOpenChecks();
 
 	// Misc. map data access
-	void rebuildConnectedLines() { data_.rebuildConnectedLines(); }
-	void rebuildConnectedSides() { data_.rebuildConnectedSides(); }
+	void rebuildConnectedLines() const { data_.rebuildConnectedLines(); }
+	void rebuildConnectedSides() const { data_.rebuildConnectedSides(); }
 	void restoreObjectIdList(map::ObjectType type, const vector<unsigned>& list)
 	{
 		data_.restoreObjectIdList(type, list);
@@ -147,21 +155,52 @@ public:
 	void updateThingTypeUsage(int type, int adjust);
 	int  thingTypeUsageCount(int type);
 
+	// Bulk operations
+	void beginBulkOperation();
+	void endBulkOperation();
+
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<const vector<MapObject*>&> object_created;
+		sigslot::signal<const vector<MapObject*>&> object_modified;
+		sigslot::signal<const vector<MapObject*>&> object_deleted;
+	};
+	Signals  signals_;
+	Signals& signals() { return signals_; }
+	void     sendObjectCreatedSignal(MapObject* object);
+	void     sendObjectModifiedSignal(MapObject* object);
+	void     sendObjectDeletedSignal(MapObject* object);
+
 private:
-	MapObjectCollection     data_;
-	string                  udmf_namespace_;
-	PropertyList            udmf_props_;
-	string                  name_;
-	MapFormat               current_format_;
-	long                    opened_time_ = 0;
-	unique_ptr<MapSpecials> map_specials_;
+	MapObjectCollection          data_;
+	string                       udmf_namespace_;
+	PropertyList                 udmf_props_;
+	string                       name_;
+	MapFormat                    current_format_;
+	long                         opened_time_ = 0;
+	unique_ptr<map::MapSpecials> map_specials_;
+	bool                         is_open_ = false;
+
+	mutable vector<MapSector*> thing_sectors_; // Cache of thing<->sector links
 
 	vector<ArchiveEntry*> udmf_extra_entries_; // UDMF Extras
 
-	long geometry_updated_ = 0; // The last time the map geometry was updated
-	long things_updated_   = 0; // The last time the thing list was modified
+	std::array<long, 6> type_modified_times_;           // The last modified time of each object type
+	long                geometry_updated_          = 0; // The last time the map geometry was updated
+	long                sector_renderinfo_updated_ = 0; // The last time any sector render info was updated
 
 	// Usage counts
 	std::map<int, int> usage_thing_type_;
+
+	// Bulk operations
+	struct BulkOperation
+	{
+		vector<MapObject*> created;
+		vector<MapObject*> modified;
+		vector<MapObject*> deleted;
+	};
+	unique_ptr<BulkOperation> current_bulk_operation_;
+	unsigned                  bulk_operation_depth_ = 0;
 };
 } // namespace slade

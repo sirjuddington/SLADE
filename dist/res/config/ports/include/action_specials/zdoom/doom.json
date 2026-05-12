@@ -1,0 +1,173 @@
+// ZDoom action specials for doom map format
+{
+  "groups": [
+    {
+      "name": "Scripting",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        { "name": "WR FS_Execute", "id": 273 },
+        { "name": "W1 FS_Execute", "id": 274 },
+        { "name": "W1 FS_Execute (Frontside only)", "id": 275 },
+        { "name": "SR FS_Execute", "id": 276 },
+        { "name": "S1 FS_Execute", "id": 277 },
+        { "name": "GR FS_Execute", "id": 278 },
+        { "name": "G1 FS_Execute", "id": 279 }
+      ]
+    },
+
+    {
+      "name": "Renderer",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        { "name": "-- Line Mirror", "id": 336 },
+        { "name": "-- Line Horizon", "id": 337 }
+      ]
+    },
+
+    {
+      "name": "Transfers",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "name": "-- Transfer Heights (swimmable)", "id": 280 },
+        { "name": "-- Transfer_Heights (only fake the floor)", "id": 350 },
+        { "name": "-- Transfer_Heights (fake and clip only the floor)", "id": 351 }
+      ]
+    },
+
+    {
+      "name": "3D Floors",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "name": "-- 3D Floor (solid, opaque)", "id": 281 },
+        { "name": "-- 3D Floor (solid, opaque, no light effects)", "id": 289 },
+        { "name": "-- 3D Floor (solid, 50% translucent, no light effects)", "id": 300 },
+        { "name": "-- 3D Floor (swimmable, 50% translucent)", "id": 301 },
+        { "name": "-- 3D Floor (non-solid, 50% translucent, foggy)", "id": 302 },
+        { "name": "-- 3D Floor (non-solid, invisible)", "id": 303 },
+        { "name": "-- 3D Floor (swimmable, opaque)", "id": 304 },
+        { "name": "-- 3D Floor (non-solid, invisble)", "id": 305 },
+        { "name": "-- 3D Floor (solid, invisible)", "id": 306 },
+        { "name": "-- 3D Floor (solid, opaque)", "id": 400 },
+        { "name": "-- 3D Floor (solid, opaque, monsters see-through)", "id": 401 },
+        { "name": "-- 3D Floor (solid, opaque, shoot-through)", "id": 402 },
+        { "name": "-- 3D Floor (swimmable, opaque)", "id": 403 },
+        { "name": "-- 3D Floor (swimmable, 80% opaque)", "id": 404 },
+        { "name": "-- 3D Floor (swimmable, 60% opaque)", "id": 405 },
+        { "name": "-- 3D Floor (swimmable, 40% opaque)", "id": 406 },
+        { "name": "-- 3D Floor (swimmable, 20% opaque)", "id": 407 },
+        { "name": "-- 3D Floor (swimmable, invisible)", "id": 408 },
+        { "name": "-- 3D Floor (solid, flat, opaque)", "id": 413 },
+        { "name": "-- 3D Floor (solid, flat, 80% opaque)", "id": 414 },
+        { "name": "-- 3D Floor (solid, flat, 60% opaque)", "id": 415 },
+        { "name": "-- 3D Floor (solid, flat, 40% opaque)", "id": 416 },
+        { "name": "-- 3D Floor (solid, flat, 20% opaque)", "id": 417 }
+      ]
+    },
+
+    {
+      "name": "Sector Effects",
+      "defaults": { "tagged": "sectors" },
+      "specials": [
+        {
+          "name": "-- Set Sector Light & Fog",
+          "id": 282,
+          "description": "Set colors from RRGGBB hex values as front side textures: upper for light, lower for fog."
+        },
+        { "name": "-- Set Gravity from Length of Line", "id": 333 },
+        {
+          "name": "-- Set Sector Light & Fog",
+          "id": 334,
+          "description": "Set colors from RRGGBB hex values as front side textures: upper for light, lower for fog."
+        },
+        { "name": "-- Set Sector Damage from Length of Line", "id": 335 }
+      ]
+    },
+
+    {
+      "name": "Wagglers",
+      "defaults": { "tagged": "sectors" },
+      "specials": [
+        { "name": "W1 Floor_Waggle (amplitude 24)", "id": 338 },
+        { "name": "W1 Floor_Waggle (amplitude 12)", "id": 339 }
+      ]
+    },
+
+    {
+      "name": "Scrollers/Affecting sectors",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "name": "-- Copy ceiling scoller", "id": 352 },
+        { "name": "-- Copy floor scroller", "id": 353 },
+        { "name": "-- Copy carrying floor scroller", "id": 354 }
+      ]
+    },
+
+    {
+      "name": "Scrollers/Affecting lines",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        { "name": "-- Scroll Texture Left", "id": 48 },
+        { "name": "-- Scroll Texture Right", "id": 422 },
+        { "name": "-- Scroll Texture Up", "id": 423 },
+        { "name": "-- Scroll Texture Down", "id": 424 },
+        { "name": "-- Scroll Texture Left & Up", "id": 425 },
+        { "name": "-- Scroll Texture Left & Down", "id": 426 },
+        { "name": "-- Scroll Texture Right & Up", "id": 427 },
+        { "name": "-- Scroll Texture Right & Down", "id": 428 }
+      ]
+    },
+
+    {
+      "name": "Translucent Lines",
+      "defaults": { "tagged": "lines" },
+      "specials": [
+        { "name": "-- Translucent Line (50% opaque)", "id": 284 },
+        { "name": "-- Translucent Line (75% opaque)", "id": 285 },
+        { "name": "-- Translucent Line (25% opaque)", "id": 286 },
+        { "name": "-- Translucent Line (50% opaque, additive)", "id": 287 },
+        { "name": "-- Translucent Line (opaque)", "id": 288 },
+        { "name": "-- Translucent Line (80% opaque)", "id": 409 },
+        { "name": "-- Translucent Line (60% opaque)", "id": 410 },
+        { "name": "-- Translucent Line (40% opaque)", "id": 411 },
+        { "name": "-- Translucent Line (20% opaque)", "id": 412 }
+      ]
+    },
+
+    {
+      "name": "Slopes",
+      "defaults": { "tagged": "sector_and_back" },
+      "specials": [
+        { "name": "-- Slope front floor", "id": 340 },
+        { "name": "-- Slope front ceiling", "id": 341 },
+        { "name": "-- Slope front floor and ceiling", "id": 342 },
+        { "name": "-- Slope back floor", "id": 343 },
+        { "name": "-- Slope back ceiling", "id": 344 },
+        { "name": "-- Slope back floor and ceiling", "id": 345 },
+        { "name": "-- Slope back floor and front ceiling", "id": 346 },
+        { "name": "-- Slope front floor and back ceiling", "id": 347 }
+      ]
+    },
+
+    {
+      "name": "Floors/Move Up",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "name": "S1 Floor Up 2", "id": 434 },
+        { "name": "SR Floor Up 2", "id": 435 },
+        { "name": "W1 Floor Up 2", "id": 436 },
+        { "name": "WR Floor Up 2", "id": 437 },
+        { "name": "G1 Floor Up 2", "id": 438 },
+        { "name": "GR Floor Up 2", "id": 439 }
+      ]
+    },
+
+    {
+      "name": "Autosave",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        { "name": "W1 Autosave", "id": 348 },
+        { "name": "S1 Autosave", "id": 349 }
+      ]
+    }
+  ]
+}

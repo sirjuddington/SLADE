@@ -1,0 +1,4 @@
+﻿{
+	"version": 4,
+	"include": [ "cmake/presets_windows.json" ]
+}

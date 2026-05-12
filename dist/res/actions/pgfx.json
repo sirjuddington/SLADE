@@ -1,0 +1,81 @@
+{
+  "pgfx_mirror": {
+    "text": "Mirror",
+    "icon": "mirror",
+    "help_text": "Mirror the graphic horizontally"
+  },
+  "pgfx_flip": {
+    "text": "Flip",
+    "icon": "flip",
+    "help_text": "Flip the graphic vertically"
+  },
+  "pgfx_rotate": {
+    "text": "Rotate",
+    "icon": "rotate",
+    "help_text": "Rotate the graphic"
+  },
+  "pgfx_remap": {
+    "text": "Colour remap",
+    "icon": "remap",
+    "help_text": "Remap a range of colours in the graphic to another range (paletted gfx only)"
+  },
+  "pgfx_colourise": {
+    "text": "Colourise",
+    "icon": "colourise",
+    "help_text": "Colourise the graphic"
+  },
+  "pgfx_tint": {
+    "text": "Tint",
+    "icon": "tint",
+    "help_text": "Tint the graphic by a colour/amount"
+  },
+  "pgfx_alph": {
+    "text": "alPh chunk",
+    "help_text": "Add/Remove alPh chunk to/from the PNG",
+    "type": "check"
+  },
+  "pgfx_trns": {
+    "text": "tRNS chunk",
+    "help_text": "Add/Remove tRNS chunk to/from the PNG",
+    "type": "check"
+  },
+  "pgfx_extract": {
+    "text": "Extract all",
+    "help_text": "Extract all images in this entry to separate PNGs"
+  },
+  "pgfx_crop": {
+    "text": "Crop",
+    "icon": "crop",
+    "help_text": "Crop the graphic"
+  },
+  "pgfx_convert": {
+    "text": "Convert to...",
+    "icon": "convert",
+    "help_text": "Open the Gfx Conversion Dialog for the entry"
+  },
+  "pgfx_pngopt": {
+    "text": "Optimize PNG",
+    "icon": "pngopt",
+    "help_text": "Optimize PNG entry"
+  },
+  "pgfx_settrans": {
+    "text": "Set brush translation",
+    "icon": "gfx_translation",
+    "help_text": "Select translation for drawing tool"
+  },
+  "pgfx_setbrush": {
+    "text": "Set brush shape",
+    "icon": "brush_sq_1",
+    "help_text": "Choose which brush shape to use when drawing"
+  },
+  "pgfx_offsetcopy": {
+    "text": "Copy Offsets",
+    "icon": "copy",
+    "help_text": "Copy the graphic's offsets to the clipboard"
+  },
+  "pgfx_offsetpaste": {
+    "text": "Paste Offsets",
+    "icon": "paste",
+    "help_text": "Paste previously copied offsets to the graphic"
+  }
+}

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
@@ -27,7 +27,7 @@
 namespace slade
 {
 class CTexture;
-class GfxCanvas;
+class GfxCanvasBase;
 class PaletteChooser;
 class ColourBox;
 
@@ -43,17 +43,17 @@ public:
 	void openEntries(const vector<ArchiveEntry*>& entries);
 	void openTextures(
 		const vector<CTexture*>& textures,
-		Palette*                 palette    = nullptr,
+		const Palette*           palette    = nullptr,
 		Archive*                 archive    = nullptr,
 		bool                     force_rgba = false);
-	void updatePreviewGfx() const;
+	void updatePreviewGfx(bool update_ui = true) const;
 	void updateControls() const;
 	void convertOptions(SIFormat::ConvertOptions& opt) const;
 
-	bool      itemModified(int index) const;
-	SImage*   itemImage(int index);
-	SIFormat* itemFormat(int index) const;
-	Palette*  itemPalette(int index) const;
+	bool           itemModified(int index) const;
+	SImage*        itemImage(int index);
+	SIFormat*      itemFormat(int index) const;
+	const Palette* itemPalette(int index) const;
 
 	void applyConversion();
 
@@ -72,18 +72,22 @@ private:
 
 	struct ConvItem
 	{
-		ArchiveEntry* entry   = nullptr;
-		CTexture*     texture = nullptr;
-		SImage        image;
-		bool          modified   = false;
-		SIFormat*     new_format = nullptr;
-		Palette*      palette    = nullptr;
-		Archive*      archive    = nullptr;
-		bool          force_rgba = false;
+		ArchiveEntry*  entry   = nullptr;
+		CTexture*      texture = nullptr;
+		SImage         image;
+		bool           modified   = false;
+		SIFormat*      new_format = nullptr;
+		const Palette* palette    = nullptr;
+		Archive*       archive    = nullptr;
+		bool           force_rgba = false;
 
 		ConvItem(ArchiveEntry* entry = nullptr) : entry{ entry } {}
 
-		ConvItem(CTexture* texture, Palette* palette = nullptr, Archive* archive = nullptr, bool force_rgba = false) :
+		ConvItem(
+			CTexture*      texture,
+			const Palette* palette    = nullptr,
+			Archive*       archive    = nullptr,
+			bool           force_rgba = false) :
 			texture{ texture },
 			palette{ palette },
 			archive{ archive },
@@ -98,8 +102,8 @@ private:
 	ConvFormat         current_format_;
 
 	wxStaticText*   label_current_format_     = nullptr;
-	GfxCanvas*      gfx_current_              = nullptr;
-	GfxCanvas*      gfx_target_               = nullptr;
+	GfxCanvasBase*  gfx_current_              = nullptr;
+	GfxCanvasBase*  gfx_target_               = nullptr;
 	wxButton*       btn_convert_              = nullptr;
 	wxButton*       btn_convert_all_          = nullptr;
 	wxButton*       btn_skip_                 = nullptr;
@@ -120,12 +124,12 @@ private:
 	Palette target_pal_;
 	ColRGBA colour_trans_;
 
-	bool nextItem();
+	bool nextItem(bool update_ui = true);
 	void updateButtons() const;
 
 	// Static
-	static wxString current_palette_name_;
-	static wxString target_palette_name_;
+	static string current_palette_name_;
+	static string target_palette_name_;
 
 	// Events
 	void onResize(wxSizeEvent& e);

@@ -10,6 +10,8 @@ struct BBox
 	Vec2d max;
 
 	BBox();
+	BBox(const Vec2d& min, const Vec2d& max);
+	BBox(double min_x, double min_y, double max_x, double max_y);
 
 	void reset();
 

@@ -17,12 +17,13 @@ public:
 	void setArgsPanel(ArgsPanel* panel) { panel_args_ = panel; }
 	void setSpecial(int special);
 	void setTrigger(int index) const;
-	void setTrigger(const wxString& trigger) const;
+	void setTrigger(string_view trigger) const;
 	void clearTrigger() const;
 	int  selectedSpecial() const;
 	void showGeneralised(bool show = true);
 	void applyTo(const vector<MapObject*>& lines, bool apply_special) const;
 	void openLines(const vector<MapObject*>& lines);
+	void updateArgsPanel() const;
 
 	void onRadioButtonChanged(wxCommandEvent& e);
 	void onSpecialSelectionChanged(wxDataViewEvent& e);
@@ -37,15 +38,16 @@ private:
 	wxRadioButton*         rb_generalised_       = nullptr;
 	ArgsPanel*             panel_args_           = nullptr;
 	wxChoice*              choice_trigger_       = nullptr;
-	NumberTextCtrl*        text_special_         = nullptr;
-	wxButton*              btn_preset_           = nullptr;
 	bool                   show_trigger_         = false;
+	wxTextCtrl*            text_special_         = nullptr;
+	wxButton*              btn_preset_           = nullptr;
+	bool                   ignore_select_event_  = false;
 
 	struct FlagHolder
 	{
 		wxCheckBox* check_box;
 		int         index;
-		wxString    udmf;
+		string      udmf;
 	};
 	vector<FlagHolder> flags_;
 };

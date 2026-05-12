@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ColRGBA.h"
-
 namespace slade
 {
 // ColHSL: Represents a colour in HSL format, generally used for calculations
@@ -38,12 +36,18 @@ namespace colour
 	// String conversion
 	enum class StringFormat
 	{
-		RGB,  // RGB(r, g, b)
-		RGBA, // RGBA(r, g, b, a)
-		HEX,  // #rrggbb
-		ZDoom // "rr gg bb"
+		RGB,  // rgb(r, g, b)
+		RGBA, // rgba(r, g, b, a)
+		HEX,  // #RRGGBB
+		HEXA, // #RRGGBBAA
+		ZDoom // "RR GG BB"
 	};
 	string   toString(const ColRGBA& colour, StringFormat format = StringFormat::HEX);
 	wxColour toWx(const ColRGBA& colour);
+	ColRGBA  fromString(string_view str);
+
+	// Other conversion
+	int     toInt(const ColRGBA& colour);
+	ColRGBA fromInt(int rgb);
 } // namespace colour
 } // namespace slade

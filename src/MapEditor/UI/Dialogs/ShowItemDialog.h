@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 class wxChoice;
 class wxTextCtrl;
@@ -7,7 +7,7 @@ namespace slade
 {
 namespace map
 {
-	enum class ObjectType;
+	enum class ObjectType : u8;
 }
 
 class ShowItemDialog : public wxDialog

@@ -26,14 +26,16 @@ public:
 		ObjectEdit,
 		Paste,
 		TagSectors,
-		TagThings
+		TagThings,
+		MouseLook
 	};
 
 	enum class DragType
 	{
 		None,
 		Selection,
-		Move
+		Move,
+		MouseLook
 	};
 
 	enum MouseButton
@@ -59,8 +61,9 @@ public:
 
 	// Mouse handling
 	void setMouseState(MouseState state) { mouse_state_ = state; }
+	void setMousePos(const Vec2i& pos);
 	bool mouseMove(int new_x, int new_y);
-	bool mouseDown(MouseButton button, bool double_click = false);
+	bool mouseDown(MouseButton button, int x, int y, bool double_click = false);
 	bool mouseUp(MouseButton button);
 	void mouseWheel(bool up, double amount);
 	void mouseLeave();

@@ -1,0 +1,1149 @@
+{
+  "groups": [
+    {
+      "name": "Player Starts",
+      "defaults": {
+        "colour": "rgb(0, 0, 127)",
+        "radius": 16,
+        "solid": true
+      },
+      "things": [
+        { "type": 1, "name": "Player 01 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 2, "name": "Player 02 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 3, "name": "Player 03 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 4, "name": "Player 04 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 5, "name": "Player 05 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 6, "name": "Player 06 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 7, "name": "Player 07 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 8, "name": "Player 08 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 9, "name": "Player 09 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 10, "name": "Player 10 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 11, "name": "Player 11 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 12, "name": "Player 12 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 13, "name": "Player 13 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 14, "name": "Player 14 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 15, "name": "Player 15 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 16, "name": "Player 16 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 17, "name": "Player 17 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 18, "name": "Player 18 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 19, "name": "Player 19 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 20, "name": "Player 20 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 21, "name": "Player 21 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 22, "name": "Player 22 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 23, "name": "Player 23 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 24, "name": "Player 24 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 25, "name": "Player 25 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 26, "name": "Player 26 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 27, "name": "Player 27 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 28, "name": "Player 28 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 29, "name": "Player 29 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 30, "name": "Player 30 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 31, "name": "Player 31 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 32, "name": "Player 32 Start", "sprite": "PLAYA?", "player_coop": true },
+
+        { "type": 33, "name": "Match Start", "sprite": "NDRNA2A8", "player_dm": true },
+        { "type": 34, "name": "CTF Red Team Start", "sprite": "SIGNG0", "player_dm": true },
+        { "type": 35, "name": "CTF Blue Team Start", "sprite": "SIGNE0", "player_dm": true }
+      ]
+    },
+
+    {
+      "name": "Enemies",
+      "defaults": {
+        "colour": "rgb(0, 0, 255)",
+        "angle": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 100, "sprite": "POSSA?", "radius": 24, "height": 32, "name": "Crawla (Blue)", "hanging": true },
+        { "type": 101, "sprite": "SPOSA?", "radius": 24, "height": 32, "name": "Crawla (Red)", "hanging": true },
+        {
+          "type": 102,
+          "sprite": "FISHA0",
+          "radius": 8,
+          "height": 28,
+          "name": "Stupid Dumb Unnamed RoboFish",
+          "hanging": true
+        },
+        { "type": 103, "sprite": "BUZZA?", "radius": 28, "height": 40, "name": "Buzz (Gold)", "hanging": true },
+        { "type": 104, "sprite": "RBUZA?", "radius": 28, "height": 40, "name": "Buzz (Red)", "hanging": true },
+        { "type": 108, "sprite": "DETNA?", "radius": 20, "height": 32, "name": "Deton", "hanging": true },
+        { "type": 110, "sprite": "TRETA?", "radius": 16, "height": 32, "name": "Turret", "hanging": true },
+        { "type": 111, "sprite": "TURRI?", "radius": 12, "height": 64, "name": "Pop-up Turret", "hanging": true },
+        {
+          "type": 122,
+          "sprite": "SSHLA?",
+          "radius": 24,
+          "height": 40,
+          "name": "Spring Shell (Green)",
+          "hanging": true
+        },
+        {
+          "type": 125,
+          "sprite": "SSHLI?",
+          "radius": 24,
+          "height": 40,
+          "name": "Spring Shell (Yellow)",
+          "hanging": true
+        },
+        { "type": 109, "sprite": "SKIMA?", "radius": 16, "height": 24, "name": "Skim", "hanging": true },
+        { "type": 113, "sprite": "JJAWA3A7", "radius": 12, "height": 20, "name": "Jet Jaw", "hanging": true },
+        { "type": 126, "sprite": "CRABA0", "radius": 24, "height": 32, "name": "Crushstacean", "hanging": true },
+        { "type": 138, "sprite": "CR2BA0", "radius": 24, "height": 32, "name": "Banpyura", "hanging": true },
+        { "type": 117, "sprite": "ARCHA?", "radius": 24, "height": 32, "name": "Robo-Hood", "hanging": true },
+        { "type": 118, "sprite": "CBFSA?", "radius": 32, "height": 72, "name": "Lance-a-Bot", "hanging": true },
+        {
+          "type": 1113,
+          "sprite": "CBBSA?",
+          "radius": 32,
+          "height": 72,
+          "name": "Suspicious Lance-a-Bot Statue",
+          "hanging": true
+        },
+        { "type": 119, "sprite": "ESHIA?", "radius": 16, "height": 48, "name": "Egg Guard", "hanging": true },
+        {
+          "type": 115,
+          "sprite": "VLTRF?",
+          "radius": 12,
+          "height": 24,
+          "name": "Bird Aircraft Strike Hazard",
+          "hanging": true
+        },
+        { "type": 120, "sprite": "GSNPA?", "radius": 24, "height": 24, "name": "Green Snapper", "hanging": true },
+        { "type": 121, "sprite": "MNUSA0", "radius": 24, "height": 32, "name": "Minus", "hanging": true },
+        { "type": 134, "sprite": "CANAA0", "radius": 12, "height": 80, "hanging": true, "name": "Canarivore" },
+        { "type": 123, "sprite": "UNIDA?", "radius": 18, "height": 36, "name": "Unidus", "hanging": true },
+        { "type": 135, "sprite": "PTERA2A8", "radius": 16, "height": 16, "name": "Pterabyte Spawner", "hanging": true },
+        { "type": 136, "sprite": "PYREA0", "radius": 24, "height": 34, "name": "Pyre Fly", "hanging": true },
+        { "type": 137, "sprite": "DRABA?", "radius": 28, "height": 48, "name": "Dragonbomber", "hanging": true },
+        { "type": 105, "sprite": "JETBB?", "radius": 20, "height": 50, "name": "Jetty-Syn Bomber", "hanging": true },
+        { "type": 106, "sprite": "JETGB?", "radius": 20, "height": 48, "name": "Jetty-Syn Gunner", "hanging": true },
+        { "type": 112, "sprite": "SHRPA?", "radius": 16, "height": 24, "name": "Spincushion", "hanging": true },
+        { "type": 114, "sprite": "SNLRA3A7", "radius": 24, "height": 48, "name": "Snailer", "hanging": true },
+        { "type": 129, "sprite": "PENGA?", "radius": 24, "height": 32, "name": "Penguinator", "hanging": true },
+        { "type": 130, "sprite": "POPHA?", "radius": 24, "height": 32, "name": "Pophat", "hanging": true },
+        { "type": 107, "sprite": "CCOMA?", "radius": 16, "height": 32, "name": "Crawla Commander", "hanging": true },
+        { "type": 131, "sprite": "SBOBB0", "radius": 32, "height": 32, "name": "Spinbobert", "hanging": true },
+        { "type": 132, "sprite": "CACOA0", "radius": 32, "height": 32, "name": "Cacolantern", "hanging": true },
+        { "type": 133, "sprite": "HBATC?", "radius": 24, "height": 24, "hanging": true, "name": "Hangster" },
+        { "type": 127, "sprite": "HIVEA0", "radius": 32, "height": 80, "name": "Hive Elemental", "hanging": true },
+        { "type": 128, "sprite": "BUMBA?", "radius": 16, "height": 32, "name": "Bumblebore", "hanging": true },
+        { "type": 124, "sprite": "BBUZA?", "radius": 20, "height": 24, "name": "Buggle", "hanging": true },
+        { "type": 116, "sprite": "PNTYA?", "radius": 8, "height": 16, "name": "Pointy", "hanging": true }
+      ]
+    },
+
+    {
+      "name": "Bosses",
+      "defaults": {
+        "colour": "rgb(64, 64, 64)",
+        "angle": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 200, "sprite": "EGGMA?", "radius": 24, "height": 76, "name": "Egg Mobile", "angle": true },
+        { "type": 201, "sprite": "EGGNA?", "radius": 24, "height": 76, "name": "Egg Slimer", "angle": true },
+        { "type": 202, "sprite": "EGGOA?", "radius": 32, "height": 116, "name": "Sea Egg", "angle": true },
+        { "type": 203, "sprite": "EGGPA?", "radius": 24, "height": 76, "name": "Egg Colosseum", "angle": true },
+        { "type": 204, "sprite": "FANGA?", "radius": 24, "height": 60, "name": "Fang", "angle": true },
+        { "type": 206, "sprite": "BRAKB?", "radius": 48, "height": 160, "name": "Brak Eggman (Old)", "angle": true },
+        { "type": 207, "sprite": "METLI?", "radius": 16, "height": 48, "name": "Metal Sonic (Race)", "angle": true },
+        { "type": 208, "sprite": "METLC?", "radius": 16, "height": 48, "name": "Metal Sonic (Battle)", "angle": true },
+        { "type": 209, "sprite": "BRAK0?", "radius": 48, "height": 160, "name": "Brak Eggman", "angle": true },
+
+        {
+          "type": 290,
+          "sprite": "internal:eggmanend",
+          "radius": 8,
+          "height": 16,
+          "angle": false,
+          "name": "Boss Escape Point"
+        },
+        {
+          "type": 291,
+          "sprite": "internal:capsule",
+          "radius": 8,
+          "height": 16,
+          "angle": false,
+          "name": "Egg Capsule Center"
+        },
+        {
+          "type": 292,
+          "sprite": "internal:eggmanway",
+          "radius": 8,
+          "height": 16,
+          "angle": false,
+          "name": "Boss Waypoint"
+        },
+        {
+          "type": 293,
+          "sprite": "internal:metal",
+          "radius": 8,
+          "height": 16,
+          "angle": true,
+          "name": "Metal Sonic Gather Point"
+        },
+        {
+          "type": 294,
+          "sprite": "internal:eggmanway",
+          "radius": 8,
+          "height": 16,
+          "angle": true,
+          "name": "Fang Waypoint"
+        }
+      ]
+    },
+
+    {
+      "name": "Rings and Weapon Panels",
+      "defaults": {
+        "colour": "rgb(255, 255, 0)",
+        "solid": true,
+        "radius": 24,
+        "height": 24,
+        "sprite": "RINGA0"
+      },
+      "things": [
+        { "type": 300, "sprite": "RINGA0", "radius": 16, "name": "Ring" },
+        { "type": 301, "sprite": "RNGBA0", "name": "Bounce Ring" },
+        { "type": 302, "sprite": "RNGRA0", "name": "Rail Ring" },
+        { "type": 303, "sprite": "RNGIA0", "name": "Infinity Ring" },
+        { "type": 304, "sprite": "RNGAA0", "name": "Automatic Ring" },
+        { "type": 305, "sprite": "RNGEA0", "name": "Explosion Ring" },
+        { "type": 306, "sprite": "RNGSA0", "name": "Scatter Ring" },
+        { "type": 307, "sprite": "RNGGA0", "name": "Grenade Ring" },
+        { "type": 308, "sprite": "RRNGA0", "radius": 16, "name": "CTF Team Ring (Red)" },
+        { "type": 309, "sprite": "BRNGA0", "radius": 16, "name": "CTF Team Ring (Blue)" },
+        { "type": 330, "sprite": "PIKBA0", "name": "Bounce Ring Panel" },
+        { "type": 331, "sprite": "PIKRA0", "name": "Rail Ring Panel" },
+        { "type": 332, "sprite": "PIKAA0", "name": "Automatic Ring Panel" },
+        { "type": 333, "sprite": "PIKEA0", "name": "Explosion Ring Panel" },
+        { "type": 334, "sprite": "PIKSA0", "name": "Scatter Ring Panel" },
+        { "type": 335, "sprite": "PIKGA0", "name": "Grenade Ring Panel" }
+      ]
+    },
+
+    {
+      "name": "Other Collectibles",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)",
+        "solid": true,
+        "radius": 16,
+        "height": 32,
+        "sort": 1,
+        "sprite": "CEMGA0"
+      },
+      "things": [
+        { "type": 310, "sprite": "RFLGA0", "radius": 24, "height": 64, "name": "CTF Red Flag" },
+        { "type": 311, "sprite": "BFLGA0", "radius": 24, "height": 64, "name": "CTF Blue Flag" },
+        { "type": 312, "sprite": "TOKEA0", "radius": 16, "height": 32, "name": "Emerald Token" },
+
+        { "type": 313, "sprite": "CEMGA0", "name": "Chaos Emerald 1 (Green)" },
+        { "type": 314, "sprite": "CEMGB0", "name": "Chaos Emerald 2 (Purple)" },
+        { "type": 315, "sprite": "CEMGC0", "name": "Chaos Emerald 3 (Blue)" },
+        { "type": 316, "sprite": "CEMGD0", "name": "Chaos Emerald 4 (Cyan)" },
+        { "type": 317, "sprite": "CEMGE0", "name": "Chaos Emerald 5 (Orange)" },
+        { "type": 318, "sprite": "CEMGF0", "name": "Chaos Emerald 6 (Red)" },
+        { "type": 319, "sprite": "CEMGG0", "name": "Chaos Emerald 7 (Gray)" },
+
+        { "type": 320, "sprite": "SHRDA0", "name": "Emerald Hunt Location" },
+        { "type": 321, "sprite": "CEMGA0", "name": "Match Chaos Emerald Spawn" },
+
+        { "type": 322, "sprite": "EMBMA0", "radius": 16, "height": 30, "name": "Emblem" }
+      ]
+    },
+
+    {
+      "name": "Monitors",
+      "defaults": {
+        "colour": "rgb(127, 127, 127)",
+        "solid": true,
+        "radius": 18,
+        "height": 40
+      },
+      "things": [
+        { "type": 400, "sprite": "TVRIA0", "name": "Super Ring (10 Rings)" },
+
+        { "type": 401, "sprite": "TVPIA0", "name": "Pity Shield" },
+        { "type": 402, "sprite": "TVATA0", "name": "Attraction Shield" },
+        { "type": 403, "sprite": "TVFOA0", "name": "Force Shield" },
+        { "type": 404, "sprite": "TVARA0", "name": "Armageddon Shield" },
+        { "type": 405, "sprite": "TVWWA0", "name": "Whirlwind Shield" },
+        { "type": 406, "sprite": "TVELA0", "name": "Elemental Shield" },
+
+        { "type": 407, "sprite": "TVSSA0", "name": "Super Sneakers" },
+        { "type": 408, "sprite": "TVIVA0", "name": "Invincibility" },
+        { "type": 409, "sprite": "TV1UA0", "name": "Extra Life" },
+        { "type": 410, "sprite": "TVEGA0", "name": "Eggman" },
+        { "type": 411, "sprite": "TVMXA0", "name": "Teleporter" },
+        { "type": 413, "sprite": "TVGVA0", "name": "Gravity Boots" },
+
+        { "type": 414, "sprite": "TRRIA0", "name": "CTF Team Ring Monitor (Red)" },
+        { "type": 415, "sprite": "TBRIA0", "name": "CTF Team Ring Monitor (Blue)" },
+        { "type": 416, "sprite": "TVRCA0", "name": "Recycler" },
+        { "type": 418, "sprite": "TV1KA0", "name": "Score (1,000 Points)" },
+        { "type": 419, "sprite": "TVTKA0", "name": "Score (10,000 Points)" },
+
+        { "type": 420, "sprite": "TVFLA0", "name": "Flame Shield" },
+        { "type": 421, "sprite": "TVBBA0", "name": "Water Shield" },
+        { "type": 422, "sprite": "TVZPA0", "name": "Lightning Shield" }
+      ]
+    },
+
+    {
+      "name": "Monitors (Respawning)",
+      "defaults": {
+        "colour": "rgb(255, 180, 0)",
+        "solid": true,
+        "radius": 20,
+        "height": 44
+      },
+      "things": [
+        { "type": 431, "sprite": "TVPIB0", "name": "Pity Shield (Respawn)" },
+        { "type": 432, "sprite": "TVATB0", "name": "Attraction Shield (Respawn)" },
+        { "type": 433, "sprite": "TVFOB0", "name": "Force Shield (Respawn)" },
+        { "type": 434, "sprite": "TVARB0", "name": "Armageddon Shield (Respawn)" },
+        { "type": 435, "sprite": "TVWWB0", "name": "Whirlwind Shield (Respawn)" },
+        { "type": 436, "sprite": "TVELB0", "name": "Elemental Shield (Respawn)" },
+
+        { "type": 437, "sprite": "TVSSB0", "name": "Super Sneakers (Respawn)" },
+        { "type": 438, "sprite": "TVIVB0", "name": "Invincibility (Respawn)" },
+        { "type": 440, "sprite": "TVEGB0", "name": "Eggman (Respawn)" },
+        { "type": 443, "sprite": "TVGVB0", "name": "Gravity Boots (Respawn)" },
+
+        { "type": 450, "sprite": "TVFLB0", "name": "Flame Shield (Respawn)" },
+        { "type": 451, "sprite": "TVBBB0", "name": "Water Shield (Respawn)" },
+        { "type": 452, "sprite": "TVZPB0", "name": "Lightning Shield (Respawn)" }
+      ]
+    },
+
+    {
+      "name": "Generic Items & Hazards",
+      "defaults": {
+        "colour": "rgb(0, 255, 255)",
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 500, "sprite": "BUBLE0", "radius": 8, "height": 16, "name": "Air Bubble Patch", "angle": true },
+        { "type": 501, "sprite": "SIGND0", "radius": 8, "height": 32, "name": "Signpost", "angle": true },
+        { "type": 502, "sprite": "STPTA0M0", "radius": 64, "height": 128, "name": "Star Post", "angle": true },
+        { "type": 520, "sprite": "SPHRD0", "radius": 16, "height": 24, "name": "Bomb Sphere", "angle": true },
+        { "type": 521, "sprite": "SPIKA0", "radius": 12, "height": 8, "name": "Spikeball", "angle": true },
+        { "type": 522, "sprite": "WSPKALAR", "radius": 16, "height": 14, "name": "Wall Spike", "angle": true },
+        { "type": 523, "sprite": "USPKA0", "radius": 8, "height": 32, "name": "Spike", "angle": true },
+        { "type": 1130, "sprite": "SMCEA0", "radius": 17, "height": 34, "name": "Small Mace", "angle": true },
+        { "type": 1131, "sprite": "BMCEA0", "radius": 34, "height": 68, "name": "Big Mace", "angle": true },
+        { "type": 1136, "sprite": "SFBRA0", "radius": 17, "height": 34, "name": "Small Fireball", "angle": true },
+        { "type": 1137, "sprite": "BFBRA0", "radius": 34, "height": 68, "name": "Large Fireball", "angle": true }
+      ]
+    },
+
+    {
+      "name": "Springs and Fans",
+      "defaults": {
+        "colour": "rgb(255, 0, 0)",
+        "solid": true,
+        "icon": "sprite",
+        "radius": 20,
+        "height": 16,
+        "sprite": "RSPRD2"
+      },
+      "things": [
+        { "type": 540, "sprite": "FANSA0D0", "radius": 16, "height": 8, "name": "Fan", "angle": true },
+        { "type": 541, "sprite": "STEMD0", "radius": 32, "name": "Gas Jet", "angle": true },
+        { "type": 542, "sprite": "BUMPA0", "radius": 32, "height": 64, "name": "Bumper", "angle": true },
+        { "type": 543, "sprite": "BLONA0", "radius": 32, "height": 64, "name": "Balloon", "angle": true },
+
+        { "type": 550, "sprite": "SPRYA0", "name": "Yellow Spring", "angle": true },
+        { "type": 551, "sprite": "SPRRA0", "name": "Red Spring", "angle": true },
+        { "type": 552, "sprite": "SPRBA0", "name": "Blue Spring", "angle": true },
+
+        { "type": 555, "sprite": "YSPRD?", "radius": 16, "angle": true, "name": "Diagonal Yellow Spring" },
+        { "type": 556, "sprite": "RSPRD?", "radius": 16, "angle": true, "name": "Diagonal Red Spring" },
+        { "type": 557, "sprite": "BSPRD?", "radius": 16, "angle": true, "name": "Diagonal Blue Spring" },
+
+        {
+          "type": 558,
+          "sprite": "SSWYD?",
+          "radius": 16,
+          "height": 32,
+          "angle": true,
+          "name": "Horizontal Yellow Spring"
+        },
+        { "type": 559, "sprite": "SSWRD?", "radius": 16, "height": 32, "angle": true, "name": "Horizontal Red Spring" },
+        {
+          "type": 560,
+          "sprite": "SSWBD?",
+          "radius": 16,
+          "height": 32,
+          "angle": true,
+          "name": "Horizontal Blue Spring"
+        },
+
+        { "type": 1134, "sprite": "YSPBA0", "radius": 17, "height": 34, "name": "Yellow Spring Ball", "angle": true },
+        { "type": 1135, "sprite": "RSPBA0", "radius": 17, "height": 34, "name": "Red Spring Ball", "angle": true },
+        { "type": 544, "sprite": "BSTYA0", "radius": 28, "height": 2, "angle": true, "name": "Yellow Boost Panel" },
+        { "type": 545, "sprite": "BSTRA0", "radius": 28, "height": 2, "angle": true, "name": "Red Boost Panel" }
+      ]
+    },
+
+    {
+      "name": "Special Placement Patterns",
+      "defaults": {
+        "colour": "rgb(127, 0, 127)",
+        "angle": true,
+        "radius": 16,
+        "height": 384,
+        "sprite": "RINGA0"
+      },
+      "things": [
+        { "type": 600, "sprite": "RINGA0", "angle": false, "name": "5 Vertical Rings (Yellow Spring)" },
+        { "type": 601, "sprite": "RINGA0", "height": 1024, "angle": false, "name": "5 Vertical Rings (Red Spring)" },
+        { "type": 602, "sprite": "RINGA0", "height": 32, "angle": true, "name": "5 Diagonal Rings (Yellow Spring)" },
+        { "type": 603, "sprite": "RINGA0", "height": 32, "angle": true, "name": "10 Diagonal Rings (Red Spring)" },
+
+        { "type": 604, "sprite": "RINGA0", "radius": 96, "height": 192, "angle": true, "name": "Circle of Rings" },
+        { "type": 605, "sprite": "RINGA0", "radius": 192, "name": "Circle of Rings (Big)" },
+        {
+          "type": 606,
+          "sprite": "SPHRA0",
+          "radius": 96,
+          "height": 192,
+          "angle": true,
+          "name": "Circle of Blue Spheres"
+        },
+        { "type": 607, "sprite": "SPHRA0", "radius": 192, "name": "Circle of Blue Spheres (Big)" },
+        {
+          "type": 608,
+          "sprite": "SPHRA0",
+          "radius": 96,
+          "height": 192,
+          "angle": true,
+          "name": "Circle of Rings and Spheres"
+        },
+        { "type": 609, "sprite": "SPHRA0", "radius": 192, "name": "Circle of Rings and Spheres (Big)" }
+      ]
+    },
+
+    {
+      "name": "Misc. Invisible",
+      "defaults": {
+        "colour": "rgb(255, 255, 255)",
+        "radius": 0,
+        "height": 0,
+        "sprite": "UNKNA0",
+        "sort": 1,
+        "fixedsize": true,
+        "blocking": 0
+      },
+      "things": [
+        { "type": 700, "sprite": "internal:ambiance", "name": "Water Ambience A (Large)" },
+        { "type": 701, "sprite": "internal:ambiance", "name": "Water Ambience B (Large)" },
+        { "type": 702, "sprite": "internal:ambiance", "name": "Water Ambience C (Medium)" },
+        { "type": 703, "sprite": "internal:ambiance", "name": "Water Ambience D (Medium)" },
+        { "type": 704, "sprite": "internal:ambiance", "name": "Water Ambience E (Small)" },
+        { "type": 705, "sprite": "internal:ambiance", "name": "Water Ambience F (Small)" },
+        { "type": 706, "sprite": "internal:ambiance", "name": "Water Ambience G (Extra Large)" },
+        { "type": 707, "sprite": "internal:ambiance", "name": "Water Ambience H (Extra Large)" },
+        { "type": 708, "sprite": "internal:ambiance", "name": "Disco Ambience" },
+        { "type": 709, "sprite": "internal:ambiance", "name": "Volcano Ambience" },
+        { "type": 710, "sprite": "internal:ambiance", "name": "Machine Ambience" },
+        { "type": 750, "sprite": "internal:vertexslope", "name": "Slope Vertex" },
+        { "type": 751, "sprite": "internal:tele", "angle": true, "name": "Teleport Destination" },
+        { "type": 752, "sprite": "internal:view", "angle": true, "name": "Alternate View Point" },
+        { "type": 753, "sprite": "internal:zoom", "name": "Zoom Tube Waypoint" },
+        { "type": 754, "sprite": "GWLGA0", "name": "Push Point" },
+        { "type": 755, "sprite": "GWLRA0", "name": "Pull Point" },
+
+        {
+          "type": 756,
+          "sprite": "TOADA0",
+          "radius": 32,
+          "height": 16,
+          "angle": true,
+          "name": "Blast Linedef Executor"
+        },
+        { "type": 757, "sprite": "PRTLA0", "radius": 8, "height": 16, "angle": true, "name": "Fan Particle Generator" },
+
+        { "type": 758, "sprite": "internal:view", "name": "Object Angle Anchor" },
+        { "type": 760, "sprite": "internal:polyanchor", "name": "PolyObject Anchor" },
+        { "type": 761, "sprite": "internal:polycenter", "name": "PolyObject Spawn Point" },
+        { "type": 762, "sprite": "internal:polycentercrush", "name": "PolyObject Spawn Point (Crush)" },
+        { "type": 780, "sprite": "internal:skyb", "name": "Skybox View Point" }
+      ]
+    },
+
+    {
+      "name": "Greenflower",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        { "type": 800, "sprite": "FWR1A0", "radius": 16, "height": 40, "name": "GFZ Flower" },
+        { "type": 801, "sprite": "FWR2A0", "radius": 16, "height": 96, "name": "Sunflower" },
+        { "type": 802, "sprite": "FWR3A0", "radius": 8, "height": 32, "name": "Budding Flower" },
+        { "type": 803, "sprite": "BUS3A0", "radius": 16, "height": 32, "name": "Blueberry Bush" },
+        { "type": 804, "sprite": "BUS1A0", "radius": 16, "height": 32, "name": "Berry Bush" },
+        { "type": 805, "sprite": "BUS2A0", "radius": 16, "height": 32, "name": "Bush" },
+        { "type": 806, "sprite": "TRE1A0", "radius": 20, "height": 128, "name": "GFZ Tree" },
+        { "type": 807, "sprite": "TRE1B0", "radius": 20, "height": 128, "name": "GFZ Berry Tree" },
+        { "type": 808, "sprite": "TRE1C0", "radius": 20, "height": 128, "name": "GFZ Cherry Tree" },
+        { "type": 809, "sprite": "TRE2A0", "radius": 20, "height": 200, "name": "Checkered Tree" },
+        { "type": 810, "sprite": "TRE2B0", "radius": 20, "height": 200, "name": "Checkered Tree (Sunset)" },
+        { "type": 811, "sprite": "TRE4A0", "radius": 20, "height": 200, "name": "Polygon Tree" },
+        { "type": 812, "sprite": "TRE5A0", "radius": 20, "height": 200, "name": "Bush Tree" },
+        { "type": 813, "sprite": "TRE5B0", "radius": 20, "height": 200, "name": "Red Bush Tree" }
+      ]
+    },
+
+    {
+      "name": "Techno Hill",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        { "type": 900, "sprite": "THZPA0", "radius": 8, "height": 32, "name": "THZ Steam Flower", "hanging": true },
+        { "type": 901, "sprite": "ALRMA0", "radius": 8, "height": 16, "hanging": true, "name": "Alarm" },
+        {
+          "type": 902,
+          "sprite": "FWR5A0",
+          "radius": 16,
+          "height": 64,
+          "name": "THZ Spin Flower (Red)",
+          "hanging": true
+        },
+        {
+          "type": 903,
+          "sprite": "FWR6A0",
+          "radius": 16,
+          "height": 64,
+          "name": "THZ Spin Flower (Yellow)",
+          "hanging": true
+        },
+        {
+          "type": 904,
+          "sprite": "THZTA0",
+          "radius": 16,
+          "height": 64,
+          "angle": true,
+          "name": "Whistlebush",
+          "hanging": true
+        }
+      ]
+    },
+
+    {
+      "name": "Deep Sea",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        {
+          "type": 1000,
+          "sprite": "GARGA?",
+          "radius": 16,
+          "height": 40,
+          "angle": true,
+          "solid": true,
+          "name": "Gargoyle"
+        },
+        {
+          "type": 1009,
+          "sprite": "GARGB1",
+          "radius": 32,
+          "height": 80,
+          "angle": true,
+          "solid": true,
+          "name": "Gargoyle (Big)"
+        },
+
+        { "type": 1001, "sprite": "SEWEA0", "radius": 24, "height": 56, "hanging": true, "name": "Seaweed" },
+        { "type": 1002, "sprite": "DRIPD0", "radius": 8, "height": 16, "hanging": true, "name": "Dripping Water" },
+        { "type": 1003, "sprite": "CORLA0", "radius": 29, "height": 40, "hanging": true, "name": "Coral (Green)" },
+        { "type": 1004, "sprite": "CORLB0", "radius": 30, "height": 53, "hanging": true, "name": "Coral (Red)" },
+        { "type": 1005, "sprite": "CORLC0", "radius": 28, "height": 41, "hanging": true, "name": "Coral (Orange)" },
+        { "type": 1006, "sprite": "BCRYA?", "radius": 8, "height": 16, "hanging": true, "name": "Blue Crystal" },
+        { "type": 1007, "sprite": "KELPA0", "radius": 16, "height": 292, "hanging": true, "name": "Kelp" },
+        { "type": 1008, "sprite": "DSTGA0", "radius": 8, "height": 116, "hanging": true, "name": "Stalagmite (DSZ1)" },
+        {
+          "type": 1010,
+          "sprite": "LIBEARAL",
+          "radius": 16,
+          "height": 16,
+          "angle": true,
+          "hanging": true,
+          "name": "Light Beam"
+        },
+        { "type": 1011, "sprite": "DSTGA0", "radius": 8, "height": 116, "hanging": true, "name": "Stalagmite (DSZ2)" },
+        {
+          "type": 1012,
+          "sprite": "BMNEA?",
+          "radius": 28,
+          "height": 56,
+          "angle": true,
+          "hanging": true,
+          "name": "Big Floating Mine"
+        },
+        { "type": 1013, "sprite": "ALGAA0", "radius": 48, "height": 120, "hanging": true, "name": "Animated Kelp" },
+        {
+          "type": 1014,
+          "sprite": "CORLD0",
+          "radius": 56,
+          "height": 112,
+          "hanging": true,
+          "name": "Large Coral (Brown)"
+        },
+        {
+          "type": 1015,
+          "sprite": "CORLE0",
+          "radius": 56,
+          "height": 112,
+          "hanging": true,
+          "name": "Large Coral (Beige)"
+        }
+      ]
+    },
+
+    {
+      "name": "Castle Eggman",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        { "type": 1100, "sprite": "CHANA0", "radius": 4, "height": 128, "hanging": true, "name": "Chain (Decorative)" },
+        { "type": 1101, "sprite": "FLAMA0E0", "radius": 8, "height": 32, "name": "Torch" },
+        {
+          "type": 1102,
+          "sprite": "ESTAA?",
+          "radius": 32,
+          "height": 240,
+          "angle": true,
+          "solid": true,
+          "name": "Eggman Statue"
+        },
+        { "type": 1103, "sprite": "FWR4A0", "radius": 16, "height": 40, "name": "CEZ Flower" },
+
+        { "type": 1104, "sprite": "SMCEA0", "radius": 17, "height": 34, "name": "Mace Spawnpoint" },
+        { "type": 1105, "sprite": "SMCEA0", "radius": 17, "height": 34, "name": "Chain with Maces Spawnpoint" },
+        { "type": 1106, "sprite": "YSPBA0", "radius": 17, "height": 34, "name": "Chained Spring Spawnpoint" },
+        { "type": 1107, "sprite": "BMCHA0", "radius": 17, "height": 34, "name": "Chain Spawnpoint" },
+        {
+          "type": 1108,
+          "sprite": "internal:chain3",
+          "radius": 17,
+          "height": 34,
+          "angle": true,
+          "name": "Hidden Chain Spawnpoint"
+        },
+        { "type": 1109, "sprite": "BFBRA0", "radius": 17, "height": 34, "name": "Firebar Spawnpoint" },
+        { "type": 1110, "sprite": "SMCEA0", "radius": 17, "height": 34, "name": "Custom Mace Spawnpoint" },
+
+        {
+          "type": 1111,
+          "sprite": "CSTAA?",
+          "radius": 16,
+          "height": 40,
+          "angle": true,
+          "solid": true,
+          "name": "Crawla Statue"
+        },
+        {
+          "type": 1112,
+          "sprite": "CBBSA?",
+          "radius": 32,
+          "height": 72,
+          "angle": true,
+          "solid": true,
+          "name": "Lance-a-Bot Statue"
+        },
+        { "type": 1114, "sprite": "PINEA0", "radius": 16, "height": 628, "name": "Pine Tree" },
+        { "type": 1115, "sprite": "CEZBA0", "radius": 16, "height": 24, "name": "CEZ Shrub (Small)" },
+        { "type": 1116, "sprite": "CEZBB0", "radius": 32, "height": 48, "name": "CEZ Shrub (Large)" },
+        { "type": 1117, "sprite": "BANRA0", "radius": 40, "height": 224, "angle": true, "name": "Pole Banner (Red)" },
+        { "type": 1118, "sprite": "BANRA0", "radius": 40, "height": 224, "angle": true, "name": "Pole Banner (Blue)" },
+        { "type": 1119, "sprite": "CNDLA0", "radius": 8, "height": 48, "name": "Candle" },
+        { "type": 1120, "sprite": "CNDLB0", "radius": 8, "height": 176, "name": "Candle Pricket" },
+        { "type": 1121, "sprite": "FLMHA0", "radius": 24, "height": 80, "name": "Flame Holder" },
+        { "type": 1122, "sprite": "CTRCA0", "radius": 16, "height": 80, "name": "Fire Torch" },
+
+        { "type": 1123, "sprite": "internal:cannonball", "radius": 8, "height": 16, "name": "Cannonball Launcher" },
+
+        { "type": 1124, "sprite": "CBLLA0", "radius": 20, "height": 40, "name": "Cannonball" },
+        { "type": 1125, "sprite": "CABRALAR", "radius": 48, "height": 32, "name": "Brambles" },
+        { "type": 1126, "sprite": "LCKNC0", "radius": 16, "height": 32, "name": "Invisible Lockon Object" },
+        { "type": 1127, "sprite": "EGR1A?", "radius": 20, "height": 72, "name": "Spectator Eggrobo" },
+        { "type": 1128, "sprite": "CFLGA0", "radius": 8, "height": 208, "angle": true, "name": "Waving Flag (Red)" },
+        { "type": 1129, "sprite": "CFLGA0", "radius": 8, "height": 208, "angle": true, "name": "Waving Flag (Blue)" }
+      ]
+    },
+
+    {
+      "name": "Arid Canyon",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        { "type": 1200, "sprite": "BTBLA0", "radius": 24, "height": 48, "hanging": true, "name": "Tumbleweed (Big)" },
+        { "type": 1201, "sprite": "STBLA0", "radius": 12, "height": 24, "hanging": true, "name": "Tumbleweed (Small)" },
+        { "type": 1202, "sprite": "ROIAA0", "radius": 8, "height": 16, "angle": true, "name": "Rock Spawner" },
+        {
+          "type": 1203,
+          "sprite": "CACTA0",
+          "radius": 13,
+          "height": 24,
+          "hanging": true,
+          "name": "Tiny Red Flower Cactus"
+        },
+        {
+          "type": 1204,
+          "sprite": "CACTB0",
+          "radius": 15,
+          "height": 52,
+          "hanging": true,
+          "name": "Small Red Flower Cactus"
+        },
+        {
+          "type": 1205,
+          "sprite": "CACTC0",
+          "radius": 13,
+          "height": 24,
+          "hanging": true,
+          "name": "Tiny Blue Flower Cactus"
+        },
+        {
+          "type": 1206,
+          "sprite": "CACTD0",
+          "radius": 15,
+          "height": 52,
+          "hanging": true,
+          "name": "Small Blue Flower Cactus"
+        },
+        { "type": 1207, "sprite": "CACTE0", "radius": 32, "height": 96, "hanging": true, "name": "Prickly Pear" },
+        { "type": 1208, "sprite": "CACTF0", "radius": 20, "height": 128, "hanging": true, "name": "Barrel Cactus" },
+        {
+          "type": 1209,
+          "sprite": "CACTG0",
+          "radius": 24,
+          "height": 224,
+          "hanging": true,
+          "name": "Tall Barrel Cactus"
+        },
+        { "type": 1210, "sprite": "CACTH0", "radius": 24, "height": 256, "hanging": true, "name": "Armed Cactus" },
+        { "type": 1211, "sprite": "CACTI0", "radius": 48, "height": 96, "hanging": true, "name": "Ball Cactus" },
+        { "type": 1212, "sprite": "WWSGAR", "radius": 22, "height": 64, "hanging": true, "name": "Caution Sign" },
+        { "type": 1213, "sprite": "WWS2AR", "radius": 22, "height": 64, "hanging": true, "name": "Cacti Sign" },
+        { "type": 1214, "sprite": "WWS3ALAR", "radius": 16, "height": 192, "hanging": true, "name": "Sharp Turn Sign" },
+        {
+          "type": 1215,
+          "sprite": "OILLA0",
+          "radius": 22,
+          "height": 64,
+          "angle": true,
+          "hanging": true,
+          "name": "Mine Oil Lamp"
+        },
+
+        { "type": 1216, "sprite": "BARRA?", "radius": 24, "height": 63, "angle": true, "name": "TNT Barrel" },
+        { "type": 1217, "sprite": "REMTA0", "radius": 64, "height": 40, "angle": true, "name": "TNT Proximity Shell" },
+        { "type": 1218, "sprite": "TAZDCR", "radius": 80, "height": 416, "angle": true, "name": "Dust Devil" },
+        { "type": 1219, "sprite": "MCRTCLFR", "radius": 22, "height": 32, "angle": true, "name": "Minecart Spawner" },
+        { "type": 1220, "sprite": "MCRTIR", "radius": 32, "height": 32, "angle": true, "name": "Minecart Stopper" },
+        {
+          "type": 1221,
+          "sprite": "SALDARAL",
+          "radius": 96,
+          "height": 160,
+          "angle": true,
+          "name": "Minecart Saloon Door"
+        },
+        {
+          "type": 1222,
+          "sprite": "TRAEBRBL",
+          "radius": 28,
+          "height": 32,
+          "angle": true,
+          "name": "Train Cameo Spawner"
+        },
+        { "type": 1223, "sprite": "ADSTA0", "radius": 4, "height": 4, "angle": true, "name": "Train Dust Spawner" },
+        { "type": 1224, "sprite": "STEAA0", "radius": 4, "height": 4, "angle": true, "name": "Train Steam Spawner" },
+        {
+          "type": 1229,
+          "sprite": "internal:zoom",
+          "radius": 8,
+          "height": 16,
+          "angle": true,
+          "name": "Minecart Switch Point"
+        },
+        { "type": 1230, "sprite": "CACTJ0", "radius": 13, "height": 28, "angle": true, "name": "Tiny Cactus" },
+        { "type": 1231, "sprite": "CACTK0", "radius": 15, "height": 60, "angle": true, "name": "Small Cactus" }
+      ]
+    },
+
+    {
+      "name": "Red Volcano",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        {
+          "type": 1300,
+          "sprite": "internal:flameh",
+          "radius": 16,
+          "height": 40,
+          "angle": true,
+          "name": "Flame Jet (Horizontal)"
+        },
+        { "type": 1301, "sprite": "internal:flamev", "radius": 16, "height": 40, "name": "Flame Jet (Vertical)" },
+        {
+          "type": 1302,
+          "sprite": "internal:flame2",
+          "radius": 16,
+          "height": 24,
+          "name": "Spinning Flame Jet (Counter-Clockwise)"
+        },
+        {
+          "type": 1303,
+          "sprite": "internal:flame1",
+          "radius": 16,
+          "height": 24,
+          "name": "Spinning Flame Jet (Clockwise)"
+        },
+
+        { "type": 1304, "sprite": "LFALF0", "radius": 30, "height": 32, "name": "Lavafall" },
+        { "type": 1305, "sprite": "PUMIA1A5", "radius": 30, "height": 60, "name": "Rollout Rock" },
+        { "type": 1306, "sprite": "JPLAB0", "radius": 32, "height": 48, "name": "Big Fern" },
+        { "type": 1307, "sprite": "JPLAC0", "radius": 32, "height": 48, "name": "Jungle Palm" },
+        { "type": 1308, "sprite": "TFLOA0", "radius": 14, "height": 110, "name": "Torch Flower" },
+        { "type": 1309, "sprite": "WVINALAR", "radius": 1, "height": 288, "name": "RVZ1 Wall Vine (Long)" },
+        { "type": 1310, "sprite": "WVINBLBR", "radius": 1, "height": 288, "name": "RVZ1 Wall Vine (Short)" }
+      ]
+    },
+
+    {
+      "name": "Botanic Serenity",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)",
+        "radius": 16,
+        "height": 32,
+        "sprite": "BSZ1A0"
+      },
+      "things": [
+        { "type": 1400, "sprite": "BSZ1A0", "name": "Tall Flower (Red)" },
+        { "type": 1401, "sprite": "BSZ1B0", "name": "Tall Flower (Purple)" },
+        { "type": 1402, "sprite": "BSZ1C0", "name": "Tall Flower (Blue)" },
+        { "type": 1403, "sprite": "BSZ1D0", "name": "Tall Flower (Cyan)" },
+        { "type": 1404, "sprite": "BSZ1E0", "name": "Tall Flower (Yellow)" },
+        { "type": 1405, "sprite": "BSZ1F0", "name": "Tall Flower (Orange)" },
+        { "type": 1410, "sprite": "BSZ2A0", "name": "Medium Flower (Red)" },
+        { "type": 1411, "sprite": "BSZ2B0", "name": "Medium Flower (Purple)" },
+        { "type": 1412, "sprite": "BSZ2C0", "name": "Medium Flower (Blue)" },
+        { "type": 1413, "sprite": "BSZ2D0", "name": "Medium Flower (Cyan)" },
+        { "type": 1414, "sprite": "BSZ2E0", "name": "Medium Flower (Yellow)" },
+        { "type": 1415, "sprite": "BSZ2F0", "name": "Medium Flower (Orange)" },
+        { "type": 1420, "sprite": "BSZ3A0", "name": "Short Flower (Red)" },
+        { "type": 1421, "sprite": "BSZ3B0", "name": "Short Flower (Purple)" },
+        { "type": 1422, "sprite": "BSZ3C0", "name": "Short Flower (Blue)" },
+        { "type": 1423, "sprite": "BSZ3D0", "name": "Short Flower (Cyan)" },
+        { "type": 1424, "sprite": "BSZ3E0", "name": "Short Flower (Yellow)" },
+        { "type": 1425, "sprite": "BSZ3F0", "name": "Short Flower (Orange)" },
+        { "type": 1430, "sprite": "BST1A0", "name": "Tulip (Red)" },
+        { "type": 1431, "sprite": "BST2A0", "name": "Tulip (Purple)" },
+        { "type": 1432, "sprite": "BST3A0", "name": "Tulip (Blue)" },
+        { "type": 1433, "sprite": "BST4A0", "name": "Tulip (Cyan)" },
+        { "type": 1434, "sprite": "BST5A0", "name": "Tulip (Yellow)" },
+        { "type": 1435, "sprite": "BST6A0", "name": "Tulip (Orange)" },
+        { "type": 1440, "sprite": "BSZ5A0", "name": "Cluster (Red)" },
+        { "type": 1441, "sprite": "BSZ5B0", "name": "Cluster (Purple)" },
+        { "type": 1442, "sprite": "BSZ5C0", "name": "Cluster (Blue)" },
+        { "type": 1443, "sprite": "BSZ5D0", "name": "Cluster (Cyan)" },
+        { "type": 1444, "sprite": "BSZ5E0", "name": "Cluster (Yellow)" },
+        { "type": 1445, "sprite": "BSZ5F0", "name": "Cluster (Orange)" },
+        { "type": 1450, "sprite": "BSZ6A0", "name": "Bush (Red)" },
+        { "type": 1451, "sprite": "BSZ6B0", "name": "Bush (Purple)" },
+        { "type": 1452, "sprite": "BSZ6C0", "name": "Bush (Blue)" },
+        { "type": 1453, "sprite": "BSZ6D0", "name": "Bush (Cyan)" },
+        { "type": 1454, "sprite": "BSZ6E0", "name": "Bush (Yellow)" },
+        { "type": 1455, "sprite": "BSZ6F0", "name": "Bush (Orange)" },
+        { "type": 1460, "sprite": "BSZ7A0", "name": "Vine (Red)" },
+        { "type": 1461, "sprite": "BSZ7B0", "name": "Vine (Purple)" },
+        { "type": 1462, "sprite": "BSZ7C0", "name": "Vine (Blue)" },
+        { "type": 1463, "sprite": "BSZ7D0", "name": "Vine (Cyan)" },
+        { "type": 1464, "sprite": "BSZ7E0", "name": "Vine (Yellow)" },
+        { "type": 1465, "sprite": "BSZ7F0", "name": "Vine (Orange)" },
+        { "type": 1470, "sprite": "BSZ8A0", "name": "BSZ Shrub" },
+        { "type": 1471, "sprite": "BSZ8B0", "name": "BSZ Clover" },
+
+        { "type": 1473, "sprite": "BSZ8D0", "radius": 16, "height": 160, "name": "Palm Tree (Big)" },
+        { "type": 1475, "sprite": "BSZ8F0", "radius": 16, "height": 80, "name": "Palm Tree (Small)" }
+      ]
+    },
+
+    {
+      "name": "Azure Temple",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        {
+          "type": 1500,
+          "sprite": "BGARA?",
+          "radius": 16,
+          "height": 40,
+          "angle": true,
+          "solid": true,
+          "name": "Glaregoyle"
+        },
+        {
+          "type": 1501,
+          "sprite": "BGARA?",
+          "radius": 16,
+          "height": 40,
+          "angle": true,
+          "solid": true,
+          "name": "Glaregoyle (Up)"
+        },
+        {
+          "type": 1502,
+          "sprite": "BGARA?",
+          "radius": 16,
+          "height": 40,
+          "angle": true,
+          "solid": true,
+          "name": "Glaregoyle (Down)"
+        },
+        {
+          "type": 1503,
+          "sprite": "BGARA?",
+          "radius": 16,
+          "height": 40,
+          "angle": true,
+          "solid": true,
+          "name": "Glaregoyle (Long)"
+        },
+        { "type": 1504, "sprite": "RCRYB0", "radius": 24, "height": 32, "name": "ATZ Target" },
+        { "type": 1505, "sprite": "CFLMA0E0", "radius": 8, "height": 32, "name": "Green Flame" },
+        {
+          "type": 1506,
+          "sprite": "BGARD1",
+          "radius": 16,
+          "height": 40,
+          "angle": true,
+          "solid": true,
+          "name": "Blue Gargoyle"
+        }
+      ]
+    },
+
+    {
+      "name": "Dream Hill",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        { "type": 1600, "sprite": "TRE6A0", "radius": 16, "height": 32, "name": "Spring Tree" },
+        { "type": 1601, "sprite": "SHLPA0", "radius": 24, "height": 32, "name": "Shleep" },
+        { "type": 1602, "sprite": "NTPNALAR", "radius": 16, "height": 32, "name": "Pian" }
+      ]
+    },
+
+    {
+      "name": "NiGHTS Track",
+      "defaults": {
+        "colour": "rgb(255, 0, 255)",
+        "radius": 8,
+        "height": 4096,
+        "sprite": "UNKNA0"
+      },
+      "things": [
+        { "type": 1700, "sprite": "internal:axis1", "name": "Axis" },
+        { "type": 1701, "sprite": "internal:axis2", "name": "Axis Transfer" },
+        { "type": 1702, "sprite": "internal:axis3", "name": "Axis Transfer Line" },
+        { "type": 1710, "sprite": "CAPSA0", "radius": 72, "height": 144, "name": "Ideya Capture" }
+      ]
+    },
+
+    {
+      "name": "NiGHTS Items",
+      "defaults": {
+        "colour": "rgb(255, 0, 255)",
+        "radius": 16,
+        "height": 32
+      },
+      "things": [
+        { "type": 1703, "sprite": "NDRNA?", "radius": 16, "height": 56, "name": "Ideya Drone" },
+        { "type": 1704, "sprite": "NBMPG3G7", "radius": 32, "height": 64, "angle": true, "name": "NiGHTS Bumper" },
+        { "type": 1705, "sprite": "HOOPA0", "radius": 80, "height": 160, "angle": true, "name": "Hoop (Generic)" },
+        { "type": 1706, "sprite": "SPHRA0", "radius": 16, "height": 24, "name": "Blue Sphere" },
+
+        { "type": 1707, "sprite": "NPRUA0", "name": "Super Paraloop" },
+        { "type": 1708, "sprite": "NPRUB0", "name": "Drill Refill" },
+        { "type": 1709, "sprite": "NPRUC0", "name": "Nightopian Helper" },
+        { "type": 1711, "sprite": "NPRUD0", "name": "Extra Time" },
+        { "type": 1712, "sprite": "NPRUE0", "name": "Link Freeze" },
+
+        { "type": 1713, "sprite": "HOOPA0", "radius": 80, "height": 160, "angle": true, "name": "Hoop (Customizable)" },
+
+        { "type": 1714, "sprite": "internal:axis1", "radius": 8, "height": 16, "name": "Ideya Anchor Point" }
+      ]
+    },
+
+    {
+      "name": "Mario",
+      "defaults": {
+        "colour": "rgb(127, 64, 0)"
+      },
+      "things": [
+        { "type": 1800, "sprite": "COINA0", "radius": 16, "height": 24, "name": "Coin" },
+        { "type": 1801, "sprite": "GOOMA0", "radius": 24, "height": 32, "angle": true, "name": "Goomba" },
+        { "type": 1802, "sprite": "BGOMA0", "radius": 24, "height": 32, "angle": true, "name": "Goomba (Blue)" },
+        { "type": 1803, "sprite": "FFWRB0", "radius": 16, "height": 32, "name": "Fire Flower" },
+        { "type": 1804, "sprite": "SHLLA?", "radius": 16, "height": 20, "name": "Koopa Shell" },
+        { "type": 1805, "sprite": "PUMAA0", "radius": 8, "height": 16, "name": "Puma (Jumping Fireball)" },
+        { "type": 1806, "sprite": "KOOPA0", "radius": 16, "height": 48, "name": "King Bowser" },
+        { "type": 1807, "sprite": "MAXEA0", "radius": 8, "height": 16, "name": "Axe" },
+        { "type": 1808, "sprite": "MUS1A0", "radius": 16, "height": 32, "name": "Bush (Short)" },
+        { "type": 1809, "sprite": "MUS2A0", "radius": 16, "height": 32, "name": "Bush (Tall)" },
+        { "type": 1810, "sprite": "TOADA0", "radius": 8, "height": 32, "name": "Toad" }
+      ]
+    },
+
+    {
+      "name": "Christmas & Disco",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        { "type": 1850, "sprite": "XMS1A0", "radius": 16, "height": 40, "name": "Christmas Pole" },
+        { "type": 1851, "sprite": "XMS2A0", "radius": 8, "height": 32, "name": "Candy Cane" },
+
+        { "type": 1852, "sprite": "XMS3A0", "radius": 16, "height": 64, "solid": true, "name": "Snowman" },
+        { "type": 1853, "sprite": "XMS3B0", "radius": 16, "height": 80, "solid": true, "name": "Snowman (With Hat)" },
+
+        { "type": 1854, "sprite": "XMS4A0", "radius": 8, "height": 120, "name": "Lamp Post" },
+        { "type": 1855, "sprite": "XMS4B0", "radius": 8, "height": 120, "name": "Lamp Post (Snow)" },
+
+        { "type": 1856, "sprite": "XMS5A0", "radius": 4, "height": 80, "hanging": true, "name": "Hanging Star" },
+
+        { "type": 1857, "sprite": "BUS1B0", "radius": 16, "height": 32, "name": "Berry Bush (Snow)" },
+        { "type": 1858, "sprite": "BUS2B0", "radius": 16, "height": 32, "name": "Bush (Snow)" },
+        { "type": 1859, "sprite": "BUS3B0", "radius": 16, "height": 32, "name": "Blueberry Bush (Snow)" },
+
+        { "type": 1875, "sprite": "DBALA0", "radius": 16, "height": 54, "hanging": true, "name": "Disco Ball" },
+
+        {
+          "type": 1876,
+          "sprite": "ESTAB1",
+          "radius": 20,
+          "height": 96,
+          "angle": true,
+          "solid": true,
+          "name": "Eggman Disco Statue"
+        }
+      ]
+    },
+
+    {
+      "name": "Stalagmites",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)",
+        "radius": 16,
+        "height": 40
+      },
+      "things": [
+        { "type": 1900, "sprite": "STLGA0", "radius": 16, "height": 40, "name": "Brown Stalagmite (Tall)" },
+        { "type": 1901, "sprite": "STLGB0", "radius": 16, "height": 40, "name": "Brown Stalagmite" },
+        { "type": 1902, "sprite": "STLGC0", "radius": 16, "height": 40, "name": "Orange Stalagmite (Tall)" },
+        { "type": 1903, "sprite": "STLGD0", "radius": 16, "height": 40, "name": "Orange Stalagmite" },
+        { "type": 1904, "sprite": "STLGE0", "radius": 16, "height": 40, "name": "Red Stalagmite (Tall)" },
+        { "type": 1905, "sprite": "STLGF0", "radius": 16, "height": 40, "name": "Red Stalagmite" },
+        { "type": 1906, "sprite": "STLGG0", "radius": 24, "height": 96, "name": "Gray Stalagmite (Tall)" },
+        { "type": 1907, "sprite": "STLGH0", "radius": 16, "height": 40, "name": "Gray Stalagmite" },
+        { "type": 1908, "sprite": "STLGI0", "radius": 16, "height": 40, "name": "Blue Stalagmite (Tall)" },
+        { "type": 1909, "sprite": "STLGJ0", "radius": 16, "height": 40, "name": "Blue Stalagmite" }
+      ]
+    },
+
+    {
+      "name": "Haunted Heights",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        { "type": 2000, "sprite": "FMCEA0", "radius": 18, "height": 28, "name": "Smashing Spikeball" },
+        { "type": 2001, "sprite": "HHZMA0", "radius": 16, "height": 40, "name": "HHZ Grass" },
+        { "type": 2002, "sprite": "HHZMB0", "radius": 16, "height": 40, "name": "HHZ Tentacle 1" },
+        { "type": 2003, "sprite": "HHZMC0", "radius": 16, "height": 40, "name": "HHZ Tentacle 2" },
+        { "type": 2004, "sprite": "HHZME0", "radius": 16, "height": 40, "name": "HHZ Stalagmite (Tall)" },
+        { "type": 2005, "sprite": "HHZMF0", "radius": 16, "height": 40, "name": "HHZ Stalagmite (Short)" },
+        { "type": 2006, "sprite": "PUMKA0", "radius": 16, "height": 40, "name": "Jack-o'-lantern 1" },
+        { "type": 2007, "sprite": "PUMKB0", "radius": 16, "height": 40, "name": "Jack-o'-lantern 2" },
+        { "type": 2008, "sprite": "PUMKC0", "radius": 16, "height": 40, "name": "Jack-o'-lantern 3" },
+        { "type": 2009, "sprite": "SHRMD0", "radius": 16, "height": 48, "name": "Purple Mushroom" },
+        { "type": 2010, "sprite": "HHPLC0", "radius": 12, "height": 40, "name": "HHZ Tree" }
+      ]
+    },
+
+    {
+      "name": "Frozen Hillside",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)"
+      },
+      "things": [
+        { "type": 2100, "sprite": "FHZIA0", "radius": 8, "height": 32, "name": "Ice Shard (Small)" },
+        { "type": 2101, "sprite": "FHZIB0", "radius": 8, "height": 32, "name": "Ice Shard (Large)" },
+        { "type": 2102, "sprite": "TRE3A0", "radius": 20, "height": 200, "name": "Crystal Tree (Aqua)" },
+        { "type": 2103, "sprite": "TRE3B0", "radius": 20, "height": 200, "name": "Crystal Tree (Pink)" },
+        { "type": 2104, "sprite": "ROSYA?", "radius": 16, "height": 48, "name": "Amy Cameo" },
+        { "type": 2105, "sprite": "XMS6A0", "radius": 52, "height": 106, "name": "Mistletoe" }
+      ]
+    },
+
+    {
+      "name": "Flickies",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)",
+        "radius": 8,
+        "height": 20
+      },
+      "things": [
+        { "type": 2200, "sprite": "FL01A?", "name": "Bluebird" },
+        { "type": 2201, "sprite": "FL02A?", "name": "Rabbit" },
+        { "type": 2202, "sprite": "FL03A?", "name": "Chicken" },
+        { "type": 2203, "sprite": "FL04A?", "name": "Seal" },
+        { "type": 2204, "sprite": "FL05A?", "name": "Pig" },
+        { "type": 2205, "sprite": "FL06A?", "name": "Chipmunk" },
+        { "type": 2206, "sprite": "FL07A?", "name": "Penguin" },
+        { "type": 2207, "sprite": "FL08A?", "name": "Fish" },
+        { "type": 2208, "sprite": "FL09A?", "name": "Ram" },
+        { "type": 2209, "sprite": "FL10A?", "name": "Puffin" },
+        { "type": 2210, "sprite": "FL11A?", "name": "Cow" },
+        { "type": 2211, "sprite": "FL12A?", "name": "Rat" },
+        { "type": 2212, "sprite": "FL13A?", "name": "Bear" },
+        { "type": 2213, "sprite": "FL14A?", "name": "Dove" },
+        { "type": 2214, "sprite": "FL15A?", "name": "Cat" },
+        { "type": 2215, "sprite": "FL16A?", "name": "Canary" },
+        { "type": 2216, "sprite": "FS01A?", "name": "Spider" },
+        { "type": 2217, "sprite": "FS02A0", "name": "Bat" }
+      ]
+    },
+
+    {
+      "name": "Weapons",
+      "defaults": {
+        "colour": "rgb(220, 180, 100)",
+        "radius": 20,
+        "angle": false,
+        "icon": "weapon"
+      },
+      "things": [
+        { "type": 2005, "name": "Chainsaw", "sprite": "CSAWA?" },
+        { "type": 2001, "name": "Shotgun", "sprite": "SHOTA?" },
+        { "type": 2002, "name": "Chaingun", "sprite": "MGUNA?" },
+        { "type": 2003, "name": "Rocket Launcher", "sprite": "LAUNA?" },
+        { "type": 2004, "name": "Plasma Gun", "sprite": "PLASA?" },
+        { "type": 2006, "name": "BFG9000", "sprite": "BFUGA?" }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,7 +34,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -191,7 +191,7 @@ bool DatArchiveHandler::open(Archive& archive, const MemChunk& mc)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string DatArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
+string DatArchiveHandler::detectNamespace(const Archive& archive, ArchiveEntry* entry)
 {
 	return detectNamespace(archive, archive.entryIndex(entry));
 }
@@ -199,7 +199,7 @@ string DatArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string DatArchiveHandler::detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir)
+string DatArchiveHandler::detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir)
 {
 	// Textures
 	if (index > static_cast<unsigned>(walls_[0]) && index < static_cast<unsigned>(walls_[1]))
@@ -557,7 +557,7 @@ bool DatArchiveHandler::isThisFormat(const MemChunk& mc)
 bool DatArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

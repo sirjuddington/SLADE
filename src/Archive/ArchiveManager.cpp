@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,10 +37,14 @@
 #include "ArchiveDir.h"
 #include "ArchiveEntry.h"
 #include "ArchiveFormatHandler.h"
+#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "EntryType/EntryType.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
-#include "General/UI.h"
+#include "MainEditor/MainEditor.h"
+#include "UI/UI.h"
+#include "Utility/DateTime.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -53,8 +57,32 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 CVAR(Int, base_resource, -1, CVar::Flag::Save)
-CVAR(Int, max_recent_files, 25, CVar::Flag::Save)
 CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Updates/Adds [archive] in/to the database and updates last opened time if
+// requested.
+// -----------------------------------------------------------------------------
+i64 updateArchiveInDatabase(Archive& archive, bool update_last_opened)
+{
+	auto db_id = database::archiveFileId(archive);
+	if (db_id < 0)
+		db_id = database::writeArchiveFile(archive);
+
+	if (update_last_opened)
+		database::setArchiveFileLastOpened(db_id, datetime::now());
+
+	return db_id;
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -77,8 +105,8 @@ bool ArchiveManager::validResDir(string_view dir) const
 	// too, so the res folder cannot be used.
 	static string paths[] = {
 		"animated.lmp",
-		"config/executables.cfg",
-		"config/nodebuilders.cfg",
+		"config/executables.json",
+		"config/nodebuilders.json",
 		"fonts/dejavu_sans.ttf",
 		"html/box-title-back.png",
 		"html/startpage.htm",
@@ -115,8 +143,6 @@ bool ArchiveManager::validResDir(string_view dir) const
 // -----------------------------------------------------------------------------
 bool ArchiveManager::init()
 {
-	program_resource_archive_ = std::make_unique<Archive>(ArchiveFormat::Zip);
-
 #ifdef __WXOSX__
 	auto resdir = app::path("../Resources", app::Dir::Executable); // Use Resources dir within bundle on mac
 #else
@@ -125,14 +151,20 @@ bool ArchiveManager::init()
 
 	if (fileutil::dirExists(resdir) && validResDir(resdir))
 	{
-		program_resource_archive_->importDir(resdir);
+		program_resource_archive_ = std::make_shared<Archive>(ArchiveFormat::Dir);
+		program_resource_archive_->setFilename(app::path("slade.pk3", app::Dir::Executable));
+		program_resource_archive_->importDir(resdir, false, nullptr, true);
 		res_archive_open_ = (program_resource_archive_->numEntries() > 0);
 
 		if (!initArchiveFormats())
 			log::error("An error occurred reading archive formats configuration");
 
+		program_resource_archive_->setReadOnly();
 		return res_archive_open_;
 	}
+
+	program_resource_archive_ = std::make_shared<Archive>(ArchiveFormat::Zip);
+	program_resource_archive_->setFilename(app::path("slade.pk3", app::Dir::Executable));
 
 	// Find slade3.pk3 directory
 	auto dir_slade_pk3 = app::path("slade.pk3", app::Dir::Resources);
@@ -144,6 +176,16 @@ bool ArchiveManager::init()
 		dir_slade_pk3 = app::path("slade.pk3", app::Dir::User);
 	if (!fileutil::fileExists(dir_slade_pk3))
 		dir_slade_pk3 = "slade.pk3";
+
+	// If still not found, try $APPDIR/usr/share/slade3/slade.pk3
+	// (will be here if we're running an AppImage)
+	if (!fileutil::fileExists(dir_slade_pk3))
+	{
+		wxString appdir;
+		wxGetEnv(wxS("APPDIR"), &appdir);
+		if (!appdir.empty())
+			dir_slade_pk3 = appdir.utf8_string() + "/usr/share/slade3/slade.pk3";
+	}
 
 	// Open slade.pk3
 	if (!program_resource_archive_->open(dir_slade_pk3))
@@ -157,6 +199,7 @@ bool ArchiveManager::init()
 	if (!initArchiveFormats())
 		log::error("An error occurred reading archive formats configuration");
 
+	program_resource_archive_->setReadOnly();
 	return res_archive_open_;
 }
 
@@ -165,7 +208,7 @@ bool ArchiveManager::init()
 // -----------------------------------------------------------------------------
 bool ArchiveManager::initArchiveFormats() const
 {
-	return archive::loadFormatInfo(program_resource_archive_->entryAtPath("config/archive_formats.cfg")->data());
+	return archive::loadFormatInfo(program_resource_archive_->entryAtPath("config/archive_formats.json")->data());
 }
 
 // -----------------------------------------------------------------------------
@@ -174,6 +217,32 @@ bool ArchiveManager::initArchiveFormats() const
 bool ArchiveManager::initBaseResource()
 {
 	return openBaseResource((int)base_resource);
+}
+
+// -----------------------------------------------------------------------------
+// Reloads the program resource archive from disk
+// Note that this does not re-open the archive, it just reloads existing entry
+// data, so any new entries added to slade.pk3 (or res dir) will not be loaded
+// -----------------------------------------------------------------------------
+void ArchiveManager::reloadResArchive() const
+{
+	for (auto entry : program_resource_archive_->rootDir()->allEntries())
+		program_resource_archive_->revertEntry(entry.get(), true);
+}
+
+// -----------------------------------------------------------------------------
+// Reloads the entry at [res_path] in the program resource archive frin disk
+// -----------------------------------------------------------------------------
+bool ArchiveManager::reloadResource(string_view res_path) const
+{
+	if (auto entry = program_resource_archive_->entryAtPath(res_path))
+	{
+		program_resource_archive_->revertEntry(entry, true);
+		return true;
+	}
+
+	log::warning("Resource {} not found in resource archive", res_path);
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -188,33 +257,27 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		OpenArchive n_archive;
 		n_archive.archive  = archive;
 		n_archive.resource = true;
+		n_archive.db_id    = -1;
 		open_archives_.push_back(n_archive);
 
 		// Emit archive changed/saved signal when received from the archive
 		archive->signals().modified.connect([this](Archive& archive, bool modified)
 											{ signals_.archive_modified(archiveIndex(&archive), modified); });
-		archive->signals().saved.connect([this](Archive& archive) { signals_.archive_saved(archiveIndex(&archive)); });
+		archive->signals().saved.connect(
+			[this](Archive& archive)
+			{
+				// Update in database
+				if (archive.isOnDisk())
+					setArchiveDbId(archive, database::writeArchiveFile(archive));
+
+				signals_.archive_saved(archiveIndex(&archive));
+			});
 
 		// Announce the addition
 		signals_.archive_added(open_archives_.size() - 1);
 
 		// Add to resource manager
 		app::resources().addArchive(archive.get());
-
-		// ZDoom also loads any WADs found in the root of a PK3 or directory
-		if ((archive->format() == ArchiveFormat::Zip || archive->format() == ArchiveFormat::Dir) && auto_open_wads_root)
-		{
-			for (const auto& entry : archive->rootDir()->entries())
-			{
-				if (entry->type() == EntryType::unknownType())
-					EntryType::detectEntryType(*entry);
-
-				if (entry->type()->id() == "wad")
-					// First true: yes, manage this
-					// Second true: open silently, don't open a tab for it
-					openArchive(entry.get(), true, true);
-			}
-		}
 
 		return true;
 	}
@@ -291,6 +354,13 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 		return new_archive;
 	}
 
+	// Check the file exists
+	if (!fileutil::fileExists(filename))
+	{
+		global::error = fmt::format("File \"{}\" does not exist", filename);
+		return nullptr;
+	}
+
 	// Determine file format
 	string std_fn{ filename };
 	auto   format_id = archive::detectArchiveFormat(std_fn);
@@ -314,12 +384,17 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 			auto index = open_archives_.size();
 			addArchive(new_archive);
 
+			// Update in database
+			auto db_id = updateArchiveInDatabase(*new_archive, true);
+			setArchiveDbId(*new_archive, db_id);
+
+			// ZDoom also loads any WADs found in the root of a PK3
+			if (auto_open_wads_root && new_archive->formatId() == "zip")
+				openWadsInRoot(*new_archive);
+
 			// Announce open
 			if (!silent)
 				signals_.archive_opened(index);
-
-			// Add to recent files
-			addRecentFile(filename);
 		}
 
 		// Return the opened archive
@@ -383,6 +458,10 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 			auto index = open_archives_.size();
 			addArchive(new_archive);
 
+			// Update in database
+			auto db_id = updateArchiveInDatabase(*new_archive, true);
+			setArchiveDbId(*new_archive, db_id);
+
 			// Announce open
 			if (!silent)
 				signals_.archive_opened(index);
@@ -431,12 +510,17 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 			auto index = open_archives_.size();
 			addArchive(new_archive);
 
+			// Update in database
+			auto db_id = updateArchiveInDatabase(*new_archive, true);
+			setArchiveDbId(*new_archive, db_id);
+
+			// ZDoom also loads any WADs found in the root of a directory
+			if (auto_open_wads_root)
+				openWadsInRoot(*new_archive);
+
 			// Announce open
 			if (!silent)
 				signals_.archive_opened(index);
-
-			// Add to recent files
-			addRecentFile(dir);
 		}
 
 		// Return the opened archive
@@ -583,13 +667,26 @@ bool ArchiveManager::closeArchive(const Archive* archive)
 }
 
 // -----------------------------------------------------------------------------
-// Closes all opened archives
+// Closes all opened archives. If [exiting] is true, does some extra cleanup
+// for program exit
 // -----------------------------------------------------------------------------
-void ArchiveManager::closeAll()
+void ArchiveManager::closeAll(bool exiting)
 {
 	// Close the first archive in the list until no archives are open
 	while (!open_archives_.empty())
 		closeArchive(0);
+
+	// If we're exiting the program, do some cleanup
+	if (exiting)
+	{
+		if (base_resource_archive_)
+			base_resource_archive_->close();
+		base_resource_archive_.reset();
+
+		if (program_resource_archive_)
+			program_resource_archive_->close();
+		program_resource_archive_.reset();
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -632,6 +729,39 @@ vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(const Archive* 
 	vector<shared_ptr<Archive>> vec;
 	getDependentArchivesInternal(archive, vec);
 	return vec;
+}
+
+// -----------------------------------------------------------------------------
+// Sets [archive]'s database ID to [db_id]
+// (in the ArchiveManager, not the database itself)
+// -----------------------------------------------------------------------------
+void ArchiveManager::setArchiveDbId(const Archive& archive, i64 db_id)
+{
+	for (auto& oa : open_archives_)
+		if (oa.archive.get() == &archive)
+			oa.db_id = db_id;
+}
+
+// -----------------------------------------------------------------------------
+// Opens all wad archives in the root directory of [archive]
+// -----------------------------------------------------------------------------
+void ArchiveManager::openWadsInRoot(const Archive& archive)
+{
+	// Don't want to trigger this signal for embedded wads
+	database::signals().archive_file_updated.block();
+
+	for (const auto& entry : archive.rootDir()->entries())
+	{
+		if (entry->type() == EntryType::unknownType())
+			EntryType::detectEntryType(*entry);
+
+		if (entry->type()->id() == "wad")
+			// First true: yes, manage this
+			// Second true: open silently, don't open a tab for it
+			openArchive(entry.get(), true, true);
+	}
+
+	database::signals().archive_file_updated.unblock();
 }
 
 // -----------------------------------------------------------------------------
@@ -721,6 +851,9 @@ shared_ptr<Archive> ArchiveManager::shareArchive(const Archive* const archive)
 	if (archive == base_resource_archive_.get())
 		return base_resource_archive_;
 
+	if (archive == program_resource_archive_.get())
+		return program_resource_archive_;
+
 	for (const auto& oa : open_archives_)
 		if (oa.archive.get() == archive)
 			return oa.archive;
@@ -790,6 +923,14 @@ string ArchiveManager::getBaseResourcePath(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the currently selected base resource path
+// -----------------------------------------------------------------------------
+string ArchiveManager::currentBaseResourcePath()
+{
+	return getBaseResourcePath(base_resource);
+}
+
+// -----------------------------------------------------------------------------
 // Opens the base resource archive [index]
 // -----------------------------------------------------------------------------
 bool ArchiveManager::openBaseResource(int index)
@@ -823,9 +964,13 @@ bool ArchiveManager::openBaseResource(int index)
 		return false;
 
 	// Attempt to open the file
-	ui::showSplash(fmt::format("Opening {}...", filename), true);
+	ui::showSplash(fmt::format("Opening {}...", filename), true, maineditor::windowWx());
 	if (base_resource_archive_->open(filename))
 	{
+		// Update in database
+		auto db_id = updateArchiveInDatabase(*base_resource_archive_, false);
+		setArchiveDbId(*base_resource_archive_, db_id);
+
 		base_resource = index;
 		ui::hideSplash();
 		app::resources().addArchive(base_resource_archive_.get());
@@ -926,94 +1071,6 @@ vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(ArchiveSearchOption
 	}
 
 	return ret;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the recent file path at [index]
-// -----------------------------------------------------------------------------
-string ArchiveManager::recentFile(unsigned index)
-{
-	// Check index
-	if (index >= recent_files_.size())
-		return "";
-
-	return recent_files_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Adds a recent file to the list, if it doesn't exist already
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFile(string_view path)
-{
-	// Check the path is valid
-	if (!(fileutil::fileExists(path) || fileutil::dirExists(path)))
-		return;
-
-	// Replace \ with /
-	auto file_path = string{ path };
-	std::replace(file_path.begin(), file_path.end(), '\\', '/');
-
-	// Check if the file is already in the list
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == file_path)
-		{
-			// Move this file to the top of the list
-			recent_files_.erase(recent_files_.begin() + a);
-			recent_files_.insert(recent_files_.begin(), file_path);
-
-			// Announce
-			signals_.recent_files_changed();
-
-			return;
-		}
-	}
-
-	// Add the file to the top of the list
-	recent_files_.insert(recent_files_.begin(), file_path);
-
-	// Keep it trimmed
-	while (recent_files_.size() > static_cast<unsigned>(max_recent_files))
-		recent_files_.pop_back();
-
-	// Announce
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Adds a list of recent file paths to the recent file list
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFiles(const vector<string>& paths)
-{
-	// Mute annoucements
-	signals_.recent_files_changed.block();
-
-	// Clear existing list
-	recent_files_.clear();
-
-	// Add the files
-	for (const auto& path : paths)
-		addRecentFile(path);
-
-	// Announce
-	signals_.recent_files_changed.unblock();
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Removes the recent file matching [path]
-// -----------------------------------------------------------------------------
-void ArchiveManager::removeRecentFile(string_view path)
-{
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == path)
-		{
-			recent_files_.erase(recent_files_.begin() + a);
-			signals_.recent_files_changed();
-			return;
-		}
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1199,13 +1256,25 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index) const
 // -----------------------------------------------------------------------------
 // Returns true if [entry] exists in the bookmarks list
 // -----------------------------------------------------------------------------
-bool slade::ArchiveManager::isBookmarked(const ArchiveEntry* entry) const
+bool ArchiveManager::isBookmarked(const ArchiveEntry* entry) const
 {
 	for (const auto& bm : bookmarks_)
 		if (bm.lock().get() == entry)
 			return true;
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the database ID of the given [archive], or -1 if it doesn't have one
+// -----------------------------------------------------------------------------
+i64 ArchiveManager::archiveDbId(const Archive& archive) const
+{
+	for (const auto& oa : open_archives_)
+		if (oa.archive.get() == &archive)
+			return oa.db_id;
+
+	return -1;
 }
 
 
@@ -1239,3 +1308,25 @@ void c_open(const vector<string>& args)
 		app::archiveManager().openArchive(arg);
 }
 ConsoleCommand am_open("open", &c_open, 1, true); // Can't use the macro with this name
+
+// -----------------------------------------------------------------------------
+// Reloads all resources from slade.pk3
+// -----------------------------------------------------------------------------
+CONSOLE_COMMAND(reload_resources, 0, true)
+{
+	app::archiveManager().reloadResArchive();
+
+	log::info("Reloaded all resources from slade.pk3");
+}
+
+// -----------------------------------------------------------------------------
+// Reloads a specific resource entry given by its path in the resource archive
+// -----------------------------------------------------------------------------
+CONSOLE_COMMAND(reload_resource, 1, true)
+{
+	auto res_path = args[0];
+	if (app::archiveManager().reloadResource(res_path))
+		log::info("Reloaded resource: {}", res_path);
+	else
+		log::error("Failed to reload resource: {}", res_path);
+}

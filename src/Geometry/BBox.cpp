@@ -1,6 +1,6 @@
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -42,9 +42,11 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
-// BBox Struct Constructor
+// BBox Struct Constructors
 // -----------------------------------------------------------------------------
 BBox::BBox() : min{ 0, 0 }, max{ 0, 0 } {}
+BBox::BBox(const Vec2d& min, const Vec2d& max) : min{ min }, max{ max } {}
+BBox::BBox(double min_x, double min_y, double max_x, double max_y) : min{ min_x, min_y }, max{ max_x, max_y } {}
 
 // -----------------------------------------------------------------------------
 // Resets the bounding box to 0,0

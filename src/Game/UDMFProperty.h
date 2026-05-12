@@ -1,5 +1,6 @@
 #pragma once
 
+#include "General/JsonFwd.h"
 #include "Utility/Property.h"
 
 namespace slade::game
@@ -24,9 +25,10 @@ public:
 		Unknown
 	};
 
-	UDMFProperty()  = default;
+	UDMFProperty();
 	~UDMFProperty() = default;
 
+	int                       order() const { return order_; }
 	const string&             propName() const { return property_; }
 	const string&             name() const { return name_; }
 	const string&             group() const { return group_; }
@@ -42,10 +44,12 @@ public:
 	template<typename T> bool isDefault(T value) const;
 
 	void parse(const ParseTreeNode* node, string_view group);
+	void fromJson(const Json& j, string_view group);
 
 	string getStringRep();
 
 private:
+	int              order_;
 	string           property_;
 	string           name_;
 	string           group_;

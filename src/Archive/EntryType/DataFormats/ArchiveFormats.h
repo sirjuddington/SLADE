@@ -166,3 +166,9 @@ class SinArchiveDataFormat : public ArchiveDataFormat
 public:
 	SinArchiveDataFormat() : ArchiveDataFormat("archive_sin", ArchiveFormat::SiN) {}
 };
+
+class LabDataFormat : public ArchiveDataFormat
+{
+public:
+	LabDataFormat() : ArchiveDataFormat("archive_lab", ArchiveFormat::Lab) {}
+};

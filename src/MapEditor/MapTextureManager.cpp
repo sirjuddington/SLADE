@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -146,7 +146,7 @@ const MapTextureManager::Texture& MapTextureManager::texture(string_view name, b
 	auto& mtex = textures_[strutil::upper(name)];
 
 	// Get desired filter type
-	auto filter = gl::TexFilter::Linear;
+	auto filter = gl::TexFilter::NearestLinearMin;
 	if (map_tex_filter == 0)
 		filter = gl::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
@@ -257,7 +257,7 @@ const MapTextureManager::Texture& MapTextureManager::flat(string_view name, bool
 	auto& mtex = flats_[strutil::upper(name)];
 
 	// Get desired filter type
-	auto filter = gl::TexFilter::Linear;
+	auto filter = gl::TexFilter::NearestLinearMin;
 	if (map_tex_filter == 0)
 		filter = gl::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
@@ -378,7 +378,7 @@ const MapTextureManager::Texture& MapTextureManager::sprite(
 	auto& mtex = sprites_[hashname];
 
 	// Get desired filter type
-	auto filter = gl::TexFilter::Linear;
+	auto filter = gl::TexFilter::NearestLinearMin;
 	if (map_tex_filter == 0)
 		filter = gl::TexFilter::NearestLinearMin;
 	else if (map_tex_filter == 1)
@@ -537,7 +537,7 @@ void MapTextureManager::importEditorImages(MapTexHashMap& map, const ArchiveDir*
 			auto name = fmt::format("{}{}", path, entry->nameNoExt());
 			log::info(4, "Loading editor texture {}", name);
 			auto& mtex = map[name];
-			mtex.gl_id = gl::Texture::createFromImage(image, nullptr, gl::TexFilter::Mipmap);
+			mtex.gl_id = gl::Texture::createFromImage(image, nullptr, gl::TexFilter::Mipmap, false);
 		}
 	}
 

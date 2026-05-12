@@ -1,7 +1,7 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -71,10 +71,21 @@ MapVertex::MapVertex(const Vec2d& pos, const ParseTreeNode* udmf_def) : MapObjec
 }
 
 // -----------------------------------------------------------------------------
+// Copies another MapVertex object [c]
+// -----------------------------------------------------------------------------
+void MapVertex::copy(MapObject* c)
+{
+	beginModify();
+	position_ = static_cast<MapVertex*>(c)->position_;
+	MapObject::copy(c);
+	endModify();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the object point [point].
 // Currently for vertices this is always the vertex position
 // -----------------------------------------------------------------------------
-Vec2d MapVertex::getPoint(Point point)
+Vec2d MapVertex::getPoint(Point point) const
 {
 	return position_;
 }
@@ -85,9 +96,10 @@ Vec2d MapVertex::getPoint(Point point)
 void MapVertex::move(double nx, double ny)
 {
 	// Move the vertex
-	setModified();
+	beginModify();
 	position_.x = nx;
 	position_.y = ny;
+	endModify();
 
 	// Reset all attached lines' geometry info
 	for (auto& connected_line : connected_lines_)
@@ -99,7 +111,7 @@ void MapVertex::move(double nx, double ny)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapVertex::intProperty(string_view key)
+int MapVertex::intProperty(string_view key) const
 {
 	if (key == PROP_X)
 		return static_cast<int>(position_.x);
@@ -112,7 +124,7 @@ int MapVertex::intProperty(string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapVertex::floatProperty(string_view key)
+double MapVertex::floatProperty(string_view key) const
 {
 	if (key == PROP_X)
 		return position_.x;
@@ -127,18 +139,21 @@ double MapVertex::floatProperty(string_view key)
 // -----------------------------------------------------------------------------
 void MapVertex::setIntProperty(string_view key, int value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_X)
 	{
+		beginModify();
 		position_.x = value;
+		endModify();
+
 		for (auto& connected_line : connected_lines_)
 			connected_line->resetInternals();
 	}
 	else if (key == PROP_Y)
 	{
+		beginModify();
 		position_.y = value;
+		endModify();
+
 		for (auto& connected_line : connected_lines_)
 			connected_line->resetInternals();
 	}
@@ -151,13 +166,18 @@ void MapVertex::setIntProperty(string_view key, int value)
 // -----------------------------------------------------------------------------
 void MapVertex::setFloatProperty(string_view key, double value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_X)
+	{
+		beginModify();
 		position_.x = value;
+		endModify();
+	}
 	else if (key == PROP_Y)
+	{
+		beginModify();
 		position_.y = value;
+		endModify();
+	}
 	else
 		return MapObject::setFloatProperty(key, value);
 }
@@ -165,7 +185,7 @@ void MapVertex::setFloatProperty(string_view key, double value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapVertex::scriptCanModifyProp(string_view key)
+bool MapVertex::scriptCanModifyProp(string_view key) const
 {
 	if (key == PROP_X || key == PROP_Y)
 		return false;

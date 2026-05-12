@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -113,7 +113,7 @@ vector<ArchiveEntry*> maineditor::currentEntrySelection()
 // -----------------------------------------------------------------------------
 // Opens the texture editor for the current archive tab
 // -----------------------------------------------------------------------------
-void maineditor::openTextureEditor(const Archive* archive, const ArchiveEntry* entry)
+void maineditor::openTextureEditor(const Archive* archive, ArchiveEntry* entry)
 {
 	main_window->archiveManagerPanel()->openTextureTab(app::archiveManager().archiveIndex(archive), entry);
 }
@@ -176,7 +176,7 @@ ArchivePanel* maineditor::currentArchivePanel()
 {
 	auto* panel = main_window->archiveManagerPanel()->currentPanel();
 
-	if (panel && panel->GetName().CmpNoCase("archive") == 0)
+	if (panel && panel->GetName().CmpNoCase(wxS("archive")) == 0)
 		return dynamic_cast<ArchivePanel*>(panel);
 
 	return nullptr;

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -36,9 +36,11 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveFormatHandler.h"
-#include "UI/Canvas/MapPreviewCanvas.h"
+#include "General/MapPreviewData.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
-#include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -55,6 +57,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 MapBackupPanel::MapBackupPanel(wxWindow* parent) :
 	wxPanel{ parent, -1 },
+	map_data_{ new MapPreviewData },
 	archive_backups_{ new Archive(ArchiveFormat::Zip) }
 {
 	// Setup Sizer
@@ -62,10 +65,10 @@ MapBackupPanel::MapBackupPanel(wxWindow* parent) :
 	SetSizer(sizer);
 
 	// Backups list
-	sizer->Add(list_backups_ = new ListView(this, -1), wxutil::sfWithBorder(0, wxRIGHT).Expand());
+	sizer->Add(list_backups_ = new ListView(this, -1), ui::LayoutHelper(this).sfWithBorder(0, wxRIGHT).Expand());
 
 	// Map preview
-	sizer->Add(canvas_map_ = new MapPreviewCanvas(this), 1, wxEXPAND);
+	sizer->Add(canvas_map_ = ui::createMapPreviewCanvas(this, map_data_.get()), 1, wxEXPAND);
 
 	// Bind events
 	list_backups_->Bind(wxEVT_LIST_ITEM_SELECTED, [&](wxListEvent&) { updateMapPreview(); });
@@ -77,36 +80,37 @@ MapBackupPanel::MapBackupPanel(wxWindow* parent) :
 // Opens the map backup file for [map_name] in [archive_name] and populates the
 // list
 // -----------------------------------------------------------------------------
-bool MapBackupPanel::loadBackups(wxString archive_name, const wxString& map_name)
+bool MapBackupPanel::loadBackups(string archive_name, string_view map_name)
 {
 	// Open backup file
-	archive_name.Replace(".", "_");
-	auto backup_file = app::path("backups", app::Dir::User) + "/" + archive_name.ToStdString() + "_backup.zip";
+	strutil::replaceIP(archive_name, ".", "_");
+	auto backup_file = app::path("backups", app::Dir::User) + "/" + archive_name + "_backup.zip";
 	if (!archive_backups_->open(backup_file))
 		return false;
 
 	// Get backup dir for map
-	dir_current_ = archive_backups_->dirAtPath(map_name.ToStdString());
+	dir_current_ = archive_backups_->dirAtPath(map_name);
 	if (dir_current_ == archive_backups_->rootDir().get() || !dir_current_)
 		return false;
 
 	// Populate backups list
 	list_backups_->ClearAll();
-	list_backups_->AppendColumn("Backup Date");
-	list_backups_->AppendColumn("Time");
+	list_backups_->AppendColumn(wxS("Backup Date"));
+	list_backups_->AppendColumn(wxS("Time"));
 
 	int index = 0;
 	for (int a = dir_current_->numSubdirs() - 1; a >= 0; a--)
 	{
-		wxString      timestamp = dir_current_->subdirAt(a)->name();
-		wxArrayString cols;
+		auto           timestamp = dir_current_->subdirAt(a)->name();
+		vector<string> cols;
 
 		// Date
-		cols.Add(timestamp.Before('_'));
+		cols.push_back(strutil::beforeFirst(timestamp, '_'));
 
 		// Time
-		wxString time = timestamp.After('_');
-		cols.Add(time.Left(2) + ":" + time.Mid(2, 2) + ":" + time.Right(2));
+		auto time = strutil::afterFirst(timestamp, '_');
+		std::replace(time.begin(), time.end(), '.', ':');
+		cols.push_back(time);
 
 		// Add to list
 		list_backups_->addItem(index++, cols);
@@ -124,7 +128,7 @@ bool MapBackupPanel::loadBackups(wxString archive_name, const wxString& map_name
 void MapBackupPanel::updateMapPreview()
 {
 	// Clear current preview
-	canvas_map_->clearMap();
+	map_data_->clear();
 
 	// Check for selection
 	if (list_backups_->selectedItems().IsEmpty())
@@ -140,5 +144,5 @@ void MapBackupPanel::updateMapPreview()
 	// Open map preview
 	auto maps = archive_mapdata_->detectMaps();
 	if (!maps.empty())
-		canvas_map_->openMap(maps[0]);
+		map_data_->openMap(maps[0]);
 }

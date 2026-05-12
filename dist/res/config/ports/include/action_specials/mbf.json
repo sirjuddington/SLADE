@@ -1,0 +1,12 @@
+{
+  "groups": [
+    {
+      "name": "Transfers",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 271, "name": "-- Transfer Sky Texture" },
+        { "id": 272, "name": "-- Transfer Sky Texture (Flipped)" }
+      ]
+    }
+  ]
+}

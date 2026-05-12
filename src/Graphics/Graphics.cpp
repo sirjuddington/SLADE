@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,12 +32,15 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Graphics.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "Graphics/GameFormats.h"
 #include "SImage/SIFormat.h"
 #include "Utility/Memory.h"
 
 using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -576,4 +579,19 @@ bool gfx::setImageOffsets(MemChunk& img_data, int xoff, int yoff)
 	// Unsupported format
 	else
 		return false;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the given [entry] supports offsets
+// -----------------------------------------------------------------------------
+bool gfx::supportsOffsets(const ArchiveEntry& entry)
+{
+	const auto* type = entry.type();
+	if (type == nullptr)
+		return false;
+
+	// Check entry type
+	auto& entryformat = type->formatId();
+	return entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
+		   || entryformat == "img_doom_beta" || entryformat == "img_png";
 }

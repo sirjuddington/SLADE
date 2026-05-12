@@ -1,0 +1,87 @@
+{
+  "name": "SLADE (Dark)",
+  "default": {
+    "background": "rgb(37, 37, 37)",
+    "bold": false,
+    "font": "Courier New",
+    "foreground": "rgb(215, 215, 215)",
+    "italic": false,
+    "size": 10,
+    "underlined": false
+  },
+  "selection": {
+    "background": "rgb(72, 72, 72)"
+  },
+  "preprocessor": {
+    "foreground": "rgb(85, 113, 128)"
+  },
+  "comment": {
+    "foreground": "rgb(102, 124, 97)",
+    "italic": true
+  },
+  "comment_doc": {
+    "foreground": "rgb(97, 116, 124)",
+    "italic": true
+  },
+  "string": {
+    "foreground": "rgb(216, 101, 84)"
+  },
+  "character": {
+    "foreground": "rgb(216, 101, 84)"
+  },
+  "keyword": {
+    "foreground": "rgb(94, 142, 232)"
+  },
+  "constant": {
+    "foreground": "rgb(188, 117, 198)"
+  },
+  "type": {
+    "foreground": "rgb(125, 105, 220)"
+  },
+  "property": {
+    "foreground": "rgb(121, 234, 214)"
+  },
+  "function": {
+    "foreground": "rgb(239, 222, 154)"
+  },
+  "number": {
+    "foreground": "rgb(188, 174, 225)"
+  },
+  "operator": {
+    "foreground": "rgb(175, 205, 198)"
+  },
+  "bracematch": {
+    "background": "rgb(36, 96, 67)",
+    "bold": true
+  },
+  "bracebad": {
+    "background": "rgb(255, 170, 170)",
+    "bold": true
+  },
+  "linenum": {
+    "background": "rgb(47, 51, 49)",
+    "foreground": "rgb(176, 200, 186)"
+  },
+  "calltip": {
+    "background": "rgb(58, 61, 58)",
+    "foreground": "rgb(215, 215, 215)"
+  },
+  "calltip_hl": {
+    "bold": true,
+    "foreground": "rgb(39, 194, 133)"
+  },
+  "foldmargin": {
+    "background": "rgb(47, 51, 49)",
+    "foreground": "rgb(115, 140, 126)"
+  },
+  "guides": {
+    "foreground": "rgb(48, 82, 82)"
+  },
+  "wordmatch": {
+    "foreground": "rgb(81, 185, 255)"
+  },
+  "current_line": {
+    "background": "rgb(27, 27, 27)",
+    "foreground": "rgb(30, 51, 51)"
+  }
+}

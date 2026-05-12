@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace slade
 {
@@ -15,6 +15,7 @@ namespace game
 		std::map<MapFormat, bool> supported_formats;
 		bool                      user;
 		vector<string>            filters;
+		string                    iwad;
 
 		GameDef(string_view def_name = "Unknown") : name{ def_name }, user{ true } {}
 
@@ -82,15 +83,15 @@ namespace game
 	void init();
 
 	// Basic Game/Port Definitions
-	const std::map<string, GameDef>& gameDefs();
-	const GameDef&                   gameDef(const string& id);
-	const std::map<string, PortDef>& portDefs();
-	const PortDef&                   portDef(const string& id);
+	const vector<GameDef>& gameDefs();
+	const GameDef&         gameDef(const string& id);
+	const vector<PortDef>& portDefs();
+	const PortDef&         portDef(const string& id);
 
 	bool mapFormatSupported(MapFormat format, const string& game, const string& port = "");
 
 	// Tagging
-	TagType parseTagged(const ParseTreeNode* tagged);
+	TagType parseTagged(string_view tagged);
 
 	// Custom definitions (ZScript, DECORATE, EDF, etc.)
 	void updateCustomDefinitions();

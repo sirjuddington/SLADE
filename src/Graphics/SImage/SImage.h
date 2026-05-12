@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace slade
 {
@@ -81,6 +81,7 @@ public:
 	bool      putRGBAData(MemChunk& mc, const Palette* pal = nullptr) const;
 	bool      putRGBData(MemChunk& mc, const Palette* pal = nullptr) const;
 	bool      putIndexedData(MemChunk& mc) const;
+	bool      putAlphaData(MemChunk& mc) const;
 	int       width() const { return width_; }
 	int       height() const { return height_; }
 	int       index() const { return imgindex_; }
@@ -97,6 +98,7 @@ public:
 
 	void setXOffset(int offset);
 	void setYOffset(int offset);
+	void setOffsets(const Vec2i& offsets);
 	void setPalette(const Palette* pal);
 
 	void setWidth(int w);
@@ -108,9 +110,9 @@ public:
 	void   create(int width, int height, Type type, const Palette* pal = nullptr, int index = 0, int numimages = 1);
 	void   create(const Info& info, const Palette* pal = nullptr);
 	void   fillAlpha(uint8_t alpha = 0);
-	short  findUnusedColour() const;
+	short  findUnusedColour(short preferred = -1) const;
 	size_t countColours() const;
-	void   shrinkPalette(Palette* pal = nullptr) const;
+	void   shrinkPalette(Palette* pal = nullptr);
 	bool   copyImage(const SImage* image);
 
 	// Image format reading
@@ -125,7 +127,6 @@ public:
 	bool loadJediFONT(const uint8_t* gfx_data, int size);
 	bool loadJaguarSprite(const uint8_t* header, int hdr_size, const uint8_t* gfx_data, int size);
 	bool loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, int i_height);
-	bool loadSVG(const string& svg_text, int width, int height);
 
 	// Conversion stuff
 	bool convertRGBA(const Palette* pal = nullptr);
@@ -145,8 +146,8 @@ public:
 	bool resize(int nwidth, int nheight);
 	bool setImageData(const vector<uint8_t>& ndata, int nwidth, int nheight, Type ntype);
 	bool setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth, int nheight, Type ntype);
-	bool applyTranslation(const Translation* tr, Palette* pal = nullptr, bool truecolor = false);
-	bool applyTranslation(string_view tr, Palette* pal = nullptr, bool truecolor = false);
+	bool applyTranslation(const Translation* tr, const Palette* pal = nullptr, bool truecolor = false);
+	bool applyTranslation(string_view tr, const Palette* pal = nullptr, bool truecolor = false);
 	bool drawPixel(int x, int y, ColRGBA colour, const DrawProps& properties, const Palette* pal);
 	bool drawImage(
 		const SImage&    img,
@@ -159,6 +160,13 @@ public:
 	bool tint(ColRGBA colour, float amount, const Palette* pal = nullptr, int start = -1, int stop = -1);
 	bool adjust();
 	bool mirrorpad();
+
+	// Generation
+	void generateCheckeredPattern(
+		int            square_size,
+		const ColRGBA& col1,
+		const ColRGBA& col2,
+		const Palette* pal = nullptr);
 
 	// Signals
 	struct Signals

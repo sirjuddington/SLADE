@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,20 +34,13 @@
 #include "App.h"
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
-#include "General/UI.h"
 #include "NewArchiveDiaog.h"
+#include "UI/Layout.h"
+#include "UI/State.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
 using namespace ui;
-
-
-// -----------------------------------------------------------------------------
-//
-// Variables
-//
-// -----------------------------------------------------------------------------
-CVAR(String, archive_last_created_format, "wad", CVar::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -60,25 +53,28 @@ CVAR(String, archive_last_created_format, "wad", CVar::Save)
 // -----------------------------------------------------------------------------
 // NewArchiveDialog class constructor
 // -----------------------------------------------------------------------------
-NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Create New Archive")
+NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, wxS("Create New Archive"))
 {
+	auto lh = LayoutHelper(this);
+
 	// Set dialog icon
 	wxutil::setWindowIcon(this, "newarchive");
 
 	// Create controls
 	auto* choice_type = new wxChoice(this, -1);
-	auto* btn_create  = new wxButton(this, wxID_OK, "Create");
-	auto* btn_cancel  = new wxButton(this, wxID_CANCEL, "Cancel");
+	auto* btn_create  = new wxButton(this, wxID_OK, wxS("Create"));
+	auto* btn_cancel  = new wxButton(this, wxID_CANCEL, wxS("Cancel"));
 
 	// Fill formats list
 	long selected_index = 0;
+	auto last_format    = getStateString(ARCHIVE_LAST_CREATED_FORMAT);
 	for (const auto& format : archive::allFormatsInfo())
 		if (format.create)
 		{
-			if (format.id == archive_last_created_format)
+			if (format.id == last_format)
 				selected_index = choice_type->GetCount();
 
-			choice_type->AppendString(format.name + " Archive");
+			choice_type->AppendString(wxString::FromUTF8(format.name + " Archive"));
 		}
 
 	// Setup controls
@@ -88,9 +84,9 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	// Layout
 	auto* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type), wxutil::sfWithLargeBorder().Expand());
+	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type), lh.sfWithLargeBorder().Expand());
 	auto* hbox = wxutil::createDialogButtonBox(btn_create, btn_cancel);
-	sizer->Add(hbox, wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Create button click
 	btn_create->Bind(
@@ -98,10 +94,10 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 		[this, choice_type](wxCommandEvent&)
 		{
 			for (const auto& format : archive::allFormatsInfo())
-				if (choice_type->GetString(choice_type->GetSelection()) == (format.name + " Archive"))
+				if (choice_type->GetString(choice_type->GetSelection()) == wxString::FromUTF8(format.name + " Archive"))
 				{
-					archive_created_            = app::archiveManager().newArchive(format.id).get();
-					archive_last_created_format = format.id;
+					archive_created_ = app::archiveManager().newArchive(format.id).get();
+					saveStateString(ARCHIVE_LAST_CREATED_FORMAT, format.id);
 					EndModal(wxID_OK);
 				}
 		});
@@ -109,7 +105,7 @@ NewArchiveDialog::NewArchiveDialog(wxWindow* parent) : wxDialog(parent, -1, "Cre
 	// Cancel button click
 	btn_cancel->Bind(wxEVT_BUTTON, [this](wxCommandEvent&) { EndModal(wxID_CANCEL); });
 
-	SetInitialSize({ ui::scalePx(250), -1 });
+	SetInitialSize(lh.size(250, -1));
 	wxWindowBase::Layout();
 	wxWindowBase::Fit();
 	wxTopLevelWindowBase::SetMinSize(GetBestSize());

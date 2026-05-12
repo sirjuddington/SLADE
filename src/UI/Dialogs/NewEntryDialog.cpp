@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,8 +36,8 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveFormat.h"
-#include "General/UI.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -51,7 +51,7 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-vector<string> type_names          = { "Empty (Marker)", "Text", "Palette", "Boom ANIMATED", "Boom SWITCHES" };
+vector<string> type_names = { "Empty (Marker)", "Text", "Palette", "Boom ANIMATED", "Boom SWITCHES", "ANSI Text" };
 int            selected_entry_type = 0;
 } // namespace slade::ui
 
@@ -68,7 +68,7 @@ namespace slade::ui
 // -----------------------------------------------------------------------------
 void allDirs(const ArchiveDir& dir, wxArrayString& list)
 {
-	list.Add(dir.path());
+	list.Add(wxString::FromUTF8(dir.path()));
 	for (const auto& subdir : dir.subdirs())
 		allDirs(*subdir, list);
 }
@@ -85,8 +85,10 @@ void allDirs(const ArchiveDir& dir, wxArrayString& list)
 // NewEntryDialog Class Constructor
 // -----------------------------------------------------------------------------
 NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const ArchiveDir* current_dir, bool new_dir) :
-	wxDialog(parent, -1, new_dir ? "New Directory" : "New Entry")
+	wxDialog(parent, -1, new_dir ? wxS("New Directory") : wxS("New Entry"))
 {
+	auto lh = LayoutHelper(this);
+
 	wxutil::setWindowIcon(this, new_dir ? "newfolder" : "newentry");
 
 	const auto&   archive_format = archive.formatInfo();
@@ -99,7 +101,12 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	text_entry_name_   = new wxTextCtrl(this, -1);
 	choice_entry_type_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, types);
 	combo_parent_dir_  = new wxComboBox(
-        this, -1, current_dir ? current_dir->path() : "/", wxDefaultPosition, wxDefaultSize, all_dirs);
+        this,
+        -1,
+        current_dir ? wxString::FromUTF8(current_dir->path()) : wxString(wxS("/")),
+        wxDefaultPosition,
+        wxDefaultSize,
+        all_dirs);
 
 
 	// Setup controls
@@ -114,22 +121,22 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	// --- Layout controls ---
 	auto* m_sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_sizer);
-	auto* sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	m_sizer->Add(sizer, wxutil::sfWithLargeBorder(1).Expand());
+	auto* sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	m_sizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// New entry options
 	int row = 0;
-	sizer->Add(new wxStaticText(this, -1, "Name:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer->Add(new wxStaticText(this, -1, wxS("Name:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	sizer->Add(text_entry_name_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 	if (!new_dir)
 	{
-		sizer->Add(new wxStaticText(this, -1, "Type:"), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+		sizer->Add(new wxStaticText(this, -1, wxS("Type:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 		sizer->Add(choice_entry_type_, { row++, 1 }, { 1, 1 }, wxEXPAND);
 	}
 	if (archive_format.supports_dirs)
 	{
 		sizer->Add(
-			new wxStaticText(this, -1, new_dir ? "Parent Directory:" : "Directory:"),
+			new wxStaticText(this, -1, new_dir ? wxS("Parent Directory:") : wxS("Directory:")),
 			{ row, 0 },
 			{ 1, 1 },
 			wxALIGN_CENTER_VERTICAL);
@@ -140,7 +147,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	// Dialog buttons
 	m_sizer->Add(
 		wxutil::createDialogButtonBox(this, "Create", "Cancel"),
-		wxutil::sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 
 	// --- Bind events ---
@@ -153,12 +160,12 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 			using namespace maineditor;
 			if (e.GetInt() == static_cast<int>(NewEntryType::Animated))
 			{
-				text_entry_name_->SetValue("ANIMATED");
+				text_entry_name_->SetValue(wxS("ANIMATED"));
 				text_entry_name_->Enable(false);
 			}
 			else if (e.GetInt() == static_cast<int>(NewEntryType::Switches))
 			{
-				text_entry_name_->SetValue("SWITCHES");
+				text_entry_name_->SetValue(wxS("SWITCHES"));
 				text_entry_name_->Enable(false);
 			}
 			else
@@ -167,7 +174,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 
 
 	// Init dialog size
-	SetInitialSize({ ui::scalePx(400), -1 });
+	SetInitialSize(lh.size(400, -1));
 	wxDialog::Layout();
 	wxDialog::Fit();
 	wxDialog::SetMinSize(GetBestSize());
@@ -178,9 +185,9 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 // -----------------------------------------------------------------------------
 // Returns the entered entry name
 // -----------------------------------------------------------------------------
-wxString NewEntryDialog::entryName() const
+string NewEntryDialog::entryName() const
 {
-	return text_entry_name_->GetValue();
+	return text_entry_name_->GetValue().utf8_string();
 }
 
 // -----------------------------------------------------------------------------
@@ -194,9 +201,9 @@ int NewEntryDialog::entryType() const
 // -----------------------------------------------------------------------------
 // Returns the entered parent directory path for the entry
 // -----------------------------------------------------------------------------
-wxString NewEntryDialog::parentDirPath() const
+string NewEntryDialog::parentDirPath() const
 {
-	return combo_parent_dir_->GetValue();
+	return combo_parent_dir_->GetValue().utf8_string();
 }
 
 // -----------------------------------------------------------------------------

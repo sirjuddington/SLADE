@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -47,6 +47,7 @@
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -197,10 +198,14 @@ bool ItemSelection::updateHilight(const Vec2d& mouse_pos, double dist_scale)
 }
 
 // -----------------------------------------------------------------------------
-// Clears the current selection
+// Clears the current selection. Returns true if the selection was changed
 // -----------------------------------------------------------------------------
-void ItemSelection::clear()
+bool ItemSelection::clear()
 {
+	// Ignore if no selection
+	if (selection_.empty())
+		return false;
+
 	// Update change set
 	last_change_.clear();
 	for (auto& item : selection_)
@@ -211,6 +216,8 @@ void ItemSelection::clear()
 
 	if (context_)
 		context_->selectionUpdated();
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -290,8 +297,7 @@ bool ItemSelection::toggleCurrent(bool clear_none)
 		// Clear selection if specified
 		if (clear_none)
 		{
-			clear();
-			if (context_)
+			if (clear() && context_)
 			{
 				context_->selectionUpdated();
 				context_->addEditorMessage("Selection cleared");
@@ -589,15 +595,43 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 	case Mode::Lines:    type = MapObject::Type::Line; break;
 	case Mode::Sectors:  type = MapObject::Type::Sector; break;
 	case Mode::Things:   type = MapObject::Type::Thing; break;
-	default:             return {};
+	case Mode::Visual:
+		// In 3D mode we can have multiple types selected, so use the current
+		// highlight to determine the type
+		if (hilight_.index >= 0)
+		{
+			switch (baseItemType(hilight_.type))
+			{
+			case ItemType::Vertex: type = MapObject::Type::Vertex; break;
+			case ItemType::Side:   type = MapObject::Type::Side; break;
+			case ItemType::Sector: type = MapObject::Type::Sector; break;
+			case ItemType::Thing:  type = MapObject::Type::Thing; break;
+			default:               return {};
+			}
+		}
+		else
+			return {};
+		break;
+	default: return {};
 	}
 
 	// Get selected objects
 	vector<MapObject*> list;
 	MapObject*         o;
-	for (auto& item : selection_)
-		if ((o = context_->map().object(type, item.index)))
-			list.push_back(o);
+	if (type == MapObject::Type::Side)
+	{
+		// For sides (3d mode walls), we need to get the parent line of each
+		// selected side
+		for (auto& item : selection_)
+			if (auto side = context_->map().side(item.index))
+				vectorAddUnique(list, static_cast<MapObject*>(side->parentLine()));
+	}
+	else
+	{
+		for (auto& item : selection_)
+			if ((o = context_->map().object(type, item.index)))
+				list.push_back(o);
+	}
 
 	// If no objects were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0)

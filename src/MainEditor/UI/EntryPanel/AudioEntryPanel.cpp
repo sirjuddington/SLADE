@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,11 +39,11 @@
 #include "Audio/ModMusic.h"
 #include "Audio/Mp3Music.h"
 #include "Audio/Music.h"
-#include "General/UI.h"
 #include "MainEditor/Conversions.h"
 #include "UI/Controls/SIconButton.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -72,38 +72,47 @@ CVAR(Bool, snd_autoplay, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 	EntryPanel(parent, "audio"),
-	timer_seek_{ new wxTimer(this) },
+	timer_seek_{ this },
+	sound_buffer_{ new sf::SoundBuffer() },
+#if (SFML_VERSION_MAJOR > 2)
+	sound_{ new sf::Sound(*sound_buffer_) },
+#else
 	sound_{ new sf::Sound() },
+#endif
 	music_{ new audio::Music() },
 	mod_{ new audio::ModMusic() },
 	mp3_{ new audio::Mp3Music() }
 {
-	namespace wx = wxutil;
+	SetDoubleBuffered(true);
+
+	auto lh = ui::LayoutHelper(this);
 
 	// Setup sizer
-	auto sizer_gb = new wxGridBagSizer(ui::pad(), ui::pad());
+	auto sizer_gb = new wxGridBagSizer(lh.pad(), lh.pad());
 	sizer_main_->AddStretchSpacer();
 	sizer_main_->Add(sizer_gb, wxSizerFlags().Center());
 	sizer_main_->AddStretchSpacer();
 
+	// Add time label
+	txt_time_ = new wxStaticText(this, -1, wxS("0:00.000 / 0:00.000"));
+	sizer_gb->Add(txt_time_, wxGBPosition(0, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT);
+
 	// Add seekbar
 	slider_seek_ = new wxSlider(this, -1, 0, 0, 100);
-	sizer_gb->Add(slider_seek_, wxGBPosition(0, 0), wxGBSpan(1, 9), wxEXPAND);
+	sizer_gb->Add(slider_seek_, wxGBPosition(0, 2), wxGBSpan(1, 7), wxEXPAND);
 
 	// Add play controls
 	btn_play_ = new SIconButton(this, "play", "", 24);
 	sizer_gb->Add(btn_play_, wxGBPosition(1, 0));
-	btn_pause_ = new SIconButton(this, "pause", "", 24);
-	sizer_gb->Add(btn_pause_, wxGBPosition(1, 1));
 	btn_stop_ = new SIconButton(this, "stop", "", 24);
-	sizer_gb->Add(btn_stop_, wxGBPosition(1, 2));
+	sizer_gb->Add(btn_stop_, wxGBPosition(1, 1));
 	btn_prev_ = new SIconButton(this, "prev", "", 24);
-	sizer_gb->Add(btn_prev_, wxGBPosition(1, 3));
+	sizer_gb->Add(btn_prev_, wxGBPosition(1, 2));
 	btn_next_ = new SIconButton(this, "next", "", 24);
-	sizer_gb->Add(btn_next_, wxGBPosition(1, 4));
+	sizer_gb->Add(btn_next_, wxGBPosition(1, 3));
 
 	// Separator
-	sizer_gb->Add(new wxStaticLine(this), { 2, 0 }, { 1, 9 }, wxEXPAND | wxTOP | wxBOTTOM, ui::pad());
+	sizer_gb->Add(new wxStaticLine(this), { 2, 0 }, { 1, 9 }, wxEXPAND | wxTOP | wxBOTTOM, lh.pad());
 
 	// Add title
 	txt_title_ = new wxStaticText(this, -1, wxEmptyString);
@@ -111,30 +120,33 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 
 	// Add info
 	txt_info_ = new wxTextCtrl(
-		this,
-		-1,
-		wxEmptyString,
-		wxDefaultPosition,
-		{ -1, ui::scalePx(200) },
-		wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
+		this, -1, wxEmptyString, wxDefaultPosition, lh.size(-1, 240), wxTE_MULTILINE | wxTE_READONLY | wxTE_BESTWRAP);
 	sizer_gb->Add(txt_info_, wxGBPosition(4, 0), wxGBSpan(1, 9), wxEXPAND | wxHORIZONTAL);
 
 	// Add track number
-	txt_track_ = new wxStaticText(this, -1, "1/1");
-	sizer_gb->Add(txt_track_, wxGBPosition(1, 5), wxDefaultSpan, wxALIGN_CENTER);
+	txt_track_ = new wxStaticText(this, -1, wxS("1/1"));
+	sizer_gb->Add(txt_track_, wxGBPosition(1, 4), wxDefaultSpan, wxALIGN_CENTER);
 
 	// Separator
 	sizer_gb->Add(
 		new wxStaticLine(this, -1, wxDefaultPosition, wxDefaultSize, wxLI_VERTICAL),
-		wxGBPosition(1, 6),
+		wxGBPosition(1, 5),
 		wxDefaultSpan,
 		wxEXPAND);
 
 	// Add volume slider
-	sizer_gb->Add(new wxStaticText(this, -1, "Volume:"), wxGBPosition(1, 7), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
-	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, wxSize(ui::scalePx(128), -1));
+	sizer_gb->Add(
+		new wxStaticText(this, -1, wxS("Volume:")),
+		wxGBPosition(1, 6),
+		wxDefaultSpan,
+		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	slider_volume_ = new wxSlider(this, -1, 0, 0, 100, wxDefaultPosition, lh.size(180, -1));
 	slider_volume_->SetValue(snd_volume);
-	sizer_gb->Add(slider_volume_, wxGBPosition(1, 8), { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	sizer_gb->Add(slider_volume_, wxGBPosition(1, 7), { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+
+	// Add volume percentage label
+	txt_volume_ = new wxStaticText(this, -1, WX_FMT("{}%", snd_volume.value));
+	sizer_gb->Add(txt_volume_, wxGBPosition(1, 8), wxDefaultSpan, wxALIGN_CENTER_VERTICAL | wxALIGN_LEFT);
 
 	// Set volume
 	sound_->setVolume(snd_volume);
@@ -148,13 +160,29 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 
 	// Bind events
 	btn_play_->Bind(wxEVT_BUTTON, &AudioEntryPanel::onBtnPlay, this);
-	btn_pause_->Bind(wxEVT_BUTTON, &AudioEntryPanel::onBtnPause, this);
 	btn_stop_->Bind(wxEVT_BUTTON, &AudioEntryPanel::onBtnStop, this);
 	btn_prev_->Bind(wxEVT_BUTTON, &AudioEntryPanel::onBtnPrev, this);
 	btn_next_->Bind(wxEVT_BUTTON, &AudioEntryPanel::onBtnNext, this);
-	slider_seek_->Bind(wxEVT_SLIDER, &AudioEntryPanel::onSliderSeekChanged, this);
 	slider_volume_->Bind(wxEVT_SLIDER, &AudioEntryPanel::onSliderVolumeChanged, this);
 	Bind(wxEVT_TIMER, &AudioEntryPanel::onTimer, this);
+
+	// Seek slider events
+	slider_seek_->Bind(
+		wxEVT_SCROLL_THUMBTRACK,
+		[this](wxScrollEvent& e)
+		{
+			// Stop the timer updating the slider position while moving the slider
+			seeking_ = true;
+			e.Skip();
+		});
+	slider_seek_->Bind(
+		wxEVT_SCROLL_THUMBRELEASE,
+		[this](wxScrollEvent& e)
+		{
+			seeking_ = false;
+			e.Skip();
+		});
+	slider_seek_->Bind(wxEVT_SLIDER, &AudioEntryPanel::onSliderSeekChanged, this);
 
 	wxWindowBase::Layout();
 }
@@ -164,8 +192,8 @@ AudioEntryPanel::AudioEntryPanel(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 AudioEntryPanel::~AudioEntryPanel()
 {
-	// Stop the timer to avoid crashes
-	timer_seek_->Stop();
+	timer_seek_.Stop();       // Stop the timer to avoid crashes
+	music_->allowSeek(false); // Needed to avoid a crash in SFML with ogg files
 	resetStream();
 }
 
@@ -189,18 +217,17 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 	// Enable all playback controls initially
 	slider_seek_->Enable();
 	btn_play_->Enable();
-	btn_pause_->Enable();
-
 	btn_stop_->Enable();
 	btn_prev_->Enable();
 	btn_next_->Enable();
 
 	// Reset seek slider
 	slider_seek_->SetValue(0);
+	updateTimeText();
 
 	// Delete previous temp file
-	if (wxFileExists(prevfile_))
-		wxRemoveFile(prevfile_);
+	if (fileutil::fileExists(prevfile_))
+		fileutil::removeFile(prevfile_);
 
 	// Open new data
 	if (!open(entry))
@@ -210,7 +237,7 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 	if (snd_autoplay)
 	{
 		startStream();
-		timer_seek_->Start(10);
+		timer_seek_.Start(10);
 	}
 
 	Refresh();
@@ -220,19 +247,19 @@ bool AudioEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-wxString AudioEntryPanel::statusString()
+string AudioEntryPanel::statusString()
 {
-	int hours, minutes, seconds, milliseconds = song_length_ % 1000;
-	seconds      = (song_length_ / 1000) % 60;
-	minutes      = (song_length_ / 60000) % 60;
-	hours        = (song_length_ / 3600000);
-	wxString ret = wxEmptyString;
+	int hours, minutes, seconds, milliseconds = audio_length_ % 1000;
+	seconds = (audio_length_ / 1000) % 60;
+	minutes = (audio_length_ / 60000) % 60;
+	hours   = (audio_length_ / 3600000);
+	string ret;
 	if (hours)
-		ret = wxString::Format("%d:%02d:%02d.%03d", hours, minutes, seconds, milliseconds);
+		ret = fmt::format("{}:{:02d}:{:02d}.{:03d}", hours, minutes, seconds, milliseconds);
 	else if (minutes)
-		ret = wxString::Format("%d:%02d.%03d", minutes, seconds, milliseconds);
+		ret = fmt::format("{}:{:02d}.{:03d}", minutes, seconds, milliseconds);
 	else
-		ret = wxString::Format("%d.%03d", seconds, milliseconds);
+		ret = fmt::format("{}.{:03d}", seconds, milliseconds);
 
 	return ret;
 }
@@ -246,14 +273,16 @@ void AudioEntryPanel::setAudioDuration(int duration)
 	{
 		slider_seek_->Enable(false);
 		slider_seek_->SetRange(0, 0);
+		txt_time_->SetLabel(wxS("0:00.000 / 0:00.000"));
 	}
 	else
 	{
 		slider_seek_->Enable(true);
 		slider_seek_->SetRange(0, duration);
 		slider_seek_->SetPageSize(duration * 0.1);
+		updateTimeText(0);
 	}
-	song_length_ = duration;
+	audio_length_ = duration;
 }
 
 // -----------------------------------------------------------------------------
@@ -276,10 +305,10 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 	auto& mcdata = entry->data();
 
 	// Setup temp filename
-	wxFileName path(app::path(entry->name(), app::Dir::Temp));
+	strutil::Path path(app::path(entry->name(), app::Dir::Temp));
 	// Add extension if missing
-	if (path.GetExt().IsEmpty())
-		path.SetExt(entry->type()->extension());
+	if (!path.hasExtension())
+		path.setExtension(entry->type()->extension());
 
 	// Convert if necessary, then write to file
 	data_.clear();
@@ -301,26 +330,26 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 	else if (entry->type()->formatId() == "midi_mus") // MUS -> MIDI
 	{
 		conversion::musToMidi(mcdata, data_);
-		path.SetExt("mid");
+		path.setExtension("mid");
 	}
 	else if (
 		entry->type()->formatId() == "midi_xmi" || // HMI/HMP/XMI -> MIDI
 		entry->type()->formatId() == "midi_hmi" || entry->type()->formatId() == "midi_hmp")
 	{
 		conversion::zmusToMidi(mcdata, data_, 0, &num_tracks_);
-		path.SetExt("mid");
+		path.setExtension("mid");
 	}
 	else if (entry->type()->formatId() == "midi_gmid") // GMID -> MIDI
 	{
 		conversion::gmidToMidi(mcdata, data_);
-		path.SetExt("mid");
+		path.setExtension("mid");
 	}
 	else
 		data_.importMem(mcdata.data(), mcdata.size());
 
 	// MIDI format
 	if (strutil::startsWith(entry->type()->formatId(), "midi_"))
-		openMidi(data_, path.GetFullPath());
+		openMidi(data_, path.fullPath());
 
 	// MOD format
 	else if (strutil::startsWith(entry->type()->formatId(), "mod_"))
@@ -332,13 +361,13 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 
 	// Other format
 	else
-		openAudio(data_, path.GetFullPath());
+		openAudio(data_, path.fullPath());
 
 	// Keep filename so we can delete it later
-	prevfile_ = path.GetFullPath();
+	prevfile_ = path.fullPath();
 
-	txt_title_->SetLabel(entry->path(true));
-	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
+	txt_title_->SetLabel(wxString::FromUTF8(entry->path(true)));
+	txt_track_->SetLabel(WX_FMT("{}/{}", subsong_ + 1, num_tracks_));
 	updateInfo(*entry);
 
 	// Disable prev/next track buttons if only one track is available
@@ -356,7 +385,7 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Opens an audio file for playback (SFML 2.x+)
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
+bool AudioEntryPanel::openAudio(MemChunk& audio, string_view filename)
 {
 	// Stop if sound currently playing
 	resetStream();
@@ -376,7 +405,6 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
 		// Enable play controls
 		setAudioDuration(sound_buffer_->getDuration().asMilliseconds());
 		btn_play_->Enable();
-		btn_pause_->Enable();
 		btn_stop_->Enable();
 
 		return true;
@@ -398,7 +426,6 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
 	// Unable to open audio, disable play controls
 	setAudioDuration(0);
 	btn_play_->Enable(false);
-	btn_pause_->Enable(false);
 	btn_stop_->Enable(false);
 
 	return false;
@@ -407,7 +434,7 @@ bool AudioEntryPanel::openAudio(MemChunk& audio, const wxString& filename)
 // -----------------------------------------------------------------------------
 // Opens a MIDI file for playback
 // -----------------------------------------------------------------------------
-bool AudioEntryPanel::openMidi(MemChunk& data, const wxString& filename)
+bool AudioEntryPanel::openMidi(MemChunk& data, string_view filename)
 {
 	audio_type_ = MIDI;
 
@@ -421,7 +448,6 @@ bool AudioEntryPanel::openMidi(MemChunk& data, const wxString& filename)
 		{
 			// Enable play controls
 			btn_play_->Enable();
-			btn_pause_->Enable();
 			btn_stop_->Enable();
 
 			// Setup seekbar
@@ -447,7 +473,6 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 		// Enable playback controls
 		slider_volume_->Enable();
 		btn_play_->Enable();
-		btn_pause_->Enable();
 		btn_stop_->Enable();
 		setAudioDuration(mod_->duration().asMilliseconds());
 
@@ -458,7 +483,6 @@ bool AudioEntryPanel::openMod(MemChunk& data)
 		// Disable playback controls
 		slider_volume_->Enable();
 		btn_play_->Enable();
-		btn_pause_->Enable();
 		btn_stop_->Enable();
 		setAudioDuration(0);
 
@@ -479,7 +503,6 @@ bool AudioEntryPanel::openMp3(MemChunk& data)
 		// Enable playback controls
 		slider_volume_->Enable();
 		btn_play_->Enable();
-		btn_pause_->Enable();
 		btn_stop_->Enable();
 		setAudioDuration(mp3_->duration().asMilliseconds());
 
@@ -490,7 +513,6 @@ bool AudioEntryPanel::openMp3(MemChunk& data)
 		// Disable playback controls
 		slider_volume_->Enable();
 		btn_play_->Enable();
-		btn_pause_->Enable();
 		btn_stop_->Enable();
 		setAudioDuration(0);
 
@@ -550,14 +572,74 @@ void AudioEntryPanel::resetStream() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if audio is currently playing
+// -----------------------------------------------------------------------------
+bool AudioEntryPanel::isPlaying() const
+{
+	switch (audio_type_)
+	{
+#if (SFML_VERSION_MAJOR > 2)
+	case Sound: return sound_->getStatus() == sf::Sound::Status::Playing;
+	case Music: return music_->getStatus() == sf::Sound::Status::Playing;
+	case Mod:   return mod_->getStatus() == sf::Sound::Status::Playing;
+	case Mp3:   return mp3_->getStatus() == sf::Sound::Status::Playing;
+#else
+	case Sound: return sound_->getStatus() == sf::Sound::Playing;
+	case Music: return music_->getStatus() == sf::Sound::Playing;
+	case Mod:   return mod_->getStatus() == sf::Sound::Playing;
+	case Mp3:   return mp3_->getStatus() == sf::Sound::Playing;
+#endif
+	case MIDI: return audio::midiPlayer().isPlaying();
+	default:   return false;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Updates the play button icon based on playing state
+// -----------------------------------------------------------------------------
+void AudioEntryPanel::updatePlayButton() const
+{
+	if (isPlaying())
+		btn_play_->SetBitmap(icons::getIcon(icons::General, "pause", 24));
+	else
+		btn_play_->SetBitmap(icons::getIcon(icons::General, "play", 24));
+}
+
+// -----------------------------------------------------------------------------
+// Updates the time label text
+// -----------------------------------------------------------------------------
+void AudioEntryPanel::updateTimeText(int ms) const
+{
+	if (ms < 0)
+		ms = slider_seek_->GetValue();
+
+	int elapsed_ms      = ms % 1000;
+	int elapsed_seconds = (ms / 1000) % 60;
+	int elapsed_minutes = ms / 60000;
+	int total_ms        = audio_length_ % 1000;
+	int total_seconds   = (audio_length_ / 1000) % 60;
+	int total_minutes   = audio_length_ / 60000;
+
+	txt_time_->SetLabel(
+		wxString::Format(
+			wxS("%d:%02d.%03d / %d:%02d.%03d"),
+			elapsed_minutes,
+			elapsed_seconds,
+			elapsed_ms,
+			total_minutes,
+			total_seconds,
+			total_ms));
+}
+
+// -----------------------------------------------------------------------------
 // Used to update the info area, returns true if info is non-empty
 // -----------------------------------------------------------------------------
 bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 {
 	txt_info_->Clear();
 
-	wxString info = entry.typeString() + "\n";
-	auto&    mc   = entry.data();
+	string info = entry.typeString() + "\n";
+	auto&  mc   = entry.data();
 	switch (audio_type_)
 	{
 	case Sound:
@@ -567,18 +649,18 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 		{
 			size_t samplerate = mc.readL16(2);
 			size_t samples    = mc.readL16(4);
-			info += wxString::Format(
-				"%lu samples at %lu Hz", static_cast<unsigned long>(samples), static_cast<unsigned long>(samplerate));
+			info += fmt::format(
+				"{} samples at {} Hz", static_cast<unsigned long>(samples), static_cast<unsigned long>(samplerate));
 		}
 		else if (entry.type() == EntryType::fromId("snd_speaker"))
 		{
 			size_t samples = mc.readL16(2);
-			info += wxString::Format("%lu samples", static_cast<unsigned long>(samples));
+			info += fmt::format("{} samples", static_cast<unsigned long>(samples));
 		}
 		else if (entry.type() == EntryType::fromId("snd_audiot"))
 		{
 			size_t samples = mc.readL16(0);
-			info += wxString::Format("%lu samples", static_cast<unsigned long>(samples));
+			info += fmt::format("{} samples", static_cast<unsigned long>(samples));
 		}
 		else if (entry.type() == EntryType::fromId("snd_sun"))
 			info += audio::getSunInfo(mc);
@@ -612,7 +694,7 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 		break;
 	default: break;
 	}
-	txt_info_->SetValue(info);
+	txt_info_->SetValue(wxString::FromUTF8(info));
 	if (info.length())
 		return true;
 	return false;
@@ -631,18 +713,20 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 // -----------------------------------------------------------------------------
 void AudioEntryPanel::onBtnPlay(wxCommandEvent& e)
 {
-	startStream();
-	timer_seek_->Start(10);
-}
+	if (isPlaying())
+	{
+		// Pause
+		stopStream();
+		timer_seek_.Stop();
+	}
+	else
+	{
+		// Play
+		startStream();
+		timer_seek_.Start(10);
+	}
 
-// -----------------------------------------------------------------------------
-// Called when the pause button is pressed
-// -----------------------------------------------------------------------------
-void AudioEntryPanel::onBtnPause(wxCommandEvent& e)
-{
-	// Stop playing (no reset)
-	stopStream();
-	timer_seek_->Stop();
+	updatePlayButton();
 }
 
 // -----------------------------------------------------------------------------
@@ -652,11 +736,17 @@ void AudioEntryPanel::onBtnStop(wxCommandEvent& e)
 {
 	// Stop playing
 	stopStream();
-	timer_seek_->Stop();
+	timer_seek_.Stop();
 
 	// Reset
 	resetStream();
 	slider_seek_->SetValue(0);
+
+	// Reset time label
+	updateTimeText(0);
+
+	// Reset play button icon
+	updatePlayButton();
 }
 
 // -----------------------------------------------------------------------------
@@ -678,7 +768,7 @@ void AudioEntryPanel::onBtnPrev(wxCommandEvent& e)
 		updateInfo(*entry);
 	}
 
-	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
+	txt_track_->SetLabel(WX_FMT("{}/{}", subsong_ + 1, num_tracks_));
 }
 
 // -----------------------------------------------------------------------------
@@ -697,7 +787,7 @@ void AudioEntryPanel::onBtnNext(wxCommandEvent& e)
 		updateInfo(*entry);
 	}
 
-	txt_track_->SetLabel(wxString::Format("%d/%d", subsong_ + 1, num_tracks_));
+	txt_track_->SetLabel(WX_FMT("{}/{}", subsong_ + 1, num_tracks_));
 }
 
 // -----------------------------------------------------------------------------
@@ -719,17 +809,29 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 	}
 
 	// Set slider
-	slider_seek_->SetValue(pos);
+	if (!seeking_)
+		slider_seek_->SetValue(pos);
 
-	// Stop the timer if playback has reached the end
+	updateTimeText(pos);
+
+// Stop the timer if playback has reached the end
+#if (SFML_VERSION_MAJOR > 2)
+	if (pos >= slider_seek_->GetMax() || (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Status::Stopped)
+		|| (audio_type_ == Music && music_->getStatus() == sf::Sound::Status::Stopped)
+		|| (audio_type_ == Mod && mod_->getStatus() == sf::Sound::Status::Stopped)
+		|| (audio_type_ == Mp3 && mp3_->getStatus() == sf::Sound::Status::Stopped)
+		|| (audio_type_ == MIDI && !audio::midiPlayer().isPlaying()))
+#else
 	if (pos >= slider_seek_->GetMax() || (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Music && music_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Mod && mod_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Mp3 && mp3_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == MIDI && !audio::midiPlayer().isPlaying()))
+#endif
 	{
-		timer_seek_->Stop();
+		timer_seek_.Stop();
 		slider_seek_->SetValue(0);
+		updatePlayButton();
 	}
 }
 
@@ -745,8 +847,10 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 	case Mod:   mod_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
 	case MIDI:  audio::midiPlayer().setPosition(slider_seek_->GetValue()); break;
 	case Mp3:   mp3_->setPlayingOffset(sf::milliseconds(slider_seek_->GetValue())); break;
-	default:    break;
+	default:    return;
 	}
+
+	updateTimeText();
 }
 
 // -----------------------------------------------------------------------------
@@ -755,6 +859,9 @@ void AudioEntryPanel::onSliderSeekChanged(wxCommandEvent& e)
 void AudioEntryPanel::onSliderVolumeChanged(wxCommandEvent& e)
 {
 	snd_volume = slider_volume_->GetValue();
+
+	// Update volume percentage label
+	txt_volume_->SetLabel(WX_FMT("{}%", snd_volume.value));
 
 	switch (audio_type_)
 	{

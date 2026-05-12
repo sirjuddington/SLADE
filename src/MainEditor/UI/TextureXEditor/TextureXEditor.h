@@ -21,21 +21,22 @@ public:
 	UndoManager* undoManager() const { return undo_manager_.get(); }
 
 	bool openArchive(Archive* archive);
+	bool openEntry(ArchiveEntry* tx_entry);
 	void updateTexturePalette() const;
 	void saveChanges();
 	bool close();
 	void showTextureMenu(bool show = true) const;
-	void setSelection(size_t index) const;
-	void setSelection(const ArchiveEntry* entry) const;
+	bool setSelection(size_t index) const;
+	bool setSelection(const ArchiveEntry* entry) const;
 	void updateMenuStatus() const;
 	void undo() const;
 	void redo() const;
 
 	// Editing
-	void     setFullPath(bool enabled = false) const;
-	bool     removePatch(unsigned index, bool delete_entry = false) const;
-	int      browsePatchTable(const wxString& first = "") const;
-	wxString browsePatchEntry(const wxString& first = "");
+	void   setFullPath(bool enabled = false) const;
+	bool   removePatch(unsigned index, bool delete_entry = false) const;
+	int    browsePatchTable(const string& first = "") const;
+	string browsePatchEntry(const string& first = "");
 
 	// Checks
 	bool checkTextures();
@@ -52,8 +53,9 @@ private:
 	unique_ptr<UndoManager> undo_manager_;
 
 	// UI Stuff
-	TabControl* tabs_         = nullptr;
-	wxMenu*     menu_texture_ = nullptr;
+	TabControl* tabs_             = nullptr;
+	wxMenu*     menu_texture_     = nullptr;
+	int         pnames_tab_index_ = -1;
 
 	bool pb_update_       = true;
 	bool pnames_modified_ = false;

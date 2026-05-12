@@ -1,7 +1,7 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,8 +38,11 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "General/SActionHandler.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "UI/Controls/SToolButton.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include <wx/statbmp.h>
@@ -55,11 +58,13 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace
 {
-const string background_colour = "#1F242E";
-const string foreground_colour = "#D5D7DD";
-const string link_colour       = "#FFCC66";
-const string blue_dark_colour  = "#4D6FB3";
-const string blue_light_colour = "#4D83F0";
+const wxString BACKGROUND_COLOUR_DARK  = wxS("#1F242E");
+const wxString BACKGROUND_COLOUR_LIGHT = wxS("#E0EBFF");
+const wxString FOREGROUND_COLOUR_DARK  = wxS("#D5D7DD");
+const wxString LINK_COLOUR_DARK        = wxS("#FFCC66");
+const wxString LINK_COLOUR_LIGHT       = wxS("#0044CC");
+const wxString BLUE_DARK_COLOUR        = wxS("#4D6FB3");
+const wxString BLUE_LIGHT_COLOUR       = wxS("#4D83F0");
 } // namespace
 
 
@@ -71,21 +76,30 @@ const string blue_light_colour = "#4D83F0";
 namespace
 {
 // -----------------------------------------------------------------------------
+// Returns the background colour depending on the current theme
+// -----------------------------------------------------------------------------
+wxColour backgroundColour()
+{
+	return { app::isDarkTheme() ? BACKGROUND_COLOUR_DARK : BACKGROUND_COLOUR_LIGHT };
+}
+
+// -----------------------------------------------------------------------------
 // Returns a wxBitmapBundle of [icon] at base [size]
 // -----------------------------------------------------------------------------
 wxBitmapBundle getIconBitmapBundle(string_view icon, int size)
 {
 	auto svg_entry = app::archiveManager().programResourceArchive()->entryAtPath(fmt::format("icons/{}", icon));
-	return wxBitmapBundle::FromSVG(reinterpret_cast<const char*>(svg_entry->rawData()), wxutil::scaledSize(size, size));
+	return wxBitmapBundle::FromSVG(
+		reinterpret_cast<const wxByte*>(svg_entry->rawData()), svg_entry->size(), { size, size });
 }
 
 // -----------------------------------------------------------------------------
-// Creates a custom button (SToolBarButton) for an action with [text] and [icon]
+// Creates a custom button (SToolButton) for an action with [text] and [icon]
 // -----------------------------------------------------------------------------
-SToolBarButton* createActionButton(wxWindow* parent, const string& action_id, const string& text, const string& icon)
+SToolButton* createActionButton(wxWindow* parent, const string& action_id, const string& text, const string& icon)
 {
-	auto button = new SToolBarButton(parent, action_id, text, icon, "", true, 24);
-	button->SetBackgroundColour(wxColour(background_colour));
+	auto button = new SToolButton(parent, action_id, text, icon, "", true, 24);
+	button->SetBackgroundColour(backgroundColour());
 	button->setExactFit(false);
 	button->setFontSize(1.1f);
 	button->setPadding(8);
@@ -98,11 +112,12 @@ SToolBarButton* createActionButton(wxWindow* parent, const string& action_id, co
 // -----------------------------------------------------------------------------
 wxSizer* createLogoSizer(wxWindow* parent)
 {
+	auto lh    = LayoutHelper(parent);
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 
 	// Logo
 	auto logo_bitmap = new wxStaticBitmap(parent, -1, getIconBitmapBundle("general/logo.svg", 112));
-	sizer->Add(logo_bitmap, wxutil::sfWithLargeBorder(1, wxRIGHT).CenterVertical());
+	sizer->Add(logo_bitmap, lh.sfWithLargeBorder(1, wxRIGHT).CenterVertical());
 
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer->Add(vbox, wxSizerFlags(1).Expand());
@@ -110,21 +125,21 @@ wxSizer* createLogoSizer(wxWindow* parent)
 	vbox->AddStretchSpacer();
 
 	// SLADE Label
-	auto slade_label = new wxStaticText(parent, -1, "SLADE");
+	auto slade_label = new wxStaticText(parent, -1, wxS("SLADE"));
 	slade_label->SetFont(slade_label->GetFont().Bold().Scale(4.0f));
-	slade_label->SetForegroundColour(wxColour(blue_light_colour));
+	slade_label->SetForegroundColour(wxColour(app::isDarkTheme() ? BLUE_LIGHT_COLOUR : BLUE_DARK_COLOUR));
 	vbox->Add(slade_label, wxSizerFlags().Left());
 
 	// "It's a Doom Editor"
-	auto tagline_label = new wxStaticText(parent, -1, "It's a Doom Editor");
+	auto tagline_label = new wxStaticText(parent, -1, wxS("It's a Doom Editor"));
 	tagline_label->SetFont(tagline_label->GetFont().Bold().Italic().Scale(1.2f));
-	tagline_label->SetForegroundColour(wxColour(blue_dark_colour));
-	vbox->Add(tagline_label, wxutil::sfWithBorder(0, wxBOTTOM).CenterHorizontal());
+	tagline_label->SetForegroundColour(wxColour(app::isDarkTheme() ? BLUE_DARK_COLOUR : BLUE_LIGHT_COLOUR));
+	vbox->Add(tagline_label, lh.sfWithBorder(0, wxBOTTOM).CenterHorizontal());
 
 	// Version
-	auto version_label = new wxStaticText(parent, -1, "v" + app::version().toString());
+	auto version_label = new wxStaticText(parent, -1, wxString::FromUTF8("v" + app::version().toString()));
 	version_label->SetFont(version_label->GetFont().Bold());
-	version_label->SetForegroundColour(wxColour(blue_dark_colour));
+	version_label->SetForegroundColour(wxColour(app::isDarkTheme() ? BLUE_DARK_COLOUR : BLUE_LIGHT_COLOUR));
 	vbox->Add(version_label, wxSizerFlags().Center());
 
 	vbox->AddStretchSpacer();
@@ -138,7 +153,7 @@ wxSizer* createLogoSizer(wxWindow* parent)
 wxSizer* createActionsSizer(wxWindow* parent)
 {
 	auto sizer  = new wxBoxSizer(wxVERTICAL);
-	auto sflags = wxutil::sfWithBorder(0, wxBOTTOM).Expand();
+	auto sflags = LayoutHelper(parent).sfWithBorder(0, wxBOTTOM).Expand();
 
 	sizer->Add(createActionButton(parent, "aman_open", "Open Archive", "open"), sflags);
 	sizer->Add(createActionButton(parent, "aman_opendir", "Open Directory", "opendir"), sflags);
@@ -147,6 +162,107 @@ wxSizer* createActionsSizer(wxWindow* parent)
 
 	return sizer;
 }
+
+// -----------------------------------------------------------------------------
+// Returns the icon for an archive at [path]
+// -----------------------------------------------------------------------------
+string getArchiveIcon(const strutil::Path& path)
+{
+	string icon = "archive";
+
+	// Dir
+	if (!path.hasExtension())
+		icon = "folder";
+
+	// Wad
+	static auto wad_fmt = archive::formatInfo(ArchiveFormat::Wad);
+	for (const auto& fmt_ext : wad_fmt.extensions)
+		if (strutil::equalCI(path.extension(), fmt_ext.first))
+		{
+			icon = "wad";
+			break;
+		}
+
+	// Zip
+	static auto zip_fmt = archive::formatInfo(ArchiveFormat::Zip);
+	for (const auto& fmt_ext : zip_fmt.extensions)
+		if (strutil::equalCI(path.extension(), fmt_ext.first))
+		{
+			icon = "zip";
+			break;
+		}
+
+	return icon;
+}
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+// RecentFileButton Class
+//
+// A custom SToolButton for recent files, will underline text on mouse over
+// instead of changing the background colour
+// -----------------------------------------------------------------------------
+namespace
+{
+class RecentFileButton : public SToolButton
+{
+public:
+	RecentFileButton(wxWindow* parent, const strutil::Path& path, int index) :
+		SToolButton(parent, "aman_recent", getArchiveIcon(path), true),
+		filename_{ path.fileName() }
+	{
+		action_wx_id_offset_ = index;
+		click_can_delete_    = true;
+
+		wxWindow::SetBackgroundColour(backgroundColour());
+		wxWindow::SetForegroundColour(wxColour(app::isDarkTheme() ? LINK_COLOUR_DARK : LINK_COLOUR_LIGHT));
+		wxWindow::SetCursor(wxCURSOR_HAND);
+		setExactFit(true);
+		setPadding(FromDIP(1), 0);
+		setTextOffset(FromDIP(4));
+
+		// Determine text width
+		SetFont(GetFont().MakeBold());
+		text_width_ = ToDIP(GetTextExtent(wxString::FromUTF8(filename_)).GetWidth()) + pad_inner_ * 2;
+
+		updateSize();
+	}
+
+protected:
+	void drawContent(wxGraphicsContext* gc, bool mouse_over) override
+	{
+		// Get system colours needed
+		auto col_background = GetBackgroundColour();
+		auto col_hilight    = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
+
+		// Get size of text
+		auto name_size   = GetTextExtent(wxString::FromUTF8(filename_));
+		auto name_height = name_size.y;
+
+		// Draw icon
+		if (auto icon = icon_.GetBitmapFor(this); icon.IsOk())
+		{
+			// Draw normal icon
+			gc->DrawBitmap(
+				icon,
+				FromDIP(pad_outer_ + pad_inner_),
+				FromDIP(pad_outer_ + pad_inner_),
+				FromPhys(icon.GetWidth()),
+				FromPhys(icon.GetHeight()));
+		}
+
+		// Draw text
+		if (mouse_over)
+			gc->SetFont(GetFont().MakeUnderlined(), GetForegroundColour());
+		int top  = (static_cast<double>(GetSize().y) * 0.5) - (static_cast<double>(name_height) * 0.5);
+		int left = pad_outer_ + pad_inner_ * 2 + icon_size_ + text_offset_;
+		gc->DrawText(wxString::FromUTF8(filename_), FromDIP(left), top);
+	}
+
+private:
+	string filename_;
+};
 } // namespace
 
 
@@ -161,17 +277,20 @@ wxSizer* createActionsSizer(wxWindow* parent)
 // -----------------------------------------------------------------------------
 StartPanel::StartPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
-	wxPanel::SetName("startpage");
+	const wxString wxs_black = wxS("#000000");
 
-	wxWindowBase::SetBackgroundColour(wxColour(background_colour));
-	wxWindowBase::SetForegroundColour(wxColour(foreground_colour));
+	wxPanel::SetName(wxS("startpage"));
+
+	wxWindow::SetDoubleBuffered(true);
+	wxWindowBase::SetBackgroundColour(backgroundColour());
+	wxWindowBase::SetForegroundColour(wxColour(app::isDarkTheme() ? FOREGROUND_COLOUR_DARK : wxs_black));
 
 	// Setup Recent Files panel
 	recent_files_panel_      = new wxPanel(this);
-	sc_recent_files_updated_ = app::archiveManager().signals().recent_files_changed.connect_scoped(
+	sc_recent_files_updated_ = database::signals().archive_file_updated.connect_scoped(
 		[this] { updateRecentFilesPanel(); }); // Update panel when recent files list changes
-	recent_files_panel_->SetBackgroundColour(wxColour(background_colour));
-	recent_files_panel_->SetForegroundColour(wxColour(foreground_colour));
+	recent_files_panel_->SetBackgroundColour(backgroundColour());
+	recent_files_panel_->SetForegroundColour(wxColour(app::isDarkTheme() ? FOREGROUND_COLOUR_DARK : wxs_black));
 	updateRecentFilesPanel();
 
 	setupLayout();
@@ -182,13 +301,13 @@ StartPanel::StartPanel(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 void StartPanel::setupLayout()
 {
-	namespace wx = wxutil;
+	auto lh = LayoutHelper(this);
 
 	auto main_sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(main_sizer);
 
 	// Blue strip at the top
-	auto top_panel = new wxPanel(this, -1, wxDefaultPosition, { -1, 4 });
+	auto top_panel = new wxPanel(this, -1, wxDefaultPosition, lh.size(-1, 4));
 	top_panel->SetBackgroundColour(wxColour(116, 135, 175));
 	main_sizer->Add(top_panel, wxSizerFlags().Expand());
 
@@ -197,12 +316,12 @@ void StartPanel::setupLayout()
 	left_sizer->Add(createActionsSizer(this), wxSizerFlags(1).Right());
 
 	auto content_sizer = new wxBoxSizer(wxHORIZONTAL);
-	content_sizer->Add(left_sizer, wx::sfWithLargeBorder(1, wxRIGHT).CenterVertical());
-	content_sizer->Add(recent_files_panel_, wx::sfWithLargeBorder(1, wxLEFT).CenterVertical());
+	content_sizer->Add(left_sizer, lh.sfWithLargeBorder(1, wxRIGHT).CenterVertical());
+	content_sizer->Add(recent_files_panel_, lh.sfWithLargeBorder(1, wxLEFT).CenterVertical());
 
 	main_sizer->AddStretchSpacer();
-	main_sizer->Add(createLogoSizer(this), wx::sfWithLargeBorder(0, wxBOTTOM).Center());
-	main_sizer->Add(content_sizer, wx::sfWithBorder(1, wxLEFT | wxRIGHT).Center());
+	main_sizer->Add(createLogoSizer(this), lh.sfWithLargeBorder(0, wxBOTTOM).Center());
+	main_sizer->Add(content_sizer, lh.sfWithBorder(1, wxLEFT | wxRIGHT).Center());
 	main_sizer->AddStretchSpacer();
 }
 
@@ -211,6 +330,7 @@ void StartPanel::setupLayout()
 // -----------------------------------------------------------------------------
 void StartPanel::updateRecentFilesPanel()
 {
+	auto lh    = LayoutHelper(recent_files_panel_);
 	auto sizer = recent_files_panel_->GetSizer();
 	if (!sizer)
 	{
@@ -220,14 +340,14 @@ void StartPanel::updateRecentFilesPanel()
 
 	sizer->Clear(true);
 
-	auto title_label = new wxStaticText(recent_files_panel_, -1, "Recent Files");
+	auto title_label = new wxStaticText(recent_files_panel_, -1, wxS("Recent Files"));
 	title_label->SetFont(title_label->GetFont().Bold().Scale(1.25f));
-	sizer->Add(title_label, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(title_label, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
-	auto recent_files = app::archiveManager().recentFiles();
+	auto recent_files = database::recentFiles();
 	if (recent_files.empty())
 	{
-		auto no_recent_label = new wxStaticText(recent_files_panel_, -1, "No recently opened files");
+		auto no_recent_label = new wxStaticText(recent_files_panel_, -1, wxS("No recently opened files"));
 		no_recent_label->SetFont(no_recent_label->GetFont().Scale(1.2f).Italic());
 		sizer->Add(no_recent_label);
 	}
@@ -236,7 +356,7 @@ void StartPanel::updateRecentFilesPanel()
 		auto index = 0;
 		for (const auto& path : recent_files)
 		{
-			sizer->Add(createRecentFileSizer(path, index), wxutil::sfWithMinBorder(0, wxBOTTOM));
+			sizer->Add(createRecentFileSizer(path, index), wxSizerFlags());
 
 			if (index++ > 10)
 				break;
@@ -251,83 +371,17 @@ void StartPanel::updateRecentFilesPanel()
 // -----------------------------------------------------------------------------
 wxSizer* StartPanel::createRecentFileSizer(string_view full_path, int index) const
 {
+	auto lh    = LayoutHelper(recent_files_panel_);
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 
-	// Icon --------------------------------------------------------------------
-	auto   path = strutil::Path(full_path);
-	string icon = "entry_list/archive.svg";
+	// File button
+	auto path   = strutil::Path(full_path);
+	auto button = new RecentFileButton(recent_files_panel_, path, index);
+	sizer->Add(button, lh.sfWithLargeBorder(0, wxRIGHT));
 
-	// Dir
-	if (!path.hasExtension())
-		icon = "entry_list/folder.svg";
-
-	// Wad
-	static auto wad_fmt = archive::formatInfo(ArchiveFormat::Wad);
-	for (const auto& fmt_ext : wad_fmt.extensions)
-		if (strutil::equalCI(path.extension(), fmt_ext.first))
-		{
-			icon = "entry_list/wad.svg";
-			break;
-		}
-
-	// Zip
-	static auto zip_fmt = archive::formatInfo(ArchiveFormat::Zip);
-	for (const auto& fmt_ext : zip_fmt.extensions)
-		if (strutil::equalCI(path.extension(), fmt_ext.first))
-		{
-			icon = "entry_list/zip.svg";
-			break;
-		}
-
-	sizer->Add(
-		new wxStaticBitmap(recent_files_panel_, -1, getIconBitmapBundle(icon, 16)), wxutil::sfWithBorder(0, wxRIGHT));
-
-
-	// Text --------------------------------------------------------------------
-	auto filename = wxutil::strFromView(path.fileName());
-	if (filename.length() > 24)
-		filename = filename.SubString(0, 18) + "..." + wxutil::strFromView(path.extension());
-	if (!path.hasExtension())
-		filename += "/";
-	auto filename_label = new wxStaticText(recent_files_panel_, -1, filename);
-	filename_label->SetFont(filename_label->GetFont().Bold());
-	filename_label->SetForegroundColour(wxColour(link_colour));
-	filename_label->SetCursor(wxCURSOR_HAND);
-	filename_label->SetDoubleBuffered(true);
-	if (path.fileName().length() > 24)
-		filename_label->SetToolTip(wxutil::strFromView(path.fileName()));
-	sizer->Add(filename_label, wxutil::sfWithLargeBorder(0, wxRIGHT).Bottom());
-
+	// Path label
 	auto path_label = new wxStaticText(recent_files_panel_, -1, wxutil::strFromView(path.path(false)));
-	sizer->Add(path_label, wxSizerFlags().Bottom());
-
-	// Open on filename click
-	filename_label->Bind(
-		wxEVT_LEFT_DOWN,
-		[this, index](wxMouseEvent&)
-		{
-			SActionHandler::setWxIdOffset(index);
-			SActionHandler::doAction("aman_recent");
-		});
-
-	// Underline filename on mouseover
-	filename_label->Bind(
-		wxEVT_IDLE,
-		[filename_label](wxIdleEvent&)
-		{
-			auto font      = filename_label->GetFont();
-			auto mouseover = filename_label->GetScreenRect().Contains(wxGetMousePosition());
-			if (!mouseover && font.GetUnderlined())
-			{
-				font.SetUnderlined(false);
-				filename_label->SetFont(font);
-			}
-			else if (mouseover && !font.GetUnderlined())
-			{
-				font.SetUnderlined(true);
-				filename_label->SetFont(font);
-			}
-		});
+	sizer->Add(path_label, wxSizerFlags().CenterVertical());
 
 	return sizer;
 }

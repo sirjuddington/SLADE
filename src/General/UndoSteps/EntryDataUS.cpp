@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -64,7 +64,7 @@ bool EntryDataUS::swapData()
 	// log::info(1, "Entry data swap...");
 
 	// Get parent dir
-	auto dir = archive_->dirAtPath(path_.ToStdString());
+	auto dir = archive_->dirAtPath(path_);
 	if (dir)
 	{
 		// Get entry

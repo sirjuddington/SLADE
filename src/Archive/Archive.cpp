@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,12 +35,12 @@
 #include "ArchiveEntry.h"
 #include "ArchiveFormatHandler.h"
 #include "EntryType/EntryType.h"
-#include "General/UI.h"
 #include "MapDesc.h"
+#include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>
-#include <filesystem>
+#include <SFML/System/Time.hpp>
 
 using namespace slade;
 
@@ -205,7 +205,7 @@ string Archive::fileExtensionString() const
 	}
 
 	// No extension (probably unknown type)
-	return "Any File|*.*";
+	return "Any File|*";
 }
 
 // -----------------------------------------------------------------------------
@@ -265,8 +265,12 @@ bool Archive::open(string_view filename)
 	if (format_handler_->open(*this, filename))
 	{
 		log::info(2, "Archive::open took {}ms", timer.getElapsedTime().asMilliseconds());
-		file_modified_ = fileutil::fileModifiedTime(filename);
-		on_disk_       = true;
+
+		if (format_handler_->format() != ArchiveFormat::Dir)
+			file_modified_ = fileutil::fileModifiedTime(filename);
+
+		on_disk_ = true;
+
 		return true;
 	}
 	else
@@ -492,6 +496,19 @@ void Archive::entryStateChanged(ArchiveEntry* entry)
 }
 
 // -----------------------------------------------------------------------------
+// Notifies that an [entry]'s data has changed
+// -----------------------------------------------------------------------------
+void Archive::entryDataChanged(ArchiveEntry* entry)
+{
+	// Check the entry is valid and part of this archive
+	if (!checkEntry(entry))
+		return;
+
+	// Signal entry data change
+	signals_.entry_data_changed(*this, *entry);
+}
+
+// -----------------------------------------------------------------------------
 // Adds the directory structure starting from [start] to [list]
 // -----------------------------------------------------------------------------
 void Archive::putEntryTreeAsList(vector<ArchiveEntry*>& list, const ArchiveDir* start) const
@@ -660,6 +677,23 @@ shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, unsig
 }
 
 // -----------------------------------------------------------------------------
+// Adds [entry] to the end of the namespace matching [add_namespace].
+// Returns the added entry or NULL if the entry is invalid
+// -----------------------------------------------------------------------------
+shared_ptr<ArchiveEntry> Archive::addEntry(shared_ptr<ArchiveEntry> entry, string_view add_namespace)
+{
+	// Abort if read only
+	if (read_only_)
+		return nullptr;
+
+	// Check valid entry
+	if (!entry)
+		return nullptr;
+
+	return format_handler_->addEntry(*this, entry, add_namespace);
+}
+
+// -----------------------------------------------------------------------------
 // Creates a new entry with [name] and adds it to [dir] at [position].
 // If [dir] is null it is added to the root dir.
 // If [position] is out of bounds, it is added tothe end of the dir.
@@ -809,13 +843,10 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 // If [ignore_hidden] is true, files and directories beginning with a '.' will
 // not be imported
 // -----------------------------------------------------------------------------
-bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<ArchiveDir> base)
+bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<ArchiveDir> base, bool set_filepath)
 {
 	// Get a list of all files in the directory
-	vector<string> files;
-	for (const auto& item : std::filesystem::recursive_directory_iterator{ directory })
-		if (item.is_regular_file())
-			files.push_back(item.path().string());
+	auto files = fileutil::allFilesInDir(directory, true, true);
 
 	// Go through files
 	for (const auto& file : files)
@@ -860,6 +891,9 @@ bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<Ar
 		else
 			log::error(global::error);
 
+		if (set_filepath)
+			entry->exProp("filePath") = file;
+
 		// Set unmodified
 		entry->setState(EntryState::Unmodified);
 		dir->dirEntry()->setState(EntryState::Unmodified);
@@ -873,7 +907,7 @@ bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<Ar
 // saved.
 // Returns false if entry was invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool Archive::revertEntry(ArchiveEntry* entry)
+bool Archive::revertEntry(ArchiveEntry* entry, bool force)
 {
 	// Check entry
 	if (!checkEntry(entry))
@@ -884,7 +918,7 @@ bool Archive::revertEntry(ArchiveEntry* entry)
 		return false;
 
 	// No point if entry is unmodified or newly created
-	if (entry->state() != EntryState::Modified)
+	if (!force && entry->state() != EntryState::Modified)
 		return true;
 
 	// Reload entry data from the archive on disk
@@ -913,7 +947,7 @@ MapDesc Archive::mapDesc(ArchiveEntry* maphead)
 // Returns the MapDesc information about all maps in the Archive.
 // To be implemented in Archive sub-classes.
 // -----------------------------------------------------------------------------
-vector<MapDesc> Archive::detectMaps()
+vector<MapDesc> Archive::detectMaps() const
 {
 	return format_handler_->detectMaps(*this);
 }

@@ -1,0 +1,273 @@
+{
+  "groups": [
+    {
+      "name": "Floor Changers",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 189, "name": "S1 Change Floor Tex & Effect (Trigger Model)" },
+        { "id": 190, "name": "SR Change Floor Tex & Effect (Trigger Model)" },
+        { "id": 153, "name": "W1 Change Floor Tex & Effect (Trigger Model)" },
+        { "id": 154, "name": "WR Change Floor Tex & Effect (Trigger Model)" },
+        { "id": 241, "name": "S1 Change Floor Tex & Effect (Numeric Model)" },
+        { "id": 78, "name": "SR Change Floor Tex & Effect (Numeric Model)" },
+        { "id": 239, "name": "W1 Change Floor Tex & Effect (Numeric Model)" },
+        { "id": 240, "name": "WR Change Floor Tex & Effect (Numeric Model)" }
+      ]
+    },
+
+    {
+      "name": "Misc/Untagged",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        { "id": 85, "name": "-- Scrolling Wall (Right)" }
+      ]
+    },
+
+    {
+      "name": "Misc/Line-tagged",
+      "defaults": { "tagged": "line" },
+      "specials": [
+        { "id": 260, "name": "-- Translucent Line" }
+      ]
+    },
+
+    {
+      "name": "Floors/Move Down",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 159, "name": "S1 Floor To Lowest Adjacent Floor" },
+        { "id": 177, "name": "SR Floor To Lowest Adjacent Floor" },
+        { "id": 222, "name": "SR Floor Down To Adjacent Floor" },
+        { "id": 221, "name": "S1 Floor Down To Adjacent Floor" },
+        { "id": 220, "name": "WR Floor Down To Adjacent Floor" },
+        { "id": 219, "name": "W1 Floor Down To Adjacent Floor" }
+      ]
+    },
+
+    {
+      "name": "Floors/Move Up",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 178, "name": "SR Floor Up 512" },
+        { "id": 142, "name": "W1 Floor Up 512" },
+        { "id": 147, "name": "WR Floor Up 512" },
+        { "id": 158, "name": "S1 Floor Up By Shortest Lo Tex" },
+        { "id": 176, "name": "SR Floor Up By Shortest Lo Tex" },
+        { "id": 160, "name": "S1 Floor Up 24 Change Tex & Effect" },
+        { "id": 179, "name": "SR Floor Up 24 Change Tex & Effect" },
+        { "id": 161, "name": "S1 Floor Up 24" },
+        { "id": 180, "name": "SR Floor Up 24" },
+        { "id": 191, "name": "SR Floor Donut Raise" },
+        { "id": 146, "name": "W1 Floor Donut Raise" },
+        { "id": 155, "name": "WR Floor Donut Raise" }
+      ]
+    },
+
+    {
+      "name": "Lifts",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 143, "name": "W1 Lift Up 24 Change Tex" },
+        { "id": 148, "name": "WR Lift Up 24 Change Tex" },
+        { "id": 144, "name": "W1 Lift Up 24 Remove Effect" },
+        { "id": 149, "name": "WR Lift Up 24 Remove Effect" },
+        { "id": 162, "name": "S1 Lift Perpetual" },
+        { "id": 181, "name": "SR Lift Perpetual" },
+        { "id": 163, "name": "S1 Lift Stop" },
+        { "id": 182, "name": "SR Lift Stop" },
+        { "id": 211, "name": "SR Toggle Floor To Ceiling (Instant)" },
+        { "id": 212, "name": "WR Toggle Floor To Ceiling (Instant)" }
+      ]
+    },
+
+    {
+      "name": "Ceilings",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 145, "name": "W1 Ceil Down To Floor Fast" },
+        { "id": 152, "name": "WR Ceil Down To Floor Fast" },
+        { "id": 166, "name": "S1 Ceil Up To Highest Ceil" },
+        { "id": 186, "name": "SR Ceil Up To Highest Ceil" },
+        { "id": 151, "name": "WR Ceil Up To Highest Ceil" },
+        { "id": 167, "name": "S1 Ceil Down To 8 Above Floor" },
+        { "id": 187, "name": "SR Ceil Down To 8 Above Floor" },
+        { "id": 203, "name": "S1 Ceil Down To Lowest Ceil" },
+        { "id": 205, "name": "SR Ceil Down To Lowest Ceil" },
+        { "id": 199, "name": "W1 Ceil Down To Lowest Ceil" },
+        { "id": 201, "name": "WR Ceil Down To Lowest Ceil" },
+        { "id": 204, "name": "S1 Ceil Down To Highest Floor" },
+        { "id": 206, "name": "SR Ceil Down To Highest Floor" },
+        { "id": 200, "name": "W1 Ceil Down To Highest Floor" },
+        { "id": 202, "name": "WR Ceil Down To Highest Floor" }
+      ]
+    },
+
+    {
+      "name": "Crushers",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 184, "name": "SR Start Crusher" },
+        { "id": 165, "name": "S1 Start Crusher Silent" },
+        { "id": 185, "name": "SR Start Crusher Silent" },
+        { "id": 150, "name": "WR Start Crusher Silent" },
+        { "id": 164, "name": "S1 Start Crusher, Fast Damage" },
+        { "id": 183, "name": "SR Start Crusher, Fast Damage" },
+        { "id": 168, "name": "S1 Stop Crusher" },
+        { "id": 188, "name": "SR Stop Crusher" }
+      ]
+    },
+
+    {
+      "name": "Light Effects",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 172, "name": "S1 Light Start Blinking" },
+        { "id": 193, "name": "SR Light Start Blinking" },
+        { "id": 156, "name": "WR Light Start Blinking" },
+        { "id": 173, "name": "S1 Light To Lowest Adjacent Level" },
+        { "id": 194, "name": "SR Light To Lowest Adjacent Level" },
+        { "id": 157, "name": "WR Light To Lowest Adjacent Level" },
+        { "id": 169, "name": "S1 Light To Highest Adjacent Level" },
+        { "id": 192, "name": "SR Light To Highest Adjacent Level" },
+        { "id": 170, "name": "S1 Light To 35" },
+        { "id": 171, "name": "S1 Light To 255" }
+      ]
+    },
+
+    {
+      "name": "Teleports/Thing-based",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 195, "name": "SR Teleport" },
+        { "id": 174, "name": "S1 Teleport" },
+        { "id": 269, "name": "WR Teleport Monsters Only (Silent)" },
+        { "id": 268, "name": "W1 Teleport Monsters Only (Silent)" },
+        { "id": 210, "name": "SR Teleport Preserve Direction (Silent)" },
+        { "id": 209, "name": "S1 Teleport Preserve Direction (Silent)" },
+        { "id": 208, "name": "WR Teleport Preserve Direction (Silent)" },
+        { "id": 207, "name": "W1 Teleport Preserve Direction (Silent)" }
+      ]
+    },
+
+    {
+      "name": "Teleports/Line-based",
+      "defaults": { "tagged": "line" },
+      "specials": [
+        { "id": 244, "name": "WR Teleport Line" },
+        { "id": 243, "name": "W1 Teleport Line" },
+        { "id": 263, "name": "WR Teleport Line (Reversed)" },
+        { "id": 262, "name": "W1 Teleport Line (Reversed)" },
+        { "id": 267, "name": "WR Teleport Line Monsters Only" },
+        { "id": 266, "name": "W1 Teleport Line Monsters Only" },
+        { "id": 265, "name": "WR Teleport Line Monsters Only (Reversed)" },
+        { "id": 264, "name": "W1 Teleport Line Monsters Only (Reversed)" }
+      ]
+    },
+
+    {
+      "name": "Doors/Remote",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 175, "name": "S1 Door Close + Open" },
+        { "id": 196, "name": "SR Door Close + Open" }
+      ]
+    },
+
+    {
+      "name": "Stair Builders",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 258, "name": "SR Build Stairs 8" },
+        { "id": 256, "name": "WR Build Stairs 8" },
+        { "id": 259, "name": "SR Build Stairs 16 + Crush" },
+        { "id": 257, "name": "WR Build Stairs 16 + Crush" }
+      ]
+    },
+
+    {
+      "name": "Elevators",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 229, "name": "S1 Elevator To Higher Floor" },
+        { "id": 230, "name": "SR Elevator To Higher Floor" },
+        { "id": 227, "name": "W1 Elevator To Higher Floor" },
+        { "id": 228, "name": "WR Elevator To Higher Floor" },
+        { "id": 233, "name": "S1 Elevator To Lower Floor" },
+        { "id": 234, "name": "SR Elevator To Lower Floor" },
+        { "id": 231, "name": "W1 Elevator To Lower Floor" },
+        { "id": 232, "name": "WR Elevator To Lower Floor" },
+        { "id": 237, "name": "S1 Elevator To Current Floor" },
+        { "id": 238, "name": "SR Elevator To Current Floor" },
+        { "id": 235, "name": "W1 Elevator To Current Floor" },
+        { "id": 236, "name": "WR Elevator To Current Floor" }
+      ]
+    },
+
+    {
+      "name": "Exits",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        { "id": 197, "name": "G1 Exit (Normal)" },
+        { "id": 198, "name": "G1 Exit (Secret)" }
+      ]
+    },
+
+    {
+      "name": "Transfers",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 213, "name": "-- Transfer Floor Light" },
+        { "id": 261, "name": "-- Transfer Ceiling Light" },
+        { "id": 242, "name": "-- Transfer Heights" },
+        { "id": 223, "name": "-- Set Friction To Length" }
+      ]
+    },
+
+    {
+      "name": "Pushers",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 224, "name": "-- Set Wind" },
+        { "id": 225, "name": "-- Set Current" },
+        { "id": 226, "name": "-- Point Pusher" }
+      ]
+    },
+
+    {
+      "name": "Scrollers/Affecting sectors",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 214, "name": "-- Accel Tagged Ceiling w.r.t. 1st Side's Sector" },
+        { "id": 215, "name": "-- Accel Tagged Floor w.r.t. 1st Side's Sector" },
+        { "id": 216, "name": "-- Accel Objects on Tagged Floor wrt 1st Side's Sector" },
+        { "id": 217, "name": "-- Accel Objects&Tagged Floor wrt 1st Side's Sector" },
+        { "id": 245, "name": "-- Scroll Tagged Ceiling w.r.t. 1st Side's Sector" },
+        { "id": 246, "name": "-- Scroll Tagged Floor w.r.t. 1st Side's Sector" },
+        { "id": 247, "name": "-- Push Objects on Tagged Floor wrt 1st Side's Sector" },
+        { "id": 248, "name": "-- Push Objects & Tagged Floor wrt 1st Side's Sector" },
+        { "id": 250, "name": "-- Scroll Tagged Ceiling" },
+        { "id": 251, "name": "-- Scroll Tagged Floor" },
+        { "id": 252, "name": "-- Carry Objects on Tagged Floor" },
+        { "id": 253, "name": "-- Scroll Tagged Floor, Carry Objects" }
+      ]
+    },
+
+    {
+      "name": "Scrollers/Affecting lines",
+      "defaults": { "tagged": "line" },
+      "specials": [
+        { "id": 218, "name": "-- Accel Tagged Wall w.r.t 1st Side's Sector" },
+        { "id": 249, "name": "-- Scroll Tagged Wall w.r.t 1st Side's Sector" },
+        { "id": 254, "name": "-- Scroll Tagged Wall, Same as Floor/Ceiling" }
+      ]
+    },
+
+    {
+      "name": "Scrollers/Affecting self",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        { "id": 255, "name": "-- Scroll Wall Using Sidedef Offsets" }
+      ]
+    }
+  ]
+}

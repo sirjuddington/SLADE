@@ -1,0 +1,23 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24">
+    <ellipse
+        cx="12"
+        cy="12"
+        rx="11"
+        ry="11"
+        fill="#3060AD"
+        stroke="#B2CCFF"
+        stroke-width="1.5"
+    />
+    <g transform="translate(-4.75, -2.5)">
+        <g transform="scale(1.4, 1.2)">
+            <path
+                fill="#FFFFFF"
+                d="M15 10.5V9c0-1.1-.9-2-2-2H9v10h4c1.1 0 2-.9 2-2v-1.5c0-.8-.7-1.5-1.5-1.5.8 0 1.5-.7 1.5-1.5zM13 15h-2v-2h2v2zm0-4h-2V9h2v2z"
+            />
+        </g>
+    </g>
+</svg>

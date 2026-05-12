@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2017 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,11 +35,10 @@
 #include "FileUtils.h"
 #include "App.h"
 #include "StringUtils.h"
-#include <filesystem>
+#include "thirdparty/xxhash/xxhash.h"
 #include <fstream>
 
 using namespace slade;
-namespace fs = std::filesystem;
 
 
 // -----------------------------------------------------------------------------
@@ -47,6 +46,32 @@ namespace fs = std::filesystem;
 // FileUtil Namespace Functions
 //
 // -----------------------------------------------------------------------------
+namespace slade::fileutil
+{
+// -----------------------------------------------------------------------------
+// Converts a string_view to wxString using UTF-8 encoding
+// -----------------------------------------------------------------------------
+inline wxString fromUtf8(string_view str)
+{
+#if wxCHECK_VERSION(3, 3, 0)
+	return wxString::FromUTF8(str);
+#else
+	return wxString::FromUTF8(str.data(), str.size());
+#endif
+}
+
+// -----------------------------------------------------------------------------
+// Returns the platform-specific path separator
+// -----------------------------------------------------------------------------
+inline string pathSeparator()
+{
+#ifdef __WXMSW__
+	return "\\";
+#else
+	return "/";
+#endif
+}
+} // namespace slade::fileutil
 
 
 // -----------------------------------------------------------------------------
@@ -54,16 +79,7 @@ namespace fs = std::filesystem;
 // -----------------------------------------------------------------------------
 bool fileutil::fileExists(string_view path)
 {
-	try
-	{
-		auto fs_path = fs::path{ path };
-		return fs::exists(fs_path) && fs::is_regular_file(fs_path);
-	}
-	catch (std::exception& ex)
-	{
-		log::error("Error checking if file \"{}\" exists: {}", path, ex.what());
-		return false;
-	}
+	return !path.empty() && wxFileExists(fromUtf8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -71,16 +87,7 @@ bool fileutil::fileExists(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::dirExists(string_view path)
 {
-	try
-	{
-		auto fs_path = fs::path{ path };
-		return fs::exists(fs_path) && fs::is_directory(fs_path);
-	}
-	catch (std::exception& ex)
-	{
-		log::error("Error checking if dir \"{}\" exists: {}", path, ex.what());
-		return false;
-	}
+	return !path.empty() && wxDirExists(fromUtf8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -88,25 +95,29 @@ bool fileutil::dirExists(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::validExecutable(string_view path)
 {
-	// Special handling for MacOS .app dir
+	if (path.empty())
+		return false;
+
+	// Special handling for macOS .app dir
 	if (app::platform() == app::Platform::MacOS)
 	{
 		if (strutil::endsWithCI(path, ".app") && dirExists(path))
 			return true;
 	}
 
-	// Invalid if file doesn't exist
-	if (!fileExists(path))
-		return false;
-
 	// Check for .exe or .bat extension on Windows
 	if (app::platform() == app::Platform::Windows)
 	{
 		if (!strutil::endsWithCI(path, ".exe") && !strutil::endsWithCI(path, ".bat"))
 			return false;
+
+		// Invalid if file doesn't exist
+		if (!fileExists(path))
+			return false;
 	}
 
-	// TODO: Check for executable permission on Linux/MacOS
+	// TODO: Check if file OR command exists on Linux/macOS
+	// TODO: Check for executable permission on Linux/macOS
 
 	// Passed all checks, is valid executable
 	return true;
@@ -117,14 +128,7 @@ bool fileutil::validExecutable(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::removeFile(string_view path)
 {
-	static std::error_code ec;
-	if (!fs::remove(path, ec))
-	{
-		log::warning("Unable to remove file \"{}\": {}", path, ec.message());
-		return false;
-	}
-
-	return true;
+	return !path.empty() && wxRemoveFile(fromUtf8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -133,15 +137,10 @@ bool fileutil::removeFile(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::copyFile(string_view from, string_view to, bool overwrite)
 {
-	static std::error_code ec;
-	auto                   options = overwrite ? fs::copy_options::overwrite_existing : fs::copy_options::none;
-	if (!fs::copy_file(from, to, options, ec))
-	{
-		log::warning(R"(Unable to copy file from "{}" to "{}": {})", from, to, ec.message());
+	if (from.empty() || to.empty())
 		return false;
-	}
 
-	return true;
+	return wxCopyFile(fromUtf8(from), fromUtf8(to), overwrite);
 }
 
 // -----------------------------------------------------------------------------
@@ -190,16 +189,7 @@ bool fileutil::writeStringToFile(const string& str, const string& path)
 // -----------------------------------------------------------------------------
 bool fileutil::createDir(string_view path)
 {
-	static std::error_code ec;
-	if (!fs::create_directory(path, ec))
-	{
-		if (ec.value() != 0)
-			log::warning("Unable to create directory \"{}\": {}", path, ec.message());
-
-		return false;
-	}
-
-	return true;
+	return !path.empty() && wxMkdir(fromUtf8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -208,14 +198,7 @@ bool fileutil::createDir(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::removeDir(string_view path)
 {
-	static std::error_code ec;
-	if (!fs::remove_all(path, ec))
-	{
-		log::warning("Unable to remove directory \"{}\": {}", path, ec.message());
-		return false;
-	}
-
-	return true;
+	return !path.empty() && wxDir::Remove(fromUtf8(path), wxPATH_RMDIR_RECURSIVE);
 }
 
 // -----------------------------------------------------------------------------
@@ -229,17 +212,19 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 {
 	vector<string> paths;
 
-	if (include_subdirs)
+	if (path.empty())
+		return paths;
+
+	wxArrayString all_files;
+	wxDir::GetAllFiles(
+		fromUtf8(path), &all_files, wxEmptyString, include_subdirs ? wxDIR_FILES | wxDIR_DIRS : wxDIR_FILES);
+
+	for (const auto& file : all_files)
 	{
-		for (const auto& item : fs::recursive_directory_iterator(path))
-			if (item.is_regular_file() || item.is_directory() && include_dir_paths)
-				paths.push_back(item.path().string());
-	}
-	else
-	{
-		for (const auto& item : fs::directory_iterator(path))
-			if (item.is_regular_file() || item.is_directory() && include_dir_paths)
-				paths.push_back(item.path().string());
+		if (include_dir_paths)
+			paths.push_back(file.utf8_string());
+		else
+			paths.push_back(strutil::replace(file.utf8_string(), path, ""));
 	}
 
 	return paths;
@@ -247,20 +232,81 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 
 // -----------------------------------------------------------------------------
 // Returns the modification time of the file at [path], or 0 if the file doesn't
-// exist or can't be acessed
+// exist or can't be accessed
 // -----------------------------------------------------------------------------
 time_t fileutil::fileModifiedTime(string_view path)
 {
-#if 0
-	// Use this whenever we update to C++20
-	const auto file_time = std::filesystem::last_write_time(path);
-	const auto sys_time  = std::chrono::clock_cast<std::chrono::system_clock>(file_time);
-	return std::chrono::system_clock::to_time_t(sys_time);
-#endif
+	if (path.empty())
+		return 0;
 
-	return wxFileModificationTime(wxString{ path.data(), path.length() });
+	return wxFileModificationTime(fromUtf8(path));
 }
 
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the file at [path] using xxHash (XXH128).
+// Returns the hash as a hex string or empty if the file doesn't exist or can't
+// be accessed
+// -----------------------------------------------------------------------------
+string fileutil::fileHash(string_view path)
+{
+	SFile file(path);
+	return file.calculateHash();
+}
+
+// -----------------------------------------------------------------------------
+// Searches the system PATH for an executable named [exe_name].
+// Returns the full path to the executable if found, or an empty string if not
+// -----------------------------------------------------------------------------
+string fileutil::findExecutable(string_view exe_name, string_view bundle_dir)
+{
+	if (exe_name.empty())
+		return {};
+
+	// Check for bundled tool executable
+	if (!bundle_dir.empty() && app::platform() == app::Platform::Windows)
+	{
+		auto exe_path = app::path(fmt::format("tools/{}/{}", bundle_dir, exe_name), app::Dir::Executable);
+
+		// Append .exe if not present
+		if (!strutil::endsWithCI(exe_path, ".exe"))
+			exe_path += ".exe";
+
+		// Check if it exists
+		if (fileExists(exe_path))
+			return exe_path;
+	}
+
+	// Get system PATH environment variable
+	auto path_env = std::getenv("PATH");
+	if (!path_env)
+		return {};
+
+	// Remove * suffix or prefix from exe_name
+	if (strutil::startsWith(exe_name, '*'))
+		exe_name.remove_prefix(1);
+	if (strutil::endsWith(exe_name, '*'))
+		exe_name.remove_suffix(1);
+
+	// Split PATH into individual paths
+	auto path_str = string{ path_env };
+	auto paths    = strutil::split(path_str, (app::platform() == app::Platform::Windows) ? ';' : ':');
+
+	// Check each path for the executable
+	for (const auto& p : paths)
+	{
+		auto path = fmt::format("{}{}{}", p, pathSeparator(), exe_name);
+
+		// Append .exe on Windows if not present
+		if (app::platform() == app::Platform::Windows && !strutil::endsWithCI(path, ".exe"))
+			path += ".exe";
+
+		// Check if file exists and is executable
+		if (wxFileName::IsFileExecutable(fromUtf8(path)))
+			return path;
+	}
+
+	return {};
+}
 
 
 // -----------------------------------------------------------------------------
@@ -295,6 +341,17 @@ bool SFile::open(const string& path, Mode mode)
 	if (handle_)
 		return false;
 
+#ifdef __WXMSW__
+	// Convert path to UTF-16 for Windows
+	auto wpath = wxString::FromUTF8(path);
+	switch (mode)
+	{
+	case Mode::ReadOnly: handle_ = _wfopen(wpath.wc_str(), L"rb"); break;
+	case Mode::Write:    handle_ = _wfopen(wpath.wc_str(), L"wb"); break;
+	case Mode::ReadWite: handle_ = _wfopen(wpath.wc_str(), L"r+b"); break;
+	case Mode::Append:   handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
+	}
+#else
 	switch (mode)
 	{
 	case Mode::ReadOnly: handle_ = fopen(path.c_str(), "rb"); break;
@@ -302,11 +359,26 @@ bool SFile::open(const string& path, Mode mode)
 	case Mode::ReadWite: handle_ = fopen(path.c_str(), "r+b"); break;
 	case Mode::Append:   handle_ = fopen(path.c_str(), "ab"); break;
 	}
+#endif
 
 	if (handle_)
-		stat(path.c_str(), &stat_);
+	{
+		// Determine file size
+#ifdef __WXMSW__
+		struct _stat st;
+		_wstat(wpath.wc_str(), &st);
+#else
+		struct stat st;
+		stat(path.c_str(), &st);
+#endif
+		size_ = st.st_size;
 
-	return handle_ != nullptr;
+		path_ = path;
+
+		return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -318,6 +390,8 @@ void SFile::close()
 	{
 		fclose(handle_);
 		handle_ = nullptr;
+		size_   = 0;
+		path_.clear();
 	}
 }
 
@@ -375,7 +449,6 @@ bool SFile::read(string& str, unsigned count) const
 	{
 		str.resize(count);
 		auto c = fread(str.data(), 1, count, handle_);
-		str.push_back('\0');
 		return c > 0;
 	}
 
@@ -402,4 +475,43 @@ bool SFile::writeStr(string_view str) const
 		return fwrite(str.data(), 1, str.size(), handle_);
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the file using xxHash (XXH128).
+// Returns the hash as a hex string or empty if the file is not open
+// -----------------------------------------------------------------------------
+string SFile::calculateHash() const
+{
+	if (!isOpen())
+		return {};
+
+	auto current_pos = currentPos();
+	auto size        = this->size();
+
+	seekFromStart(0);
+	unsigned pos = 0;
+
+	auto* state = XXH3_createState();
+	XXH3_128bits_reset(state);
+
+	// Read in 1mb chunks
+	unsigned chunk_size = 1024;
+	char     buffer[1024];
+	while (pos < size)
+	{
+		if (size - pos < chunk_size)
+			chunk_size = size - pos;
+
+		read(buffer, chunk_size);
+		XXH3_128bits_update(state, buffer, chunk_size);
+
+		pos += chunk_size;
+	}
+
+	auto hash = XXH3_128bits_digest(state);
+	XXH3_freeState(state);
+	seekFromStart(current_pos);
+
+	return fmt::format("{:x}{:x}", hash.high64, hash.low64);
 }

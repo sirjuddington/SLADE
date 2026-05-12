@@ -7,19 +7,28 @@
 # Static linking
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
-# Enable big objects
-add_compile_options(/bigobj)
+# Enable big objects and utf8
+add_compile_options(/bigobj /utf-8)
+
+# NO_FLUIDSYNTH preprocessor definition
+if (NO_FLUIDSYNTH)
+	add_definitions(-DNO_FLUIDSYNTH)
+endif ()
+
+# Define a SLADE_DEBUG macro
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSLADE_DEBUG")
 
 
 # Dependencies -----------------------------------------------------------------
 
 # wxWidgets
-find_package(wxWidgets CONFIG REQUIRED)
+if (NOT BUILD_WX)
+	find_package(wxWidgets CONFIG REQUIRED)
+endif ()
 set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net)
 
-# FTGL
+# FreeType
 find_package(Freetype REQUIRED)
-find_package(FTGL REQUIRED)
 
 # Lua
 if (NOT NO_LUA)
@@ -31,12 +40,38 @@ if (NOT NO_FLUIDSYNTH)
 	find_package(FluidSynth CONFIG REQUIRED)
 endif ()
 
+# WebP/Png
+if (NOT BUILD_WX)
+	find_package(WebP CONFIG REQUIRED)
+	find_package(PNG REQUIRED)
+endif ()
+
 # Other
-find_package(freeimage CONFIG REQUIRED)
+find_package(libxmp CONFIG)
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
-find_package(SFML COMPONENTS system audio window network CONFIG REQUIRED)
+
+# SFML
+set(SFML_FIND_COMPONENTS System Audio Window Network)
+list(TRANSFORM SFML_FIND_COMPONENTS TOLOWER OUTPUT_VARIABLE SFML2_FIND_COMPONENTS)
+find_package(SFML 2 QUIET COMPONENTS ${SFML2_FIND_COMPONENTS})
+if (SFML_FOUND)
+	list(TRANSFORM SFML2_FIND_COMPONENTS PREPEND sfml- OUTPUT_VARIABLE SFML_LIBRARIES)
+else ()
+	list(TRANSFORM SFML_FIND_COMPONENTS PREPEND SFML:: OUTPUT_VARIABLE SFML_LIBRARIES)
+	find_package(SFML 3 COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
+endif ()
+
+# WebP
+if (NOT BUILD_WX)
+	find_package(WebP CONFIG REQUIRED)
+endif ()
+
+# Other
+find_package(MPG123 CONFIG REQUIRED)
+find_package(OpenGL REQUIRED)
 find_package(glm REQUIRED)
+find_package(cpptrace CONFIG REQUIRED)
 find_package(LibArchive REQUIRED)
 
 
@@ -67,16 +102,20 @@ add_executable(slade WIN32
 	${SLADE_HEADERS}
 )
 
-if(NOT SLADE_EXE_NAME)
-set(SLADE_EXE_NAME SLADE)
-endif()
+if (NOT SLADE_EXE_NAME)
+	set(SLADE_EXE_NAME SLADE)
+endif ()
+
+if (NOT SLADE_EXE_DIR)
+	set(SLADE_EXE_DIR dist)
+endif ()
 
 # Properties
 set_target_properties(slade
 	PROPERTIES
 	LINK_FLAGS "/subsystem:windows"
 	OUTPUT_NAME "${SLADE_EXE_NAME}"
-	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/dist"
+	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/${SLADE_EXE_DIR}"
 )
 
 # Precompiled Header
@@ -87,17 +126,14 @@ target_link_libraries(slade
 	${BZIP2_LIBRARIES}
 	${EXTERNAL_LIBRARIES}
 	${FREETYPE_LIBRARIES}
-	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
+	${SFML_LIBRARIES}
 	${WX_LIBS}
 	${ZLIB_LIBRARY}
-	freeimage::FreeImage
 	MPG123::libmpg123
-	sfml-audio
-	sfml-main
-	sfml-network
-	sfml-window
 	glm::glm
+	cpptrace::cpptrace
+	libxmp::xmp_static
 	LibArchive::LibArchive
 )
 
@@ -107,4 +143,13 @@ endif ()
 
 if (NOT NO_FLUIDSYNTH)
 	target_link_libraries(slade FluidSynth::libfluidsynth)
+endif ()
+
+if (NOT BUILD_WX)
+	target_link_libraries(slade
+		WebP::webp
+		WebP::webpdecoder
+		WebP::webpdemux
+		PNG::PNG
+	)
 endif ()

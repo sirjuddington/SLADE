@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -176,6 +176,15 @@ string Console::prevCommand(int index)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the global instance of the Console
+// -----------------------------------------------------------------------------
+Console& Console::instance()
+{
+	static Console console;
+	return console;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the ConsoleCommand at the specified index
 // -----------------------------------------------------------------------------
 ConsoleCommand& Console::command(size_t index)
@@ -199,9 +208,9 @@ ConsoleCommand& Console::command(size_t index)
 // -----------------------------------------------------------------------------
 ConsoleCommand::ConsoleCommand(
 	string_view name,
-	void        (*command_func)(const vector<string>&),
-	int         min_args = 0,
-	bool        show_in_list)
+	void (*command_func)(const vector<string>&),
+	int  min_args = 0,
+	bool show_in_list)
 {
 	// Init variables
 	name_         = name;
@@ -210,7 +219,7 @@ ConsoleCommand::ConsoleCommand(
 	show_in_list_ = show_in_list;
 
 	// Add this command to the console
-	app::console()->addCommand(*this);
+	Console::instance().addCommand(*this);
 }
 
 // -----------------------------------------------------------------------------
@@ -218,11 +227,18 @@ ConsoleCommand::ConsoleCommand(
 // -----------------------------------------------------------------------------
 void ConsoleCommand::execute(const vector<string>& args) const
 {
-	// Only execute if we have the minimum args specified
-	if (args.size() >= min_args_)
-		command_func_(args);
-	else
-		log::console(fmt::format("Missing command arguments, type \"cmdhelp {}\" for more information", name_));
+	CPPTRACE_TRY
+	{
+		// Only execute if we have the minimum args specified
+		if (args.size() >= min_args_)
+			command_func_(args);
+		else
+			log::console(fmt::format("Missing command arguments, type \"cmdhelp {}\" for more information", name_));
+	}
+	CPPTRACE_CATCH(...)
+	{
+		app::handleException();
+	}
 }
 
 
@@ -247,11 +263,11 @@ CONSOLE_COMMAND(echo, 1, true)
 // -----------------------------------------------------------------------------
 CONSOLE_COMMAND(cmdlist, 0, true)
 {
-	log::console(fmt::format("{} Valid Commands:", app::console()->numCommands()));
+	log::console(fmt::format("{} Valid Commands:", Console::instance().numCommands()));
 
-	for (int a = 0; a < app::console()->numCommands(); a++)
+	for (int a = 0; a < Console::instance().numCommands(); a++)
 	{
-		auto& cmd = app::console()->command(a);
+		auto& cmd = Console::instance().command(a);
 		if (cmd.showInList() || global::debug)
 			log::console(fmt::format("\"{}\" ({} args)", cmd.name(), cmd.minArgs()));
 	}
@@ -265,7 +281,11 @@ CONSOLE_COMMAND(cvarlist, 0, true)
 	// Get sorted list of cvars
 	vector<string> list;
 	CVar::putList(list);
-	sort(list.begin(), list.end());
+	std::ranges::sort(list);
+
+	// Filter list if an argument is given
+	if (!args.empty())
+		std::erase_if(list, [&](const string& cvar) { return !strutil::startsWithCI(cvar, args[0]); });
 
 	log::console(fmt::format("{} CVars:", list.size()));
 
@@ -280,12 +300,12 @@ CONSOLE_COMMAND(cvarlist, 0, true)
 CONSOLE_COMMAND(cmdhelp, 1, true)
 {
 	// Check command exists
-	for (int a = 0; a < app::console()->numCommands(); a++)
+	for (int a = 0; a < Console::instance().numCommands(); a++)
 	{
-		if (strutil::equalCI(app::console()->command(a).name(), args[0]))
+		if (strutil::equalCI(Console::instance().command(a).name(), args[0]))
 		{
-			wxString url = wxString::Format("https://github.com/sirjuddington/SLADE/wiki/%s-Console-Command", args[0]);
-			wxLaunchDefaultBrowser(url);
+			auto url = fmt::format("https://github.com/sirjuddington/SLADE/wiki/{}-Console-Command", args[0]);
+			wxLaunchDefaultBrowser(wxString::FromUTF8(url));
 			return;
 		}
 	}

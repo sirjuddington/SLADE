@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,15 +34,16 @@
 #include "App.h"
 #include "Game/Configuration.h"
 #include "Geometry/Geometry.h"
-#include "Geometry/Polygon2D.h"
 #include "MapLine.h"
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
-#include "SLADEMap/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
+#include "Utility/Polygon.h"
+#include "Utility/StringUtils.h"
+#include <algorithm>
 
 using namespace slade;
 
@@ -71,7 +72,7 @@ MapSector::MapSector(
 	light_{ light },
 	special_{ special },
 	id_{ id },
-	geometry_updated_{ app::runTimer() }
+	renderinfo_updated_{ app::runTimer() }
 {
 }
 
@@ -125,9 +126,6 @@ void MapSector::copy(MapObject* obj)
 	if (obj->objType() != Type::Sector)
 		return;
 
-	// Update modified time
-	setModified();
-
 	// Update texture counts (decrement previous)
 	if (parent_map_)
 	{
@@ -136,6 +134,7 @@ void MapSector::copy(MapObject* obj)
 	}
 
 	// Basic variables
+	beginModify();
 	auto sector      = dynamic_cast<MapSector*>(obj);
 	floor_.texture   = sector->floor_.texture;
 	ceiling_.texture = sector->ceiling_.texture;
@@ -156,20 +155,44 @@ void MapSector::copy(MapObject* obj)
 
 	// Other properties
 	MapObject::copy(obj);
+
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
 // Update the last time the sector geometry changed
 // -----------------------------------------------------------------------------
-void MapSector::setGeometryUpdated()
+void MapSector::setRenderInfoUpdated() const
 {
-	geometry_updated_ = app::runTimer();
+	renderinfo_updated_ = app::runTimer();
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the sector has the specified [id]
+// (including UDMF moreids if applicable)
+// -----------------------------------------------------------------------------
+bool MapSector::hasId(int id) const
+{
+	if (id_ == id)
+		return true;
+
+	// Check moreids property (UDMF only)
+	if (parent_map_->currentFormat() == MapFormat::UDMF && hasProp("moreids"))
+	{
+		auto moreids = stringProperty("moreids");
+		auto ids_vec = strutil::split(moreids, ' ');
+		for (const auto& extra_id : ids_vec)
+			if (strutil::asInt(extra_id) == id)
+				return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
 // Returns the value of the string property matching [key]
 // -----------------------------------------------------------------------------
-string MapSector::stringProperty(string_view key)
+string MapSector::stringProperty(string_view key) const
 {
 	if (key == PROP_TEXFLOOR)
 		return floor_.texture;
@@ -182,7 +205,7 @@ string MapSector::stringProperty(string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapSector::intProperty(string_view key)
+int MapSector::intProperty(string_view key) const
 {
 	if (key == PROP_HEIGHTFLOOR)
 		return floor_.height;
@@ -218,17 +241,17 @@ void MapSector::setFloatProperty(string_view key, double value)
 {
 	using game::UDMFFeature;
 
-	// Check if flat offset/scale/rotation is changing (if UDMF)
-	if (parent_map_->currentFormat() == MapFormat::UDMF)
-	{
-		if ((game::configuration().featureSupported(UDMFFeature::FlatPanning)
-			 && (key == "xpanningfloor" || key == "ypanningfloor"))
-			|| (game::configuration().featureSupported(UDMFFeature::FlatScaling)
-				&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
-			|| (game::configuration().featureSupported(UDMFFeature::FlatRotation)
-				&& (key == "rotationfloor" || key == "rotationceiling")))
-			polygon_->setTexture(0); // Clear texture to force update
-	}
+	//// Check if flat offset/scale/rotation is changing (if UDMF)
+	// if (parent_map_->currentFormat() == MapFormat::UDMF)
+	//{
+	//	if ((game::configuration().featureSupported(UDMFFeature::FlatPanning)
+	//		 && (key == "xpanningfloor" || key == "ypanningfloor"))
+	//		|| (game::configuration().featureSupported(UDMFFeature::FlatScaling)
+	//			&& (key == "xscalefloor" || key == "yscalefloor" || key == "xscaleceiling" || key == "yscaleceiling"))
+	//		|| (game::configuration().featureSupported(UDMFFeature::FlatRotation)
+	//			&& (key == "rotationfloor" || key == "rotationceiling")))
+	//		polygon_.setTexture(0); // Clear texture to force update
+	// }
 
 	MapObject::setFloatProperty(key, value);
 }
@@ -238,19 +261,16 @@ void MapSector::setFloatProperty(string_view key, double value)
 // -----------------------------------------------------------------------------
 void MapSector::setIntProperty(string_view key, int value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_HEIGHTFLOOR)
 		setFloorHeight(value);
 	else if (key == PROP_HEIGHTCEILING)
 		setCeilingHeight(value);
 	else if (key == PROP_LIGHTLEVEL)
-		light_ = value;
+		setLightLevel(value);
 	else if (key == PROP_SPECIAL)
-		special_ = value;
+		setSpecial(value);
 	else if (key == PROP_ID)
-		id_ = value;
+		setTag(value);
 	else
 		MapObject::setIntProperty(key, value);
 }
@@ -260,12 +280,13 @@ void MapSector::setIntProperty(string_view key, int value)
 // -----------------------------------------------------------------------------
 void MapSector::setFloorTexture(string_view tex)
 {
-	setModified();
+	beginModify();
 	if (parent_map_)
 		parent_map_->sectors().updateTexUsage(floor_.texture, -1);
 	floor_.texture = tex;
 	if (parent_map_)
 		parent_map_->sectors().updateTexUsage(floor_.texture, 1);
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -273,12 +294,13 @@ void MapSector::setFloorTexture(string_view tex)
 // -----------------------------------------------------------------------------
 void MapSector::setCeilingTexture(string_view tex)
 {
-	setModified();
+	beginModify();
 	if (parent_map_)
 		parent_map_->sectors().updateTexUsage(ceiling_.texture, -1);
 	ceiling_.texture = tex;
 	if (parent_map_)
 		parent_map_->sectors().updateTexUsage(ceiling_.texture, 1);
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -286,9 +308,10 @@ void MapSector::setCeilingTexture(string_view tex)
 // -----------------------------------------------------------------------------
 void MapSector::setFloorHeight(short height)
 {
-	setModified();
+	beginModify();
 	floor_.height = height;
 	setFloorPlane(Plane::flat(height));
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -296,9 +319,10 @@ void MapSector::setFloorHeight(short height)
 // -----------------------------------------------------------------------------
 void MapSector::setCeilingHeight(short height)
 {
-	setModified();
+	beginModify();
 	ceiling_.height = height;
 	setCeilingPlane(Plane::flat(height));
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -307,7 +331,7 @@ void MapSector::setCeilingHeight(short height)
 void MapSector::setFloorPlane(const Plane& p)
 {
 	if (floor_.plane != p)
-		setGeometryUpdated();
+		setRenderInfoUpdated();
 	floor_.plane = p;
 }
 
@@ -317,7 +341,7 @@ void MapSector::setFloorPlane(const Plane& p)
 void MapSector::setCeilingPlane(const Plane& p)
 {
 	if (ceiling_.plane != p)
-		setGeometryUpdated();
+		setRenderInfoUpdated();
 	ceiling_.plane = p;
 }
 
@@ -326,8 +350,9 @@ void MapSector::setCeilingPlane(const Plane& p)
 // -----------------------------------------------------------------------------
 void MapSector::setLightLevel(int light)
 {
-	setModified();
+	beginModify();
 	light_ = light;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -335,8 +360,9 @@ void MapSector::setLightLevel(int light)
 // -----------------------------------------------------------------------------
 void MapSector::setSpecial(int special)
 {
-	setModified();
+	beginModify();
 	special_ = special;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -344,8 +370,25 @@ void MapSector::setSpecial(int special)
 // -----------------------------------------------------------------------------
 void MapSector::setTag(int tag)
 {
-	setModified();
+	beginModify();
 	id_ = tag;
+	endModify();
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the ceiling has a slope
+// -----------------------------------------------------------------------------
+bool MapSector::ceilingHasSlope() const
+{
+	return ceiling_.plane.a != 0 || ceiling_.plane.b != 0 || ceiling_.plane.c != 1;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the floor has a slope
+// -----------------------------------------------------------------------------
+bool MapSector::floorHasSlope() const
+{
+	return floor_.plane.a != 0 || floor_.plane.b != 0 || floor_.plane.c != 1;
 }
 
 // -----------------------------------------------------------------------------
@@ -353,7 +396,7 @@ void MapSector::setTag(int tag)
 // Mid = the absolute mid point of the sector,
 // Within/Text = a calculated point that is within the actual sector
 // -----------------------------------------------------------------------------
-Vec2d MapSector::getPoint(Point point)
+Vec2d MapSector::getPoint(Point point) const
 {
 	if (point == Point::Mid)
 	{
@@ -371,7 +414,7 @@ Vec2d MapSector::getPoint(Point point)
 // -----------------------------------------------------------------------------
 // Calculates the sector's bounding box
 // -----------------------------------------------------------------------------
-void MapSector::updateBBox()
+void MapSector::updateBBox() const
 {
 	// Reset bounding box
 	bbox_.reset();
@@ -386,13 +429,13 @@ void MapSector::updateBBox()
 	}
 
 	text_point_ = { 0, 0 };
-	setGeometryUpdated();
+	setRenderInfoUpdated();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the sector bounding box
 // -----------------------------------------------------------------------------
-BBox MapSector::boundingBox()
+BBox MapSector::boundingBox() const
 {
 	// Update bbox if needed
 	if (!bbox_.isValid())
@@ -402,26 +445,23 @@ BBox MapSector::boundingBox()
 }
 
 // -----------------------------------------------------------------------------
-// Returns the sector polygon, updating it if necessary
+// Returns the sector polygon vertices (as triangles), updating if necessary
 // -----------------------------------------------------------------------------
-Polygon2D* MapSector::polygon()
+const vector<glm::vec2>& MapSector::polygonVertices() const
 {
-	if (!polygon_)
-		polygon_ = std::make_unique<Polygon2D>();
-
 	if (poly_needsupdate_)
 	{
-		polygon_->openSector(this);
-		poly_needsupdate_ = false;
+		polygon_triangles_ = polygon::generateSectorTriangles(*this);
+		poly_needsupdate_  = false;
 	}
 
-	return polygon_.get();
+	return polygon_triangles_;
 }
 
 // -----------------------------------------------------------------------------
 // Returns true if the given [point] is inside the sector
 // -----------------------------------------------------------------------------
-bool MapSector::containsPoint(const Vec2d& point)
+bool MapSector::containsPoint(const Vec2d& point) const
 {
 	// Check with bbox first
 	if (!boundingBox().contains(point))
@@ -461,7 +501,7 @@ bool MapSector::containsPoint(const Vec2d& point)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the closest line in the sector
 // -----------------------------------------------------------------------------
-double MapSector::distanceTo(const Vec2d& point, double maxdist)
+double MapSector::distanceTo(const Vec2d& point, double maxdist) const
 {
 	// Init
 	if (maxdist < 0)
@@ -472,17 +512,13 @@ double MapSector::distanceTo(const Vec2d& point, double maxdist)
 		updateBBox();
 	double min_dist = 9999999;
 	double dist     = geometry::distanceToLine(point, bbox_.leftSide());
-	if (dist < min_dist)
-		min_dist = dist;
-	dist = geometry::distanceToLine(point, bbox_.topSide());
-	if (dist < min_dist)
-		min_dist = dist;
-	dist = geometry::distanceToLine(point, bbox_.rightSide());
-	if (dist < min_dist)
-		min_dist = dist;
-	dist = geometry::distanceToLine(point, bbox_.bottomSide());
-	if (dist < min_dist)
-		min_dist = dist;
+	min_dist        = std::min(dist, min_dist);
+	dist            = geometry::distanceToLine(point, bbox_.topSide());
+	min_dist        = std::min(dist, min_dist);
+	dist            = geometry::distanceToLine(point, bbox_.rightSide());
+	min_dist        = std::min(dist, min_dist);
+	dist            = geometry::distanceToLine(point, bbox_.bottomSide());
+	min_dist        = std::min(dist, min_dist);
 
 	if (min_dist > maxdist && !bbox_.contains(point))
 		return -1;
@@ -496,9 +532,8 @@ double MapSector::distanceTo(const Vec2d& point, double maxdist)
 			continue;
 
 		// Check distance
-		dist = line->distanceTo(point);
-		if (dist < min_dist)
-			min_dist = dist;
+		dist     = line->distanceTo(point);
+		min_dist = std::min(dist, min_dist);
 	}
 
 	return min_dist;
@@ -513,7 +548,7 @@ bool MapSector::putLines(vector<MapLine*>& list) const
 	for (auto& connected_side : connected_sides_)
 	{
 		// Add the side's parent line to the list if it doesn't already exist
-		if (std::find(list.begin(), list.end(), connected_side->parentLine()) == list.end())
+		if (std::ranges::find(list, connected_side->parentLine()) == list.end())
 			list.push_back(connected_side->parentLine());
 	}
 
@@ -530,9 +565,9 @@ bool MapSector::putVertices(vector<MapVertex*>& list) const
 		auto line = connected_side->parentLine();
 
 		// Add the side's parent line's vertices to the list if they doesn't already exist
-		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())
+		if (line->v1() && std::ranges::find(list, line->v1()) == list.end())
 			list.push_back(line->v1());
-		if (line->v2() && std::find(list.begin(), list.end(), line->v2()) == list.end())
+		if (line->v2() && std::ranges::find(list, line->v2()) == list.end())
 			list.push_back(line->v2());
 	}
 
@@ -549,9 +584,9 @@ bool MapSector::putVertices(vector<MapObject*>& list) const
 		auto line = connected_side->parentLine();
 
 		// Add the side's parent line's vertices to the list if they doesn't already exist
-		if (line->v1() && std::find(list.begin(), list.end(), line->v1()) == list.end())
+		if (line->v1() && std::ranges::find(list, line->v1()) == list.end())
 			list.push_back(line->v1());
-		if (line->v2() && std::find(list.begin(), list.end(), line->v2()) == list.end())
+		if (line->v2() && std::ranges::find(list, line->v2()) == list.end())
 			list.push_back(line->v2());
 	}
 
@@ -559,81 +594,47 @@ bool MapSector::putVertices(vector<MapObject*>& list) const
 }
 
 // -----------------------------------------------------------------------------
-// Returns the light level of the sector at [where] - 1 = floor, 2 = ceiling
+// Returns the light level of the sector at [where]
 // -----------------------------------------------------------------------------
-uint8_t MapSector::lightAt(int where, int extra_floor_index)
+uint8_t MapSector::lightAt(SectorPart where) const
 {
+	int light = light_;
+
 	// Check for UDMF + flat lighting
-	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting))
+	if (parent_map_->currentFormat() == MapFormat::UDMF)
 	{
-		// 3D floors cast their light downwards to the next floor down, so we
-		// need to know which floor this plane is below.
-		// The floor plane is on the bottom of the 3D floor, so no change is
-		// necessary -- unless we're being asked for the light of the sector
-		// itself, which is below the bottommost floor.
-		// Ceilings are below the next 3D floor up, so subtract 1.
-		int floor_gap = extra_floor_index;
-		if (where == 2)
-			floor_gap--;
-		else if (where == 1 && floor_gap < 0)
-			floor_gap = extra_floors_.size() - 1;
-		auto* control_sector = this;
-		if (floor_gap >= 0 && floor_gap < extra_floors_.size() && !extra_floors_[floor_gap].disableLighting()
-			&& !extra_floors_[floor_gap].lightingInsideOnly())
-		{
-			control_sector = parent_map_->sector(extra_floors_[floor_gap].control_sector_index);
-		}
-
-		// Get general light level
-		int l = control_sector->lightLevel();
-
-		// Get specific light level
-		// TODO unclear how 3D floors work here -- what wins? what sector does it come from?
-		if (where == 1)
+		// Apply flat lighting (if supported and specified)
+		if (game::configuration().featureSupported(game::UDMFFeature::FlatLighting))
 		{
 			// Floor
-			int fl = intProperty("lightfloor");
-			if (boolProperty("lightfloorabsolute"))
-				l = fl;
-			else
-				l += fl;
-		}
-		else if (where == 2)
-		{
+			if (where == SectorPart::Floor && hasProp("lightfloor"))
+			{
+				int fl = intProperty("lightfloor");
+				if (boolProperty("lightfloorabsolute"))
+					light = fl;
+				else
+					light += fl;
+			}
 			// Ceiling
-			int cl = intProperty("lightceiling");
-			if (boolProperty("lightceilingabsolute"))
-				l = cl;
-			else
-				l += cl;
+			else if (where == SectorPart::Ceiling && hasProp("lightceiling"))
+			{
+				int cl = intProperty("lightceiling");
+				if (boolProperty("lightceilingabsolute"))
+					light = cl;
+				else
+					light += cl;
+			}
 		}
-
-		// Clamp light level
-		if (l > 255)
-			l = 255;
-		if (l < 0)
-			l = 0;
-
-		return l;
 	}
-	else
-	{
-		// Clamp light level
-		int l = light_;
-		if (l > 255)
-			l = 255;
-		if (l < 0)
-			l = 0;
 
-		return l;
-	}
+	// Clamp light level
+	return std::clamp<int>(light, 0, 255);
 }
 
 // -----------------------------------------------------------------------------
 // Changes the sector light level by [amount]
 // -----------------------------------------------------------------------------
-void MapSector::changeLight(int amount, int where)
+void MapSector::changeLight(int amount, SectorPart where)
 {
 	// Get current light level
 	int ll = lightAt(where);
@@ -649,148 +650,34 @@ void MapSector::changeLight(int amount, int where)
 					&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting);
 
 	// Change light level by amount
-	if (where == 1 && separate)
+	if (where == SectorPart::Floor && separate)
 	{
 		int cur = intProperty("lightfloor");
 		setIntProperty("lightfloor", cur + amount);
 	}
-	else if (where == 2 && separate)
+	else if (where == SectorPart::Ceiling && separate)
 	{
 		int cur = intProperty("lightceiling");
 		setIntProperty("lightceiling", cur + amount);
 	}
 	else
-	{
-		setModified();
-		light_ = ll + amount;
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Returns the colour of the sector at [where] - 1 = floor, 2 = ceiling.
-// If [fullbright] is true, light level is ignored
-// -----------------------------------------------------------------------------
-ColRGBA MapSector::colourAt(int where, bool fullbright)
-{
-	using game::UDMFFeature;
-
-	// Check for sector colour set in open script
-	// TODO: Test if this is correct behaviour
-	if (parent_map_->mapSpecials()->tagColoursSet())
-	{
-		ColRGBA col;
-		if (parent_map_->mapSpecials()->tagColour(id_, &col))
-		{
-			if (fullbright)
-				return col;
-
-			// Get sector light level
-			int ll = light_;
-
-			// Clamp light level
-			if (ll > 255)
-				ll = 255;
-			if (ll < 0)
-				ll = 0;
-
-			// Calculate and return the colour
-			float lightmult = static_cast<float>(ll) / 255.0f;
-			return col.ampf(lightmult, lightmult, lightmult, 1.0f);
-		}
-	}
-
-	// Check for UDMF
-	if (parent_map_->currentFormat() == MapFormat::UDMF
-		&& (game::configuration().featureSupported(UDMFFeature::SectorColor)
-			|| game::configuration().featureSupported(UDMFFeature::FlatLighting)))
-	{
-		// Get sector light colour
-		wxColour wxcol;
-		if (game::configuration().featureSupported(UDMFFeature::SectorColor))
-		{
-			int intcol = MapObject::intProperty("lightcolor");
-			wxcol      = wxColour(intcol);
-		}
-		else
-			wxcol = wxColour(255, 255, 255, 255);
-
-
-		// Ignore light level if fullbright
-		if (fullbright)
-			return { wxcol.Blue(), wxcol.Green(), wxcol.Red(), 255 };
-
-		// Get sector light level
-		int ll = light_;
-
-		if (game::configuration().featureSupported(UDMFFeature::FlatLighting))
-		{
-			// Get specific light level
-			if (where == 1)
-			{
-				// Floor
-				int fl = MapObject::intProperty("lightfloor");
-				if (boolProperty("lightfloorabsolute"))
-					ll = fl;
-				else
-					ll += fl;
-			}
-			else if (where == 2)
-			{
-				// Ceiling
-				int cl = MapObject::intProperty("lightceiling");
-				if (boolProperty("lightceilingabsolute"))
-					ll = cl;
-				else
-					ll += cl;
-			}
-		}
-
-		// Clamp light level
-		if (ll > 255)
-			ll = 255;
-		if (ll < 0)
-			ll = 0;
-
-		// Calculate and return the colour
-		float lightmult = static_cast<float>(ll) / 255.0f;
-		return { static_cast<uint8_t>(wxcol.Blue() * lightmult),
-				 static_cast<uint8_t>(wxcol.Green() * lightmult),
-				 static_cast<uint8_t>(wxcol.Red() * lightmult),
-				 255 };
-	}
-
-	// Other format, simply return the light level
-	if (fullbright)
-		return { 255, 255, 255, 255 };
-	else
-	{
-		int l = light_;
-
-		// Clamp light level
-		if (l > 255)
-			l = 255;
-		if (l < 0)
-			l = 0;
-
-		auto l8 = static_cast<uint8_t>(l);
-
-		return { l8, l8, l8, 255 };
-	}
+		setLightLevel(ll + amount);
 }
 
 // -----------------------------------------------------------------------------
 // Returns the fog colour of the sector
 // -----------------------------------------------------------------------------
-ColRGBA MapSector::fogColour()
+// TODO: Move out to MapSpecials
+ColRGBA MapSector::fogColour() const
 {
 	ColRGBA color(0, 0, 0, 0);
 
 	// Map specials/scripts
-	if (parent_map_->mapSpecials()->tagFadeColoursSet())
+	/*if (parent_map_->mapSpecials()->tagFadeColoursSet())
 	{
 		if (parent_map_->mapSpecials()->tagFadeColour(id_, &color))
 			return color;
-	}
+	}*/
 
 	// UDMF
 	if (parent_map_->currentFormat() == MapFormat::UDMF
@@ -809,7 +696,7 @@ ColRGBA MapSector::fogColour()
 // is reasonably close to the middle of the sector bbox while still being within
 // the sector itself
 // -----------------------------------------------------------------------------
-void MapSector::findTextPoint()
+void MapSector::findTextPoint() const
 {
 	// Check if actual sector midpoint can be used
 	text_point_ = getPoint(Point::Mid);
@@ -861,16 +748,23 @@ void MapSector::findTextPoint()
 }
 
 // -----------------------------------------------------------------------------
+// Resets the sector geometry info (bounding box, polygon vertices, etc.)
+// -----------------------------------------------------------------------------
+void MapSector::resetGeometryInfo() const
+{
+	poly_needsupdate_ = true;
+	bbox_.reset();
+	setRenderInfoUpdated();
+}
+
+// -----------------------------------------------------------------------------
 // Adds [side] to the list of 'connected sides'
 // (sides that are part of this sector)
 // -----------------------------------------------------------------------------
 void MapSector::connectSide(MapSide* side)
 {
-	setModified();
 	connected_sides_.push_back(side);
-	poly_needsupdate_ = true;
-	bbox_.reset();
-	setGeometryUpdated();
+	resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------
@@ -878,7 +772,6 @@ void MapSector::connectSide(MapSide* side)
 // -----------------------------------------------------------------------------
 void MapSector::disconnectSide(const MapSide* side)
 {
-	setModified();
 	for (unsigned a = 0; a < connected_sides_.size(); a++)
 	{
 		if (connected_sides_[a] == side)
@@ -888,26 +781,7 @@ void MapSector::disconnectSide(const MapSide* side)
 		}
 	}
 
-	poly_needsupdate_ = true;
-	bbox_.reset();
-	setGeometryUpdated();
-}
-
-void MapSector::addExtraFloor(const ExtraFloor& extra_floor, const MapSector& control_sector)
-{
-	extra_floors_.emplace_back(extra_floor);
-
-	// Sort extra floors from top down
-	std::sort(
-		extra_floors_.begin(),
-		extra_floors_.end(),
-		[](const ExtraFloor& a, const ExtraFloor& b) { return b.effective_height < a.effective_height; });
-
-	// Mark the sector as updated if the control sector has been; this is a sort of very rudimentary dependency graph
-	if (control_sector.geometry_updated_ > geometry_updated_)
-		setGeometryUpdated();
-	if (control_sector.modifiedTime() > modifiedTime())
-		setModified();
+	resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------
@@ -948,9 +822,7 @@ void MapSector::readBackup(Backup* backup)
 	parent_map_->sectors().updateTexUsage(ceiling_.texture, 1);
 
 	// Update geometry info
-	poly_needsupdate_ = true;
-	bbox_.reset();
-	setGeometryUpdated();
+	resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------

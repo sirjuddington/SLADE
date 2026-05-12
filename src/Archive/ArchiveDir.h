@@ -1,10 +1,10 @@
-#pragma once
+﻿#pragma once
 
 #include "EntryState.h"
 
 namespace slade
 {
-class ArchiveDir
+class ArchiveDir : public std::enable_shared_from_this<ArchiveDir>
 {
 	friend class Archive;
 	friend class ArchiveFormatHandler;
@@ -57,7 +57,8 @@ public:
 	shared_ptr<ArchiveDir> clone(shared_ptr<ArchiveDir> parent = nullptr);
 	bool                   exportTo(string_view path) const;
 	void                   allowDuplicateNames(bool allow) { allow_duplicate_names_ = allow; }
-	ArchiveEntry*          findDuplicateEntryName() const;
+	ArchiveEntry*          findDuplicateEntryName(bool ignore_first = false) const;
+	void                   resolveDuplicateEntryNames(string& log) const;
 
 	// Static utility functions
 	static shared_ptr<ArchiveDir>   subdirAtPath(const shared_ptr<ArchiveDir>& root, string_view path);

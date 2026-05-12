@@ -22,8 +22,10 @@ typedef unsigned __int64 uint64_t;
 // String stuff
 #define S_CMP(s1, s2) s1.Cmp(s2) == 0
 #define S_CMPNOCASE(s1, s2) s1.CmpNoCase(s2) == 0
+#define WX_FMT(...) wxString::FromUTF8(fmt::format(__VA_ARGS__))
 
 // Usings for common std types, to avoid std:: spam
+using std::optional;
 using std::shared_ptr;
 using std::string;
 using std::string_view;
@@ -77,6 +79,8 @@ using u64 = uint64_t;
 #include "General/Log.h"
 #include "Utility/MemChunk.h"
 #include "OpenGL/GLHeaders.h"
+#include "Utility/ColRGBA.h"
+#include "Utility/JsonUtils.h"
 // clang-format on
 
 #endif // __MAIN_H__

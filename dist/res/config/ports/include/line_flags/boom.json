@@ -1,0 +1,14 @@
+{
+  "flags": [
+    { "value": 1, "name": "Impassable", "udmf": "blocking" },
+    { "value": 2, "name": "Blocks Monsters", "udmf": "blockmonsters" },
+    { "value": 4, "name": "Two Sided", "udmf": "twosided" },
+    { "value": 8, "name": "Upper Unpegged", "udmf": "dontpegtop" },
+    { "value": 16, "name": "Lower Unpegged", "udmf": "dontpegbottom" },
+    { "value": 32, "name": "Secret", "udmf": "secret" },
+    { "value": 64, "name": "Blocks Sound", "udmf": "blocksound" },
+    { "value": 128, "name": "Not On Map", "udmf": "dontdraw" },
+    { "value": 256, "name": "Starts On Map", "udmf": "mapped" },
+    { "value": 512, "name": "Pass Use", "udmf": "passuse" }
+  ]
+}

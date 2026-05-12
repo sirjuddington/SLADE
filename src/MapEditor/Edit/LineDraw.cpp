@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -271,21 +271,23 @@ void LineDraw::begin(bool shape)
 	auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 	if (shape)
 	{
-		context_->setFeatureHelp({ "Shape Drawing",
-								   fmt::format("{} = Accept", key_accept),
-								   fmt::format("{} = Cancel", key_cancel),
-								   "Left Click = Draw point",
-								   "Right Click = Undo previous point" });
+		context_->setFeatureHelp(
+			{ "Shape Drawing",
+			  fmt::format("{} = Accept", key_accept),
+			  fmt::format("{} = Cancel", key_cancel),
+			  "Left Click = Draw point",
+			  "Right Click = Undo previous point" });
 		mapeditor::showShapeDrawPanel(true);
 	}
 	else
 	{
-		context_->setFeatureHelp({ "Line Drawing",
-								   fmt::format("{} = Accept", key_accept),
-								   fmt::format("{} = Cancel", key_cancel),
-								   "Left Click = Draw point",
-								   "Right Click = Undo previous point",
-								   "Shift = Snap to nearest vertex" });
+		context_->setFeatureHelp(
+			{ "Line Drawing",
+			  fmt::format("{} = Accept", key_accept),
+			  fmt::format("{} = Cancel", key_cancel),
+			  "Left Click = Draw point",
+			  "Right Click = Undo previous point",
+			  "Shift = Snap to nearest vertex" });
 	}
 }
 
@@ -295,7 +297,7 @@ void LineDraw::begin(bool shape)
 void LineDraw::end(bool apply)
 {
 	// Hide shape draw panel
-	mapeditor::showShapeDrawPanel(true);
+	mapeditor::showShapeDrawPanel(false);
 
 	// Do nothing if we don't need to create any lines
 	if (!apply || draw_points_.size() <= 1)

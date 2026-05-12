@@ -1,7 +1,7 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -40,7 +40,6 @@
 #undef BOOL
 #include "Graphics/Palette/Palette.h"
 #include "SIFormat.h"
-#include "thirdparty/lunasvg/include/lunasvg.h"
 
 using namespace slade;
 
@@ -761,7 +760,7 @@ bool SImage::loadJediFNT(const uint8_t* gfx_data, int size)
 			mask_[i] = 0;
 
 	// Convert from column-major to row-major
-	rotate(90);
+	rotate(270);
 
 	// Announce change and return success
 	signals_.image_changed();
@@ -959,21 +958,4 @@ bool SImage::loadJaguarTexture(const uint8_t* gfx_data, int size, int i_width, i
 	// Announce change and return success
 	signals_.image_changed();
 	return true;
-}
-
-// -----------------------------------------------------------------------------
-// Loads an SVG image, sized to [width x height].
-// Returns false if the SVG data was invalid, true otherwise
-// -----------------------------------------------------------------------------
-bool SImage::loadSVG(const string& svg_text, int width, int height)
-{
-	// Load SVG
-	const auto svg = lunasvg::Document::loadFromData(svg_text);
-	if (!svg)
-		return false;
-
-	// Render SVG
-	const auto bmp = svg->renderToBitmap(width, height);
-
-	return setImageData(bmp.data(), bmp.width() * bmp.height() * 4, bmp.width(), bmp.height(), Type::RGBA);
 }

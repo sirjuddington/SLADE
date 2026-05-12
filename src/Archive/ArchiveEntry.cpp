@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,6 +39,7 @@
 #include "ArchiveFormatHandler.h"
 #include "EntryType/EntryType.h"
 #include "General/Misc.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -130,11 +131,35 @@ string_view ArchiveEntry::upperNameNoExt() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the entry file extension
+// -----------------------------------------------------------------------------
+string_view ArchiveEntry::ext() const
+{
+	auto ext_pos = name_.find('.');
+	if (ext_pos != string::npos)
+		return { name_.data() + ext_pos };
+
+	return {};
+}
+
+// -----------------------------------------------------------------------------
+// Returns the entry file extension in uppercase
+// -----------------------------------------------------------------------------
+string_view ArchiveEntry::upperExt() const
+{
+	auto ext_pos = upper_name_.find('.');
+	if (ext_pos != string::npos)
+		return { upper_name_.data() + ext_pos };
+
+	return {};
+}
+
+// -----------------------------------------------------------------------------
 // Returns the entry's parent archive
 // -----------------------------------------------------------------------------
 Archive* ArchiveEntry::parent() const
 {
-	return parent_ ? parent_->archive() : nullptr;
+	return parent_.expired() ? nullptr : parent_.lock()->archive();
 }
 
 // -----------------------------------------------------------------------------
@@ -142,12 +167,13 @@ Archive* ArchiveEntry::parent() const
 // -----------------------------------------------------------------------------
 Archive* ArchiveEntry::topParent() const
 {
-	if (parent_)
+	if (!parent_.expired())
 	{
-		if (!parent_->archive()->parentEntry())
-			return parent_->archive();
+		auto parent = parent_.lock();
+		if (!parent->archive()->parentEntry())
+			return parent->archive();
 
-		return parent_->archive()->parentEntry()->topParent();
+		return parent->archive()->parentEntry()->topParent();
 	}
 
 	return nullptr;
@@ -158,7 +184,7 @@ Archive* ArchiveEntry::topParent() const
 // -----------------------------------------------------------------------------
 string ArchiveEntry::path(bool include_name) const
 {
-	auto path = parent_ ? parent_->path() : "";
+	auto path = parent_.expired() ? "" : parent_.lock()->path();
 	return include_name ? path + name() : path;
 }
 
@@ -168,7 +194,7 @@ string ArchiveEntry::path(bool include_name) const
 // -----------------------------------------------------------------------------
 ArchiveEntry* ArchiveEntry::nextEntry()
 {
-	return parent_ ? parent_->entryAt(parent_->entryIndex(this) + 1) : nullptr;
+	return parent_.expired() ? nullptr : parent_.lock()->entryAt(parent_.lock()->entryIndex(this) + 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -177,7 +203,7 @@ ArchiveEntry* ArchiveEntry::nextEntry()
 // -----------------------------------------------------------------------------
 ArchiveEntry* ArchiveEntry::prevEntry()
 {
-	return parent_ ? parent_->entryAt(parent_->entryIndex(this) - 1) : nullptr;
+	return parent_.expired() ? nullptr : parent_.lock()->entryAt(parent_.lock()->entryIndex(this) - 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -186,7 +212,7 @@ ArchiveEntry* ArchiveEntry::prevEntry()
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveEntry> ArchiveEntry::getShared() const
 {
-	return parent_ ? parent_->sharedEntry(this) : nullptr;
+	return parent_.expired() ? nullptr : parent_.lock()->sharedEntry(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -195,7 +221,7 @@ shared_ptr<ArchiveEntry> ArchiveEntry::getShared() const
 // -----------------------------------------------------------------------------
 int ArchiveEntry::index()
 {
-	return parent_ ? parent_->entryIndex(this) : -1;
+	return parent_.expired() ? -1 : parent_.lock()->entryIndex(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -256,7 +282,7 @@ void ArchiveEntry::unlock()
 void ArchiveEntry::formatName(const ArchiveFormatInfo& format)
 {
 	// Perform character substitution if needed
-	name_ = misc::fileNameToLumpName(name_);
+	name_ = misc::fileNameToLumpName(name_, true);
 
 	// Max length
 	if (format.max_name_length > 0 && static_cast<int>(name_.size()) > format.max_name_length)
@@ -320,6 +346,7 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 
 	// Update attributes
 	setState(EntryState::Modified);
+	dataChanged();
 
 	return data_.reSize(new_size, preserve_data);
 }
@@ -327,7 +354,7 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 // -----------------------------------------------------------------------------
 // Clears entry data and resets its size to zero
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::clearData()
+bool ArchiveEntry::clearData(bool silent)
 {
 	// Check if locked
 	if (locked_)
@@ -338,6 +365,9 @@ bool ArchiveEntry::clearData()
 
 	// Delete the data
 	data_.clear();
+
+	if (!silent)
+		dataChanged();
 
 	return true;
 }
@@ -368,7 +398,7 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	}
 
 	// Clear any current data
-	clearData();
+	clearData(true);
 
 	// Copy data into the entry
 	data_.importMem(static_cast<const uint8_t*>(data), size);
@@ -376,6 +406,7 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	// Update attributes
 	setType(EntryType::unknownType());
 	setState(EntryState::Modified);
+	dataChanged();
 
 	return true;
 }
@@ -431,7 +462,7 @@ bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t si
 	}
 
 	// Open the file
-	wxFile file({ filename.data(), filename.size() });
+	wxFile file(wxutil::strFromView(filename));
 
 	// Check that it opened ok
 	if (!file.IsOpened())
@@ -491,6 +522,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 		// Update attributes
 		setType(EntryType::unknownType());
 		setState(EntryState::Modified);
+		dataChanged();
 
 		return true;
 	}
@@ -529,7 +561,7 @@ bool ArchiveEntry::importEntry(const ArchiveEntry* entry)
 bool ArchiveEntry::exportFile(string_view filename) const
 {
 	// Attempt to open file
-	wxFile file({ filename.data(), filename.size() }, wxFile::write);
+	wxFile file(wxutil::strFromView(filename), wxFile::write);
 
 	// Check it opened ok
 	if (!file.IsOpened())
@@ -562,6 +594,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 	{
 		// Update attributes
 		setState(EntryState::Modified);
+		dataChanged();
 
 		return true;
 	}
@@ -594,14 +627,21 @@ string ArchiveEntry::typeString() const
 }
 
 // -----------------------------------------------------------------------------
-// ArchiveEntry::stateChanged
-//
 // Notifies the entry's parent archive that the entry has been modified
 // -----------------------------------------------------------------------------
 void ArchiveEntry::stateChanged()
 {
 	if (auto parent_archive = parent())
 		parent_archive->entryStateChanged(this);
+}
+
+// -----------------------------------------------------------------------------
+// Notifies the entry's parent archive that the entry's data has changed
+// -----------------------------------------------------------------------------
+void ArchiveEntry::dataChanged()
+{
+	if (auto parent_archive = parent())
+		parent_archive->entryDataChanged(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -659,15 +699,15 @@ bool ArchiveEntry::isInNamespace(string_view ns)
 // -----------------------------------------------------------------------------
 ArchiveEntry* ArchiveEntry::relativeEntry(string_view at_path, bool allow_absolute_path) const
 {
-	if (!parent_)
+	if (parent_.expired())
 		return nullptr;
 
 	// Try relative to this entry
-	auto include = parent_->archive()->entryAtPath(path().append(at_path));
+	auto include = parent_.lock()->archive()->entryAtPath(path().append(at_path));
 
 	// Try absolute path
 	if (!include && allow_absolute_path)
-		include = parent_->archive()->entryAtPath(at_path);
+		include = parent_.lock()->archive()->entryAtPath(at_path);
 
 	return include;
 }
@@ -678,4 +718,13 @@ ArchiveEntry* ArchiveEntry::relativeEntry(string_view at_path, bool allow_absolu
 bool ArchiveEntry::isFolderType() const
 {
 	return type_ == EntryType::folderType();
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the entry's type is an archive type (eg. wad)
+// -----------------------------------------------------------------------------
+bool ArchiveEntry::isArchive() const
+{
+	// TODO: Should probably add an is_archive flag to EntryType but this will do for now
+	return type()->category() == "Archives";
 }

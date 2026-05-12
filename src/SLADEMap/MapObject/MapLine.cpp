@@ -1,7 +1,7 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapLine.h"
+#include "General/MapFormat.h"
 #include "Geometry/Geometry.h"
 #include "MapSector.h"
 #include "MapSide.h"
@@ -78,9 +79,9 @@ MapLine::MapLine(
 
 	// Connect to sides
 	if (s1)
-		s1->parent_ = this;
+		s1->setParent(this);
 	if (s2)
-		s2->parent_ = this;
+		s2->setParent(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -101,9 +102,9 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, const P
 
 	// Connect to sides
 	if (s1)
-		s1->parent_ = this;
+		s1->setParent(this);
 	if (s2)
-		s2->parent_ = this;
+		s2->setParent(this);
 
 	// Set properties from UDMF definition
 	ParseTreeNode* prop;
@@ -137,11 +138,33 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, const P
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the line has the specified [id]
+// (including UDMF moreids if applicable)
+// -----------------------------------------------------------------------------
+bool MapLine::hasId(int id) const
+{
+	if (id_ == id)
+		return true;
+
+	// Check moreids property (UDMF only)
+	if (parent_map_->currentFormat() == MapFormat::UDMF && hasProp("moreids"))
+	{
+		auto moreids = stringProperty("moreids");
+		auto ids_vec = strutil::split(moreids, ' ');
+		for (const auto& extra_id : ids_vec)
+			if (strutil::asInt(extra_id) == id)
+				return true;
+	}
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the sector on the front side of the line (if any)
 // -----------------------------------------------------------------------------
 MapSector* MapLine::frontSector() const
 {
-	return side1_ ? side1_->sector_ : nullptr;
+	return side1_ ? side1_->sector() : nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -149,7 +172,7 @@ MapSector* MapLine::frontSector() const
 // -----------------------------------------------------------------------------
 MapSector* MapLine::backSector() const
 {
-	return side2_ ? side2_->sector_ : nullptr;
+	return side2_ ? side2_->sector() : nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -217,11 +240,25 @@ int MapLine::s2Index() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the line has a property named [key].
+// Can be prefixed with 'side1.' or 'side2.' to check properties from the
+// front and back sides respectively
+// -----------------------------------------------------------------------------
+bool MapLine::hasProp(string_view key) const
+{
+	if (strutil::startsWith(key, "side1.") && side1_)
+		return side1_->hasProp(key.substr(6));
+	if (strutil::startsWith(key, "side2.") && side2_)
+		return side2_->hasProp(key.substr(6));
+	return MapObject::hasProp(key);
+}
+
+// -----------------------------------------------------------------------------
 // Returns the value of the boolean property matching [key].
 // Can be prefixed with 'side1.' or 'side2.' to get bool properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-bool MapLine::boolProperty(string_view key)
+bool MapLine::boolProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->boolProperty(key.substr(6));
@@ -236,7 +273,7 @@ bool MapLine::boolProperty(string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get int properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-int MapLine::intProperty(string_view key)
+int MapLine::intProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->intProperty(key.substr(6));
@@ -276,7 +313,7 @@ int MapLine::intProperty(string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get float properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-double MapLine::floatProperty(string_view key)
+double MapLine::floatProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->floatProperty(key.substr(6));
@@ -291,7 +328,7 @@ double MapLine::floatProperty(string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get string properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-string MapLine::stringProperty(string_view key)
+string MapLine::stringProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->stringProperty(key.substr(6));
@@ -343,7 +380,7 @@ void MapLine::setIntProperty(string_view key, int value)
 	}
 
 	// Back side property
-	else if (strutil::startsWith(key, "side2."))
+	if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			side2_->setIntProperty(key.substr(6), value);
@@ -351,7 +388,7 @@ void MapLine::setIntProperty(string_view key, int value)
 	}
 
 	// Mark as modified only if a line prop, not a side prop, is changing
-	setModified();
+	beginModify();
 
 	// Vertices
 	if (key == PROP_V1)
@@ -417,7 +454,12 @@ void MapLine::setIntProperty(string_view key, int value)
 
 	// Line property
 	else
+	{
 		MapObject::setIntProperty(key, value);
+		return;
+	}
+
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -475,33 +517,33 @@ void MapLine::setStringProperty(string_view key, string_view value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapLine::scriptCanModifyProp(string_view key)
+bool MapLine::scriptCanModifyProp(string_view key) const
 {
 	return !(key == PROP_V1 || key == PROP_V2 || key == PROP_S1 || key == PROP_S2);
 }
 
 // -----------------------------------------------------------------------------
-// Sets the front side of the line to [side]
+// Sets the front side of the line to [side].
+// This just sets the side without doing any other processing, for a safe way
+// of changing the side, use SLADEMap::setLineSide instead
 // -----------------------------------------------------------------------------
 void MapLine::setS1(MapSide* side)
 {
-	if (!side)
-		side1_ = nullptr;
-
-	else if (!side1_ && parent_map_)
-		parent_map_->setLineSide(this, side, true);
+	beginModify();
+	side1_ = side;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
-// Sets the back side of the line to [side]
+// Sets the back side of the line to [side].
+// This just sets the side without doing any other processing, for a safe way
+// of changing the side, use SLADEMap::setLineSide instead
 // -----------------------------------------------------------------------------
 void MapLine::setS2(MapSide* side)
 {
-	if (!side)
-		side2_ = nullptr;
-
-	else if (!side2_ && parent_map_)
-		parent_map_->setLineSide(this, side, false);
+	beginModify();
+	side2_ = side;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -509,14 +551,15 @@ void MapLine::setS2(MapSide* side)
 // -----------------------------------------------------------------------------
 void MapLine::setV1(MapVertex* vertex)
 {
-	if (!vertex)
+	if (!vertex || vertex == vertex1_)
 		return;
 
-	setModified();
+	beginModify();
 	vertex1_->disconnectLine(this);
 	vertex1_ = vertex;
 	vertex1_->connectLine(this);
 	resetInternals();
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -527,11 +570,12 @@ void MapLine::setV2(MapVertex* vertex)
 	if (!vertex)
 		return;
 
-	setModified();
+	beginModify();
 	vertex2_->disconnectLine(this);
 	vertex2_ = vertex;
 	vertex2_->connectLine(this);
 	resetInternals();
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -539,8 +583,9 @@ void MapLine::setV2(MapVertex* vertex)
 // -----------------------------------------------------------------------------
 void MapLine::setSpecial(int special)
 {
-	setModified();
+	beginModify();
 	special_ = special;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -548,8 +593,9 @@ void MapLine::setSpecial(int special)
 // -----------------------------------------------------------------------------
 void MapLine::setId(int id)
 {
-	setModified();
+	beginModify();
 	id_ = id;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -557,8 +603,9 @@ void MapLine::setId(int id)
 // -----------------------------------------------------------------------------
 void MapLine::setFlags(int flags)
 {
-	setModified();
+	beginModify();
 	flags_ = flags;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -566,8 +613,9 @@ void MapLine::setFlags(int flags)
 // -----------------------------------------------------------------------------
 void MapLine::setFlag(int flag)
 {
-	setModified();
+	beginModify();
 	flags_ |= flag;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -575,8 +623,9 @@ void MapLine::setFlag(int flag)
 // -----------------------------------------------------------------------------
 void MapLine::clearFlag(int flag)
 {
-	setModified();
+	beginModify();
 	flags_ = flags_ & ~flag;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -586,8 +635,9 @@ void MapLine::setArg(unsigned index, int value)
 {
 	if (index < 5)
 	{
-		setModified();
+		beginModify();
 		args_[index] = value;
+		endModify();
 	}
 }
 
@@ -595,7 +645,7 @@ void MapLine::setArg(unsigned index, int value)
 // Returns the object point [point].
 // Currently for lines this is always the mid point
 // -----------------------------------------------------------------------------
-Vec2d MapLine::getPoint(Point point)
+Vec2d MapLine::getPoint(Point point) const
 {
 	// if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
 	return start() + (end() - start()) * 0.5;
@@ -628,7 +678,7 @@ Seg2d MapLine::seg() const
 // -----------------------------------------------------------------------------
 // Returns the length of the line
 // -----------------------------------------------------------------------------
-double MapLine::length()
+double MapLine::length() const
 {
 	if (!vertex1_ || !vertex2_)
 		return -1;
@@ -658,7 +708,7 @@ bool MapLine::doubleSector() const
 // -----------------------------------------------------------------------------
 // Returns the vector perpendicular to the front side of the line
 // -----------------------------------------------------------------------------
-Vec2d MapLine::frontVector()
+Vec2d MapLine::frontVector() const
 {
 	// Check if vector needs to be recalculated
 	if (front_vec_.x == 0 && front_vec_.y == 0)
@@ -674,7 +724,7 @@ Vec2d MapLine::frontVector()
 // Calculates and returns the end point of the 'direction tab' for the line
 // (used as a front side indicator for 2d map display)
 // -----------------------------------------------------------------------------
-Vec2d MapLine::dirTabPoint(double tab_length)
+Vec2d MapLine::dirTabPoint(double tab_length) const
 {
 	// Calculate midpoint
 	Vec2d mid(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
@@ -698,7 +748,7 @@ Vec2d MapLine::dirTabPoint(double tab_length)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the line
 // -----------------------------------------------------------------------------
-double MapLine::distanceTo(const Vec2d& point)
+double MapLine::distanceTo(const Vec2d& point) const
 {
 	// Update length data if needed
 	if (length_ < 0)
@@ -809,6 +859,66 @@ bool MapLine::intersects(const MapLine* other, Vec2d& intersect_point) const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the height of the lowest ceiling of any of the adjacent sectors
+// -----------------------------------------------------------------------------
+int MapLine::lowestCeiling() const
+{
+	int lowestCeiling = side1_->sector()->ceiling().height;
+	if (side2_)
+	{
+		const int ceiling2 = side2_->sector()->ceiling().height;
+		if (ceiling2 < lowestCeiling)
+			lowestCeiling = ceiling2;
+	}
+	return lowestCeiling;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the height of the highest ceiling of any of the adjacent sectors
+// -----------------------------------------------------------------------------
+int MapLine::highestCeiling() const
+{
+	int highestCeiling = side1_->sector()->ceiling().height;
+	if (side2_)
+	{
+		const int ceiling2 = side2_->sector()->ceiling().height;
+		if (ceiling2 > highestCeiling)
+			highestCeiling = ceiling2;
+	}
+	return highestCeiling;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the height of the lowest floor of any of the adjacent sectors
+// -----------------------------------------------------------------------------
+int MapLine::lowestFloor() const
+{
+	int lowestFloor = side1_->sector()->floor().height;
+	if (side2_)
+	{
+		const int floor2 = side2_->sector()->floor().height;
+		if (floor2 < lowestFloor)
+			lowestFloor = floor2;
+	}
+	return lowestFloor;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the height of the highest floor of any of the adjacent sectors
+// -----------------------------------------------------------------------------
+int MapLine::highestFloor() const
+{
+	int highestFloor = side1_->sector()->floor().height;
+	if (side2_)
+	{
+		const int floor2 = side2_->sector()->floor().height;
+		if (floor2 > highestFloor)
+			highestFloor = floor2;
+	}
+	return highestFloor;
+}
+
+// -----------------------------------------------------------------------------
 // Clears any textures not needed on the line
 // (eg. a front upper texture that would be invisible)
 // -----------------------------------------------------------------------------
@@ -841,7 +951,7 @@ void MapLine::clearUnneededTextures() const
 // -----------------------------------------------------------------------------
 // Resets all calculated internal values for the line and sectors
 // -----------------------------------------------------------------------------
-void MapLine::resetInternals()
+void MapLine::resetInternals() const
 {
 	// Reset line internals
 	length_    = -1;
@@ -850,18 +960,12 @@ void MapLine::resetInternals()
 	// Reset front sector internals
 	auto s1 = frontSector();
 	if (s1)
-	{
-		s1->resetPolygon();
-		s1->resetBBox();
-	}
+		s1->resetGeometryInfo();
 
 	// Reset back sector internals
 	auto s2 = backSector();
 	if (s2)
-	{
-		s2->resetPolygon();
-		s2->resetBBox();
-	}
+		s2->resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------
@@ -869,7 +973,7 @@ void MapLine::resetInternals()
 // -----------------------------------------------------------------------------
 void MapLine::flip(bool sides)
 {
-	setModified();
+	beginModify();
 
 	// Flip vertices
 	auto v   = vertex1_;
@@ -883,6 +987,7 @@ void MapLine::flip(bool sides)
 		side1_ = side2_;
 		side2_ = s;
 	}
+	endModify();
 
 	resetInternals();
 	if (parent_map_)
@@ -950,9 +1055,9 @@ void MapLine::readBackup(Backup* backup)
 	side1_  = dynamic_cast<MapSide*>(s1);
 	side2_  = dynamic_cast<MapSide*>(s2);
 	if (side1_)
-		side1_->parent_ = this;
+		side1_->setParent(this);
 	if (side2_)
-		side2_->parent_ = this;
+		side2_->setParent(this);
 
 	// Flags
 	flags_ = backup->props_internal.get<int>(PROP_FLAGS);
@@ -975,8 +1080,7 @@ void MapLine::copy(MapObject* c)
 	if (objType() != c->objType())
 		return;
 
-	// Update modified time
-	setModified();
+	beginModify();
 
 	MapObject::copy(c);
 
@@ -996,6 +1100,8 @@ void MapLine::copy(MapObject* c)
 	args_[2] = l->args_[2];
 	args_[3] = l->args_[3];
 	args_[4] = l->args_[4];
+
+	endModify();
 }
 
 // -----------------------------------------------------------------------------

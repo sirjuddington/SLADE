@@ -1,0 +1,37 @@
+{
+  "aelt_sizecol": {
+    "text": "Size",
+    "help_text": "Show the size column",
+    "type": "check"
+  },
+  "aelt_typecol": {
+    "text": "Type",
+    "help_text": "Show the type column",
+    "type": "check"
+  },
+  "aelt_indexcol": {
+    "text": "Index",
+    "help_text": "Show the index column",
+    "type": "check"
+  },
+  "aelt_hrules": {
+    "text": "Horizontal Rules",
+    "help_text": "Show horizontal rules between entries",
+    "type": "check"
+  },
+  "aelt_vrules": {
+    "text": "Vertical Rules",
+    "help_text": "Show vertical rules between columns",
+    "type": "check"
+  },
+  "aelt_bgcolour": {
+    "text": "Colour by Type",
+    "help_text": "Colour item background by entry type",
+    "type": "check"
+  },
+  "aelt_bgalt": {
+    "text": "Alternating Row Colour",
+    "help_text": "Show alternating row colours",
+    "type": "check"
+  }
+}

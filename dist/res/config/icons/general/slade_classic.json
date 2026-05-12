@@ -1,0 +1,458 @@
+{
+  "name": "SLADE Classic",
+  "icons": {
+    "3d": {
+      "png16": "icons/general/classic/16/3d.png",
+      "png32": "icons/general/classic/32/3d.png"
+    },
+    "animation_delete": {
+      "png16": "icons/general/classic/16/animation_delete.png",
+      "png32": "icons/general/classic/32/animation_delete.png"
+    },
+    "animation_new": {
+      "png16": "icons/general/classic/16/animation_new.png",
+      "png32": "icons/general/classic/32/animation_new.png"
+    },
+    "bookmark": {
+      "png16": "icons/general/classic/16/bookmark.png",
+      "png32": "icons/general/classic/32/bookmark.png"
+    },
+    "bookmark_add": {
+      "png16": "icons/general/classic/16/plus.png",
+      "png32": "icons/general/classic/32/plus.png"
+    },
+    "bookmark_remove": {
+      "png16": "icons/general/classic/16/minus.png",
+      "png32": "icons/general/classic/32/minus.png"
+    },
+    "buildarchive": {
+      "png16": "icons/general/classic/16/buildarchive.png",
+      "png32": "icons/general/classic/32/buildarchive.png"
+    },
+    "close": {
+      "png16": "icons/general/classic/16/close.png",
+      "png32": "icons/general/classic/32/close.png"
+    },
+    "closeall": {
+      "png16": "icons/general/classic/16/closeall.png",
+      "png32": "icons/general/classic/32/closeall.png"
+    },
+    "colourise": {
+      "png16": "icons/general/classic/16/colourise.png",
+      "png32": "icons/general/classic/32/colourise.png"
+    },
+    "compile": {
+      "png16": "icons/general/classic/16/compile.png",
+      "png32": "icons/general/classic/32/compile.png"
+    },
+    "console": {
+      "png16": "icons/general/classic/16/console.png",
+      "png32": "icons/general/classic/32/console.png"
+    },
+    "convert": {
+      "png16": "icons/general/classic/16/convert.png",
+      "png32": "icons/general/classic/32/convert.png"
+    },
+    "copy": {
+      "png16": "icons/general/classic/16/copy.png",
+      "png32": "icons/general/classic/32/copy.png"
+    },
+    "crop": {
+      "png16": "icons/general/classic/16/crop.png",
+      "png32": "icons/general/classic/32/crop.png"
+    },
+    "cut": {
+      "png16": "icons/general/classic/16/cut.png",
+      "png32": "icons/general/classic/32/cut.png"
+    },
+    "delete": {
+      "png16": "icons/general/classic/16/delete.png",
+      "png32": "icons/general/classic/32/delete.png"
+    },
+    "down": {
+      "png16": "icons/general/classic/16/down.png",
+      "png32": "icons/general/classic/32/down.png"
+    },
+    "exit": {
+      "png16": "icons/general/classic/16/exit.png",
+      "png32": "icons/general/classic/32/exit.png"
+    },
+    "export": {
+      "png16": "icons/general/classic/16/export.png",
+      "png32": "icons/general/classic/32/export.png"
+    },
+    "eye": {
+      "png16": "icons/general/classic/16/eye.png",
+      "png32": "icons/general/classic/32/eye.png"
+    },
+    "flat_t": {
+      "png16": "icons/general/classic/16/flat_t.png",
+      "png32": "icons/general/classic/32/flat_t.png"
+    },
+    "flat_u": {
+      "png16": "icons/general/classic/16/flat_u.png",
+      "png32": "icons/general/classic/32/flat_u.png"
+    },
+    "flat_w": {
+      "png16": "icons/general/classic/16/flat_w.png",
+      "png32": "icons/general/classic/32/flat_w.png"
+    },
+    "flip": {
+      "png16": "icons/general/classic/16/flip.png",
+      "png32": "icons/general/classic/32/flip.png"
+    },
+    "gfx_drag": {
+      "png16": "icons/general/classic/16/gfx_drag.png",
+      "png32": "icons/general/classic/32/gfx_drag.png"
+    },
+    "gfx_draw": {
+      "png16": "icons/general/classic/16/gfx_draw.png",
+      "png32": "icons/general/classic/32/gfx_draw.png"
+    },
+    "gfx_erase": {
+      "png16": "icons/general/classic/16/gfx_erase.png",
+      "png32": "icons/general/classic/32/gfx_erase.png"
+    },
+    "gfx_translate": {
+      "png16": "icons/general/classic/16/gfx_translate.png",
+      "png32": "icons/general/classic/32/gfx_translate.png"
+    },
+    "gfx_translation": {
+      "png16": "icons/general/classic/16/gfx_translation.png",
+      "png32": "icons/general/classic/32/gfx_translation.png"
+    },
+    "import": {
+      "png16": "icons/general/classic/16/import.png",
+      "png32": "icons/general/classic/32/import.png"
+    },
+    "importfiles": {
+      "png16": "icons/general/classic/16/importfiles.png",
+      "png32": "icons/general/classic/32/importfiles.png"
+    },
+    "left": {
+      "png16": "icons/general/classic/16/left.png",
+      "png32": "icons/general/classic/32/left.png"
+    },
+    "lightbulb": {
+      "png16": "icons/general/classic/16/lightbulb.png",
+      "png32": "icons/general/classic/32/lightbulb.png"
+    },
+    "linedraw": {
+      "png16": "icons/general/classic/16/linedraw.png",
+      "png32": "icons/general/classic/32/linedraw.png"
+    },
+    "lines": {
+      "png16": "icons/general/classic/16/lines.png",
+      "png32": "icons/general/classic/32/lines.png"
+    },
+    "mapeditor": {
+      "png16": "icons/general/classic/16/mapeditor.png",
+      "png32": "icons/general/classic/32/mapeditor.png"
+    },
+    "minus": {
+      "png16": "icons/general/classic/16/minus.png",
+      "png32": "icons/general/classic/32/minus.png"
+    },
+    "mirror": {
+      "png16": "icons/general/classic/16/mirror.png",
+      "png32": "icons/general/classic/32/mirror.png"
+    },
+    "newarchive": {
+      "png16": "icons/general/classic/16/newarchive.png",
+      "png32": "icons/general/classic/32/newarchive.png"
+    },
+    "newentry": {
+      "png16": "icons/general/classic/16/newentry.png",
+      "png32": "icons/general/classic/32/newentry.png"
+    },
+    "newfolder": {
+      "png16": "icons/general/classic/16/newfolder.png",
+      "png32": "icons/general/classic/32/newfolder.png"
+    },
+    "next": {
+      "png16": "icons/general/classic/16/next.png",
+      "png32": "icons/general/classic/32/next.png"
+    },
+    "objectedit": {
+      "png16": "icons/general/classic/16/objectedit.png",
+      "png32": "icons/general/classic/32/objectedit.png"
+    },
+    "offset": {
+      "png16": "icons/general/classic/16/offset.png",
+      "png32": "icons/general/classic/32/offset.png"
+    },
+    "open": {
+      "png16": "icons/general/classic/16/open.png",
+      "png32": "icons/general/classic/32/open.png"
+    },
+    "opendir": {
+      "png16": "icons/general/classic/16/opendir.png",
+      "png32": "icons/general/classic/32/opendir.png"
+    },
+    "palette_colourise": {
+      "png16": "icons/general/classic/16/palette_colourise.png",
+      "png32": "icons/general/classic/32/palette_colourise.png"
+    },
+    "palette_delete": {
+      "png16": "icons/general/classic/16/palette_delete.png",
+      "png32": "icons/general/classic/32/palette_delete.png"
+    },
+    "palette_deleteothers": {
+      "png16": "icons/general/classic/16/palette_deleteothers.png",
+      "png32": "icons/general/classic/32/palette_deleteothers.png"
+    },
+    "palette_duplicate": {
+      "png16": "icons/general/classic/16/palette_duplicate.png",
+      "png32": "icons/general/classic/32/palette_duplicate.png"
+    },
+    "palette_generate": {
+      "png16": "icons/general/classic/16/palette_generate.png",
+      "png32": "icons/general/classic/32/palette_generate.png"
+    },
+    "palette_gradient": null,
+    "palette_invert": {
+      "png16": "icons/general/classic/16/palette_invert.png",
+      "png32": "icons/general/classic/32/palette_invert.png"
+    },
+    "palette_pull": {
+      "png16": "icons/general/classic/16/palette_pull.png",
+      "png32": "icons/general/classic/32/palette_pull.png"
+    },
+    "palette_push": {
+      "png16": "icons/general/classic/16/palette_push.png",
+      "png32": "icons/general/classic/32/palette_push.png"
+    },
+    "palette_test": {
+      "png16": "icons/general/classic/16/palette_test.png",
+      "png32": "icons/general/classic/32/palette_test.png"
+    },
+    "palette_tint": {
+      "png16": "icons/general/classic/16/palette_tint.png",
+      "png32": "icons/general/classic/32/palette_tint.png"
+    },
+    "palette_tweak": {
+      "png16": "icons/general/classic/16/palette_tweak.png",
+      "png32": "icons/general/classic/32/palette_tweak.png"
+    },
+    "paste": {
+      "png16": "icons/general/classic/16/paste.png",
+      "png32": "icons/general/classic/32/paste.png"
+    },
+    "patch_add": {
+      "png16": "icons/general/classic/16/patch_add.png",
+      "png32": "icons/general/classic/32/patch_add.png"
+    },
+    "patch_back": {
+      "png16": "icons/general/classic/16/patch_back.png",
+      "png32": "icons/general/classic/32/patch_back.png"
+    },
+    "patch_duplicate": {
+      "png16": "icons/general/classic/16/patch_duplicate.png",
+      "png32": "icons/general/classic/32/patch_duplicate.png"
+    },
+    "patch_forward": {
+      "png16": "icons/general/classic/16/patch_forward.png",
+      "png32": "icons/general/classic/32/patch_forward.png"
+    },
+    "patch_remove": {
+      "png16": "icons/general/classic/16/patch_remove.png",
+      "png32": "icons/general/classic/32/patch_remove.png"
+    },
+    "patch_replace": {
+      "png16": "icons/general/classic/16/patch_replace.png",
+      "png32": "icons/general/classic/32/patch_replace.png"
+    },
+    "pause": {
+      "png16": "icons/general/classic/16/pause.png",
+      "png32": "icons/general/classic/32/pause.png"
+    },
+    "play": {
+      "png16": "icons/general/classic/16/play.png",
+      "png32": "icons/general/classic/32/play.png"
+    },
+    "plus": {
+      "png16": "icons/general/classic/16/plus.png",
+      "png32": "icons/general/classic/32/plus.png"
+    },
+    "pngopt": {
+      "png16": "icons/general/classic/16/pngopt.png",
+      "png32": "icons/general/classic/32/pngopt.png"
+    },
+    "prev": {
+      "png16": "icons/general/classic/16/prev.png",
+      "png32": "icons/general/classic/32/prev.png"
+    },
+    "properties": {
+      "png16": "icons/general/classic/16/properties.png",
+      "png32": "icons/general/classic/32/properties.png"
+    },
+    "redo": {
+      "png16": "icons/general/classic/16/redo.png",
+      "png32": "icons/general/classic/32/redo.png"
+    },
+    "remap": {
+      "png16": "icons/general/classic/16/remap.png",
+      "png32": "icons/general/classic/32/remap.png"
+    },
+    "rename": {
+      "png16": "icons/general/classic/16/rename.png",
+      "png32": "icons/general/classic/32/rename.png"
+    },
+    "renameeach": {
+      "png16": "icons/general/classic/16/renameeach.png",
+      "png32": "icons/general/classic/32/renameeach.png"
+    },
+    "revert": {
+      "png16": "icons/general/classic/16/revert.png",
+      "png32": "icons/general/classic/32/revert.png"
+    },
+    "right": {
+      "png16": "icons/general/classic/16/right.png",
+      "png32": "icons/general/classic/32/right.png"
+    },
+    "rotate": {
+      "png16": "icons/general/classic/16/rotate.png",
+      "png32": "icons/general/classic/32/rotate.png"
+    },
+    "run": {
+      "png16": "icons/general/classic/16/run.png",
+      "png32": "icons/general/classic/32/run.png"
+    },
+    "save": {
+      "png16": "icons/general/classic/16/save.png",
+      "png32": "icons/general/classic/32/save.png"
+    },
+    "saveall": {
+      "png16": "icons/general/classic/16/saveall.png",
+      "png32": "icons/general/classic/32/saveall.png"
+    },
+    "saveas": {
+      "png16": "icons/general/classic/16/saveas.png",
+      "png32": "icons/general/classic/32/saveas.png"
+    },
+    "script": {
+      "png16": "icons/general/classic/16/text.png",
+      "png32": "icons/general/classic/32/text.png"
+    },
+    "sector_both": {
+      "png16": "icons/general/classic/16/sector_both.png",
+      "png32": "icons/general/classic/32/sector_both.png"
+    },
+    "sector_ceiling": {
+      "png16": "icons/general/classic/16/sector_ceiling.png",
+      "png32": "icons/general/classic/32/sector_ceiling.png"
+    },
+    "sector_floor": {
+      "png16": "icons/general/classic/16/sector_floor.png",
+      "png32": "icons/general/classic/32/sector_floor.png"
+    },
+    "sectors": {
+      "png16": "icons/general/classic/16/sectors.png",
+      "png32": "icons/general/classic/32/sectors.png"
+    },
+    "settings": {
+      "png16": "icons/general/classic/16/settings.png",
+      "png32": "icons/general/classic/32/settings.png"
+    },
+    "shapedraw": {
+      "png16": "icons/general/classic/16/shapedraw.png",
+      "png32": "icons/general/classic/32/shapedraw.png"
+    },
+    "sort": {
+      "png16": "icons/general/classic/16/down.png",
+      "png32": "icons/general/classic/32/down.png"
+    },
+    "stop": {
+      "png16": "icons/general/classic/16/stop.png",
+      "png32": "icons/general/classic/32/stop.png"
+    },
+    "switch_delete": {
+      "png16": "icons/general/classic/16/switch_delete.png",
+      "png32": "icons/general/classic/32/switch_delete.png"
+    },
+    "switch_new": {
+      "png16": "icons/general/classic/16/switch_new.png",
+      "png32": "icons/general/classic/32/switch_new.png"
+    },
+    "tex_delete": {
+      "png16": "icons/general/classic/16/tex_delete.png",
+      "png32": "icons/general/classic/32/tex_delete.png"
+    },
+    "tex_export": {
+      "png16": "icons/general/classic/16/tex_export.png",
+      "png32": "icons/general/classic/32/tex_export.png"
+    },
+    "tex_extract": {
+      "png16": "icons/general/classic/16/tex_extract.png",
+      "png32": "icons/general/classic/32/tex_extract.png"
+    },
+    "tex_new": {
+      "png16": "icons/general/classic/16/tex_new.png",
+      "png32": "icons/general/classic/32/tex_new.png"
+    },
+    "tex_newfile": {
+      "png16": "icons/general/classic/16/tex_newfile.png",
+      "png32": "icons/general/classic/32/tex_newfile.png"
+    },
+    "tex_newpatch": {
+      "png16": "icons/general/classic/16/tex_newpatch.png",
+      "png32": "icons/general/classic/32/tex_newpatch.png"
+    },
+    "tex_offset": {
+      "png16": "icons/general/classic/16/tex_offset.png",
+      "png32": "icons/general/classic/32/tex_offset.png"
+    },
+    "tex_rename": {
+      "png16": "icons/general/classic/16/tex_rename.png",
+      "png32": "icons/general/classic/32/tex_rename.png"
+    },
+    "tex_renameeach": {
+      "png16": "icons/general/classic/16/tex_renameeach.png",
+      "png32": "icons/general/classic/32/tex_renameeach.png"
+    },
+    "texeditor": {
+      "png16": "icons/general/classic/16/texeditor.png",
+      "png32": "icons/general/classic/32/texeditor.png"
+    },
+    "things": {
+      "png16": "icons/general/classic/16/things.png",
+      "png32": "icons/general/classic/32/things.png"
+    },
+    "tick": {
+      "png16": "icons/general/classic/16/tick.png",
+      "png32": "icons/general/classic/32/tick.png"
+    },
+    "tint": {
+      "png16": "icons/general/classic/16/tint.png",
+      "png32": "icons/general/classic/32/tint.png"
+    },
+    "undo": {
+      "png16": "icons/general/classic/16/undo.png",
+      "png32": "icons/general/classic/32/undo.png"
+    },
+    "up": {
+      "png16": "icons/general/classic/16/up.png",
+      "png32": "icons/general/classic/32/up.png"
+    },
+    "upfolder": {
+      "png16": "icons/general/classic/16/upfolder.png",
+      "png32": "icons/general/classic/32/upfolder.png"
+    },
+    "verts": {
+      "png16": "icons/general/classic/16/verts.png",
+      "png32": "icons/general/classic/32/verts.png"
+    },
+    "wiki": {
+      "png16": "icons/general/classic/16/wiki.png",
+      "png32": "icons/general/classic/32/wiki.png"
+    },
+    "zoom_in": {
+      "png16": "icons/general/classic/16/plus.png",
+      "png32": "icons/general/classic/32/plus.png"
+    },
+    "zoom_out": {
+      "png16": "icons/general/classic/16/minus.png",
+      "png32": "icons/general/classic/32/minus.png"
+    }
+  }
+}

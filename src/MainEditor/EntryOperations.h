@@ -22,6 +22,7 @@ namespace entryoperations
 		UndoManager*                 undo_manager);
 	bool openMapDB2(ArchiveEntry* entry);
 	bool compileACS(ArchiveEntry* entry, bool hexen = false, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
+	bool compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target = nullptr, wxFrame* parent = nullptr);
 
 	// TEXTUREx
 	bool addToPatchTable(const vector<ArchiveEntry*>& entries);
@@ -32,7 +33,7 @@ namespace entryoperations
 	bool cleanZdTextureSinglePatch(const vector<ArchiveEntry*>& entries);
 
 	// Graphics
-	bool exportAsPNG(ArchiveEntry* entry, const wxString& filename);
+	bool exportAsPNG(ArchiveEntry* entry, const string& filename);
 	bool optimizePNG(ArchiveEntry* entry);
 	bool exportEntriesAsPNG(const vector<ArchiveEntry*>& entries);
 	bool optimizePNGEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager = nullptr);
@@ -45,6 +46,8 @@ namespace entryoperations
 	bool tintGfxEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager = nullptr);
 	bool modifyOffsets(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager = nullptr);
 	bool convertVoxelEntries(const vector<ArchiveEntry*>& entries, UndoManager* undo_manager = nullptr);
+	bool copyGfxOffsets(ArchiveEntry& entry);
+	bool pasteGfxOffsets(const vector<ArchiveEntry*>& entries);
 
 	// ANIMATED/SWITCHES
 	bool convertAnimated(const ArchiveEntry* entry, MemChunk* animdata, bool animdefs);

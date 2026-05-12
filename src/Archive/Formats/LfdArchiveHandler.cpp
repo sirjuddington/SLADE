@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,7 +34,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -194,7 +194,7 @@ bool LfdArchiveHandler::write(Archive& archive, MemChunk& mc)
 		for (char& n : name)
 			n = 0;
 		size = wxINT32_SWAP_ON_BE(entry->size());
-		wxFileName fn(entry->name());
+		wxFileName fn(wxString::FromUTF8(entry->name()));
 
 		for (size_t c = 0; c < fn.GetName().length() && c < 9; c++)
 			name[c] = fn.GetName()[c];
@@ -215,7 +215,7 @@ bool LfdArchiveHandler::write(Archive& archive, MemChunk& mc)
 		for (char& n : name)
 			n = 0;
 		size = wxINT32_SWAP_ON_BE(entry->size());
-		wxFileName fn(entry->name());
+		wxFileName fn(wxString::FromUTF8(entry->name()));
 
 		for (size_t c = 0; c < fn.GetName().length() && c < 9; c++)
 			name[c] = fn.GetName()[c];
@@ -290,7 +290,7 @@ bool LfdArchiveHandler::isThisFormat(const MemChunk& mc)
 bool LfdArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

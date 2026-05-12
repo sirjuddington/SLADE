@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SImage.h"
-#include "Utility/ColRGBA.h"
 
 namespace slade
 {
@@ -75,7 +74,7 @@ public:
 	virtual bool     convertWritable(SImage& image, ConvertOptions opt) { return false; }
 	virtual bool     writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset) { return false; }
 
-	bool saveImage(SImage& image, MemChunk& out, Palette* pal = nullptr, int index = 0)
+	bool saveImage(SImage& image, MemChunk& out, const Palette* pal = nullptr, int index = 0)
 	{
 		// Attempt to write image data
 		out.seek(0, SEEK_SET);
@@ -109,6 +108,6 @@ protected:
 	Palette& imagePalette(const SImage& image) const { return *image.paletteToUse(static_cast<Palette*>(nullptr)); }
 
 	virtual bool readImage(SImage& image, const MemChunk& data, int index) = 0;
-	virtual bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) { return false; }
+	virtual bool writeImage(SImage& image, MemChunk& data, const Palette* pal, int index) { return false; }
 };
 } // namespace slade

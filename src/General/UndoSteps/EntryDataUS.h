@@ -15,7 +15,7 @@ public:
 
 private:
 	MemChunk data_;
-	wxString path_;
+	string   path_;
 	int      index_   = -1;
 	Archive* archive_ = nullptr;
 };

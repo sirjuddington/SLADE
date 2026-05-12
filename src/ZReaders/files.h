@@ -1,14 +1,12 @@
-#ifndef FILES_H
+﻿#ifndef FILES_H
 #define FILES_H
 
-#include "Main.h"
-#include "Utility/MemChunk.h"
-#include "templates.h"
 #include "tarray.h"
+#include "templates.h"
+#include "thirdparty/lzma/C/LzmaDec.h"
+#include <bzlib.h>
 #include <stdio.h>
 #include <zlib.h>
-#include <bzlib.h>
-#include "../lzma/C/LzmaDec.h"
 
 #undef Status
 

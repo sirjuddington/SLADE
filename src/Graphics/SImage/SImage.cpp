@@ -1,7 +1,7 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -241,6 +241,52 @@ bool SImage::putIndexedData(MemChunk& mc) const
 }
 
 // -----------------------------------------------------------------------------
+// Loads the image alpha/mask data into [mc].
+// Returns false if image is invalid, true otherwise
+// -----------------------------------------------------------------------------
+bool SImage::putAlphaData(MemChunk& mc) const
+{
+	// Check the image is valid
+	if (!isValid())
+		return false;
+
+	// Init rgba data
+	mc.reSize(width_ * height_ * 4, false);
+
+	// If data is already in alpha map format just return a copy
+	if (type_ == Type::AlphaMap)
+	{
+		mc.importMem(data_);
+		return true;
+	}
+
+	// If paletted, return the mask or full opaque
+	else if (type_ == Type::PalMask)
+	{
+		if (mask_.data())
+			mc.importMem(mask_);
+		else
+		{
+			mc.reSize(width_ * height_, false);
+			mc.fillData(255);
+		}
+
+		return true;
+	}
+
+	// If RGBA, return the alpha channel
+	else if (type_ == Type::RGBA)
+	{
+		vector<uint8_t> alpha_map(width_ * height_);
+		for (int a = 0; a < width_ * height_; a++)
+			alpha_map[a] = data_[a * 4 + 3];
+		mc.importMem(alpha_map.data(), width_ * height_);
+	}
+
+	return false; // Invalid image type
+}
+
+// -----------------------------------------------------------------------------
 // Returns the number of bytes per image row
 // -----------------------------------------------------------------------------
 unsigned SImage::stride() const
@@ -367,6 +413,19 @@ void SImage::setYOffset(int offset)
 }
 
 // -----------------------------------------------------------------------------
+// Changes the image offsets
+// -----------------------------------------------------------------------------
+void SImage::setOffsets(const Vec2i& offsets)
+{
+	// Change the offsets
+	offset_x_ = offsets.x;
+	offset_y_ = offsets.y;
+
+	// Announce change
+	signals_.offsets_changed(offset_x_, offset_y_);
+}
+
+// -----------------------------------------------------------------------------
 // Sets the image palette to [pal]
 // -----------------------------------------------------------------------------
 void SImage::setPalette(const Palette* pal)
@@ -422,12 +481,21 @@ void SImage::create(int width, int height, Type type, const Palette* pal, int in
 		palette_.reset();
 
 	// Create blank image
-	data_.reSize(width * height * bpp(), false);
-	data_.fillData(0);
-	if (type == Type::PalMask)
+	if (width > 0 && height > 0)
 	{
-		mask_.reSize(width * height, false);
-		mask_.fillData(0);
+		data_.reSize(width * height * bpp(), false);
+		data_.fillData(0);
+		if (type == Type::PalMask)
+		{
+			mask_.reSize(width * height, false);
+			mask_.fillData(0);
+		}
+	}
+	else
+	{
+		data_.clear();
+		if (type == Type::PalMask)
+			mask_.clear();
 	}
 }
 
@@ -500,8 +568,10 @@ void SImage::fillAlpha(uint8_t alpha)
 // -----------------------------------------------------------------------------
 // Returns the first unused palette index, or -1 if the image is not paletted or
 // uses all 256 colours
+// If [preferred] is > 0, it will be returned if it's not already in use,
+// instead of the first unused colour
 // -----------------------------------------------------------------------------
-short SImage::findUnusedColour() const
+short SImage::findUnusedColour(short preferred) const
 {
 	// Only for paletted images
 	if (type_ != Type::PalMask)
@@ -513,6 +583,10 @@ short SImage::findUnusedColour() const
 	// Go through image data and mark used colours
 	for (int a = 0; a < width_ * height_; a++)
 		used[data_[a]] = 1;
+
+	// Check if preferred colour is unused
+	if (preferred >= 0 && !used[preferred])
+		return preferred;
 
 	// Find first unused
 	for (int a = 0; a < 256; a++)
@@ -555,7 +629,7 @@ size_t SImage::countColours() const
 // -----------------------------------------------------------------------------
 // Shifts all the used colours to the beginning of the palette
 // -----------------------------------------------------------------------------
-void SImage::shrinkPalette(Palette* pal) const
+void SImage::shrinkPalette(Palette* pal)
 {
 	// If the picture is not paletted, stop.
 	if (type_ != Type::PalMask)
@@ -1029,9 +1103,7 @@ void SImage::setHeight(int h)
 }
 
 // -----------------------------------------------------------------------------
-// Rotates the image with an angle of 90°, 180° or 270°.
-// Why not use FreeImage_Rotate instead? So as not to bother converting to and
-// fro a FIBITMAP...
+// Rotates the image with an angle of 90°, 180° or 270°
 // -----------------------------------------------------------------------------
 bool SImage::rotate(int angle)
 {
@@ -1335,7 +1407,7 @@ bool SImage::setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth,
 // -----------------------------------------------------------------------------
 // Applies a palette translation to the image
 // -----------------------------------------------------------------------------
-bool SImage::applyTranslation(const Translation* tr, Palette* pal, bool truecolor)
+bool SImage::applyTranslation(const Translation* tr, const Palette* pal, bool truecolor)
 {
 	// Check image is ok
 	if (!data_.hasData())
@@ -1404,13 +1476,16 @@ bool SImage::applyTranslation(const Translation* tr, Palette* pal, bool truecolo
 		type_ = Type::RGBA;
 	}
 
+	// Announce change
+	signals_.image_changed();
+
 	return true;
 }
 
 // -----------------------------------------------------------------------------
 // Applies a palette translation to the image
 // -----------------------------------------------------------------------------
-bool SImage::applyTranslation(string_view tr, Palette* pal, bool truecolor)
+bool SImage::applyTranslation(string_view tr, const Palette* pal, bool truecolor)
 {
 	Translation trans;
 	trans.clear();
@@ -1658,6 +1733,9 @@ bool SImage::colourise(ColRGBA colour, const Palette* pal, int start, int stop)
 			data_[a] = palette->nearestColour(col);
 	}
 
+	// Announce change
+	signals_.image_changed();
+
 	return true;
 }
 
@@ -1707,6 +1785,9 @@ bool SImage::tint(ColRGBA colour, float amount, const Palette* pal, int start, i
 		else
 			data_[a] = palette->nearestColour(col);
 	}
+
+	// Announce change
+	signals_.image_changed();
 
 	return true;
 }
@@ -1883,6 +1964,78 @@ bool SImage::mirrorpad()
 		offset_x_ += extra;
 	}
 	return success;
+}
+
+// -----------------------------------------------------------------------------
+// Generates a checkered pattern of [square_size] squares, alternating between
+// [col1] and [col2] (or the nearest colours in the palette)
+// -----------------------------------------------------------------------------
+void SImage::generateCheckeredPattern(int square_size, const ColRGBA& col1, const ColRGBA& col2, const Palette* pal)
+{
+	if (type_ == Type::AlphaMap || type_ == Type::Unknown)
+		return;
+
+	// Get nearest palette colours for non-RGBA image
+	int  pal_c1  = 0;
+	int  pal_c2  = 0;
+	auto palette = paletteToUse(pal);
+	if (type_ == Type::PalMask)
+	{
+		pal_c1 = palette->nearestColour(col1);
+		pal_c2 = palette->nearestColour(col2);
+	}
+
+	// Quick and dirty lambda to 'draw' a square
+	auto drawSquare = [this, square_size](int x, int y, const ColRGBA& col, int p_index)
+	{
+		for (auto yp = y; yp < y + square_size; ++yp)
+		{
+			for (auto xp = x; xp < x + square_size; ++xp)
+			{
+				if (type_ == Type::PalMask)
+					setPixel(xp, yp, p_index);
+				else
+					setPixel(xp, yp, col);
+			}
+		}
+	};
+
+	// First colour
+	int  x       = 0;
+	int  y       = 0;
+	bool odd_row = false;
+	while (y < height_)
+	{
+		x = odd_row ? square_size : 0;
+
+		while (x < width_)
+		{
+			drawSquare(x, y, col1, pal_c1);
+			x += square_size * 2;
+		}
+
+		// Next row
+		y += square_size;
+		odd_row = !odd_row;
+	}
+
+	// Second colour
+	y       = 0;
+	odd_row = false;
+	while (y < height_)
+	{
+		x = odd_row ? 0 : square_size;
+
+		while (x < width_)
+		{
+			drawSquare(x, y, col2, pal_c2);
+			x += square_size * 2;
+		}
+
+		// Next row
+		y += square_size;
+		odd_row = !odd_row;
+	}
 }
 
 const Palette* SImage::paletteToUse(const Palette* pal) const

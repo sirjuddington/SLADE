@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -30,16 +30,12 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#undef BOOL
+#include "SIFormat.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryDataFormat.h"
 #include "Graphics/Palette/Palette.h"
-#include "SIFormat.h"
-#include <FreeImage.h>
-
-#ifndef _WIN32
-#undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
-#endif
+#include "Utility/Memory.h"
+#include <wx/mstream.h>
 
 using namespace slade;
 
@@ -115,108 +111,94 @@ public:
 
 	bool isThisFormat(const MemChunk& mc) override
 	{
-		auto mem = FreeImage_OpenMemory(const_cast<BYTE*>(mc.data()), mc.size());
-		auto fif = FreeImage_GetFileTypeFromMemory(mem, 0);
-		FreeImage_CloseMemory(mem);
-		return fif != FIF_UNKNOWN;
+		auto stream = wxMemoryInputStream(mc.data(), mc.size());
+		return wxImage::CanRead(stream);
 	}
 
 	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
-		getFIInfo(mc, info);
+
+		// Load wxImage
+		wxMemoryInputStream memstream(mc.data(), mc.size());
+		const wxImage       wx_image(memstream, wxBITMAP_TYPE_ANY);
+		if (wx_image.IsOk())
+		{
+			info.width       = wx_image.GetWidth();
+			info.height      = wx_image.GetHeight();
+			info.colformat   = SImage::Type::RGBA;
+			info.format      = id_;
+			info.has_palette = wx_image.HasPalette();
+		}
+
 		return info;
 	}
 
 protected:
 	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
-		// Get image info
-		SImage::Info info;
-		auto         bm = getFIInfo(data, info);
+		// Load to wxImage
+		wxMemoryInputStream memstream(data.data(), data.size());
+		const wxImage       wx_image(memstream, wxBITMAP_TYPE_ANY);
 
 		// Check it created/read ok
-		if (!bm)
+		if (!wx_image.IsOk())
 		{
-			global::error = "Unable to read image data (unsupported format?)";
+			global::error = "Unable to read image data";
+			log::error("Unable to read image data (unsupported wxImage format?)");
 			return false;
 		}
 
-		// Get image palette if it exists
-		auto    bm_pal = FreeImage_GetPalette(bm);
-		Palette palette;
-		if (bm_pal)
-		{
-			int a = 0;
-			int b = FreeImage_GetColorsUsed(bm);
-			if (b > 256)
-				b = 256;
-			for (; a < b; a++)
-				palette.setColour(a, ColRGBA(bm_pal[a].rgbRed, bm_pal[a].rgbGreen, bm_pal[a].rgbBlue, 255));
-		}
+		// Get image info
+		SImage::Info info;
+		info.width       = wx_image.GetWidth();
+		info.height      = wx_image.GetHeight();
+		info.colformat   = SImage::Type::RGBA; // Generic images always converted to RGBA on loading
+		info.format      = id_;
+		info.has_palette = wx_image.HasPalette();
 
 		// Create image
 		if (info.has_palette)
+		{
+			auto palette = wxutil::paletteFromWx(wx_image.GetPalette());
 			image.create(info, &palette);
+		}
 		else
 			image.create(info);
+
+		// Load image data
 		auto img_data = imageData(image);
-
-		// Convert to 32bpp & flip vertically
-		auto rgba = FreeImage_ConvertTo32Bits(bm);
-		if (!rgba)
+		auto data_rgb = wx_image.GetData();
+		if (wx_image.HasAlpha())
 		{
-			log::error("FreeImage_ConvertTo32Bits failed for image data");
-			global::error = "Error reading PNG data";
-			return false;
+			// Image has alpha channel
+			const auto data_alpha = wx_image.GetAlpha();
+			int        c          = 0;
+			for (int a = 0; a < info.width * info.height; a++)
+			{
+				img_data[c++] = data_rgb[a * 3];     // Red
+				img_data[c++] = data_rgb[a * 3 + 1]; // Green
+				img_data[c++] = data_rgb[a * 3 + 2]; // Blue
+				img_data[c++] = data_alpha[a];       // Alpha
+			}
 		}
-		FreeImage_FlipVertical(rgba);
-
-		// Load raw RGBA data
-		auto bits_rgba = FreeImage_GetBits(rgba);
-		int  c         = 0;
-		for (int a = 0; a < info.width * info.height; a++)
+		else
 		{
-			img_data[c++] = bits_rgba[a * 4 + 2]; // Red
-			img_data[c++] = bits_rgba[a * 4 + 1]; // Green
-			img_data[c++] = bits_rgba[a * 4];     // Blue
-			img_data[c++] = bits_rgba[a * 4 + 3]; // Alpha
+			// No alpha channel
+			int c = 0;
+			for (int a = 0; a < info.width * info.height; a++)
+			{
+				img_data[c++] = data_rgb[a * 3];     // Red
+				img_data[c++] = data_rgb[a * 3 + 1]; // Green
+				img_data[c++] = data_rgb[a * 3 + 2]; // Blue
+				img_data[c++] = 255;                 // Alpha
+			}
 		}
-
-		// Free memory
-		FreeImage_Unload(rgba);
-		FreeImage_Unload(bm);
 
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override { return false; }
-
-private:
-	FIBITMAP* getFIInfo(const MemChunk& data, SImage::Info& info) const
-	{
-		// Get FreeImage bitmap info from entry data
-		auto mem = FreeImage_OpenMemory(const_cast<BYTE*>(data.data()), data.size());
-		auto fif = FreeImage_GetFileTypeFromMemory(mem, 0);
-		auto bm  = FreeImage_LoadFromMemory(fif, mem, 0);
-		FreeImage_CloseMemory(mem);
-
-		// Check it created/read ok
-		if (!bm)
-			return nullptr;
-
-		// Get info from image
-		info.width     = FreeImage_GetWidth(bm);
-		info.height    = FreeImage_GetHeight(bm);
-		info.colformat = SImage::Type::RGBA; // Generic images always converted to RGBA on loading
-		info.format    = id_;
-
-		// Check if palette supplied
-		if (FreeImage_GetColorsUsed(bm) > 0)
-			info.has_palette = true;
-
-		return bm;
-	}
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override { return false; }
 };
 
 // Define valid raw flat sizes
@@ -239,12 +221,13 @@ uint32_t valid_flat_size[][3] = {
 	{ 256, 256, 1 },   // hires flat size
 	{ 320, 200, 0 },   // full screen format
 	{ 512, 512, 1 },   // hires flat size
+	{ 560, 200, 0 },   // Heretic + Hexen widescreen
 	{ 640, 400, 1 },   // SRB2 fade mask size 4
 	{ 1024, 1024, 1 }, // hires flat size
 	{ 2048, 2048, 1 }, // super hires flat size (SRB2)
 	{ 4096, 4096, 1 }, // |
 };
-uint32_t n_valid_flat_sizes = 22;
+uint32_t n_valid_flat_sizes = 23;
 
 
 // -----------------------------------------------------------------------------
@@ -461,7 +444,7 @@ public:
 	}
 
 protected:
-	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& data, const Palette* pal, int index) override
 	{
 		// Can't write if RGBA
 		if (image.type() == SImage::Type::RGBA)
@@ -555,11 +538,9 @@ void SIFormat::initFormats()
 	new SIFRottWall();
 
 	// Jedi Engine (Dark Forces) formats
-#if 0
 	new SIFJediBM();
 	new SIFJediFME();
 	new SIFJediWAX();
-#endif
 
 	// Other game formats
 	new SIFHalfLifeTex();

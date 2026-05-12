@@ -22,15 +22,16 @@ public:
 	void showIcons(bool show) { icons_ = show; }
 	bool enableSizeUpdate() const { return update_width_; }
 	void enableSizeUpdate(bool update) { update_width_ = update; }
+	void setColumnSpacing(int spacing) { column_spacing_ = spacing; }
 
-	bool addItem(int index, const wxString& text);
-	bool addItem(int index, wxArrayString text);
+	bool addItem(int index, const string& text);
+	bool addItem(int index, const vector<string>& text);
 
 	bool deleteItems(wxArrayInt items);
 
 	ColRGBA disabledColour() const;
 	bool    setItemStatus(int item, ItemStatus status);
-	bool    setItemText(int item, int column, const wxString& text);
+	bool    setItemText(int item, int column, const string& text);
 
 	void clearSelection();
 	bool selectItem(int item, bool focus = true);
@@ -44,7 +45,8 @@ public:
 	bool updateSize();
 
 private:
-	bool icons_        = true;
-	bool update_width_ = true;
+	bool icons_          = true;
+	bool update_width_   = true;
+	int  column_spacing_ = 0;
 };
 } // namespace slade

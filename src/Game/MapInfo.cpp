@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -160,7 +160,7 @@ bool MapInfo::checkEqualsToken(Tokenizer& tz, string_view parsing) const
 bool MapInfo::strToCol(const string& str, ColRGBA& col) const
 {
 	wxColour wxcol;
-	if (!wxcol.Set(str))
+	if (!wxcol.Set(wxString::FromUTF8(str)))
 	{
 		// Parse RR GG BB string
 		auto components = strutil::splitV(str, ' ');

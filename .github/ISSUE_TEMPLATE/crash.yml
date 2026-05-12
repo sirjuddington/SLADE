@@ -46,7 +46,6 @@ body:
         2. Click on '....'
         3. Scroll down to '....'
         4. Crash occurrs
-      render: text
     validations:
       required: true
   - type: textarea
@@ -64,6 +63,5 @@ body:
       description: If applicable, add screenshots to help explain how to reproduce the crash.
       value: |
         ![DESCRIPTION](LINK.png)
-      render: text
     validations:
       required: false

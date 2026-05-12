@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,7 +38,7 @@
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
 #include "General/Misc.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
@@ -141,7 +141,7 @@ bool ZipArchiveHandler::open(Archive& archive, string_view filename)
 		if (!zip_entry->IsDir())
 		{
 			// Get the entry name as a Path (so we can break it up)
-			strutil::Path fn(wxutil::strToView(zip_entry->GetName(wxPATH_UNIX)));
+			strutil::Path fn(zip_entry->GetName(wxPATH_UNIX).utf8_string());
 
 			// Create entry
 			auto new_entry = std::make_shared<ArchiveEntry>(
@@ -175,7 +175,7 @@ bool ZipArchiveHandler::open(Archive& archive, string_view filename)
 		else
 		{
 			// Zip entry is a directory, add it to the directory tree
-			strutil::Path fn(wxutil::strToView(zip_entry->GetName(wxPATH_UNIX)));
+			strutil::Path fn(zip_entry->GetName(wxPATH_UNIX).utf8_string());
 			createDir(archive, fn.path(true));
 		}
 
@@ -238,7 +238,7 @@ bool ZipArchiveHandler::write(Archive& archive, MemChunk& mc)
 	}
 
 	// Clean up
-	wxRemoveFile(tempfile);
+	fileutil::removeFile(tempfile);
 
 	return success;
 }
@@ -286,7 +286,7 @@ bool ZipArchiveHandler::write(Archive& archive, string_view filename)
 	vector<wxZipEntry*>            c_entries;
 	if (fileutil::fileExists(temp_file_))
 	{
-		in    = std::make_unique<wxFFileInputStream>(temp_file_);
+		in    = std::make_unique<wxFFileInputStream>(wxString::FromUTF8(temp_file_));
 		inzip = std::make_unique<wxZipInputStream>(*in);
 
 		if (inzip->IsOk())
@@ -326,7 +326,7 @@ bool ZipArchiveHandler::write(Archive& archive, string_view filename)
 		if (entries[a]->type() == EntryType::folderType())
 		{
 			// If the current entry is a folder, just write a directory entry and continue
-			zip.PutNextDirEntry(entries[a]->path(true));
+			zip.PutNextDirEntry(wxString::FromUTF8(entries[a]->path(true)));
 			entries[a]->setState(EntryState::Unmodified);
 			continue;
 		}
@@ -342,14 +342,14 @@ bool ZipArchiveHandler::write(Archive& archive, string_view filename)
 		{
 			// If the current entry has been changed, or doesn't exist in the old zip,
 			// (re)compress its data and write it to the zip
-			const auto zipentry = new wxZipEntry(entries[a]->path() + saname);
+			const auto zipentry = new wxZipEntry(wxString::FromUTF8(entries[a]->path() + saname));
 			zip.PutNextEntry(zipentry);
 			zip.Write(entries[a]->rawData(), entries[a]->size());
 		}
 		else
 		{
 			// If the entry is unmodified and exists in the old zip, just copy it over
-			c_entries[index]->SetName(entries[a]->path() + saname);
+			c_entries[index]->SetName(wxString::FromUTF8(entries[a]->path() + saname));
 			zip.CopyEntry(c_entries[index], *inzip);
 			inzip->Reset();
 		}
@@ -399,7 +399,7 @@ bool ZipArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* entr
 	}
 
 	// Open the file
-	wxFFileInputStream in(archive.filename());
+	wxFFileInputStream in(wxString::FromUTF8(archive.filename()));
 	if (!in.IsOk())
 	{
 		log::error("ZipArchiveHandler::loadEntryData: Unable to open zip file \"{}\"!", archive.filename());
@@ -468,7 +468,7 @@ shared_ptr<ArchiveEntry> ZipArchiveHandler::addEntry(
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-MapDesc ZipArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
+MapDesc ZipArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead)
 {
 	MapDesc map;
 
@@ -481,7 +481,7 @@ MapDesc ZipArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 		return map;
 
 	// Check entry directory
-	if (maphead->parentDir()->parent() != archive.rootDir() || maphead->parentDir()->name() != "maps")
+	if (maphead->parentDir()->parent() != archive.rootDir() || !strutil::equalCI(maphead->parentDir()->name(), "maps"))
 		return map;
 
 	// Setup map info
@@ -497,7 +497,7 @@ MapDesc ZipArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<MapDesc> ZipArchiveHandler::detectMaps(Archive& archive)
+vector<MapDesc> ZipArchiveHandler::detectMaps(const Archive& archive)
 {
 	vector<MapDesc> ret;
 
@@ -540,7 +540,7 @@ vector<MapDesc> ZipArchiveHandler::detectMaps(Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ZipArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -573,7 +573,7 @@ ArchiveEntry* ZipArchiveHandler::findFirst(Archive& archive, ArchiveSearchOption
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ZipArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -605,7 +605,7 @@ ArchiveEntry* ZipArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ZipArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> ZipArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -642,7 +642,7 @@ void ZipArchiveHandler::generateTempFileName(string_view filename)
 {
 	const strutil::Path tfn(filename);
 	temp_file_ = app::path(tfn.fileName(), app::Dir::Temp);
-	if (wxFileExists(temp_file_))
+	if (fileutil::fileExists(temp_file_))
 	{
 		// Make sure we don't overwrite an existing temp file
 		// (in case there are multiple zips open with the same name)
@@ -650,7 +650,7 @@ void ZipArchiveHandler::generateTempFileName(string_view filename)
 		while (true)
 		{
 			temp_file_ = app::path(fmt::format("{}.{}", tfn.fileName(), n), app::Dir::Temp);
-			if (!wxFileExists(temp_file_))
+			if (!fileutil::fileExists(temp_file_))
 				break;
 
 			n++;
@@ -687,7 +687,7 @@ bool ZipArchiveHandler::isThisFormat(const MemChunk& mc)
 bool ZipArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open the file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened
 	if (!file.IsOpened())

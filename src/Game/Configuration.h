@@ -1,7 +1,8 @@
-#pragma once
+﻿#pragma once
 
 #include "Args.h"
-#include "General/Defs.h"
+#include "General/JsonFwd.h"
+#include "General/MapFormat.h"
 #include "Utility/PropertyList.h"
 
 // Forward declarations
@@ -9,7 +10,7 @@ namespace slade
 {
 namespace map
 {
-	enum class ObjectType;
+	enum class ObjectType : u8;
 }
 namespace zscript
 {
@@ -76,6 +77,13 @@ public:
 		string sky2;
 	};
 
+	struct ConfigDesc
+	{
+		string game;
+		string port;
+		string map_format;
+	};
+
 	Configuration();
 	~Configuration();
 
@@ -102,21 +110,16 @@ public:
 	bool featureSupported(Feature feature) const { return supported_features_[static_cast<int>(feature)]; }
 	bool featureSupported(UDMFFeature feature) const { return udmf_features_[static_cast<int>(feature)]; }
 
-	// Configuration reading
-	void readActionSpecials(
-		ParseTreeNode*       node,
-		Arg::SpecialMap&     shared_args,
-		const ActionSpecial* group_defaults = nullptr);
-	void readThingTypes(const ParseTreeNode* node, const ThingType* group_defaults = nullptr);
-	void readUDMFProperties(const ParseTreeNode* block, UDMFPropMap& plist) const;
-	void readGameSection(const ParseTreeNode* node_game, bool port_section = false);
-	bool readConfiguration(
-		string_view cfg,
-		string_view source      = "",
-		MapFormat   format      = MapFormat::Unknown,
-		bool        ignore_game = false,
-		bool        clear       = true);
+	// JSON Configuration reading
 	bool openConfig(const string& game, const string& port = "", MapFormat format = MapFormat::Unknown);
+	bool readGameConfiguration(const Json& j, ConfigDesc desc, ArchiveEntry* entry = nullptr);
+	void readConfigurationSection(const Json& j, ConfigDesc cfg, ArchiveEntry* entry = nullptr);
+	void readActionSpecials(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
+	void readThingTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
+	void readFlags(const Json& j, vector<Flag>& flags, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
+	void readSectorTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
+	void readUDMFProperties(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
+	void readSpecialPresets(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
 
 	// Action specials
 	const ActionSpecial& actionSpecial(unsigned id);
@@ -153,8 +156,8 @@ public:
 	unsigned    nLineFlags() const { return flags_line_.size(); }
 	const Flag& lineFlag(unsigned flag_index);
 	bool        lineFlagSet(unsigned flag_index, const MapLine* line) const;
-	bool        lineFlagSet(string_view udmf_name, MapLine* line, MapFormat map_format) const;
-	bool        lineBasicFlagSet(string_view flag, MapLine* line, MapFormat map_format) const;
+	bool        lineFlagSet(string_view udmf_name, const MapLine* line, MapFormat map_format) const;
+	bool        lineBasicFlagSet(string_view flag, const MapLine* line, MapFormat map_format) const;
 	string      lineFlagsString(const MapLine* line) const;
 	void        setLineFlag(unsigned flag_index, MapLine* line, bool set = true) const;
 	void        setLineFlag(string_view udmf_name, MapLine* line, MapFormat map_format, bool set = true) const;
@@ -168,9 +171,10 @@ public:
 	const string&  spacTriggerUDMFName(unsigned trigger_index);
 
 	// UDMF properties
-	UDMFProperty* getUDMFProperty(const string& name, map::ObjectType type);
-	UDMFPropMap&  allUDMFProperties(map::ObjectType type);
-	void          cleanObjectUDMFProps(MapObject* object);
+	UDMFProperty*                                  getUDMFProperty(const string& name, map::ObjectType type);
+	UDMFPropMap&                                   allUDMFProperties(map::ObjectType type);
+	vector<std::pair<const string, UDMFProperty>*> sortedUDMFProperties(map::ObjectType type);
+	void                                           cleanObjectUDMFProps(MapObject* object);
 
 	// Sector types
 	string sectorTypeName(int type);

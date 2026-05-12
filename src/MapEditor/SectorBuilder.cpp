@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -347,8 +347,6 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge() const
 	double   min_dist = 999999999;
 	MapLine* nearest  = nullptr;
 
-	// LOG_DEBUG("Finding outer edge from vertex", vertex_right, "at", vertex_right->point());
-
 	// Fire a ray east from the vertex and find the first line it crosses
 	MapLine* line = nullptr;
 	for (unsigned a = 0; a < map_->nLines(); a++)
@@ -401,7 +399,6 @@ SectorBuilder::Edge SectorBuilder::findOuterEdge() const
 
 	// Determine the edge side
 	double side = geometry::lineSide(vertex_right_->position(), nearest->seg());
-	// LOG_DEBUG("Found next outer line", nearest, "on side", side);
 	if (side >= 0)
 		return Edge{ nearest, true };
 	else
@@ -708,28 +705,27 @@ void SectorBuilder::createSector(MapSector* sector, MapSector* sector_copy)
 // -----------------------------------------------------------------------------
 void SectorBuilder::drawResult() const
 {
-	glDisable(GL_TEXTURE_2D);
-	gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
+	// gl::setColour(255, 255, 255, 255, gl::Blend::Normal);
 
-	// Go through sector edges
-	for (auto& edge : sector_edges_)
-	{
-		// Setup colour
-		if (edge.front)
-		{
-			glLineWidth(2.0f);
-			glColor3f(0.0f, 1.0f, 0.0f);
-		}
-		else
-		{
-			glLineWidth(3.0f);
-			glColor3f(0.0f, 0.0f, 1.0f);
-		}
+	//// Go through sector edges
+	// for (auto& edge : sector_edges_)
+	//{
+	//	// Setup colour
+	//	if (edge.front)
+	//	{
+	//		glLineWidth(2.0f);
+	//		glColor3f(0.0f, 1.0f, 0.0f);
+	//	}
+	//	else
+	//	{
+	//		glLineWidth(3.0f);
+	//		glColor3f(0.0f, 0.0f, 1.0f);
+	//	}
 
-		// Draw line
-		glBegin(GL_LINES);
-		glVertex2d(edge.line->x1(), edge.line->y1());
-		glVertex2d(edge.line->x2(), edge.line->y2());
-		glEnd();
-	}
+	//	// Draw line
+	//	glBegin(GL_LINES);
+	//	glVertex2d(edge.line->x1(), edge.line->y1());
+	//	glVertex2d(edge.line->x2(), edge.line->y2());
+	//	glEnd();
+	//}
 }

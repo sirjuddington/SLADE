@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -75,10 +75,10 @@ std::map<MapCheck::StandardCheck, StandardCheckInfo> std_checks = {
 	{ MapCheck::SpecialTag, { "missing_tag", "Missing action special tags" } },
 	{ MapCheck::IntersectingLine, { "intersecting_line", "Intersecting lines" } },
 	{ MapCheck::OverlappingLine, { "overlapping_line", "Overlapping lines" } },
-	{ MapCheck::OverlappingThing, { "unknown_texture", "Unknown wall textures" } },
-	{ MapCheck::UnknownTexture, { "unknown_flat", "Unknown flat textures" } },
-	{ MapCheck::UnknownFlat, { "unknown_thing", "Unknown thing types" } },
-	{ MapCheck::UnknownThingType, { "overlapping_thing", "Overlapping things" } },
+	{ MapCheck::OverlappingThing, { "overlapping_thing", "Overlapping things" } },
+	{ MapCheck::UnknownTexture, { "unknown_texture", "Unknown wall textures" } },
+	{ MapCheck::UnknownFlat, { "unknown_flat", "Unknown flat textures" } },
+	{ MapCheck::UnknownThingType, { "unknown_thing", "Unknown thing types" } },
 	{ MapCheck::StuckThing, { "stuck_thing", "Stuck things" } },
 	{ MapCheck::SectorReference, { "sector_ref", "Invalid sector references" } },
 	{ MapCheck::InvalidLine, { "invalid_line", "Invalid lines" } },
@@ -211,7 +211,7 @@ public:
 				editor->beginUndoRecord("Change Texture", true, false, false);
 
 				// Set texture if one selected
-				auto texture = browser.selectedItem()->name().ToStdString();
+				auto texture = browser.selectedItem()->name();
 				switch (parts_[index])
 				{
 				case MapLine::Part::FrontUpper: lines_[index]->setStringProperty("side1.texturetop", texture); break;
@@ -885,9 +885,9 @@ public:
 					continue;
 
 				// Also check player start spots in Hexen-style hubs
-				shareflag = false;
 				if (tt1.flags() & game::ThingType::Flags::CoOpStart && tt2.flags() & game::ThingType::Flags::CoOpStart)
 				{
+					shareflag = false;
 					if (thing1->arg(0) == thing2->arg(0))
 						shareflag = true;
 				}
@@ -1115,7 +1115,7 @@ public:
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
-				auto texture = browser.selectedItem()->name().ToStdString();
+				auto texture = browser.selectedItem()->name();
 				editor->beginUndoRecord("Change Texture", true, false, false);
 				switch (parts_[index])
 				{
@@ -1229,7 +1229,7 @@ public:
 			if (browser.ShowModal() == wxID_OK)
 			{
 				// Set texture if one selected
-				auto texture = browser.selectedItem()->name().ToStdString();
+				auto texture = browser.selectedItem()->name();
 				editor->beginUndoRecord("Change Texture");
 				if (floor_[index])
 					sectors_[index]->setFloorTexture(texture);

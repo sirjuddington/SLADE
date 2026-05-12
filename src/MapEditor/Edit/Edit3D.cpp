@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,6 +33,7 @@
 #include "Edit3D.h"
 #include "Game/Configuration.h"
 #include "General/UndoRedo.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -44,8 +45,12 @@
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
+#include "Utility/Vector.h"
+#include <queue>
+#include <set>
 
 using namespace slade;
 using namespace mapeditor;
@@ -153,11 +158,11 @@ void Edit3D::changeSectorLight(int amount) const
 		{
 			// Get sector
 			auto s     = context_->map().sector(item.index);
-			int  where = 0;
+			auto where = map::SectorPart::Interior;
 			if (item.type == ItemType::Floor && !link_light_)
-				where = 1;
+				where = map::SectorPart::Floor;
 			else if (item.type == ItemType::Ceiling && !link_light_)
-				where = 2;
+				where = map::SectorPart::Ceiling;
 
 			// Check for decrease when light = 255
 			if (s->lightAt(where) == 255 && amount < -1)
@@ -166,7 +171,7 @@ void Edit3D::changeSectorLight(int amount) const
 			// Ignore if sector already processed
 			if (link_light_)
 			{
-				if (processed.count(s))
+				if (processed.contains(s))
 					continue;
 				processed.insert(s);
 			}
@@ -362,6 +367,8 @@ void Edit3D::changeSectorHeight(int amount) const
 		{
 			// Get sector
 			auto sector = context_->map().side(item.index)->sector();
+			if (!sector)
+				continue;
 
 			// Check this sector's ceiling hasn't already been changed
 			int index = sector->index();
@@ -382,6 +389,8 @@ void Edit3D::changeSectorHeight(int amount) const
 
 			// Get sector
 			MapSector* sector = context_->map().sector(item.index);
+			if (!sector)
+				continue;
 
 			if (floor)
 			{
@@ -418,54 +427,170 @@ void Edit3D::changeSectorHeight(int amount) const
 }
 
 // -----------------------------------------------------------------------------
-// Aligns X offsets beginning from the wall selection [start]
+// Aligns texture offsets beginning from the wall selection [start]
 // -----------------------------------------------------------------------------
-void Edit3D::autoAlignX(Item start) const
+void Edit3D::autoAlign(Item start, AlignType align_type) const
 {
+	// Check align type
+	if (align_type != AlignType::AlignX && align_type != AlignType::AlignY && align_type != AlignType::AlignXY)
+	{
+		log::error("Edit3d::autoAlign: alignType is invalid");
+		return;
+	}
+
 	// Check start is a wall
 	if (start.type != ItemType::WallBottom && start.type != ItemType::WallMiddle && start.type != ItemType::WallTop)
 		return;
 
 	// Get starting side
-	auto side = context_->map().side(start.index);
-	if (!side)
+	auto first_side = context_->map().side(start.index);
+	if (!first_side)
 		return;
 
 	// Get texture to match
 	string tex;
 	if (start.type == ItemType::WallBottom)
-		tex = side->texLower();
+		tex = first_side->texLower();
 	else if (start.type == ItemType::WallMiddle)
-		tex = side->texMiddle();
+		tex = first_side->texMiddle();
 	else if (start.type == ItemType::WallTop)
-		tex = side->texUpper();
+		tex = first_side->texUpper();
 
 	// Don't try to auto-align a missing texture (every line on the map will probably match)
 	if (tex == "-")
 		return;
 
-	// Get texture width
+	// Get texture size
 	auto gl_tex = mapeditor::textureManager()
 					  .texture(tex, game::configuration().featureSupported(game::Feature::MixTexFlats))
 					  .gl_id;
-	int tex_width = -1;
+	int tex_width  = -1;
+	int tex_height = -1;
 	if (gl_tex)
-		tex_width = gl::Texture::info(gl_tex).size.x;
+	{
+		tex_width  = gl::Texture::info(gl_tex).size.x;
+		tex_height = gl::Texture::info(gl_tex).size.y;
+	}
+	else if (align_type == AlignType::AlignY || align_type == AlignType::AlignXY)
+	{
+		// We need the height of the texture for vertical alignment to determine anchor points
+		log::warning("Cannot determine height of texture {}, but is required for y alignment", tex);
+		return;
+	}
 
-	// Init aligned wall list
-	vector<Item> walls_done;
+	// Get vertical texture anchor
+	// We cannot guarantee all textures of bottom, middle and top to
+	// be aligned consistently. However, we assume that by selecting the
+	// top, middle or bottom section of a wall as initial element the user
+	// expresses the intent to align these sections of the walls.
+	// We therefore store the/a height at which the top of the texture
+	// on the respective wall portion would reside.
+	// We use that later to determine the proper y-offset.
+	auto first_line           = first_side->parentLine();
+	int  first_tex_top_height = getTextureTopHeight(first_line, start.type, tex_height);
+
+	// Adjust firstTexTopHeight with texture Y offset
+	first_tex_top_height += first_side->texOffsetY();
 
 	// Begin undo level
-	context_->beginUndoRecord("Auto Align X", true, false, false);
+	string axis_names;
+	switch (align_type)
+	{
+	case AlignType::AlignX:  axis_names = "X axis"; break;
+	case AlignType::AlignY:  axis_names = "Y axis"; break;
+	case AlignType::AlignXY: axis_names = "X and Y axis"; break;
+	}
+	context_->beginUndoRecord("Auto Align on " + axis_names, true, false, false);
 
-	// Do alignment
-	doAlignX(side, side->texOffsetX(), tex, walls_done, tex_width);
+	// Queue of jobs to process
+	std::queue<AlignmentJob> jobs;
+
+	// Set of sides already processed
+	std::set<unsigned int> processed_sides;
+
+	// Enter the first job into the queue
+	AlignmentJob first_job;
+	first_job.side         = first_side;
+	first_job.tex_offset_x = first_side->texOffsetX();
+	jobs.push(first_job);
+
+	while (!jobs.empty())
+	{
+		AlignmentJob job = jobs.front();
+		jobs.pop();
+
+		// Skip if side has already been processed
+		if (processed_sides.find(job.side->index()) != processed_sides.end())
+			continue;
+
+		// Skip if this wall does not have the desired texture
+		if (!(job.side->texUpper() == tex || job.side->texMiddle() == tex || job.side->texLower() == tex))
+			continue;
+
+		// Add side to set of processed sides
+		processed_sides.insert(job.side->index());
+
+		// Perform X-Alignment
+		switch (align_type)
+		{
+		case AlignType::AlignX:
+		case AlignType::AlignXY:
+			// Wrap x-offset
+			if (tex_width > 0)
+			{
+				while (job.tex_offset_x >= tex_width)
+					job.tex_offset_x -= tex_width;
+				while (job.tex_offset_x < 0)
+					job.tex_offset_x += tex_width;
+			}
+			// Set X offset
+			job.side->setIntProperty("offsetx", job.tex_offset_x);
+			break;
+		}
+
+		// Perform Y-alignment
+		switch (align_type)
+		{
+		case AlignType::AlignY:
+		case AlignType::AlignXY:
+			// First we need to determine the top height for the respective texture
+			int  current_tex_top_height = -1;
+			auto current_line           = job.side->parentLine();
+			current_tex_top_height      = getTextureTopHeight(current_line, start.type, tex_height);
+			// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
+			int current_offset_y = first_tex_top_height - current_tex_top_height;
+
+			// Adjust the y-offset (but only, if we're not adjusting the middle part on a two-sided wall)
+			if (start.type != ItemType::WallMiddle
+				|| !game::configuration().lineBasicFlagSet("twosided", current_line, context_->mapDesc().format))
+			{
+				if (tex_height > 0)
+				{
+					while (current_offset_y > tex_height)
+						current_offset_y -= tex_height;
+					while (current_offset_y < 0)
+						current_offset_y += tex_height;
+				}
+			}
+			// Set Y offset
+			job.side->setIntProperty("offsety", current_offset_y);
+			break;
+		}
+
+		// Enqueue all sides connected to the start vertex of the current side
+		enqueueConnectedLines(jobs, job.side->startVertex(), job.tex_offset_x);
+
+		// Enqueue all sides connected to the end vertex of the current side
+		const int side_len     = (int)math::round(job.side->parentLine()->length());
+		const int end_offset_x = job.tex_offset_x + side_len;
+		enqueueConnectedLines(jobs, job.side->endVertex(), end_offset_x);
+	}
 
 	// End undo level
 	context_->endUndoRecord();
 
 	// Editor message
-	context_->addEditorMessage("Auto-aligned on X axis");
+	context_->addEditorMessage("Auto-aligned on " + axis_names);
 }
 
 // -----------------------------------------------------------------------------
@@ -986,6 +1111,49 @@ void Edit3D::floodFill(CopyType type) const
 }
 
 // -----------------------------------------------------------------------------
+// Opens the thing type browser for the currently selected 3d mode things
+// -----------------------------------------------------------------------------
+void Edit3D::changeThingType(bool force_highlight) const
+{
+	// Get things to edit
+	auto items = context_->selection().selectionOrHilight();
+	if (force_highlight && !vectorContains(items, context_->selection().hilight()))
+		if (context_->selection().hilight().type == ItemType::Thing)
+			items.push_back(context_->selection().hilight());
+
+	if (items.empty())
+		return;
+
+	// Browse for new thing type
+	auto first_thing = items[0].asThing(context_->map());
+	auto type        = first_thing->type();
+	if (int new_type = mapeditor::browseThingType(type, context_->map()); new_type >= 0)
+	{
+		// Begin undo level
+		context_->beginUndoRecordLocked("Change Thing Type", true, false, false);
+
+		// Go through items
+		for (auto& item : items)
+		{
+			if (auto thing = item.asThing(context_->map()))
+			{
+				context_->recordPropertyChangeUndoStep(thing);
+				thing->setType(new_type);
+			}
+		}
+
+		// End undo level
+		context_->endUndoRecord();
+
+		// Editor message
+		if (items.size() == 1)
+			context_->addEditorMessage("Thing type changed");
+		else
+			context_->addEditorMessage(fmt::format("{} Thing types changed", items.size()));
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Changes the Z height of selected 3d mode things by [amount]
 // -----------------------------------------------------------------------------
 void Edit3D::changeThingZ(int amount) const
@@ -996,7 +1164,6 @@ void Edit3D::changeThingZ(int amount) const
 
 	// Go through 3d selection
 	auto& selection_3d = context_->selection();
-	bool  changed      = false;
 	for (auto& item : selection_3d)
 	{
 		// Check if thing
@@ -1007,12 +1174,8 @@ void Edit3D::changeThingZ(int amount) const
 			double z = thing->zPos();
 			z += amount;
 			thing->setZ(z);
-			changed = true;
 		}
 	}
-
-	if (changed)
-		context_->map().recomputeSpecials();
 }
 
 // -----------------------------------------------------------------------------
@@ -1214,10 +1377,16 @@ void Edit3D::changeHeight(int amount) const
 // Opens the texture browser for the currently selected 3d mode walls and/or
 // floors
 // -----------------------------------------------------------------------------
-void Edit3D::changeTexture() const
+void Edit3D::changeTexture(bool force_highlight) const
 {
 	// Check for selection or hilight
 	auto selection = context_->selection().selectionOrHilight();
+	if (force_highlight && !vectorContains(selection, context_->selection().hilight()))
+	{
+		auto base_type = baseItemType(context_->selection().hilight().type);
+		if (base_type == ItemType::Side || base_type == ItemType::Sector)
+			selection.push_back(context_->selection().hilight());
+	}
 	if (selection.empty())
 		return;
 
@@ -1296,6 +1465,9 @@ void Edit3D::changeTexture() const
 // -----------------------------------------------------------------------------
 void Edit3D::deleteTexture() const
 {
+	// Begin undo level
+	context_->beginUndoRecord("Delete Texture", true, false, false);
+
 	auto& map = context_->map();
 	for (auto& item : context_->selection().selectionOrHilight())
 	{
@@ -1310,6 +1482,138 @@ void Edit3D::deleteTexture() const
 		else if (item.type == ItemType::WallTop)
 			map.side(item.index)->setStringProperty("texturetop", "-");
 	}
+
+	// End undo level
+	context_->endUndoRecord();
+}
+
+// -----------------------------------------------------------------------------
+// Browse to change the current highlight's texture (if it's a wall or flat), or
+// type (if it's a thing)
+// -----------------------------------------------------------------------------
+void Edit3D::changeTextureOrType() const
+{
+	if (!context_->selection().hasHilight())
+		return;
+
+	if (auto hl = context_->selection().hilight(); hl.type == ItemType::Thing)
+		changeThingType(true);
+	else
+		changeTexture(true);
+}
+
+// -----------------------------------------------------------------------------
+// Opens a dialog containing a MapObjectPropsPanel to edit properties for all
+// selected (or hilighted) walls' lines
+// -----------------------------------------------------------------------------
+void Edit3D::editWallProperties() const
+{
+	auto selection = context_->selection().selectedItems();
+	if (selection.empty() && context_->selection().hasHilight())
+		selection.push_back(context_->selection().hilight());
+	if (selection.empty())
+		return;
+
+	vector<MapObject*> lines;
+	for (auto item : selection)
+	{
+		if (item.type == ItemType::WallTop || item.type == ItemType::WallMiddle || item.type == ItemType::WallBottom)
+		{
+			if (auto side = item.asSide(context_->map()))
+				vectorAddUnique(lines, static_cast<MapObject*>(side->parentLine()));
+		}
+	}
+
+	// Begin recording undo level
+	context_->beginUndoRecord("Property Edit (Line)");
+	for (auto item : lines)
+		context_->recordPropertyChangeUndoStep(item);
+
+	bool done = mapeditor::editObjectProperties(lines);
+	if (done)
+	{
+		context_->renderer().forceUpdate();
+		context_->updateDisplay();
+	}
+
+	// End undo level
+	context_->endUndoRecord(done);
+}
+
+// -----------------------------------------------------------------------------
+// Opens a dialog containing a MapObjectPropsPanel to edit properties for all
+// selected (or hilighted) flats' sectors
+// -----------------------------------------------------------------------------
+void Edit3D::editFlatProperties() const
+{
+	auto selection = context_->selection().selectedItems();
+	if (selection.empty() && context_->selection().hasHilight())
+		selection.push_back(context_->selection().hilight());
+	if (selection.empty())
+		return;
+
+	vector<MapObject*> sectors;
+	for (auto item : selection)
+	{
+		if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
+		{
+			if (auto sector = item.asSector(context_->map()))
+				vectorAddUnique(sectors, static_cast<MapObject*>(sector));
+		}
+	}
+
+	// Begin recording undo level
+	context_->beginUndoRecord("Property Edit (Sector)");
+	for (auto item : sectors)
+		context_->recordPropertyChangeUndoStep(item);
+
+	bool done = mapeditor::editObjectProperties(sectors);
+	if (done)
+	{
+		context_->renderer().forceUpdate();
+		context_->updateDisplay();
+	}
+
+	// End undo level
+	context_->endUndoRecord(done);
+}
+
+// -----------------------------------------------------------------------------
+// Opens a dialog containing a MapObjectPropsPanel to edit properties for all
+// selected (or hilighted) things
+// -----------------------------------------------------------------------------
+void Edit3D::editThingProperties() const
+{
+	auto selection = context_->selection().selectedItems();
+	if (selection.empty() && context_->selection().hasHilight())
+		selection.push_back(context_->selection().hilight());
+	if (selection.empty())
+		return;
+
+	vector<MapObject*> things;
+	for (auto item : selection)
+	{
+		if (item.type == ItemType::Thing)
+		{
+			if (auto thing = item.asThing(context_->map()))
+				vectorAddUnique(things, static_cast<MapObject*>(thing));
+		}
+	}
+
+	// Begin recording undo level
+	context_->beginUndoRecord("Property Edit (Thing)");
+	for (auto item : things)
+		context_->recordPropertyChangeUndoStep(item);
+
+	bool done = mapeditor::editObjectProperties(things);
+	if (done)
+	{
+		context_->renderer().forceUpdate();
+		context_->updateDisplay();
+	}
+
+	// End undo level
+	context_->endUndoRecord(done);
 }
 
 // -----------------------------------------------------------------------------
@@ -1584,60 +1888,83 @@ void Edit3D::getAdjacentFlats(Item item, vector<Item>& list) const
 }
 
 // -----------------------------------------------------------------------------
-// Recursive function to align textures on the x axis
+// Determine the height of the top end of the texture on the respective wall part
+// of the given line using the given texture height.
 // -----------------------------------------------------------------------------
-void Edit3D::doAlignX(MapSide* side, int offset, string_view tex, vector<Item>& walls_done, int tex_width)
+int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_height) const
 {
-	// Check if this wall has already been processed
-	for (auto& item : walls_done)
+	assert(wallType == ItemType::WallBottom || wallType == ItemType::WallMiddle || wallType == ItemType::WallTop);
+	if (wallType == ItemType::WallBottom)
 	{
-		if (item.index == static_cast<int>(side->index()))
-			return;
+		const bool unpegged = game::configuration().lineBasicFlagSet(
+			"dontpegbottom", firstLine, context_->mapDesc().format);
+		// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
+		// Otherwise: Top of texture is at the highest floor
+		if (unpegged)
+			return firstLine->highestCeiling();
+		else
+			return firstLine->highestFloor();
+	}
+	else if (wallType == ItemType::WallMiddle)
+	{
+		const bool unpegged = game::configuration().lineBasicFlagSet(
+			"dontpegbottom", firstLine, context_->mapDesc().format);
+		// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
+		// Otherwise: Top of texture is at the lowest ceiling
+		if (unpegged)
+			return firstLine->highestFloor() + tex_height;
+		else
+			return firstLine->lowestCeiling();
+	}
+	else
+	{
+		// wallType == ItemType::WallTop
+		// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
+		// Otherwise: Top of texture is at lowest ceiling plus texture height
+		const bool unpegged = game::configuration().lineBasicFlagSet(
+			"dontpegtop", firstLine, context_->mapDesc().format);
+		if (unpegged)
+			return firstLine->highestCeiling();
+		else
+			return firstLine->lowestCeiling() + tex_height;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Add alignment jobs for all sides connected to the given common vertex.
+// Calculates the correct texture x-offset for the respective sides.
+// tex_offset_x gives the texture x-offset to be assumed for the common vertex.
+// -----------------------------------------------------------------------------
+void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* common_vertex, int tex_offset_x)
+{
+	for (MapLine* line : common_vertex->connectedLines())
+	{
+		auto s1 = line->s1();
+		if (s1)
+			enqueueSide(jobs, s1, common_vertex, tex_offset_x);
+		auto s2 = line->s2();
+		if (s2)
+			enqueueSide(jobs, s2, common_vertex, tex_offset_x);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Add alignment job for the given side.
+// Calculates the correct texture x-offset for the respective sides.
+// tex_offset_x gives the texture x-offset to be assumed for the common vertex.
+// -----------------------------------------------------------------------------
+void Edit3D::enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* common_vertex, int tex_offset_x)
+{
+	AlignmentJob job;
+	job.side         = side;
+	job.tex_offset_x = tex_offset_x;
+	if (side->endVertex() == common_vertex)
+	{
+		// The side starts opposite from the given vertex,
+		// so we need to adjust the texture offset by the length
+		// of the side;
+		job.tex_offset_x -= (int)math::round(side->parentLine()->length());
 	}
 
-	// Add to 'done' list
-	walls_done.emplace_back(static_cast<int>(side->index()), ItemType::WallMiddle);
-
-	// Wrap offset
-	if (tex_width > 0)
-	{
-		while (offset >= tex_width)
-			offset -= tex_width;
-	}
-
-	// Set offset
-	side->setIntProperty("offsetx", offset);
-
-	// Get 'next' vertex
-	auto line   = side->parentLine();
-	auto vertex = line->v2();
-	if (side == line->s2())
-		vertex = line->v1();
-
-	// Get integral length of line
-	int intlen = math::round(line->length());
-
-	// Go through connected lines
-	for (unsigned a = 0; a < vertex->nConnectedLines(); a++)
-	{
-		auto l = vertex->connectedLine(a);
-
-		// First side
-		auto s = l->s1();
-		if (s)
-		{
-			// Check for matching texture
-			if (s->texUpper() == tex || s->texMiddle() == tex || s->texLower() == tex)
-				doAlignX(s, offset + intlen, tex, walls_done, tex_width);
-		}
-
-		// Second side
-		s = l->s2();
-		if (s)
-		{
-			// Check for matching texture
-			if (s->texUpper() == tex || s->texMiddle() == tex || s->texLower() == tex)
-				doAlignX(s, offset + intlen, tex, walls_done, tex_width);
-		}
-	}
+	jobs.push(job);
 }

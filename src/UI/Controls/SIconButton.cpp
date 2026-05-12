@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SIconButton.h"
-#include "MapEditor/UI/MapCanvas.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -47,31 +47,17 @@ using namespace slade;
 // SIconButton class constructor
 // -----------------------------------------------------------------------------
 SIconButton::SIconButton(
-	wxWindow*       parent,
-	icons::Type     icon_type,
-	const wxString& icon,
-	const wxString& tooltip,
-	int             icon_size) :
+	wxWindow*     parent,
+	icons::Type   icon_type,
+	const string& icon,
+	const string& tooltip,
+	int           icon_size) :
 	wxBitmapButton{ parent, -1, wxNullBitmap }
 {
-#if wxCHECK_VERSION(3, 1, 6)
-	auto bmp = icons::getIcon(icon_type, icon.ToStdString(), icon_size);
-#else
-	// Create icon
-	auto size = ui::scalePx(icon_size);
-	auto bmp  = icons::getIcon(icon_type, icon.ToStdString(), size);
-
-	// Scale icon if required
-	if (bmp.GetWidth() != size)
-	{
-		auto img = bmp.ConvertToImage();
-		img.Rescale(size, size, wxIMAGE_QUALITY_BICUBIC);
-		bmp = wxBitmap(img);
-	}
-#endif
+	auto bmp = icons::getIcon(icon_type, icon, icon_size);
 
 	// Set button image and tooltip
 	SetBitmap(bmp);
 	if (!tooltip.empty())
-		SetToolTip(tooltip);
+		SetToolTip(wxString::FromUTF8(tooltip));
 }

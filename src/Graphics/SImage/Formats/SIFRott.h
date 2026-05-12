@@ -266,7 +266,7 @@ protected:
 
 		// Convert from column-major to row-major
 		image.rotate(90);
-		image.mirror(true);
+		image.mirror(false);
 
 		return true;
 	}

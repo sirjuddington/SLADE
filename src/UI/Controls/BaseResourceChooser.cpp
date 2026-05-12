@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -36,6 +36,7 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -66,22 +67,25 @@ BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change) :
 	populateChoices();
 
 	// Bind events
-	Bind(wxEVT_CHOICE, [&](wxCommandEvent&) {
-		// Open the selected base resource
-		if (load_change_)
-			app::archiveManager().openBaseResource(GetSelection() - 1);
-	});
+	Bind(
+		wxEVT_CHOICE,
+		[&](wxCommandEvent&)
+		{
+			// Open the selected base resource
+			if (load_change_)
+				app::archiveManager().openBaseResource(GetSelection() - 1);
+		});
 
 	// Handle base resource change signals from the Archive Manager
 	auto& am_signals = app::archiveManager().signals();
 	signal_connections_ += am_signals.base_res_path_added.connect([this](unsigned) { populateChoices(); });
 	signal_connections_ += am_signals.base_res_path_removed.connect([this](unsigned) { populateChoices(); });
 	signal_connections_ += am_signals.base_res_current_cleared.connect([this]() { SetSelection(0); });
-	signal_connections_ += am_signals.base_res_current_changed.connect(
-		[this](unsigned) { SetSelection(base_resource + 1); });
+	signal_connections_ += am_signals.base_res_current_changed.connect([this](unsigned)
+																	   { SetSelection(base_resource + 1); });
 
 	if (app::platform() != app::Platform::Linux)
-		wxWindowBase::SetMinSize(wxutil::scaledSize(128, -1));
+		wxWindowBase::SetMinSize(FromDIP(wxSize(128, -1)));
 }
 
 // -----------------------------------------------------------------------------
@@ -94,14 +98,11 @@ void BaseResourceChooser::populateChoices()
 	Clear();
 
 	// Add <none> option
-	AppendString("<none>");
+	AppendString(wxS("<none>"));
 
 	// Populate with base resource paths
 	for (unsigned a = 0; a < app::archiveManager().numBaseResourcePaths(); a++)
-	{
-		wxFileName fn(app::archiveManager().getBaseResourcePath(a));
-		AppendString(fn.GetFullName());
-	}
+		AppendString(wxutil::strFromView(strutil::Path::fileNameOf(app::archiveManager().getBaseResourcePath(a))));
 
 	// Select current base resource
 	SetSelection(base_resource + 1);

@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,12 +34,12 @@
 #include "ThingTypeBrowser.h"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
-#include "General/UI.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
-#include "OpenGL/Drawing.h"
+#include "OpenGL/Draw2D.h"
 #include "UI/Browser/BrowserCanvas.h"
 #include "UI/Browser/BrowserItem.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -63,7 +63,7 @@ namespace slade
 class ThingBrowserItem : public BrowserItem
 {
 public:
-	ThingBrowserItem(const wxString& name, const game::ThingType& type, unsigned index) :
+	ThingBrowserItem(const string& name, const game::ThingType& type, unsigned index) :
 		BrowserItem{ name, index },
 		thing_type_{ &type }
 	{
@@ -123,12 +123,13 @@ private:
 ThingTypeBrowser::ThingTypeBrowser(wxWindow* parent, int type) : BrowserWindow(parent)
 {
 	// Set window title
-	wxTopLevelWindow::SetTitle("Browse Thing Types");
+	wxTopLevelWindow::SetTitle(wxS("Browse Thing Types"));
 
 	// Add 'Details view' checkbox
-	cb_view_tiles_ = new wxCheckBox(this, -1, "Details view");
+	auto lh        = ui::LayoutHelper(this);
+	cb_view_tiles_ = new wxCheckBox(this, -1, wxS("Details view"));
 	cb_view_tiles_->SetValue(browser_thing_tiles);
-	sizer_bottom_->Add(cb_view_tiles_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	sizer_bottom_->Add(cb_view_tiles_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Populate tree
 	auto& types = game::configuration().allThingTypes();
@@ -160,13 +161,13 @@ void ThingTypeBrowser::setupViewOptions()
 {
 	if (browser_thing_tiles)
 	{
-		setFont(drawing::Font::Condensed);
+		setFont(gl::draw2d::Font::Condensed);
 		setItemSize(48);
 		setItemViewType(browser::ItemView::Tiles);
 	}
 	else
 	{
-		setFont(drawing::Font::Bold);
+		setFont(gl::draw2d::Font::Bold);
 		setItemSize(80);
 		setItemViewType(browser::ItemView::Normal);
 	}
@@ -183,7 +184,7 @@ int ThingTypeBrowser::selectedType() const
 	auto selected = selectedItem();
 	if (selected)
 	{
-		log::info(wxString::Format("Selected item %d", selected->index()));
+		log::info("Selected item {}", selected->index());
 		return selected->index();
 	}
 	else

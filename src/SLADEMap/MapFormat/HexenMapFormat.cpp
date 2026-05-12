@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,7 +37,6 @@
 #include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
 #include "Game/Game.h"
-#include "General/UI.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSide.h"
 #include "SLADEMap/MapObject/MapThing.h"
@@ -46,6 +45,7 @@
 #include "SLADEMap/MapObjectList/SideList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/MapObjectList/VertexList.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -171,14 +171,15 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 			args[i] = data.args[i];
 
 		// Create thing
-		map_data.addThing(std::make_unique<MapThing>(
-			Vec3d{ static_cast<double>(data.x), static_cast<double>(data.y), static_cast<double>(data.z) },
-			data.type,
-			data.angle,
-			data.flags,
-			args,
-			data.tid,
-			data.special));
+		map_data.addThing(
+			std::make_unique<MapThing>(
+				Vec3d{ static_cast<double>(data.x), static_cast<double>(data.y), static_cast<double>(data.z) },
+				data.type,
+				data.angle,
+				data.flags,
+				args,
+				data.tid,
+				data.special));
 	}
 
 	log::info(3, "Read {} things", map_data.things().size());

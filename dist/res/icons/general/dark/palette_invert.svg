@@ -1,0 +1,25 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    width="16px"
+    height="16px"
+    style="-ms-transform:rotate(360deg);-webkit-transform:rotate(360deg)"
+    viewBox="0 0 24 24"
+    transform="rotate(360)">
+
+    <g transform="scale(0.8, 0.8)">
+        <path
+            d="M12 19.58c-1.6 0-3.11-.62-4.24-1.75A5.951 5.951 0 0 1 6 13.58c0-1.58.62-3.11 1.76-4.24L12 5.1m5.66 2.83L12 2.27L6.34 7.93c-3.12 3.12-3.12 8.19 0 11.31A7.98 7.98 0 0 0 12 21.58c2.05 0 4.1-.78 5.66-2.34c3.12-3.12 3.12-8.19 0-11.31z"
+            fill="#CCCCCC"
+            transform="translate(3, -2)"
+        />
+    </g>
+
+    <g transform="scale(1, 0.5)">
+        <path 
+            d="M4 15V9h8V4.16L19.84 12L12 19.84V15H4z"
+            fill="#6696FF"
+            transform="translate(0, 28)"
+        />
+    </g>
+</svg>

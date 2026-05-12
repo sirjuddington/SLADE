@@ -1,7 +1,7 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Tokenizer.h"
+#include "FileUtils.h"
 #include "StringUtils.h"
 
 using namespace slade;
@@ -58,7 +59,7 @@ namespace
 bool isWhitespace(char p)
 {
 	// Whitespace is either a newline, tab character or space
-	return p == '\n' || p == 13 || p == ' ' || p == '\t';
+	return p == '\r' || p == '\n' || p == 13 || p == ' ' || p == '\t';
 }
 } // namespace
 
@@ -69,6 +70,41 @@ bool isWhitespace(char p)
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// Parses a magic editor comment, as introduced by Doom Builder.
+// Token should be of the form "//$Key ...".
+// Returns a pair of the key (lowercased) and any value, or "true" if none.
+// See also: https://zdoom.org/wiki/Editor_keys
+// -----------------------------------------------------------------------------
+std::pair<string, string> Tokenizer::parseEditorComment(string_view token)
+{
+	// These aren't documented very well, and it's not really clear what the argument format is intended
+	// to be, but none of them seem to take more than one argument.  So take the whole rest of the line,
+	// strip whitespace, and drop the quotes if any.
+
+	// Find the first space
+	size_t spos = token.find_first_of(" \t");
+	if (spos == string_view::npos)
+	{
+		string key(token.substr(3));
+		strutil::lowerIP(key);
+		return std::pair{ key, "true" };
+	}
+
+	string key(token.substr(3, spos - 3));
+	strutil::lowerIP(key);
+
+	string value(token.substr(spos));
+	strutil::trimIP(value);
+
+	// Strip quotes, if present
+	if (!value.empty() && value.front() == '"' && value.back() == '"')
+	{
+		value.erase(value.begin());
+		value.pop_back();
+	}
+	return std::pair{ key, value };
+}
 
 // -----------------------------------------------------------------------------
 // Returns true if the token is a valid integer. If [allow_hex] is true, can
@@ -506,7 +542,7 @@ string Tokenizer::getLine(bool from_start)
 	}
 
 	string line;
-	while (data_[state_.position] != '\n' && data_[state_.position] != '\r')
+	while (state_.position < state_.size && data_[state_.position] != '\n' && data_[state_.position] != '\r')
 		line += data_[state_.position++];
 
 	readNext(&token_current_);
@@ -594,10 +630,10 @@ bool Tokenizer::checkNextNC(const char* check) const
 bool Tokenizer::openFile(string_view filename, size_t offset, size_t length)
 {
 	// Open the file
-	wxFile file(string{ filename });
+	SFile file(filename);
 
 	// Check file opened
-	if (!file.IsOpened())
+	if (!file.isOpen())
 	{
 		log::error("Tokenizer::openFile: Unable to open file {}", filename);
 		return false;
@@ -608,13 +644,13 @@ bool Tokenizer::openFile(string_view filename, size_t offset, size_t length)
 
 	// If length isn't specified or exceeds the file length,
 	// only read to the end of the file
-	if (offset + length > file.Length() || length == 0)
-		length = static_cast<size_t>(file.Length()) - offset;
+	if (offset + length > file.size() || length == 0)
+		length = static_cast<size_t>(file.size()) - offset;
 
 	// Read the file portion
 	data_.resize((size_t)length, 0);
-	file.Seek(offset, wxFromStart);
-	file.Read(data_.data(), (size_t)length);
+	file.seekFromStart(offset);
+	file.read(data_.data(), (size_t)length);
 
 	reset();
 
@@ -803,13 +839,12 @@ void Tokenizer::tokenizeToken()
 	}
 
 	// Check for end of token
-	if (isWhitespace(data_[state_.position]) ||       // Whitespace
-		isSpecialCharacter(data_[state_.position]) || // Special character
-		checkCommentBegin() > 0)                      // Comment
+	if (isEndOfToken())
 	{
 		// End token
-		state_.state = TokenizeState::State::Unknown;
-		state_.done  = true;
+		state_.state  = TokenizeState::State::Unknown;
+		state_.done   = true;
+		state_.to_eol = false;
 
 		return;
 	}
@@ -824,7 +859,7 @@ void Tokenizer::tokenizeToken()
 void Tokenizer::tokenizeComment()
 {
 	// Check for decorate //$
-	if (decorate_ && state_.comment_type == CPPStyle)
+	if (editor_comments_ && state_.comment_type == CPPStyle)
 	{
 		if (data_[state_.position] == '$' && data_[state_.position - 1] == '/' && data_[state_.position - 2] == '/')
 		{
@@ -833,12 +868,13 @@ void Tokenizer::tokenizeComment()
 			state_.current_token.quoted_string = false;
 			state_.current_token.pos_start     = state_.position - 2;
 			state_.state                       = TokenizeState::State::Token;
+			state_.to_eol                      = true;
 			return;
 		}
 	}
 
 	// Check for end of line comment
-	if (state_.comment_type != CStyle && data_[state_.position] == '\n')
+	if (state_.comment_type != CStyle && (data_[state_.position] == '\n' || data_[state_.position] == '\r'))
 	{
 		state_.state = TokenizeState::State::Unknown;
 		++state_.position;
@@ -954,6 +990,18 @@ void Tokenizer::resetToLineStart()
 
 		--state_.position;
 	}
+}
+
+bool Tokenizer::isEndOfToken() const
+{
+	// Token is to end of line, only ends on newline
+	if (state_.to_eol)
+		return data_[state_.position] == '\n' || data_[state_.position] == '\r';
+
+	// Regular token
+	return isWhitespace(data_[state_.position]) ||       // Whitespace
+		   isSpecialCharacter(data_[state_.position]) || // Special character
+		   checkCommentBegin() > 0;                      // Comment
 }
 
 

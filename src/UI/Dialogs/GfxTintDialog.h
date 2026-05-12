@@ -3,7 +3,7 @@
 namespace slade
 {
 class ColourBox;
-class GfxCanvas;
+class GfxCanvasBase;
 
 /*******************************************************************
  * GFXTINTDIALOG CLASS
@@ -18,10 +18,10 @@ public:
 
 	ColRGBA colour() const;
 	float   amount() const;
-	void    setValues(const wxString& col, int val) const;
+	void    setValues(const string& col, int val) const;
 
 private:
-	GfxCanvas*          gfx_preview_ = nullptr;
+	GfxCanvasBase*      gfx_preview_ = nullptr;
 	ArchiveEntry*       entry_       = nullptr;
 	unique_ptr<Palette> palette_;
 	ColourBox*          cb_colour_     = nullptr;

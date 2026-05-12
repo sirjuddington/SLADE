@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,7 +35,7 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -328,7 +328,7 @@ bool ResArchiveHandler::isResArchive(const MemChunk& mc, size_t& dir_offset, siz
 bool ResArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

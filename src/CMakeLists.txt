@@ -1,14 +1,14 @@
-
 # wxWidgets version minimum 3.0
-if(NOT WX_VERSION)
+if (NOT WX_VERSION)
 	SET(WX_VERSION 3.0)
-endif(NOT WX_VERSION)
+endif (NOT WX_VERSION)
 
 # Sources
 file(GLOB_RECURSE SLADE_SOURCES CONFIGURE_DEPENDS
 	Application/*.cpp
 	Archive/*.cpp
 	Audio/*.cpp
+	Database/*.cpp
 	Game/*.cpp
 	General/*.cpp
 	Geometry/*.cpp
@@ -31,6 +31,12 @@ else ()
 	ADD_DEFINITIONS(-DNO_LUA)
 endif ()
 
+# Disable implicit wxString encoding
+# (only when building wx 3.3 currently, as it causes build errors in wx 3.2)
+if (BUILD_WX)
+	ADD_DEFINITIONS(-DwxNO_IMPLICIT_WXSTRING_ENCODING)
+endif ()
+
 # Headers
 file(GLOB_RECURSE SLADE_HEADERS CONFIGURE_DEPENDS
 	*.h
@@ -41,5 +47,5 @@ file(GLOB_RECURSE SLADE_HEADERS CONFIGURE_DEPENDS
 if (WIN32 AND MSVC)
 	include("win_msvc") # Windows+MSVC
 else ()
-	include("unix")     # Linux or MacOS
+	include("unix") # Linux or MacOS
 endif ()

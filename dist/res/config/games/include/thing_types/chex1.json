@@ -1,0 +1,310 @@
+// Chex 1 thing types
+
+/*  Oddly, several of the thing types were completely changed between Chex 1 and Chex 3.
+ *	This means that it's not interesting to have a Chex 1 config #included by a Chex 3
+ *	config. This also means that Chex 1 maps need to be converted to be usable in Chex 3.
+ *
+ *	This may be explained by Chex 2, which created "new" things by simply respriting
+ *	existing things. Notably:
+	armored bipedicus	==> quadrumpus
+	cycloptis commonus	==> larva
+	flembrane			==> maximus
+	hydroponic plant	==> David statue
+	banana tree			==> triceratops skeleton
+	cave stalagmite		==> Thinker statue
+	cave pillar			==> chef
+	mine cart			==> big spoon
+	beaker				==> street light
+	hanging pots		==> Ramses statue
+	captive pastry guy	==> barstool
+	captive chex guy	==> t-rex statue
+ */
+
+{
+  "groups": [
+    {
+      "name": "Player Starts",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)",
+        "radius": 16,
+        "solid": true
+      },
+      "things": [
+        { "type": 1, "name": "Player 1 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 2, "name": "Player 2 Start", "sprite": "PLAYB?", "player_coop": true, "translation": "chex0" },
+        { "type": 3, "name": "Player 3 Start", "sprite": "PLAYC?", "player_coop": true, "translation": "chex1" },
+        { "type": 4, "name": "Player 4 Start", "sprite": "PLAYD?", "player_coop": true, "translation": "chex2" },
+        { "type": 11, "name": "Zorchmatch Start", "sprite": "PLAYF?", "player_dm": true }
+      ]
+    },
+
+    {
+      "name": "Teleports",
+      "things": [
+        {
+          "type": 14,
+          "name": "Teleport Destination",
+          "colour": "rgb(255, 255, 0)",
+          "sprite": "TFOGB?"
+        }
+      ]
+    },
+
+    {
+      "name": "Flemoids",
+      "defaults": {
+        "colour": "rgb(200, 0, 0)",
+        "solid": true
+      },
+      "things": [
+        { "type": 3004, "name": "Flemoidus Commonus", "radius": 20, "sprite": "POSSA?" },
+        { "type": 9, "name": "Flemoidus Bipedicus", "radius": 20, "sprite": "SPOSA?" },
+        { "type": 3001, "name": "Armored Flemoidus Bipedicus", "radius": 20, "sprite": "TROOA?" },
+        { "type": 3002, "name": "Flemoidus Cycloptis Commonus", "radius": 30, "sprite": "SARGA?" },
+        { "type": 3003, "name": "Flembrane", "radius": 64, "sprite": "BOSSA?" }
+      ]
+    },
+
+    {
+      "name": "Health And Armour",
+      "defaults": {
+        "angle": false
+      },
+      "things": [
+        {
+          "type": 2011,
+          "name": "Bowl of Fruit",
+          "radius": 12,
+          "colour": "rgb(100, 100, 200)",
+          "sprite": "STIMA?",
+          "icon": "health"
+        },
+        {
+          "type": 2012,
+          "name": "Bowl of Vegetables",
+          "radius": 12,
+          "colour": "rgb(100, 100, 200)",
+          "sprite": "MEDIA?",
+          "icon": "health"
+        },
+        {
+          "type": 2013,
+          "name": "Supercharge Breakfast",
+          "radius": 12,
+          "colour": "rgb(100, 100, 200)",
+          "sprite": "SOULA?",
+          "icon": "health"
+        },
+        {
+          "type": 2014,
+          "name": "Glass of Water",
+          "radius": 10,
+          "colour": "rgb(0, 0, 200)",
+          "sprite": "BON1A?",
+          "icon": "health"
+        },
+        {
+          "type": 2015,
+          "name": "Slime Repellent",
+          "radius": 10,
+          "colour": "rgb(0, 0, 200)",
+          "sprite": "BON2A?",
+          "icon": "armour"
+        },
+        {
+          "type": 2018,
+          "name": "Chex Armor",
+          "radius": 14,
+          "colour": "rgb(100, 200, 100)",
+          "sprite": "ARM1A?",
+          "icon": "armour"
+        },
+        {
+          "type": 2019,
+          "name": "Super Chex Armor",
+          "radius": 14,
+          "colour": "rgb(100, 100, 200)",
+          "sprite": "ARM2A?",
+          "icon": "armour"
+        }
+      ]
+    },
+
+    {
+      "name": "Weapons",
+      "defaults": {
+        "colour": "rgb(220, 180, 100)",
+        "radius": 20,
+        "angle": false,
+        "icon": "weapon"
+      },
+      "things": [
+        { "type": 2001, "name": "Large Zorcher", "sprite": "SHOTA?" },
+        { "type": 2002, "name": "Rapid Zorcher", "sprite": "MGUNA?" },
+        { "type": 2003, "name": "Zorch Propulsor", "sprite": "LAUNA?" },
+        { "type": 2004, "name": "Phasing Zorcher", "sprite": "PLASA?" },
+        { "type": 2005, "name": "Super Bootspork", "sprite": "CSAWA?" },
+        { "type": 2006, "name": "LAZ Device", "sprite": "BFUGA?" }
+      ]
+    },
+
+    {
+      "name": "Ammunition",
+      "defaults": {
+        "colour": "rgb(180, 150, 50)",
+        "angle": false,
+        "radius": 16,
+        "icon": "ammo"
+      },
+      "things": [
+        { "type": 2007, "name": "Mini Zorch Recharge", "sprite": "CLIPA?", "radius": 10 },
+        { "type": 2048, "name": "Mini Zorch Pack", "sprite": "AMMOA?" },
+        { "type": 2008, "name": "Large Zorch Recharge", "sprite": "SHELA?", "radius": 10 },
+        { "type": 2049, "name": "Large Zorch Pack", "sprite": "SBOXA?" },
+        { "type": 2010, "name": "Zorch Propulsor Recharge", "sprite": "ROCKA?", "radius": 10 },
+        { "type": 2046, "name": "Zorch Propulsor Pack", "sprite": "BROKA?" },
+        { "type": 2047, "name": "Phasing Zorcher Recharge", "sprite": "CELLA?", "radius": 10 },
+        { "type": 17, "name": "Phasing Zorcher Pack", "sprite": "CELPA?" },
+        { "type": 8, "name": "Zorchpack", "sprite": "BPAKA?" }
+      ]
+    },
+
+    {
+      "name": "Powerups",
+      "defaults": {
+        "colour": "rgb(220, 100, 220)",
+        "radius": 16,
+        "angle": false,
+        "icon": "powerup"
+      },
+      "things": [
+        { "type": 2025, "name": "Slime-Proof Suit", "sprite": "SUITA?" },
+        { "type": 2026, "name": "Computer Area Map", "sprite": "PMAPA?" }
+      ]
+    },
+
+    {
+      "name": "Keys",
+      "defaults": {
+        "radius": 12,
+        "angle": false,
+        "icon": "key"
+      },
+      "things": [
+        { "type": 13, "name": "Red Key", "colour": "rgb(255, 0, 0)", "sprite": "RKEYA?" },
+        { "type": 5, "name": "Blue Key", "colour": "rgb(0, 0, 255)", "sprite": "BKEYA?" },
+        { "type": 6, "name": "Yellow Key", "colour": "rgb(255, 255, 0)", "sprite": "YKEYA?" }
+      ]
+    },
+
+    {
+      "name": "Lighting",
+      "defaults": {
+        "colour": "rgb(220, 220, 200)",
+        "radius": 16,
+        "angle": false,
+        "icon": "light",
+        "fullbright": true,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 2028, "name": "Landing Light", "sprite": "COLUA?" }
+      ]
+    },
+
+    {
+      "name": "Decorations/IFC",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 35, "name": "Oxygen Tank", "sprite": "CBRAA?" },
+        { "type": 37, "name": "Flag on Pole", "sprite": "COL6A?" },
+        { "type": 41, "name": "Chemical Burner", "sprite": "CEYEA?", "fullbright": true },
+        { "type": 55, "name": "Laboratory Coil", "sprite": "SMBTA?", "fullbright": true },
+        { "type": 48, "name": "Spaceship", "sprite": "ELECA?" },
+        { "type": 62, "name": "Hanging Pots", "sprite": "GOR5A?", "hanging": true, "radius": 20 },
+        { "type": 34, "name": "Beaker", "sprite": "CANDA?" }
+      ]
+    },
+
+    {
+      "name": "Decorations/Slime",
+      "defaults": {
+        "colour": "rgb(160, 0, 0)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 44, "name": "Slime Fountain", "sprite": "TBLUA?" },
+        { "type": 21, "name": "Zorched Cycloptis", "sprite": "SARGN?", "solid": false } // E1M4 has one...
+      ]
+    },
+
+    {
+      "name": "Decorations/Rocks & Cave Stuff",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 33, "name": "Bazooik Mine Cart", "sprite": "COL4A?" },
+        { "type": 49, "name": "Cave Bat", "sprite": "GOR1A?", "hanging": true },
+        { "type": 63, "name": "Cave Bat", "sprite": "GOR1A?", "hanging": true },
+        { "type": 32, "name": "Bazooik Cave Pillar", "sprite": "COL3A?" },
+        { "type": 30, "name": "Bazooik Cave Stalagmite", "sprite": "COL1A?" },
+        { "type": 53, "name": "Bazooik Cave Stalactite", "sprite": "GOR5A?" }
+      ]
+    },
+
+    {
+      "name": "Decorations/Plants",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 31, "name": "Hydroponic Plant", "sprite": "COL2A?", "hanging": true },
+        { "type": 50, "name": "Hanging Plant 2", "sprite": "GOR3A?", "hanging": true, "radius": 20 },
+        { "type": 51, "name": "Hanging Plant 1", "sprite": "GOR2A?", "hanging": true, "radius": 20 },
+        { "type": 59, "name": "Hanging Plant 1", "sprite": "GOR2A?", "hanging": true, "radius": 20 },
+        { "type": 61, "name": "Hanging Plant 2", "sprite": "GOR3A?", "hanging": true, "radius": 20 },
+        { "type": 25, "name": "Flower 1", "sprite": "POL1A?", "solid": false },
+        { "type": 28, "name": "Flower 2", "sprite": "POL2A?", "solid": false },
+        { "type": 54, "name": "Banana Tree", "sprite": "TRE2A?", "radius": 20 },
+        { "type": 47, "name": "Apple Tree", "sprite": "SMITA?", "radius": 20 },
+        { "type": 43, "name": "Orange Tree", "sprite": "TRE1A?", "radius": 20 }
+      ]
+    },
+
+    {
+      "name": "Decorations/Captives",
+      "defaults": {
+        "colour": "rgb(90, 0, 0)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 56, "name": "Captive Pastry Guy", "sprite": "SMGTA?" },
+        { "type": 57, "name": "Captive Chex Soldier", "sprite": "SMRTA?" },
+        { "type": 45, "name": "Captive Donut Guy", "sprite": "TGRNA?" }
+      ]
+    }
+  ]
+}
+

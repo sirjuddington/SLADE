@@ -2,12 +2,12 @@
 
 namespace slade
 {
+class CTexture;
+class CTextureCanvasBase;
 class ListView;
+class SAuiToolBar;
 class TextureXEditor;
 class TextureXList;
-class CTextureCanvas;
-class CTexture;
-class SToolBar;
 namespace ui
 {
 	class ZoomControl;
@@ -30,14 +30,14 @@ public:
 	virtual wxPanel* createPatchControls(wxWindow* parent);
 	virtual void     populatePatchList();
 	virtual void     updatePatchControls();
-	void             updateTextureName(const wxString& new_name) const;
+	void             updateTextureName(const string& new_name) const;
 
 	bool openTexture(const CTexture* tex, TextureXList* list);
 	void clearTexture();
 	void setPalette(const Palette* pal) const;
 
-	Palette* palette() const;
-	bool     blendRGBA() const;
+	const Palette* palette() const;
+	bool           blendRGBA() const;
 
 	// Editing
 	virtual void addPatch();
@@ -72,16 +72,17 @@ protected:
 	TextureXEditor*      tx_editor_ = nullptr;
 	unique_ptr<CTexture> tex_current_;
 	bool                 tex_modified_ = false;
+	bool                 ignore_drag_  = false;
 
 	// View controls
-	ui::ZoomControl* zc_zoom_         = nullptr;
-	wxCheckBox*      cb_draw_outside_ = nullptr;
-	wxCheckBox*      cb_blend_rgba_   = nullptr;
-	wxCheckBox*      cb_tex_scale_    = nullptr;
-	wxCheckBox*      cb_tex_arc_      = nullptr;
-	wxStaticText*    label_viewtype_  = nullptr;
-	wxChoice*        choice_viewtype_ = nullptr;
-	CTextureCanvas*  tex_canvas_      = nullptr;
+	ui::ZoomControl*    zc_zoom_         = nullptr;
+	wxCheckBox*         cb_draw_outside_ = nullptr;
+	wxCheckBox*         cb_blend_rgba_   = nullptr;
+	wxCheckBox*         cb_tex_scale_    = nullptr;
+	wxCheckBox*         cb_tex_arc_      = nullptr;
+	wxStaticText*       label_viewtype_  = nullptr;
+	wxChoice*           choice_viewtype_ = nullptr;
+	CTextureCanvasBase* tex_canvas_      = nullptr;
 
 	// Texture controls
 	wxTextCtrl*   text_tex_name_        = nullptr;
@@ -93,8 +94,8 @@ protected:
 	wxCheckBox*   cb_tex_world_panning_ = nullptr;
 
 	// Texture patches list + related controls
-	ListView* list_patches_ = nullptr;
-	SToolBar* tb_patches_   = nullptr;
+	ListView*    list_patches_ = nullptr;
+	SAuiToolBar* tb_patches_   = nullptr;
 
 	// Patch controls
 	wxSpinCtrl* spin_patch_left_ = nullptr;

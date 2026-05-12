@@ -23,8 +23,8 @@ public:
 	AudioEntryPanel(wxWindow* parent);
 	~AudioEntryPanel() override;
 
-	wxString statusString() override;
-	void     setAudioDuration(int duration);
+	string statusString() override;
+	void   setAudioDuration(int duration);
 
 protected:
 	bool loadEntry(ArchiveEntry* entry) override;
@@ -42,25 +42,27 @@ private:
 		OPL,
 	};
 
-	wxString  prevfile_;
-	AudioType audio_type_  = Invalid;
-	int       num_tracks_  = 1;
-	int       subsong_     = 0;
-	int       song_length_ = 0;
-	bool      opened_      = false;
+	string    prevfile_;
+	AudioType audio_type_   = Invalid;
+	int       num_tracks_   = 1;
+	int       subsong_      = 0;
+	int       audio_length_ = 0;
+	bool      opened_       = false;
 	MemChunk  data_;
+	bool      seeking_ = false;
 
 	wxBitmapButton* btn_play_      = nullptr;
-	wxBitmapButton* btn_pause_     = nullptr;
 	wxBitmapButton* btn_stop_      = nullptr;
 	wxBitmapButton* btn_next_      = nullptr;
 	wxBitmapButton* btn_prev_      = nullptr;
 	wxSlider*       slider_seek_   = nullptr;
 	wxSlider*       slider_volume_ = nullptr;
-	wxTimer*        timer_seek_    = nullptr;
 	wxStaticText*   txt_title_     = nullptr;
 	wxStaticText*   txt_track_     = nullptr;
+	wxStaticText*   txt_time_      = nullptr;
+	wxStaticText*   txt_volume_    = nullptr;
 	wxTextCtrl*     txt_info_      = nullptr;
+	wxTimer         timer_seek_;
 
 	unique_ptr<sf::SoundBuffer> sound_buffer_;
 	unique_ptr<sf::Sound>       sound_;
@@ -69,18 +71,20 @@ private:
 	unique_ptr<audio::Mp3Music> mp3_;
 
 	bool open(ArchiveEntry* entry);
-	bool openAudio(MemChunk& audio, const wxString& filename);
-	bool openMidi(MemChunk& data, const wxString& filename);
+	bool openAudio(MemChunk& audio, string_view filename);
+	bool openMidi(MemChunk& data, string_view filename);
 	bool openMod(MemChunk& data);
 	bool openMp3(MemChunk& data);
 	bool updateInfo(ArchiveEntry& entry) const;
 	void startStream();
 	void stopStream() const;
 	void resetStream() const;
+	bool isPlaying() const;
+	void updatePlayButton() const;
+	void updateTimeText(int ms = -1) const;
 
 	// Events
 	void onBtnPlay(wxCommandEvent& e);
-	void onBtnPause(wxCommandEvent& e);
 	void onBtnStop(wxCommandEvent& e);
 	void onBtnPrev(wxCommandEvent& e);
 	void onBtnNext(wxCommandEvent& e);

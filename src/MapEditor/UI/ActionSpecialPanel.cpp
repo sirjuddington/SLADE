@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -38,12 +38,14 @@
 #include "Game/SpecialPreset.h"
 #include "Game/UDMFProperty.h"
 #include "GenLineSpecialPanel.h"
-#include "General/UI.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "UI/Controls/NumberTextCtrl.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
+#include <charconv>
 
 using namespace slade;
 
@@ -67,21 +69,30 @@ public:
 	int  specialNumber(wxDataViewItem item) const;
 	void showSpecial(int special, bool focus = true);
 	int  selectedSpecial() const;
+	void filterSpecials(string filter = "");
 
 private:
 	wxDataViewItem root_;
 	wxDataViewItem item_none_;
 	wxDialog*      parent_dialog_ = nullptr;
 
+	struct ASTVRow
+	{
+		const game::ActionSpecial* special;
+		wxString                   label;
+		wxDataViewItem             item;
+	};
+	vector<ASTVRow> sorted_specials_ = {};
+
 	struct ASTVGroup
 	{
-		wxString       name;
+		string         name;
 		wxDataViewItem item;
-		ASTVGroup(wxDataViewItem i, const wxString& name) : name{ name }, item{ i } {}
+		ASTVGroup(wxDataViewItem i, const string& name) : name{ name }, item{ i } {}
 	};
 	vector<ASTVGroup> groups_;
 
-	wxDataViewItem getGroup(const wxString& group_name);
+	wxDataViewItem getGroup(const string& group_name);
 };
 } // namespace slade
 
@@ -91,7 +102,7 @@ private:
 ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeCtrl{ parent, -1 }, root_{ nullptr }
 {
 	// Add 'None'
-	item_none_ = AppendItem(root_, "0: None");
+	item_none_ = AppendItem(root_, wxS("0: None"));
 
 	// Computing the minimum width of the tree is slightly complicated, since
 	// wx doesn't expose it to us directly
@@ -99,16 +110,23 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 	dc.SetFont(GetFont());
 	wxSize textsize;
 
-	// Populate tree
-	for (auto& i : game::configuration().allActionSpecials())
+	// Sort specials in config order
+	sorted_specials_.reserve(game::configuration().allActionSpecials().size());
+	for (const auto& i : game::configuration().allActionSpecials())
 	{
 		if (!i.second.defined())
 			continue;
 
-		wxString label = wxString::Format("%d: %s", i.second.number(), i.second.name());
-		AppendItem(getGroup(i.second.group()), label);
+		wxString label = WX_FMT("{}: {}", i.second.number(), i.second.name());
 		textsize.IncTo(dc.GetTextExtent(label));
+		sorted_specials_.push_back({ &i.second, label, {} });
 	}
+	std::sort(
+		sorted_specials_.begin(),
+		sorted_specials_.end(),
+		[](const auto& a, const auto& b) { return a.special->order() < b.special->order(); });
+
+	filterSpecials();
 	Expand(root_);
 
 	// Bind events
@@ -123,8 +141,8 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeC
 
 	// 64 is an arbitrary fudge factor -- should be at least the width of a
 	// scrollbar plus the expand icons plus any extra padding
-	int min_width = textsize.GetWidth() + GetIndent() + ui::scalePx(64);
-	wxWindowBase::SetMinSize({ min_width, ui::scalePx(200) });
+	int min_width = textsize.GetWidth() + GetIndent() + 64;
+	wxWindowBase::SetMinSize(FromDIP(wxSize{ min_width, 200 }));
 }
 
 // -----------------------------------------------------------------------------
@@ -154,23 +172,17 @@ void ActionSpecialTreeView::showSpecial(int special, bool focus)
 		return;
 	}
 
-	// Go through item groups
-	for (auto& group : groups_)
+	// Go through every item
+	for (const auto& i : sorted_specials_)
 	{
-		// Go through group items
-		for (int b = 0; b < GetChildCount(group.item); b++)
+		// Select+show if match
+		if (i.special->number() == special)
 		{
-			auto item = GetNthChild(group.item, b);
-
-			// Select+show if match
-			if (specialNumber(item) == special)
-			{
-				EnsureVisible(item);
-				Select(item);
-				if (focus)
-					SetFocus();
-				return;
-			}
+			EnsureVisible(i.item);
+			Select(i.item);
+			if (focus)
+				SetFocus();
+			return;
 		}
 	}
 }
@@ -188,9 +200,110 @@ int ActionSpecialTreeView::selectedSpecial() const
 }
 
 // -----------------------------------------------------------------------------
+// Limit the visible specials, based on a filter string.  If it's blank or
+// numeric, show everything and select that special; otherwise, split it on
+// whitespace, only show specials whose names contain each word, and select the
+// first visible special
+// -----------------------------------------------------------------------------
+void ActionSpecialTreeView::filterSpecials(string filter)
+{
+	// Unfortunately, there's no filtering on a wxDataViewTreeCtrl, so we must empty the tree (of
+	// leaves only, not groups) and then repopulate it
+	for (auto& i : sorted_specials_)
+	{
+		if (i.item.IsOk())
+		{
+			DeleteItem(i.item);
+			i.item = wxDataViewItem(nullptr);
+		}
+	}
+
+	const int           current_special = selectedSpecial();
+	bool                current_visible = false;
+	bool                show_everything = false;
+	int                 typed_special   = -1;
+	vector<string_view> filter_words;
+	if (current_special == 0)
+		current_visible = true;
+
+	// Check what kind of filter we have: nothing, a number, or text
+	strutil::trimIP(filter);
+	if (filter.empty())
+		show_everything = true;
+	else
+	{
+		// See if it's a number first
+		const auto result = std::from_chars(filter.data(), filter.data() + filter.size(), typed_special, 10);
+		// This is a weird API
+		if (result.ec == std::errc())
+			show_everything = true;
+	}
+
+	if (!show_everything)
+		// Split on spaces and filter by name
+		filter_words = strutil::splitV(filter, ' ', true);
+
+	// Now add the items back to the tree, skipping any that don't match the filter
+	for (auto& i : sorted_specials_)
+	{
+		bool show = true;
+		for (const auto& word : filter_words)
+		{
+			if (!strutil::containsCI(i.special->name(), word))
+			{
+				show = false;
+				break;
+			}
+		}
+		if (!show)
+			continue;
+
+		if (i.special->number() == current_special)
+			current_visible = true;
+		i.item = AppendItem(getGroup(i.special->group()), i.label);
+	}
+
+	// If we're filtering, expand all the groups
+	if (!show_everything)
+	{
+		for (const auto& g : groups_)
+		{
+			Expand(g.item);
+		}
+	}
+
+	// If a number was typed, select that
+	if (typed_special >= 0)
+		showSpecial(typed_special, false);
+	// If not, but the previous selection is still visible, re-select it
+	else if (current_special != 0 && current_visible)
+		showSpecial(current_special, false);
+	// Otherwise, select the first available special
+	else
+	{
+		for (const auto& i : sorted_specials_)
+		{
+			if (i.item.IsOk())
+			{
+				Select(i.item);
+				EnsureVisible(i.item);
+				break;
+			}
+		}
+	}
+
+	// If nothing was a viable selection, fall back to 0
+	if (!GetSelection().IsOk())
+	{
+		Select(item_none_);
+		EnsureVisible(item_none_);
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Returns the parent wxDataViewItem representing action special group [group]
 // -----------------------------------------------------------------------------
-wxDataViewItem ActionSpecialTreeView::getGroup(const wxString& group_name)
+wxDataViewItem ActionSpecialTreeView::getGroup(const string& group_name)
 {
 	// Check if group was already made
 	for (auto& group : groups_)
@@ -200,11 +313,11 @@ wxDataViewItem ActionSpecialTreeView::getGroup(const wxString& group_name)
 	}
 
 	// Split group into subgroups
-	auto path = wxSplit(group_name, '/');
+	auto path = strutil::splitV(group_name, '/');
 
 	// Create group needed
-	auto     current  = root_;
-	wxString fullpath = "";
+	auto   current = root_;
+	string fullpath;
 	for (unsigned p = 0; p < path.size(); p++)
 	{
 		if (p > 0)
@@ -224,7 +337,7 @@ wxDataViewItem ActionSpecialTreeView::getGroup(const wxString& group_name)
 
 		if (!found)
 		{
-			current = AppendContainer(current, path[p], -1, 1);
+			current = AppendContainer(current, wxutil::strFromView(path[p]));
 			groups_.emplace_back(current, fullpath);
 		}
 	}
@@ -247,6 +360,7 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	panel_args_     = nullptr;
 	choice_trigger_ = nullptr;
 	show_trigger_   = trigger;
+	auto lh         = ui::LayoutHelper(this);
 
 	// Setup layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -255,12 +369,12 @@ ActionSpecialPanel::ActionSpecialPanel(wxWindow* parent, bool trigger) : wxPanel
 	{
 		// Action Special radio button
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
-		rb_special_ = new wxRadioButton(this, -1, "Action Special", wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		hbox->Add(rb_special_, wxutil::sfWithBorder(0, wxRIGHT).Expand());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
+		rb_special_ = new wxRadioButton(this, -1, wxS("Action Special"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+		hbox->Add(rb_special_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 		// Generalised Special radio button
-		rb_generalised_ = new wxRadioButton(this, -1, "Generalised Special");
+		rb_generalised_ = new wxRadioButton(this, -1, wxS("Generalised Special"));
 		hbox->Add(rb_generalised_, wxSizerFlags().Expand());
 
 		// Boom generalised line special panel
@@ -291,12 +405,29 @@ void ActionSpecialPanel::setupSpecialPanel()
 	// Create panel
 	panel_action_special_ = new wxPanel(this, -1);
 	auto sizer            = new wxBoxSizer(wxVERTICAL);
+	auto lh               = ui::LayoutHelper(panel_action_special_);
 
 	// Special box
 	text_special_ = new NumberTextCtrl(panel_action_special_);
-	sizer->Add(text_special_, wxutil::sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(text_special_, lh.sfWithBorder(0, wxBOTTOM).Expand());
+	// Typing in the box acts as a filter
 	text_special_->Bind(
-		wxEVT_TEXT, [&](wxCommandEvent& e) { tree_specials_->showSpecial(text_special_->number(), false); });
+		wxEVT_TEXT,
+		[&](wxCommandEvent& e)
+		{
+			// This method calls Select on itself, but we don't want to treat that as a real selection
+			// change, or we'll alter the text and recurse into it.  Disable the event while calling it
+			auto selection       = selectedSpecial();
+			ignore_select_event_ = true;
+			tree_specials_->filterSpecials(text_special_->GetValue().utf8_string());
+			ignore_select_event_ = false;
+
+			if (selection != selectedSpecial())
+				updateArgsPanel();
+		});
+	// Focusing the text also select-alls; if you leave and return you probably want to start over,
+	// not make small edits
+	text_special_->Bind(wxEVT_SET_FOCUS, [&](wxFocusEvent& e) { text_special_->SetSelection(-1, -1); });
 
 	// Action specials tree
 	tree_specials_ = new ActionSpecialTreeView(panel_action_special_);
@@ -311,31 +442,36 @@ void ActionSpecialPanel::setupSpecialPanel()
 			auto& props = game::configuration().allUDMFProperties(MapObject::Type::Line);
 
 			// Get all UDMF trigger properties
-			std::map<wxString, wxFlexGridSizer*> named_flexgrids;
+			std::map<string, wxFlexGridSizer*> named_flexgrids;
 			for (auto& i : props)
 			{
 				if (!i.second.isTrigger())
 					continue;
 
-				wxString group       = i.second.group();
-				auto     frame_sizer = named_flexgrids[group];
+				auto group       = i.second.group();
+				auto frame_sizer = named_flexgrids[group];
 				if (!frame_sizer)
 				{
-					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, group);
+					auto frame_triggers = new wxStaticBox(panel_action_special_, -1, wxString::FromUTF8(group));
 					auto sizer_triggers = new wxStaticBoxSizer(frame_triggers, wxVERTICAL);
-					sizer->Add(sizer_triggers, wxutil::sfWithBorder(0, wxTOP).Expand());
+					sizer->Add(sizer_triggers, lh.sfWithBorder(0, wxTOP).Expand());
 
-					frame_sizer = new wxFlexGridSizer(3, ui::pad() / 2, ui::pad());
+					frame_sizer = new wxFlexGridSizer(3, lh.pad() / 2, lh.pad());
 					frame_sizer->AddGrowableCol(0, 1);
 					frame_sizer->AddGrowableCol(1, 1);
 					frame_sizer->AddGrowableCol(2, 1);
-					sizer_triggers->Add(frame_sizer, wxutil::sfWithBorder(1).Expand());
+					sizer_triggers->Add(frame_sizer, lh.sfWithBorder(1).Expand());
 
 					named_flexgrids.find(group)->second = frame_sizer;
 				}
 
 				auto cb_trigger = new wxCheckBox(
-					panel_action_special_, -1, i.second.name(), wxDefaultPosition, wxDefaultSize, wxCHK_3STATE);
+					panel_action_special_,
+					-1,
+					wxString::FromUTF8(i.second.name()),
+					wxDefaultPosition,
+					wxDefaultSize,
+					wxCHK_3STATE);
 				frame_sizer->Add(cb_trigger, wxSizerFlags().Expand());
 
 				flags_.push_back({ cb_trigger, -1, i.second.propName() });
@@ -345,27 +481,28 @@ void ActionSpecialPanel::setupSpecialPanel()
 		// Hexen trigger
 		else if (mapeditor::editContext().mapDesc().format == MapFormat::Hexen)
 		{
-			auto frame_trigger = new wxStaticBox(panel_action_special_, -1, "Special Trigger");
+			auto frame_trigger = new wxStaticBox(panel_action_special_, -1, wxS("Special Trigger"));
 			auto sizer_trigger = new wxStaticBoxSizer(frame_trigger, wxVERTICAL);
-			sizer->Add(sizer_trigger, wxutil::sfWithBorder().Expand());
+			sizer->Add(sizer_trigger, lh.sfWithBorder().Expand());
 
 			// Add triggers dropdown
 			auto spac_triggers = wxutil::arrayStringStd(game::configuration().allSpacTriggers());
 			choice_trigger_ = new wxChoice(panel_action_special_, -1, wxDefaultPosition, wxDefaultSize, spac_triggers);
-			sizer_trigger->Add(choice_trigger_, wxutil::sfWithBorder().Expand());
+			sizer_trigger->Add(choice_trigger_, lh.sfWithBorder().Expand());
 
 			// Add activation-related flags
-			auto fg_sizer = new wxFlexGridSizer(3, ui::pad() / 2, ui::pad());
+			auto fg_sizer = new wxFlexGridSizer(3, lh.pad() / 2, lh.pad());
 			fg_sizer->AddGrowableCol(0, 1);
 			fg_sizer->AddGrowableCol(1, 1);
 			fg_sizer->AddGrowableCol(2, 1);
-			sizer_trigger->Add(fg_sizer, wxutil::sfWithBorder().Expand());
+			sizer_trigger->Add(fg_sizer, lh.sfWithBorder().Expand());
 			for (unsigned a = 0; a < game::configuration().nLineFlags(); a++)
 			{
 				if (game::configuration().lineFlag(a).activation)
 				{
 					flags_.push_back(
-						{ new wxCheckBox(panel_action_special_, -1, game::configuration().lineFlag(a).name),
+						{ new wxCheckBox(
+							  panel_action_special_, -1, wxString::FromUTF8(game::configuration().lineFlag(a).name)),
 						  static_cast<int>(a),
 						  game::configuration().lineFlag(a).udmf });
 					fg_sizer->Add(flags_.back().check_box, 0, wxEXPAND);
@@ -374,8 +511,8 @@ void ActionSpecialPanel::setupSpecialPanel()
 		}
 
 		// Preset button
-		btn_preset_ = new wxButton(panel_action_special_, -1, "Preset...");
-		sizer->Add(btn_preset_, wxutil::sfWithBorder(0, wxTOP).Right());
+		btn_preset_ = new wxButton(panel_action_special_, -1, wxS("Preset..."));
+		sizer->Add(btn_preset_, lh.sfWithBorder(0, wxTOP).Right());
 		btn_preset_->Bind(wxEVT_BUTTON, &ActionSpecialPanel::onSpecialPresetClicked, this);
 	}
 
@@ -404,14 +541,9 @@ void ActionSpecialPanel::setSpecial(int special)
 	// Regular action special
 	showGeneralised(false);
 	tree_specials_->showSpecial(special, false);
-	text_special_->SetValue(wxString::Format("%d", special));
+	text_special_->SetValue(WX_FMT("{}", special));
 
-	// Setup args if any
-	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
-	}
+	updateArgsPanel();
 }
 
 // -----------------------------------------------------------------------------
@@ -434,7 +566,7 @@ void ActionSpecialPanel::setTrigger(int index) const
 // -----------------------------------------------------------------------------
 // Sets the action special trigger from a udmf trigger name (hexen or udmf)
 // -----------------------------------------------------------------------------
-void ActionSpecialPanel::setTrigger(const wxString& trigger) const
+void ActionSpecialPanel::setTrigger(string_view trigger) const
 {
 	if (!show_trigger_)
 		return;
@@ -575,7 +707,7 @@ void ActionSpecialPanel::applyTo(const vector<MapObject*>& lines, bool apply_spe
 					game::configuration().setLineFlag(
 						flag.index, dynamic_cast<MapLine*>(line), flag.check_box->GetValue());
 				else
-					line->setBoolProperty(flag.udmf.ToStdString(), flag.check_box->GetValue());
+					line->setBoolProperty(flag.udmf, flag.check_box->GetValue());
 			}
 		}
 	}
@@ -653,13 +785,25 @@ void ActionSpecialPanel::openLines(const vector<MapObject*>& lines)
 			for (auto& flag : flags_)
 			{
 				bool set;
-				if (MapObject::multiBoolProperty(lines, flag.udmf.ToStdString(), set))
+				if (MapObject::multiBoolProperty(lines, flag.udmf, set))
 					flag.check_box->SetValue(set);
 				else
 					flag.check_box->Set3StateValue(wxCHK_UNDETERMINED);
 			}
 		}
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Update the arg names/types on the args panel
+// -----------------------------------------------------------------------------
+void ActionSpecialPanel::updateArgsPanel() const
+{
+	if (!panel_args_)
+		return;
+
+	auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
+	panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
 }
 
 
@@ -686,21 +830,17 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 {
-	if ((game::configuration().featureSupported(game::Feature::Boom) && rb_generalised_->GetValue())
-		|| selectedSpecial() < 0)
+	if (ignore_select_event_ || selectedSpecial() < 0
+		|| (game::configuration().featureSupported(game::Feature::Boom) && rb_generalised_->GetValue()))
 	{
 		e.Skip();
 		return;
 	}
 
 	// Set special # text box
-	text_special_->SetValue(wxString::Format("%d", selectedSpecial()));
+	text_special_->SetValue(WX_FMT("{}", selectedSpecial()));
 
-	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
-	}
+	updateArgsPanel();
 }
 
 // -----------------------------------------------------------------------------
@@ -717,12 +857,9 @@ void ActionSpecialPanel::onSpecialItemActivated(wxDataViewEvent& e)
 	}
 
 	// Jump to args tab, if there is one
+	updateArgsPanel();
 	if (panel_args_)
-	{
-		auto& args = game::configuration().actionSpecial(selectedSpecial()).argSpec();
-		panel_args_->setup(args, (mapeditor::editContext().mapDesc().format == MapFormat::UDMF));
 		panel_args_->SetFocus();
-	}
 }
 
 // -----------------------------------------------------------------------------

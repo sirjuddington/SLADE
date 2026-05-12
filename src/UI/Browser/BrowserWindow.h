@@ -11,7 +11,7 @@ namespace browser
 	enum class ItemView;
 	enum class NameType;
 } // namespace browser
-namespace drawing
+namespace gl::draw2d
 {
 	enum class Font;
 }
@@ -56,14 +56,14 @@ public:
 	Palette* palette() const { return palette_.get(); }
 	void     setPalette(const Palette* pal) const;
 
-	bool         addItem(BrowserItem* item, const wxString& where = "");
+	bool         addItem(BrowserItem* item, const string& where = "");
 	void         addGlobalItem(BrowserItem* item);
 	void         clearItems(BrowserTreeNode* node = nullptr) const;
 	void         reloadItems(const BrowserTreeNode* node = nullptr) const;
 	BrowserItem* selectedItem() const;
-	bool         selectItem(const wxString& name, const BrowserTreeNode* node = nullptr);
+	bool         selectItem(string_view name, const BrowserTreeNode* node = nullptr);
 
-	unsigned     addSortType(const wxString& name) const;
+	unsigned     addSortType(const string& name) const;
 	virtual void doSort(unsigned sort_type = 0);
 	void         setSortType(int type);
 
@@ -72,7 +72,7 @@ public:
 	void addItemTree(const BrowserTreeNode* node, const wxTreeListItem& item) const;
 
 	// Canvas display options
-	void setFont(drawing::Font font) const;
+	void setFont(gl::draw2d::Font font) const;
 	void setItemNameType(browser::NameType type) const;
 	void setItemSize(int size);
 	void setItemViewType(browser::ItemView type) const;

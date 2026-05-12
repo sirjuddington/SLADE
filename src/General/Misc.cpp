@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,6 +38,7 @@
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
+#include "Utility/FileUtils.h"
 #include "Utility/PropertyList.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -54,10 +55,6 @@ CVAR(Bool, size_as_string, true, CVar::Flag::Save)
 CVAR(Bool, percent_encoding, false, CVar::Flag::Save)
 EXTERN_CVAR(Float, col_cie_tristim_x)
 EXTERN_CVAR(Float, col_cie_tristim_z)
-namespace slade::misc
-{
-vector<WindowInfo> window_info;
-}
 
 
 // -----------------------------------------------------------------------------
@@ -143,7 +140,7 @@ bool misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 	if (format == "img_raw" && SIFormat::rawFormat()->isThisFormat(entry->data()))
 		return SIFormat::rawFormat()->loadImage(*image, entry->data());
 
-	// Lastly, try detecting/loading via FreeImage
+	// Lastly, try detecting/loading via wxWidgets
 	else if (SIFormat::generalFormat()->isThisFormat(entry->data()))
 		return SIFormat::generalFormat()->loadImage(*image, entry->data());
 
@@ -328,7 +325,7 @@ string misc::lumpNameToFileName(string_view lump)
 			if ((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (chr < '0' || chr > '9') && chr != '-'
 				&& chr != '.' && chr != '_' && chr != '~')
 			{
-				file += wxString::Format("%%%02X", chr);
+				file += fmt::format("%{:02X}", static_cast<unsigned char>(chr));
 			}
 			else
 				file += fmt::format("{}", chr);
@@ -347,7 +344,7 @@ string misc::lumpNameToFileName(string_view lump)
 // -----------------------------------------------------------------------------
 // Turns a file name into a lump name
 // -----------------------------------------------------------------------------
-string misc::fileNameToLumpName(string_view file)
+string misc::fileNameToLumpName(string_view file, bool percent_encoding_only)
 {
 	if (percent_encoding)
 	{
@@ -369,6 +366,9 @@ string misc::fileNameToLumpName(string_view file)
 
 		return lump;
 	}
+
+	if (percent_encoding_only)
+		return string{ file };
 
 	// ZDoom
 	string lump{ file };
@@ -551,73 +551,4 @@ Vec2i misc::findJaguarTextureDimensions(const ArchiveEntry* entry, string_view n
 	}
 	// We didn't find the texture
 	return dimensions;
-}
-
-// -----------------------------------------------------------------------------
-// Gets the saved window info for [id]
-// -----------------------------------------------------------------------------
-misc::WindowInfo misc::getWindowInfo(string_view id)
-{
-	for (auto& a : window_info)
-	{
-		if (a.id == id)
-			return a;
-	}
-
-	return WindowInfo("", -1, -1, -1, -1);
-}
-
-// -----------------------------------------------------------------------------
-// Sets the saved window info for [id]
-// -----------------------------------------------------------------------------
-void misc::setWindowInfo(string_view id, int width, int height, int left, int top)
-{
-	if (id.empty())
-		return;
-
-	for (auto& a : window_info)
-	{
-		if (a.id == id)
-		{
-			if (width >= -1)
-				a.width = width;
-			if (height >= -1)
-				a.height = height;
-			if (left >= -1)
-				a.left = left;
-			if (top >= -1)
-				a.top = top;
-			return;
-		}
-	}
-
-	window_info.emplace_back(id, width, height, left, top);
-}
-
-// -----------------------------------------------------------------------------
-// Reads saved window info from tokenizer [tz]
-// -----------------------------------------------------------------------------
-void misc::readWindowInfo(Tokenizer& tz)
-{
-	// Read definitions
-	tz.advIf("{");
-	while (!tz.check("}") && !tz.atEnd())
-	{
-		auto id     = tz.current().text;
-		int  width  = tz.next().asInt();
-		int  height = tz.next().asInt();
-		int  left   = tz.next().asInt();
-		int  top    = tz.next().asInt();
-		setWindowInfo(id, width, height, left, top);
-		tz.adv();
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Writes all saved window info to [file]
-// -----------------------------------------------------------------------------
-void misc::writeWindowInfo(wxFile& file)
-{
-	for (auto& a : window_info)
-		file.Write(wxString::Format("\t%s %d %d %d %d\n", a.id, a.width, a.height, a.left, a.top));
 }

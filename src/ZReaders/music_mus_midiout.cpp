@@ -33,6 +33,7 @@
 
 // HEADER FILES ------------------------------------------------------------
 
+#include "Main.h"
 #include "i_musicinterns.h"
 #include "templates.h"
 #include "portable_endian.h"

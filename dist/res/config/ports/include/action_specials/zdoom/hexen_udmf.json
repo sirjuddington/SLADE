@@ -1,0 +1,629 @@
+// ZDoom action specials for hexen/udmf map formats
+{
+  "arg_presets": {
+    "scroll_texture_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "Doom scroller", "value": 64 }
+      ]
+    },
+    "scroll_texture_flags": {
+      "name": "Flags",
+      "type": "flags",
+      "custom_flags": [
+        { "name": "upper", "value": 1 },
+        { "name": "mid", "value": 2 },
+        { "name": "lower", "value": 4 }
+      ]
+    },
+    "scroll_flat_flags": {
+      "name": "Flags",
+      "type": "flags",
+      "custom_flags": [
+        { "name": "Displacement", "value": 1 },
+        { "name": "Accelerative", "value": 2 },
+        { "name": "DX/DY from linedef", "value": 4 }
+      ]
+    }
+  },
+
+  "groups": [
+    {
+      "name": "Lighting",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        {
+          "name": "Light_ForceLightning",
+          "id": 109,
+          "arg1": {
+            "name": "Mode",
+            "type": "choice",
+            "custom_values": [
+              { "value": 0, "name": "immediate flash and set lightning mode" },
+              { "value": 1, "name": "single flash without setting lightning mode" },
+              { "value": 2, "name": "unset lightning mode" }
+            ]
+          },
+          "tagged": "no"
+        },
+        { "name": "Light_MinNeighbor", "id": 233, "arg1": "Sector Tag" },
+        { "name": "Light_LowerByValue", "id": 111, "arg1": "Sector Tag", "arg2": "Value" },
+        { "name": "Light_MaxNeighbor", "id": 234, "arg1": "Sector Tag" },
+        { "name": "Light_RaiseByValue", "id": 110, "arg1": "Sector Tag", "arg2": "Value" },
+        { "name": "Light_ChangeToValue", "id": 112, "arg1": "Sector Tag", "arg2": "Value" },
+        {
+          "name": "Light_Fade",
+          "id": 113,
+          "arg1": "Sector Tag",
+          "arg2": "Value",
+          "arg3": {
+            "name": "Fade Length",
+            "description": "Number of tics to reach the new value"
+          }
+        },
+        {
+          "name": "Light_Glow",
+          "id": 114,
+          "arg1": "Sector Tag",
+          "arg2": "Upper Light Level",
+          "arg3": "Lower Light Level",
+          "arg4": {
+            "name": "Fade Length",
+            "description": "Number of tics to alternate between both values"
+          }
+        },
+        {
+          "name": "Light_Flicker",
+          "id": 115,
+          "arg1": "Sector Tag",
+          "arg2": "Upper Light Level",
+          "arg3": "Lower Light Level"
+        },
+        {
+          "name": "Light_Strobe",
+          "id": 116,
+          "arg1": "Sector Tag",
+          "arg2": "Upper Light Level",
+          "arg3": "Lower Light Level",
+          "arg4": {
+            "name": "Upper Length",
+            "description": "Number of tics to stay at upper level"
+          },
+          "arg5": {
+            "name": "Lower Length",
+            "description": "Number of tics to stay at lower level"
+          }
+        },
+        {
+          "name": "Light_StrobeDoom",
+          "id": 232,
+          "arg1": "Sector Tag",
+          "arg2": {
+            "name": "Upper Length",
+            "description": "Number of tics to stay at normal level"
+          },
+          "arg3": {
+            "name": "Lower Length",
+            "description": "Number of tics to stay at lowest neighboring level"
+          }
+        },
+        { "name": "Light_Stop", "id": 117, "arg1": "Sector Tag" }
+      ]
+    },
+
+    {
+      "name": "Teleporters",
+      "defaults": { "tagged": "ex_1thing_2sector" },
+      "specials": [
+        {
+          "name": "Teleport",
+          "id": 70,
+          "arg1": "Dest Thing ID",
+          "arg2": "Dest Sector Tag",
+          "arg3": "No Source Fog?"
+        },
+        {
+          "name": "Teleport_ZombieChanger",
+          "id": 39,
+          "arg1": "Dest Thing ID",
+          "arg2": "Dest Sector Tag"
+        },
+        {
+          "name": "Teleport_NoFog",
+          "id": 71,
+          "arg1": "Dest Thing ID",
+          "arg2": "Change Facing?",
+          "arg3": "Dest Sector Tag",
+          "tagged": "ex_1thing_3sector"
+        },
+        {
+          "name": "TeleportOther",
+          "id": 76,
+          "arg1": "Target Thing ID",
+          "arg2": "Dest Thing ID",
+          "arg3": "Use Fog?",
+          "tagged": "ex_1thing_2thing"
+        },
+        {
+          "name": "TeleportGroup",
+          "id": 77,
+          "arg1": { "name": "Target Thing ID", "description": "0 Teleports the activator" },
+          "arg2": { "name": "Source Thing ID", "description": "Must be a teleport destination" },
+          "arg3": { "name": "Dest Thing ID", "description": "Must be a teleport destination" },
+          "arg4": "Move Source?",
+          "arg5": "Use Fog?",
+          "tagged": "ex_1thing_2thing_3thing"
+        },
+        {
+          "name": "TeleportInSector",
+          "id": 78,
+          "arg1": "Sector Tag",
+          "arg2": { "name": "Source Thing ID", "description": "Must be a teleport destination" },
+          "arg3": { "name": "Dest Thing ID", "description": "Must be a teleport destination" },
+          "arg4": "Use Fog?",
+          "arg5": "Group Thing ID",
+          "tagged": "ex_1sector_2thing_3thing_5thing"
+        },
+        {
+          "name": "Teleport_NoStop",
+          "id": 154,
+          "arg1": "Thing Tag",
+          "arg2": "Sector Tag",
+          "arg3": "No Fog?"
+        },
+        {
+          "name": "Teleport_Line",
+          "id": 215,
+          "arg1": {
+            "name": "This ID",
+            "description": "Line ID of the marked line (in UDMF, use line ID property instead!)"
+          },
+          "arg2": { "name": "Destination ID", "description": "Line ID of the destination line" },
+          "arg3": "Flip 180?",
+          "tagged": "ex_1lineid_2line"
+        },
+        {
+          "name": "Line_SetPortal",
+          "id": 156,
+          "arg1": "Target Line",
+          "arg2": { "name": "This Line", "description": "Leave as 0 in UDMF maps" },
+          "arg3": {
+            "name": "Portal type",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Visual", "value": 0 },
+              { "name": "Teleporter", "value": 1 },
+              { "name": "Interactive", "value": 2 },
+              { "name": "Static", "value": 3 },
+              { "name": "Linked (EE)", "value": 4 }
+            ]
+          },
+          "arg4": {
+            "name": "Plane anchor",
+            "type": "choice",
+            "custom_values": [
+              { "name": "None", "value": 0 },
+              { "name": "Floors", "value": 1 },
+              { "name": "Ceilings", "value": 2 }
+            ]
+          },
+          "tagged": "line"
+        },
+        {
+          "name": "Line_SetPortalTarget",
+          "id": 107,
+          "arg1": "Line ID",
+          "arg2": "Target Line"
+        }
+      ]
+    },
+
+    {
+      "name": "Lines",
+      "defaults": { "tagged": "line" },
+      "specials": [
+        {
+          "name": "Line_SetBlocking",
+          "id": 55,
+          "arg1": "Line ID",
+          "arg2": {
+            "name": "Set Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "value": 1, "name": "creatures" },
+              { "value": 2, "name": "monsters" },
+              { "value": 4, "name": "players" },
+              { "value": 8, "name": "floaters" },
+              { "value": 16, "name": "projectiles" },
+              { "value": 32, "name": "everything above" },
+              { "value": 64, "name": "Strife railing (only bottom 32 units block)" },
+              { "value": 128, "name": "switch use" },
+              { "value": 256, "name": "monster sight" },
+              { "value": 512, "name": "hitscan attacks" }
+            ]
+          },
+          "arg3": {
+            "name": "Clear Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "value": 1, "name": "creatures" },
+              { "value": 2, "name": "monsters" },
+              { "value": 4, "name": "players" },
+              { "value": 8, "name": "floaters" },
+              { "value": 16, "name": "projectiles" },
+              { "value": 32, "name": "everything above" },
+              { "value": 64, "name": "Strife railing (only bottom 32 units block)" },
+              { "value": 128, "name": "switch use" },
+              { "value": 256, "name": "monster sight" },
+              { "value": 512, "name": "hitscan attacks" }
+            ]
+          }
+        },
+        {
+          "name": "ForceField",
+          "id": 33,
+          "description": "[RH] Strife's forcefield special (148)"
+        },
+        {
+          "name": "ClearForceField",
+          "id": 34,
+          "description": "[RH] Remove Strife's forcefield from tagged sectors",
+          "arg1": "Sector Tag",
+          "tagged": "sector"
+        },
+        {
+          "name": "GlassBreak",
+          "id": 49,
+          "arg1": {
+            "name": "Don't Spawn Junk?",
+            "description": "Set to 1 to avoid spawning seven 'glass junk' actors"
+          },
+          "tagged": "no"
+        }
+      ]
+    },
+
+    {
+      "name": "Scrollers",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        {
+          "name": "Scroll_Texture_Up",
+          "id": 102,
+          "arg1": "$scroll_texture_speed",
+          "arg2": "$scroll_texture_flags"
+        },
+        {
+          "name": "Scroll_Texture_Down",
+          "id": 103,
+          "arg1": "$scroll_texture_speed",
+          "arg2": "$scroll_texture_flags"
+        },
+        {
+          "name": "Scroll_Texture_Left",
+          "id": 100,
+          "arg1": "$scroll_texture_speed",
+          "arg2": "$scroll_texture_flags"
+        },
+        {
+          "name": "Scroll_Texture_Right",
+          "id": 101,
+          "arg1": "$scroll_texture_speed",
+          "arg2": "$scroll_texture_flags"
+        },
+        {
+          "name": "Scroll_Texture_Both",
+          "id": 221,
+          "arg1": "Line ID",
+          "arg2": "Left Speed",
+          "arg3": "Right Speed",
+          "arg4": "Down Speed",
+          "arg5": "Up Speed",
+          "tagged": "line_negative"
+        },
+        {
+          "name": "Scroll_Wall",
+          "id": 52,
+          "arg1": { "name": "Line ID", "description": "Affected lines should not be 3D middle textures" },
+          "arg2": { "name": "X Speed", "description": "Horizontal speed per tic as fixed point value" },
+          "arg3": { "name": "Y Speed", "description": "Vertical speed per tic as fixed point value" },
+          "arg4": { "name": "Line Side", "description": "0 for front and 1 for back" },
+          "arg5": "$scroll_texture_flags",
+          "tagged": "line"
+        },
+        {
+          "name": "Scroll_Texture_Offsets",
+          "id": 225,
+          "arg1": "$scroll_texture_flags"
+        },
+        {
+          "name": "Scroll_Texture_Model",
+          "id": 222,
+          "arg1": "Line ID",
+          "arg2": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "value": 1, "name": "Displacement" },
+              { "value": 2, "name": "Accelerative" }
+            ]
+          },
+          "tagged": "lineid"
+        },
+        {
+          "name": "Scroll_Floor",
+          "id": 223,
+          "arg1": "Sector Tag",
+          "arg2": "$scroll_flat_flags",
+          "arg3": {
+            "name": "Type",
+            "type": "choice",
+            "custom_values": [
+              { "value": 0, "name": "Scroll texture" },
+              { "value": 1, "name": "Carry actors" },
+              { "value": 2, "name": "Scroll and carry" }
+            ]
+          },
+          "arg4": { "name": "X Speed", "description": "128 is no scroll, 0-127 is West, 129-255 is East" },
+          "arg5": { "name": "Y Speed", "description": "128 is no scroll, 0-127 is South, 129-255 is North" },
+          "tagged": "sector"
+        },
+        {
+          "name": "Scroll_Ceiling",
+          "id": 224,
+          "arg1": "Sector Tag",
+          "arg2": "$scroll_flat_flags",
+          "arg3": { "name": "Unused", "description": "There are no scroll ceiling types, so this value is not used" },
+          "arg4": { "name": "X Speed", "description": "128 is no scroll, 0-127 is West, 129-255 is East" },
+          "arg5": { "name": "Y Speed", "description": "128 is no scroll, 0-127 is South, 129-255 is North" },
+          "tagged": "sector"
+        },
+        {
+          "name": "Sector_CopyScroller",
+          "id": 58,
+          "arg1": { "name": "Sector Tag", "description": "Tag of the sector to copy" },
+          "arg2": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "value": 1, "name": "copy ceiling scrolling" },
+              { "value": 2, "name": "copy floor scrolling" },
+              { "value": 4, "name": "copy actor carrying" }
+            ]
+          }
+        }
+      ]
+    },
+
+    {
+      "name": "Exits",
+      "specials": [
+        {
+          "name": "Exit_Normal",
+          "id": 243,
+          "arg1": { "name": "Player Start", "description": "Value of first argument of player start" }
+        },
+        {
+          "name": "Exit_Secret",
+          "id": 244,
+          "arg1": { "name": "Player Start", "description": "Value of first argument of player start" }
+        },
+        {
+          "name": "Teleport_NewMap",
+          "id": 74,
+          "arg1": "Map Levelnum",
+          "arg2": { "name": "Player Start", "description": "Value of first argument of player start" },
+          "arg3": "Keep Facing"
+        },
+        {
+          "name": "Teleport_EndGame",
+          "id": 75
+        }
+      ]
+    },
+
+    {
+      "name": "Renderer",
+      "specials": [
+        {
+          "name": "Line_Horizon",
+          "id": 9,
+          "description": "[RH] draw one-sided wall at horizon"
+        },
+        {
+          "name": "Line_Mirror",
+          "id": 182
+        },
+        {
+          "name": "Transfer_WallLight",
+          "id": 16,
+          "arg1": "Line ID",
+          "arg2": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "transfer to front side", "value": 1 },
+              { "name": "transfer to back side", "value": 2 },
+              { "name": "absolute light transfer (ignore fake contrast)", "value": 4 }
+            ]
+          },
+          "tagged": "line"
+        },
+        {
+          "name": "Transfer_FloorLight",
+          "id": 210,
+          "arg1": "Sector Tag",
+          "tagged": "sector"
+        },
+        {
+          "name": "Transfer_CeilingLight",
+          "id": 211,
+          "arg1": "Sector Tag",
+          "tagged": "sector"
+        },
+        {
+          "name": "ExtraFloor_LightOnly",
+          "id": 50,
+          "arg1": "Sector Tag",
+          "arg2": {
+            "name": "Light Type",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Control sector ceiling to top of other type 0 EF_LO", "value": 0 },
+              { "name": "Tagged ceiling to control sector floor", "value": 1 },
+              { "name": "Control sector ceiling to top of other EF_LO (any type)", "value": 2 }
+            ]
+          },
+          "tagged": "sector"
+        },
+        {
+          "name": "Sector_SetPortal",
+          "id": 57,
+          "arg1": {
+            "name": "Sector Tag",
+            "description": "Tag of the sectors in which the portal is seen. Sectors seen through the portal should not have this tag."
+          },
+          "arg2": {
+            "name": "Portal Type",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Normal view", "value": 0 },
+              { "name": "Transferred view (copy another portal)", "value": 1 },
+              { "name": "Eternity-style skybox portal", "value": 2 }
+            ]
+          },
+          "arg3": {
+            "name": "Plane",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Floor portal", "value": 0 },
+              { "name": "Ceiling portal", "value": 1 },
+              { "name": "Floor & ceiling portal", "value": 2 }
+            ]
+          },
+          "arg4": {
+            "name": "Misc",
+            "description": "Type 0: 1 if line belongs to sector seen, 0 if it belongs to sector viewing; Type 1: sector tag to copy"
+          },
+          "arg5": {
+            "name": "Alpha",
+            "description": "Translucency value of the portal"
+          },
+          "tagged": "sector"
+        },
+        {
+          "name": "Sector_SetTranslucent",
+          "id": 98,
+          "arg1": {
+            "name": "Sector Tag",
+            "description": "Tag of sectors containing portals to affect"
+          },
+          "arg2": {
+            "name": "Plane",
+            "description": "0 = Floor, 1 = ceiling"
+          },
+          "arg3": {
+            "name": "Alpha",
+            "description": "On a scale of 0--255 from fully transparent to fully opaque"
+          }
+          // Additive transparency is not implemented at the moment
+          // "arg4": { "name": "Transparency Type", "description": "0 for normal, 1 for additive transparency" }
+        },
+        {
+          "name": "SetGlobalFogParameter (OpenGL)",
+          "id": 157,
+          "arg1": {
+            "name": "Property",
+            "description": "0 = fog density; 1 = outside fog density; 2 = sky fog"
+          },
+          "arg2": "Value"
+        },
+        {
+          "name": "Sector_SetPlaneReflection (OpenGL)",
+          "id": 159,
+          "arg1": "Sector Tag",
+          "arg2": {
+            "name": "Floor Reflection",
+            "description": "On a 0--255 scale (255 is fully reflective)"
+          },
+          "arg3": {
+            "name": "Ceiling Reflection",
+            "description": "On a 0--255 scale (255 is fully reflective)"
+          },
+          "tagged": "sector"
+        },
+        {
+          "name": "TranslucentLine",
+          "id": 208,
+          "arg1": {
+            "name": "Line ID",
+            "description": "Lines to affect (0 = this one)"
+          },
+          "arg2": {
+            "name": "Alpha",
+            "description": "On a scale of 0--255 from fully transparent to fully opaque"
+          },
+          "arg3": "Additive?",
+          "arg4": {
+            "name": "Extra flags",
+            "description": "Do not use this in a UDMF map"
+          },
+          "tagged": "lineid"
+        },
+        {
+          "name": "Transfer_Heights",
+          "id": 209,
+          "arg1": "Sector Tag",
+          "arg2": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "always use transferred heights", "value": 1 },
+              { "name": "only draw fake floor", "value": 2 },
+              { "name": "improved texture control", "value": 4 },
+              { "name": "swimmable", "value": 8 },
+              { "name": "invisible fake planes", "value": 16 },
+              { "name": "don't transfer light", "value": 32 }
+            ]
+          },
+          "tagged": "sector"
+        }
+      ]
+    }
+  ],
+
+  // Hexen-format-only action specials
+  // - Line_SetIdentification is only for hexen format, and should not be used in UDMF
+  "hexen": {
+    "groups": [
+      {
+        "name": "Lines",
+        "specials": [
+          {
+            "name": "Line_SetIdentification",
+            "id": 121,
+            "arg1": "Line ID",
+            "arg2": {
+              "name": "Extra Flags",
+              "type": "flags",
+              "custom_flags": [
+                { "value": 1, "name": "zone boundary" },
+                { "value": 2, "name": "railing" },
+                { "value": 4, "name": "block floaters" },
+                { "value": 8, "name": "clip midtextures" },
+                { "value": 16, "name": "wrap midtextures" },
+                { "value": 32, "name": "3D middle texture" },
+                { "value": 64, "name": "check switch height" }
+              ]
+            },
+            "arg3": "Don't Use",
+            "arg4": "Don't Use",
+            "arg5": "Line ID high",
+            "tagged": "lineid_hi5"
+          }
+        ]
+      }
+    ]
+  }
+}

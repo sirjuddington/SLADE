@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -65,7 +65,23 @@ bool dump_parsed_blocks    = false;
 bool dump_parsed_states    = false;
 bool dump_parsed_functions = false;
 
-string db_comment = "//$";
+// Doom Builder's magic comment indicator
+// Only documentation seems to be: https://zdoom.org/wiki/Editor_keys
+const string editor_comment_prefix = "//$";
+
+#if wxCHECK_VERSION(3, 3, 0)
+//  Not sure why wx3.3 confuses the compiler about string <-> char comparisons,
+//  but we'll just do this for now
+//  TODO: Try removing this once wx 3.3 is released and on vcpkg
+bool operator==(const string& str, char c)
+{
+	return str.size() == 1 && str[0] == c;
+}
+bool operator!=(const string& str, char c)
+{
+	return str.size() != 1 || str[0] != c;
+}
+#endif
 } // namespace slade::zscript
 
 
@@ -193,8 +209,8 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<Ar
 {
 	Tokenizer tz;
 	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.<>");
-	tz.enableDecorate(true);
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
+	tz.enableEditorComments();
 	tz.openMem(entry->data(), "ZScript");
 
 	entry_stack.push_back(entry);
@@ -856,13 +872,15 @@ bool Class::parseClassBlock(vector<ParsedStatement>& block)
 		else if (strutil::equalCI(first_token, "states"))
 			states_.parse(statement);
 
-		// DB property comment
-		else if (strutil::startsWith(first_token, db_comment))
+		// DB property comment(s)
+		else if (strutil::startsWith(first_token, editor_comment_prefix))
 		{
-			if (statement.tokens.size() > 1)
-				db_properties_.emplace_back(first_token.substr(3), statement.tokens[1]);
-			else
-				db_properties_.emplace_back(first_token.substr(3), "true");
+			db_properties_.emplace_back(Tokenizer::parseEditorComment(first_token));
+			for (auto i = 1; i < statement.tokens.size(); ++i)
+			{
+				if (strutil::startsWith(statement.tokens[i], editor_comment_prefix))
+					db_properties_.emplace_back(Tokenizer::parseEditorComment(statement.tokens[i]));
+			}
 		}
 
 		// Function
@@ -892,14 +910,9 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 			continue;
 
 		// DB property comment
-		if (strutil::startsWith(statement.tokens[0], db_comment))
+		if (strutil::startsWith(statement.tokens[0], editor_comment_prefix))
 		{
-			string_view prop = statement.tokens[0];
-			prop.remove_prefix(3);
-			if (statement.tokens.size() > 1)
-				db_properties_.emplace_back(prop, statement.tokens[1]);
-			else
-				db_properties_.emplace_back(prop, "true");
+			db_properties_.emplace_back(Tokenizer::parseEditorComment(statement.tokens[0]));
 			continue;
 		}
 
@@ -1119,14 +1132,6 @@ bool ParsedStatement::parse(Tokenizer& tz)
 		if (tz.advIf(';'))
 			return true;
 
-		// DB comment
-		if (strutil::startsWith(tz.current().text, db_comment))
-		{
-			tokens.emplace_back(tz.current().text);
-			tokens.emplace_back(tz.getLine());
-			return true;
-		}
-
 		if (tz.check('}'))
 		{
 			// End of array initializer
@@ -1164,6 +1169,10 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		tokens.emplace_back(tz.current().text);
 		tz.adv();
+
+		// DB comments are treated as standalone statements
+		if (strutil::startsWith(tokens.back(), editor_comment_prefix))
+			return true;
 	}
 
 	// Block

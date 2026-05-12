@@ -1,0 +1,49 @@
+{
+  "items": [
+    { "type": "action", "id": "arch_entry_save", "show_text": true },
+    {
+      "type": "button",
+      "id": "revert",
+      "text": "Revert",
+      "icon": "revert",
+      "help_text": "Revert any changes made to the entry",
+      "show_text": true
+    },
+
+    { "type": "separator" },
+
+    // Palette Selection
+    { "type": "label", "text": "Palette:" },
+    {
+      "type": "button",
+      "id": "pal_prev",
+      "text": "Previous Palette",
+      "icon": "left"
+    },
+    { "type": "custom_control", "id": "current_palette" },
+    {
+      "type": "button",
+      "id": "pal_next",
+      "text": "Next Palette",
+      "icon": "right"
+    },
+
+    { "type": "separator" },
+
+    // Current Palette
+    { "type": "action", "id": "ppal_moveup" },
+    { "type": "action", "id": "ppal_movedown" },
+    { "type": "action", "id": "ppal_duplicate" },
+    { "type": "action", "id": "ppal_remove" },
+    { "type": "action", "id": "ppal_removeothers" },
+
+    { "type": "separator" },
+
+    // Palette Operations
+    { "type": "action", "id": "ppal_addcustom" },
+    { "type": "action", "id": "ppal_exportas" },
+    { "type": "action", "id": "ppal_importfrom" },
+    { "type": "action", "id": "ppal_test" },
+    { "type": "action", "id": "ppal_generate" }
+  ]
+}

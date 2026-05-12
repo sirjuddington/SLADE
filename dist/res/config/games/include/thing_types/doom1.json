@@ -1,0 +1,407 @@
+// Doom 1 thing types
+{
+  "groups": [
+    {
+      "name": "Player Starts",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)",
+        "radius": 16,
+        "solid": true
+      },
+      "things": [
+        { "type": 1, "name": "Player 1 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 2, "name": "Player 2 Start", "sprite": "PLAYB?", "player_coop": true, "translation": "doom0" },
+        { "type": 3, "name": "Player 3 Start", "sprite": "PLAYC?", "player_coop": true, "translation": "doom1" },
+        { "type": 4, "name": "Player 4 Start", "sprite": "PLAYD?", "player_coop": true, "translation": "doom2" },
+        { "type": 11, "name": "Deathmatch Start", "sprite": "PLAYF?", "player_dm": true }
+      ]
+    },
+
+    {
+      "name": "Teleports",
+      "things": [
+        {
+          "type": 14,
+          "name": "Teleport Destination",
+          "colour": "rgb(255, 255, 0)",
+          "sprite": "TFOGB?"
+        }
+      ]
+    },
+
+    {
+      "name": "Monsters",
+      "defaults": {
+        "colour": "rgb(200, 0, 0)",
+        "solid": true
+      },
+      "things": [
+        {
+          "type": 3004,
+          "name": "Former Human",
+          "radius": 20,
+          "sprite": "POSSA?"
+        },
+        {
+          "type": 9,
+          "name": "Former Human Sergeant",
+          "radius": 20,
+          "sprite": "SPOSA?"
+        },
+        {
+          "type": 3001,
+          "name": "Imp",
+          "radius": 20,
+          "sprite": "TROOA?"
+        },
+        {
+          "type": 3002,
+          "name": "Demon",
+          "radius": 30,
+          "sprite": "SARGA?"
+        },
+        {
+          "type": 58,
+          "name": "Spectre",
+          "radius": 30,
+          "sprite": "SARGB?",
+          "translation": "0:255=%[0.22,0.22,0.22]:[0.00,0.00,0.00]"
+        },
+        {
+          "type": 3006,
+          "name": "Lost Soul",
+          "radius": 16,
+          "sprite": "SKULA?"
+        },
+        {
+          "type": 3005,
+          "name": "Cacodemon",
+          "radius": 32,
+          "sprite": "HEADA?"
+        },
+        {
+          "type": 3003,
+          "name": "Baron Of Hell",
+          "radius": 24,
+          "sprite": "BOSSA?"
+        },
+        {
+          "type": 16,
+          "name": "CyberDemon",
+          "radius": 40,
+          "sprite": "CYBRA?"
+        },
+        {
+          "type": 7,
+          "name": "Spider Mastermind",
+          "radius": 128,
+          "sprite": "SPIDA?"
+        }
+      ]
+    },
+
+    {
+      "name": "Health And Armour",
+      "defaults": {
+        "angle": false
+      },
+      "things": [
+        {
+          "type": 2011,
+          "name": "Stimpack",
+          "radius": 12,
+          "colour": "rgb(100, 100, 200)",
+          "sprite": "STIMA?",
+          "icon": "health"
+        },
+        {
+          "type": 2012,
+          "name": "Medikit",
+          "radius": 12,
+          "colour": "rgb(100, 100, 200)",
+          "sprite": "MEDIA?",
+          "icon": "health"
+        },
+        {
+          "type": 2014,
+          "name": "Health Potion",
+          "radius": 10,
+          "colour": "rgb(0, 0, 200)",
+          "sprite": "BON1A?",
+          "icon": "health"
+        },
+        {
+          "type": 2015,
+          "name": "Armour Helmet",
+          "radius": 10,
+          "colour": "rgb(0, 0, 200)",
+          "sprite": "BON2A?",
+          "icon": "armour"
+        },
+        {
+          "type": 2018,
+          "name": "Green Armour",
+          "radius": 14,
+          "colour": "rgb(100, 200, 100)",
+          "sprite": "ARM1A?",
+          "icon": "armour"
+        },
+        {
+          "type": 2019,
+          "name": "Blue Armour",
+          "radius": 14,
+          "colour": "rgb(100, 100, 200)",
+          "sprite": "ARM2A?",
+          "icon": "armour"
+        }
+      ]
+    },
+
+    {
+      "name": "Weapons",
+      "defaults": {
+        "colour": "rgb(220, 180, 100)",
+        "radius": 20,
+        "angle": false,
+        "icon": "weapon"
+      },
+      "things": [
+        { "type": 2005, "name": "Chainsaw", "sprite": "CSAWA?" },
+        { "type": 2001, "name": "Shotgun", "sprite": "SHOTA?" },
+        { "type": 2002, "name": "Chaingun", "sprite": "MGUNA?" },
+        { "type": 2003, "name": "Rocket Launcher", "sprite": "LAUNA?" },
+        { "type": 2004, "name": "Plasma Gun", "sprite": "PLASA?" },
+        { "type": 2006, "name": "BFG9000", "sprite": "BFUGA?" }
+      ]
+    },
+
+    {
+      "name": "Ammunition",
+      "defaults": {
+        "colour": "rgb(180, 150, 50)",
+        "angle": false,
+        "radius": 16,
+        "icon": "ammo"
+      },
+      "things": [
+        { "type": 2007, "name": "Ammo Clip", "sprite": "CLIPA?", "radius": 10 },
+        { "type": 2048, "name": "Box Of Ammo", "sprite": "AMMOA?" },
+        { "type": 2008, "name": "Shotgun Shells", "sprite": "SHELA?", "radius": 10 },
+        { "type": 2049, "name": "Box Of Shells", "sprite": "SBOXA?" },
+        { "type": 2010, "name": "Rocket", "sprite": "ROCKA?", "radius": 10 },
+        { "type": 2046, "name": "Box Of Rockets", "sprite": "BROKA?" },
+        { "type": 2047, "name": "Energy Cell", "sprite": "CELLA?", "radius": 10 },
+        { "type": 17, "name": "Energy Pack", "sprite": "CELPA?" },
+        { "type": 8, "name": "Backpack", "sprite": "BPAKA?" }
+      ]
+    },
+
+    {
+      "name": "Powerups",
+      "defaults": {
+        "colour": "rgb(220, 100, 220)",
+        "radius": 16,
+        "angle": false,
+        "icon": "powerup"
+      },
+      "things": [
+        { "type": 2024, "name": "Partial Invisibility Sphere", "sprite": "PINSB?" },
+        { "type": 2013, "name": "Soul Sphere", "sprite": "SOULA?" },
+        { "type": 2022, "name": "Invulnerability Sphere", "sprite": "PINVA?" },
+        { "type": 2025, "name": "Radiation Shielding Suit", "sprite": "SUITA?" },
+        { "type": 2023, "name": "Berserk Pack", "sprite": "PSTRA?" },
+        { "type": 2045, "name": "Lite-Amp Goggles", "sprite": "PVISA?" },
+        { "type": 2026, "name": "Computer Area Map", "sprite": "PMAPA?" }
+      ]
+    },
+
+    {
+      "name": "Keys",
+      "defaults": {
+        "radius": 12,
+        "angle": false,
+        "icon": "key"
+      },
+      "things": [
+        {
+          "type": 13,
+          "name": "Red Keycard",
+          "colour": "rgb(255, 0, 0)",
+          "sprite": "RKEYA?"
+        },
+        {
+          "type": 38,
+          "name": "Red Skull Key",
+          "colour": "rgb(255, 0, 0)",
+          "sprite": "RSKUA?",
+          "radius": 14
+        },
+        {
+          "type": 5,
+          "name": "Blue Keycard",
+          "colour": "rgb(0, 0, 255)",
+          "sprite": "BKEYA?"
+        },
+        {
+          "type": 40,
+          "name": "Blue Skull Key",
+          "colour": "rgb(0, 0, 255)",
+          "sprite": "BSKUA?",
+          "radius": 14
+        },
+        {
+          "type": 6,
+          "name": "Yellow Keycard",
+          "colour": "rgb(255, 255, 0)",
+          "sprite": "YKEYA?"
+        },
+        {
+          "type": 39,
+          "name": "Yellow Skull Key",
+          "colour": "rgb(255, 255, 0)",
+          "sprite": "YSKUA?",
+          "radius": 14
+        }
+      ]
+    },
+
+    {
+      "name": "Gore/Dead Things",
+      "defaults": {
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "colour": "rgb(90, 0, 0)"
+      },
+      "things": [
+        { "type": 15, "name": "Dead Player", "sprite": "PLAYN?" },
+        { "type": 18, "name": "Dead Former Human", "sprite": "POSSL?" },
+        { "type": 19, "name": "Dead Former Human Sargeant", "sprite": "SPOSL?" },
+        { "type": 20, "name": "Dead Imp", "sprite": "TROOM?" },
+        { "type": 21, "name": "Dead Demon", "sprite": "SARGN?" },
+        { "type": 23, "name": "Dead Lost Soul", "sprite": "SKULK?" },
+        { "type": 22, "name": "Dead Cacodemon", "sprite": "HEADL?" }
+      ]
+    },
+
+    {
+      "name": "Gore/Hanging & Impaled Bodies",
+      "defaults": {
+        "colour": "rgb(120, 0, 0)",
+        "radius": 16,
+        "angle": false,
+        "hanging": true,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 25, "name": "Impaled Body", "sprite": "POL6A?", "hanging": false },
+        { "type": 26, "name": "Impaled Body (Twitching)", "sprite": "POL6B?", "hanging": false },
+        { "type": 63, "name": "Hanging Swaying Body", "sprite": "GOR1A?", "solid": false },
+        { "type": 49, "name": "Hanging Swaying Body (Blocking)", "sprite": "GOR1B?" },
+        { "type": 61, "name": "Hanging One-legged Body", "sprite": "GOR3A?", "solid": false },
+        { "type": 51, "name": "Hanging One-legged Body (Blocking)", "sprite": "GOR3A?" },
+        { "type": 62, "name": "Hanging Leg", "sprite": "GOR5A?", "solid": false },
+        { "type": 53, "name": "Hanging Leg (Blocking)", "sprite": "GOR5A?" },
+        { "type": 59, "name": "Hanging Body Arms Out", "sprite": "GOR2A?", "solid": false },
+        { "type": 50, "name": "Hanging Body Arms Out (Blocking)", "sprite": "GOR2A?" },
+        { "type": 60, "name": "Hanging Legs", "sprite": "GOR4A?", "solid": false },
+        { "type": 52, "name": "Hanging Legs (Blocking)", "sprite": "GOR4A?" }
+      ]
+    },
+
+    {
+      "name": "Gore/Blood & Stuff",
+      "defaults": {
+        "colour": "rgb(160, 0, 0)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true
+      },
+      "things": [
+        { "type": 24, "name": "Pool of Blood", "sprite": "POL5A?" },
+        { "type": 10, "name": "Guts and Bones", "sprite": "PLAYW?" },
+        { "type": 12, "name": "Guts And Bones 2", "sprite": "PLAYW?" },
+        { "type": 27, "name": "Skull on Pole", "sprite": "POL4A?" },
+        { "type": 28, "name": "Heads on Pole", "sprite": "POL2A?" },
+        { "type": 42, "name": "Flaming Skulls", "sprite": "FSKUA?" },
+        { "type": 29, "name": "Pile of Skulls", "sprite": "POL3A?" }
+      ]
+    },
+
+    {
+      "name": "Lighting",
+      "defaults": {
+        "colour": "rgb(220, 220, 200)",
+        "radius": 16,
+        "angle": false,
+        "icon": "light",
+        "fullbright": true,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 34, "name": "Candle", "sprite": "CANDA?" },
+        { "type": 35, "name": "Candelabra", "sprite": "CBRAA?" },
+        { "type": 2028, "name": "Yellow Lamp", "sprite": "COLUA?" },
+        { "type": 57, "name": "Short Red Torch", "sprite": "SMRTA?" },
+        { "type": 46, "name": "Tall Red Torch", "sprite": "TREDA?" },
+        { "type": 55, "name": "Short Blue Torch", "sprite": "SMBTA?" },
+        { "type": 44, "name": "Tall Blue Torch", "sprite": "TBLUA?" },
+        { "type": 56, "name": "Short Green Torch", "sprite": "SMGTA?" },
+        { "type": 45, "name": "Tall Green Torch", "sprite": "TGRNA?" }
+      ]
+    },
+
+    {
+      "name": "Decorations/Tech",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 48, "name": "Tech Column", "sprite": "ELECA?" },
+        { "type": 2035, "name": "Barrel", "sprite": "BAR1A?" }
+      ]
+    },
+
+    {
+      "name": "Decorations/Hell",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 33, "name": "Short Red Pillar", "sprite": "COL4A?" },
+        { "type": 32, "name": "Tall Red Pillar", "sprite": "COL3A?" },
+        { "type": 31, "name": "Short Green Pillar", "sprite": "COL2A?" },
+        { "type": 30, "name": "Tall Green Pillar", "sprite": "COL1A?" },
+        { "type": 37, "name": "Red Pillar + Skull", "sprite": "COL6A?" },
+        { "type": 36, "name": "Pillar + Pumping Heart", "sprite": "COL5A?" },
+        { "type": 41, "name": "Evil Eye", "sprite": "CEYEA?", "fullbright": true }
+      ]
+    },
+
+    {
+      "name": "Decorations/Plants",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 54, "name": "Large Brown Tree", "sprite": "TRE2A?", "radius": 32 },
+        { "type": 43, "name": "Short Grey Tree", "sprite": "TRE1A?" },
+        { "type": 47, "name": "Tree Stump", "sprite": "SMITA?" }
+      ]
+    }
+  ]
+}

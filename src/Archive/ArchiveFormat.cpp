@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,7 +33,7 @@
 #include "Main.h"
 #include "ArchiveFormat.h"
 #include "Utility/Named.h"
-#include "Utility/Parser.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace archive;
@@ -51,14 +51,14 @@ vector<Named<ArchiveFormat>> formats = { { "adat", ArchiveFormat::ADat }, { "bsp
 										 { "dat", ArchiveFormat::Dat },   { "folder", ArchiveFormat::Dir },
 										 { "disk", ArchiveFormat::Disk }, { "gob", ArchiveFormat::Gob },
 										 { "grp", ArchiveFormat::Grp },   { "gzip", ArchiveFormat::GZip },
-										 { "hog", ArchiveFormat::Hog },   { "lfd", ArchiveFormat::Lfd },
-										 { "lib", ArchiveFormat::Lib },   { "pak", ArchiveFormat::Pak },
-										 { "pod", ArchiveFormat::Pod },   { "res", ArchiveFormat::Res },
-										 { "rff", ArchiveFormat::Rff },   { "sin", ArchiveFormat::SiN },
-										 { "tar", ArchiveFormat::Tar },   { "wad", ArchiveFormat::Wad },
-										 { "wadj", ArchiveFormat::WadJ }, { "wad2", ArchiveFormat::Wad2 },
-										 { "wolf", ArchiveFormat::Wolf }, { "zip", ArchiveFormat::Zip },
-										 { "7z", ArchiveFormat::Zip7 } };
+										 { "lab", ArchiveFormat::Lab },   { "hog", ArchiveFormat::Hog },
+										 { "lfd", ArchiveFormat::Lfd },   { "lib", ArchiveFormat::Lib },
+										 { "pak", ArchiveFormat::Pak },   { "pod", ArchiveFormat::Pod },
+										 { "res", ArchiveFormat::Res },   { "rff", ArchiveFormat::Rff },
+										 { "sin", ArchiveFormat::SiN },   { "tar", ArchiveFormat::Tar },
+										 { "wad", ArchiveFormat::Wad },   { "wadj", ArchiveFormat::WadJ },
+										 { "wad2", ArchiveFormat::Wad2 }, { "wolf", ArchiveFormat::Wolf },
+										 { "zip", ArchiveFormat::Zip },   { "7z", ArchiveFormat::Zip7 } };
 
 std::map<ArchiveFormat, ArchiveFormatInfo> format_info;
 } // namespace slade::archive
@@ -71,86 +71,38 @@ std::map<ArchiveFormat, ArchiveFormatInfo> format_info;
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
-// Reads archive formats configuration file from [mc]
+// Reads archive formats configuration json from [mc]
 // -----------------------------------------------------------------------------
 bool archive::loadFormatInfo(const MemChunk& mc)
 {
-	Parser parser;
-	if (!parser.parseText(mc))
-		return false;
-
-	auto root         = parser.parseTreeRoot();
-	auto formats_node = root->child("archive_formats");
-	for (unsigned a = 0; a < formats_node->nChildren(); a++)
+	if (auto j = jsonutil::parse(mc); !j.is_discarded())
 	{
-		auto              fmt_desc = dynamic_cast<ParseTreeNode*>(formats_node->child(a));
-		ArchiveFormatInfo fmt{ fmt_desc->name() };
-
-		for (unsigned p = 0; p < fmt_desc->nChildren(); p++)
+		for (auto& [id, j_info] : j.items())
 		{
-			auto prop = fmt_desc->childPTN(p);
+			ArchiveFormatInfo fmt{ id };
 
-			// Format name
-			if (prop->nameIsCI("name"))
-				fmt.name = prop->stringValue();
+			fmt.name                  = j_info["name"];
+			fmt.supports_dirs         = j_info.value("supports_dirs", false);
+			fmt.names_extensions      = j_info.value("names_extensions", false);
+			fmt.max_name_length       = j_info.value("max_name_length", -1);
+			fmt.entry_format          = j_info["entry_format"];
+			fmt.prefer_uppercase      = j_info.value("prefer_uppercase", false);
+			fmt.create                = j_info.value("create", false);
+			fmt.allow_duplicate_names = j_info.value("allow_duplicate_names", false);
 
-			// Supports dirs
-			else if (prop->nameIsCI("supports_dirs"))
-				fmt.supports_dirs = prop->boolValue();
+			if (j_info.contains("extensions"))
+				for (auto& j_ext : j_info["extensions"])
+					fmt.extensions.emplace_back(j_ext["extension"], j_ext["name"]);
 
-			// Entry names have extensions
-			else if (prop->nameIsCI("names_extensions"))
-				fmt.names_extensions = prop->boolValue();
-
-			// Max entry name length
-			else if (prop->nameIsCI("max_name_length"))
-				fmt.max_name_length = prop->intValue();
-
-			// Entry format (id)
-			else if (prop->nameIsCI("entry_format"))
-				fmt.entry_format = prop->stringValue();
-
-			// Extensions
-			else if (prop->nameIsCI("extensions"))
+			auto format = formatFromId(fmt.id);
+			if (format == ArchiveFormat::Unknown)
 			{
-				for (unsigned e = 0; e < prop->nChildren(); e++)
-				{
-					auto ext = prop->childPTN(e);
-					fmt.extensions.emplace_back(ext->name(), ext->stringValue());
-				}
+				log::error("Unknown archive format id \"{}\" in archive_formats.json", fmt.id);
+				continue;
 			}
 
-			// Prefer uppercase entry names
-			else if (prop->nameIsCI("prefer_uppercase"))
-				fmt.prefer_uppercase = prop->boolValue();
-
-			// Can be created
-			else if (prop->nameIsCI("create"))
-				fmt.create = prop->boolValue();
-
-			// Allow duplicate entry names (within same directory)
-			else if (prop->nameIsCI("allow_duplicate_names"))
-				fmt.allow_duplicate_names = prop->boolValue();
+			format_info[format] = fmt;
 		}
-
-		log::info(3, wxString::Format("Read archive format %s: \"%s\"", fmt.id, fmt.name));
-		if (fmt.supports_dirs)
-			log::info(3, "  Supports folders");
-		if (fmt.names_extensions)
-			log::info(3, "  Entry names have extensions");
-		if (fmt.max_name_length >= 0)
-			log::info(3, wxString::Format("  Max entry name length: %d", fmt.max_name_length));
-		for (const auto& ext : fmt.extensions)
-			log::info(3, wxString::Format(R"(  Extension "%s" = "%s")", ext.first, ext.second));
-
-		auto format = formatFromId(fmt.id);
-		if (format == ArchiveFormat::Unknown)
-		{
-			log::error("Unknown archive format id \"{}\" in archive_formats.cfg", fmt.id);
-			continue;
-		}
-
-		format_info[format] = fmt;
 	}
 
 	// Add builtin 'folder' format
@@ -178,7 +130,7 @@ vector<ArchiveFormatInfo>& archive::allFormatsInfo()
 
 	if (all_formats_vec.empty() && !format_info.empty())
 	{
-		for (auto [format, info] : format_info)
+		for (const auto& info : format_info | std::views::values)
 			all_formats_vec.push_back(info);
 	}
 
@@ -198,7 +150,7 @@ const ArchiveFormatInfo& archive::formatInfo(ArchiveFormat format)
 // -----------------------------------------------------------------------------
 const ArchiveFormatInfo& archive::formatInfoFromId(string_view id)
 {
-	for (auto& [format, info] : format_info)
+	for (auto& info : format_info | std::views::values)
 		if (info.id == id)
 			return info;
 
@@ -225,6 +177,23 @@ ArchiveFormat archive::formatFromId(string_view format_id_string)
 	for (const auto& [name, id] : formats)
 		if (name == format_id_string)
 			return id;
+
+	return ArchiveFormat::Unknown;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the format that uses the given [extension]
+// -----------------------------------------------------------------------------
+ArchiveFormat archive::formatFromExtension(string_view extension)
+{
+	for (const auto& [format, info] : format_info)
+	{
+		for (const auto& key : info.extensions | std::views::keys)
+		{
+			if (strutil::equalCI(key, extension))
+				return format;
+		}
+	}
 
 	return ArchiveFormat::Unknown;
 }

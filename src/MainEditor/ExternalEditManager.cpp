@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -384,6 +384,7 @@ private:
 // -----------------------------------------------------------------------------
 ExternalEditManager::~ExternalEditManager()
 {
+	destructing_ = true;
 	for (auto& file_monitor : file_monitors_)
 		delete file_monitor;
 }
@@ -439,7 +440,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view edi
 
 	// Run external editor
 	auto command = fmt::format(R"("{}" "{}")", exe_path, monitor->filename());
-	long success = wxExecute(command, wxEXEC_ASYNC, monitor->process());
+	long success = wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC, monitor->process());
 	if (success == 0)
 	{
 		global::error = fmt::format("Failed to launch {}", editor);
@@ -458,6 +459,11 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view edi
 // -----------------------------------------------------------------------------
 void ExternalEditManager::monitorStopped(const ExternalEditFileMonitor* monitor)
 {
+	// Ignore if we're in the destructor, to avoid modifying file_monitors_
+	// while we're iterating through it
+	if (destructing_)
+		return;
+
 	if (VECTOR_EXISTS(file_monitors_, monitor))
 		VECTOR_REMOVE(file_monitors_, monitor);
 }

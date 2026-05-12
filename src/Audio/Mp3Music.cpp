@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -51,13 +51,13 @@ struct Mp3MemoryData
 	off_t  offset;
 };
 
-ssize_t memoryDataRead(void* raw_mp3_data, void* buffer, size_t nbyte)
+mpg123_ssize_t memoryDataRead(void* raw_mp3_data, void* buffer, size_t nbyte)
 {
 	auto mp3_data = static_cast<Mp3MemoryData*>(raw_mp3_data);
 	if (mp3_data->offset >= static_cast<ssize_t>(mp3_data->size))
 	{
 		memset(buffer, 0, nbyte);
-		return 0;
+		return (mpg123_ssize_t)0;
 	}
 
 	if (mp3_data->offset + static_cast<ssize_t>(nbyte) > static_cast<ssize_t>(mp3_data->size))
@@ -67,12 +67,12 @@ ssize_t memoryDataRead(void* raw_mp3_data, void* buffer, size_t nbyte)
 		memcpy(buffer, static_cast<unsigned char*>(mp3_data->data) + mp3_data->offset, read_size);
 		memset(buffer, 0, mem_set_size);
 		mp3_data->offset += read_size;
-		return static_cast<ssize_t>(read_size);
+		return static_cast<mpg123_ssize_t>(read_size);
 	}
 
 	memcpy(buffer, static_cast<unsigned char*>(mp3_data->data) + mp3_data->offset, nbyte);
 	mp3_data->offset += nbyte;
-	return static_cast<ssize_t>(nbyte);
+	return static_cast<mpg123_ssize_t>(nbyte);
 }
 
 off_t memoryDataLSeek(void* raw_mp3_data, off_t offset, int whence)
@@ -180,7 +180,11 @@ bool Mp3Music::openFromFile(const std::string& filename)
 		return false;
 	}
 
+#if (SFML_VERSION_MAJOR > 2)
+	initialize(channels, rate, getChannelMap());
+#else
 	initialize(channels, rate);
+#endif
 
 	return true;
 }
@@ -234,7 +238,11 @@ bool Mp3Music::loadFromMemory(void* data, size_t size_in_bytes)
 
 	log::debug("rate {}, channels {}", rate, channels);
 
+#if (SFML_VERSION_MAJOR > 2)
+	initialize(channels, rate, getChannelMap());
+#else
 	initialize(channels, rate);
+#endif
 
 	return true;
 }
@@ -260,7 +268,11 @@ sf::Time Mp3Music::duration() const
 // -----------------------------------------------------------------------------
 bool Mp3Music::onGetData(Chunk& data)
 {
+#if (SFML_VERSION_MAJOR > 2)
+	std::lock_guard lock(mutex_);
+#else
 	sf::Lock lock(mutex_);
+#endif
 
 	if (handle_)
 	{
@@ -281,7 +293,12 @@ bool Mp3Music::onGetData(Chunk& data)
 // -----------------------------------------------------------------------------
 void Mp3Music::onSeek(sf::Time time_offset)
 {
+#if (SFML_VERSION_MAJOR > 2)
+	std::lock_guard lock(mutex_);
+#else
 	sf::Lock lock(mutex_);
+#endif
+
 
 	// tschumacher: sampleoff must be (seconds * samplingRate) to make this working correctly
 	if (handle_)

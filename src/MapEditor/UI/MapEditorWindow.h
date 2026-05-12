@@ -34,12 +34,11 @@ public:
 	bool chooseMap(Archive* archive = nullptr);
 	bool openMap(const MapDesc& map);
 	void loadMapScripts(const MapDesc& map);
-	bool writeMap(Archive& wad, const wxString& name = "MAP01", bool nodes = true);
+	bool writeMap(Archive& wad, const string& name = "MAP01", bool nodes = true);
 	bool saveMap();
 	bool saveMapAs();
 	void closeMap() const;
 	void forceRefresh(bool renderer = false) const;
-	void refreshToolBar() const;
 	void setUndoManager(UndoManager* manager) const;
 	bool tryClose();
 	bool hasMapOpen(const Archive* archive) const;
@@ -63,6 +62,7 @@ private:
 	MapChecksPanel*                  panel_checks_       = nullptr;
 	UndoManagerHistoryPanel*         panel_undo_history_ = nullptr;
 	wxMenu*                          menu_scripts_       = nullptr;
+	wxChoice*                        view_distance_      = nullptr;
 
 	void buildNodes(Archive* wad);
 	void lockMapEntries(bool lock = true) const;

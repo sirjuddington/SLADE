@@ -50,7 +50,6 @@ body:
         2. Click on '....'
         3. Scroll down to '....'
         4. See error
-      render: text
     validations:
       required: true
   - type: textarea
@@ -58,7 +57,6 @@ body:
     attributes:
       label: Expected Behavior
       description: What did you expect to happen instead?
-      render: text
     validations:
       required: false
   - type: textarea
@@ -68,6 +66,5 @@ body:
       description: If applicable, add screenshots to help explain your problem.
       value: |
         ![DESCRIPTION](LINK.png)
-      render: text
     validations:
       required: false

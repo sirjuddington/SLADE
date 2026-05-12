@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -41,7 +41,6 @@
 #include "Palette.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
-#include <filesystem>
 
 using namespace slade;
 
@@ -205,20 +204,16 @@ bool PaletteManager::loadCustomPalettes()
 	if (!fileutil::dirExists(custom_path))
 		fileutil::createDir(custom_path);
 
-	for (const auto& item : std::filesystem::directory_iterator{ custom_path })
+	for (const auto& file : fileutil::allFilesInDir(custom_path, true, true))
 	{
-		if (!item.is_regular_file())
-			continue;
-
 		// Load palette data
-		auto     pal       = std::make_unique<Palette>();
-		auto     file_path = item.path().string();
+		auto     pal = std::make_unique<Palette>();
 		MemChunk mc;
-		mc.importFile(file_path);
+		mc.importFile(file);
 		pal->loadMem(mc);
 
 		// Add the palette
-		addPalette(std::move(pal), strutil::Path::fileNameOf(file_path, false));
+		addPalette(std::move(pal), strutil::Path::fileNameOf(file, false));
 	}
 
 	return true;

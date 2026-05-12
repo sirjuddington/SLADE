@@ -1,0 +1,51 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24"
+    transform="translate(0.5, 0.5)">
+    <rect
+        x="4"
+        y="1"
+        width="7.5"
+        height="7.5"
+        fill="#267eb9"
+    />
+    <rect
+        x="12.5"
+        y="1"
+        width="7.5"
+        height="7.5"
+        fill="#d42b2b"
+    />
+    <rect
+        x="4"
+        y="9.5"
+        width="7.5"
+        height="7.5"
+        fill="#d42b2b"
+    />
+    <rect
+        x="12.5"
+        y="9.5"
+        width="7.5"
+        height="7.5"
+        fill="#267eb9"
+    />
+    <g transform="scale(1, 0.5)">
+        <path 
+            d="M4 15V9h8V4.16L19.84 12L12 19.84V15H4z"
+            fill="#6696FF"
+            transform="translate(0, 28)"
+        />
+    </g>
+    <g transform="scale(1.5, 1)">
+        <path
+            d="M9 7v10h2v-4h.8l1.2 4h2l-1.24-4.15C14.5 12.55 15 11.84 15 11V9a2 2 0 0 0-2-2H9m2 2h2v2h-2V9z"
+            fill="#FFFFFF"
+            fill-opacity="0.8"
+            transform="translate(-4, -3.1)"
+        />
+    </g>
+</svg>

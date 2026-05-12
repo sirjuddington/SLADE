@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,15 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
-#include <FreeImage.h>
 #include <SFML/System/Err.hpp>
 #include <fmt/chrono.h>
-#include <fmt/format.h>
 #include <fstream>
-
-#ifndef _WIN32
-#undef _WINDOWS_ // Undefine _WINDOWS_ that has been defined by FreeImage
-#endif
 
 using namespace slade;
 
@@ -60,43 +54,23 @@ CVAR(Int, log_verbosity, 1, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // Formatter for fmt so that log::MessageType can be written to a string
 // -----------------------------------------------------------------------------
-template<> struct fmt::formatter<log::MessageType>
+template<> struct fmt::formatter<log::MessageType> : formatter<string_view>
 {
-	template<typename ParseContext> constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
-	template<typename FormatContext> auto          format(const log::MessageType& type, FormatContext& ctx)
+	auto format(const log::MessageType& type, format_context& ctx) const -> format_context::iterator
 	{
+		string_view prefix;
 		switch (type)
 		{
-		case log::MessageType::Info:    return format_to(ctx.out(), "  [Info]");
-		case log::MessageType::Warning: return format_to(ctx.out(), "  [Warn]");
-		case log::MessageType::Error:   return format_to(ctx.out(), " [Error]");
-		case log::MessageType::Debug:   return format_to(ctx.out(), " [Debug]");
-		case log::MessageType::Script:  return format_to(ctx.out(), "[Script]");
-		default:                        return format_to(ctx.out(), "   [Log]");
+		case log::MessageType::Info:    prefix = " [Info]"; break;
+		case log::MessageType::Warning: prefix = " [Warn]"; break;
+		case log::MessageType::Error:   prefix = "[Error]"; break;
+		case log::MessageType::Debug:   prefix = "[Debug]"; break;
+		case log::MessageType::Script:  prefix = "[Script]"; break;
+		default:                        prefix = "  [Log]"; break;
 		}
+		return formatter<string_view>::format(prefix, ctx);
 	}
-}; // namespace fmt
-
-
-// -----------------------------------------------------------------------------
-//
-// FreeImage Error Handler
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Allows us to catch FreeImage errors and log them
-// -----------------------------------------------------------------------------
-void FreeImageErrorHandler(FREE_IMAGE_FORMAT fif, const char* message)
-{
-	string error = "FreeImage: ";
-	if (fif != FIF_UNKNOWN)
-		error += fmt::format("[{}] ", FreeImage_GetFormatFromFIF(fif));
-	error += message;
-
-	log::error(error);
-}
+};
 
 
 // -----------------------------------------------------------------------------
@@ -143,21 +117,19 @@ void log::init()
 		info(fmt::format("{} Windows Build", app::isWin64Build() ? "64bit" : "32bit"));
 	info(fmt::format("Written by Simon Judd, 2008-{:%Y}", *tm));
 #ifdef SFML_VERSION_MAJOR
-	info(fmt::format(
-		"Compiled with wxWidgets {}.{}.{} and SFML {}.{}.{}",
-		wxMAJOR_VERSION,
-		wxMINOR_VERSION,
-		wxRELEASE_NUMBER,
-		SFML_VERSION_MAJOR,
-		SFML_VERSION_MINOR,
-		SFML_VERSION_PATCH));
+	info(
+		fmt::format(
+			"Compiled with wxWidgets {}.{}.{} and SFML {}.{}.{}",
+			wxMAJOR_VERSION,
+			wxMINOR_VERSION,
+			wxRELEASE_NUMBER,
+			SFML_VERSION_MAJOR,
+			SFML_VERSION_MINOR,
+			SFML_VERSION_PATCH));
 #else
 	info(fmt::format("Compiled with wxWidgets {}.{}.{}", wxMAJOR_VERSION, wxMINOR_VERSION, wxRELEASE_NUMBER));
 #endif
 	info("--------------------------------");
-
-	// Set up FreeImage to use our log:
-	FreeImage_SetOutputMessage(FreeImageErrorHandler);
 }
 
 // -----------------------------------------------------------------------------
@@ -166,6 +138,22 @@ void log::init()
 const vector<log::Message>& log::history()
 {
 	return log;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the last [n] log messages (as pointers)
+// -----------------------------------------------------------------------------
+vector<log::Message*> log::last(int n)
+{
+	vector<Message*> list;
+
+	if (n < 0 || n > log.size())
+		n = log.size();
+
+	for (auto i = log.size() - n; i < log.size(); i++)
+		list.push_back(&log[i]);
+
+	return list;
 }
 
 // -----------------------------------------------------------------------------
@@ -200,6 +188,11 @@ void log::message(MessageType type, string_view text)
 		sf::err() << log.back().formattedMessageLine() << "\n";
 		sf::err().flush();
 	}
+
+	// Log to debugger in windows+debug
+#if defined(__WXMSW__) && defined(SLADE_DEBUG)
+	OutputDebugStringA(fmt::format("{}\r\n", log.back().formattedMessageLine()).c_str());
+#endif
 }
 
 void log::message(MessageType type, int level, string_view text, fmt::format_args args)
@@ -227,19 +220,19 @@ vector<log::Message*> log::since(time_t time, MessageType type)
 // -----------------------------------------------------------------------------
 // Logs a debug message [text] at verbosity [level] only if debug mode is on
 // -----------------------------------------------------------------------------
-void log::debug(int level, const wxString& text)
+void log::debug(int level, string_view text)
 {
 	if (global::debug)
-		message(MessageType::Debug, level, text.ToStdString());
+		message(MessageType::Debug, level, text);
 }
 
 // -----------------------------------------------------------------------------
 // Logs a debug message [text] only if debug mode is on
 // -----------------------------------------------------------------------------
-void log::debug(const wxString& text)
+void log::debug(string_view text)
 {
 	if (global::debug)
-		message(MessageType::Debug, text.ToStdString());
+		message(MessageType::Debug, text);
 }
 
 void log::debug(int level, string_view text, fmt::format_args args)

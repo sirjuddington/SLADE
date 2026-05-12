@@ -2,20 +2,29 @@
 
 namespace slade
 {
-class ItemSelection;
-class MapRenderer2D;
-class MapRenderer3D;
+// Forward declarations
 class MCAnimation;
 class MCOverlay;
 namespace gl
 {
+	class Camera;
+	class LineBuffer;
+	class VertexBuffer2D;
 	class View;
-}
+
+	namespace draw2d
+	{
+		struct Context;
+	}
+} // namespace gl
 
 namespace mapeditor
 {
-	struct Item;
 	class MapEditContext;
+	class MapRenderer2D;
+	class MapRenderer3D;
+	struct Item;
+	class ItemSelection;
 
 	class Renderer
 	{
@@ -26,8 +35,13 @@ namespace mapeditor
 		MapRenderer2D& renderer2D() const { return *renderer_2d_; }
 		MapRenderer3D& renderer3D() const { return *renderer_3d_; }
 		gl::View&      view() const { return *view_; }
+		float          uiScale() const { return ui_scale_; }
+		gl::Camera&    camera() const { return *camera_; }
+		void           setUIScale(float scale) { ui_scale_ = scale; }
 
-		void forceUpdate() const;
+		void forceUpdate(bool update_2d = true, bool update_3d = true) const;
+		void clearTextureCache() const;
+		void clearData();
 
 		// View manipulation
 		void   setView(double map_x, double map_y) const;
@@ -55,12 +69,22 @@ namespace mapeditor
 		void animateSelectionChange(const ItemSelection& selection);
 		void animateHilightChange(const Item& old_item, MapObject* old_object = nullptr);
 		void addAnimation(unique_ptr<MCAnimation> animation);
+		void clearAnimations();
 
 	private:
 		MapEditContext*           context_;
 		unique_ptr<MapRenderer2D> renderer_2d_;
 		unique_ptr<MapRenderer3D> renderer_3d_;
 		unique_ptr<gl::View>      view_;
+		unique_ptr<gl::View>      view_screen_;
+		float                     ui_scale_ = 1.0f;
+		unique_ptr<gl::Camera>    camera_;
+
+		// OpenGL
+		unique_ptr<gl::VertexBuffer2D> vb_grid_;
+		unique_ptr<gl::VertexBuffer2D> vb_linedraw_points_;
+		unique_ptr<gl::LineBuffer>     lb_crosshair_;
+		unique_ptr<gl::LineBuffer>     lb_objectedit_box_;
 
 		// MCAnimations
 		vector<unique_ptr<MCAnimation>> animations_;
@@ -74,6 +98,7 @@ namespace mapeditor
 		float  fade_lines_           = 1.f;
 		float  anim_flash_level_     = 0.5f;
 		bool   anim_flash_inc_       = true;
+		float  anim_flash_time_      = 0.0f;
 		float  anim_info_fade_       = 0.f;
 		float  anim_overlay_fade_    = 0.f;
 		float  anim_help_fade_       = 0.f;
@@ -81,17 +106,16 @@ namespace mapeditor
 
 
 		// Drawing
-		void drawGrid() const;
-		void drawEditorMessages() const;
-		void drawFeatureHelpText() const;
-		void drawSelectionNumbers() const;
-		void drawThingQuickAngleLines() const;
-		void drawLineLength(const Vec2d& p1, const Vec2d& p2, ColRGBA col) const;
-		void drawLineDrawLines(bool snap_nearest_vertex) const;
-		void drawPasteLines() const;
-		void drawObjectEdit() const;
-		void drawAnimations() const;
-		void drawMap2d() const;
+		void drawGrid(gl::draw2d::Context& dc) const;
+		void drawEditorMessages(gl::draw2d::Context& dc) const;
+		void drawFeatureHelpText(gl::draw2d::Context& dc) const;
+		void drawSelectionNumbers(gl::draw2d::Context& dc) const;
+		void drawThingQuickAngleLines(gl::draw2d::Context& dc) const;
+		void drawLineLength(gl::draw2d::Context& dc, const Vec2d& p1, const Vec2d& p2) const;
+		void drawLineDrawLines(gl::draw2d::Context& dc, bool snap_nearest_vertex) const;
+		void drawPasteLines(gl::draw2d::Context& dc) const;
+		void drawObjectEdit(gl::draw2d::Context& dc) const;
+		void drawMap2d(gl::draw2d::Context& dc) const;
 		void drawMap3d() const;
 
 		// Animation

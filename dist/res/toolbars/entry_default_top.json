@@ -1,0 +1,6 @@
+{
+  "items": [
+    { "type": "action", "id": "arch_view_text", "show_text": true },
+    { "type": "action", "id": "arch_view_hex", "show_text": true }
+  ]
+}

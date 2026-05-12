@@ -1,0 +1,12 @@
+// Universal thing types
+{
+  "groups": [
+    {
+      "name": "Special Effects/Editor Things",
+      "defaults": { "colour": "rgb(120, 120, 200)" },
+      "things": [
+        { "type": 32000, "name": "Doom Builder Camera", "icon": "camera" }
+      ]
+    }
+  ]
+}

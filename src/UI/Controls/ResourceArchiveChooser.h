@@ -9,7 +9,7 @@ public:
 	~ResourceArchiveChooser() override = default;
 
 	vector<Archive*> selectedResourceArchives() const;
-	wxString         selectedResourceList() const;
+	string           selectedResourceList() const;
 
 private:
 	wxCheckListBox*  list_resources_    = nullptr;

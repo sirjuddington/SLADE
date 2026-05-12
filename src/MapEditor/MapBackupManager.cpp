@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -41,6 +41,7 @@
 #include "UI/MapBackupPanel.h"
 #include "UI/SDialog.h"
 #include "UI/WxUtils.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -78,12 +79,12 @@ bool MapBackupManager::writeBackup(
 {
 	// Create backup directory if needed
 	auto backup_dir = app::path("backups", app::Dir::User);
-	if (!wxDirExists(backup_dir))
-		wxMkdir(backup_dir);
+	if (!fileutil::dirExists(backup_dir))
+		fileutil::createDir(backup_dir);
 
 	// Open or create backup zip
-	shared_ptr<Archive> backup = std::make_shared<Archive>(ArchiveFormat::Zip);
-	string              fname{ archive_name };
+	auto   backup = std::make_shared<Archive>(ArchiveFormat::Zip);
+	string fname{ archive_name };
 	std::replace(fname.begin(), fname.end(), '.', '_');
 	auto backup_file = fmt::format("{}/{}_backup.zip", backup_dir, fname);
 	if (!backup->open(backup_file))
@@ -146,7 +147,7 @@ bool MapBackupManager::writeBackup(
 	}
 
 	// Add map data to backup
-	auto timestamp = wxDateTime::Now().FormatISOCombined('_').ToStdString();
+	auto timestamp = wxDateTime::Now().FormatISOCombined('_').utf8_string();
 	strutil::replaceIP(timestamp, ":", "");
 	auto dir = fmt::format("{}/{}", map_name, timestamp);
 	for (auto& entry : backup_entries)
@@ -180,15 +181,15 @@ Archive* MapBackupManager::openBackup(string_view archive_name, string_view map_
 	sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT, 6);
 	sizer->AddSpacer(10);
 
-	if (panel_backup->loadBackups(wxutil::strFromView(archive_name), wxutil::strFromView(map_name)))
+	if (panel_backup->loadBackups(string{ archive_name }, map_name))
 	{
 		if (dlg.ShowModal() == wxID_OK)
 			return panel_backup->selectedMapData();
 	}
 	else
 		wxMessageBox(
-			fmt::format("No backups exist for {} of {}", map_name, archive_name),
-			"Restore Backup",
+			WX_FMT("No backups exist for {} of {}", map_name, archive_name),
+			wxS("Restore Backup"),
 			wxICON_INFORMATION,
 			mapeditor::windowWx());
 

@@ -12,7 +12,7 @@
         y="2"
         width="8"
         height="8"
-        stroke="#476DBD"
+        stroke="#000000"
         stroke-width="1.5"
         fill="none"
     />
@@ -21,7 +21,7 @@
         y="2"
         width="8"
         height="8"
-        stroke="#476DBD"
+        stroke="#000000"
         stroke-width="1.5"
         fill="none"
     />
@@ -30,7 +30,7 @@
         y="14"
         width="8"
         height="8"
-        stroke="#476DBD"
+        stroke="#000000"
         stroke-width="1.5"
         fill="none"
     />
@@ -39,7 +39,7 @@
         y="14"
         width="8"
         height="8"
-        stroke="#476DBD"
+        stroke="#000000"
         stroke-width="1.5"
         fill="none"
     />

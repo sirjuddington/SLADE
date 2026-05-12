@@ -72,25 +72,33 @@ protected:
 		int     width  = 640;
 		int     height = 480;
 
+		struct RGBQuad
+		{
+			uint8_t blue;
+			uint8_t green;
+			uint8_t red;
+			uint8_t reserved;
+		};
+
 		union
 		{
-			RGBQUAD  color;
+			RGBQuad  color;
 			uint32_t quad;
 		};
-		color.rgbReserved = 0;
+		color.reserved = 0;
 		ColRGBA colour(0, 0, 0, 0);
 
 		// Initialize the bitmap palette.
 		for (int i = 0; i < 16; ++i)
 		{
-			color.rgbRed   = data[i * 3 + 0];
-			color.rgbGreen = data[i * 3 + 1];
-			color.rgbBlue  = data[i * 3 + 2];
+			color.red   = data[i * 3 + 0];
+			color.green = data[i * 3 + 1];
+			color.blue  = data[i * 3 + 2];
 			// Convert from 6-bit per component to 8-bit per component.
 			quad     = (quad << 2) | ((quad >> 4) & 0x03030303);
-			colour.r = color.rgbRed;
-			colour.g = color.rgbGreen;
-			colour.b = color.rgbBlue;
+			colour.r = color.red;
+			colour.g = color.green;
+			colour.b = color.blue;
 			palette.setColour(i, colour);
 		}
 		// Fill the rest of the palette with clones of index 0
@@ -138,7 +146,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override
 	{
 		// Is there really any point to being able to write this format?
 		// Answer: yeah, no other tool can do it. :p
@@ -155,7 +163,7 @@ protected:
 
 		if (image.countColours() > 16)
 		{
-			log::error(wxString::Format("Cannot convert to planar format, too many colors (%d)", image.countColours()));
+			log::error("Cannot convert to planar format, too many colors ({})", image.countColours());
 			return false;
 		}
 
@@ -328,7 +336,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override
 	{
 		// Again, don't see much point
 		if (!gfx_extraconv)
@@ -337,22 +345,20 @@ protected:
 		// Check if data is paletted
 		if (image.type() != SImage::Type::PalMask)
 		{
-			log::error(
-				wxString::Format("Cannot convert truecolour image to 4-bit format - convert to 16-colour first."));
+			log::error("Cannot convert truecolour image to 4-bit format - convert to 16-colour first.");
 			return false;
 		}
 
 		if (image.countColours() > 16)
 		{
-			log::error(wxString::Format("Cannot convert to 4-bit format, too many colors (%d)", image.countColours()));
+			log::error("Cannot convert to 4-bit format, too many colors ({})", image.countColours());
 			return false;
 		}
 
 		// Check image size
 		if (!((image.width() == 4 && image.height() == 16) || (image.width() == 16 && image.height() == 23)))
 		{
-			log::error(wxString::Format(
-				"No point in converting to 4-bit format, image isn't a valid Hexen size (4x16 or 16x23)"));
+			log::error("No point in converting to 4-bit format, image isn't a valid Hexen size (4x16 or 16x23)");
 			return false;
 		}
 

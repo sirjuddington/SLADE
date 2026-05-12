@@ -1,0 +1,20 @@
+{
+  "items": [
+    { "type": "action", "id": "txed_patch_add" },
+    { "type": "action", "id": "txed_patch_remove" },
+    { "type": "action", "id": "txed_patch_back" },
+    { "type": "action", "id": "txed_patch_forward" },
+    { "type": "action", "id": "txed_patch_replace" },
+    { "type": "action", "id": "txed_patch_duplicate" }
+  ],
+
+  "groups": [
+    {
+      "name": "Patch",
+      "item_ids": [
+        "txed_patch_add", "txed_patch_remove", "txed_patch_back", "txed_patch_forward", "txed_patch_replace",
+        "txed_patch_duplicate"
+      ]
+    }
+  ]
+}

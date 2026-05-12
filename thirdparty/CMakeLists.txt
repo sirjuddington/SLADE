@@ -6,46 +6,50 @@ find_package(BZip2 REQUIRED)
 set(ZLIB_LIBRARY ${ZLIB_LIBRARY} PARENT_SCOPE)
 set(BZIP2_LIBRARIES ${BZIP2_LIBRARIES} PARENT_SCOPE)
 
-option(USE_SYSTEM_DUMB "Use system DUMB library" OFF)
-if(USE_SYSTEM_DUMB)
-	pkg_check_modules(DUMB REQUIRED IMPORTED_TARGET dumb>=1.0)
-else()
-	file(GLOB_RECURSE DUMB_SOURCES dumb/*.c)
-endif()
-
 # Roll the rest up into a big ball and compile it by itself
 set(EXTERNAL_SOURCES
 )
 file(GLOB_RECURSE EXTERNAL_SOURCES
 	lzma/C/LzmaDec.c
 	glad/src/*.c
-	${DUMB_SOURCES}
+	libdrawtext/*.c
 	${SLADE_HEADERS}
-	)
+	xxhash/*.c
+)
 
 # Add fmt
 option(USE_SYSTEM_FMT "Use system fmt library" OFF)
 option(FMT_INSTALL OFF)
-if(USE_SYSTEM_FMT)
+if (USE_SYSTEM_FMT)
 	find_package(fmt REQUIRED)
-else()
+else ()
 	add_subdirectory(fmt)
 	#target_include_directories(fmt INTERFACE ${CMAKE_CURRENT_LIST_DIR}/fmt/include)
-endif()
+endif ()
 
-# Add lunasvg
-add_library(lunasvg STATIC)
-add_subdirectory(lunasvg/include)
-add_subdirectory(lunasvg/source)
-add_subdirectory(lunasvg/3rdparty/software)
-add_subdirectory(lunasvg/3rdparty/plutovg)
+# Required for libdrawtext or we get multiple definition linker errors
+if (NOT MSVC)
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fcommon")
+endif ()
+
+# Add SQLiteCpp
+add_subdirectory(sqlitecpp)
+
+# Add JSON (nlohmann)
+include(FetchContent)
+FetchContent_Declare(json
+	URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz
+	DOWNLOAD_EXTRACT_TIMESTAMP true
+)
+FetchContent_MakeAvailable(json)
 
 add_library(external STATIC ${EXTERNAL_SOURCES})
-target_link_libraries(external ${ZLIB_LIBRARY} lunasvg fmt::fmt ${CMAKE_DL_LIBS})
+target_link_libraries(external
+	${ZLIB_LIBRARY}
+	fmt::fmt
+	${CMAKE_DL_LIBS}
+	SQLiteCpp
+	sqlite3
+	nlohmann_json::nlohmann_json
+)
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)
-
-if(USE_SYSTEM_DUMB)
-	target_link_libraries(external PkgConfig::DUMB)
-else()
-	target_include_directories(external PUBLIC ${CMAKE_CURRENT_LIST_DIR}/dumb)
-endif()

@@ -1,0 +1,215 @@
+// Doom 1 action specials
+{
+  "groups": [
+    {
+      "name": "Doors/Local",
+      "defaults": {
+        "tagged": "sector_back"
+      },
+      "specials": [
+        { "id": 1, "name": "DR Door" },
+        { "id": 28, "name": "DR Door Red Key" },
+        { "id": 26, "name": "DR Door Blue Key" },
+        { "id": 27, "name": "DR Door Yellow Key" },
+        { "id": 31, "name": "D1 Door Stay Open" },
+        { "id": 33, "name": "D1 Door Red Key" },
+        { "id": 32, "name": "D1 Door Blue Key" },
+        { "id": 34, "name": "D1 Door Yellow Key" }
+      ]
+    },
+
+    {
+      "name": "Doors/Remote",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 29, "name": "S1 Door" },
+        { "id": 63, "name": "SR Door" },
+        { "id": 4, "name": "W1 Door" },
+        { "id": 90, "name": "WR Door" },
+        { "id": 103, "name": "S1 Door Stay Open" },
+        { "id": 61, "name": "SR Door Stay Open" },
+        { "id": 2, "name": "W1 Door Stay Open" },
+        { "id": 86, "name": "WR Door Stay Open" },
+        { "id": 50, "name": "S1 Door Close" },
+        { "id": 42, "name": "SR Door Close" },
+        { "id": 3, "name": "W1 Door Close" },
+        { "id": 75, "name": "WR Door Close" },
+        { "id": 16, "name": "W1 Door Close + Open" },
+        { "id": 76, "name": "WR Door Close + Open" },
+        { "id": 46, "name": "GR Door Also Monsters" }
+      ]
+    },
+
+    {
+      "name": "Ceilings",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 40, "name": "W1 Ceil To Highest Ceil" },
+        { "id": 41, "name": "S1 Ceil To Floor" },
+        { "id": 43, "name": "SR Ceil To Floor" },
+        { "id": 44, "name": "W1 Ceil To 8 Above Floor" },
+        { "id": 72, "name": "WR Ceil To 8 Above Floor" }
+      ]
+    },
+
+    {
+      "name": "Lifts",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 21, "name": "S1 Lift" },
+        { "id": 62, "name": "SR Lift" },
+        { "id": 10, "name": "W1 Lift Also Monsters" },
+        { "id": 88, "name": "WR Lift Also Monsters" }
+      ]
+    },
+
+    {
+      "name": "Floors/Move Up",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 18, "name": "S1 Floor To Higher Adjacent Floor" },
+        { "id": 69, "name": "SR Floor To Higher Adjacent Floor" },
+        { "id": 5, "name": "W1 Floor To Lowest Adjacent Ceil" },
+        { "id": 91, "name": "WR Floor To Lowest Adjacent Ceil" },
+        { "id": 101, "name": "S1 Floor To Lowest Adjacent Ceil" },
+        { "id": 64, "name": "SR Floor To Lowest Adjacent Ceil" },
+        { "id": 24, "name": "G1 Floor To Lowest Adjacent Ceil" },
+        { "id": 55, "name": "S1 Floor To 8 Below LAC + Crush" },
+        { "id": 65, "name": "SR Floor To 8 Below LAC + Crush" },
+        { "id": 56, "name": "W1 Floor To 8 Below LAC + Crush" },
+        { "id": 94, "name": "WR Floor To 8 Below LAC + Crush" },
+        { "id": 58, "name": "W1 Floor Up 24" },
+        { "id": 92, "name": "WR Floor Up 24" },
+        { "id": 30, "name": "W1 Floor Up Shortest Lo Tex" },
+        { "id": 96, "name": "WR Floor Up Shortest Lo Tex" },
+        { "id": 20, "name": "S1 Floor To Higher Floor Change Tex" },
+        { "id": 68, "name": "SR Floor To Higher Floor Change Tex" },
+        { "id": 22, "name": "W1 Floor To Higher Floor Change Tex" },
+        { "id": 95, "name": "WR Floor To Higher Floor Change Tex" },
+        { "id": 47, "name": "G1 Floor To Higher Floor Change Tex" },
+        { "id": 15, "name": "S1 Floor Up 24 Change Tex" },
+        { "id": 66, "name": "SR Floor Up 24 Change Tex" },
+        { "id": 59, "name": "W1 Floor Up 24 Change Tex + Type" },
+        { "id": 93, "name": "WR Floor Up 24 Change Tex + Type" },
+        { "id": 14, "name": "S1 Floor Up 32 Change Tex" },
+        { "id": 67, "name": "SR Floor Up 32 Change Tex" }
+      ]
+    },
+
+    {
+      "name": "Floors/Move Down",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 38, "name": "W1 Floor To Lowest Adjacent Floor" },
+        { "id": 23, "name": "S1 Floor To Lowest Adjacent Floor" },
+        { "id": 82, "name": "WR Floor To Lowest Adjacent Floor" },
+        { "id": 60, "name": "SR Floor To Lowest Adjacent Floor" },
+        { "id": 19, "name": "W1 Floor To Highest Adjacent Floor" },
+        { "id": 102, "name": "S1 Floor To Highest Adjacent Floor" },
+        { "id": 83, "name": "WR Floor To Highest Adjacent Floor" },
+        { "id": 45, "name": "SR Floor To Highest Adjacent Floor" },
+        { "id": 36, "name": "W1 Floor To 8 Above HAF Fast" },
+        { "id": 71, "name": "S1 Floor To 8 Above HAF Fast" },
+        { "id": 98, "name": "WR Floor To 8 Above HAF Fast" },
+        { "id": 70, "name": "SR Floor To 8 Above HAF Fast" },
+        { "id": 37, "name": "W1 Floor To LAF Change Tex + Type" },
+        { "id": 84, "name": "WR Floor To LAF Change Tex + Type" },
+        { "id": 9, "name": "S1 Floor Donut" }
+      ]
+    },
+
+    {
+      "name": "Stair Builders",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 7, "name": "S1 Build Stairs 8" },
+        { "id": 8, "name": "W1 Build Stairs 8" }
+      ]
+    },
+
+    {
+      "name": "Moving Floors",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 53, "name": "W1 Start Moving Floor" },
+        { "id": 87, "name": "WR Start Moving Floor" },
+        { "id": 54, "name": "W1 Stop Moving Floor" },
+        { "id": 89, "name": "WR Stop Moving Floor" }
+      ]
+    },
+
+    {
+      "name": "Crushers",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 49, "name": "S1 Start Crusher, Slow Damage" },
+        { "id": 25, "name": "W1 Start Crusher, Slow Damage" },
+        { "id": 73, "name": "WR Start Crusher, Slow Damage" },
+        { "id": 6, "name": "W1 Start Crusher, Fast Damage" },
+        { "id": 77, "name": "WR Start Crusher, Fast Damage" },
+        { "id": 57, "name": "W1 Stop Crusher" },
+        { "id": 74, "name": "WR Stop Crusher" }
+      ]
+    },
+
+    {
+      "name": "Exits",
+      "specials": [
+        { "id": 11, "name": "S1 Exit (Normal)" },
+        { "id": 52, "name": "W1 Exit (Normal)" },
+        { "id": 51, "name": "S1 Exit (Secret)" }
+      ]
+    },
+
+    {
+      "name": "Teleports",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 97, "name": "WR Teleport" },
+        { "id": 39, "name": "W1 Teleport" }
+      ]
+    },
+
+    {
+      "name": "Light Effects",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 35, "name": "W1 Light To 35" },
+        { "id": 79, "name": "WR Light To 35" },
+        { "id": 13, "name": "W1 Light To 255" },
+        { "id": 81, "name": "WR Light To 255" },
+        { "id": 12, "name": "W1 Light To Highest Adjacent Level" },
+        { "id": 80, "name": "WR Light To Highest Adjacent Level" },
+        { "id": 104, "name": "W1 Light To Lowest Adjacent Level" },
+        { "id": 17, "name": "W1 Light Blink 1.0 Sec" }
+      ]
+    },
+
+    {
+      "name": "Misc",
+      "specials": [
+        { "id": 48, "name": "Scrolling Wall" }
+      ]
+    }
+  ]
+}

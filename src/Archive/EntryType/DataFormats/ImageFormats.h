@@ -220,20 +220,20 @@ public:
 		// The value of 42 (0x2A) is present in the next two bytes,
 		// in the given endianness
 		if (42
-			!= (littleendian ? wxUINT16_SWAP_ON_BE(static_cast<const uint16_t>(mc[2])) :
-							   wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
+			!= (littleendian ? wxUINT16_SWAP_ON_BE(static_cast<const uint16_t>(mc[2]))
+							 : wxUINT16_SWAP_ON_LE((const uint16_t)(mc[2]))))
 			return MATCH_FALSE;
 		// First offset must be on a word boundary (therefore, %2 == 0) and
 		// somewhere within the file, but not in the header of course.
 		size_t offset =
-			(littleendian ? wxUINT32_SWAP_ON_BE(static_cast<const uint32_t>(mc[4])) :
-							wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
+			(littleendian ? wxUINT32_SWAP_ON_BE(static_cast<const uint32_t>(mc[4]))
+						  : wxUINT32_SWAP_ON_LE((const uint32_t)(mc[4])));
 		if (offset < 8 || offset >= size || offset % 2)
 			return MATCH_FALSE;
 		// Check the first IFD for validity
 		uint16_t numentries =
-			(littleendian ? wxUINT16_SWAP_ON_BE(static_cast<const uint16_t>(mc[offset])) :
-							wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
+			(littleendian ? wxUINT16_SWAP_ON_BE(static_cast<const uint16_t>(mc[offset]))
+						  : wxUINT16_SWAP_ON_LE((const uint16_t)(mc[offset])));
 		if (offset + 6 + (numentries * 12) > size)
 			return MATCH_FALSE;
 		// Okay, it seems valid so far
@@ -278,7 +278,7 @@ public:
 		// Check size
 		if (mc.size() > 48)
 		{
-			// Check for ILBM header, we'll also accept ACBM and PBM files, hoping FreeImage handles them all.
+			// Check for ILBM header, we'll also accept ACBM and PBM files, hoping wxWidgets handles them all.
 			// There's more info and documentation on these by Sander van der Burg at
 			// https://github.com/svanderburg/libilbm
 			if ((mc[0] == 'F' && mc[1] == 'O' && mc[2] == 'R' && mc[3] == 'M')
@@ -569,9 +569,9 @@ public:
 class DoomJaguarDataFormat : public EntryDataFormat
 {
 public:
-	DoomJaguarDataFormat(int colmajor = 0, string_view id = "img_doom_jaguar") :
-		EntryDataFormat(id),
-		colmajor(colmajor){};
+	DoomJaguarDataFormat(int colmajor = 0, string_view id = "img_doom_jaguar") : EntryDataFormat(id), colmajor(colmajor)
+	{
+	}
 	~DoomJaguarDataFormat() override = default;
 
 	int isThisFormat(const MemChunk& mc) override
@@ -610,7 +610,7 @@ private:
 class DoomJaguarColMajorDataFormat : public DoomJaguarDataFormat
 {
 public:
-	DoomJaguarColMajorDataFormat() : DoomJaguarDataFormat(1, "img_doom_jaguar_colmajor"){};
+	DoomJaguarColMajorDataFormat() : DoomJaguarDataFormat(1, "img_doom_jaguar_colmajor") {}
 	~DoomJaguarColMajorDataFormat() override = default;
 };
 
@@ -673,9 +673,9 @@ public:
 		for (size_t w = 0; w < width; ++w)
 			col_offsets[w] = mc.readB16(8 + 2 * w);
 
-		const int result = size < static_cast<unsigned>(4 + col_offsets[width - 1]) ?
-							   MATCH_FALSE :
-							   MATCH_TRUE; // We can't test validity of pixel data here
+		const int result = size < static_cast<unsigned>(4 + col_offsets[width - 1])
+							   ? MATCH_FALSE
+							   : MATCH_TRUE; // We can't test validity of pixel data here
 
 		delete[] col_offsets;
 
@@ -807,14 +807,26 @@ public:
 		uint32_t offset = 36; // Offset to start of first frame
 		for (size_t a = 0; a < nframes; ++a)
 		{
+			// Check if we can read the frame type (4 bytes)
+			if (offset + 3 >= size)
+				return MATCH_FALSE;
+
 			if (mc.readL32(offset) != 0)
 			{
 				// We have a frame with a group of picture
+				// Check if we can read the group size (4 bytes at offset + 4)
+				if (offset + 7 >= size)
+					return MATCH_FALSE;
+
 				uint32_t grpsz = mc.readL32(offset + 4);
 				// Move to end of group header
 				offset += (grpsz + 2) << 2;
 				for (size_t b = 0; b < grpsz; ++b)
 				{
+					// Check if we can read picture dimensions (8 bytes at offset + 8)
+					if (offset + 15 >= size)
+						return MATCH_FALSE;
+
 					uint32_t pw = mc.readL32(offset + 8);
 					uint32_t ph = mc.readL32(offset + 12);
 					if (pw > width || ph > height)
@@ -831,6 +843,11 @@ public:
 			{
 				// We have a frame with a single picture
 				offset += 4;
+
+				// Check if we can read picture dimensions (8 bytes at offset + 8)
+				if (offset + 15 >= size)
+					return MATCH_FALSE;
+
 				uint32_t pw = mc.readL32(offset + 8);
 				uint32_t ph = mc.readL32(offset + 12);
 				if (pw > width || ph > height)
@@ -885,22 +902,6 @@ public:
 		size_t size = mc.size();
 		if (size < 101)
 			return MATCH_FALSE;
-		// Avoid some false positives by looking for "garbage" characters
-		// after the end of the "name"
-		bool nameend = false;
-		for (int i = 0; i < 32; ++i)
-		{
-			if (mc[i] == 0)
-			{
-				if (i == 0)
-					return false;
-				nameend = true;
-			}
-			else if (nameend)
-			{
-				return false;
-			}
-		}
 		size_t width  = mc.readL32(32);
 		size_t height = mc.readL32(36);
 		if (!width || !height || width % 8 || height % 8)

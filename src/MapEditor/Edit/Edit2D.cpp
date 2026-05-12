@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,10 +36,10 @@
 #include "Game/ThingType.h"
 #include "General/Clipboard.h"
 #include "Geometry/Geometry.h"
-#include "MapEditor/MapClipboardItems.h"
+#include "MapEditor/ClipboardItems.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/Renderer/MapRenderer2D.h"
 #include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/SectorBuilder.h"
 #include "MapEditor/UndoSteps.h"
@@ -457,7 +457,7 @@ void Edit2D::changeSectorTexture() const
 
 	// Unlock hilight if needed
 	context_->selection().lockHilight(hl_lock);
-	context_->renderer().renderer2D().clearTextureCache();
+	context_->renderer().clearTextureCache();
 }
 
 // -----------------------------------------------------------------------------
@@ -866,8 +866,9 @@ void Edit2D::createVertex(Vec2d pos) const
 
 	// Editor message
 	if (vertex)
-		context_->addEditorMessage(fmt::format(
-			"Created vertex at ({}, {})", static_cast<int>(vertex->xPos()), static_cast<int>(vertex->yPos())));
+		context_->addEditorMessage(
+			fmt::format(
+				"Created vertex at ({}, {})", static_cast<int>(vertex->xPos()), static_cast<int>(vertex->yPos())));
 }
 
 // -----------------------------------------------------------------------------

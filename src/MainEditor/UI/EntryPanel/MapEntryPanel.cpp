@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -34,12 +34,14 @@
 #include "MapEntryPanel.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
-#include "OpenGL/OpenGL.h"
-#include "UI/Canvas/MapPreviewCanvas.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
+#include "General/MapPreviewData.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/SAuiToolBar.h"
+#include "Utility/SFileDialog.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -72,27 +74,19 @@ EXTERN_CVAR(Bool, map_view_things)
 // -----------------------------------------------------------------------------
 // MapEntryPanel class constructor
 // -----------------------------------------------------------------------------
-MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
+MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map"), map_data_{ new MapPreviewData }
 {
 	// Setup map canvas
-	map_canvas_ = new MapPreviewCanvas(this);
+	map_canvas_ = ui::createMapPreviewCanvas(this, map_data_.get(), true, true);
 	sizer_main_->Add(map_canvas_, wxSizerFlags(1).Expand());
 
-	// Setup map toolbar buttons
-	auto group = new SToolBarGroup(toolbar_, "Map");
-	group->addActionButton("save_image", "Save Map Image", "export", "Save map overview to an image", true);
-	group->addActionButton("pmap_open_text", "", true);
-	toolbar_->addGroup(group);
-
-	// Remove save/revert buttons
-	toolbar_->deleteGroup("Entry");
-	stb_save_   = nullptr;
-	stb_revert_ = nullptr;
+	// Setup toolbar
+	toolbar_->loadLayoutFromResource("entry_map_top");
 
 	// Setup bottom panel
-	sizer_bottom_->Add(label_stats_ = new wxStaticText(this, -1, ""), wxSizerFlags().CenterVertical());
+	sizer_bottom_->Add(label_stats_ = new wxStaticText(this, -1, wxEmptyString), wxSizerFlags().CenterVertical());
 	sizer_bottom_->AddStretchSpacer();
-	sizer_bottom_->Add(cb_show_things_ = new wxCheckBox(this, -1, "Show Things"), wxSizerFlags().CenterVertical());
+	sizer_bottom_->Add(cb_show_things_ = new wxCheckBox(this, -1, wxS("Show Things")), wxSizerFlags().CenterVertical());
 	cb_show_things_->SetValue(map_view_things);
 
 	// Bind events
@@ -109,20 +103,39 @@ MapEntryPanel::MapEntryPanel(wxWindow* parent) : EntryPanel(parent, "map")
 bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 {
 	// Clear current map data
-	map_canvas_->clearMap();
+	map_data_->clear();
 
-	// Find map definition for entry
-	auto    maps = entry->parent()->detectMaps();
 	MapDesc thismap;
 	bool    found = false;
-	for (auto& map : maps)
+
+	// Check for wad archive (map in zip)
+	unique_ptr<Archive> tmp_archive;
+	if (entry->type()->formatId() == "archive_wad")
 	{
-		if (map.head.lock().get() == entry)
+		tmp_archive = std::make_unique<Archive>(ArchiveFormat::Wad);
+		tmp_archive->open(entry);
+		auto maps = tmp_archive->detectMaps();
+		if (!maps.empty())
 		{
-			thismap = map;
+			thismap = maps[0];
 			found   = true;
-			break;
 		}
+		toolbar_->showItem("pmap_open_archive", true);
+	}
+	else // Normal map entry
+	{
+		// Find map definition for entry
+		auto maps = entry->parent()->detectMaps();
+		for (auto& map : maps)
+		{
+			if (map.head.lock().get() == entry)
+			{
+				thismap = map;
+				found   = true;
+				break;
+			}
+		}
+		toolbar_->showItem("pmap_open_archive", false);
 	}
 
 	// All errors = invalid map
@@ -134,25 +147,28 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 	{
 		entry->setType(EntryType::unknownType());
 		EntryType::detectEntryType(*entry);
+		map_canvas_->Refresh();
 		return false;
 	}
 
 	// Load map into preview canvas
-	if (map_canvas_->openMap(thismap))
+	if (map_data_->openMap(thismap))
 	{
-		label_stats_->SetLabel(wxString::Format(
-			"Vertices: %d, Sides: %d, Lines: %d, Sectors: %d, Things: %d, Total Size: %dx%d",
-			map_canvas_->nVertices(),
-			map_canvas_->nSides(),
-			map_canvas_->nLines(),
-			map_canvas_->nSectors(),
-			map_canvas_->nThings(),
-			map_canvas_->width(),
-			map_canvas_->height()));
+		label_stats_->SetLabel(WX_FMT(
+			"Vertices: {}, Sides: {}, Lines: {}, Sectors: {}, Things: {}, Total Size: {}x{}",
+			static_cast<int>(map_data_->vertices.size()),
+			map_data_->n_sides,
+			static_cast<int>(map_data_->lines.size()),
+			map_data_->n_sectors,
+			static_cast<int>(map_data_->things.size()),
+			static_cast<int>(map_data_->bounds.width()),
+			static_cast<int>(map_data_->bounds.height())));
+		map_canvas_->Refresh();
 		return true;
 	}
 
-	label_stats_->SetLabel("");
+	label_stats_->SetLabel(wxEmptyString);
+	map_canvas_->Refresh();
 	return false;
 }
 
@@ -161,55 +177,28 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool MapEntryPanel::createImage()
 {
-	auto entry = entry_.lock();
-	if (!entry)
-		return false;
+	auto name = fmt::format("{}_{}", entry()->parent()->filename(false), entry()->name());
 
-	ArchiveEntry temp;
-
-	// Stupid OpenGL grumble grumble grumble
-	if (gl::fboSupport())
-		map_canvas_->createImage(temp, map_image_width, map_image_height);
-	else
-		map_canvas_->createImage(
-			temp,
-			glm::min<int>(map_image_width, map_canvas_->GetSize().x),
-			glm::min<int>(map_image_height, map_canvas_->GetSize().y));
-
-	wxString   name = wxString::Format("%s_%s", entry->parent()->filename(false), entry->name());
-	wxFileName fn(name);
-
-	// Create save file dialog
-	wxFileDialog dialog_save(
-		this,
-		wxString::Format("Save Map Preview \"%s\"", name),
-		dir_last,
-		fn.GetFullName(),
-		"PNG (*.PNG)|*.png",
-		wxFD_SAVE | wxFD_OVERWRITE_PROMPT,
-		wxDefaultPosition);
-
-	// Run the dialog & check that the user didn't cancel
-	if (dialog_save.ShowModal() == wxID_OK)
+	// Popup file save dialog
+	filedialog::FDInfo inf;
+	if (filedialog::saveFile(inf, fmt::format("Save Map Preview \"{}\"", name), "PNG (*.png)|*.png", this, name))
 	{
-		// If a filename was selected, export it
-		bool ret = temp.exportFile(dialog_save.GetPath().ToStdString());
-
-		// Save 'dir_last'
-		dir_last = wxutil::strToView(dialog_save.GetDirectory());
-
-		// Open the saved image
-		wxLaunchDefaultApplication(dialog_save.GetPath());
-
-		return ret;
+		// Save the map preview as a png image at the selected path
+		if (createMapImage(*map_data_, inf.filenames[0], map_image_width, map_image_height))
+		{
+			// Open the saved image
+			wxLaunchDefaultApplication(wxString::FromUTF8(inf.filenames[0]));
+			return true;
+		}
 	}
-	return true;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
 // Called when a (EntryPanel) toolbar button is clicked
 // -----------------------------------------------------------------------------
-void MapEntryPanel::toolbarButtonClick(const wxString& action_id)
+void MapEntryPanel::toolbarButtonClick(const string& action_id)
 {
 	// Save Map Image
 	if (action_id == "save_image")

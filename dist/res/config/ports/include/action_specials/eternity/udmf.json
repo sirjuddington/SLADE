@@ -1,0 +1,2979 @@
+// Eternity action specials for UDMF map format
+
+// Again, things are commented instead of deleted because these lines
+// will likely exist eventually. Just saving effort in the long-term.
+// Some lines like FS_Execute are gone though.
+
+{
+  "arg_presets": {
+    // These keywords are from Boom's generalized specials
+    "door_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "slow - standard Doom door", "value": 16 },
+        { "name": "normal", "value": 32 },
+        { "name": "fast - fast Doom door", "value": 64 },
+        { "name": "turbo", "value": 128 }
+      ]
+    },
+    "lift_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "very slow - perpetual Doom lift", "value": 4 },
+        { "name": "slow", "value": 8 },
+        { "name": "normal", "value": 16 },
+        { "name": "fast - standard Doom lift", "value": 32 },
+        { "name": "turbo - fast Doom lift", "value": 64 }
+      ]
+    },
+    "floor_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "slow - standard Doom floor", "value": 8 },
+        { "name": "normal", "value": 16 },
+        { "name": "fast - fast Doom floor", "value": 32 },
+        { "name": "turbo", "value": 64 }
+      ]
+    },
+    "ceiling_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "slow - standard Doom ceiling", "value": 8 },
+        { "name": "normal", "value": 16 },
+        { "name": "fast - fast Doom ceiling", "value": 32 },
+        { "name": "turbo", "value": 64 }
+      ]
+    },
+    "crusher_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "slow - standard Doom crusher", "value": 8 },
+        { "name": "normal - fast Doom crusher", "value": 16 },
+        { "name": "fast", "value": 32 },
+        { "name": "turbo", "value": 64 }
+      ]
+    },
+    "stair_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "slow - standard Doom stairs", "value": 2 },
+        { "name": "normal", "value": 4 },
+        { "name": "fast", "value": 16 },
+        { "name": "turbo - fast Doom stairs", "value": 32 }
+      ]
+    },
+    "donut_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "slow", "value": 2 },
+        { "name": "normal - standard Doom donut", "value": 4 },
+        { "name": "fast", "value": 16 },
+        { "name": "turbo", "value": 32 }
+      ]
+    },
+    "delay_tics": {
+      "name": "Delay (tics)",
+      "type": "tics"
+    },
+    "delay_octics": {
+      "name": "Delay (octics)",
+      "type": "octics"
+    },
+    "delay_tics_door": {
+      "name": "Delay (tics)",
+      "type": "tics",
+      "custom_values": [
+        { "name": "brief", "value": 35 },
+        { "name": "normal - standard Doom door", "value": 150 },
+        { "name": "slow", "value": 300 },
+        { "name": "agonizing", "value": 1050 }
+      ]
+    },
+    "delay_octics_door": {
+      "name": "Delay (octics)",
+      "type": "octics",
+      "custom_values": [
+        { "name": "brief", "value": 8 },
+        { "name": "normal - standard Doom door (approx.)", "value": 34 },
+        { "name": "slow (approx.)", "value": 69 },
+        { "name": "agonizing", "value": 240 }
+      ]
+    },
+    "delay_tics_lift": {
+      "name": "Delay (tics)",
+      "type": "tics",
+      "custom_values": [
+        { "name": "brief", "value": 35 },
+        { "name": "normal - standard Doom lift", "value": 105 },
+        { "name": "slow", "value": 165 },
+        { "name": "agonizing", "value": 350 }
+      ]
+    },
+    "delay_octics_lift": {
+      "name": "Delay (octics)",
+      "type": "octics",
+      "custom_values": [
+        { "name": "brief", "value": 8 },
+        { "name": "normal - standard Doom lift", "value": 24 },
+        { "name": "slow (approx.)", "value": 38 },
+        { "name": "agonizing", "value": 80 }
+      ]
+    },
+    "crush_mode": {
+      "name": "Crush mode",
+      "type": "choice",
+      "custom_values": [
+        { "name": "use current game's default", "value": 0 },
+        { "name": "Doom mode - keep moving while crushing", "value": 1 },
+        { "name": "Hexen mode - stop moving until actor dies/leaves", "value": 2 }
+      ]
+    },
+    "means_of_death": {
+      "name": "Means of death",
+      "type": "choice",
+      "custom_values": [
+        { "name": "generic damage", "value": 0 },
+        { "name": "rocket", "value": 5 },
+        { "name": "rocket splash damage", "value": 6 },
+        { "name": "plasma", "value": 7 },
+        { "name": "BFG ball", "value": 8 },
+        { "name": "BFG tracer", "value": 9 },
+        { "name": "chainsaw", "value": 10 },
+        { "name": "shotgun", "value": 11 },
+        { "name": "drowning", "value": 12 },
+        { "name": "slime - Doom's damaging floors", "value": 13 },
+        { "name": "lava/fire", "value": 14 },
+        { "name": "crusher", "value": 15 },
+        { "name": "telefrag", "value": 16 },
+        { "name": "falling", "value": 17 },
+        { "name": "suicide", "value": 18 },
+        { "name": "barrel", "value": 19 },
+        { "name": "exit - used in deathmatch", "value": 20 },
+        { "name": "generic splash damage", "value": 21 },
+        { "name": "generic melee damage", "value": 22 },
+        { "name": "railgun", "value": 23 },
+        { "name": "ice", "value": 24 },
+        { "name": "disintegration", "value": 25 },
+        { "name": "poison", "value": 26 },
+        { "name": "electricity", "value": 27 },
+        { "name": "massacre - console cheat", "value": 1000 }
+      ]
+    },
+
+    "projectile_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "imp fireball", "value": 80 },
+        { "name": "Baron slimeball", "value": 120 },
+        { "name": "rocket", "value": 160 },
+        { "name": "plasma cell", "value": 200 }
+      ]
+    },
+    "projectile_h_speed": {
+      "name": "H Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "imp fireball", "value": 80 },
+        { "name": "Baron slimeball", "value": 120 },
+        { "name": "rocket", "value": 160 },
+        { "name": "plasma cell", "value": 200 }
+      ]
+    },
+    "projectile_v_speed": {
+      "name": "H Speed",
+      "type": "speed"
+    },
+    "scroll_texture_speed": {
+      "name": "Speed",
+      "type": "speed",
+      // TODO 'speed' is unit per 8 tics, but texture scrolling is in units per 64 tics
+      "custom_values": [
+        { "name": "Doom scroller", "value": 64 }
+      ]
+    },
+    "scroll_texture_flags": {
+      "name": "Flags",
+      "type": "flags",
+      "custom_flags": [
+        { "name": "upper", "value": 1 },
+        { "name": "mid", "value": 2 },
+        { "name": "lower", "value": 4 }
+      ]
+    },
+    "scroll_flat_flags": {
+      "name": "Flags",
+      "type": "flags",
+      "custom_flags": [
+        { "name": "Displacement", "value": 1 },
+        { "name": "Accelerative", "value": 2 },
+        { "name": "DX/DY from linedef", "value": 4 }
+      ]
+    },
+    "polyobj_speed": {
+      "name": "Speed",
+      "type": "speed"
+      // TODO are there any reasonable defaults here?
+    },
+    "which_players": {
+      "name": "Who",
+      "type": "choice",
+      "custom_values": [
+        { "name": "activator only", "value": 0 },
+        { "name": "all players", "value": 1 }
+      ]
+    }
+  },
+
+  "groups": [
+    {
+      "name": "Floors",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        {
+          "name": "Generic_Floor",
+          "id": 200,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Distance",
+          "arg4": {
+            "name": "Target",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Move by given distance", "value": 0 },
+              { "name": "Move to highest neighboring floor", "value": 1 },
+              { "name": "Move to lowest neighboring floor", "value": 2 },
+              { "name": "Move to nearest neighboring floor", "value": 3 },
+              { "name": "Move to lowest neighboring ceiling", "value": 4 },
+              { "name": "Move to sector's own ceiling", "value": 5 },
+              { "name": "Move by height of shortest lower texture", "value": 6 }
+            ]
+          },
+          "arg5": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "Don't copy", "value": 0 },
+              { "name": "Copy floor texture; remove sector special", "value": 1 },
+              { "name": "Copy floor texture", "value": 2 },
+              { "name": "Copy floor texture and sector special", "value": 3 },
+              { "name": "Copy from neighbor (otherwise front of trigger line)", "value": 4 },
+              { "name": "Raise (otherwise lower)", "value": 8 },
+              { "name": "Inflict crushing damage", "value": 16 }
+            ]
+          }
+        },
+        {
+          "name": "Floor_LowerToNearest",
+          "id": 22,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed"
+        },
+        {
+          "name": "Floor_LowerToLowestCeiling",
+          "id": 258,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Change"
+        },
+        {
+          "name": "Floor_LowerToLowest",
+          "id": 21,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed"
+        },
+        // {
+        //   "name": "Floor_LowerToLowestTxTy",
+        //   "id": 241,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$floor_speed"
+        // },
+        {
+          "name": "Floor_LowerToHighest",
+          "id": 242,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Lip + 128",
+          "arg4": {
+            "name": "Always Adjust?",
+            "description": "If 1, the height adjustment is applied even if neighbouring sectors are at the same floor height"
+          }
+        },
+        {
+          "name": "Floor_LowerToHighestEE",
+          "id": 256,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Change"
+        },
+        {
+          "name": "Floor_LowerByValue",
+          "id": 20,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Value"
+        },
+        {
+          "name": "Floor_LowerByValueTimes8",
+          "id": 36,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Floor_LowerInstant",
+          "id": 66,
+          "arg1": "Sector Tag",
+          "arg2": "Unused",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Floor_LowerByTexture",
+          "id": 261,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Change"
+        },
+        {
+          "name": "Floor_RaiseToNearest",
+          "id": 25,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed"
+        },
+        {
+          "name": "Floor_RaiseToHighest",
+          "id": 24,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed"
+        },
+        {
+          "name": "Floor_RaiseToLowest",
+          "id": 257,
+          "arg1": "Sector Tag",
+          "arg2": "Change",
+          "arg3": "Crush"
+        },
+        {
+          "name": "Floor_RaiseToCeiling",
+          "id": 259,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Change",
+          "arg4": "Crush",
+          "arg5": "Gap"
+        },
+        {
+          "name": "Floor_ToCeilingInstant",
+          "id": 260,
+          "arg1": "Sector Tag",
+          "arg2": "Change",
+          "arg3": "Crush",
+          "arg4": "Gap"
+        },
+        {
+          "name": "Floor_RaiseToLowestCeiling",
+          "id": 238,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Change",
+          "arg4": "Crush",
+          "arg5": "Gap"
+        },
+        {
+          "name": "Floor_RaiseByValue",
+          "id": 23,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Value"
+        },
+        {
+          "name": "Floor_RaiseByValueTimes8",
+          "id": 35,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Eighth of Value"
+        },
+        // {
+        //   "name": "Floor_RaiseByValueTxTy",
+        //   "id": 239,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$floor_speed",
+        //   "arg3": "Value"
+        // },
+        {
+          "name": "Floor_RaiseByTexture",
+          "id": 240,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed"
+        },
+        {
+          "name": "Floor_RaiseInstant",
+          "id": 67,
+          "arg1": "Sector Tag",
+          "arg2": "Unused",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Floor_RaiseAndCrush",
+          "id": 28,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Crush Damage",
+          "arg4": "$crush_mode"
+        },
+        {
+          "name": "Floor_CrushStop",
+          "id": 46,
+          "arg1": "Sector Tag"
+        },
+        {
+          "name": "Floor_MoveToValue",
+          "id": 37,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Value",
+          "arg4": "Negative?"
+        },
+        {
+          "name": "Floor_MoveToValueTimes8",
+          "id": 68,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Eighth of Value",
+          "arg4": "Negative?"
+        },
+        {
+          "name": "Floor_Donut",
+          "id": 250,
+          "arg1": "Pillar Sector Tag",
+          "arg2": "Pillar Speed",
+          "arg3": "Surrounding Speed"
+        },
+        {
+          "name": "Floor_Waggle",
+          "id": 138,
+          "arg1": "Sector Tag",
+          "arg2": "Amplitude",
+          "arg3": "$floor_speed",
+          "arg4": "Phase Offset",
+          "arg5": "Duration (in seconds)"
+        },
+        {
+          "name": "Floor_TransferTrigger",
+          "id": 235,
+          "arg1": "Sector Tag"
+        },
+        {
+          "name": "Floor_TransferNumeric",
+          "id": 236,
+          "arg1": "Sector Tag"
+        }
+      ]
+    },
+
+    {
+      "name": "Ceilings",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        {
+          "name": "Generic_Ceiling",
+          "id": 201,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Distance",
+          "arg4": {
+            "name": "Target",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Move by given distance", "value": 0 },
+              { "name": "Move to highest neighboring ceiling", "value": 1 },
+              { "name": "Move to lowest neighboring ceiling", "value": 2 },
+              { "name": "Move to nearest neighboring ceiling", "value": 3 },
+              { "name": "Move to highest neighboring floor", "value": 4 },
+              { "name": "Move to sector's own floor", "value": 5 },
+              { "name": "Move by height of shortest upper texture", "value": 6 }
+            ]
+          },
+          "arg5": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "Don't copy", "value": 0 },
+              { "name": "Copy ceiling texture; remove sector special", "value": 1 },
+              { "name": "Copy ceiling texture", "value": 2 },
+              { "name": "Copy ceiling texture and sector special", "value": 3 },
+              { "name": "Copy from neighbor (otherwise front of trigger line)", "value": 4 },
+              { "name": "Raise (otherwise lower)", "value": 8 },
+              { "name": "Inflict crushing damage", "value": 16 }
+            ]
+          }
+        },
+        {
+          "name": "Generic_Crusher",
+          "id": 205,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": "Silent?",
+          "arg5": "Crush Damage"
+        },
+        // {
+        //   "name": "Generic_Crusher2",
+        //   "id": 169,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "Lowering Speed",
+        //   "arg3": "Raising Speed",
+        //   "arg4": {
+        //     "name": "Silent?",
+        //     "type": "yesno"
+        //   },
+        //   "arg5": "Crush Damage"
+        // },
+        {
+          "name": "Ceiling_LowerToNearest",
+          "id": 264,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Change",
+          "arg4": "Crush"
+        },
+        {
+          "name": "Ceiling_LowerToLowest",
+          "id": 253,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed"
+        },
+        {
+          "name": "Ceiling_LowerToFloor",
+          "id": 254,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Change",
+          "arg4": "Crush",
+          "arg5": "Gap"
+        },
+        {
+          "name": "Ceiling_LowerToHighestFloor",
+          "id": 192,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Change",
+          "arg4": "Crush",
+          "arg5": "Gap"
+        },
+        {
+          "name": "Ceiling_LowerByValue",
+          "id": 40,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Value"
+        },
+        {
+          "name": "Ceiling_LowerByValueTimes8",
+          "id": 199,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Ceiling_LowerInstant",
+          "id": 193,
+          "arg1": "Sector Tag",
+          "arg2": "Unused",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Ceiling_RaiseToLowest",
+          "id": 265,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Change"
+        },
+        {
+          "name": "Ceiling_RaiseToNearest",
+          "id": 252,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed"
+        },
+        {
+          "name": "Ceiling_RaiseToHighest",
+          "id": 262,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Change"
+        },
+        {
+          "name": "Ceiling_ToHighestInstant",
+          "id": 263,
+          "arg1": "Sector Tag",
+          "arg2": "Change",
+          "arg3": "Crush"
+        },
+        {
+          "name": "Ceiling_RaiseToHighestFloor",
+          "id": 266,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Change"
+        },
+        {
+          "name": "Ceiling_RaiseByValue",
+          "id": 41,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Value"
+        },
+        {
+          "name": "Ceiling_RaiseByValueTimes8",
+          "id": 198,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Ceiling_RaiseInstant",
+          "id": 194,
+          "arg1": "Sector Tag",
+          "arg2": "Unused",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Ceiling_RaiseByTexture",
+          "id": 268,
+          "arg1": "Sector Tag",
+          "arg2": "Change",
+          "arg3": "Crush",
+          "arg4": "Gap"
+        },
+        {
+          "name": "Ceiling_MoveToValue",
+          "id": 47,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Value",
+          "arg4": "Negative?"
+        },
+        {
+          "name": "Ceiling_MoveToValueTimes8",
+          "id": 69,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Eighth of Value",
+          "arg4": "Negative?"
+        },
+        // {
+        //   "name": "Ceiling_Waggle",
+        //   "id": 38,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "Amplitude",
+        //   "arg3": "$ceiling_speed",
+        //   "arg4": "Phase Offset",
+        //   "arg5": "Duration (in seconds)"
+        // },
+        {
+          "name": "Ceiling_ToFloorInstant",
+          "id": 267,
+          "arg1": "Sector Tag",
+          "arg2": "Change",
+          "arg3": "Crush",
+          "arg4": "Gap"
+        },
+        {
+          "name": "Ceiling_LowerByTexture",
+          "id": 269,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Change",
+          "arg4": "Crush"
+        },
+        {
+          "name": "Ceiling_LowerAndCrush",
+          "id": 43,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Crush Damage",
+          "arg4": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_LowerAndCrushDist",
+          "id": 97,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Crush Damage",
+          "arg4": "Distance to Floor",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushAndRaise",
+          "id": 42,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Crush Damage",
+          "arg4": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushAndRaiseA",
+          "id": 196,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushAndRaiseSilentA",
+          "id": 197,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushAndRaiseDist",
+          "id": 168,
+          "arg1": "Sector Tag",
+          "arg2": "Distance to Floor",
+          "arg3": "$ceiling_speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushAndRaiseSilentDist",
+          "id": 104,
+          "arg1": "Sector Tag",
+          "arg2": "Distance to Floor",
+          "arg3": "$ceiling_speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushRaiseAndStay",
+          "id": 45,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Crush Damage",
+          "arg4": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushRaiseAndStayA",
+          "id": 195,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushRaiseAndStaySilA",
+          "id": 255,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushStop",
+          "id": 44,
+          "arg1": "Sector Tag"
+        }
+      ]
+    },
+
+    {
+      "name": "Doors",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        // {
+        //   "name": "Generic_Door",
+        //   "id": 202,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$door_speed",
+        //   "arg3": {
+        //     "name": "Door Kind",
+        //     "type": "choice",
+        //     "custom_values": [
+        //       { "name": "Raise door, close after delay", "value": 0 },
+        //       { "name": "Open door", "value": 1 },
+        //       { "name": "Close door, open after delay", "value": 2 },
+        //       { "name": "Close door", "value": 3 }
+        //     ]
+        //   },
+        //   "arg4": "$delay_octics_door",
+        //   "arg5": "Lock"
+        // },
+        {
+          "name": "Door_Raise",
+          "id": 12,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "$delay_tics_door",
+          "arg4": "Light Tag"
+        },
+        {
+          "name": "Door_WaitRaise",
+          "id": 105,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "$delay_tics_door",
+          "arg4": "Wait Time",
+          "arg5": "Light Tag"
+        },
+        {
+          "name": "Door_LockedRaise",
+          "id": 13,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "$delay_tics_door",
+          "arg4": "Lock",
+          "arg5": "Light Tag"
+        },
+        {
+          "name": "Door_Open",
+          "id": 11,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "Light Tag"
+        },
+        {
+          "name": "Door_Close",
+          "id": 10,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "Light Tag"
+        },
+        {
+          "name": "Door_WaitClose",
+          "id": 106,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "Wait Time",
+          "arg4": "Light Tag"
+        },
+        {
+          "name": "Door_CloseWaitOpen",
+          "id": 249,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "$delay_octics_door",
+          "arg4": "Light Tag"
+        }
+        // {
+        //   "name": "Door_Animated",
+        //   "id": 14,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$door_speed",
+        //   "arg3": "$delay_tics_door",
+        //   "arg4": "Lock"
+        // }
+      ]
+    },
+
+    {
+      "name": "Platforms & Lifts",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        // {
+        //   "name": "Generic_Lift",
+        //   "id": 203,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$lift_speed",
+        //   "arg3": "$delay_octics_lift",
+        //   "arg4": {
+        //     "name": "Lift Type",
+        //     "type": "choice",
+        //     "custom_values": [
+        //       { "name": "Raise by value * 8, lower after delay", "value": 0 },
+        //       { "name": "Lower to lowest floor with lip of 8, raise after delay", "value": 1 },
+        //       { "name": "Lower to nearest floor, raise after delay", "value": 2 },
+        //       { "name": "Lower to lowest ceiling, raise after delay", "value": 3 },
+        //       { "name": "Perpetual lift between lowest and highest floors", "value": 4 }
+        //     ]
+        //   },
+        //   "arg5": "Value (for lift type 0)"
+        // },
+        {
+          "name": "Plat_DownWaitUpStay",
+          "id": 62,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift"
+        },
+        {
+          "name": "Plat_DownWaitUpStayLip",
+          "id": 206,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift",
+          "arg4": "Lip",
+          "arg5": {
+            "name": "Sound type",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Use platform sound", "value": 0 },
+              { "name": "Use moving floor sound", "value": 1 }
+            ]
+          }
+        },
+        {
+          "name": "Plat_DownByValue",
+          "id": 63,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift",
+          "arg4": "Eighth of Value"
+        },
+        {
+          "name": "Plat_UpWaitDownStay",
+          "id": 64,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift"
+        },
+        // {
+        //   "name": "Plat_UpNearestWaitDownStay",
+        //   "id": 172,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$lift_speed",
+        //   "arg3": "$delay_tics_lift"
+        // },
+        {
+          "name": "Plat_UpByValue",
+          "id": 65,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift",
+          "arg4": "Eighth of Value"
+        },
+        {
+          "name": "Plat_UpByValueStayTx",
+          "id": 230,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Plat_RaiseAndStayTx0",
+          "id": 228,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": {
+            "name": "Lockout",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Game Default", "value": 0 },
+              { "name": "Doom (don't lockout)", "value": 1 },
+              { "name": "Heretic (do lockout)", "value": 2 }
+            ]
+          }
+        },
+        {
+          "name": "Plat_PerpetualRaise",
+          "id": 60,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift"
+        },
+        {
+          "name": "Plat_PerpetualRaiseLip",
+          "id": 207,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift",
+          "arg4": "Lip"
+        },
+        {
+          "name": "Plat_ToggleCeiling",
+          "id": 231,
+          "arg1": "Sector Tag"
+        },
+        {
+          "name": "Plat_Stop",
+          "id": 61,
+          "arg1": "Sector Tag"
+        }
+      ]
+    },
+
+    {
+      "name": "Elevators & Pillars",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        {
+          "name": "FloorAndCeiling_LowerByValue",
+          "id": 95,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "Value"
+        },
+        {
+          "name": "FloorAndCeiling_RaiseByValue",
+          "id": 96,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "Value"
+        },
+        {
+          "name": "FloorAndCeiling_LowerRaise",
+          "id": 251,
+          "arg1": "Sector Tag",
+          "arg2": "Floor Lower Speed",
+          "arg3": "Ceiling Raise Speed",
+          "arg4": {
+            "name": "Boom Bug Emulation",
+            "description": "Use value 1998 to emulate a Boom bug"
+          }
+        },
+        {
+          "name": "Elevator_LowerToNearest",
+          "id": 247,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed"
+        },
+        {
+          "name": "Elevator_RaiseToNearest",
+          "id": 245,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed"
+        },
+        {
+          "name": "Elevator_MoveToFloor",
+          "id": 246,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed"
+        },
+        {
+          "name": "Pillar_Open",
+          "id": 30,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": {
+            "name": "Floor Lower Value",
+            "description": "0 = Lowest Adjacent Floor"
+          },
+          "arg4": {
+            "name": "Ceiling Raise Value",
+            "description": "0 = Highest Adjacent Ceiling"
+          }
+        },
+        {
+          "name": "Pillar_Build",
+          "id": 29,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": {
+            "name": "Floor Height",
+            "description": "0 = Halfway Point"
+          }
+        },
+        {
+          "name": "Pillar_BuildAndCrush",
+          "id": 94,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": {
+            "name": "Floor Height",
+            "description": "0 = Halfway Point"
+          },
+          "arg4": "Crushing Damage",
+          "arg5": "Crushing Mode"
+        },
+        {
+          "name": "Sector_Attach3dMidtex",
+          "id": 48,
+          "arg1": "Line ID",
+          "arg2": "Sector Tag",
+          "arg3": {
+            "name": "Plane",
+            "type": "choice",
+            "custom_values": [
+              { "name": "floor", "value": 0 },
+              { "name": "ceiling", "value": 1 }
+            ]
+          },
+          "tagged": "ex_1line_2sector"
+        }
+      ]
+    },
+
+    {
+      "name": "Stair Builders",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        // {
+        //   "name": "Generic_Stairs",
+        //   "id": 204,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$stair_speed",
+        //   "arg3": "Step Height",
+        //   "arg4": {
+        //     "name": "Flags",
+        //     "type": "flags",
+        //     "custom_flags": [
+        //       { "name": "build stairs down", "value": 0 },
+        //       { "name": "build stairs up", "value": 1 },
+        //       { "name": "ignore floor textures when finding stairs", "value": 2 }
+        //     ]
+        //   },
+        //   "arg5": "Reset Delay (in tics)"
+        // },
+        // {
+        //   "name": "Stairs_BuildDown",
+        //   "id": 26,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$stair_speed",
+        //   "arg3": "Step Height",
+        //   "arg4": "Step Delay (in tics)",
+        //   "arg5": "Reset Delay (in tics)"
+        // },
+        // {
+        //   "name": "Stairs_BuildDownSync",
+        //   "id": 31,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$stair_speed",
+        //   "arg3": "Step Height",
+        //   "arg4": "Reset Delay (in tics)"
+        // },
+        // {
+        //   "name": "Stairs_BuildUp",
+        //   "id": 27,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$stair_speed",
+        //   "arg3": "Step Height",
+        //   "arg4": "Step Delay (in tics)",
+        //   "arg5": "Reset Delay (in tics)"
+        // },
+        // {
+        //   "name": "Stairs_BuildUpSync",
+        //   "id": 32,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "$stair_speed",
+        //   "arg3": "Step Height",
+        //   "arg4": "Reset Delay (in tics)"
+        // },
+        {
+          "name": "Stairs_BuildUpDoom",
+          "id": 217,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": "Step Delay (in tics)",
+          "arg5": "Reset Delay (in tics)"
+        },
+        {
+          "name": "Stairs_BuildDownDoom",
+          "id": 270,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": "Step Delay (in tics)",
+          "arg5": "Reset Delay (in tics)"
+        },
+        {
+          "name": "Stairs_BuildUpDoomSync",
+          "id": 271,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": "Reset Delay (in tics)"
+        },
+        {
+          "name": "Stairs_BuildDownDoomSync",
+          "id": 272,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": "Reset Delay (in tics)"
+        },
+        {
+          "name": "Stairs_BuildUpDoomCrush",
+          "id": 273,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": "Step Delay (in tics)",
+          "arg5": "Reset Delay (in tics)"
+        }
+      ]
+    },
+
+    {
+      "name": "Sector",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        {
+          "name": "Plane_Align",
+          "id": 181,
+          "arg1": {
+            "name": "Floor",
+            "type": "choice",
+            "custom_values": [
+              { "name": "don't align", "value": 0 },
+              { "name": "align front to back", "value": 1 },
+              { "name": "align back to front", "value": 2 }
+            ]
+          },
+          "arg2": {
+            "name": "Ceiling",
+            "type": "choice",
+            "custom_values": [
+              { "name": "don't align", "value": 0 },
+              { "name": "align front to back", "value": 1 },
+              { "name": "align back to front", "value": 2 }
+            ]
+          },
+          "arg3": "Line ID",
+          "tagged": "ex_3lineid"
+        },
+        {
+          "name": "Plane_Copy",
+          "id": 118,
+          "arg1": "Front Floor Tag",
+          "arg2": "Front Ceiling Tag",
+          "arg3": "Back Floor Tag",
+          "arg4": "Back Ceiling Tag",
+          "arg5": {
+            "name": "Share Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "copy floor front to back", "value": 1 },
+              { "name": "copy floor back to front", "value": 2 },
+              { "name": "copy ceiling front to back", "value": 4 },
+              { "name": "copy ceiling back to front", "value": 8 }
+            ]
+          },
+          "tagged": "ex_1sector_2sector_3sector_4sector"
+        },
+        // {
+        //   "name": "Sector_Set3DFloor",
+        //   "id": 160,
+        //   "arg1": "Sector Tag",
+        //   "arg2": {
+        //     "name": "Type",
+        //     "type": "flags",
+        //     "custom_flags": [
+        //       { "name": "Vavoom", "value": 0 },
+        //       { "name": "solid", "value": 1 },
+        //       { "name": "swimmable", "value": 2 },
+        //       { "name": "non-solid", "value": 3 },
+        //       { "name": "draw inside of floor (don't use with Vavoom)", "value": 4 },
+        //       { "name": "arg 5 is LineID (don't use in UDMF)", "value": 8 },
+        //       { "name": "invert visibility", "value": 16 },
+        //       { "name": "invert shootability", "value": 32 }
+        //     ]
+        //   },
+        //   "arg3": {
+        //     "name": "Flags",
+        //     "type": "flags",
+        //     "custom_flags": [
+        //       { "name": "disable lighting effects", "value": 1 },
+        //       { "name": "restrict lighting to inside of floor", "value": 2 },
+        //       { "name": "pseudo-fog", "value": 4 },
+        //       { "name": "flat floor at ceiling height", "value": 8 },
+        //       { "name": "use upper texture", "value": 16 },
+        //       { "name": "use lower texture", "value": 32 },
+        //       { "name": "use additive translucency", "value": 64 }
+        //     ]
+        //   },
+        //   "arg4": { "name": "Opacity", "description": "On a 0--255 scale from fully transparent to fully opaque" },
+        //   "arg5": { "name": "Hi-Tag/Line ID", "description": "Don't use this one in UDMF" }
+        // },
+        // {
+        //   "name": "Sector_SetLink",
+        //   "id": 51,
+        //   "arg1": "Control Tag",
+        //   "arg2": "Sector Tag",
+        //   "arg3": {
+        //     "name": "Plane",
+        //     "type": "choice",
+        //     "custom_values": [
+        //       { "name": "floor", "value": 0 },
+        //       { "name": "ceiling", "value": 1 }
+        //     ]
+        //   },
+        //   "arg4": {
+        //     "name": "Link flags",
+        //     "type": "flags",
+        //     "custom_flags": [
+        //       { "name": "floor to surface", "value": 1 },
+        //       { "name": "ceiling to surface", "value": 2 },
+        //       { "name": "invert floor movement", "value": 4 },
+        //       { "name": "invert ceiling movement", "value": 8 }
+        //     ]
+        //   },
+        //   "tagged": "ex_1sector_2sector"
+        // },
+        {
+          "name": "Static_Init",
+          "id": 190,
+          "arg1": "Sector Tag/Line ID",
+          "arg2": {
+            "name": "Property",
+            "type": "choice",
+            "custom_values": [
+              // { "name": "set gravity", "value": 0 },
+              // { "name": "set light or fog color from upper/lower texture", "value": 1 },
+              // { "name": "set damage from linedef length", "value": 2 },
+              // { "name": "sector link", "value": 3 },
+              { "name": "set sky from upper texture", "value": 255 }
+            ]
+          },
+          "arg3": {
+            "name": "Ceiling/Flip?",
+            "description": "Property 3: use ceiling instead of floor as control surface; Property 255: flip sky texture horizontally"
+          },
+          "arg4": {
+            "name": "Move Type",
+            "desc": "Only used when Property is 3",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "floor to surface", "value": 1 },
+              { "name": "ceiling to surface", "value": 2 },
+              { "name": "invert floor movement", "value": 4 },
+              { "name": "invert ceiling movement", "value": 8 }
+            ]
+          },
+          "tagged": "ex_sector_2is3_line"
+        },
+        // {
+        //   "name": "Sector_ChangeFlags",
+        //   "id": 54,
+        //   "arg1": "Sector Tag",
+        //   "arg2": {
+        //     "name": "Set flags",
+        //     "type": "flags",
+        //     "custom_flags": [
+        //       { "name": "silent", "value": 1 },
+        //       { "name": "nofallingdamage", "value": 2 },
+        //       { "name": "dropactors", "value": 4 },
+        //       { "name": "norespawn", "value": 8 }
+        //     ]
+        //   },
+        //   "arg3": {
+        //     "name": "Clear flags",
+        //     "type": "flags",
+        //     "custom_flags": [
+        //       { "name": "silent", "value": 1 },
+        //       { "name": "nofallingdamage", "value": 2 },
+        //       { "name": "dropactors", "value": 4 },
+        //       { "name": "norespawn", "value": 8 }
+        //     ]
+        //   }
+        // },
+        {
+          "name": "Sector_ChangeSound",
+          "id": 140,
+          "arg1": "Sector Tag",
+          "arg2": {
+            "name": "Sound Sequence",
+            "description": "Index of sequence in SNDSEQ"
+          }
+        },
+        {
+          "name": "Sector_SetRotation",
+          "id": 185,
+          "arg1": "Sector Tag",
+          "arg2": "Floor Angle",
+          "arg3": "Ceiling Angle"
+        },
+        {
+          "name": "Sector_SetFloorPanning",
+          "id": 187,
+          "arg1": "Sector Tag",
+          "arg2": "U Offset",
+          "arg3": "V Offset",
+          "arg4": {
+            "name": "U Frac",
+            "description": "One hundredth of this value is added to U offset"
+          },
+          "arg5": {
+            "name": "V Frac",
+            "description": "One hundredth of this value is added to V offset"
+          }
+        },
+        {
+          "name": "Sector_SetCeilingPanning",
+          "id": 186,
+          "arg1": "Sector Tag",
+          "arg2": "U Offset",
+          "arg3": "V Offset",
+          "arg4": {
+            "name": "U Frac",
+            "description": "One hundredth of this value is added to U offset"
+          },
+          "arg5": {
+            "name": "V Frac",
+            "description": "One hundredth of this value is added to V offset"
+          }
+        },
+        // {
+        //   "name": "Sector_SetFloorScale",
+        //   "id": 189,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "U Offset",
+        //   "arg3": {
+        //     "name": "U Frac",
+        //     "description": "One hundredth of this value is added to U offset"
+        //   },
+        //   "arg4": "V Offset",
+        //   "arg5": {
+        //     "name": "V Frac",
+        //     "description": "One hundredth of this value is added to V offset"
+        //   }
+        // },
+        // {
+        //   "name": "Sector_SetCeilingScale",
+        //   "id": 188,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "U Offset",
+        //   "arg3": {
+        //     "name": "U Frac",
+        //     "description": "One hundredth of this value is added to U offset"
+        //   },
+        //   "arg4": "V Offset",
+        //   "arg5": {
+        //     "name": "V Frac",
+        //     "description": "One hundredth of this value is added to V offset"
+        //   }
+        // },
+        {
+          "name": "line_align_sector",
+          "arg": {
+            "name": "Align to",
+            "type": "choice",
+            "custom_values": [
+              { "name": "front sector", "value": 0 },
+              { "name": "back sector", "value": 1 }
+            ]
+          }
+        },
+        // {
+        //   "name": "Line_AlignFloor",
+        //   "id": 184,
+        //   "arg1": "Line ID",
+        //   "arg2": "$line_align_sector",
+        //   "tagged": "line"
+        // },
+        // {
+        //   "name": "Line_AlignCeiling",
+        //   "id": 183,
+        //   "arg1": "Line ID",
+        //   "arg2": "$line_align_sector",
+        //   "tagged": "line"
+        // },
+        // {
+        //   "name": "Sector_SetColor",
+        //   "id": 212,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "Red",
+        //   "arg3": "Green",
+        //   "arg4": "Blue",
+        //   "arg5": "Desaturation"
+        // },
+        // {
+        //   "name": "Sector_SetFade",
+        //   "id": 213,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "Red",
+        //   "arg3": "Green",
+        //   "arg4": "Blue"
+        // },
+        // {
+        //   "name": "Sector_SetDamage",
+        //   "id": 214,
+        //   "arg1": "Sector Tag",
+        //   "arg2": "Amount",
+        //   "arg3": "$means_of_death"
+        // },
+        // {
+        //   "name": "Sector_SetGravity",
+        //   "id": 216,
+        //   "arg1": "Sector Tag",
+        //   "arg2": {
+        //     "name": "Gravity Multiplier",
+        //     "description": "Integral part of the gravity multiplier"
+        //   },
+        //   "arg3": {
+        //     "name": "Fraction",
+        //     "description": "Fractional part of the gravity multiplier"
+        //   }
+        // },
+        {
+          "name": "Sector_SetWind",
+          "id": 218,
+          "arg1": {
+            "name": "Sector Tag",
+            "description": "Remember that the sector needs to have the 'pusher/puller/wind enabled' flag"
+          },
+          "arg2": "Strength",
+          "arg3": "Angle",
+          "arg4": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "Use Line?", "value": 1 },
+              { "name": "Heretic Wind Behaviour", "value": 2 }
+            ]
+          }
+        },
+        {
+          "name": "Sector_SetFriction",
+          "id": 219,
+          "arg1": "Sector Tag",
+          "arg2": {
+            "name": "Amount",
+            "description": "0: value taken from linedef length; 1-127: increased friction (sludgy), 128: normal friction, 129-255: decreased friction (icy)"
+          }
+        },
+        {
+          "name": "Sector_SetCurrent",
+          "id": 220,
+          "arg1": {
+            "name": "Sector Tag",
+            "description": "Remember that the sector needs to have the 'pusher/puller/wind enabled' flag"
+          },
+          "arg2": "Strength",
+          "arg3": "Angle",
+          "arg4": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "Use Line?", "value": 1 },
+              { "name": "Heretic Current Behaviour", "value": 2 }
+            ]
+          }
+        },
+        {
+          "name": "PointPush_SetForce",
+          "id": 227,
+          "arg1": "Sector Tag",
+          "arg2": {
+            "name": "Thing ID",
+            "description": "TID of the pusher or puller"
+          },
+          "arg3": "Strength",
+          "arg4": {
+            "name": "Use Line?",
+            "description": "If 1, pusher/puller strength is derived from the length of the linedef itself, instead of previous arg."
+          },
+          "tagged": "ex_1sector_2thing"
+        }
+        // {
+        //   "name": "Sector_SetContents (OpenGL)",
+        //   "id": 161,
+        //   "arg1": {
+        //     "name": "Content Type",
+        //     "type": "choice",
+        //     "custom_values": [
+        //       { "name": "empty", "value": 0 },
+        //       { "name": "water", "value": 1 },
+        //       { "name": "lava", "value": 2 },
+        //       { "name": "nukage", "value": 3 },
+        //       { "name": "slime", "value": 4 },
+        //       { "name": "hellslime", "value": 5 },
+        //       { "name": "blood", "value": 6 },
+        //       { "name": "sludge", "value": 7 },
+        //       { "name": "hazard", "value": 8 },
+        //       { "name": "Boom water", "value": 9 }
+        //     ]
+        //   },
+        //   "arg2": {
+        //     "name": "Translucency %",
+        //     "description": "0 is fully opaque, 100 is invisible"
+        //   },
+        //   "arg3": {
+        //     "name": "Flags",
+        //     "type": "flags",
+        //     "custom_flags": [
+        //       { "name": "don't block movement", "value": 1 },
+        //       { "name": "don't block sight", "value": 2 },
+        //       { "name": "don't block shooting", "value": 4 },
+        //       { "name": "use additive translucency", "value": 8 }
+        //     ]
+        //   }
+        // },
+        // {
+        //   "name": "Sector_SetCeilingScale2",
+        //   "id": 170
+        // },
+        // {
+        //   "name": "Sector_SetFloorScale2",
+        //   "id": 171
+        // }
+      ]
+    },
+
+    {
+      "name": "Lighting",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+      // {
+      //   "name": "Light_ForceLightning",
+      //   "id": 109,
+      //   "arg1": {
+      //     "name": "Mode",
+      //     "type": "choice",
+      //     "custom_values": [
+      //       { "name": "immediate flash and set lightning mode", "value": 0 },
+      //       { "name": "single flash without setting lightning mode", "value": 1 },
+      //       { "name": "unset lightning mode", "value": 2 }
+      //     ]
+      //   },
+      //   "tagged": "no"
+      // },
+      {
+        "name": "Light_MinNeighbor",
+        "id": 233,
+        "arg1": "Sector Tag"
+      },
+      {
+        "name": "Light_LowerByValue",
+        "id": 111,
+        "arg1": "Sector Tag",
+        "arg2": "Value"
+      },
+      {
+        "name": "Light_MaxNeighbor",
+        "id": 234,
+        "arg1": "Sector Tag"
+      },
+      {
+        "name": "Light_RaiseByValue",
+        "id": 110,
+        "arg1": "Sector Tag",
+        "arg2": "Value"
+      },
+      {
+        "name": "Light_ChangeToValue",
+        "id": 112,
+        "arg1": "Sector Tag",
+        "arg2": "Value"
+      },
+      {
+        "name": "Light_Fade",
+        "id": 113,
+        "arg1": "Sector Tag",
+        "arg2": "Value",
+        "arg3": {
+        "name": "Fade Length",
+        "description": "Number of tics to reach the new value"
+        }
+      },
+      {
+        "name": "Light_Glow",
+        "id": 114,
+        "arg1": "Sector Tag",
+        "arg2": "Upper Light Level",
+        "arg3": "Lower Light Level",
+        "arg4": {
+        "name": "Fade Length",
+        "description": "Number of tics to alternate between both values"
+        }
+      },
+      {
+        "name": "Light_Flicker",
+        "id": 115,
+        "arg1": "Sector Tag",
+        "arg2": "Upper Light Level",
+        "arg3": "Lower Light Level"
+      },
+      {
+        "name": "Light_Strobe",
+        "id": 116,
+        "arg1": "Sector Tag",
+        "arg2": "Upper Light Level",
+        "arg3": "Lower Light Level",
+        "arg4": {
+        "name": "Upper Length",
+        "description": "Number of tics to stay at upper level"
+        },
+        "arg5": {
+        "name": "Lower Length",
+        "description": "Number of tics to stay at lower level"
+        }
+      },
+      {
+        "name": "Light_StrobeDoom",
+        "id": 232,
+        "arg1": "Sector Tag",
+        "arg2": {
+        "name": "Upper Length",
+        "description": "Number of tics to stay at normal level"
+        },
+        "arg3": {
+        "name": "Lower Length",
+        "description": "Number of tics to stay at lowest neighboring level"
+        }
+      }
+      // {
+      //   "name": "Light_Stop",
+      //   "id": 117,
+      //   "arg1": "Sector Tag"
+      // }
+      ]
+    },
+
+    {
+      "name": "Teleporters",
+      "defaults": { "tagged": "ex_1thing_2sector" },
+      "specials": [
+      {
+        "name": "Teleport",
+        "id": 70,
+        "arg1": "Dest Thing ID",
+        "arg2": "Dest Sector Tag",
+        "arg3": "No Source Fog?"
+      },
+      // {
+      //   "name": "Teleport_ZombieChanger", // [RH] Needed for Strife
+      //   "id": 39,
+      //   "arg1": "Dest Thing ID",
+      //   "arg2": "Dest Sector Tag"
+      // },
+      {
+        "name": "Teleport_NoFog",
+        "id": 71,
+        "arg1": "Dest Thing ID",
+        "arg2": "Change Facing?",
+        "arg3": "Dest Sector Tag",
+        "tagged": "ex_1thing_3sector"
+      },
+      // {
+      //   "name": "TeleportOther",
+      //   "id": 76,
+      //   "arg1": "Target Thing ID",
+      //   "arg2": "Dest Thing ID",
+      //   "arg3": "Use Fog?",
+      //   "tagged": "ex_1thing_2thing"
+      // },
+      // {
+      //   "name": "TeleportGroup",
+      //   "id": 77,
+      //   "arg1": {
+      //     "name": "Target Thing ID",
+      //     "description": "0 Teleports the activator"
+      //   },
+      //   "arg2": {
+      //     "name": "Source Thing ID",
+      //     "description": "Must be a teleport destination"
+      //   },
+      //   "arg3": {
+      //     "name": "Dest Thing ID",
+      //     "description": "Must be a teleport destination"
+      //   },
+      //   "arg4": "Move Source?",
+      //   "arg5": "Use Fog?",
+      //   "tagged": "ex_1thing_2thing_3thing"
+      // },
+      // {
+      //   "name": "TeleportInSector",
+      //   "id": 78,
+      //   "arg1": "Sector Tag",
+      //   "arg2": {
+      //     "name": "Source Thing ID",
+      //     "description": "Must be a teleport destination"
+      //   },
+      //   "arg3": {
+      //     "name": "Dest Thing ID",
+      //     "description": "Must be a teleport destination"
+      //   },
+      //   "arg4": "Use Fog?",
+      //   "arg5": "Group Thing ID",
+      //   "tagged": "ex_1sector_2thing_3thing_5thing"
+      // },
+      // {
+      //   "name": "Teleport_NoStop",
+      //   "id": 154,
+      //   "arg1": "Thing Tag",
+      //   "arg2": "Sector Tag",
+      //   "arg3": "No Fog?"
+      // },
+      {
+        "name": "Teleport_Line",
+        "id": 215,
+        "arg1": {
+        "name": "This ID",
+        "description": "Line ID of the marked line (in UDMF, use line ID property instead!)"
+        },
+        "arg2": {
+        "name": "Destination ID",
+        "description": "Line ID of the destination line"
+        },
+        "arg3": "Flip 180?",
+        "tagged": "ex_1lineid_2line"
+      }
+      ]
+    },
+
+    {
+      "name": "Things",
+      "defaults": { "tagged": "thing" },
+      "specials": [
+      {
+        "name": "Thing_Activate",
+        "id": 130,
+        "arg1": "Thing ID"
+      },
+      {
+        "name": "Thing_Deactivate",
+        "id": 131,
+        "arg1": "Thing ID"
+      },
+      {
+        "name": "HealThing",
+        "id": 248,
+        "arg1": "Thing ID",
+        "arg2": "Amount"
+      },
+      {
+        "name": "Thing_Raise",
+        "id": 17,
+        "arg1": "Thing ID"
+      },
+      {
+        "name": "Thing_Spawn",
+        "id": 135,
+        "arg1": "Thing ID",
+        "arg2": {
+        "name": "Type",
+        "description": "Spawn ID of the projectile"
+        },
+        "arg3": {
+        "name": "Angle",
+        "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South"
+        },
+        "arg4": {
+        "name": "New TID",
+        "description": "TID to give spawned thing"
+        }
+      },
+      {
+        "name": "Thing_SpawnNoFog",
+        "id": 137,
+        "arg1": "Thing ID",
+        "arg2": {
+        "name": "Type",
+        "description": "Spawn ID of the projectile"
+        },
+        "arg3": {
+        "name": "Angle",
+        "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South"
+        },
+        "arg4": {
+        "name": "New TID",
+        "description": "TID to give spawned thing"
+        }
+      },
+      // {
+      //   "name": "Thing_SpawnFacing",
+      //   "id": 139,
+      //   "arg1": "Thing ID",
+      //   "arg2": {
+      //     "name": "Type",
+      //     "description": "Spawn ID of the projectile"
+      //   },
+      //   "arg3": "No Fog?",
+      //   "arg4": {
+      //     "name": "New TID",
+      //     "description": "TID to give spawned thing"
+      //   }
+      // },
+      {
+        "name": "Thing_Projectile",
+        "id": 134,
+        "arg1": "Thing ID",
+        "arg2": {
+        "name": "Type",
+        "description": "Spawn ID of the projectile"
+        },
+        "arg3": {
+        "name": "Angle",
+        "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South",
+        "type": "angle"
+        },
+        "arg4": "$projectile_h_speed",
+        "arg5": "$projectile_v_speed"
+      },
+      {
+        "name": "Thing_ProjectileGravity",
+        "id": 136,
+        "arg1": "Thing ID",
+        "arg2": {
+        "name": "Type",
+        "description": "Spawn ID of the projectile"
+        },
+        "arg3": {
+        "name": "Angle",
+        "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South"
+        },
+        "arg4": "$projectile_h_speed",
+        "arg5": "$projectile_v_speed"
+      },
+      // {
+      //   "name": "Thing_ProjectileAimed",
+      //   "id": 178,
+      //   "arg1": "Thing ID",
+      //   "arg2": {
+      //     "name": "Type",
+      //     "description": "Spawn ID of the projectile"
+      //   },
+      //   "arg3": "$projectile_speed",
+      //   "arg4": "Target TID",
+      //   "arg5": {
+      //     "name": "New TID",
+      //     "description": "TID to give spawned thing"
+      //   },
+      //   "tagged": "ex_1thing_4thing"
+      // },
+      // {
+      //   "name": "Thing_ProjectileIntercept",
+      //   "id": 175,
+      //   "arg1": "Thing ID",
+      //   "arg2": {
+      //     "name": "Type",
+      //     "description": "Spawn ID of the projectile"
+      //   },
+      //   "arg3": "$projectile_speed",
+      //   "arg4": "Target TID",
+      //   "arg5": {
+      //     "name": "New TID",
+      //     "description": "TID to give spawned thing"
+      //   },
+      //   "tagged": "ex_1thing_4thing"
+      // },
+      {
+        "name": "DamageThing",
+        "id": 73,
+        "arg1": {
+        "name": "Amount",
+        "description": "0 is a guaranteed kill"
+        },
+        "arg2": "$means_of_death",
+        "tagged": "no"
+      },
+      {
+        "name": "Thing_Damage",
+        "id": 119,
+        "arg1": "Thing ID",
+        "arg2": "Amount",
+        "arg3": "$means_of_death"
+      },
+      {
+        "name": "Thing_Destroy",
+        "id": 133,
+        "arg1": "Thing ID",
+        "arg2": "Extreme?",
+        "arg3": "Sector Tag",
+        "tagged": "ex_1thing_3sector"
+      },
+      {
+        "name": "Thing_Remove",
+        "id": 132,
+        "arg1": "Thing ID"
+      },
+      // {
+      //   "name": "Thing_Move",
+      //   "id": 125,
+      //   "arg1": "Thing ID",
+      //   "arg2": "Destination TID",
+      //   "arg3": "No Fog?",
+      //   "tagged": "ex_1thing_2thing"
+      // },
+      {
+        "name": "ThrustThing",
+        "id": 72,
+        "arg1": {
+        "name": "Angle",
+        "description": "Byte angle: 0 = East, 64 = North, 128 = West, 192 = South",
+        "type": "angle"
+        },
+        "arg2": {
+        "name": "Force",
+        "description": "In map unit per tics"
+        },
+        "arg3": {
+        "name": "No limit",
+        "description": "Should be set to 1 for forces above 30"
+        },
+        "arg4": "Thing ID",
+        "tagged": "ex_4thing"
+      },
+      {
+        "name": "ThrustThingZ",
+        "id": 128,
+        "arg1": "Thing ID",
+        "arg2": {
+        "name": "Force",
+        "description": "Vertical movement in quarter of unit per tic"
+        },
+        "arg3": {
+        "name": "Down?",
+        "description": "Default is up"
+        },
+        "arg4": {
+        "name": "Add?",
+        "description": "Default is to ignore existing vertical velocity"
+        }
+      },
+      {
+        "name": "Thing_Stop",
+        "id": 19,
+        "arg1": "Thing ID"
+      },
+      // {
+      //   "name": "Thing_SetConversation",
+      //   "id": 79,
+      //   "arg1": "Thing ID",
+      //   "arg2": {
+      //     "name": "Conversation ID",
+      //     "description": "0 = remove all conversation from tagged actors"
+      //   }
+      // },
+      // {
+      //   "name": "Thing_SetSpecial",
+      //   "id": 127,
+      //   "arg1": "Thing ID",
+      //   "arg2": "Special",
+      //   "arg3": "First Special Arg",
+      //   "arg4": "Second Special Arg",
+      //   "arg5": "Third Special Arg"
+      // },
+      {
+        "name": "Thing_ChangeTID",
+        "id": 176,
+        "arg1": "Thing ID",
+        "arg2": "New TID"
+      }
+      // {
+      //   "name": "Thing_Hate",
+      //   "id": 177,
+      //   "arg1": "Hater TID",
+      //   "arg2": "Hated TID",
+      //   "arg3": {
+      //     "name": "Hate Type",
+      //     "type": "choice",
+      //     "custom_values": [
+      //       { "name": "hate once", "value": 0 },
+      //       { "name": "retaliate against players", "value": 1 },
+      //       { "name": "also hunt enemies", "value": 2 },
+      //       { "name": "also hunt players", "value": 3 },
+      //       { "name": "also hunt monsters", "value": 4 },
+      //       { "name": "ignore player attacks", "value": 5 },
+      //       { "name": "ignore attacks but hunt enemies", "value": 6 }
+      //     ]
+      //   }
+      // },
+      // {
+      //   "name": "Thing_SetTranslation",
+      //   "id": 180,
+      //   "arg1": "Thing ID",
+      //   "arg2": "Translation number"
+      // },
+      // {
+      //   "name": "Thing_SetGoal",
+      //   "id": 229,
+      //   "arg1": "Thing ID",
+      //   "arg2": "Goal TID",
+      //   "arg3": {
+      //     "name": "Delay",
+      //     "description": "Seconds before starting patrol"
+      //   },
+      //   "arg4": {
+      //     "name": "Don't Chase Target?",
+      //     "description": "If 1, the monster will attack enemies on its way but still go towards the goal instead of any other target"
+      //   },
+      //   "tagged": "ex_1thing_2thing"
+      // }
+      ]
+    },
+
+    //{
+    //  "name": "Lines",
+    //  "defaults": { "tagged": "line" },
+    //  "specials": [
+    // {
+    //   "name": "Line_SetBlocking",
+    //   "id": 55,
+    //   "arg1": "Line ID",
+    //   "arg2": {
+    //     "name": "Set Flags",
+    //     "type": "flags",
+    //     "custom_flags": [
+    //       { "id": 1, "name": "creatures" },
+    //       { "id": 2, "name": "monsters" },
+    //       { "id": 4, "name": "players" },
+    //       { "id": 8, "name": "floaters" },
+    //       { "id": 16, "name": "projectiles" },
+    //       { "id": 32, "name": "everything above" },
+    //       { "id": 64, "name": "Strife railing (only bottom 32 units block)" },
+    //       { "id": 128, "name": "switch use" },
+    //       { "id": 256, "name": "monster sight" },
+    //       { "id": 512, "name": "hitscan attacks" }
+    //     ]
+    //   },
+    //   "arg3": {
+    //     "name": "Clear Flags",
+    //     "type": "flags",
+    //     "custom_flags": [
+    //       { "id": 1, "name": "creatures" },
+    //       { "id": 2, "name": "monsters" },
+    //       { "id": 4, "name": "players" },
+    //       { "id": 8, "name": "floaters" },
+    //       { "id": 16, "name": "projectiles" },
+    //       { "id": 32, "name": "everything above" },
+    //       { "id": 64, "name": "Strife railing (only bottom 32 units block)" },
+    //       { "id": 128, "name": "switch use" },
+    //       { "id": 256, "name": "monster sight" },
+    //       { "id": 512, "name": "hitscan attacks" }
+    //     ]
+    //   }
+    // },
+    // { "id": 33, "name": "ForceField" }, // [RH] Strife's forcefield special (148)
+    // {
+    //   "name": "ClearForceField", // [RH] Remove Strife's forcefield from tagged sectors
+    //   "id": 34,
+    //   "arg1": "Sector Tag",
+    //   "tagged": "sector"
+    // },
+    // {
+    //   "name": "GlassBreak",
+    //   "id": 49,
+    //   "arg1": {
+    //     "name": "Don't Spawn Junk?",
+    //     "description": "Set to 1 to avoid spawning seven 'glass junk' actors"
+    //   },
+    //   "tagged": "no"
+    // }
+    //  ]
+
+    {
+      "name": "Scrollers",
+      "defaults": { "tagged": "no" },
+      "specials": [
+      {
+        "name": "Scroll_Texture_Up",
+        "id": 102,
+        "arg1": "$scroll_texture_speed",
+        "arg2": "$scroll_texture_flags"
+      },
+      {
+        "name": "Scroll_Texture_Down",
+        "id": 103,
+        "arg1": "$scroll_texture_speed",
+        "arg2": "$scroll_texture_flags"
+      },
+      {
+        "name": "Scroll_Texture_Left",
+        "id": 100,
+        "arg1": "$scroll_texture_speed",
+        "arg2": "$scroll_texture_flags"
+      },
+      {
+        "name": "Scroll_Texture_Right",
+        "id": 101,
+        "arg1": "$scroll_texture_speed",
+        "arg2": "$scroll_texture_flags"
+      },
+      // {
+      //   "name": "Scroll_Texture_Both",
+      //   "id": 221,
+      //   "arg1": "Line ID",
+      //   "arg2": "Left Speed",
+      //   "arg3": "Right Speed",
+      //   "arg4": "Down Speed",
+      //   "arg5": "Up Speed",
+      //   "tagged": "line_negative"
+      // },
+      // {
+      //   "name": "Scroll_Wall",
+      //   "id": 52,
+      //   "arg1": { "name": "Line ID", "description": "Affected lines should not be 3D middle textures" },
+      //   "arg2": { "name": "X Speed", "description": "Horizontal speed per tic as fixed point value" },
+      //   "arg3": { "name": "Y Speed", "description": "Vertical speed per tic as fixed point value" },
+      //   "arg4": { "name": "Line Side", "description": "0 for front and 1 for back" },
+      //   "arg5": "$scroll_texture_flags",
+      //   "tagged": "line"
+      // },
+      // {
+      //   "name": "Scroll_Texture_Offsets",
+      //   "id": 225,
+      //   "arg1": "$scroll_texture_flags"
+      // },
+      {
+        "name": "Scroll_Texture_Model",
+        "id": 222,
+        "arg1": "Line ID",
+        "arg2": {
+        "name": "Flags",
+        "type": "flags",
+        "custom_flags": [
+          { "name": "Displacement", "value": 1 },
+          { "name": "Accelerative", "value": 2 }
+        ]
+        },
+        "tagged": "lineid"
+      },
+      {
+        "name": "Scroll_Floor",
+        "id": 223,
+        "arg1": "Sector Tag",
+        "arg2": "$scroll_flat_flags",
+        "arg3": {
+        "name": "Type",
+        "type": "choice",
+        "custom_values": [
+          { "name": "Scroll texture", "value": 0 },
+          { "name": "Carry actors", "value": 1 },
+          { "name": "Scroll and carry", "value": 2 }
+        ]
+        },
+        "arg4": {
+        "name": "X Speed",
+        "description": "128 is no scroll, 0-127 is West, 129-255 is East"
+        },
+        "arg5": {
+        "name": "Y Speed",
+        "description": "128 is no scroll, 0-127 is South, 129-255 is North"
+        },
+        "tagged": "sector"
+      },
+      {
+        "name": "Scroll_Ceiling",
+        "id": 224,
+        "arg1": "Sector Tag",
+        "arg2": "$scroll_flat_flags",
+        "arg3": {
+        "name": "Unused",
+        "description": "There are no scroll ceiling types, so this value is not used"
+        },
+        "arg4": {
+        "name": "X Speed",
+        "description": "128 is no scroll, 0-127 is West, 129-255 is East"
+        },
+        "arg5": {
+        "name": "Y Speed",
+        "description": "128 is no scroll, 0-127 is South, 129-255 is North"
+        },
+        "tagged": "sector"
+      }
+      // {
+      //   "name": "Sector_CopyScroller",
+      //   "id": 58,
+      //   "arg1": { "name": "Sector Tag", "description": "Tag of the sector to copy" },
+      //   "arg2": {
+      //     "name": "Flags",
+      //     "type": "flags",
+      //     "custom_flags": [
+      //       { "value": 1, "name": "copy ceiling scrolling" },
+      //       { "value": 2, "name": "copy floor scrolling" },
+      //       { "value": 4, "name": "copy actor carrying" }
+      //     ]
+      //   }
+      // }
+      ]
+    },
+
+    {
+      "name": "PolyObjects",
+      "specials": [
+        {
+          "id": 1,
+          "name": "Polyobj_StartLine",
+          "arg1": "PolyObject ID",
+          "arg2": "Mirror PolyObject ID",
+          "arg3": "Sound Sequence"
+        },
+        {
+          "id": 5,
+          "name": "Polyobj_ExplicitLine",
+          "arg1": "PolyObject ID",
+          "arg2": "Rendering Order",
+          "arg3": "Mirror PolyObject ID",
+          "arg4": "Sound Sequence",
+          "arg5": "Line ID" // Not in UDMF
+        },
+        {
+          "id": 2,
+          "name": "Polyobj_RotateLeft",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "id": 90,
+          "name": "Polyobj_OR_RotateLeft",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "id": 3,
+          "name": "Polyobj_RotateRight",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "id": 91,
+          "name": "Polyobj_OR_RotateRight",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "id": 4,
+          "name": "Polyobj_Move",
+          "arg1": "PolyObject ID",
+          "arg2": "$polyobj_speed",
+          "arg3": "Byte Angle",
+          "arg4": "Distance"
+        },
+        {
+          "id": 92,
+          "name": "Polyobj_OR_Move",
+          "arg1": "PolyObject ID",
+          "arg2": "$polyobj_speed",
+          "arg3": "Byte Angle",
+          "arg4": "Distance"
+        },
+        {
+          "id": 6,
+          "name": "Polyobj_MoveTimes8",
+          "arg1": "PolyObject ID",
+          "arg2": "$polyobj_speed",
+          "arg3": "Byte Angle",
+          "arg4": "Eighth of Distance"
+        },
+        {
+          "id": 93,
+          "name": "Polyobj_OR_MoveTimes8",
+          "arg1": "PolyObject ID",
+          "arg2": "$polyobj_speed",
+          "arg3": "Byte Angle",
+          "arg4": "Eighth of Distance"
+        },
+        {
+          "id": 7,
+          "name": "Polyobj_DoorSwing",
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle",
+          "arg4": "$delay_tics_door"
+        },
+        {
+          "id": 8,
+          "name": "Polyobj_DoorSlide",
+          "arg1": "PolyObject ID",
+          "arg2": "$polyobj_speed",
+          "arg3": "Byte Angle",
+          "arg4": "Distance",
+          "arg5": "$delay_tics_door"
+        },
+        // {
+        //   "id": 86,
+        //   "name": "Polyobj_MoveToSpot",
+        //   "arg1": "PolyObject ID",
+        //   "arg2": "Speed",
+        //   "arg3": "Spot TID"
+        // },
+        // {
+        //   "id": 59,
+        //   "name": "Polyobj_OR_MoveToSpot",
+        //   "arg1": "PolyObject ID",
+        //   "arg2": "Speed",
+        //   "arg3": "Spot TID"
+        // },
+        // {
+        //   "id": 88,
+        //   "name": "Polyobj_MoveTo",
+        //   "arg1": "PolyObject ID",
+        //   "arg2": "Speed",
+        //   "arg3": "X Position",
+        //   "arg4": "Y Position"
+        // },
+        // {
+        //   "id": 89,
+        //   "name": "Polyobj_OR_MoveTo",
+        //   "arg1": "PolyObject ID",
+        //   "arg2": "Speed",
+        //   "arg3": "X Position",
+        //   "arg4": "Y Position"
+        // },
+        {
+          "id": 87,
+          "name": "Polyobj_Stop",
+          "arg1": "PolyObject ID"
+        }
+      ]
+    },
+
+    {
+      "name": "Exits",
+      "specials": [
+        {
+          "name": "Exit_Normal",
+          "id": 243,
+          "arg1": {
+            "name": "Player Start",
+            "description": "Value of first argument of player start"
+          }
+        },
+        {
+          "name": "Exit_Secret",
+          "id": 244,
+          "arg1": {
+            "name": "Player Start",
+            "description": "Value of first argument of player start"
+          }
+        },
+        {
+          "name": "Teleport_NewMap",
+          "id": 74,
+          "arg1": "Map Levelnum",
+          "arg2": {
+            "name": "Player Start",
+            "description": "Value of first argument of player start"
+          },
+          "arg3": "Keep Facing"
+        },
+        {
+          "name": "Teleport_EndGame",
+          "id": 75
+        }
+      ]
+    },
+
+    {
+      "name": "Portals",
+      "specials": [
+      {
+        "id": 57,
+        "name": "Sector_SetPortal",
+        "arg1": {
+        "name": "Sector Tag",
+        "description": "Tag of the sectors in which the portal is seen. Sectors seen through the portal should not have this tag."
+        },
+        "arg2": {
+        "name": "Portal Type",
+        "type": "choice",
+        "custom_values": [
+          { "name": "Normal view", "value": 0 },
+          { "name": "Transferred view (copy another portal)", "value": 1 },
+          { "name": "Eternity-style skybox portal", "value": 2 },
+          { "name": "Plane portal", "value": 3 },
+          { "name": "Horizon portal", "value": 4 },
+          { "name": "Copy portal to line", "value": 5 },
+          { "name": "Linked portal", "value": 6 }
+        ]
+        },
+        "arg3": {
+        "name": "Plane",
+        "type": "choice",
+        "custom_values": [
+          { "name": "Floor portal", "value": 0 },
+          { "name": "Ceiling portal", "value": 1 },
+          { "name": "Floor & ceiling portal", "value": 2 }
+        ]
+        },
+        "arg4": {
+        "name": "Misc",
+        "description": "Type 0: 1 if line belongs to sector seen, 0 if it belongs to sector viewing; Type 1: sector tag to copy"
+        },
+        "arg5": {
+        "name": "Alpha",
+        "description": "Translucency value of the portal"
+        },
+        "tagged": "sector"
+      },
+      {
+        "id": 156,
+        "name": "Line_SetPortal",
+        "arg1": {
+        "name": "Line Tag",
+        "description": "Tag number of the exit line of this portal."
+        },
+        "arg2": {
+        "name": "This line",
+        "description": "ID of this line. THIS ARG SHOULD BE 0 IN UDMF."
+        },
+        "arg3": {
+        "name": "Portal Type",
+        "type": "choice",
+        "custom_values": [
+          { "name": "Visual only", "value": 0 },
+          { "name": "Visual and simple teleporter", "value": 1 },
+          { "name": "Interactive", "value": 2 },
+          { "name": "Static", "value": 3 },
+          { "name": "Linked", "value": 4 }
+        ]
+        },
+        "arg4": {
+        "name": "Plane anchor",
+        "type": "choice",
+        "custom_values": [
+          { "name": "No alignment", "value": 0 },
+          { "name": "Align floors", "value": 1 },
+          { "name": "Align ceilings", "value": 2 }
+        ]
+        },
+        "tagged": "lineid"
+      },
+      {
+        "id": 300,
+        "name": "Portal_Define",
+        "arg1": "Portal ID",
+        "arg2": {
+        "name": "Portal Type",
+        "type": "choice",
+        "custom_values": [
+          { "name": "Plane Portal", "value": 0 },
+          { "name": "Horizon Portal", "value": 1 },
+          { "name": "Skybox Portal", "value": 2 },
+          { "name": "Anchor Portal", "value": 3 },
+          { "name": "Two-way Portal", "value": 4 },
+          { "name": "Linked Portal", "value": 5 }
+        ]
+        },
+        "arg3": "Anchor line ID",
+        "arg4": "Z parameter"
+      },
+      {
+        "id": 301,
+        "name": "Line_QuickPortal",
+        "arg1": {
+        "name": "Non-interactive",
+        "type": "choice",
+        "custom_values": [
+          { "name": "True", "value": 0 },
+          { "name": "Interactive", "value": 1 }
+        ]
+        },
+        "tagged": "line"
+      }
+      ]
+    },
+
+    {
+      "name": "Renderer",
+      "specials": [
+      {
+        "id": 9,
+        "name": "Line_Horizon"
+        // [RH] draw one-sided wall at horizon
+      },
+      // {
+      //   "id": 182,
+      //   "name": "Line_Mirror"
+      // },
+      // {
+      //   "id": 16,
+      //   "name": "Transfer_WallLight",
+      //   "arg1": "Line ID",
+      //   "arg2": {
+      //     "name": "Flags",
+      //     "type": "flags",
+      //     "custom_flags": [
+      //       { "name": "transfer to front side", "value": 1 },
+      //       { "name": "transfer to back side", "value": 2 },
+      //       { "name": "absolute light transfer (ignore fake contrast)", "value": 4 }
+      //     ]
+      //   },
+      //   "tagged": "line"
+      // },
+      {
+        "id": 210,
+        "name": "Transfer_FloorLight",
+        "arg1": "Sector Tag",
+        "tagged": "sector"
+      },
+      {
+        "id": 211,
+        "name": "Transfer_CeilingLight",
+        "arg1": "Sector Tag",
+        "tagged": "sector"
+      },
+      // {
+      //   "id": 50,
+      //   "name": "ExtraFloor_LightOnly",
+      //   "arg1": "Sector Tag",
+      //   "arg2": {
+      //     "name": "Light Type",
+      //     "type": "choice",
+      //     "custom_values": [
+      //       { "name": "Control sector ceiling to top of other type 0 EF_LO", "value": 0 },
+      //       { "name": "Tagged ceiling to control sector floor", "value": 1 },
+      //       { "name": "Control sector ceiling to top of other EF_LO (any type)", "value": 2 }
+      //     ]
+      //   },
+      //   "tagged": "sector"
+      // },
+      // {
+      //   "id": 98,
+      //   "name": "Sector_SetTranslucent",
+      //   "arg1": {
+      //     "name": "Sector Tag",
+      //     "description": "Tag of sectors containing portals to affect"
+      //   },
+      //   "arg2": {
+      //     "name": "Plane",
+      //     "description": "0 = Floor, 1 = ceiling"
+      //   },
+      //   "arg3": {
+      //     "name": "Alpha",
+      //     "description": "On a scale of 0--255 from fully transparent to fully opaque"
+      //   }
+      //   // Additive transparency is not implemented at the moment
+      //   // "arg4": {
+      //   //   "name": "Transparency Type",
+      //   //   "description": "0 for normal, 1 for additive transparency"
+      //   // }
+      // },
+      // {
+      //   "id": 157,
+      //   "name": "SetGlobalFogParameter (OpenGL)",
+      //   "arg1": {
+      //     "name": "Property",
+      //     "description": "0 = fog density; 1 = outside fog density; 2 = sky fog"
+      //   },
+      //   "arg2": "Value"
+      // },
+      // {
+      //   "id": 159,
+      //   "name": "Sector_SetPlaneReflection (OpenGL)",
+      //   "arg1": "Sector Tag",
+      //   "arg2": {
+      //     "name": "Floor Reflection",
+      //     "description": "On a 0--255 scale (255 is fully reflective)"
+      //   },
+      //   "arg3": {
+      //     "name": "Ceiling Reflection",
+      //     "description": "On a 0--255 scale (255 is fully reflective)"
+      //   },
+      //   "tagged": "sector"
+      // },
+      // {
+      //   "id": 208,
+      //   "name": "TranslucentLine",
+      //   "arg1": {
+      //     "name": "Line ID",
+      //     "description": "Lines to affect (0 = this one)"
+      //   },
+      //   "arg2": {
+      //     "name": "Alpha",
+      //     "description": "On a scale of 0--255 from fully transparent to fully opaque"
+      //   },
+      //   "arg3": "Additive?",
+      //   "arg4": {
+      //     "name": "Extra flags",
+      //     "description": "Do not use this in a UDMF map"
+      //   },
+      //   "tagged": "lineid"
+      // },
+      {
+        "id": 209,
+        "name": "Transfer_Heights",
+        "arg1": "Sector Tag",
+        // "arg2": {
+        //   "name": "Flags",
+        //   "type": "flags",
+        //   "custom_flags": [
+        //     { "name": "always use transferred heights", "value": 1 },
+        //     { "name": "only draw fake floor", "value": 2 },
+        //     { "name": "improved texture control", "value": 4 },
+        //     { "name": "swimmable", "value": 8 },
+        //     { "name": "invisible fake planes", "value": 16 },
+        //     { "name": "don't transfer light", "value": 32 }
+        //   ]
+        // },
+        "tagged": "sector"
+      }
+      // {
+      //   "id": 53,
+      //   "name": "Line_SetTextureOffset"
+      //   // This special can only be used in ACS
+      // },
+      // {
+      //   "id": 56,
+      //   "name": "Line_SetTextureScale"
+      //   // This special can only be used in ACS
+      // }
+      ]
+    },
+
+    {
+      "name": "Scripting",
+      "specials": [
+      {
+        "id": 80,
+        "name": "ACS_Execute",
+        "arg1": "Script Number",
+        "arg2": {
+        "name": "Map Levelnum",
+        "description": "Use 0 for current map"
+        },
+        "arg3": {
+        "name": "First Arg",
+        "description": "First argument passed to the script"
+        },
+        "arg4": {
+        "name": "Second Arg",
+        "description": "Second argument passed to the script"
+        },
+        "arg5": {
+        "name": "Third Arg",
+        "description": "Third argument passed to the script"
+        }
+      },
+      {
+        "id": 83,
+        "name": "ACS_LockedExecute",
+        "arg1": "Script Number",
+        "arg2": {
+        "name": "Map Levelnum",
+        "description": "Use 0 for current map"
+        },
+        "arg3": {
+        "name": "First Arg",
+        "description": "First argument passed to the script"
+        },
+        "arg4": {
+        "name": "Second Arg",
+        "description": "Second argument passed to the script"
+        },
+        "arg5": {
+        "name": "Lock Number",
+        "description": "Lock value as defined in LOCKDEFS"
+        }
+      },
+      {
+        "id": 85,
+        "name": "ACS_LockedExecuteDoor",
+        "arg1": "Script Number",
+        "arg2": {
+        "name": "Map Levelnum",
+        "description": "Use 0 for current map"
+        },
+        "arg3": {
+        "name": "First Arg",
+        "description": "First argument passed to the script"
+        },
+        "arg4": {
+        "name": "Second Arg",
+        "description": "Second argument passed to the script"
+        },
+        "arg5": {
+        "name": "Lock Number",
+        "description": "Lock value as defined in LOCKDEFS"
+        }
+      },
+      {
+        "id": 84,
+        "name": "ACS_ExecuteWithResult",
+        "arg1": "Script Number",
+        "arg2": {
+        "name": "First Arg",
+        "description": "First argument passed to the script"
+        },
+        "arg3": {
+        "name": "Second Arg",
+        "description": "Second argument passed to the script"
+        },
+        "arg4": {
+        "name": "Third Arg",
+        "description": "Third argument passed to the script"
+        }
+      },
+      {
+        "id": 226,
+        "name": "ACS_ExecuteAlways",
+        "arg1": "Script Number",
+        "arg2": {
+        "name": "Map Levelnum",
+        "description": "Use 0 for current map"
+        },
+        "arg3": {
+        "name": "First Arg",
+        "description": "First argument passed to the script"
+        },
+        "arg4": {
+        "name": "Second Arg",
+        "description": "Second argument passed to the script"
+        },
+        "arg5": {
+        "name": "Third Arg",
+        "description": "Third argument passed to the script"
+        }
+      },
+      {
+        "id": 81,
+        "name": "ACS_Suspend",
+        "arg1": "Script Number",
+        "arg2": {
+        "name": "Map Levelnum",
+        "description": "Use 0 for current map"
+        }
+      },
+      {
+        "id": 82,
+        "name": "ACS_Terminate",
+        "arg1": "Script Number",
+        "arg2": {
+        "name": "Map Levelnum",
+        "description": "Use 0 for current map"
+        }
+      },
+      // {
+      //   "id": 191,
+      //   "name": "SetPlayerProperty",
+      //   "arg1": "$which_players",
+      //   "arg2": {
+      //     "name": "Set?",
+      //     "type": "choice",
+      //     "custom_values": [
+      //       { "name": "turn off", "value": 0 },
+      //       { "name": "turn on", "value": 1 }
+      //     ]
+      //   },
+      //   "arg3": {
+      //     "name": "Property",
+      //     "type": "choice",
+      //     "custom_values": [
+      //       { "name": "cannot move", "value": 0 },
+      //       { "name": "not auto targeted by monsters", "value": 1 },
+      //       { "name": "instant switch", "value": 2 },
+      //       { "name": "fly", "value": 3 },
+      //       { "name": "totally frozen", "value": 4 },
+      //       { "name": "invulnerable", "value": 5 },
+      //       { "name": "buddha mode (cannot drop below 1 health)", "value": 16 }
+      //     ]
+      //   }
+      // },
+      // {
+      //   "id": 237,
+      //   "name": "ChangeCamera",
+      //   "arg1": {
+      //     "name": "Thing ID",
+      //     "description": "TID of the camera object"
+      //   },
+      //   "arg2": "$which_players",
+      //   "arg3": {
+      //     "name": "Move Reverts?",
+      //     "description": "Set to 1 if movement should cancel the special"
+      //   },
+      //   "tagged": "thing"
+      // },
+      // special 15 = "Autosave";   // [RH] Save the game *now*
+      {
+        "id": 179,
+        "name": "ChangeSkill",
+        "arg1": {
+        "name": "Skill Number",
+        "description": "Number of the new skill (standard go from 0 for easiest to 5 for hardest)"
+        }
+      },
+      // {
+      //   "id": 18,
+      //   "name": "StartConversation",
+      //   "arg1": {
+      //     "name": "Thing ID",
+      //     "description": "TID of the talking actor"
+      //   },
+      //   "arg2": {
+      //     "name": "Face Talker?",
+      //     "description": "Player turns to face talker if non-null"
+      //   }
+      // },
+      {
+        "id": 120,
+        "name": "Radius_Quake",
+        "arg1": {
+        "name": "Intensity",
+        "description": "Tremor intensity on a 1--9 scale"
+        },
+        "arg2": {
+        "name": "Duration",
+        "description": "In tics"
+        },
+        "arg3": {
+        "name": "Damage Radius",
+        "description": "Radius of damage in 64x64 cells"
+        },
+        "arg4": {
+        "name": "Tremor Radius",
+        "description": "Radius of tremor in 64x64 cells"
+        },
+        "arg5": {
+        "name": "Thing ID",
+        "description": "TID of the focus (0 = activator)"
+        },
+        "tagged": "ex_5thing"
+      }
+      // {
+      //   "id": 129,
+      //   "name": "UsePuzzleItem",
+      //   "arg1": {
+      //     "name": "Puzzle Number",
+      //     "description": "Value of the the item's PuzzleItem.Number property"
+      //   },
+      //   "arg2": {
+      //     "name": "Script Number",
+      //     "description": "Script to run if item successfully used"
+      //   },
+      //   "arg3": {
+      //     "name": "First Arg",
+      //     "description": "First argument passed to the script"
+      //   },
+      //   "arg4": {
+      //     "name": "Second Arg",
+      //     "description": "Second argument passed to the script"
+      //   },
+      //   "arg5": {
+      //     "name": "Third Arg",
+      //     "description": "Third argument passed to the script"
+      //   }
+      // },
+      // {
+      //   "id": 173,
+      //   "name": "NoiseAlert",
+      //   "arg1": {
+      //     "name": "Target TID",
+      //     "description": "TID of the actor that is to be attacked by alerted monsters (0 = activator)"
+      //   },
+      //   "arg2": {
+      //     "name": "Emitter TID",
+      //     "description": "TID of the actor from which the alert emanates (0 = activator)"
+      //   },
+      //   "tagged": "ex_1thing_2thing"
+      // },
+      // {
+      //   "id": 174,
+      //   "name": "SendToCommunicator",
+      //   "arg1": {
+      //     "name": "Voc ID",
+      //     "description": "Number of the VOC lump to play and LOG lump to print"
+      //   },
+      //   "arg2": {
+      //     "name": "Front Only?",
+      //     "description": "If non-zero, only activate on front side of the line"
+      //   },
+      //   "arg3": {
+      //     "name": "Identity?",
+      //     "description": "If non-zero, also print the name of who sent the message"
+      //   },
+      //   "arg4": {
+      //     "name": "No Log Message?",
+      //     "description": "If non-zero, the message will not be placed in the objectives popup"
+      //   }
+      // }
+      ]
+    }
+  ]
+}

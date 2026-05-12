@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,20 +33,23 @@
 #include "TextEntryPanel.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
-#include "Game/Configuration.h"
 #include "Game/Game.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
-#include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
-#include "UI/Dialogs/Preferences/PreferencesDialog.h"
-#include "UI/SToolBar/SToolBar.h"
+#include "UI/Controls/Splitter.h"
+#include "UI/Dialogs/SettingsDialog.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
+#if wxCHECK_VERSION(3, 3, 2)
+#include <wx/stc/minimap.h>
+#endif
 
 using namespace slade;
 
@@ -57,6 +60,7 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, txed_trim_whitespace)
+EXTERN_CVAR(Int, txed_minimap_width)
 
 
 // -----------------------------------------------------------------------------
@@ -72,34 +76,45 @@ EXTERN_CVAR(Bool, txed_trim_whitespace)
 TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 {
 	// Create the text area
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer_main_->Add(hbox, wxSizerFlags(1).Expand());
 	text_area_ = new TextEditorCtrl(this, -1);
-	sizer_main_->Add(text_area_, wxSizerFlags(1).Expand());
+	hbox->Add(text_area_, wxSizerFlags(1).Expand());
+
+	// Create the minimap if enabled (and supported)
+#if wxCHECK_VERSION(3, 3, 2)
+	if (txed_minimap_width > 0)
+	{
+		auto minimap = new wxStyledTextCtrlMiniMap(this, text_area_);
+		text_area_->SetUseVerticalScrollBar(false);
+		minimap->SetUseVerticalScrollBar(true);
+		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
+		minimap->SetDoubleBuffered(true);
+		hbox->Add(minimap, wxSizerFlags().Expand());
+	}
+#endif
 
 	// Create the find+replace panel
 	panel_fr_ = new FindReplacePanel(this, *text_area_);
 	text_area_->setFindReplacePanel(panel_fr_);
 	panel_fr_->Hide();
-	sizer_main_->Add(panel_fr_, wxutil::sfWithLargeBorder(0, wxTOP).Expand());
+	sizer_main_->Add(panel_fr_, ui::LayoutHelper(this).sfWithLargeBorder(0, wxTOP).Expand());
 
-	// Add 'Text Language' choice to toolbar
-	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);
-	auto languages      = wxutil::arrayStringStd(TextLanguage::languageNames());
+	// Text Language dropdown
+	auto languages = wxutil::arrayStringStd(TextLanguage::languageNames());
 	languages.Sort();
-	languages.Insert("None", 0, 1);
-	choice_text_language_ = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
+	languages.Insert(wxS("None"), 0, 1);
+	choice_text_language_ = new wxChoice(toolbar_, -1, wxDefaultPosition, wxDefaultSize, languages);
 	choice_text_language_->Select(0);
-	group_language->addCustomControl(choice_text_language_);
-	toolbar_->addGroup(group_language);
 
-	// Add 'Jump To' choice to toolbar
-	auto group_jump_to = new SToolBarGroup(toolbar_, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(ui::scalePx(200), -1));
-	group_jump_to->addCustomControl(choice_jump_to_);
-	toolbar_->addGroup(group_jump_to);
+	// Jump To dropdown
+	choice_jump_to_ = new wxChoice(toolbar_, -1, wxDefaultPosition, wxSize(FromDIP(200), -1));
 	text_area_->setJumpToControl(choice_jump_to_);
 
-	// Add 'Compile ACS' to end of toolbar
-	toolbar_->addActionGroup("Compile", { "arch_scripts_compileacs" }, true);
+	// Setup toolbar
+	toolbar_->registerCustomControl("text_language", choice_text_language_);
+	toolbar_->registerCustomControl("jump_to", choice_jump_to_);
+	toolbar_->loadLayoutFromResource("entry_text_top");
 
 	// Bind events
 	choice_text_language_->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);
@@ -114,19 +129,20 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 
 	// 'Code Folding' submenu
 	auto menu_fold = new wxMenu();
-	menu_custom_->AppendSubMenu(menu_fold, "Code Folding");
+	menu_custom_->AppendSubMenu(menu_fold, wxS("Code Folding"));
 	SAction::fromId("ptxt_fold_foldall")->addToMenu(menu_fold);
 	SAction::fromId("ptxt_fold_unfoldall")->addToMenu(menu_fold);
 
 	// 'Compile' submenu
 	auto menu_scripts = new wxMenu();
-	menu_custom_->AppendSubMenu(menu_scripts, "Compile");
+	menu_custom_->AppendSubMenu(menu_scripts, wxS("Compile"));
 	SAction::fromId("arch_scripts_compileacs")->addToMenu(menu_scripts);
 	SAction::fromId("arch_scripts_compilehacs")->addToMenu(menu_scripts);
+	SAction::fromId("arch_scripts_compiledecohack")->addToMenu(menu_scripts);
 
 	// 'Colour Scheme' submenu
 	auto menu_colour = new wxMenu();
-	menu_custom_->AppendSubMenu(menu_colour, "Colour Scheme");
+	menu_custom_->AppendSubMenu(menu_colour, wxS("Colour Scheme"));
 	SAction::fromId("ptxt_theme_light")->addToMenu(menu_colour);
 	SAction::fromId("ptxt_theme_dark")->addToMenu(menu_colour);
 	SAction::fromId("ptxt_theme_other")->addToMenu(menu_colour);
@@ -176,7 +192,7 @@ bool TextEntryPanel::loadEntry(ArchiveEntry* entry)
 	{
 		for (auto a = 0u; a < choice_text_language_->GetCount(); ++a)
 		{
-			if (strutil::equalCI(tl->name(), wxutil::strToView(choice_text_language_->GetString(a))))
+			if (strutil::equalCI(tl->name(), choice_text_language_->GetString(a).utf8_string()))
 			{
 				choice_text_language_->Select(a);
 				break;
@@ -256,15 +272,14 @@ void TextEntryPanel::closeEntry()
 // -----------------------------------------------------------------------------
 // Returns a string with extended editing/entry info for the status bar
 // -----------------------------------------------------------------------------
-wxString TextEntryPanel::statusString()
+string TextEntryPanel::statusString()
 {
 	// Setup status string
-	int      line   = text_area_->GetCurrentLine() + 1;
-	int      pos    = text_area_->GetCurrentPos();
-	int      col    = text_area_->GetColumn(pos) + 1;
-	wxString status = wxString::Format("Ln %d, Col %d, Pos %d", line, col, pos);
+	int line = text_area_->GetCurrentLine() + 1;
+	int pos  = text_area_->GetCurrentPos();
+	int col  = text_area_->GetColumn(pos) + 1;
 
-	return status;
+	return fmt::format("Ln {}, Col {}, Pos {}", line, col, pos);
 }
 
 // -----------------------------------------------------------------------------
@@ -347,6 +362,10 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 	else if (id == "arch_scripts_compilehacs" && entry)
 		entryoperations::compileACS(entry.get(), true, nullptr, nullptr);
 
+	// compileDECOHack
+	else if (id == "arch_scripts_compiledecohack" && entry)
+		entryoperations::compileDECOHack(entry.get(), nullptr, nullptr);
+
 	// Light colour scheme
 	else if (id == "ptxt_theme_light")
 	{
@@ -363,7 +382,7 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 
 	// Other colour scheme
 	else if (id == "ptxt_theme_other")
-		PreferencesDialog::openPreferences(maineditor::windowWx(), "Fonts & Colours");
+		ui::SettingsDialog::popupSettingsPage(maineditor::windowWx(), ui::SettingsPage::TextStyle);
 
 	// Not handled
 	else
@@ -396,7 +415,7 @@ void TextEntryPanel::onTextModified(wxCommandEvent& e)
 void TextEntryPanel::onChoiceLanguageChanged(wxCommandEvent& e)
 {
 	// Get selected language
-	auto tl = TextLanguage::fromName(wxutil::strToView(choice_text_language_->GetStringSelection()));
+	auto tl = TextLanguage::fromName(choice_text_language_->GetStringSelection().utf8_string());
 
 	// Set text editor language
 	text_area_->setLanguage(tl);

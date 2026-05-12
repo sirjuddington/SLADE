@@ -1,0 +1,142 @@
+{
+  "zdbsp": {
+    "name": "ZDBSP",
+    "command": "$o $f --output=$f",
+    "executable": "zdbsp",
+    "options": [
+      {
+        "parameter": "--no-prune",
+        "description": "Don't remove unused sidedefs or sectors"
+      },
+      {
+        "parameter": "--gl",
+        "description": "Build GL nodes (full)"
+      },
+      {
+        "parameter": "--gl-matching",
+        "description": "Build GL nodes (fast)"
+      },
+      {
+        "parameter": "--gl-only",
+        "description": "Build only GL nodes"
+      },
+      {
+        "parameter": "--compress",
+        "description": "Compressed nodes (all)"
+      },
+      {
+        "parameter": "--compress-normal",
+        "description": "Compressed nodes (not GL)"
+      },
+      {
+        "parameter": "--empty-blockmap",
+        "description": "Write empty BLOCKMAP"
+      },
+      {
+        "parameter": "--empty-reject",
+        "description": "Write empty REJECT"
+      },
+      {
+        "parameter": "--zero-reject",
+        "description": "Write zero REJECT"
+      },
+      {
+        "parameter": "--no-reject",
+        "description": "Don't write REJECT"
+      },
+      {
+        "parameter": "--extended",
+        "description": "Extended nodes"
+      },
+      {
+        "parameter": "--comments",
+        "description": "Add UDMF index comments"
+      }
+    ]
+  },
+  "zennode": {
+    "name": "ZenNode",
+    "command": "$o $f -o $f",
+    "executable": "ZenNode",
+    "options": [
+      {
+        "parameter": "-rz",
+        "description": "Don't build REJECT"
+      },
+      {
+        "parameter": "-n3",
+        "description": "Fast node build"
+      },
+      {
+        "parameter": "-ni",
+        "description": "Ignore invisible lines"
+      },
+      {
+        "parameter": "-n2 -nu -rf -bc",
+        "description": "Vanilla Optimized"
+      }
+    ]
+  },
+  "glbsp": {
+    "name": "GLBSP",
+    "command": "$o $f -o $f",
+    "executable": "glbsp",
+    "options": [
+      {
+        "parameter": "-fast",
+        "description": "Fast node build"
+      },
+      {
+        "parameter": "-normal",
+        "description": "Force normal node rebuild"
+      },
+      {
+        "parameter": "-pack",
+        "description": "Pack duplicate sidedefs"
+      },
+      {
+        "parameter": "-noreject",
+        "description": "Don't build REJECT"
+      },
+      {
+        "parameter": "-mergevert",
+        "description": "Merge duplicate vertices"
+      },
+      {
+        "parameter": "-windowfx",
+        "description": "Handle 'one-sided window' trick"
+      },
+      {
+        "parameter": "-prunesec",
+        "description": "Prune unused sectors"
+      },
+      {
+        "parameter": "-nonormal",
+        "description": "Don't build normal nodes"
+      },
+      {
+        "parameter": "-noprune",
+        "description": "Don't prune lines or sides"
+      }
+    ]
+  },
+  "bsp": {
+    "name": "BSP",
+    "command": "$o $f -o $f",
+    "executable": "bsp*",
+    "options": [
+      {
+        "parameter": "-picknode visplane",
+        "description": "Minimize visplanes"
+      },
+      {
+        "parameter": "-noreject",
+        "description": "Don't build REJECT"
+      },
+      {
+        "parameter": "-blockmap comp",
+        "description": "Compressed BLOCKMAP"
+      }
+    ]
+  }
+}

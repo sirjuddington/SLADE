@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "MapObject.h"
 
@@ -9,9 +9,6 @@ class VertexList;
 
 class MapVertex : public MapObject
 {
-	friend class SLADEMap;
-	friend class VertexList;
-
 public:
 	inline static const string PROP_X = "x";
 	inline static const string PROP_Y = "y";
@@ -24,15 +21,17 @@ public:
 	double yPos() const { return position_.y; }
 	Vec2d  position() const { return position_; }
 
-	Vec2d getPoint(Point point) override;
+	void copy(MapObject* c) override;
+
+	Vec2d getPoint(Point point) const override;
 
 	void move(double nx, double ny);
 
-	int    intProperty(string_view key) override;
-	double floatProperty(string_view key) override;
+	int    intProperty(string_view key) const override;
+	double floatProperty(string_view key) const override;
 	void   setIntProperty(string_view key, int value) override;
 	void   setFloatProperty(string_view key, double value) override;
-	bool   scriptCanModifyProp(string_view key) override;
+	bool   scriptCanModifyProp(string_view key) const override;
 
 	void     connectLine(MapLine* line);
 	void     disconnectLine(const MapLine* line);

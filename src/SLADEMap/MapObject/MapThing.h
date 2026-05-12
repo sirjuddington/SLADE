@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "MapObject.h"
 #include "SLADEMap/Types.h"
@@ -9,8 +9,6 @@ class Debuggable;
 
 class MapThing : public MapObject
 {
-	friend class SLADEMap;
-
 public:
 	// UDMF property names
 	inline static const string PROP_X       = "x";
@@ -52,10 +50,10 @@ public:
 	int                id() const { return id_; }
 	int                special() const { return special_; }
 
-	Vec2d getPoint(Point point) override;
+	Vec2d getPoint(Point point) const override;
 
-	int    intProperty(string_view key) override;
-	double floatProperty(string_view key) override;
+	int    intProperty(string_view key) const override;
+	double floatProperty(string_view key) const override;
 	void   setIntProperty(string_view key, int value) override;
 	void   setFloatProperty(string_view key, double value) override;
 

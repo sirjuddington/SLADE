@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Geometry.h"
+#include "BBox.h"
 #include "General/Console.h"
 #include "Plane.h"
 #include "Rect.h"
@@ -40,6 +41,9 @@
 using namespace slade;
 using namespace geometry;
 using namespace math;
+
+#undef near
+#undef far
 
 
 // -----------------------------------------------------------------------------
@@ -234,6 +238,74 @@ double geometry::distanceRayLine(const Vec2d& r1, const Vec2d& r2, const Vec2d& 
 		return u_ray;
 	else
 		return -1;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the distance between the ray from [ray_origin] along [ray_dir] and
+// axis-aligned bounding box [tl -> br]
+// -----------------------------------------------------------------------------
+double geometry::distanceRayBBox(const Vec3d& ray_origin, const Vec3d& ray_dir, const Vec3d& tl, const Vec3d& br)
+{
+	// Calculate the min and max points of the bounding box
+	Vec3d box_min = { glm::min(tl.x, br.x), glm::min(tl.y, br.y), glm::min(tl.z, br.z) };
+	Vec3d box_max = { glm::max(tl.x, br.x), glm::max(tl.y, br.y), glm::max(tl.z, br.z) };
+
+	double near = 0.0;
+	double far  = std::numeric_limits<double>::infinity();
+
+	// Check intersection for each axis
+	for (int i = 0; i < 3; ++i)
+	{
+		double origin  = ray_origin[i];
+		double dir     = ray_dir[i];
+		double min_val = box_min[i];
+		double max_val = box_max[i];
+
+		if (fabs(dir) < EPSILON)
+		{
+			// Ray is parallel to the slab
+			// No intersection if origin is outside the slab
+			if (origin < min_val || origin > max_val)
+				return -1;
+		}
+		else
+		{
+			// Compute intersection distances with the slab planes
+			double inv_dir = 1.0 / dir;
+			double t1      = (min_val - origin) * inv_dir;
+			double t2      = (max_val - origin) * inv_dir;
+
+			// Ensure t1 is the near intersection and t2 is the far
+			if (t1 > t2)
+			{
+				double temp = t1;
+				t1          = t2;
+				t2          = temp;
+			}
+
+			// Update the overall near and far intersection distances
+			near = glm::max(near, t1);
+			far  = glm::min(far, t2);
+
+			// If near > far, the ray misses the box
+			if (near > far)
+				return -1;
+		}
+	}
+
+	// If the near intersection is behind the ray origin, check if we're inside the box
+	if (near < 0)
+	{
+		// If far intersection is also behind, no valid intersection
+		if (far < 0)
+			return -1;
+
+		// Ray origin is inside the box, return 0
+		return 0;
+	}
+
+	// Return the distance to the near intersection
+	return near;
 }
 
 // -----------------------------------------------------------------------------
@@ -459,6 +531,78 @@ bool geometry::colinear(double x1, double y1, double x2, double y2, double x3, d
 	return a == 0;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the 'tab' line for the given [line], of length [line].length * [tab]
+// (to a max length of [tab_max])
+// -----------------------------------------------------------------------------
+Rectf geometry::lineTab(const Rectf& line, float tab, float tab_max)
+{
+	// Calculate tab length
+	auto tablen = line.length() * tab;
+	if (tablen > tab_max)
+		tablen = tab_max;
+	if (tablen < 2)
+		tablen = 2;
+
+	// Calculate tab endpoint
+	auto invdir = glm::normalize(Vec2f{ -(line.br.y - line.tl.y), line.br.x - line.tl.x });
+
+	auto mid = line.middle();
+	return { mid.x, mid.y, mid.x - invdir.x * tablen, mid.y - invdir.y * tablen };
+}
+
+// -----------------------------------------------------------------------------
+// Returns a list of lines making up an arrow-headed line based on the given
+// [line], [arrowhead_length] and [arrowhead_angle] (in degrees).
+// If [arrowhead_both] is true the returned list will include an arrowhead at
+// the beginning of the line as well as the end
+// -----------------------------------------------------------------------------
+vector<Rectf> geometry::arrowLines(
+	const Rectf& line,
+	float        arrowhead_length,
+	float        arrowhead_angle,
+	bool         arrowhead_both)
+{
+	vector<Rectf> lines;
+	lines.push_back(line);
+
+	if (arrowhead_length > 0.0f)
+	{
+		Vec2f vector  = line.br - line.tl;
+		auto  angle   = atan2(-vector.y, vector.x);
+		auto  ang_rad = degToRad(arrowhead_angle);
+
+		// Line end arrowhead
+		Vec2f a1r;
+		Vec2f a1l = a1r = line.br;
+		a1l.x += arrowhead_length * sin(angle - ang_rad);
+		a1l.y += arrowhead_length * cos(angle - ang_rad);
+		a1r.x -= arrowhead_length * sin(angle + ang_rad);
+		a1r.y -= arrowhead_length * cos(angle + ang_rad);
+		lines.emplace_back(line.tl.x, line.tl.y, line.br.x, line.br.y);
+		lines.emplace_back(line.br.x, line.br.y, a1l.x, a1l.y);
+		lines.emplace_back(line.br.x, line.br.y, a1r.x, a1r.y);
+
+		if (arrowhead_both)
+		{
+			// Line start arrowhead
+			vector = line.tl - line.br;
+			angle  = atan2(-vector.y, vector.x);
+
+			Vec2f a2r;
+			Vec2f a2l = a2r = line.tl;
+			a2l.x += arrowhead_length * sin(angle - ang_rad);
+			a2l.y += arrowhead_length * cos(angle - ang_rad);
+			a2r.x -= arrowhead_length * sin(angle + ang_rad);
+			a2r.y -= arrowhead_length * cos(angle + ang_rad);
+			lines.emplace_back(line.tl.x, line.tl.y, a2l.x, a2l.y);
+			lines.emplace_back(line.tl.x, line.tl.y, a2r.x, a2r.y);
+		}
+	}
+
+	return lines;
+}
+
 
 
 CONSOLE_COMMAND(angle2d, 6, false)
@@ -468,5 +612,5 @@ CONSOLE_COMMAND(angle2d, 6, false)
 		vals[a] = strutil::asDouble(args[a]);
 
 	double ang = angle2DRad(Vec2d(vals[0], vals[1]), Vec2d(vals[2], vals[3]), Vec2d(vals[4], vals[5]));
-	log::info(wxString::Format("Angle = %1.4f", ang));
+	log::info("Angle = {:1.4f}", ang);
 }

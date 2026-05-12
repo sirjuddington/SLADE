@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,12 +35,11 @@
 #include "Main.h"
 #include "ObjectEdit.h"
 #include "General/KeyBind.h"
-#include "General/UI.h"
 #include "Geometry/Geometry.h"
 #include "Input.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/Renderer/MapRenderer2D.h"
 #include "MapEditor/Renderer/Renderer.h"
 #include "OpenGL/View.h"
 #include "SLADEMap/MapObject/MapLine.h"
@@ -48,6 +47,7 @@
 #include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/UI.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -684,17 +684,18 @@ bool ObjectEdit::begin()
 	mapeditor::showObjectEditPanel(true, &group_);
 
 	context_->input().setMouseState(Input::MouseState::ObjectEdit);
-	context_->renderer().renderer2D().forceUpdate();
+	context_->renderer().forceUpdate(true, false);
 
 	// Setup help text
 	auto key_accept = KeyBind::bind("map_edit_accept").keysAsString();
 	auto key_cancel = KeyBind::bind("map_edit_cancel").keysAsString();
 	auto key_toggle = KeyBind::bind("me2d_begin_object_edit").keysAsString();
-	context_->setFeatureHelp({ "Object Edit",
-							   fmt::format("{} = Accept", key_accept),
-							   fmt::format("{} or {} = Cancel", key_cancel, key_toggle),
-							   "Shift = Disable grid snapping",
-							   "Ctrl = Rotate" });
+	context_->setFeatureHelp(
+		{ "Object Edit",
+		  fmt::format("{} = Accept", key_accept),
+		  fmt::format("{} or {} = Cancel", key_cancel, key_toggle),
+		  "Shift = Disable grid snapping",
+		  "Ctrl = Rotate" });
 
 	return true;
 }

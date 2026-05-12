@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,7 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NodeBuildersWizardPage.h"
-#include "UI/Dialogs/Preferences/NodesPrefsPanel.h"
+#include "UI/Settings/NodeBuildersSettingsPanel.h"
 
 using namespace slade;
 
@@ -53,14 +53,16 @@ NodeBuildersWizardPage::NodeBuildersWizardPage(wxWindow* parent) : WizardPageBas
 	SetSizer(sizer);
 
 	// Add Base Resource Archive panel
-	panel_nodes_ = new NodesPrefsPanel(this);
+	panel_nodes_ = new ui::NodeBuildersSettingsPanel(this);
 	sizer->Add(panel_nodes_, wxSizerFlags(1).Expand());
+	panel_nodes_->loadSettings();
+	panel_nodes_->Show();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the description for the wizard page
 // -----------------------------------------------------------------------------
-wxString NodeBuildersWizardPage::description()
+string NodeBuildersWizardPage::description()
 {
 	return "If you plan to do any map editing, set up the paths to any node builders you have. "
 		   "You can also set up the build options for each node builder. "

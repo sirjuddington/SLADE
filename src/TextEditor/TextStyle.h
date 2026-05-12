@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utility/ColRGBA.h"
+#include "General/JsonFwd.h"
 
 namespace slade
 {
@@ -45,10 +45,12 @@ public:
 	ColRGBA foreground() const { return foreground_; }
 	ColRGBA background() const { return background_; }
 
-	bool   parse(const ParseTreeNode* node);
-	void   applyTo(wxStyledTextCtrl* stc) const;
-	bool   copyStyle(const TextStyle* copy);
-	string textDefinition(unsigned tabs = 0) const;
+	bool parse(const ParseTreeNode* node);
+	void applyTo(wxStyledTextCtrl* stc) const;
+	bool copyStyle(const TextStyle* copy);
+
+	void fromJson(const Json& j);
+	Json toJson() const;
 
 private:
 	string      name_;
@@ -75,7 +77,8 @@ public:
 	const string& getName() const { return name_; }
 	unsigned      nStyles() const { return styles_.size(); }
 
-	bool       parseSet(const ParseTreeNode* root);
+	bool       parseOldSet(const ParseTreeNode* root);
+	void       readSet(const Json& j);
 	void       applyTo(TextEditorCtrl* stc);
 	void       applyToWx(wxStyledTextCtrl* stc);
 	bool       copySet(const StyleSet* copy);
@@ -98,6 +101,7 @@ public:
 	static string    styleName(unsigned index);
 	static unsigned  numSets();
 	static StyleSet* set(unsigned index);
+	static StyleSet* set(string_view name);
 	static void      addEditor(TextEditorCtrl* stc);
 	static void      removeEditor(const TextEditorCtrl* stc);
 	static void      applyCurrentToAll();

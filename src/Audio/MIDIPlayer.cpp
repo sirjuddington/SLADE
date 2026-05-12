@@ -1,7 +1,7 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,8 +33,12 @@
 #include "Main.h"
 #include "MIDIPlayer.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include <SFML/System/Clock.hpp>
+#include <SFML/System/Time.hpp>
 #include <fluidsynth.h>
 
 using namespace slade;
@@ -46,7 +50,11 @@ using namespace audio;
 // Variables
 //
 // -----------------------------------------------------------------------------
+#ifndef NO_FLUIDSYNTH
+CVAR(String, snd_midi_player, "fluidsynth", CVar::Flag::Save)
+#else
 CVAR(String, snd_midi_player, "none", CVar::Flag::Save)
+#endif
 CVAR(String, fs_soundfont_path, "", CVar::Flag::Save)
 CVAR(String, fs_driver, "", CVar::Flag::Save)
 CVAR(String, snd_timidity_path, "", CVar::Flag::Save)
@@ -92,17 +100,18 @@ public:
 		fs_initialised_ = false;
 		file_           = "";
 
-		// Set fluidsynth driver to alsa in linux (no idea why it defaults to jack)
+		// Set fluidsynth driver to pulseaudio in linux (no idea why it defaults to jack)
 		if (app::platform() == app::Platform::Linux && fs_driver.value.empty())
-			fs_driver = "alsa";
+			fs_driver = "pulseaudio";
 
 		// Init soundfont path
 		if (fs_soundfont_path.value.empty())
 		{
 			if (app::platform() == app::Platform::Linux)
-				fs_soundfont_path = "/usr/share/sounds/sf2/FluidR3_GM.sf2:/usr/share/sounds/sf2/FluidR3_GS.sf2";
-			else
-				log::warning(1, "No FluidSynth soundfont set, MIDI playback will not work");
+				fs_soundfont_path =
+					"/usr/share/sounds/sf2/FluidR3_GM.sf2"
+					":/usr/share/sounds/sf2/FluidR3_GS.sf2"
+					":/usr/share/sounds/sf2/default-GM.sf2";
 		}
 
 		// Setup fluidsynth
@@ -154,9 +163,26 @@ public:
 		bool retval = false;
 		for (int a = paths.size() - 1; a >= 0; --a)
 		{
-			auto path = paths[a];
+			const auto& path = paths[a];
 			if (!path.empty())
 			{
+				int fs_id = fluid_synth_sfload(fs_synth_, path.c_str(), 1);
+				fs_soundfont_ids_.push_back(fs_id);
+				if (fs_id != FLUID_FAILED)
+					retval = true;
+			}
+		}
+
+		// If no soundfont was loaded, use the internal soundfont in the program resource
+		if (!retval)
+		{
+			auto sf_entry = app::programResource()->entryAtPath("soundfont/default.sf2");
+			if (sf_entry)
+			{
+				// Export to temp file
+				auto path = app::path("default.sf2", app::Dir::Temp);
+				sf_entry->exportFile(path);
+
 				int fs_id = fluid_synth_sfload(fs_synth_, path.c_str(), 1);
 				fs_soundfont_ids_.push_back(fs_id);
 				if (fs_id != FLUID_FAILED)
@@ -186,6 +212,7 @@ public:
 		if (fs_player_)
 		{
 			fluid_player_add(fs_player_, filename.c_str());
+			parseMidiTiming(filename);
 			return true;
 		}
 
@@ -212,8 +239,9 @@ public:
 
 		if (fs_player_)
 		{
-			// fluid_player_set_loop(fs_player, -1);
+			// fluid_player_set_loop(fs_player_, -1);
 			fluid_player_add_mem(fs_player_, mc.data(), mc.size());
+			parseMidiTimingFromData(mc);
 			return true;
 		}
 
@@ -231,13 +259,10 @@ public:
 	// -------------------------------------------------------------------------
 	bool play() override
 	{
-		stop();
-		timer_->restart();
-
-		if (!fs_initialised_)
+		if (!fs_initialised_ || isPlaying())
 			return false;
 
-		return (fluid_player_play(fs_player_) == FLUID_OK);
+		return fluid_player_play(fs_player_) == FLUID_OK;
 	}
 
 	// -------------------------------------------------------------------------
@@ -245,10 +270,13 @@ public:
 	// -------------------------------------------------------------------------
 	bool pause() override
 	{
-		if (!isReady())
+		if (!isPlaying())
 			return false;
 
-		return stop();
+		auto ok = fluid_player_stop(fs_player_) == FLUID_OK;
+		fluid_synth_all_notes_off(fs_synth_, -1);
+
+		return ok;
 	}
 
 	// -------------------------------------------------------------------------
@@ -256,16 +284,11 @@ public:
 	// -------------------------------------------------------------------------
 	bool stop() override
 	{
-		bool stopped = false;
+		fluid_player_stop(fs_player_);
+		fluid_synth_all_notes_off(fs_synth_, -1);
+		fluid_player_seek(fs_player_, 0);
 
-		if (fs_initialised_)
-		{
-			fluid_player_stop(fs_player_);
-			fluid_synth_system_reset(fs_synth_);
-			stopped = true;
-		}
-
-		return stopped;
+		return true;
 	}
 
 	// -------------------------------------------------------------------------
@@ -284,8 +307,14 @@ public:
 	// -------------------------------------------------------------------------
 	int position() override
 	{
-		// We cannot query this information from fluidsynth, so we cheat by querying our own timer
-		return timer_->getElapsedTime().asMilliseconds();
+		if (!fs_initialised_ || !fs_player_)
+			return 0;
+
+		// Get current tick position from FluidSynth
+		auto current_tick = fluid_player_get_current_tick(fs_player_);
+
+		// Convert to milliseconds
+		return tickToMilliseconds(current_tick);
 	}
 
 	// -------------------------------------------------------------------------
@@ -293,8 +322,30 @@ public:
 	// -------------------------------------------------------------------------
 	bool setPosition(int pos) override
 	{
-		// Cannot currently seek in fluidsynth
-		return false;
+		if (!fs_initialised_ || !fs_player_ || tempo_changes_.empty())
+			return false;
+
+		// Convert milliseconds to ticks
+		auto target_tick = millisecondsToTick(pos);
+		if (target_tick < 0)
+			return false;
+
+		auto was_playing = isPlaying();
+
+		// Stop playback and clear all notes
+		if (was_playing)
+			fluid_player_stop(fs_player_);
+		fluid_synth_all_notes_off(fs_synth_, -1);
+
+		// Seek to the target tick
+		if (fluid_player_seek(fs_player_, target_tick) != FLUID_OK)
+			return false;
+
+		// Resume playback if it was playing before
+		if (was_playing)
+			fluid_player_play(fs_player_);
+
+		return true;
 	}
 
 	// -------------------------------------------------------------------------
@@ -305,11 +356,7 @@ public:
 		if (!isReady())
 			return false;
 
-		// Clamp volume
-		if (volume > 100)
-			volume = 100;
-		if (volume < 0)
-			volume = 0;
+		volume = std::clamp(volume, 0, 100);
 
 		fluid_synth_set_gain(fs_synth_, volume * 0.01f);
 
@@ -324,6 +371,16 @@ private:
 
 	bool        fs_initialised_ = false;
 	vector<int> fs_soundfont_ids_;
+
+	// MIDI timing information for seeking
+	struct MidiTick
+	{
+		int tick;         // Tick position
+		int milliseconds; // Time in milliseconds
+		int tempo;        // Tempo at this point (microseconds per quarter note)
+	};
+	vector<MidiTick> tempo_changes_;
+	int              time_division_ = 0; // MIDI time division (PPQN)
 
 	// -------------------------------------------------------------------------
 	// Initialises fluidsynth
@@ -357,11 +414,238 @@ private:
 
 			// Driver creation unsuccessful
 			delete_fluid_synth(fs_synth_);
+			fs_synth_ = nullptr;
 			return false;
 		}
 
 		// Init unsuccessful
 		return false;
+	}
+
+	// -------------------------------------------------------------------------
+	// Parses MIDI file at [filename] to extract timing information for seeking
+	// -------------------------------------------------------------------------
+	void parseMidiTiming(const string& filename)
+	{
+		// Read the file
+		MemChunk file_data;
+		if (!file_data.importFile(filename))
+			return;
+
+		parseMidiTimingFromData(file_data);
+	}
+
+	// -------------------------------------------------------------------------
+	// Parses MIDI [data] to extract timing information for seeking
+	// -------------------------------------------------------------------------
+	void parseMidiTimingFromData(const MemChunk& data)
+	{
+		tempo_changes_.clear();
+		time_division_ = 0;
+
+		unsigned pos   = 0;
+		unsigned end   = data.size();
+		int      tempo = 500000; // Default tempo (120 BPM)
+		bool     smpte = false;
+
+		// Structure to hold tempo changes from all tracks
+		vector<MidiTick> tempo_changes;
+
+		while (pos + 8 < end)
+		{
+			auto chunk_name = data.readB32(pos);
+			auto chunk_size = data.readB32(pos + 4);
+			pos += 8;
+			auto chunk_end = pos + chunk_size;
+
+			if (chunk_name == static_cast<u32>(('M' << 24) | ('T' << 16) | ('h' << 8) | 'd')) // MThd
+			{
+				time_division_ = data.readB16(pos + 4);
+				if (data[pos + 4] & 0x80)
+				{
+					smpte          = true;
+					time_division_ = (256 - data[pos + 4]) * data[pos + 5];
+				}
+			}
+			else if (chunk_name == static_cast<u32>(('M' << 24) | ('T' << 16) | ('r' << 8) | 'k')) // MTrk
+			{
+				auto tpos           = pos;
+				int  current_tick   = 0;
+				u8   running_status = 0;
+
+				while (tpos + 4 < chunk_end)
+				{
+					// Read delta time
+					int dtime = 0;
+					for (int a = 0; a < 4; ++a)
+					{
+						dtime = (dtime << 7) + (data[tpos] & 0x7F);
+						if ((data[tpos++] & 0x80) != 0x80)
+							break;
+					}
+
+					current_tick += dtime;
+
+					// Read event
+					u8       evtype = 0;
+					u8       status = data[tpos++];
+					unsigned evsize = 0;
+
+					if (status < 0x80)
+					{
+						evtype = status;
+						status = running_status;
+					}
+					else
+					{
+						running_status = status;
+						evtype         = data[tpos++];
+					}
+
+					// Handle meta events
+					if (status == 0xFF)
+					{
+						evsize = 0;
+						for (int a = 0; a < 4; ++a)
+						{
+							evsize = (evsize << 7) + (data[tpos] & 0x7F);
+							if ((data[tpos++] & 0x80) != 0x80)
+								break;
+						}
+
+						// Tempo change event
+						if (evtype == 0x51 && evsize == 3)
+						{
+							int new_tempo = data.readB24(tpos);
+							tempo_changes.push_back({ .tick = current_tick, .milliseconds = 0, .tempo = new_tempo });
+						}
+
+						tpos += evsize;
+					}
+					else
+					{
+						// Handle other events
+						switch (status & 0xF0)
+						{
+						case 0xC0: // Program Change
+						case 0xD0: // Channel Aftertouch
+							break;
+						case 0xF0: // Sysex events
+							evsize = 0;
+							for (int a = 0; a < 4; ++a)
+							{
+								evsize = (evsize << 7) + (data[tpos] & 0x7F);
+								if ((data[tpos++] & 0x80) != 0x80)
+									break;
+							}
+							tpos += evsize;
+							break;
+						default: tpos++; // Skip next parameter
+						}
+					}
+				}
+			}
+
+			pos = chunk_end;
+		}
+
+		// Sort tempo changes by tick position
+		std::ranges::sort(tempo_changes, [](const MidiTick& a, const MidiTick& b) { return a.tick < b.tick; });
+
+		// Build timing map from tempo changes
+		tempo_changes_.push_back({ .tick = 0, .milliseconds = 0, .tempo = tempo });
+
+		int current_tick = 0;
+		int current_ms   = 0;
+
+		for (auto& change : tempo_changes)
+		{
+			// Calculate time elapsed since last tempo change
+			int tick_delta = change.tick - current_tick;
+			if (tick_delta > 0)
+			{
+				if (smpte)
+					current_ms += (tick_delta * time_division_) / 1000;
+				else
+					current_ms += (tick_delta * tempo) / (time_division_ * 1000);
+			}
+
+			// Record this tempo change
+			change.milliseconds = current_ms;
+			current_tick = change.tick;
+			tempo        = change.tempo;
+			tempo_changes_.push_back(change);
+		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Converts [ms] to MIDI ticks using the timing information
+	// -------------------------------------------------------------------------
+	int millisecondsToTick(int ms) const
+	{
+		if (tempo_changes_.empty() || time_division_ == 0)
+			return -1;
+
+		// Clamp to valid range
+		if (ms < 0)
+			return 0;
+
+		// Find the tempo segment containing this time
+		// We want the last segment with milliseconds <= [ms]
+		unsigned segment = 0;
+		for (unsigned i = 1; i < tempo_changes_.size(); ++i)
+		{
+			if (tempo_changes_[i].milliseconds > ms)
+				break;
+			segment = i;
+		}
+
+		const auto& tick_info = tempo_changes_[segment];
+		auto        ms_offset = ms - tick_info.milliseconds;
+
+		// Avoid division by zero
+		if (tick_info.tempo == 0)
+			return tick_info.tick;
+
+		// Convert milliseconds offset to ticks (use 64-bit to avoid overflow)
+		auto tick_offset = (static_cast<i64>(ms_offset) * time_division_ * 1000) / tick_info.tempo;
+
+		return tick_info.tick + static_cast<int>(tick_offset);
+	}
+
+	// -------------------------------------------------------------------------
+	// Converts MIDI [tick] to milliseconds using the timing information
+	// -------------------------------------------------------------------------
+	int tickToMilliseconds(int tick) const
+	{
+		if (tempo_changes_.empty() || time_division_ == 0)
+			return 0;
+
+		// Clamp to valid range
+		if (tick < 0)
+			return 0;
+
+		// Find the tempo segment containing this tick
+		// We want the last segment whose tick value is <= [tick]
+		unsigned segment = 0;
+		for (unsigned i = 1; i < tempo_changes_.size(); ++i)
+		{
+			if (tempo_changes_[i].tick > tick)
+				break;
+			segment = i;
+		}
+
+		const auto& tick_info   = tempo_changes_[segment];
+		auto        tick_offset = tick - tick_info.tick;
+
+		// Avoid division by zero
+		if (time_division_ == 0)
+			return tick_info.milliseconds;
+
+		// Convert tick offset to milliseconds (use 64-bit to avoid overflow)
+		auto ms_offset = (static_cast<i64>(tick_offset) * tick_info.tempo) / (time_division_ * 1000);
+
+		return tick_info.milliseconds + static_cast<int>(ms_offset);
 	}
 };
 #endif // !NO_FLUIDSYNTH
@@ -423,16 +707,15 @@ public:
 	bool play() override
 	{
 		stop();
-		timer_->restart();
+		play_start_time_ = timer_->getElapsedTime();
 
 		// Setup environment and command line to run
 		wxExecuteEnv env;
-		env.cwd          = string{ strutil::Path::pathOf(snd_timidity_path) };
-		auto commandline = fmt::format(
-			"\"{}\" \"{}\" {}", string(snd_timidity_path), file_, string(snd_timidity_options));
+		env.cwd          = wxutil::strFromView(strutil::Path::pathOf(snd_timidity_path));
+		auto commandline = fmt::format(R"("{}" "{}" {})", snd_timidity_path.value, file_, snd_timidity_options.value);
 
 		// Execute program
-		pid_ = wxExecute(commandline, wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE, nullptr, &env);
+		pid_ = wxExecute(wxString::FromUTF8(commandline), wxEXEC_ASYNC | wxEXEC_HIDE_CONSOLE, nullptr, &env);
 
 		return pid_ > 0 && wxProcess::Exists(pid_);
 	}
@@ -488,8 +771,8 @@ public:
 	// -------------------------------------------------------------------------
 	int position() override
 	{
-		// We cannot query this information from timidity, so we cheat by querying our own timer
-		return timer_->getElapsedTime().asMilliseconds();
+		// We cannot query this information from timidity, so we calculate elapsed time
+		return (timer_->getElapsedTime() - play_start_time_).asMilliseconds();
 	}
 
 	// -------------------------------------------------------------------------
@@ -511,7 +794,8 @@ public:
 	}
 
 private:
-	long pid_ = 0;
+	long     pid_ = 0;
+	sf::Time play_start_time_;
 };
 
 
@@ -777,7 +1061,7 @@ string midiInfo(const MemChunk& data)
 
 					string tmp;
 					if (evtype > 0 && evtype < 8 && evsize)
-						tmp.append(reinterpret_cast<const char*>(&data[tpos]), evsize);
+						tmp.append(reinterpret_cast<const char*>(data.data() + tpos), evsize);
 
 					switch (evtype)
 					{

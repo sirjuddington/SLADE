@@ -55,6 +55,9 @@
     <Filter Include="GLAD\KHR">
       <UniqueIdentifier>{0e4647fd-d90e-4525-af41-4acc15174c1d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="LibDrawText">
+      <UniqueIdentifier>{5cf06cfb-94fc-42f3-bbe9-2a24daf78a66}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\thirdparty\sol\forward.hpp">
@@ -320,6 +323,15 @@
     </ClInclude>
     <ClInclude Include="..\thirdparty\glad\include\KHR\khrplatform.h">
       <Filter>GLAD\KHR</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\libdrawtext\drawtext.h">
+      <Filter>LibDrawText</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\libdrawtext\drawtext_impl.h">
+      <Filter>LibDrawText</Filter>
+    </ClInclude>
+    <ClInclude Include="..\thirdparty\libdrawtext\tpool.h">
+      <Filter>LibDrawText</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -784,6 +796,24 @@
     </ClCompile>
     <ClCompile Include="..\thirdparty\glad\src\glad.c">
       <Filter>GLAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\libdrawtext\draw.c">
+      <Filter>LibDrawText</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\libdrawtext\drawgl.c">
+      <Filter>LibDrawText</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\libdrawtext\drawrast.c">
+      <Filter>LibDrawText</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\libdrawtext\font.c">
+      <Filter>LibDrawText</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\libdrawtext\tpool.c">
+      <Filter>LibDrawText</Filter>
+    </ClCompile>
+    <ClCompile Include="..\thirdparty\libdrawtext\utf8.c">
+      <Filter>LibDrawText</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

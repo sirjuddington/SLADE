@@ -1,0 +1,105 @@
+{
+  "name": "SLADE Classic",
+  "icons": {
+    "animated": {
+      "png16": "icons/entry_list/classic/16/animated.png",
+      "png32": "icons/entry_list/classic/32/animated.png"
+    },
+    "archive": {
+      "png16": "icons/entry_list/classic/16/archive.png",
+      "png32": "icons/entry_list/classic/32/archive.png"
+    },
+    "bmp": {
+      "png16": "icons/entry_list/classic/16/bmp.png",
+      "png32": "icons/entry_list/classic/32/bmp.png"
+    },
+    "code": {
+      "png16": "icons/entry_list/classic/16/text.png",
+      "png32": "icons/entry_list/classic/32/text.png"
+    },
+    "colormap": {
+      "png16": "icons/entry_list/classic/16/colormap.png",
+      "png32": "icons/entry_list/classic/32/colormap.png"
+    },
+    "data": {
+      "png16": "icons/entry_list/classic/16/data.png",
+      "png32": "icons/entry_list/classic/32/data.png"
+    },
+    "default": {
+      "png16": "icons/entry_list/classic/16/default.png",
+      "png32": "icons/entry_list/classic/32/default.png"
+    },
+    "folder": {
+      "png16": "icons/entry_list/classic/16/folder.png",
+      "png32": "icons/entry_list/classic/32/folder.png"
+    },
+    "font": {
+      "png16": "icons/entry_list/classic/16/font.png",
+      "png32": "icons/entry_list/classic/32/font.png"
+    },
+    "gfx": {
+      "png16": "icons/entry_list/classic/16/gfx.png",
+      "png32": "icons/entry_list/classic/32/gfx.png"
+    },
+    "lua": {
+      "png16": "icons/entry_list/classic/16/lua.png",
+      "png32": "icons/entry_list/classic/32/lua.png"
+    },
+    "map": {
+      "png16": "icons/entry_list/classic/16/map.png",
+      "png32": "icons/entry_list/classic/32/map.png"
+    },
+    "map_data": {
+      "png16": "icons/entry_list/classic/16/map_data.png",
+      "png32": "icons/entry_list/classic/32/map_data.png"
+    },
+    "marker": {
+      "png16": "icons/entry_list/classic/16/marker.png",
+      "png32": "icons/entry_list/classic/32/marker.png"
+    },
+    "music": {
+      "png16": "icons/entry_list/classic/16/music.png",
+      "png32": "icons/entry_list/classic/32/music.png"
+    },
+    "palette": {
+      "png16": "icons/entry_list/classic/16/palette.png",
+      "png32": "icons/entry_list/classic/32/palette.png"
+    },
+    "pnames": {
+      "png16": "icons/entry_list/classic/16/pnames.png",
+      "png32": "icons/entry_list/classic/32/pnames.png"
+    },
+    "png": {
+      "png16": "icons/entry_list/classic/16/png.png",
+      "png32": "icons/entry_list/classic/32/png.png"
+    },
+    "sound": {
+      "png16": "icons/entry_list/classic/16/sound.png",
+      "png32": "icons/entry_list/classic/32/sound.png"
+    },
+    "switches": {
+      "png16": "icons/entry_list/classic/16/switches.png",
+      "png32": "icons/entry_list/classic/32/switches.png"
+    },
+    "text": {
+      "png16": "icons/entry_list/classic/16/text.png",
+      "png32": "icons/entry_list/classic/32/text.png"
+    },
+    "texturex": {
+      "png16": "icons/entry_list/classic/16/texturex.png",
+      "png32": "icons/entry_list/classic/32/texturex.png"
+    },
+    "unknown": {
+      "png16": "icons/entry_list/classic/16/unknown.png",
+      "png32": "icons/entry_list/classic/32/unknown.png"
+    },
+    "wad": {
+      "png16": "icons/entry_list/classic/16/wad.png",
+      "png32": "icons/entry_list/classic/32/wad.png"
+    },
+    "zip": {
+      "png16": "icons/entry_list/classic/16/zip.png",
+      "png32": "icons/entry_list/classic/32/zip.png"
+    }
+  }
+}

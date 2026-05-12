@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,9 +36,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Tokenizer.h"
-#include "UI/WxUtils.h"
 #include <charconv>
-#include <regex>
 
 using namespace slade;
 
@@ -50,19 +48,11 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace slade::wxStringUtils
 {
-wxRegEx re_int1{ "^[+-]?[0-9]+[0-9]*$", wxRE_DEFAULT | wxRE_NOSUB };
-wxRegEx re_int2{ "^0[0-9]+$", wxRE_DEFAULT | wxRE_NOSUB };
-wxRegEx re_int3{ "^0x[0-9A-Fa-f]+$", wxRE_DEFAULT | wxRE_NOSUB };
-wxRegEx re_float{ "^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$", wxRE_DEFAULT | wxRE_NOSUB };
+wxRegEx re_int1{ wxS("^[+-]?[0-9]+[0-9]*$"), wxRE_DEFAULT | wxRE_NOSUB };
+wxRegEx re_int2{ wxS("^0[0-9]+$"), wxRE_DEFAULT | wxRE_NOSUB };
+wxRegEx re_int3{ wxS("^0x[0-9A-Fa-f]+$"), wxRE_DEFAULT | wxRE_NOSUB };
+wxRegEx re_float{ wxS("^[-+]?[0-9]*.?[0-9]+([eE][-+]?[0-9]+)?$"), wxRE_DEFAULT | wxRE_NOSUB };
 } // namespace slade::wxStringUtils
-
-namespace slade::strutil
-{
-std::regex re_int1{ "^[+-]?[0-9]+[0-9]*$" };
-std::regex re_int2{ "^0[0-9]+$" };
-std::regex re_int3{ "^0x[0-9A-Fa-f]+$" };
-std::regex re_float{ "^[+-]?[0-9]+[.][0-9]*([eE][+-]?[0-9]+)?$" };
-} // namespace slade::strutil
 
 
 // -----------------------------------------------------------------------------
@@ -78,8 +68,42 @@ std::regex re_float{ "^[+-]?[0-9]+[.][0-9]*([eE][+-]?[0-9]+)?$" };
 // -----------------------------------------------------------------------------
 bool strutil::isInteger(const string& str, bool allow_hex)
 {
-	return std::regex_search(str, re_int1) || std::regex_search(str, re_int2)
-		   || (allow_hex && std::regex_search(str, re_int3));
+	if (str.empty())
+		return false;
+
+	// If hex is allowed, check for starting 0x
+	if (allow_hex)
+	{
+		if (str.size() >= 3 && str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+		{
+			// Check all remaining characters are valid hex digits
+			for (size_t i = 2; i < str.size(); ++i)
+			{
+				if (const auto c = static_cast<unsigned char>(str[i]);
+					!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')))
+					return false;
+			}
+			return true;
+		}
+	}
+
+	// Check for optional leading + or -...
+	size_t i = 0;
+	if (str[0] == '+' || str[0] == '-')
+	{
+		if (str.size() == 1)
+			return false;
+		i = 1;
+	}
+
+	// ...then one or more digits
+	if (i >= str.size())
+		return false;
+	for (; i < str.size(); ++i)
+		if (!isdigit(static_cast<unsigned char>(str[i])))
+			return false;
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -87,7 +111,20 @@ bool strutil::isInteger(const string& str, bool allow_hex)
 // -----------------------------------------------------------------------------
 bool strutil::isHex(const string& str)
 {
-	return std::regex_search(str, re_int3);
+	if (str.size() < 3)
+		return false;
+
+	// Check for starting 0x
+	if (str[0] != '0' || !(str[1] == 'x' || str[1] == 'X'))
+		return false;
+
+	// Check all remaining characters are valid hex digits
+	for (size_t i = 2; i < str.size(); ++i)
+		if (const auto c = static_cast<unsigned char>(str[i]);
+			!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')))
+			return false;
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -95,12 +132,62 @@ bool strutil::isHex(const string& str)
 // -----------------------------------------------------------------------------
 bool strutil::isFloat(const string& str)
 {
-	if (str.empty() || str[0] == '$')
+	if (str.empty())
 		return false;
 
-	return std::regex_search(str, re_float);
+	// Check for optional leading + or -
+	size_t pos = 0;
+	if (str[pos] == '+' || str[pos] == '-')
+	{
+		++pos;
+		if (pos >= str.size())
+			return false;
+	}
+
+	// At least one digit before '.'
+	size_t digits_before = 0;
+	while (pos < str.size() && isdigit(static_cast<unsigned char>(str[pos])))
+	{
+		++pos;
+		++digits_before;
+	}
+	if (digits_before == 0)
+		return false;
+
+	// Must have a decimal point
+	if (pos >= str.size() || str[pos] != '.')
+		return false;
+	++pos; // Skip '.'
+
+	// Zero or more digits after decimal
+	while (pos < str.size() && isdigit(static_cast<unsigned char>(str[pos])))
+		++pos;
+
+	// Optional exponent
+	if (pos < str.size() && (str[pos] == 'e' || str[pos] == 'E'))
+	{
+		++pos;
+		if (pos < str.size() && (str[pos] == '+' || str[pos] == '-'))
+			++pos;
+
+		// Must have at least one digit in exponent
+		size_t exp_digits = 0;
+		while (pos < str.size() && isdigit(static_cast<unsigned char>(str[pos])))
+		{
+			++pos;
+			++exp_digits;
+		}
+		if (exp_digits == 0)
+			return false;
+	}
+
+	// Invalid if we haven't reached the end of the string
+	return pos == str.size();
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [left] and [right] are equal, ignoring case
+// -----------------------------------------------------------------------------
 bool strutil::equalCI(string_view left, string_view right)
 {
 	const auto sz = left.size();
@@ -108,7 +195,7 @@ bool strutil::equalCI(string_view left, string_view right)
 		return false;
 
 	for (auto a = 0u; a < sz; ++a)
-		if (tolower(left[a]) != tolower(right[a]))
+		if (std::tolower(static_cast<unsigned char>(left[a])) != std::tolower(static_cast<unsigned char>(right[a])))
 			return false;
 
 	return true;
@@ -134,16 +221,22 @@ bool strutil::equalCI(string_view left, string_view right)
 //	return true;
 //}
 
+
+// -----------------------------------------------------------------------------
+// Returns true if [str] begins with [check]
+// -----------------------------------------------------------------------------
 bool strutil::startsWith(string_view str, string_view check)
 {
-	return check.size() <= str.size() && str.compare(0, check.size(), check) == 0;
+	return check.size() <= str.size() && str.starts_with(check);
 }
-
 bool strutil::startsWith(string_view str, char check)
 {
 	return !str.empty() && str[0] == check;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] begins with [check], ignoring case
+// -----------------------------------------------------------------------------
 bool strutil::startsWithCI(string_view str, string_view check)
 {
 	const auto c_size = check.size();
@@ -151,27 +244,32 @@ bool strutil::startsWithCI(string_view str, string_view check)
 		return false;
 
 	for (unsigned c = 0; c < c_size; ++c)
-		if (tolower(str[c]) != tolower(check[c]))
+		if (std::tolower(static_cast<unsigned char>(str[c])) != std::tolower(static_cast<unsigned char>(check[c])))
 			return false;
 
 	return true;
 }
-
 bool strutil::startsWithCI(string_view str, char check)
 {
-	return !str.empty() && tolower(str[0]) == tolower(check);
+	return !str.empty()
+		   && std::tolower(static_cast<unsigned char>(str[0])) == std::tolower(static_cast<unsigned char>(check));
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] ends with [check]
+// -----------------------------------------------------------------------------
 bool strutil::endsWith(string_view str, string_view check)
 {
-	return check.size() <= str.size() && str.compare(str.size() - check.size(), check.size(), check) == 0;
+	return check.size() <= str.size() && str.ends_with(check);
 }
-
 bool strutil::endsWith(string_view str, char check)
 {
 	return !str.empty() && str.back() == check;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] ends with [check], ignoring case
+// -----------------------------------------------------------------------------
 bool strutil::endsWithCI(string_view str, string_view check)
 {
 	const auto c_size = check.size();
@@ -180,37 +278,42 @@ bool strutil::endsWithCI(string_view str, string_view check)
 
 	const auto s_size = str.size();
 	for (unsigned c = 0; c < c_size; ++c)
-		if (tolower(str[s_size - c_size + c]) != tolower(check[c]))
+		if (std::tolower(static_cast<unsigned char>(str[s_size - c_size + c]))
+			!= std::tolower(static_cast<unsigned char>(check[c])))
 			return false;
 
 	return true;
 }
-
-bool endsWithCI(string_view str, char check)
+bool strutil::endsWithCI(string_view str, char check)
 {
-	return !str.empty() && tolower(str.back()) == tolower(check);
+	return !str.empty()
+		   && std::tolower(static_cast<unsigned char>(str.back())) == std::tolower(static_cast<unsigned char>(check));
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] contains [check]
+// -----------------------------------------------------------------------------
 bool strutil::contains(string_view str, char check)
 {
 	return str.find(check) != string::npos;
 }
-
-bool strutil::containsCI(string_view str, char check)
-{
-	const auto lc = tolower(check);
-	for (auto c : str)
-		if (tolower(c) == lc)
-			return true;
-
-	return false;
-}
-
 bool strutil::contains(string_view str, string_view check)
 {
 	return str.find(check) != string::npos;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] contains [check], ignoring case
+// -----------------------------------------------------------------------------
+bool strutil::containsCI(string_view str, char check)
+{
+	const auto lc = std::tolower(static_cast<unsigned char>(check));
+	for (auto c : str)
+		if (std::tolower(static_cast<unsigned char>(c)) == lc)
+			return true;
+
+	return false;
+}
 bool strutil::containsCI(string_view str, string_view check)
 {
 	if (str.size() < check.size())
@@ -220,6 +323,9 @@ bool strutil::containsCI(string_view str, string_view check)
 	return lower(str).find(lower(check)) != string::npos;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] matches [match], which can contain wildcards (* and ?)
+// -----------------------------------------------------------------------------
 bool strutil::matches(string_view str, string_view match)
 {
 	// Empty [match] only matches empty [str]
@@ -274,6 +380,10 @@ bool strutil::matches(string_view str, string_view match)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [str] matches [match], which can contain wildcards (* and ?),
+// ignoring case
+// -----------------------------------------------------------------------------
 bool strutil::matchesCI(string_view str, string_view match)
 {
 	// Empty [match] only matches empty [str]
@@ -316,7 +426,9 @@ bool strutil::matchesCI(string_view str, string_view match)
 			if (t_pos == str.size())
 				return false; // Not found, no match
 
-			if (match[m_start + i] == '?' || tolower(str[t_pos]) == tolower(match[m_start + i]))
+			if (match[m_start + i] == '?'
+				|| std::tolower(static_cast<unsigned char>(str[t_pos]))
+					   == std::tolower(static_cast<unsigned char>(match[m_start + i])))
 				++i;
 			else if (wildcard)
 				i = 0;
@@ -347,17 +459,26 @@ string strutil::escapedString(string_view str, bool swap_backslash, bool escape_
 	return escaped;
 }
 
+// -----------------------------------------------------------------------------
+// Replaces all occurrences of [from] with [to] in [str]
+// -----------------------------------------------------------------------------
 string& strutil::replaceIP(string& str, string_view from, string_view to)
 {
+	if (from.empty())
+		return str;
+
 	size_t start_pos = 0;
-	while ((start_pos = str.find(from.data(), start_pos)) != string::npos)
+	while ((start_pos = str.find(from.data(), start_pos, from.size())) != string::npos)
 	{
-		str.replace(start_pos, from.length(), to.data(), to.size());
-		start_pos += to.length();
+		str.replace(start_pos, from.size(), to.data(), to.size());
+		start_pos += to.size();
 	}
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with all occurrences of [from] changed to [to]
+// -----------------------------------------------------------------------------
 string strutil::replace(string_view str, string_view from, string_view to)
 {
 	auto s = string{ str };
@@ -365,14 +486,23 @@ string strutil::replace(string_view str, string_view from, string_view to)
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// Replaces the first occurrence of [from] with [to] in [str]
+// -----------------------------------------------------------------------------
 string& strutil::replaceFirstIP(string& str, string_view from, string_view to)
 {
-	const auto pos = str.find(from.data(), 0);
+	if (from.empty())
+		return str;
+
+	const auto pos = str.find(from.data(), 0, from.size());
 	if (pos != string::npos)
-		str.replace(pos, from.length(), to.data(), to.size());
+		str.replace(pos, from.size(), to.data(), to.size());
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with the first occurrence of [from] changed to [to]
+// -----------------------------------------------------------------------------
 string strutil::replaceFirst(string_view str, string_view from, string_view to)
 {
 	auto s = string{ str };
@@ -382,69 +512,122 @@ string strutil::replaceFirst(string_view str, string_view from, string_view to)
 
 string& strutil::lowerIP(string& str)
 {
-	transform(str.begin(), str.end(), str.begin(), ::tolower);
+	std::ranges::transform(str, str.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 	return str;
 }
 
 string& strutil::upperIP(string& str)
 {
-	transform(str.begin(), str.end(), str.begin(), ::toupper);
+	std::ranges::transform(str, str.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
 	return str;
 }
 
 string strutil::lower(string_view str)
 {
 	auto s = string{ str };
-	transform(s.begin(), s.end(), s.begin(), ::tolower);
+	std::ranges::transform(s, s.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 	return s;
 }
 
 string strutil::upper(string_view str)
 {
 	auto s = string{ str };
-	transform(s.begin(), s.end(), s.begin(), ::toupper);
+	std::ranges::transform(s, s.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
 	return s;
 }
 
 string& strutil::ltrimIP(string& str)
 {
-	str.erase(0, str.find_first_not_of(WHITESPACE_CHARACTERS));
+	const auto p = str.find_first_not_of(WHITESPACE_CHARACTERS);
+	if (p == string::npos)
+	{
+		str.clear();
+		return str;
+	}
+	str.erase(0, p);
 	return str;
 }
 
 string& strutil::rtrimIP(string& str)
 {
-	str.erase(str.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
+	const auto p = str.find_last_not_of(WHITESPACE_CHARACTERS);
+	if (p == string::npos)
+	{
+		str.clear();
+		return str;
+	}
+	str.erase(p + 1);
 	return str;
 }
 
 string& strutil::trimIP(string& str)
 {
-	str.erase(0, str.find_first_not_of(WHITESPACE_CHARACTERS)); // left
-	str.erase(str.find_last_not_of(WHITESPACE_CHARACTERS) + 1); // right
+	const auto l = str.find_first_not_of(WHITESPACE_CHARACTERS);
+	if (l == string::npos)
+	{
+		str.clear();
+		return str;
+	}
+	str.erase(0, l); // left
+	const auto r = str.find_last_not_of(WHITESPACE_CHARACTERS);
+	if (r != string::npos)
+		str.erase(r + 1); // right
 	return str;
 }
 
 string strutil::ltrim(string_view str)
 {
+	const auto p = str.find_first_not_of(WHITESPACE_CHARACTERS);
+	if (p == string_view::npos)
+		return {};
 	auto s = string{ str };
-	s.erase(0, s.find_first_not_of(WHITESPACE_CHARACTERS));
+	s.erase(0, p);
 	return s;
 }
 
 string strutil::rtrim(string_view str)
 {
+	const auto p = str.find_last_not_of(WHITESPACE_CHARACTERS);
+	if (p == string_view::npos)
+		return {};
 	auto s = string{ str };
-	s.erase(s.find_last_not_of(WHITESPACE_CHARACTERS) + 1);
+	s.erase(p + 1);
 	return s;
 }
 
 string strutil::trim(string_view str)
 {
+	const auto l = str.find_first_not_of(WHITESPACE_CHARACTERS);
+	if (l == string_view::npos)
+		return {};
 	auto s = string{ str };
-	s.erase(0, s.find_first_not_of(WHITESPACE_CHARACTERS)); // left
-	s.erase(s.find_last_not_of(WHITESPACE_CHARACTERS) + 1); // right
+	s.erase(0, l); // left
+	const auto r = s.find_last_not_of(WHITESPACE_CHARACTERS);
+	if (r != string::npos)
+		s.erase(r + 1); // right
 	return s;
+}
+
+string_view strutil::ltrimV(string_view str)
+{
+	const auto p = str.find_first_not_of(WHITESPACE_CHARACTERS);
+	return p == string_view::npos ? string_view{} : str.substr(p);
+}
+
+string_view strutil::rtrimV(string_view str)
+{
+	const auto p = str.find_last_not_of(WHITESPACE_CHARACTERS);
+	return p == string_view::npos ? string_view{} : str.substr(0, p + 1);
+}
+
+string_view strutil::trimV(string_view str)
+{
+	const auto l = str.find_first_not_of(WHITESPACE_CHARACTERS);
+	if (l == string_view::npos)
+		return string_view{};
+	str          = str.substr(l); // left
+	const auto r = str.find_last_not_of(WHITESPACE_CHARACTERS);
+	return r == string_view::npos ? string_view{} : str.substr(0, r + 1); // right
 }
 
 string& strutil::capitalizeIP(string& str)
@@ -452,8 +635,8 @@ string& strutil::capitalizeIP(string& str)
 	if (str.empty())
 		return str;
 
-	transform(str.begin(), str.end(), str.begin(), tolower);
-	str[0] = static_cast<char>(toupper(str[0]));
+	std::ranges::transform(str, str.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+	str[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(str[0])));
 
 	return str;
 }
@@ -464,8 +647,8 @@ string strutil::capitalize(string_view str)
 		return {};
 
 	auto s = string{ str };
-	transform(s.begin(), s.end(), s.begin(), tolower);
-	s[0] = static_cast<char>(toupper(s[0]));
+	std::ranges::transform(s, s.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+	s[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(s[0])));
 	return s;
 }
 
@@ -474,6 +657,7 @@ string strutil::wildcardToRegex(string_view str)
 	// Process [str] to be a valid regex string
 	// (replace ? with . and add . before any *)
 	auto regex = string{ str };
+	regex.reserve(regex.size() * 2);
 	for (unsigned c = 0; c < regex.size(); ++c)
 	{
 		if (regex[c] == '?')
@@ -499,6 +683,27 @@ string& strutil::prependIP(string& str, string_view prefix)
 {
 	str.insert(str.begin(), prefix.begin(), prefix.end());
 	return str;
+}
+
+string strutil::surround(string_view str, string_view with)
+{
+	if (with.empty())
+		return string{ str };
+
+	// Handle some special cases
+	if (with.size() < 2)
+	{
+		switch (with[0])
+		{
+		case '(': return fmt::format("({})", str);
+		case '[': return fmt::format("[{}]", str);
+		case '{': return fmt::format("{{{}}}", str);
+		case '<': return fmt::format("<{}>", str);
+		default:  break;
+		}
+	}
+
+	return fmt::format("{0}{1}{0}", with, str);
 }
 
 string strutil::left(string_view str, unsigned n)
@@ -536,6 +741,14 @@ string strutil::afterLast(string_view str, char chr)
 	return string{ str };
 }
 
+string strutil::afterLast(string_view str, string_view token)
+{
+	auto pos = str.rfind(token);
+	if (pos == string::npos)
+		return string{ str };
+	return string{ str.substr(pos + token.size()) };
+}
+
 string_view strutil::afterLastV(string_view str, char chr)
 {
 	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
@@ -543,6 +756,14 @@ string_view strutil::afterLastV(string_view str, char chr)
 			return str.substr(i + 1);
 
 	return str;
+}
+
+string_view strutil::afterLastV(string_view str, string_view token)
+{
+	auto pos = str.rfind(token);
+	if (pos == string::npos)
+		return str;
+	return str.substr(pos + token.size());
 }
 
 string strutil::afterFirst(string_view str, char chr)
@@ -554,6 +775,14 @@ string strutil::afterFirst(string_view str, char chr)
 	return string{ str };
 }
 
+string strutil::afterFirst(string_view str, string_view token)
+{
+	auto pos = str.find(token);
+	if (pos == string::npos)
+		return string{ str };
+	return string{ str.substr(pos + token.size()) };
+}
+
 string_view strutil::afterFirstV(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); ++i)
@@ -561,6 +790,14 @@ string_view strutil::afterFirstV(string_view str, char chr)
 			return str.substr(i + 1);
 
 	return str;
+}
+
+string_view strutil::afterFirstV(string_view str, string_view token)
+{
+	auto pos = str.find(token);
+	if (pos == string::npos)
+		return str;
+	return str.substr(pos + token.size());
 }
 
 string strutil::beforeLast(string_view str, char chr)
@@ -572,6 +809,14 @@ string strutil::beforeLast(string_view str, char chr)
 	return string{ str };
 }
 
+string strutil::beforeLast(string_view str, string_view token)
+{
+	auto pos = str.rfind(token);
+	if (pos == string::npos)
+		return string{ str };
+	return string{ str.substr(0, pos) };
+}
+
 string_view strutil::beforeLastV(string_view str, char chr)
 {
 	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
@@ -579,6 +824,14 @@ string_view strutil::beforeLastV(string_view str, char chr)
 			return str.substr(0, i);
 
 	return str;
+}
+
+string_view strutil::beforeLastV(string_view str, string_view token)
+{
+	auto pos = str.rfind(token);
+	if (pos == string::npos)
+		return str;
+	return str.substr(0, pos);
 }
 
 string strutil::beforeFirst(string_view str, char chr)
@@ -590,6 +843,14 @@ string strutil::beforeFirst(string_view str, char chr)
 	return string{ str };
 }
 
+string strutil::beforeFirst(string_view str, string_view token)
+{
+	auto pos = str.find(token);
+	if (pos == string::npos)
+		return string{ str };
+	return string{ str.substr(0, pos) };
+}
+
 string_view strutil::beforeFirstV(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); i++)
@@ -599,7 +860,15 @@ string_view strutil::beforeFirstV(string_view str, char chr)
 	return str;
 }
 
-vector<string> strutil::split(string_view str, char separator)
+string_view strutil::beforeFirstV(string_view str, string_view token)
+{
+	auto pos = str.find(token);
+	if (pos == string::npos)
+		return str;
+	return str.substr(0, pos);
+}
+
+vector<string> strutil::split(string_view str, char separator, bool skip_duplicates)
 {
 	unsigned       start = 0;
 	const auto     size  = str.size();
@@ -608,7 +877,8 @@ vector<string> strutil::split(string_view str, char separator)
 	{
 		if (str[c] == separator)
 		{
-			split.emplace_back(str.substr(start, c - start));
+			if (!skip_duplicates || c > start)
+				split.emplace_back(str.substr(start, c - start));
 			start = c + 1;
 		}
 	}
@@ -618,7 +888,7 @@ vector<string> strutil::split(string_view str, char separator)
 	return split;
 }
 
-vector<string_view> strutil::splitV(string_view str, char separator)
+vector<string_view> strutil::splitV(string_view str, char separator, bool skip_duplicates)
 {
 	unsigned            start = 0;
 	const auto          size  = str.size();
@@ -627,7 +897,8 @@ vector<string_view> strutil::splitV(string_view str, char separator)
 	{
 		if (str[c] == separator)
 		{
-			split.push_back(str.substr(start, c - start));
+			if (!skip_duplicates || c > start)
+				split.push_back(str.substr(start, c - start));
 			start = c + 1;
 		}
 	}
@@ -701,7 +972,7 @@ string& strutil::removeSuffixIP(string& str, char suffix)
 strutil::Path::Path(string_view full_path) : full_path_{ full_path.data(), full_path.size() }
 {
 	// Enforce / as separators
-	std::replace(full_path_.begin(), full_path_.end(), '\\', '/');
+	std::ranges::replace(full_path_, '\\', '/');
 
 	const auto last_sep_pos = full_path_.find_last_of('/');
 	filename_start_         = last_sep_pos == string::npos ? 0 : last_sep_pos + 1;
@@ -714,8 +985,8 @@ string_view strutil::Path::path(bool include_end_sep) const
 	if (filename_start_ == 0 || filename_start_ == string::npos)
 		return {};
 
-	return include_end_sep ? string_view{ full_path_.data(), filename_start_ } :
-							 string_view{ full_path_.data(), filename_start_ - 1 };
+	return include_end_sep ? string_view{ full_path_.data(), filename_start_ }
+						   : string_view{ full_path_.data(), filename_start_ - 1 };
 }
 
 string_view strutil::Path::fileName(bool include_extension) const
@@ -723,8 +994,8 @@ string_view strutil::Path::fileName(bool include_extension) const
 	if (filename_start_ == string::npos)
 		return {};
 
-	return include_extension ? string_view{ full_path_.data() + filename_start_ } :
-							   string_view{ full_path_.data() + filename_start_, filename_end_ - filename_start_ };
+	return include_extension ? string_view{ full_path_.data() + filename_start_ }
+							 : string_view{ full_path_.data() + filename_start_, filename_end_ - filename_start_ };
 }
 
 string_view strutil::Path::extension() const
@@ -748,12 +1019,17 @@ bool strutil::Path::hasExtension() const
 	return filename_start_ != string::npos && filename_end_ < full_path_.size();
 }
 
+bool strutil::Path::extensionIs(string_view ext) const
+{
+	return equalCI(extension(), ext);
+}
+
 void strutil::Path::set(string_view full_path)
 {
 	full_path_ = full_path;
 
 	// Enforce / as separators
-	std::replace(full_path_.begin(), full_path_.end(), '\\', '/');
+	std::ranges::replace(full_path_, '\\', '/');
 
 	const auto last_sep_pos = full_path_.find_last_of('/');
 	filename_start_         = last_sep_pos == string::npos ? 0 : last_sep_pos + 1;
@@ -766,11 +1042,9 @@ void strutil::Path::setPath(string_view path)
 	if (filename_start_ == string::npos)
 		return;
 
-	// Ensure given path doesn't begin or end with a separator
+	// Ensure given path doesn't end with a separator
 	if (path.back() == '/' || path.back() == '\\')
 		path.remove_suffix(1);
-	if (path[0] == '/' || path[0] == '\\')
-		path.remove_prefix(1);
 
 	if (filename_start_ == 0)
 	{
@@ -862,8 +1136,8 @@ string_view strutil::Path::extensionOf(string_view full_path)
 string_view strutil::Path::pathOf(string_view full_path, bool include_end_sep)
 {
 	const auto last_sep_pos = full_path.find_last_of("/\\");
-	return last_sep_pos == string_view::npos ? string_view{} :
-											   full_path.substr(0, include_end_sep ? last_sep_pos + 1 : last_sep_pos);
+	return last_sep_pos == string_view::npos ? string_view{}
+											 : full_path.substr(0, include_end_sep ? last_sep_pos + 1 : last_sep_pos);
 }
 
 bool strutil::Path::filePathsMatch(string_view left, string_view right)
@@ -894,7 +1168,7 @@ bool strutil::Path::filePathsMatch(string_view left, string_view right)
 				continue;
 
 			// Case-insensitive
-			if (tolower(left[a]) != tolower(right[a]))
+			if (std::tolower(static_cast<unsigned char>(left[a])) != std::tolower(static_cast<unsigned char>(right[a])))
 				return false;
 		}
 	}
@@ -911,8 +1185,9 @@ bool strutil::Path::filePathsMatch(string_view left, string_view right)
 void strutil::processIncludes(const string& filename, string& out)
 {
 	// Open file
+	// TODO: Implement reading line to string in SFile
 	wxTextFile file;
-	if (!file.Open(filename))
+	if (!file.Open(wxString::FromUTF8(filename)))
 		return;
 
 	// Get file path
@@ -920,7 +1195,7 @@ void strutil::processIncludes(const string& filename, string& out)
 	auto       path = fn.path(true);
 
 	// Go through line-by-line
-	string    line = file.GetNextLine().ToStdString();
+	string    line = file.GetNextLine().utf8_string();
 	Tokenizer tz;
 	tz.setSpecialCharacters("");
 	while (!file.Eof())
@@ -938,7 +1213,7 @@ void strutil::processIncludes(const string& filename, string& out)
 		else
 			out.append(line + "\n");
 
-		line = file.GetNextLine();
+		line = file.GetNextLine().utf8_string();
 	}
 }
 
@@ -962,13 +1237,13 @@ void strutil::processIncludes(const ArchiveEntry* entry, string& out, bool use_r
 
 	// Open file
 	wxTextFile file;
-	if (!file.Open(filename))
+	if (!file.Open(wxString::FromUTF8(filename)))
 		return;
 
 	// Go through line-by-line
 	Tokenizer tz;
 	tz.setSpecialCharacters("");
-	auto line = file.GetFirstLine().ToStdString();
+	auto line = file.GetFirstLine().utf8_string();
 	while (!file.Eof())
 	{
 		// Check for #include
@@ -1012,11 +1287,23 @@ void strutil::processIncludes(const ArchiveEntry* entry, string& out, bool use_r
 		else
 			out.append(line + "\n");
 
-		line = file.GetNextLine();
+		line = file.GetNextLine().utf8_string();
 	}
 
 	// Delete temp file
-	wxRemoveFile(filename);
+	wxRemoveFile(wxString::FromUTF8(filename));
+}
+
+string strutil::join(const vector<string>& strings, string_view separator)
+{
+	string out;
+	for (auto i = 0u; i < strings.size(); ++i)
+	{
+		if (i > 0)
+			out.append(separator);
+		out.append(strings[i]);
+	}
+	return out;
 }
 
 int strutil::asInt(string_view str, int base)
@@ -1228,21 +1515,21 @@ string_view strutil::viewFromChars(const char* chars, unsigned max_length)
 	return { chars, size };
 }
 
-// -----------------------------------------------------------------------------
-// Encodes [str] to UTF8
-// -----------------------------------------------------------------------------
-string strutil::toUTF8(string_view str)
-{
-	return wxutil::strFromView(str).ToUTF8().data();
-}
-
-// -----------------------------------------------------------------------------
-// Decodes [str] from UTF8
-// -----------------------------------------------------------------------------
-string strutil::fromUTF8(string_view str)
-{
-	return wxString::FromUTF8(str.data(), str.length()).ToStdString();
-}
+// // -----------------------------------------------------------------------------
+// // Encodes [str] to UTF8
+// // -----------------------------------------------------------------------------
+// string strutil::toUTF8(string_view str)
+// {
+// 	return wxString(str.data(), str.size()).utf8_string();
+// }
+//
+// // -----------------------------------------------------------------------------
+// // Decodes [str] from UTF8
+// // -----------------------------------------------------------------------------
+// string strutil::fromUTF8(string_view str)
+// {
+// 	return wxString::FromUTF8(str.data(), str.length()).utf8_string();
+// }
 
 // -----------------------------------------------------------------------------
 // Splits [str] into tokens, using given [options]
@@ -1276,7 +1563,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 			// Add current token if needed
 			if (token_start < end)
 			{
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 				token_start = end;
 			}
 
@@ -1316,7 +1607,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 			// Add current token if needed
 			if (token_start < end)
 			{
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 				token_start = end;
 			}
 
@@ -1330,7 +1625,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 			// Add current token if needed
 			if (token_start < end)
 			{
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 				token_start = end;
 			}
 
@@ -1345,7 +1644,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 			// Add current token if needed
 			if (token_start < end)
 			{
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 				token_start = end;
 			}
 
@@ -1369,7 +1672,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 			// Add current token if needed
 			if (token_start < end)
 			{
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 				token_start = end;
 			}
 
@@ -1385,7 +1692,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 						break;
 
 				// Add as token
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 				token_start = end;
 			}
 			else
@@ -1400,7 +1711,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 			// Add current token if needed
 			if (token_start < end)
 			{
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 				token_start = end;
 			}
 
@@ -1415,7 +1730,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 			// Add current token if needed
 			if (token_start < end)
 			{
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 				token_start = end;
 			}
 
@@ -1430,7 +1749,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 			// Add current token if needed
 			if (token_start < end)
 			{
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 				token_start = end;
 			}
 
@@ -1444,7 +1767,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 		{
 			// Add current token if needed
 			if (token_start < end)
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 
 			++pos;
 			token_start = pos;
@@ -1452,7 +1779,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 			{
 				if (str[pos] == '"')
 				{
-					tokens.push_back({ { str.data() + token_start, pos - token_start }, true, line_no, token_start });
+					tokens.push_back(
+						{ .text          = { str.data() + token_start, pos - token_start },
+						  .quoted_string = true,
+						  .line_no       = line_no,
+						  .position      = token_start });
 					++pos;
 					break;
 				}
@@ -1472,11 +1803,16 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 			// Add current token if needed
 			if (token_start < end)
 			{
-				tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+				tokens.push_back(
+					{ .text          = { str.data() + token_start, pos - token_start },
+					  .quoted_string = false,
+					  .line_no       = line_no,
+					  .position      = token_start });
 				token_start = end;
 			}
 
-			tokens.push_back({ { str.data() + pos, 1 }, false, line_no, pos });
+			tokens.push_back(
+				{ .text = { str.data() + pos, 1 }, .quoted_string = false, .line_no = line_no, .position = pos });
 			++pos;
 			continue;
 		}
@@ -1491,7 +1827,11 @@ void strutil::tokenize(vector<Token>& tokens, const string& str, const TokenizeO
 	// Add last token if needed
 	if (token_start < end)
 	{
-		tokens.push_back({ { str.data() + token_start, pos - token_start }, false, line_no, token_start });
+		tokens.push_back(
+			{ .text          = { str.data() + token_start, pos - token_start },
+			  .quoted_string = false,
+			  .line_no       = line_no,
+			  .position      = token_start });
 		token_start = end;
 	}
 }
@@ -1541,17 +1881,17 @@ void wxStringUtils::processIncludes(const wxString& filename, wxString& out)
 	while (!file.Eof())
 	{
 		// Check for #include
-		if (line.Lower().Trim().StartsWith("#include"))
+		if (line.Lower().Trim().StartsWith(wxS("#include")))
 		{
 			// Get filename to include
-			tz.openString(line.ToStdString());
+			tz.openString(line.utf8_string());
 			tz.adv(); // Skip #include
 
 			// Process the file
-			processIncludes(path + tz.next().text, out);
+			processIncludes(path + wxString::FromUTF8(tz.next().text), out);
 		}
 		else
-			out.Append(line + "\n");
+			out.Append(line + wxS("\n"));
 
 		line = file.GetNextLine();
 	}
@@ -1575,7 +1915,7 @@ void wxStringUtils::processIncludes(const ArchiveEntry* entry, wxString& out, bo
 
 	// Open file
 	wxTextFile file;
-	if (!file.Open(filename))
+	if (!file.Open(wxString::FromUTF8(filename)))
 		return;
 
 	// Go through line-by-line
@@ -1585,15 +1925,15 @@ void wxStringUtils::processIncludes(const ArchiveEntry* entry, wxString& out, bo
 	while (!file.Eof())
 	{
 		// Check for #include
-		if (line.Lower().Trim().StartsWith("#include"))
+		if (line.Lower().Trim().StartsWith(wxS("#include")))
 		{
 			// Get name of entry to include
-			tz.openString(line.ToStdString());
-			wxString name = entry->path() + tz.next().text;
+			tz.openString(line.utf8_string());
+			wxString name = wxString::FromUTF8(entry->path() + tz.next().text);
 
 			// Get the entry
 			bool done      = false;
-			auto entry_inc = entry->parent()->entryAtPath(name.ToStdString());
+			auto entry_inc = entry->parent()->entryAtPath(name.utf8_string());
 			// DECORATE paths start from the root, not from the #including entry's directory
 			if (!entry_inc)
 				entry_inc = entry->parent()->entryAtPath(tz.current().text);
@@ -1603,13 +1943,13 @@ void wxStringUtils::processIncludes(const ArchiveEntry* entry, wxString& out, bo
 				done = true;
 			}
 			else
-				log::info(2, wxString::Format("Couldn't find entry to #include: %s", name));
+				log::info(2, "Couldn't find entry to #include: {}", name.utf8_string());
 
 			// Look in resource pack
 			if (use_res && !done && app::archiveManager().programResourceArchive())
 			{
-				name      = "config/games/" + tz.current().text;
-				entry_inc = app::archiveManager().programResourceArchive()->entryAtPath(name.ToStdString());
+				name      = wxString::FromUTF8("config/games/" + tz.current().text);
+				entry_inc = app::archiveManager().programResourceArchive()->entryAtPath(name.utf8_string());
 				if (entry_inc)
 				{
 					processIncludes(entry_inc, out);
@@ -1620,18 +1960,18 @@ void wxStringUtils::processIncludes(const ArchiveEntry* entry, wxString& out, bo
 			// Okay, we've exhausted all possibilities
 			if (!done)
 				log::info(
-					1,
-					wxString::Format(
-						"Error: Attempting to #include nonexistant entry \"%s\" from entry %s", name, entry->name()));
+					"Error: Attempting to #include nonexistant entry \"{}\" from entry {}",
+					name.utf8_string(),
+					entry->name());
 		}
 		else
-			out.Append(line + "\n");
+			out.Append(line + wxS("\n"));
 
 		line = file.GetNextLine();
 	}
 
 	// Delete temp file
-	wxRemoveFile(filename);
+	wxRemoveFile(wxString::FromUTF8(filename));
 }
 
 // -----------------------------------------------------------------------------
@@ -1668,7 +2008,7 @@ int wxStringUtils::toInt(const wxString& str)
 	if (str.ToLong(&tmp))
 		return tmp;
 
-	log::error(wxString::Format("Can't convert \"%s\" to an integer", str));
+	log::error("Can't convert \"{}\" to an integer", str.utf8_string());
 	return 0;
 }
 
@@ -1681,7 +2021,7 @@ float wxStringUtils::toFloat(const wxString& str)
 	if (str.ToDouble(&tmp))
 		return static_cast<float>(tmp);
 
-	log::error(wxString::Format("Can't convert \"%s\" to a float", str));
+	log::error("Can't convert \"{}\" to a float", str.utf8_string());
 	return 0.f;
 }
 
@@ -1694,6 +2034,6 @@ double wxStringUtils::toDouble(const wxString& str)
 	if (str.ToDouble(&tmp))
 		return tmp;
 
-	log::error(wxString::Format("Can't convert \"%s\" to a double", str));
+	log::error("Can't convert \"{}\" to a double", str.utf8_string());
 	return 0.;
 }

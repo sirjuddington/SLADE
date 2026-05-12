@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "Geometry/Rect.h"
 #include "MapObject.h"
@@ -10,8 +10,6 @@ class Debuggable;
 
 class MapLine : public MapObject
 {
-	friend class SLADEMap;
-
 public:
 	// Line parts
 	enum Part
@@ -56,6 +54,7 @@ public:
 	MapSide*           s2() const { return side2_; }
 	int                special() const { return special_; }
 	int                id() const { return id_; }
+	bool               hasId(int id) const;
 	int                flags() const { return flags_; }
 	bool               flagSet(int flag) const { return (flags_ & flag) != 0; }
 	int                arg(unsigned index) const { return index < 5 ? args_[index] : 0; }
@@ -74,15 +73,16 @@ public:
 	int s1Index() const;
 	int s2Index() const;
 
-	bool   boolProperty(string_view key) override;
-	int    intProperty(string_view key) override;
-	double floatProperty(string_view key) override;
-	string stringProperty(string_view key) override;
+	bool   hasProp(string_view key) const override;
+	bool   boolProperty(string_view key) const override;
+	int    intProperty(string_view key) const override;
+	double floatProperty(string_view key) const override;
+	string stringProperty(string_view key) const override;
 	void   setBoolProperty(string_view key, bool value) override;
 	void   setIntProperty(string_view key, int value) override;
 	void   setFloatProperty(string_view key, double value) override;
 	void   setStringProperty(string_view key, string_view value) override;
-	bool   scriptCanModifyProp(string_view key) override;
+	bool   scriptCanModifyProp(string_view key) const override;
 
 	void setS1(MapSide* side);
 	void setS2(MapSide* side);
@@ -95,21 +95,26 @@ public:
 	void clearFlag(int flag);
 	void setArg(unsigned index, int value);
 
-	Vec2d  getPoint(Point point) override;
+	Vec2d  getPoint(Point point) const override;
 	Vec2d  start() const;
 	Vec2d  end() const;
 	Seg2d  seg() const;
-	double length();
+	double length() const;
 	bool   doubleSector() const;
-	Vec2d  frontVector();
-	Vec2d  dirTabPoint(double tab_length = 0.);
-	double distanceTo(const Vec2d& point);
+	Vec2d  frontVector() const;
+	Vec2d  dirTabPoint(double tab_length = 0.) const;
+	double distanceTo(const Vec2d& point) const;
 	int    needsTexture() const;
 	bool   overlaps(const MapLine* other) const;
 	bool   intersects(const MapLine* other, Vec2d& intersect_point) const;
 
+	int lowestCeiling() const;
+	int highestCeiling() const;
+	int lowestFloor() const;
+	int highestFloor() const;
+
 	void clearUnneededTextures() const;
-	void resetInternals();
+	void resetInternals() const;
 	void flip(bool sides = true);
 
 	void writeBackup(Backup* backup) override;
@@ -132,9 +137,9 @@ private:
 	map::ArgSet args_    = {};
 
 	// Internally used info
-	double length_ = -1.;
-	double ca_     = 0.; // Used for intersection calculations
-	double sa_     = 0.; // ^^
-	Vec2d  front_vec_;
+	mutable double length_ = -1.;
+	mutable double ca_     = 0.; // Used for intersection calculations
+	mutable double sa_     = 0.; // ^^
+	mutable Vec2d  front_vec_;
 };
 } // namespace slade

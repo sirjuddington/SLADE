@@ -12,6 +12,12 @@ template<typename T> struct Rect
 	Rect() = default;
 	Rect(const Vec2<T>& tl, const Vec2<T>& br) : tl{ tl }, br{ br } {}
 	Rect(T x1, T y1, T x2, T y2) : tl{ x1, y1 }, br{ x2, y2 } {}
+	template<typename T2>
+	Rect(T2 x1, T2 y1, T2 x2, T2 y2) :
+		tl{ static_cast<T>(x1), static_cast<T>(y1) },
+		br{ static_cast<T>(x2), static_cast<T>(y2) }
+	{
+	}
 	Rect(T x, T y, T width, T height, bool center)
 	{
 		if (center)
@@ -105,6 +111,14 @@ template<typename T> struct Rect
 	bool contains(Vec2<T> point) const
 	{
 		return (point.x >= left() && point.x <= right() && point.y >= top() && point.y <= bottom());
+	}
+
+	void move(T x_offset, T y_offset)
+	{
+		tl.x += x_offset;
+		tl.y += y_offset;
+		br.x += x_offset;
+		br.y += y_offset;
 	}
 };
 } // namespace slade

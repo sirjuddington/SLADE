@@ -1,5 +1,6 @@
 #pragma once
 
+#include "JsonFwd.h"
 #include "Utility/StringPair.h"
 
 class wxMenu;
@@ -30,10 +31,11 @@ namespace executables
 		string path;
 	};
 
-	string writePaths();
-	string writeExecutables();
-	void   init();
-	void   parse(const Parser* p, bool custom);
+	void writePaths(Json& j);
+	bool writeExecutables(string_view path);
+	void readExecutables(Json& j, bool custom);
+	void init();
+	void parse(const Parser* p, bool custom);
 
 	// Game executables
 	GameExe* gameExe(string_view id);

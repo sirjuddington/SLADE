@@ -1,0 +1,254 @@
+{
+  "colours": {
+    "error": {
+      "colour": "rgb(230, 30, 0)",
+      "group": "General",
+      "name": "Error"
+    },
+    "locked": {
+      "colour": "rgb(180, 50, 0)",
+      "group": "General",
+      "name": "Locked"
+    },
+    "map_3d_crosshair": {
+      "blend_additive": true,
+      "colour": "rgb(180, 190, 255)",
+      "group": "Map Editor",
+      "name": "3D Crosshair"
+    },
+    "map_3d_hilight": {
+      "colour": "rgba(255, 255, 140, 170)",
+      "group": "Map Editor",
+      "name": "3D Hilight"
+    },
+    "map_3d_overlay_background": {
+      "colour": "rgba(0, 0, 0, 180)",
+      "group": "Map Editor",
+      "name": "3D Info Overlay Background"
+    },
+    "map_3d_overlay_foreground": {
+      "colour": "rgb(255, 255, 255)",
+      "group": "Map Editor",
+      "name": "3D Info Overlay Foreground"
+    },
+    "map_3d_selection": {
+      "colour": "rgba(30, 100, 255, 180)",
+      "group": "Map Editor",
+      "name": "3D Selection"
+    },
+    "map_64grid": {
+      "blend_additive": true,
+      "colour": "rgba(0, 0, 0, 40)",
+      "group": "Map Editor",
+      "name": "64 Grid"
+    },
+    "map_background": {
+      "colour": "rgb(150, 150, 150)",
+      "group": "Map Editor",
+      "name": "Background"
+    },
+    "map_editor_message": {
+      "colour": "rgb(255, 255, 255)",
+      "group": "Map Editor",
+      "name": "Editor Message"
+    },
+    "map_editor_message_outline": {
+      "colour": "rgb(0, 0, 0)",
+      "group": "Map Editor",
+      "name": "Editor Message Outline"
+    },
+    "map_grid": {
+      "colour": "rgba(0, 0, 0, 30)",
+      "group": "Map Editor",
+      "name": "Grid"
+    },
+    "map_hilight": {
+      "blend_additive": true,
+      "colour": "rgba(255, 255, 255, 220)",
+      "group": "Map Editor",
+      "name": "Hilighted Item"
+    },
+    "map_image_background": {
+      "colour": "rgba(255, 255, 255, 0)",
+      "group": "Map Image Export",
+      "name": "Background"
+    },
+    "map_image_line_1s": {
+      "colour": "rgb(0, 0, 0)",
+      "group": "Map Image Export",
+      "name": "Line (1-Sided)"
+    },
+    "map_image_line_2s": {
+      "colour": "rgb(144, 144, 144)",
+      "group": "Map Image Export",
+      "name": "Line (2-Sided)"
+    },
+    "map_image_line_macro": {
+      "colour": "rgb(50, 130, 220)",
+      "group": "Map Image Export",
+      "name": "Line (Macro)"
+    },
+    "map_image_line_special": {
+      "colour": "rgb(220, 130, 50)",
+      "group": "Map Image Export",
+      "name": "Line (Special)"
+    },
+    "map_line_flag1": {
+      "colour": "rgba(180, 0, 200, 120)",
+      "group": "Map Editor",
+      "name": "Line: Flag 1"
+    },
+    "map_line_flag2": {
+      "colour": "rgba(0, 180, 50, 120)",
+      "group": "Map Editor",
+      "name": "Line: Flag 2"
+    },
+    "map_line_flag3": {
+      "colour": "rgba(0, 100, 140, 160)",
+      "group": "Map Editor",
+      "name": "Line: Flag 3"
+    },
+    "map_line_flag4": {
+      "colour": "rgba(140, 70, 0, 180)",
+      "group": "Map Editor",
+      "name": "Line: Flag 4"
+    },
+    "map_line_flag5": {
+      "colour": "rgba(140, 140, 0, 120)",
+      "group": "Map Editor",
+      "name": "Line: Flag 5"
+    },
+    "map_line_invalid": {
+      "colour": "rgb(255, 0, 0)",
+      "group": "Map Editor",
+      "name": "Line: Invalid"
+    },
+    "map_line_normal": {
+      "colour": "rgb(0, 0, 0)",
+      "group": "Map Editor",
+      "name": "Line: Normal"
+    },
+    "map_line_special": {
+      "colour": "rgb(200, 0, 200)",
+      "group": "Map Editor",
+      "name": "Line: Special"
+    },
+    "map_linedraw": {
+      "colour": "rgba(255, 220, 0, 200)",
+      "group": "Map Editor",
+      "name": "Line Drawing"
+    },
+    "map_moving": {
+      "blend_additive": true,
+      "colour": "rgb(255, 100, 0)",
+      "group": "Map Editor",
+      "name": "Moving Item(s)"
+    },
+    "map_object_edit": {
+      "blend_additive": true,
+      "colour": "rgba(255, 220, 0, 200)",
+      "group": "Map Editor",
+      "name": "Object Edit"
+    },
+    "map_overlay_background": {
+      "colour": "rgba(170, 170, 170, 220)",
+      "group": "Map Editor",
+      "name": "Info Overlay Background"
+    },
+    "map_overlay_foreground": {
+      "colour": "rgb(0, 0, 0)",
+      "group": "Map Editor",
+      "name": "Info Overlay Foreground"
+    },
+    "map_selbox_fill": {
+      "blend_additive": true,
+      "colour": "rgba(255, 255, 255, 100)",
+      "group": "Map Editor",
+      "name": "Selection Box Fill"
+    },
+    "map_selbox_outline": {
+      "blend_additive": true,
+      "colour": "rgb(0, 0, 0)",
+      "group": "Map Editor",
+      "name": "Selection Box Outline"
+    },
+    "map_selection": {
+      "blend_additive": true,
+      "colour": "rgba(0, 255, 100, 150)",
+      "group": "Map Editor",
+      "name": "Selected Item"
+    },
+    "map_tagged": {
+      "blend_additive": true,
+      "colour": "rgba(0, 180, 255, 160)",
+      "group": "Map Editor",
+      "name": "Tagged Item(s)"
+    },
+    "map_tagging": {
+      "blend_additive": true,
+      "colour": "rgba(255, 0, 100, 220)",
+      "group": "Map Editor",
+      "name": "Tagging Item(s)"
+    },
+    "map_thing_path": {
+      "colour": "rgb(34, 255, 255)",
+      "group": "Map Editor",
+      "name": "Pathed Thing Line"
+    },
+    "map_thing_path_dragon": {
+      "colour": "rgb(255, 34, 34)",
+      "group": "Map Editor",
+      "name": "Pathed Thing Line (Dragon)"
+    },
+    "map_vertex": {
+      "colour": "rgb(60, 160, 255)",
+      "group": "Map Editor",
+      "name": "Vertex"
+    },
+    "map_view_background": {
+      "colour": "rgb(150, 150, 150)",
+      "group": "Map Preview",
+      "name": "Background"
+    },
+    "map_view_line_1s": {
+      "colour": "rgb(0, 0, 0)",
+      "group": "Map Preview",
+      "name": "Line (1-Sided)"
+    },
+    "map_view_line_2s": {
+      "colour": "rgb(90, 90, 90)",
+      "group": "Map Preview",
+      "name": "Line (2-Sided)"
+    },
+    "map_view_line_macro": {
+      "colour": "rgb(145, 47, 0)",
+      "group": "Map Preview",
+      "name": "Line (Macro)"
+    },
+    "map_view_line_special": {
+      "colour": "rgb(180, 0, 180)",
+      "group": "Map Preview",
+      "name": "Line (Special)"
+    },
+    "map_view_thing": {
+      "colour": "rgb(200, 200, 200)",
+      "group": "Map Preview",
+      "name": "Thing"
+    },
+    "modified": {
+      "colour": "rgb(0, 80, 180)",
+      "group": "General",
+      "name": "Modified"
+    },
+    "new": {
+      "colour": "rgb(0, 150, 0)",
+      "group": "General",
+      "name": "New"
+    }
+  },
+  "theme": {
+    "flat_alpha": 0.7,
+    "line_hilight_width": 2.0,
+    "line_selection_width": 2.0
+  }
+}

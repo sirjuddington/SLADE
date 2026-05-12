@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -48,7 +48,6 @@
 #include "SpecialPreset.h"
 #include "ThingType.h"
 #include "UDMFProperty.h"
-#include "Utility/Parser.h"
 #include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 #include "ZScript.h"
@@ -68,7 +67,18 @@ CVAR(Bool, debug_configuration, false, CVar::Flag::Save)
 namespace slade::game
 {
 Configuration config_current;
-}
+
+// Cache parsed JSON entries to avoid re-parsing anything imported multiple
+// times
+struct ParsedJsonEntry
+{
+	const ArchiveEntry* entry;
+	Json                parsed_json;
+
+	ParsedJsonEntry(const ArchiveEntry& entry) : entry(&entry) { parsed_json = jsonutil::parse(entry.data()); }
+};
+vector<ParsedJsonEntry> parsed_json_entries;
+} // namespace slade::game
 
 
 // -----------------------------------------------------------------------------
@@ -76,6 +86,142 @@ Configuration config_current;
 // Game Namespace Functions
 //
 // -----------------------------------------------------------------------------
+namespace slade::game
+{
+inline int featureId(Feature feature)
+{
+	return static_cast<int>(feature);
+}
+inline int udmfFeatureId(UDMFFeature feature)
+{
+	return static_cast<int>(feature);
+}
+
+// -----------------------------------------------------------------------------
+// Checks if a filter item [j_filter] allows the value [value]
+// -----------------------------------------------------------------------------
+inline bool checkFilterItem(const Json& j_filter, string_view value)
+{
+	bool pass = true;
+
+	if (j_filter.is_string())
+		pass = strutil::equalCI(j_filter.get<string>(), value);
+	else if (j_filter.is_array())
+	{
+		pass = false;
+		for (auto& format : j_filter.get<vector<string>>())
+			if (strutil::equalCI(format, value))
+			{
+				pass = true;
+				break;
+			}
+	}
+
+	return pass;
+}
+
+// -----------------------------------------------------------------------------
+// Checks if the filter object in [j] allows the game+mapformat combo in [cfg].
+// If no filter exists in [j], always pass
+// -----------------------------------------------------------------------------
+bool checkFilter(const Json& j, const Configuration::ConfigDesc& cfg)
+{
+	if (j.contains("filter"))
+	{
+		const auto& j_filter = j.at("filter");
+
+		// Map format filter
+		if (j_filter.contains("map_format"))
+			if (!checkFilterItem(j_filter.at("map_format"), cfg.map_format))
+				return false; // Map format not listed in filter, fail
+
+		// Not map format filter
+		if (j_filter.contains("not_map_format"))
+			if (checkFilterItem(j_filter.at("not_map_format"), cfg.map_format))
+				return false; // Map format *is* listed in filter, fail
+
+		// Game filter
+		if (j_filter.contains("game"))
+			if (!checkFilterItem(j_filter.at("game"), cfg.game))
+				return false; // Game not listed in filter, fail
+
+		// Not game filter
+		if (j_filter.contains("not_game"))
+			if (checkFilterItem(j_filter.at("not_game"), cfg.game))
+				return false; // Game *is* listed in filter, fail
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Handles an 'import' JSON object [j], returning a parsed JSON object from the
+// import target entry (relative to the given base [entry]).
+// If the import objects contains a filter, it will be checked against [cfg] and
+// a discarded value will be returned if it doesn't match
+// -----------------------------------------------------------------------------
+Json getImport(const Json& j, const Configuration::ConfigDesc& cfg, const ArchiveEntry& entry)
+{
+	string file, key;
+
+	// Check for simple or filtered import
+	if (j.is_string())
+		file = j.get<string>();
+	else if (j.is_object())
+	{
+		// Check filter
+		if (!checkFilter(j, cfg))
+			return nlohmann::detail::value_t::discarded;
+
+		jsonutil::getIf(j, "file", file); // Json file to import
+		jsonutil::getIf(j, "key", key);   // Key within Json object to import
+	}
+
+	// Get target entry to import
+	auto import_entry_path = entry.path() + file;
+	if (auto import_entry = entry.parent()->entryAtPath(import_entry_path))
+	{
+		// Check if the entry was previously parsed
+		Json* imported = nullptr;
+		for (auto& parsed : parsed_json_entries)
+			if (parsed.entry == import_entry)
+			{
+				imported = &parsed.parsed_json;
+				break;
+			}
+
+		// Parse entry as JSON if it wasn't previously
+		if (!imported)
+		{
+			parsed_json_entries.emplace_back(*import_entry);
+			imported = &parsed_json_entries.back().parsed_json;
+		}
+
+		// Check parsing was successful
+		if (imported->is_discarded())
+		{
+			log::error("Failed to parse imported entry \"{}\"", import_entry_path);
+			return nlohmann::detail::value_t::discarded;
+		}
+
+		// If key specified, return the object at said key instead of the base object
+		if (!key.empty())
+		{
+			if (imported->contains(key))
+				return imported->at(key);
+
+			log::error("Key {} does not exist in imported JSON entry \"{}\"", key, import_entry_path);
+			return nlohmann::detail::value_t::discarded;
+		}
+
+		return *imported;
+	}
+
+	// Target entry not found
+	log::error("Entry \"{}\" not found to import", import_entry_path);
+	return nlohmann::detail::value_t::discarded;
+}
+} // namespace slade::game
 
 // -----------------------------------------------------------------------------
 // Returns the currently loaded game configuration
@@ -177,781 +323,56 @@ Configuration::MapConf Configuration::mapInfo(string_view mapname)
 }
 
 // -----------------------------------------------------------------------------
-// Reads action special definitions from a parsed tree [node], using
-// [group_defaults] for default values
-// -----------------------------------------------------------------------------
-void Configuration::readActionSpecials(
-	ParseTreeNode*       node,
-	Arg::SpecialMap&     shared_args,
-	const ActionSpecial* group_defaults)
-{
-	// Check if we're clearing all existing specials
-	if (node->child("clearexisting"))
-		action_specials_.clear();
-
-	// Determine current 'group'
-	auto   group = node;
-	string groupname;
-	while (true)
-	{
-		if (!group || group->name() == "action_specials")
-			break;
-		else
-		{
-			// Add current node name to group path
-			groupname = fmt::format("{}/{}", group->name(), groupname);
-			group     = dynamic_cast<ParseTreeNode*>(group->parent());
-		}
-	}
-	strutil::removeSuffixIP(groupname, '/');
-
-	// --- Set up group default properties ---
-	ActionSpecial as_defaults;
-	if (group_defaults)
-		as_defaults = *group_defaults;
-	as_defaults.parse(node, &shared_args);
-
-	// --- Go through all child nodes ---
-	for (unsigned a = 0; a < node->nChildren(); a++)
-	{
-		auto child = node->childPTN(a);
-
-		// Check for 'group'
-		if (strutil::equalCI(child->type(), "group"))
-			readActionSpecials(child, shared_args, &as_defaults);
-
-		// Predeclared argument, for action specials that share the same complex argument
-		else if (strutil::equalCI(child->type(), "arg"))
-			shared_args[child->name()].parse(child, &shared_args);
-
-		// Action special
-		else if (strutil::equalCI(child->type(), "special"))
-		{
-			// Get special id as integer
-			auto special = strutil::asInt(child->name());
-
-			// Reset the action special (in case it's being redefined for whatever reason)
-			// action_specials_[special].reset();
-
-			// Apply group defaults
-			action_specials_[special] = as_defaults;
-			action_specials_[special].setGroup(groupname);
-
-			// Parse it
-			action_specials_[special].setNumber(special);
-			action_specials_[special].parse(child, &shared_args);
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Reads thing type definitions from a parsed tree [node], using
-// [group_defaults] for default values
-// -----------------------------------------------------------------------------
-void Configuration::readThingTypes(const ParseTreeNode* node, const ThingType* group_defaults)
-{
-	// Check if we're clearing all existing specials
-	if (node->child("clearexisting"))
-		thing_types_.clear();
-
-	// --- Determine current 'group' ---
-	auto   group = node;
-	string groupname;
-	while (true)
-	{
-		if (!group || group->name() == "thing_types")
-			break;
-		else
-		{
-			// Add current node name to group path
-			groupname = fmt::format("{}/{}", group->name(), groupname);
-			group     = dynamic_cast<ParseTreeNode*>(group->parent());
-		}
-	}
-	strutil::removeSuffixIP(groupname, '/');
-
-
-	// --- Set up group default properties ---
-	auto& cur_group_defaults = tt_group_defaults_[groupname];
-	cur_group_defaults.define(-1, "", groupname);
-	if (group_defaults)
-		cur_group_defaults.copy(*group_defaults);
-	cur_group_defaults.parse(node);
-
-	// --- Go through all child nodes ---
-	ParseTreeNode* child;
-	for (unsigned a = 0; a < node->nChildren(); a++)
-	{
-		child = node->childPTN(a);
-
-		// Check for 'group'
-		if (strutil::equalCI(child->type(), "group"))
-			readThingTypes(child, &cur_group_defaults);
-
-		// Thing type
-		else if (strutil::equalCI(child->type(), "thing"))
-		{
-			// Get thing type as integer
-			auto type = strutil::asInt(child->name());
-
-			// Reset the thing type (in case it's being redefined for whatever reason)
-			thing_types_[type].reset();
-
-			// Apply group defaults
-			thing_types_[type].copy(cur_group_defaults);
-
-			// Check for simple definition
-			if (child->isLeaf())
-				thing_types_[type].define(type, child->stringValue(), groupname);
-			else
-			{
-				// Extended definition
-				thing_types_[type].define(type, "", groupname);
-				thing_types_[type].parse(child);
-			}
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Reads UDMF property definitions from a parsed tree [node] into [plist]
-// -----------------------------------------------------------------------------
-void Configuration::readUDMFProperties(const ParseTreeNode* block, UDMFPropMap& plist) const
-{
-	// Read block properties
-	for (unsigned a = 0; a < block->nChildren(); a++)
-	{
-		auto group = block->childPTN(a);
-
-		// Group definition
-		if (strutil::equalCI(group->type(), "group"))
-		{
-			auto groupname = group->name();
-
-			// Go through the group
-			for (unsigned b = 0; b < group->nChildren(); b++)
-			{
-				auto def = group->childPTN(b);
-
-				if (strutil::equalCI(def->type(), "property"))
-				{
-					// Parse group defaults
-					plist[def->name()].parse(group, groupname);
-
-					// Parse definition
-					plist[def->name()].parse(def, groupname);
-				}
-			}
-		}
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Reads a game or port definition from a parsed tree [node]. If [port_section]
-// is true it is a port definition
-// -----------------------------------------------------------------------------
-#define SET_UDMF_FEATURE(feature, field) \
-	else if (strutil::equalCI(node->name(), #field))(udmf_features_[static_cast<unsigned>(feature)]) = node->boolValue()
-#define SET_FEATURE(feature, value) supported_features_[static_cast<unsigned>(feature)] = value
-void Configuration::readGameSection(const ParseTreeNode* node_game, bool port_section)
-{
-	for (unsigned a = 0; a < node_game->nChildren(); a++)
-	{
-		auto node = node_game->childPTN(a);
-
-		// Allow any map name
-		if (strutil::equalCI(node->name(), "map_name_any"))
-			SET_FEATURE(Feature::AnyMapName, node->boolValue());
-
-		// Map formats
-		else if (strutil::equalCI(node->name(), "map_formats"))
-		{
-			// Reset supported formats
-			map_formats_.clear();
-
-			// Go through values
-			for (unsigned v = 0; v < node->nValues(); v++)
-			{
-				if (strutil::equalCI(node->stringValue(v), "doom"))
-				{
-					map_formats_[MapFormat::Doom] = true;
-				}
-				else if (strutil::equalCI(node->stringValue(v), "hexen"))
-				{
-					map_formats_[MapFormat::Hexen] = true;
-				}
-				else if (strutil::equalCI(node->stringValue(v), "doom64"))
-				{
-					map_formats_[MapFormat::Doom64] = true;
-				}
-				else if (strutil::equalCI(node->stringValue(v), "doom32x"))
-				{
-					map_formats_[MapFormat::Doom32X] = true;
-				}
-				else if (strutil::equalCI(node->stringValue(v), "udmf"))
-				{
-					map_formats_[MapFormat::UDMF] = true;
-				}
-				else
-					log::warning("Unknown/unsupported map format \"{}\"", node->stringValue(v));
-			}
-		}
-
-		// Boom extensions
-		else if (strutil::equalCI(node->name(), "boom"))
-			SET_FEATURE(Feature::Boom, node->boolValue());
-		else if (strutil::equalCI(node->name(), "boom_sector_flag_start"))
-			boom_sector_flag_start_ = node->intValue();
-
-		// MBF21 extensions
-		else if (strutil::equalCI(node->name(), "mbf21"))
-			SET_FEATURE(Feature::MBF21, node->boolValue());
-
-		// UDMF namespace
-		else if (strutil::equalCI(node->name(), "udmf_namespace"))
-			udmf_namespace_ = node->stringValue();
-
-		// Mixed Textures and Flats
-		else if (strutil::equalCI(node->name(), "mix_tex_flats"))
-			SET_FEATURE(Feature::MixTexFlats, node->boolValue());
-
-		// TX_/'textures' namespace enabled
-		else if (strutil::equalCI(node->name(), "tx_textures"))
-			SET_FEATURE(Feature::TxTextures, node->boolValue());
-
-		// Sky flat
-		else if (strutil::equalCI(node->name(), "sky_flat"))
-			sky_flat_ = node->stringValue();
-
-		// Scripting language
-		else if (strutil::equalCI(node->name(), "script_language"))
-			script_language_ = strutil::lower(node->stringValue());
-
-		// Light levels interval
-		else if (strutil::equalCI(node->name(), "light_level_interval"))
-			setLightLevelInterval(node->intValue());
-
-		// Long names
-		else if (strutil::equalCI(node->name(), "long_names"))
-			SET_FEATURE(Feature::LongNames, node->boolValue());
-
-		// 3d mode camera eye height
-		else if (node->nameIsCI("player_eye_height"))
-			player_eye_height_ = node->intValue();
-
-		// UDMF features
-		SET_UDMF_FEATURE(UDMFFeature::Slopes, udmf_slopes);                      // UDMF slopes
-		SET_UDMF_FEATURE(UDMFFeature::FlatLighting, udmf_flat_lighting);         // UDMF flat lighting
-		SET_UDMF_FEATURE(UDMFFeature::FlatPanning, udmf_flat_panning);           // UDMF flat panning
-		SET_UDMF_FEATURE(UDMFFeature::FlatRotation, udmf_flat_rotation);         // UDMF flat rotation
-		SET_UDMF_FEATURE(UDMFFeature::FlatScaling, udmf_flat_scaling);           // UDMF flat scaling
-		SET_UDMF_FEATURE(UDMFFeature::LineTransparency, udmf_line_transparency); // UDMF line transparency
-		SET_UDMF_FEATURE(UDMFFeature::SectorColor, udmf_sector_color);           // UDMF sector color
-		SET_UDMF_FEATURE(UDMFFeature::SectorFog, udmf_sector_fog);               // UDMF sector fog
-		SET_UDMF_FEATURE(UDMFFeature::SideLighting, udmf_side_lighting);         // UDMF per-sidedef lighting
-		SET_UDMF_FEATURE(
-			UDMFFeature::SideMidtexWrapping, udmf_side_midtex_wrapping);     // UDMF per-sidetex midtex wrapping
-		SET_UDMF_FEATURE(UDMFFeature::SideScaling, udmf_side_scaling);       // UDMF per-sidedef scaling
-		SET_UDMF_FEATURE(UDMFFeature::TextureScaling, udmf_texture_scaling); // UDMF per-texture scaling
-		SET_UDMF_FEATURE(UDMFFeature::TextureOffsets, udmf_texture_offsets); // UDMF per-texture offsets
-		SET_UDMF_FEATURE(UDMFFeature::ThingScaling, udmf_thing_scaling);     // UDMF per-thing scaling
-		SET_UDMF_FEATURE(UDMFFeature::ThingRotation, udmf_thing_rotation);   // UDMF per-thing pitch and yaw rotation
-
-		// Defaults section
-		else if (strutil::equalCI(node->name(), "defaults"))
-		{
-			// Go through defaults blocks
-			for (unsigned b = 0; b < node->nChildren(); b++)
-			{
-				auto block = node->childPTN(b);
-
-				// Linedef defaults
-				if (strutil::equalCI(block->name(), "linedef"))
-				{
-					for (unsigned c = 0; c < block->nChildren(); c++)
-					{
-						auto def = block->childPTN(c);
-						if (strutil::equalCI(def->type(), "udmf"))
-							defaults_line_udmf_[def->name()] = def->value();
-						else
-							defaults_line_[def->name()] = def->value();
-					}
-				}
-
-				// Sidedef defaults
-				else if (strutil::equalCI(block->name(), "sidedef"))
-				{
-					for (unsigned c = 0; c < block->nChildren(); c++)
-					{
-						auto def = block->childPTN(c);
-						if (strutil::equalCI(def->type(), "udmf"))
-							defaults_side_udmf_[def->name()] = def->value();
-						else
-							defaults_side_[def->name()] = def->value();
-					}
-				}
-
-				// Sector defaults
-				else if (strutil::equalCI(block->name(), "sector"))
-				{
-					for (unsigned c = 0; c < block->nChildren(); c++)
-					{
-						auto def = block->childPTN(c);
-						if (strutil::equalCI(def->type(), "udmf"))
-							defaults_sector_udmf_[def->name()] = def->value();
-						else
-							defaults_sector_[def->name()] = def->value();
-					}
-				}
-
-				// Thing defaults
-				else if (strutil::equalCI(block->name(), "thing"))
-				{
-					for (unsigned c = 0; c < block->nChildren(); c++)
-					{
-						auto def = block->childPTN(c);
-						if (strutil::equalCI(def->type(), "udmf"))
-							defaults_thing_udmf_[def->name()] = def->value();
-						else
-							defaults_thing_[def->name()] = def->value();
-					}
-				}
-
-				else
-					log::warning("Unknown defaults block \"{}\"", block->name());
-			}
-		}
-
-		// Maps section (game section only)
-		else if (strutil::equalCI(node->name(), "maps") && !port_section)
-		{
-			// Go through map blocks
-			for (unsigned b = 0; b < node->nChildren(); b++)
-			{
-				auto block = node->childPTN(b);
-
-				// Map definition
-				if (strutil::equalCI(block->type(), "map"))
-				{
-					MapConf map;
-					map.mapname = block->name();
-
-					// Go through map properties
-					for (unsigned c = 0; c < block->nChildren(); c++)
-					{
-						auto prop = block->childPTN(c);
-
-						// Sky texture
-						if (strutil::equalCI(prop->name(), "sky"))
-						{
-							// Primary sky texture
-							map.sky1 = prop->stringValue();
-
-							// Secondary sky texture
-							if (prop->nValues() > 1)
-								map.sky2 = prop->stringValue(1);
-						}
-					}
-
-					maps_.push_back(map);
-				}
-			}
-		}
-	}
-}
-#undef SET_UDMF_FEATURE
-#undef SET_FEATURE
-
-// -----------------------------------------------------------------------------
-// Reads a full game configuration from [cfg]
-// -----------------------------------------------------------------------------
-bool Configuration::readConfiguration(
-	string_view cfg,
-	string_view source,
-	MapFormat   format,
-	bool        ignore_game,
-	bool        clear)
-{
-	// Clear current configuration
-	if (clear)
-	{
-		setDefaults();
-		action_specials_.clear();
-		thing_types_.clear();
-		flags_thing_.clear();
-		flags_line_.clear();
-		sector_types_.clear();
-		udmf_vertex_props_.clear();
-		udmf_linedef_props_.clear();
-		udmf_sidedef_props_.clear();
-		udmf_sector_props_.clear();
-		udmf_thing_props_.clear();
-		tt_group_defaults_.clear();
-	}
-
-	// Parse the full configuration
-	Parser parser;
-	switch (format)
-	{
-	case MapFormat::Doom:    parser.define("MAP_DOOM"); break;
-	case MapFormat::Hexen:   parser.define("MAP_HEXEN"); break;
-	case MapFormat::Doom64:  parser.define("MAP_DOOM64"); break;
-	case MapFormat::Doom32X: parser.define("MAP_DOOM32X"); break;
-	case MapFormat::UDMF:    parser.define("MAP_UDMF"); break;
-	default:                 parser.define("MAP_UNKNOWN"); break;
-	}
-	parser.parseText(cfg, source);
-
-	// Process parsed data
-	auto base = parser.parseTreeRoot();
-
-	// Read game/port section(s) if needed
-	ParseTreeNode* node_game = nullptr;
-	ParseTreeNode* node_port = nullptr;
-	if (!ignore_game)
-	{
-		// 'Game' section (this is required for it to be a valid game configuration, shouldn't be missing)
-		for (unsigned a = 0; a < base->nChildren(); a++)
-		{
-			auto child = base->childPTN(a);
-			if (child->type() == "game")
-			{
-				node_game = child;
-				break;
-			}
-		}
-		if (!node_game)
-		{
-			log::error("No game section found, something is pretty wrong.");
-			return false;
-		}
-		readGameSection(node_game, false);
-
-		// 'Port' section
-		for (unsigned a = 0; a < base->nChildren(); a++)
-		{
-			auto child = base->childPTN(a);
-			if (child->type() == "port")
-			{
-				node_port = child;
-				break;
-			}
-		}
-		if (node_port)
-			readGameSection(node_port, true);
-	}
-
-	// Go through all other config sections
-	ParseTreeNode* node = nullptr;
-	for (unsigned a = 0; a < base->nChildren(); a++)
-	{
-		node = base->childPTN(a);
-
-		// Skip read game/port section
-		if (node == node_game || node == node_port)
-			continue;
-
-		// A TC configuration may override the base game
-		if (strutil::equalCI(node->name(), "game"))
-			readGameSection(node, false);
-
-		// Action specials section
-		else if (strutil::equalCI(node->name(), "action_specials"))
-		{
-			Arg::SpecialMap sm;
-			readActionSpecials(node, sm);
-		}
-
-		// Thing types section
-		else if (strutil::equalCI(node->name(), "thing_types"))
-			readThingTypes(node);
-
-		// Line flags section
-		else if (strutil::equalCI(node->name(), "line_flags"))
-		{
-			for (unsigned c = 0; c < node->nChildren(); c++)
-			{
-				auto value = node->childPTN(c);
-
-				// Check for 'flag' type
-				if (!(strutil::equalCI(value->type(), "flag")))
-					continue;
-
-				unsigned long flag_val = 0;
-				string        flag_name, flag_udmf;
-				bool          activation = false;
-
-				if (value->nValues() == 0)
-				{
-					// Full definition
-					flag_name = value->name();
-
-					for (unsigned v = 0; v < value->nChildren(); v++)
-					{
-						auto prop = value->childPTN(v);
-
-						if (strutil::equalCI(prop->name(), "value"))
-							flag_val = prop->intValue();
-						else if (strutil::equalCI(prop->name(), "udmf"))
-						{
-							for (unsigned u = 0; u < prop->nValues(); u++)
-								flag_udmf += prop->stringValue(u) + " ";
-							flag_udmf.pop_back();
-						}
-						else if (strutil::equalCI(prop->name(), "activation"))
-							activation = prop->boolValue();
-					}
-				}
-				else
-				{
-					// Short definition
-					flag_val  = strutil::asUInt(value->name());
-					flag_name = value->stringValue();
-				}
-
-				// Check if the flag value already exists
-				bool exists = false;
-				for (auto& f : flags_line_)
-				{
-					if (static_cast<unsigned>(f.flag) == flag_val)
-					{
-						exists = true;
-						f.name = flag_name;
-						break;
-					}
-				}
-
-				// Add flag otherwise
-				if (!exists)
-					flags_line_.push_back({ static_cast<int>(flag_val), flag_name, flag_udmf, activation });
-			}
-		}
-
-		// Line triggers section
-		else if (strutil::equalCI(node->name(), "line_triggers"))
-		{
-			for (unsigned c = 0; c < node->nChildren(); c++)
-			{
-				auto value = node->childPTN(c);
-
-				// Check for 'trigger' type
-				if (!(strutil::equalCI(value->type(), "trigger")))
-					continue;
-
-				long   flag_val = 0;
-				string flag_name, flag_udmf;
-
-				if (value->nValues() == 0)
-				{
-					// Full definition
-					flag_name = value->name();
-
-					for (unsigned v = 0; v < value->nChildren(); v++)
-					{
-						auto prop = value->childPTN(v);
-
-						if (strutil::equalCI(prop->name(), "value"))
-							flag_val = prop->intValue();
-						else if (strutil::equalCI(prop->name(), "udmf"))
-						{
-							for (unsigned u = 0; u < prop->nValues(); u++)
-								flag_udmf += prop->stringValue(u) + " ";
-							flag_udmf.pop_back();
-						}
-					}
-				}
-				else
-				{
-					// Short definition
-					flag_val  = strutil::asInt(value->name());
-					flag_name = value->stringValue();
-				}
-
-				// Check if the trigger value already exists
-				bool exists = false;
-				for (auto& f : triggers_line_)
-				{
-					if (f.flag == flag_val)
-					{
-						exists = true;
-						f.name = flag_name;
-						break;
-					}
-				}
-
-				// Add trigger otherwise
-				if (!exists)
-					triggers_line_.push_back({ static_cast<int>(flag_val), flag_name, flag_udmf, false });
-			}
-		}
-
-		// Thing flags section
-		else if (strutil::equalCI(node->name(), "thing_flags"))
-		{
-			for (unsigned c = 0; c < node->nChildren(); c++)
-			{
-				auto value = node->childPTN(c);
-
-				// Check for 'flag' type
-				if (!(strutil::equalCI(value->type(), "flag")))
-					continue;
-
-				long   flag_val = 0;
-				string flag_name, flag_udmf;
-
-				if (value->nValues() == 0)
-				{
-					// Full definition
-					flag_name = value->name();
-
-					for (unsigned v = 0; v < value->nChildren(); v++)
-					{
-						auto prop = value->childPTN(v);
-
-						if (strutil::equalCI(prop->name(), "value"))
-							flag_val = prop->intValue();
-						else if (strutil::equalCI(prop->name(), "udmf"))
-						{
-							for (unsigned u = 0; u < prop->nValues(); u++)
-								flag_udmf += prop->stringValue(u) + " ";
-							flag_udmf.pop_back();
-						}
-					}
-				}
-				else
-				{
-					// Short definition
-					flag_val  = strutil::asInt(value->name());
-					flag_name = value->stringValue();
-				}
-
-				// Check if the flag value already exists
-				bool exists = false;
-				for (auto& f : flags_thing_)
-				{
-					if (f.flag == flag_val)
-					{
-						exists = true;
-						f.name = flag_name;
-						break;
-					}
-				}
-
-				// Add flag otherwise
-				if (!exists)
-					flags_thing_.push_back({ static_cast<int>(flag_val), flag_name, flag_udmf, false });
-			}
-		}
-
-		// Sector types section
-		else if (strutil::equalCI(node->name(), "sector_types"))
-		{
-			for (unsigned c = 0; c < node->nChildren(); c++)
-			{
-				auto value = node->childPTN(c);
-
-				// Check for 'type'
-				if (!(strutil::equalCI(value->type(), "type")))
-					continue;
-
-				// Parse type value
-				int type_val = strutil::asInt(value->name());
-
-				// Set type name
-				sector_types_[type_val] = value->stringValue();
-			}
-		}
-
-		// UDMF properties section
-		else if (strutil::equalCI(node->name(), "udmf_properties"))
-		{
-			// Parse vertex block properties (if any)
-			auto block = node->childPTN("vertex");
-			if (block)
-				readUDMFProperties(block, udmf_vertex_props_);
-
-			// Parse linedef block properties (if any)
-			block = node->childPTN("linedef");
-			if (block)
-				readUDMFProperties(block, udmf_linedef_props_);
-
-			// Parse sidedef block properties (if any)
-			block = node->childPTN("sidedef");
-			if (block)
-				readUDMFProperties(block, udmf_sidedef_props_);
-
-			// Parse sector block properties (if any)
-			block = node->childPTN("sector");
-			if (block)
-				readUDMFProperties(block, udmf_sector_props_);
-
-			// Parse thing block properties (if any)
-			block = node->childPTN("thing");
-			if (block)
-				readUDMFProperties(block, udmf_thing_props_);
-		}
-
-		// Special Presets section
-		else if (strutil::equalCI(node->name(), "special_presets"))
-		{
-			for (unsigned c = 0; c < node->nChildren(); c++)
-			{
-				auto preset = node->childPTN(c);
-				if (strutil::equalCI(preset->type(), "preset"))
-				{
-					special_presets_.push_back({});
-					special_presets_.back().parse(preset);
-				}
-			}
-		}
-
-		// Unknown/unexpected section
-		else
-			log::warning("Unexpected game configuration section \"{}\", skipping", node->name());
-	}
-
-	return true;
-}
-
-// -----------------------------------------------------------------------------
 // Opens the full game configuration [game]+[port], either from the user dir or
 // program resource
 // -----------------------------------------------------------------------------
 bool Configuration::openConfig(const string& game, const string& port, MapFormat format)
 {
-	string full_config;
-
-	// Get game configuration as string
 	auto& game_config = gameDef(game);
-	if (game_config.name == game)
+	if (game_config.name != game)
+		return false;
+
+	// Clear current configuration
+	setDefaults();
+	action_specials_.clear();
+	thing_types_.clear();
+	flags_thing_.clear();
+	flags_line_.clear();
+	sector_types_.clear();
+	udmf_vertex_props_.clear();
+	udmf_linedef_props_.clear();
+	udmf_sidedef_props_.clear();
+	udmf_sector_props_.clear();
+	udmf_thing_props_.clear();
+	tt_group_defaults_.clear();
+
+	// Load base game configuration
+	bool game_ok = false;
+	if (game_config.user)
 	{
-		if (game_config.user)
+		// TODO: Config is in user dir
+	}
+	else
+	{
+		// Config is in program resource
+		auto epath   = fmt::format("config/games/{}.json", game_config.filename);
+		auto archive = app::archiveManager().programResourceArchive();
+		auto entry   = archive->entryAtPath(epath);
+		if (entry)
 		{
-			// Config is in user dir
-			auto filename = app::path("games/", app::Dir::User) + game_config.filename + ".cfg";
-			if (wxFileExists(filename))
-				strutil::processIncludes(filename, full_config);
-			else
-			{
-				log::error("Error: Game configuration file \"{}\" not found", filename);
-				return false;
-			}
-		}
-		else
-		{
-			// Config is in program resource
-			auto epath   = fmt::format("config/games/{}.cfg", game_config.filename);
-			auto archive = app::archiveManager().programResourceArchive();
-			auto entry   = archive->entryAtPath(epath);
-			if (entry)
-				strutil::processIncludes(entry, full_config);
+			if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
+				game_ok = readGameConfiguration(j, ConfigDesc{ game, port, mapFormatId(format) }, entry);
 		}
 	}
 
+	if (!game_ok)
+		return false;
+
 	// Append port configuration (if specified)
+	bool port_ok = true;
 	if (!port.empty())
 	{
-		full_config += "\n\n";
+		port_ok = false;
 
 		// Check the port supports this game
 		auto& conf = portDef(port);
@@ -959,52 +380,34 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		{
 			if (conf.user)
 			{
-				// Config is in user dir
-				auto filename = app::path("ports/", app::Dir::User) + conf.filename + ".cfg";
-				if (wxFileExists(filename))
-					strutil::processIncludes(filename, full_config);
-				else
-				{
-					log::error("Error: Port configuration file \"{}\" not found", filename);
-					return false;
-				}
+				// TODO: Config is in user dir
 			}
 			else
 			{
 				// Config is in program resource
-				auto epath   = fmt::format("config/ports/{}.cfg", conf.filename);
+				auto epath   = fmt::format("config/ports/{}.json", conf.filename);
 				auto archive = app::archiveManager().programResourceArchive();
 				auto entry   = archive->entryAtPath(epath);
 				if (entry)
-					strutil::processIncludes(entry, full_config);
+				{
+					if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
+						port_ok = readGameConfiguration(j, ConfigDesc{ game, port, mapFormatId(format) }, entry);
+				}
 			}
 		}
 	}
 
-	if (debug_configuration)
-	{
-		wxFile test("full.cfg", wxFile::write);
-		test.Write(full_config);
-		test.Close();
-	}
+	if (!port_ok)
+		return false;
 
-	// Read fully built configuration
-	bool ok = true;
-	if (readConfiguration(full_config, "full.cfg", format))
-	{
-		current_game_      = game;
-		current_port_      = port;
-		game_configuration = game;
-		port_configuration = port;
-		log::info(2, R"(Read game configuration "{}" + "{}")", current_game_, current_port_);
-	}
-	else
-	{
-		log::error("Error reading game configuration, not loaded");
-		ok = false;
-	}
+	// Update current game/port selection
+	current_game_      = game;
+	current_port_      = port;
+	game_configuration = game;
+	port_configuration = port;
 
-	// Read any embedded configurations in resource archives
+#if 0
+	// TODO: Read any embedded configurations in resource archives
 	ArchiveSearchOptions opt;
 	opt.match_name   = "sladecfg";
 	auto cfg_entries = app::archiveManager().findAllResourceEntries(opt);
@@ -1020,8 +423,490 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 		if (!readConfiguration(config, cfg_entry->name(), format, true, false))
 			log::error("Error reading embedded game configuration, not loaded");
 	}
+#endif
 
-	return ok;
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Reads a game configuration from parsed JSON [j], using [cfg] to filter
+// sub-sections
+// -----------------------------------------------------------------------------
+bool Configuration::readGameConfiguration(const Json& j, ConfigDesc cfg, ArchiveEntry* entry)
+{
+	parsed_json_entries.clear();
+
+	// Map formats
+	if (j.contains("map_formats"))
+	{
+		map_formats_.clear();
+		for (const auto& mf : j.at("map_formats").get<vector<string>>())
+			map_formats_[mapFormatFromId(mf)] = true;
+	}
+
+	// Configuration section(s)
+	if (j.contains("configuration"))
+	{
+		const auto& j_configuration = j.at("configuration");
+
+		// Single configuration section
+		if (j_configuration.is_object() && checkFilter(j_configuration, cfg))
+			readConfigurationSection(j_configuration, cfg, entry);
+
+		// Multiple configuration sections
+		else if (j_configuration.is_array())
+			for (const auto& j_cfg_section : j_configuration)
+				if (checkFilter(j_cfg_section, cfg))
+					readConfigurationSection(j_cfg_section, cfg, entry);
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Reads a game configuration section from JSON object [j].
+// If the section contains a filter, it will be ignored if the filter does not
+// match [cfg]
+// -----------------------------------------------------------------------------
+void Configuration::readConfigurationSection(const Json& j, ConfigDesc cfg, ArchiveEntry* entry)
+{
+	// General properties
+	jsonutil::getIf(j, "boom_sector_flag_start", boom_sector_flag_start_);
+	jsonutil::getIf(j, "udmf_namespace", udmf_namespace_);
+	jsonutil::getIf(j, "sky_flat", sky_flat_);
+	jsonutil::getIf(j, "script_language", script_language_);
+	jsonutil::getIf(j, "player_eye_height", player_eye_height_);
+
+	// Features
+	jsonutil::getIf(j, "boom", supported_features_[featureId(Feature::Boom)]);
+	jsonutil::getIf(j, "mbf21", supported_features_[featureId(Feature::MBF21)]);
+	jsonutil::getIf(j, "map_name_any", supported_features_[featureId(Feature::AnyMapName)]);
+	jsonutil::getIf(j, "mix_tex_flats", supported_features_[featureId(Feature::MixTexFlats)]);
+	jsonutil::getIf(j, "tx_textures", supported_features_[featureId(Feature::TxTextures)]);
+	jsonutil::getIf(j, "long_names", supported_features_[featureId(Feature::LongNames)]);
+
+	// UDMF features
+	jsonutil::getIf(j, "udmf_slopes", udmf_features_[udmfFeatureId(UDMFFeature::Slopes)]);
+	jsonutil::getIf(j, "udmf_flat_lighting", udmf_features_[udmfFeatureId(UDMFFeature::FlatLighting)]);
+	jsonutil::getIf(j, "udmf_flat_panning", udmf_features_[udmfFeatureId(UDMFFeature::FlatPanning)]);
+	jsonutil::getIf(j, "udmf_flat_rotation", udmf_features_[udmfFeatureId(UDMFFeature::FlatRotation)]);
+	jsonutil::getIf(j, "udmf_flat_scaling", udmf_features_[udmfFeatureId(UDMFFeature::FlatScaling)]);
+	jsonutil::getIf(j, "udmf_line_transparency", udmf_features_[udmfFeatureId(UDMFFeature::LineTransparency)]);
+	jsonutil::getIf(j, "udmf_sector_color", udmf_features_[udmfFeatureId(UDMFFeature::SectorColor)]);
+	jsonutil::getIf(j, "udmf_sector_fog", udmf_features_[udmfFeatureId(UDMFFeature::SectorFog)]);
+	jsonutil::getIf(j, "udmf_side_lighting", udmf_features_[udmfFeatureId(UDMFFeature::SideLighting)]);
+	jsonutil::getIf(j, "udmf_side_midtex_wrapping", udmf_features_[udmfFeatureId(UDMFFeature::SideMidtexWrapping)]);
+	jsonutil::getIf(j, "udmf_side_scaling", udmf_features_[udmfFeatureId(UDMFFeature::SideScaling)]);
+	jsonutil::getIf(j, "udmf_texture_scaling", udmf_features_[udmfFeatureId(UDMFFeature::TextureScaling)]);
+	jsonutil::getIf(j, "udmf_texture_offsets", udmf_features_[udmfFeatureId(UDMFFeature::TextureOffsets)]);
+	jsonutil::getIf(j, "udmf_thing_scaling", udmf_features_[udmfFeatureId(UDMFFeature::ThingScaling)]);
+	jsonutil::getIf(j, "udmf_thing_rotation", udmf_features_[udmfFeatureId(UDMFFeature::ThingRotation)]);
+
+	// Light levels interval
+	if (j.contains("light_level_interval"))
+		setLightLevelInterval(j.at("light_level_interval"));
+
+	// Defaults section
+	if (j.contains("defaults"))
+	{
+		auto& defaults = j.at("defaults");
+
+		// Linedef defaults
+		if (defaults.contains("linedef"))
+		{
+			for (const auto& [prop, value] : defaults.at("linedef").items())
+			{
+				if (prop == "udmf")
+					for (const auto& [u_prop, u_value] : value.items())
+						defaults_line_udmf_[u_prop] = jsonutil::toProp(u_value);
+				else
+					defaults_line_[prop] = jsonutil::toProp(value);
+			}
+		}
+
+		// Sidedef defaults
+		if (defaults.contains("sidedef"))
+		{
+			for (const auto& [prop, value] : defaults.at("sidedef").items())
+			{
+				if (prop == "udmf")
+					for (const auto& [u_prop, u_value] : value.items())
+						defaults_side_udmf_[u_prop] = jsonutil::toProp(u_value);
+				else
+					defaults_side_[prop] = jsonutil::toProp(value);
+			}
+		}
+
+		// Sector defaults
+		if (defaults.contains("sector"))
+		{
+			for (const auto& [prop, value] : defaults.at("sector").items())
+			{
+				if (prop == "udmf")
+					for (const auto& [u_prop, u_value] : value.items())
+						defaults_sector_udmf_[u_prop] = jsonutil::toProp(u_value);
+				else
+					defaults_sector_[prop] = jsonutil::toProp(value);
+			}
+		}
+
+		// Thing defaults
+		if (defaults.contains("thing"))
+		{
+			for (const auto& [prop, value] : defaults.at("thing").items())
+			{
+				if (prop == "udmf")
+					for (const auto& [u_prop, u_value] : value.items())
+						defaults_thing_udmf_[u_prop] = jsonutil::toProp(u_value);
+				else
+					defaults_thing_[prop] = jsonutil::toProp(value);
+			}
+		}
+	}
+
+	// Maps
+	if (j.contains("maps"))
+	{
+		for (const auto& j_map : j.at("maps"))
+		{
+			MapConf map;
+			map.mapname = j_map.at("mapname");
+			if (j_map.contains("sky"))
+			{
+				// Sky texture
+				auto& j_sky = j_map.at("sky");
+				if (j_sky.is_string())
+					map.sky1 = j_sky;
+				else if (j_sky.is_array() && j_sky.size() > 1)
+				{
+					map.sky1 = j_sky.at(0);
+					map.sky2 = j_sky.at(1);
+				}
+				else
+					log::warning("Invalid map sky definition for {}", map.mapname);
+			}
+			maps_.push_back(map);
+		}
+	}
+
+	// Action specials
+	if (j.contains("action_specials"))
+		readActionSpecials(j.at("action_specials"), cfg, entry);
+
+	// Special presets
+	if (j.contains("special_presets"))
+		readSpecialPresets(j.at("special_presets"), cfg, entry);
+
+	// Thing types
+	if (j.contains("thing_types"))
+		readThingTypes(j.at("thing_types"), cfg, entry);
+
+	// Thing flags
+	if (j.contains("thing_flags"))
+		readFlags(j.at("thing_flags"), flags_thing_, cfg, entry);
+
+	// Line flags
+	if (j.contains("line_flags"))
+		readFlags(j.at("line_flags"), flags_line_, cfg, entry);
+
+	// Line triggers
+	if (j.contains("line_triggers"))
+		readFlags(j.at("line_triggers"), triggers_line_, cfg, entry);
+
+	// Sector types
+	if (j.contains("sector_types"))
+		readSectorTypes(j.at("sector_types"), cfg, entry);
+
+	// UDMF properties
+	if (j.contains("udmf_properties"))
+		readUDMFProperties(j.at("udmf_properties"), cfg, entry);
+}
+
+// -----------------------------------------------------------------------------
+// Reads an action_specials section from JSON object [j]
+// -----------------------------------------------------------------------------
+void Configuration::readActionSpecials(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Check if we are clearing existing action specials
+	if (j.value("clear_existing", false))
+		action_specials_.clear();
+
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
+				readActionSpecials(j_import, config, entry);
+	}
+
+	// Read any shared args
+	Arg::SpecialMap shared_args;
+	if (j.contains("arg_presets"))
+	{
+		for (auto& [name, j_arg] : j.at("arg_presets").items())
+			shared_args[name].fromJson(j_arg, nullptr);
+	}
+
+	// Check if any groups are present
+	if (!j.contains("groups"))
+		return;
+
+	// Go through all groups
+	for (auto& j_group : j.at("groups"))
+	{
+		auto group = j_group.value("name", "");
+		if (group.empty())
+			continue;
+
+		if (!j_group.contains("specials") || !j_group.at("specials").is_array())
+		{
+			log::warning("Action specials group \"{}\" does not contain specials key", group);
+			continue;
+		}
+
+		// Setup group defaults
+		ActionSpecial defaults;
+		if (j_group.contains("defaults"))
+			defaults.fromJson(j_group.at("defaults"), shared_args);
+
+		// Go through all specials in group
+		for (auto& j_special : j_group.at("specials"))
+		{
+			if (!j_special.contains("id"))
+				continue; // Must have id
+
+			int   special_id     = j_special.at("id");
+			auto& action_special = action_specials_[special_id];
+
+			// Apply defaults
+			action_special = defaults;
+			action_special.setGroup(group);
+
+			// Parse it
+			action_special.setNumber(special_id);
+			action_special.fromJson(j_special, shared_args);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads a thing_types section from JSON object [j]
+// -----------------------------------------------------------------------------
+void Configuration::readThingTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
+				readThingTypes(j_import, config, entry);
+	}
+
+	// Check if any groups are present
+	if (!j.contains("groups"))
+		return;
+
+	// Go through all groups
+	for (auto& j_group : j.at("groups"))
+	{
+		auto group = j_group.value("name", "");
+		if (group.empty())
+			continue;
+
+		if (!j_group.contains("things") || !j_group.at("things").is_array())
+		{
+			log::warning("Thing types group \"{}\" does not contain things key", group);
+			continue;
+		}
+
+		// Setup group defaults
+		auto& defaults = tt_group_defaults_[group];
+		defaults.define(-1, "", group);
+		if (j_group.contains("defaults"))
+			defaults.fromJson(j_group.at("defaults"));
+
+		// Go through all things in group
+		for (auto& j_thing : j_group.at("things"))
+		{
+			if (!j_thing.contains("type"))
+				continue; // Must have type no.
+
+			int   type       = j_thing.at("type");
+			auto& thing_type = thing_types_[type];
+
+			// Reset the thing type (in case it's being redefined for whatever reason)
+			thing_type.reset();
+
+			// Apply group defaults
+			thing_type.copy(defaults);
+
+			// Parse thing type
+			thing_type.define(type, "", group);
+			thing_type.fromJson(j_thing);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads flags from JSON object [j] and appends them to [flags]
+// -----------------------------------------------------------------------------
+void Configuration::readFlags(const Json& j, vector<Flag>& flags, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
+				readFlags(j_import, flags, config, entry);
+	}
+
+	// Go through flags (if any)
+	if (j.contains("flags") && j.at("flags").is_array())
+	{
+		for (const auto& j_flag : j.at("flags"))
+		{
+			// Parse flag details
+			Flag flag;
+			flag.flag       = j_flag.value("value", 0);
+			flag.name       = j_flag.value("name", "");
+			flag.activation = j_flag.value("activation", false);
+			if (j_flag.contains("udmf"))
+			{
+				if (j_flag.at("udmf").is_string())
+					flag.udmf = j_flag.at("udmf").get<string>();
+				else if (j_flag.at("udmf").is_array())
+				{
+					for (const auto& udmf_flag : j_flag.at("udmf"))
+						flag.udmf += udmf_flag.get<string>() + " ";
+					flag.udmf.pop_back();
+				}
+			}
+
+			// Check if the flag value already exists
+			bool exists = false;
+			for (auto& f : flags)
+				if (f.flag == flag.flag)
+				{
+					f      = flag;
+					exists = true;
+					break;
+				}
+
+			// Add flag otherwise
+			if (!exists)
+				flags.push_back(flag);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads a sector_types section from JSON object [j]
+// -----------------------------------------------------------------------------
+void Configuration::readSectorTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
+				readSectorTypes(j_import, config, entry);
+	}
+
+	// Check if any types are present
+	if (!j.contains("types") || !j.at("types").is_array())
+		return;
+
+	for (const auto& j_type : j.at("types"))
+		if (j_type.contains("type"))
+			sector_types_[j_type.at("type").get<int>()] = j_type.value("name", "Unknown");
+}
+
+// -----------------------------------------------------------------------------
+// Reads a udmf_properties section from JSON object [j]
+// -----------------------------------------------------------------------------
+void Configuration::readUDMFProperties(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
+				readUDMFProperties(j_import, config, entry);
+	}
+
+	// Check if any blocks are present
+	if (!j.contains("blocks") || !j.at("blocks").is_array())
+		return;
+
+	// Go through blocks
+	for (auto& j_block : j.at("blocks"))
+	{
+		if (!j_block.contains("block") || !j_block.contains("groups"))
+			continue;
+
+		auto         block    = j_block.value("block", "");
+		UDMFPropMap* prop_map = nullptr;
+		if (block == "vertex")
+			prop_map = &udmf_vertex_props_;
+		else if (block == "linedef")
+			prop_map = &udmf_linedef_props_;
+		else if (block == "sidedef")
+			prop_map = &udmf_sidedef_props_;
+		else if (block == "sector")
+			prop_map = &udmf_sector_props_;
+		else if (block == "thing")
+			prop_map = &udmf_thing_props_;
+		else
+			continue;
+
+		// Go through groups
+		for (auto& j_group : j_block.at("groups"))
+		{
+			auto group = j_group.value("name", "");
+			if (group.empty() || !j_group.contains("properties"))
+				continue;
+
+			auto has_default = j_group.contains("defaults");
+			for (auto& j_prop : j_group.at("properties"))
+			{
+				auto udmf = j_prop.value("udmf", "");
+				if (udmf.empty())
+					continue;
+
+				// Apply defaults if set
+				if (has_default)
+					(*prop_map)[udmf].fromJson(j_group.at("defaults"), group);
+
+				// Read property
+				(*prop_map)[udmf].fromJson(j_prop, group);
+			}
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads a special_presets section from JSON object [j]
+// -----------------------------------------------------------------------------
+void Configuration::readSpecialPresets(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry)
+{
+	// Handle imports
+	if (entry && j.contains("import"))
+	{
+		for (auto& i : j["import"])
+			if (auto j_import = getImport(i, config, *entry); !j_import.is_discarded())
+				readSpecialPresets(j_import, config, entry);
+	}
+
+	// Check if any presets are present
+	if (!j.contains("presets") || !j.at("presets").is_array())
+		return;
+
+	// Go through presets
+	for (const auto& j_preset : j.at("presets"))
+	{
+		special_presets_.emplace_back();
+		special_presets_.back().fromJson(j_preset);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1487,7 +1372,7 @@ bool Configuration::lineFlagSet(unsigned flag_index, const MapLine* line) const
 // -----------------------------------------------------------------------------
 // Returns true if the flag matching [flag] (UDMF name) is set for [line]
 // -----------------------------------------------------------------------------
-bool Configuration::lineFlagSet(string_view udmf_name, MapLine* line, MapFormat map_format) const
+bool Configuration::lineFlagSet(string_view udmf_name, const MapLine* line, MapFormat map_format) const
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1511,7 +1396,7 @@ bool Configuration::lineFlagSet(string_view udmf_name, MapLine* line, MapFormat 
 // 'Basic' flags are flags that are available in some way or another in all
 // game configurations
 // -----------------------------------------------------------------------------
-bool Configuration::lineBasicFlagSet(string_view flag, MapLine* line, MapFormat map_format) const
+bool Configuration::lineBasicFlagSet(string_view flag, const MapLine* line, MapFormat map_format) const
 {
 	// If UDMF, just get the bool value
 	if (map_format == MapFormat::UDMF)
@@ -1799,16 +1684,20 @@ UDMFProperty* Configuration::getUDMFProperty(const string& name, MapObject::Type
 {
 	using Type = MapObject::Type;
 
-	if (type == Type::Vertex)
-		return &udmf_vertex_props_[name];
-	else if (type == Type::Line)
-		return &udmf_linedef_props_[name];
-	else if (type == Type::Side)
-		return &udmf_sidedef_props_[name];
-	else if (type == Type::Sector)
-		return &udmf_sector_props_[name];
-	else if (type == Type::Thing)
-		return &udmf_thing_props_[name];
+	UDMFPropMap* udmf_props;
+
+	switch (type)
+	{
+	case Type::Vertex: udmf_props = &udmf_vertex_props_; break;
+	case Type::Line:   udmf_props = &udmf_linedef_props_; break;
+	case Type::Side:   udmf_props = &udmf_sidedef_props_; break;
+	case Type::Sector: udmf_props = &udmf_sector_props_; break;
+	case Type::Thing:  udmf_props = &udmf_thing_props_; break;
+	default:           return nullptr;
+	}
+
+	if (udmf_props->count(name) == 1)
+		return &(*udmf_props)[name];
 	else
 		return nullptr;
 }
@@ -1832,6 +1721,26 @@ UDMFPropMap& Configuration::allUDMFProperties(MapObject::Type type)
 }
 
 // -----------------------------------------------------------------------------
+// Returns all defined UDMF properties for MapObject type [type], in the order
+// they were defined in the configuration
+// -----------------------------------------------------------------------------
+vector<std::pair<const string, UDMFProperty>*> Configuration::sortedUDMFProperties(MapObject::Type type)
+{
+	auto&                                          all_props = allUDMFProperties(type);
+	vector<std::pair<const string, UDMFProperty>*> sorted_props;
+	sorted_props.reserve(all_props.size());
+	for (auto& prop : all_props)
+	{
+		sorted_props.push_back(&prop);
+	}
+	std::sort(
+		sorted_props.begin(),
+		sorted_props.end(),
+		[](const auto& a, const auto& b) { return a->second.order() < b->second.order(); });
+	return sorted_props;
+}
+
+// -----------------------------------------------------------------------------
 // Removes any UDMF properties in [object] that have default values
 // (so they are not written to the UDMF map unnecessarily)
 // -----------------------------------------------------------------------------
@@ -1840,20 +1749,16 @@ void Configuration::cleanObjectUDMFProps(MapObject* object)
 	using namespace property;
 
 	// Get UDMF properties list for type
-	UDMFPropMap* map  = nullptr;
-	auto         type = object->objType();
-	if (type == MapObject::Type::Vertex)
-		map = &udmf_vertex_props_;
-	else if (type == MapObject::Type::Line)
-		map = &udmf_linedef_props_;
-	else if (type == MapObject::Type::Side)
-		map = &udmf_sidedef_props_;
-	else if (type == MapObject::Type::Sector)
-		map = &udmf_sector_props_;
-	else if (type == MapObject::Type::Thing)
-		map = &udmf_thing_props_;
-	else
-		return;
+	UDMFPropMap* map;
+	switch (object->objType())
+	{
+	case MapObject::Type::Vertex: map = &udmf_vertex_props_; break;
+	case MapObject::Type::Line:   map = &udmf_linedef_props_; break;
+	case MapObject::Type::Side:   map = &udmf_sidedef_props_; break;
+	case MapObject::Type::Sector: map = &udmf_sector_props_; break;
+	case MapObject::Type::Thing:  map = &udmf_thing_props_; break;
+	default:                      return;
+	}
 
 	// Go through properties
 	for (const auto& i : *map)

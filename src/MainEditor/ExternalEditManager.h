@@ -16,6 +16,7 @@ public:
 
 private:
 	vector<ExternalEditFileMonitor*> file_monitors_;
+	bool                             destructing_ = false;
 
 	void monitorStopped(const ExternalEditFileMonitor* monitor);
 };

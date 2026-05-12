@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -284,7 +284,7 @@ bool GZipArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* ent
 // Returns the entry if it matches the search criteria in [options], or null
 // otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* GZipArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* GZipArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	strutil::upperIP(options.match_name);
@@ -325,7 +325,7 @@ ArchiveEntry* GZipArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptio
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* GZipArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* GZipArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	return findFirst(archive, options);
 }
@@ -333,7 +333,7 @@ ArchiveEntry* GZipArchiveHandler::findLast(Archive& archive, ArchiveSearchOption
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> GZipArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> GZipArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	vector<ArchiveEntry*> ret;
@@ -438,7 +438,7 @@ bool GZipArchiveHandler::isThisFormat(const MemChunk& mc)
 bool GZipArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Minimal metadata size is 18: 10 for header, 8 for footer
 	size_t mds = 18;

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "PropsPanelBase.h"
 #include "UI/Controls/STabCtrl.h"
@@ -13,7 +13,7 @@ class MOPGIntWithArgsProperty;
 
 namespace map
 {
-	enum class ObjectType;
+	enum class ObjectType : u8;
 }
 namespace mapeditor
 {
@@ -40,9 +40,9 @@ public:
 	void clearGrid();
 	void hideFlags(bool hide) { hide_flags_ = hide; }
 	void hideTriggers(bool hide) { hide_triggers_ = hide; }
-	void hideProperty(const wxString& property) { hide_props_.push_back(property); }
+	void hideProperty(const string& property) { hide_props_.push_back(property); }
 	void clearHiddenProperties() { hide_props_.clear(); }
-	bool propHidden(const wxString& property) { return VECTOR_EXISTS(hide_props_, property); }
+	bool propHidden(const string& property) { return VECTOR_EXISTS(hide_props_, property); }
 
 private:
 	TabControl*           stc_sections_   = nullptr;
@@ -50,7 +50,7 @@ private:
 	wxPropertyGrid*       pg_props_side1_ = nullptr;
 	wxPropertyGrid*       pg_props_side2_ = nullptr;
 	map::ObjectType       last_type_;
-	wxString              last_config_;
+	string                last_config_;
 	vector<MOPGProperty*> properties_;
 	wxPGProperty*         args_[5]      = {};
 	wxButton*             btn_reset_    = nullptr;
@@ -60,12 +60,23 @@ private:
 	wxPGProperty*         group_custom_ = nullptr;
 	bool                  no_apply_     = false;
 	bool                  udmf_         = false;
+	vector<wxPGProperty*> groups_;
+	wxStaticText*         label_no_object_ = nullptr;
 
 	// Hide properties
-	bool             hide_flags_    = false;
-	bool             hide_triggers_ = false;
-	vector<wxString> hide_props_;
+	bool           hide_flags_    = false;
+	bool           hide_triggers_ = false;
+	vector<string> hide_props_;
 
+	wxPropertyGrid* createPropGrid();
+
+	template<typename T>
+	T* addProperty(
+		const wxPGProperty* group,
+		T*                  prop,
+		bool                readonly  = false,
+		wxPropertyGrid*     grid      = nullptr,
+		game::UDMFProperty* udmf_prop = nullptr);
 	MOPGProperty* addBoolProperty(
 		const wxPGProperty* group,
 		const wxString&     label,
@@ -121,7 +132,7 @@ private:
 	void addUDMFProperty(
 		game::UDMFProperty& prop,
 		map::ObjectType     objtype,
-		const wxString&     basegroup = "",
+		const wxString&     basegroup = wxEmptyString,
 		wxPropertyGrid*     grid      = nullptr);
 
 	bool setBoolProperty(wxPGProperty* prop, bool value, bool force_set = false) const;
@@ -129,11 +140,14 @@ private:
 	void setupType(map::ObjectType objtype);
 	void setupTypeUDMF(map::ObjectType objtype);
 
+	void updateGroupVisibility() const;
+
 	// Events
 	void onBtnApply(wxCommandEvent& e);
 	void onBtnReset(wxCommandEvent& e);
 	void onShowAllToggled(wxCommandEvent& e);
 	void onBtnAdd(wxCommandEvent& e);
 	void onPropertyChanged(wxPropertyGridEvent& e);
+	void onPropGridKeyDown(wxKeyEvent& e, wxPropertyGrid* propgrid);
 };
 } // namespace slade

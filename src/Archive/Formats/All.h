@@ -10,6 +10,7 @@
 #include "GobArchiveHandler.h"
 #include "GrpArchiveHandler.h"
 #include "HogArchiveHandler.h"
+#include "LabArchiveHandler.h"
 #include "LfdArchiveHandler.h"
 #include "LibArchiveHandler.h"
 #include "PakArchiveHandler.h"

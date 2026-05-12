@@ -1,0 +1,74 @@
+{
+  "items": [
+    // Folder
+    {
+      "type": "button",
+      "id": "elist_view_list",
+      "text": "List View",
+      "icon": "list_flat",
+      "help_text": "Switch the entry list to a flat list view"
+    },
+    {
+      "type": "button",
+      "id": "elist_view_tree",
+      "text": "Tree View",
+      "icon": "list_tree",
+      "help_text": "Switch the entry list to a tree view"
+    },
+    { "type": "action", "id": "arch_elist_collapseall" },
+
+    { "type": "separator" },
+
+    // Create
+    { "type": "action", "id": "arch_newentry" },
+    { "type": "action", "id": "arch_newdir" },
+    { "type": "action", "id": "arch_importfiles" },
+    { "type": "action", "id": "arch_importdir" },
+
+    { "type": "separator" },
+
+    // Entry
+    { "type": "action", "id": "arch_entry_rename" },
+    { "type": "action", "id": "arch_entry_rename_each" },
+    { "type": "action", "id": "arch_entry_delete" },
+    { "type": "separator" },
+    { "type": "action", "id": "arch_entry_import" },
+    { "type": "action", "id": "arch_entry_export" },
+
+    { "type": "separator" },
+
+    // Moving
+    { "type": "action", "id": "arch_entry_moveup" },
+    { "type": "action", "id": "arch_entry_movedown" },
+    { "type": "action", "id": "arch_entry_sort" },
+
+    { "type": "separator" },
+
+    { "type": "action", "id": "arch_entry_bookmark" },
+
+    { "type": "stretch_spacer" },
+
+    { "type": "action", "id": "arch_elist_togglefilter" }
+  ],
+
+  "groups": [
+    {
+      "name": "Create",
+      "item_ids": [ "arch_newentry", "arch_newdir", "arch_importfiles", "arch_importdir" ]
+    },
+    {
+      "name": "Entry",
+      "item_ids": [
+        "arch_entry_rename",
+        "arch_entry_rename_each",
+        "arch_entry_delete",
+        "arch_entry_import",
+        "arch_entry_export"
+      ]
+    },
+    {
+      "name": "Moving",
+      "item_ids": [ "arch_entry_moveup", "arch_entry_movedown", "arch_entry_sort" ]
+    }
+  ]
+}

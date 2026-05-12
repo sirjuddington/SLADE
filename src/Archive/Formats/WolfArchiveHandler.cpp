@@ -1,7 +1,7 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,7 +35,7 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #ifndef _WIN32
@@ -78,8 +78,8 @@ string findFileCasing(const strutil::Path& filename)
 	bool     cont = dir.GetFirst(&found);
 	while (cont)
 	{
-		if (strutil::equalCI(wxutil::strToView(found), filename.fileName()))
-			return (dir.GetNameWithSep() + found).ToStdString();
+		if (strutil::equalCI(found.utf8_string(), filename.fileName()))
+			return (dir.GetNameWithSep() + found).utf8_string();
 		cont = dir.GetNext(&found);
 	}
 
@@ -173,18 +173,18 @@ string searchIMFName(const MemChunk& mc)
 		// Shareware stubs
 		if (nameOffset == 4)
 		{
-			memcpy(tmp, &mc[2], 16);
+			memcpy(tmp, mc.data() + 2, 16);
 			ret = tmp;
 
-			memcpy(tmp2, &mc[18], 64);
+			memcpy(tmp2, mc.data() + 18, 64);
 			fullname = tmp2;
 		}
 		else if (mc.size() > nameOffset + 80u)
 		{
-			memcpy(tmp, &mc[nameOffset], 16);
+			memcpy(tmp, mc.data() + nameOffset, 16);
 			ret = tmp;
 
-			memcpy(tmp2, &mc[nameOffset + 16], 64);
+			memcpy(tmp2, mc.data() + nameOffset + 16, 64);
 			fullname = tmp2;
 		}
 
@@ -1021,7 +1021,7 @@ bool WolfArchiveHandler::isThisFormat(const string& filename)
 	// else we have to deal with a VSWAP archive, which is the only self-contained type
 
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

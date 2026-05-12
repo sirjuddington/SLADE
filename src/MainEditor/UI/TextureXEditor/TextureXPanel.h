@@ -5,7 +5,7 @@
 namespace slade
 {
 class CTexture;
-class SToolBar;
+class SAuiToolBar;
 class TextureEditorPanel;
 class TextureXEditor;
 class TextureXList;
@@ -25,20 +25,21 @@ public:
 	TextureEditorPanel* textureEditor() const { return texture_editor_; }
 
 	bool openTEXTUREX(ArchiveEntry* entry);
+	void setupUI(); // Call after successful openTEXTUREX
 	bool saveTEXTUREX();
 	void setPalette(const Palette* pal) const;
 	void applyChanges();
 	void updateTextureList() const;
 
 	// Texture operations
-	unique_ptr<CTexture> newTextureFromPatch(const wxString& name, const wxString& patch);
+	unique_ptr<CTexture> newTextureFromPatch(string_view name, string_view patch);
 	void                 newTexture();
 	void                 newTextureFromPatch();
 	void                 newTextureFromFile();
 	void                 removeTexture();
 	void                 renameTexture(bool each = false);
 	void                 exportTexture();
-	bool                 exportAsPNG(CTexture* texture, const wxString& filename, bool force_rgba) const;
+	bool                 exportAsPNG(CTexture* texture, const string& filename, bool force_rgba) const;
 	void                 extractTexture();
 	bool                 modifyOffsets();
 	void                 moveUp();
@@ -48,8 +49,8 @@ public:
 	void                 paste();
 
 	// Undo/Redo
-	void onUndo(const wxString& undo_action) const;
-	void onRedo(const wxString& undo_action) const;
+	void onUndo(const string& undo_action) const;
+	void onRedo(const string& undo_action) const;
 
 	// SAction handler
 	bool handleAction(string_view id) override;
@@ -68,7 +69,7 @@ private:
 	wxStaticBox*        frame_textures_   = nullptr;
 	wxTextCtrl*         text_filter_      = nullptr;
 	wxButton*           btn_clear_filter_ = nullptr;
-	SToolBar*           toolbar_          = nullptr;
+	SAuiToolBar*        toolbar_          = nullptr;
 
 	// Events
 	void onTextureListSelect(wxListEvent& e);

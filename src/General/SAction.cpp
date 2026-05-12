@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,12 +35,11 @@
 #include "SAction.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/ArchiveManager.h"
 #include "General/KeyBind.h"
 #include "SActionHandler.h"
 #include "UI/WxUtils.h"
-#include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -51,12 +50,17 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-int                     SAction::n_groups_ = 0;
-int                     SAction::cur_id_   = 0;
-vector<SAction*>        SAction::actions_;
-SAction*                SAction::action_invalid_ = nullptr;
-vector<SActionHandler*> SActionHandler::action_handlers_;
-int                     SActionHandler::wx_id_offset_ = 0;
+namespace
+{
+int                         cur_id = 0;
+vector<unique_ptr<SAction>> actions;
+
+vector<SActionHandler*> action_handlers;
+int                     wx_id_offset = 0;
+
+string         current_action;
+vector<string> action_history;
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -76,7 +80,7 @@ SAction::SAction(
 	string_view helptext,
 	string_view shortcut,
 	Type        type,
-	int         radio_group,
+	string_view radio_group,
 	int         reserve_ids) :
 	id_{ id },
 	wx_id_{ 0 },
@@ -123,10 +127,10 @@ void SAction::setChecked(bool checked)
 	}
 
 	// If toggling a radio action, un-toggle others in the group
-	if (checked && type_ == Type::Radio && group_ >= 0)
+	if (checked && type_ == Type::Radio && !group_.empty())
 	{
 		// Go through and toggle off all other actions in the same group
-		for (auto& action : actions_)
+		for (auto& action : actions)
 		{
 			if (action->group_ == group_)
 				action->setChecked(false);
@@ -136,6 +140,9 @@ void SAction::setChecked(bool checked)
 	}
 	else
 		checked_ = checked; // Otherwise just set toggled state
+
+	// Signal
+	signals().checked_changed(*this);
 
 	// Update linked CVar
 	if (linked_cvar_)
@@ -147,8 +154,8 @@ void SAction::setChecked(bool checked)
 // -----------------------------------------------------------------------------
 void SAction::initWxId()
 {
-	wx_id_ = cur_id_;
-	cur_id_ += reserved_ids_;
+	wx_id_ = cur_id;
+	cur_id += reserved_ids_;
 }
 
 // -----------------------------------------------------------------------------
@@ -200,84 +207,56 @@ bool SAction::addToMenu(
 	if (!sc.empty())
 		help += fmt::format(" (Shortcut: {})", sc);
 	if (type_ == Type::Normal)
-		menu->Append(wxutil::createMenuItem(menu, wid, item_text, help, wxutil::strFromView(real_icon)));
+		menu->Append(wxutil::createMenuItem(menu, wid, item_text, help, real_icon));
 	else if (type_ == Type::Check)
 	{
-		auto item = menu->AppendCheckItem(wid, item_text, help);
+		auto item = menu->AppendCheckItem(wid, wxString::FromUTF8(item_text), wxString::FromUTF8(help));
 		item->Check(checked_);
 	}
 	else if (type_ == Type::Radio)
-		menu->AppendRadioItem(wid, item_text, help);
+		menu->AppendRadioItem(wid, wxString::FromUTF8(item_text), wxString::FromUTF8(help));
 
 	return true;
 }
 
 // -----------------------------------------------------------------------------
-// Loads a parsed SAction definition
+// Sets the base wxWidgets id to [id]. This is used to determine the next
+// available wxWidgets id for new SActions
 // -----------------------------------------------------------------------------
-bool SAction::parse(const ParseTreeNode* node)
+void SAction::setBaseWxId(int id)
 {
-	string linked_cvar;
-	int    custom_wxid = 0;
+	cur_id = id;
+}
 
-	for (unsigned a = 0; a < node->nChildren(); a++)
+// -----------------------------------------------------------------------------
+// Loads SAction properties from a JSON object [j]
+// -----------------------------------------------------------------------------
+void SAction::fromJson(const Json& j)
+{
+	text_         = j.value("text", id_);
+	icon_         = j.value("icon", icon_);
+	helptext_     = j.value("help_text", helptext_);
+	wx_id_        = j.value("wx_id", wx_id_);
+	reserved_ids_ = j.value("reserved_ids", reserved_ids_);
+	group_        = j.value("group", group_);
+
+	// Shortcut can be defined as either "shortcut" or "keybind"
+	if (j.contains("shortcut"))
+		shortcut_ = j["shortcut"];
+	else if (j.contains("keybind"))
+		shortcut_ = fmt::format("kb:{}", j["keybind"].get<string>());
+
+	if (j.contains("type"))
 	{
-		auto prop      = node->childPTN(a);
-		auto prop_name = strutil::lower(prop->name());
-
-		// Text
-		if (prop_name == "text")
-			text_ = prop->stringValue();
-
-		// Icon
-		else if (prop_name == "icon")
-			icon_ = prop->stringValue();
-
-		// Help Text
-		else if (prop_name == "help_text")
-			helptext_ = prop->stringValue();
-
-		// Shortcut
-		else if (prop_name == "shortcut")
-			shortcut_ = prop->stringValue();
-
-		// Keybind (shortcut)
-		else if (prop_name == "keybind")
-			shortcut_ = fmt::format("kb:{}", prop->stringValue());
-
-		// Type
-		else if (prop_name == "type")
-		{
-			auto lc_type = strutil::lower(prop->stringValue());
-			if (lc_type == "check")
-				type_ = Type::Check;
-			else if (lc_type == "radio")
-				type_ = Type::Radio;
-		}
-
-		// Linked CVar
-		else if (prop_name == "linked_cvar")
-			linked_cvar = prop->stringValue();
-
-		// Custom wx id
-		else if (prop_name == "custom_wx_id")
-			custom_wxid = prop->intValue();
-
-		// Reserve ids
-		else if (prop_name == "reserve_ids")
-			reserved_ids_ = prop->intValue();
+		if (auto lc_type = strutil::lower(j["type"].get<string>()); lc_type == "check")
+			type_ = Type::Check;
+		else if (lc_type == "radio")
+			type_ = Type::Radio;
 	}
 
-	// Setup wxWidgets id stuff
-	if (custom_wxid == 0)
-		initWxId();
-	else
-		wx_id_ = custom_wxid;
-
-	// Setup linked cvar
-	if (type_ == Type::Check && !linked_cvar.empty())
+	if (j.contains("linked_cvar"))
 	{
-		auto cvar = CVar::get(linked_cvar);
+		auto cvar = CVar::get(j["linked_cvar"]);
 		if (cvar && cvar->type == CVar::Type::Boolean)
 		{
 			linked_cvar_ = dynamic_cast<CBoolCVar*>(cvar);
@@ -285,7 +264,9 @@ bool SAction::parse(const ParseTreeNode* node)
 		}
 	}
 
-	return true;
+	// Get wx id if not custom defined
+	if (wx_id_ == 0)
+		initWxId();
 }
 
 
@@ -302,49 +283,21 @@ bool SAction::parse(const ParseTreeNode* node)
 // -----------------------------------------------------------------------------
 bool SAction::initActions()
 {
-	// Get actions.cfg from slade.pk3
-	auto cfg_entry = app::archiveManager().programResourceArchive()->entryAtPath("actions.cfg");
-	if (!cfg_entry)
+	// Get actions directory from program resource
+	auto actions_dir = app::programResource()->dirAtPath("actions");
+	if (!actions_dir)
 		return false;
 
-	Parser parser(cfg_entry->parentDir());
-	if (parser.parseText(cfg_entry->data(), "actions.cfg"))
+	// Parse each json file in the directory
+	for (auto& entry : actions_dir->entries())
 	{
-		auto root = parser.parseTreeRoot();
-		for (unsigned a = 0; a < root->nChildren(); a++)
+		if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
 		{
-			auto node = root->childPTN(a);
-
-			// Single action
-			if (strutil::equalCI(node->type(), "action"))
+			for (auto& [id, j_action] : j.items())
 			{
-				auto action = new SAction(node->name(), node->name());
-				if (action->parse(node))
-					actions_.push_back(action);
-				else
-					delete action;
-			}
-
-			// Group of actions
-			else if (strutil::equalCI(node->name(), "group"))
-			{
-				int group = newGroup();
-
-				for (unsigned b = 0; b < node->nChildren(); b++)
-				{
-					auto group_node = node->childPTN(b);
-					if (strutil::equalCI(group_node->type(), "action"))
-					{
-						auto action = new SAction(group_node->name(), group_node->name());
-						if (action->parse(group_node))
-						{
-							action->group_ = group;
-							actions_.push_back(action);
-						}
-						else
-							delete action;
-					}
-				}
+				auto action = std::make_unique<SAction>(id, id);
+				action->fromJson(j_action);
+				actions.push_back(std::move(action));
 			}
 		}
 	}
@@ -353,22 +306,14 @@ bool SAction::initActions()
 }
 
 // -----------------------------------------------------------------------------
-// Returns a new, unused SAction group id
-// -----------------------------------------------------------------------------
-int SAction::newGroup()
-{
-	return n_groups_++;
-}
-
-// -----------------------------------------------------------------------------
 // Returns the SAction with id matching [id]
 // -----------------------------------------------------------------------------
 SAction* SAction::fromId(string_view id)
 {
 	// Find action with id
-	for (auto& action : actions_)
+	for (auto& action : actions)
 		if (strutil::equalCI(action->id_, id))
-			return action;
+			return action.get();
 
 	// Not found
 	return invalidAction();
@@ -380,9 +325,9 @@ SAction* SAction::fromId(string_view id)
 SAction* SAction::fromWxId(int wx_id)
 {
 	// Find action with id
-	for (auto& action : actions_)
+	for (auto& action : actions)
 		if (action->isWxId(wx_id))
-			return action;
+			return action.get();
 
 	// Not found
 	return invalidAction();
@@ -391,15 +336,14 @@ SAction* SAction::fromWxId(int wx_id)
 // -----------------------------------------------------------------------------
 // Adds [action] to the list of all SActions (if it isn't in there already)
 // -----------------------------------------------------------------------------
-void SAction::add(SAction* action)
+SAction* SAction::add(unique_ptr<SAction> action)
 {
 	if (!action)
-		return;
+		return nullptr;
 
-	if (VECTOR_EXISTS(actions_, action))
-		return;
+	actions.push_back(move(action));
 
-	actions_.push_back(action);
+	return actions.back().get();
 }
 
 // -----------------------------------------------------------------------------
@@ -407,9 +351,37 @@ void SAction::add(SAction* action)
 // -----------------------------------------------------------------------------
 int SAction::nextWxId()
 {
-	int id = cur_id_;
-	++cur_id_;
+	int id = cur_id;
+	++cur_id;
 	return id;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the history of actions that have been performed
+// -----------------------------------------------------------------------------
+const vector<string>& SAction::history()
+{
+	return action_history;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the last [n] actions that were performed
+// -----------------------------------------------------------------------------
+vector<string> SAction::lastPerformed(int n)
+{
+	if (n < 0 || n > action_history.size())
+		n = action_history.size();
+
+	return { action_history.end() - n, action_history.end() };
+}
+
+// -----------------------------------------------------------------------------
+// Returns the id of the action currently being performed, or an empty string if
+// none
+// -----------------------------------------------------------------------------
+string SAction::current()
+{
+	return current_action;
 }
 
 // -----------------------------------------------------------------------------
@@ -417,10 +389,17 @@ int SAction::nextWxId()
 // -----------------------------------------------------------------------------
 SAction* SAction::invalidAction()
 {
-	if (!action_invalid_)
-		action_invalid_ = new SAction("invalid", "Invalid Action", "", "Something's gone wrong here");
+	static SAction action_invalid{ "invalid", "Invalid Action", "", "Something's gone wrong here" };
+	return &action_invalid;
+}
 
-	return action_invalid_;
+// -----------------------------------------------------------------------------
+// Returns the SAction signals struct
+// -----------------------------------------------------------------------------
+SAction::Signals& SAction::signals()
+{
+	static Signals signals;
+	return signals;
 }
 
 
@@ -436,7 +415,7 @@ SAction* SAction::invalidAction()
 // -----------------------------------------------------------------------------
 SActionHandler::SActionHandler()
 {
-	action_handlers_.push_back(this);
+	action_handlers.push_back(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -444,7 +423,23 @@ SActionHandler::SActionHandler()
 // -----------------------------------------------------------------------------
 SActionHandler::~SActionHandler()
 {
-	VECTOR_REMOVE(action_handlers_, this);
+	VECTOR_REMOVE(action_handlers, this);
+}
+
+// -----------------------------------------------------------------------------
+// Gets the wxWidgets id offset for SActions currently being handled
+// -----------------------------------------------------------------------------
+int SActionHandler::wxIdOffset()
+{
+	return wx_id_offset;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the wxWidgets id [offset] for SActions currently being handled
+// -----------------------------------------------------------------------------
+void SActionHandler::setWxIdOffset(int offset)
+{
+	wx_id_offset = offset;
 }
 
 // -----------------------------------------------------------------------------
@@ -453,39 +448,45 @@ SActionHandler::~SActionHandler()
 // -----------------------------------------------------------------------------
 bool SActionHandler::doAction(string_view id)
 {
-	bool handled = false;
+	bool handled   = false;
+	current_action = id;
 
-	// Toggle action if necessary
-	if (auto* action = SAction::fromId(id))
-		if (action->type() != SAction::Type::Normal)
-		{
-			action->toggle();
-
-			// Action is technically 'handled' already if there was a linked cvar (don't log warning)
-			if (action->linkedCVar())
-				handled = true;
-		}
-
-	// Send action to all handlers
-	for (auto& action_handler : action_handlers_)
+	CPPTRACE_TRY
 	{
-		if (action_handler->handleAction(id))
+		// Toggle action if necessary
+		if (auto* action = SAction::fromId(id))
+			if (action->type() != SAction::Type::Normal)
+			{
+				action->toggle();
+
+				// Action is technically 'handled' already if there was a linked cvar (don't log warning)
+				if (action->linkedCVar())
+					handled = true;
+			}
+
+		// Send action to all handlers
+		for (auto& action_handler : action_handlers)
 		{
-			handled = true;
-			break;
+			if (action_handler->handleAction(id))
+			{
+				handled = true;
+				break;
+			}
 		}
+
+		// Warn if nothing handled it
+		if (!handled)
+			log::warning(fmt::format("Warning: Action \"{}\" not handled", id));
+
+		// Log action
+		action_history.emplace_back(id);
+	}
+	CPPTRACE_CATCH(...)
+	{
+		app::handleException();
 	}
 
-	// Warn if nothing handled it
-	if (!handled)
-		log::warning(fmt::format("Warning: Action \"{}\" not handled", id));
-
-	// Log action (to log file only)
-	// TODO: this
-	// exiting = true;
-	// log::info(1, "**** Action \"%s\"", id);
-	// exiting = false;
-
 	// Return true if handled
+	current_action.clear();
 	return handled;
 }

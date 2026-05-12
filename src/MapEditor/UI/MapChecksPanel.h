@@ -14,7 +14,7 @@ public:
 	MapChecksPanel(wxWindow* parent, SLADEMap* map);
 	~MapChecksPanel() override;
 
-	void updateStatusText(const wxString& text);
+	void updateStatusText(const string& text);
 	void showCheckItem(unsigned index);
 	void refreshList();
 	void reset();

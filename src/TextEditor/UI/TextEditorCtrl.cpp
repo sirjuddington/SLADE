@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -37,7 +37,6 @@
 #include "Archive/ArchiveEntry.h"
 #include "FindReplacePanel.h"
 #include "General/KeyBind.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "SCallTip.h"
 #include "SLADEWxApp.h"
@@ -58,7 +57,7 @@ using namespace slade;
 CVAR(Int, txed_tab_width, 4, CVar::Flag::Save)
 CVAR(Bool, txed_auto_indent, true, CVar::Flag::Save)
 CVAR(Bool, txed_syntax_hilight, true, CVar::Flag::Save)
-CVAR(Bool, txed_brace_match, false, CVar::Flag::Save)
+CVAR(Bool, txed_brace_match, true, CVar::Flag::Save)
 CVAR(Int, txed_edge_column, 80, CVar::Flag::Save)
 CVAR(Bool, txed_indent_guides, false, CVar::Flag::Save)
 CVAR(String, txed_style_set, "SLADE Default", CVar::Flag::Save)
@@ -79,10 +78,12 @@ CVAR(Int, txed_line_extra_height, 0, CVar::Flag::Save)
 CVAR(Bool, txed_tab_spaces, false, CVar::Flag::Save)
 CVAR(Int, txed_show_whitespace, 0, CVar::Flag::Save)
 CVAR(Bool, txed_calltips_argset_kb, true, CVar::Flag::Save)
+CVAR(Bool, txed_use_directwrite, true, CVar::Flag::Save)
 CVAR(Int, txed_font_quality, wxSTC_EFF_QUALITY_DEFAULT, CVar::Flag::Save)
 CVAR(Bool, txed_fr_matchcase, false, CVar::Save)
 CVAR(Bool, txed_fr_matchword, false, CVar::Save)
 CVAR(Bool, txed_fr_matchword_start, false, CVar::Save)
+CVAR(Int, txed_minimap_width, 0, CVar::Flag::Save)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
@@ -131,13 +132,13 @@ public:
 
 	ExitCode Entry() override
 	{
-		wxString jump_points;
+		string jump_points;
 
 		Tokenizer tz;
 		tz.setSpecialCharacters(";,:|={}/()");
 		tz.openString(text_);
 
-		wxString token = tz.getToken();
+		auto token = tz.getToken();
 		while (!tz.atEnd())
 		{
 			if (token == "{")
@@ -153,30 +154,30 @@ public:
 				long skip = 0;
 				if (strutil::contains(block, ':'))
 				{
-					auto sp = wxSplit(block, ':');
-					sp.back().ToLong(&skip);
-					block = sp[0];
+					auto sp = strutil::splitV(block, ':');
+					skip    = strutil::asInt(sp.back());
+					block   = sp[0];
 				}
 
-				if (S_CMPNOCASE(token, block))
+				if (strutil::equalCI(token, block))
 				{
-					wxString name = tz.getToken();
+					auto name = tz.getToken();
 					for (int s = 0; s < skip; s++)
 						name = tz.getToken();
 
 					for (const auto& i : ignore_)
-						if (S_CMPNOCASE(name, i))
+						if (strutil::equalCI(name, i))
 							name = tz.getToken();
 
 					// Numbered block, add block name
-					if (name.IsNumber())
-						name = wxString::Format("%s %s", block, name);
+					if (strutil::isInteger(name) || strutil::isFloat(name))
+						name = fmt::format("{} {}", block, name);
 					// Unnamed block, use block name
 					if (name == "{" || name == ";")
 						name = block;
 
 					// Add jump point
-					jump_points += wxString::Format("%d,%s,", tz.lineNo() - 1, name);
+					jump_points += fmt::format("{},{},", tz.lineNo() - 1, name);
 				}
 			}
 
@@ -185,11 +186,11 @@ public:
 
 		// Remove ending comma
 		if (!jump_points.empty())
-			jump_points.RemoveLast(1);
+			jump_points.pop_back();
 
 		// Send event
 		auto event = new wxThreadEvent(wxEVT_COMMAND_JTCALCULATOR_COMPLETED);
-		event->SetString(jump_points);
+		event->SetString(wxString::FromUTF8(jump_points));
 		wxQueueEvent(handler_, event);
 
 		return nullptr;
@@ -222,7 +223,7 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 {
 	// Line numbers by default
 	SetMarginType(0, wxSTC_MARGIN_NUMBER);
-	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, "9999"));
+	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, wxS("9999")));
 
 	// Folding margin
 	setupFoldMargin();
@@ -231,20 +232,12 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	SetMarginWidth(2, 4);
 
 	// Register icons for autocompletion list
-#if wxCHECK_VERSION(3, 1, 6)
-	auto size = wxSize{ ui::scalePx(16), ui::scalePx(16) };
+	auto size = FromDIP(wxSize{ 16, 16 });
 	RegisterImage(1, icons::getIcon(icons::TextEditor, "keyword", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(2, icons::getIcon(icons::TextEditor, "constant", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(3, icons::getIcon(icons::TextEditor, "type", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(4, icons::getIcon(icons::TextEditor, "property", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(5, icons::getIcon(icons::TextEditor, "function", -1, { 1, 3 }).GetBitmap(size));
-#else
-	RegisterImage(1, icons::getIcon(icons::TextEditor, "keyword", -1, { 1, 3 }));
-	RegisterImage(2, icons::getIcon(icons::TextEditor, "constant", -1, { 1, 3 }));
-	RegisterImage(3, icons::getIcon(icons::TextEditor, "type", -1, { 1, 3 }));
-	RegisterImage(4, icons::getIcon(icons::TextEditor, "property", -1, { 1, 3 }));
-	RegisterImage(5, icons::getIcon(icons::TextEditor, "function", -1, { 1, 3 }));
-#endif
 
 	// Init w/no language
 	setLanguage(nullptr);
@@ -291,7 +284,8 @@ void TextEditorCtrl::setup()
 	SetDoubleBuffered(true);
 	SetBufferedDraw(true);
 	SetUseAntiAliasing(true);
-	SetTechnology(wxSTC_TECHNOLOGY_DIRECTWRITE);
+	if (txed_use_directwrite)
+		SetTechnology(wxSTC_TECHNOLOGY_DIRECTWRITE);
 	SetFontQuality(txed_font_quality);
 	SetMultipleSelection(true);
 	SetAdditionalSelectionTyping(true);
@@ -408,13 +402,13 @@ bool TextEditorCtrl::setLanguage(TextLanguage* lang)
 	if (!lang)
 	{
 		// Clear keywords
-		SetKeyWords(0, "");
-		SetKeyWords(1, "");
-		SetKeyWords(2, "");
-		SetKeyWords(3, "");
+		SetKeyWords(0, wxEmptyString);
+		SetKeyWords(1, wxEmptyString);
+		SetKeyWords(2, wxEmptyString);
+		SetKeyWords(3, wxEmptyString);
 
 		// Clear autocompletion list
-		autocomp_list_.Clear();
+		autocomp_list_.clear();
 
 		// Set lexer to basic mode
 		lexer_->loadLanguage(nullptr);
@@ -440,7 +434,7 @@ bool TextEditorCtrl::setLanguage(TextLanguage* lang)
 	setupFolding();
 
 	// Update variables
-	SetWordChars("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-$");
+	SetWordChars(wxS("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-$"));
 	language_ = lang;
 
 	// Re-colour text
@@ -498,20 +492,20 @@ bool TextEditorCtrl::loadEntry(const ArchiveEntry* entry)
 	last_modified_ = app::runTimer();
 
 	// Update line numbers margin width
-	wxString numlines = wxString::Format("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
+	wxString numlines = WX_FMT("0{}", txed_fold_debug ? 1234567 : GetNumberOfLines());
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, numlines));
 
 	return true;
 }
 
 // -----------------------------------------------------------------------------
-// Writes the raw ASCII text to [mc]
+// Writes the raw UTF8 text to [mc]
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::getRawText(MemChunk& mc) const
 {
 	mc.clear();
-	wxString text = GetText();
-	mc.importMem(reinterpret_cast<const uint8_t*>(text.ToUTF8().data()), text.ToUTF8().length());
+	auto text = GetText().utf8_string();
+	mc.importMem(reinterpret_cast<const uint8_t*>(text.data()), text.length());
 }
 
 // -----------------------------------------------------------------------------
@@ -564,7 +558,7 @@ void TextEditorCtrl::showFindReplacePanel(bool show)
 	}
 
 	// Get currently selected text
-	wxString find = GetSelectedText();
+	auto find = GetSelectedText();
 
 	// Get the word at the current cursor position if there is no current selection
 	if (find.IsEmpty())
@@ -587,10 +581,10 @@ void TextEditorCtrl::showFindReplacePanel(bool show)
 // Returns false if the [find] was invalid or no match was found, true
 // otherwise
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::findNext(const wxString& find, int flags)
+bool TextEditorCtrl::findNext(string_view find, int flags)
 {
 	// Check search string
-	if (find.IsEmpty())
+	if (find.empty())
 		return false;
 
 	// Get current selection
@@ -600,13 +594,13 @@ bool TextEditorCtrl::findNext(const wxString& find, int flags)
 	// Search forwards from the end of the current selection
 	SetSelection(GetCurrentPos(), GetCurrentPos());
 	SearchAnchor();
-	int found = SearchNext(flags, find);
+	int found = SearchNext(flags, wxutil::strFromView(find));
 	if (found < 0)
 	{
 		// Not found, loop back to start
 		SetSelection(0, 0);
 		SearchAnchor();
-		found = SearchNext(flags, find);
+		found = SearchNext(flags, wxutil::strFromView(find));
 		if (found < 0)
 		{
 			// No match found in entire text, reset selection
@@ -630,10 +624,10 @@ bool TextEditorCtrl::findNext(const wxString& find, int flags)
 // Returns false if the [find] was invalid or no match was found, true
 // otherwise
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::findPrev(const wxString& find, int flags)
+bool TextEditorCtrl::findPrev(string_view find, int flags)
 {
 	// Check search string
-	if (find.IsEmpty())
+	if (find.empty())
 		return false;
 
 	// Get current selection
@@ -643,13 +637,13 @@ bool TextEditorCtrl::findPrev(const wxString& find, int flags)
 	// Search back from the start of the current selection
 	SetSelection(sel_start, sel_start);
 	SearchAnchor();
-	int found = SearchPrev(flags, find);
+	int found = SearchPrev(flags, wxutil::strFromView(find));
 	if (found < 0)
 	{
 		// Not found, loop back to end
 		SetSelection(GetTextLength() - 1, GetTextLength() - 1);
 		SearchAnchor();
-		found = SearchPrev(flags, find);
+		found = SearchPrev(flags, wxutil::strFromView(find));
 		if (found < 0)
 		{
 			// No match found in entire text, reset selection
@@ -673,23 +667,23 @@ bool TextEditorCtrl::findPrev(const wxString& find, int flags)
 // Returns false if [find] is invalid or the current selection does not match
 // it, true otherwise
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::replaceCurrent(const wxString& find, const wxString& replace, int flags)
+bool TextEditorCtrl::replaceCurrent(string_view find, string_view replace, int flags)
 {
 	// Check search string
-	if (find.IsEmpty())
+	if (find.empty())
 		return false;
 
 	// Check that we've done a find previously
 	// (by searching for the find string within the current selection)
-	if (GetSelectedText().Length() != find.Length())
+	if (GetSelectedText().Length() != find.size())
 		return false;
 	SetTargetStart(GetSelectionStart());
 	SetTargetEnd(GetSelectionEnd());
-	if (SearchInTarget(find) < 0)
+	if (SearchInTarget(wxutil::strFromView(find)) < 0)
 		return false;
 
 	// Do the replace
-	ReplaceTarget(replace);
+	ReplaceTarget(wxutil::strFromView(replace));
 
 	// Update selection
 	SetSelection(GetTargetStart(), GetTargetEnd());
@@ -704,10 +698,10 @@ bool TextEditorCtrl::replaceCurrent(const wxString& find, const wxString& replac
 // Replaces all occurrences of [find] in the text with [replace].
 // Returns the number of occurrences replaced
 // -----------------------------------------------------------------------------
-int TextEditorCtrl::replaceAll(const wxString& find, const wxString& replace, int flags)
+int TextEditorCtrl::replaceAll(string_view find, string_view replace, int flags)
 {
 	// Check search string
-	if (find.IsEmpty())
+	if (find.empty())
 		return false;
 
 	// Start at beginning
@@ -718,13 +712,13 @@ int TextEditorCtrl::replaceAll(const wxString& find, const wxString& replace, in
 	while (true)
 	{
 		SearchAnchor();
-		int found = SearchNext(flags, find);
+		int found = SearchNext(flags, wxutil::strFromView(find));
 		if (found < 0)
 			break; // No matches, finished
 		else
 		{
 			// Replace text & increment counter
-			Replace(found, found + find.length(), replace);
+			Replace(found, found + find.length(), wxutil::strFromView(replace));
 			replaced++;
 
 			// Continue from end of replaced text
@@ -870,7 +864,7 @@ void TextEditorCtrl::clearWordMatch()
 {
 	SetIndicatorCurrent(8);
 	IndicatorClearRange(0, GetTextLength());
-	prev_word_match_ = "";
+	prev_word_match_.clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -931,7 +925,7 @@ bool TextEditorCtrl::openCalltip(int pos, int arg, bool dwell)
 		return false;
 
 	// Get word before bracket
-	auto word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true)).ToStdString();
+	auto word = GetTextRange(WordStartPosition(start, true), WordEndPosition(start, true)).utf8_string();
 
 	// Get matching language function (if any)
 	auto func = language_->function(word);
@@ -1096,7 +1090,7 @@ void TextEditorCtrl::updateJumpToList()
 	// Begin jump to calculation thread
 	choice_jump_to_->Enable(false);
 	jump_to_calculator_ = new JumpToCalculator(
-		this, wxutil::strToView(GetText()), language_->jumpBlocks(), language_->jumpBlocksIgnored());
+		this, GetText().utf8_string(), language_->jumpBlocks(), language_->jumpBlocksIgnored());
 	jump_to_calculator_->Run();
 }
 
@@ -1110,9 +1104,9 @@ void TextEditorCtrl::jumpToLine()
 
 	// Prompt for line number
 	long line = wxGetNumberFromUser(
-		"Enter a line number to jump to",
-		wxString::Format("Line number (1-%d):", numlines),
-		"Jump To Line",
+		wxS("Enter a line number to jump to"),
+		WX_FMT("Line number (1-{}):", numlines),
+		wxS("Jump To Line"),
 		GetCurrentLine() + 1,
 		1,
 		numlines,
@@ -1163,11 +1157,11 @@ void TextEditorCtrl::setupFolding()
 void TextEditorCtrl::lineComment()
 {
 	wxString space = wxString::FromUTF8(" ");
-	wxString empty = wxString::FromUTF8("");
+	wxString empty = wxEmptyString;
 
 	wxString comment;
 	if (language_)
-		comment = language_->lineComment();
+		comment = wxString::FromUTF8(language_->lineComment());
 	else
 		comment = default_line_comment_;
 
@@ -1238,8 +1232,8 @@ void TextEditorCtrl::blockComment()
 	wxString space = wxString::FromUTF8(" ");
 	if (language_)
 	{
-		comment_begin = language_->commentBegin();
-		comment_end   = language_->commentEnd();
+		comment_begin = wxString::FromUTF8(language_->commentBegin());
+		comment_end   = wxString::FromUTF8(language_->commentEnd());
 	}
 	else
 	{
@@ -1332,10 +1326,10 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 			if (language_)
 			{
 				// Get word before cursor
-				auto word = GetTextRange(WordStartPosition(GetCurrentPos(), true), GetCurrentPos()).ToStdString();
+				auto word = GetTextRange(WordStartPosition(GetCurrentPos(), true), GetCurrentPos()).utf8_string();
 
 				autocomp_list_ = language_->autocompletionList(word);
-				AutoCompShow(static_cast<int>(word.size()), autocomp_list_);
+				AutoCompShow(static_cast<int>(word.size()), wxString::FromUTF8(autocomp_list_));
 			}
 
 			handled = true;
@@ -1556,7 +1550,7 @@ void TextEditorCtrl::onKeyUp(wxKeyEvent& e)
 void TextEditorCtrl::onCharAdded(wxStyledTextEvent& e)
 {
 	// Update line numbers margin width
-	wxString numlines = wxString::Format("0%d", txed_fold_debug ? 1234567 : GetNumberOfLines());
+	auto numlines = WX_FMT("0{}", txed_fold_debug ? 1234567 : GetNumberOfLines());
 	SetMarginWidth(0, TextWidth(wxSTC_STYLE_LINENUMBER, numlines));
 
 	// Auto indent
@@ -1603,7 +1597,7 @@ void TextEditorCtrl::onCharAdded(wxStyledTextEvent& e)
 		// Block comment ended
 		for (auto& end_token : language_->commentEndL())
 		{
-			if (GetTextRange(GetCurrentPos() - end_token.size(), GetCurrentPos()) == end_token)
+			if (GetTextRange(GetCurrentPos() - end_token.size(), GetCurrentPos()) == wxString::FromUTF8(end_token))
 				block_comment_closed_ = true;
 		}
 	}
@@ -1721,7 +1715,7 @@ void TextEditorCtrl::onMouseDown(wxMouseEvent& e)
 	if (e.LeftDown() && e.GetModifiers() == wxMOD_CMD)
 	{
 		int  pos  = CharPositionFromPointClose(e.GetX(), e.GetY());
-		auto word = GetTextRange(WordStartPosition(pos, true), WordEndPosition(pos, true)).ToStdString();
+		auto word = GetTextRange(WordStartPosition(pos, true), WordEndPosition(pos, true)).utf8_string();
 
 		if (!word.empty())
 		{
@@ -1751,10 +1745,10 @@ void TextEditorCtrl::onMouseDown(wxMouseEvent& e)
 			// Check for function
 			if (language_->isFunction(word))
 			{
-				wxString url = language_->functionLink();
+				wxString url = wxString::FromUTF8(language_->functionLink());
 				if (!url.IsEmpty())
 				{
-					url.Replace("%s", word);
+					url.Replace(wxS("%s"), wxString::FromUTF8(word));
 					wxLaunchDefaultBrowser(url);
 				}
 			}
@@ -1783,7 +1777,7 @@ void TextEditorCtrl::onFocusLoss(wxFocusEvent& e)
 	// Clear word matches
 	SetIndicatorCurrent(8);
 	IndicatorClearRange(0, GetTextLength());
-	prev_word_match_ = "";
+	prev_word_match_.clear();
 
 	e.Skip();
 }

@@ -1,0 +1,5 @@
+{
+  "flags": [
+    { "value": 128, "name": "Friendly", "udmf": "friendly" }
+  ]
+}

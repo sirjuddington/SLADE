@@ -1,14 +1,14 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    ZoomControl.cpp
 // Description: A simple control for zooming, with +/- buttons to zoom in/out
 //              and a combobox to select or enter a zoom level (percent).
-//              Can also be linked to a GfxCanvas or CTextureCanvas
+//              Can also be linked to a GfxGLCanvas or CTextureGLCanvas
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -33,10 +33,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ZoomControl.h"
-#include "General/UI.h"
-#include "UI/Canvas/CTextureCanvas.h"
-#include "UI/Canvas/GfxCanvas.h"
-#include "UI/SToolBar/SToolBarButton.h"
+#include "SIconButton.h"
+#include "UI/Canvas/CTextureCanvasBase.h"
+#include "UI/Canvas/GfxCanvasBase.h"
+#include "UI/Layout.h"
+#include "UI/State.h"
+#include <array>
 
 using namespace slade;
 using namespace ui;
@@ -47,8 +49,6 @@ using namespace ui;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, zoom_gfx, 100, CVar::Save)
-CVAR(Int, zoom_ctex, 100, CVar::Save)
 namespace slade::ui
 {
 std::array<int, 8>  zoom_percents      = { 25, 50, 75, 100, 150, 200, 400, 800 };
@@ -74,11 +74,11 @@ ZoomControl::ZoomControl(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 // ZoomControl class constructor (linking GfxCanvas)
 // -----------------------------------------------------------------------------
-ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
+ZoomControl::ZoomControl(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 	wxPanel(parent, -1),
-	linked_gfx_canvas_{ linked_canvas },
-	zoom_(zoom_gfx)
+	linked_gfx_canvas_{ linked_canvas }
 {
+	zoom_ = getStateInt(ZOOM_GFXCANVAS);
 	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
 	setup();
@@ -87,11 +87,11 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvas* linked_canvas) :
 // -----------------------------------------------------------------------------
 // ZoomControl class constructor (linking CTextureCanvas)
 // -----------------------------------------------------------------------------
-ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
+ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvasBase* linked_canvas) :
 	wxPanel(parent, -1),
-	linked_texture_canvas_{ linked_canvas },
-	zoom_(zoom_ctex)
+	linked_texture_canvas_{ linked_canvas }
 {
+	zoom_ = getStateInt(ZOOM_CTEXTURECANVAS);
 	linked_canvas->linkZoomControl(this);
 	linked_canvas->setScale(zoomScale());
 	setup();
@@ -103,21 +103,21 @@ ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvas* linked_canvas) :
 void ZoomControl::setZoomPercent(int percent)
 {
 	zoom_ = percent;
-	cb_zoom_->SetValue(fmt::format("{}%", zoom_));
+	cb_zoom_->SetValue(WX_FMT("{}%", zoom_));
 	updateZoomButtons();
 
 	// Zoom gfx/texture canvas and update
 	if (linked_gfx_canvas_)
 	{
 		linked_gfx_canvas_->setScale(zoomScale());
-		linked_gfx_canvas_->Refresh();
-		zoom_gfx = zoom_;
+		linked_gfx_canvas_->window()->Refresh();
+		saveStateInt(ZOOM_GFXCANVAS, zoom_);
 	}
 	if (linked_texture_canvas_)
 	{
 		linked_texture_canvas_->setScale(zoomScale());
 		linked_texture_canvas_->redraw(false);
-		zoom_ctex = zoom_;
+		saveStateInt(ZOOM_CTEXTURECANVAS, zoom_);
 	}
 }
 
@@ -187,35 +187,35 @@ void ZoomControl::setup()
 	// Dropdown values
 	wxArrayString values;
 	for (const auto& pct : zoom_percents)
-		values.Add(fmt::format("{}%", pct));
+		values.Add(WX_FMT("{}%", pct));
 
-		// Combobox size
+	// Combobox size
 #ifdef WIN32
-	wxSize cbsize(ui::scalePx(64), -1);
+	wxSize cbsize(FromDIP(64), -1);
 #else
 	auto cbsize = wxDefaultSize;
 #endif
 
 	// Create controls
-	cb_zoom_ = new wxComboBox(
-		this, -1, fmt::format("{}%", zoom_), wxDefaultPosition, cbsize, values, wxTE_PROCESS_ENTER);
-	btn_zoom_out_ = new SToolBarButton(this, "zoom_out", "Zoom Out", "zoom_out", "Zoom Out", false, 16);
-	btn_zoom_in_  = new SToolBarButton(this, "zoom_in", "Zoom In", "zoom_in", "Zoom In", false, 16);
+	cb_zoom_ = new wxComboBox(this, -1, WX_FMT("{}%", zoom_), wxDefaultPosition, cbsize, values, wxTE_PROCESS_ENTER);
+	btn_zoom_out_ = new SIconButton(this, "zoom_out", "Zoom Out", 16);
+	btn_zoom_in_  = new SIconButton(this, "zoom_in", "Zoom In", 16);
 
 #ifdef __WXGTK__
 	// wxWidgets doesn't leave space for the dropdown arrow in gtk3 for whatever reason
 	cbsize = cb_zoom_->GetBestSize();
-	cbsize.x += ui::scalePx(20);
+	cbsize.x += 20;
 	cb_zoom_->SetInitialSize(cbsize);
 #endif
 
 	// Layout
+	auto  lh   = LayoutHelper(this);
 	auto* hbox = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(hbox);
-	hbox->Add(new wxStaticText(this, -1, "Zoom:"), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::px(ui::Size::PadMinimum));
-	hbox->Add(btn_zoom_out_, 0, wxALIGN_CENTER_VERTICAL);
-	hbox->Add(cb_zoom_, 1, wxEXPAND);
-	hbox->Add(btn_zoom_in_, 0, wxALIGN_CENTER_VERTICAL);
+	hbox->Add(new wxStaticText(this, -1, wxS("Zoom:")), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(btn_zoom_out_, wxSizerFlags().CenterVertical());
+	hbox->Add(cb_zoom_, wxSizerFlags(1).Expand());
+	hbox->Add(btn_zoom_in_, wxSizerFlags().CenterVertical());
 
 	// --- Events ---
 
@@ -240,7 +240,7 @@ void ZoomControl::setup()
 		[this](wxCommandEvent& e)
 		{
 			auto val = e.GetString();
-			if (val.EndsWith("%"))
+			if (val.EndsWith(wxS("%")))
 				val.RemoveLast(1); // Remove % if entered
 			long val_percent;
 			if (val.ToLong(&val_percent))
@@ -250,15 +250,8 @@ void ZoomControl::setup()
 		});
 
 	// Zoom in/out button clicked
-	Bind(
-		wxEVT_STOOLBAR_BUTTON_CLICKED,
-		[this](wxCommandEvent& e)
-		{
-			if (e.GetString() == "zoom_in")
-				zoomIn();
-			else if (e.GetString() == "zoom_out")
-				zoomOut();
-		});
+	btn_zoom_in_->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) { zoomIn(); });
+	btn_zoom_out_->Bind(wxEVT_BUTTON, [this](wxCommandEvent& e) { zoomOut(); });
 }
 
 // -----------------------------------------------------------------------------

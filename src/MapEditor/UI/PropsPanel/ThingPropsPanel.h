@@ -40,9 +40,9 @@ private:
 	NumberTextCtrl*      text_height_   = nullptr;
 	wxButton*            btn_new_id_    = nullptr;
 
-	vector<wxString> udmf_flags_;
-	vector<wxString> udmf_flags_extra_;
-	int              type_current_ = 0;
+	vector<string> udmf_flags_;
+	vector<string> udmf_flags_extra_;
+	int            type_current_ = 0;
 
 	wxPanel* setupGeneralTab();
 	wxPanel* setupExtraFlagsTab();

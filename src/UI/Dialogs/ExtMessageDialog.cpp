@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -33,7 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ExtMessageDialog.h"
-#include "General/UI.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -49,32 +49,40 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // ExtMessageDialog class constructor
 // -----------------------------------------------------------------------------
-ExtMessageDialog::ExtMessageDialog(wxWindow* parent, const wxString& caption) :
-	wxDialog(parent, -1, caption, wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
+ExtMessageDialog::ExtMessageDialog(wxWindow* parent, string_view caption) :
+	wxDialog(
+		parent,
+		-1,
+		wxutil::strFromView(caption),
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create and set sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Add message label
-	label_message_ = new wxStaticText(this, -1, "", wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
-	sizer->Add(label_message_, wxutil::sfWithBorder().Expand());
+	label_message_ = new wxStaticText(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
+	sizer->Add(label_message_, lh.sfWithBorder().Expand());
 
 	// Add extended text box
-	text_ext_ = new wxTextCtrl(this, -1, "", wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
+	text_ext_ = new wxTextCtrl(
+		this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
 	text_ext_->SetFont(wxFont(10, wxFONTFAMILY_MODERN, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL));
-	sizer->Add(text_ext_, wxutil::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(text_ext_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add OK button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wxutil::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	hbox->AddStretchSpacer(1);
-	auto btn_ok = new wxButton(this, wxID_OK, "OK");
+	auto btn_ok = new wxButton(this, wxID_OK, wxS("OK"));
 	btn_ok->SetDefault();
 	hbox->Add(btn_ok);
 
-	int size = ui::scalePx(500);
-	SetInitialSize(wxSize(size, size));
+	SetInitialSize(lh.size(500, 500));
 
 	// Bind events
 	Bind(wxEVT_SIZE, &ExtMessageDialog::onSize, this);
@@ -83,17 +91,17 @@ ExtMessageDialog::ExtMessageDialog(wxWindow* parent, const wxString& caption) :
 // -----------------------------------------------------------------------------
 // Sets the dialog short message
 // -----------------------------------------------------------------------------
-void ExtMessageDialog::setMessage(const wxString& message) const
+void ExtMessageDialog::setMessage(const string& message) const
 {
-	label_message_->SetLabel(message);
+	label_message_->SetLabel(wxString::FromUTF8(message));
 }
 
 // -----------------------------------------------------------------------------
 // Sets the dialog extended text
 // -----------------------------------------------------------------------------
-void ExtMessageDialog::setExt(const wxString& text) const
+void ExtMessageDialog::setExt(const string& text) const
 {
-	text_ext_->SetValue(text);
+	text_ext_->SetValue(wxString::FromUTF8(text));
 }
 
 

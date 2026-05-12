@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -38,18 +38,18 @@
 #include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "General/Sigslot.h"
-#include "General/UI.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "TextureXEditor.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/Layout.h"
 #include "UI/Lists/VirtualListView.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
+#include "UI/SAuiToolBar.h"
 
 using namespace slade;
 
@@ -75,10 +75,10 @@ public:
 	PatchTableListView(wxWindow* parent, PatchTable* patch_table) : VirtualListView(parent), patch_table_{ patch_table }
 	{
 		// Add columns
-		InsertColumn(0, "#");
-		InsertColumn(1, "Patch Name");
-		InsertColumn(2, "Use Count");
-		InsertColumn(3, "In Archive");
+		InsertColumn(0, wxS("#"));
+		InsertColumn(1, wxS("Patch Name"));
+		InsertColumn(2, wxS("Use Count"));
+		InsertColumn(3, wxS("In Archive"));
 
 		// Update list
 		PatchTableListView::updateList();
@@ -137,13 +137,13 @@ public:
 		if (p1.used_in.size() == p2.used_in.size())
 			return left < right;
 		else
-			return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size() :
-												p1.used_in.size() < p2.used_in.size();
+			return lv_current_->sortDescend() ? p2.used_in.size() < p1.used_in.size()
+											  : p1.used_in.size() < p2.used_in.size();
 	}
 
 protected:
 	// Returns the string for [item] at [column]
-	wxString itemText(long item, long column, long index) const override
+	string itemText(long item, long column, long index) const override
 	{
 		// Check patch table exists
 		if (!patch_table_)
@@ -157,11 +157,11 @@ protected:
 		auto& patch = patch_table_->patch(index);
 
 		if (column == 0) // Index column
-			return wxString::Format("%04ld", index);
+			return fmt::format("{:04d}", index);
 		else if (column == 1) // Name column
 			return patch.name;
 		else if (column == 2) // Usage count column
-			return wxString::Format("%lu", patch.used_in.size());
+			return fmt::format("{}", static_cast<unsigned>(patch.used_in.size()));
 		else if (column == 3) // Archive column
 		{
 			// Get patch entry
@@ -206,26 +206,6 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 	patch_table_{ patch_table },
 	parent_{ tx_editor }
 {
-	// Create controls
-	list_patches_ = new PatchTableListView(this, patch_table);
-	list_patches_->setSearchColumn(1); // Want to search by patch name not index
-	toolbar_ = new SToolBar(this, false, wxVERTICAL);
-	toolbar_->addActionGroup(
-		"_New", { "txed_pnames_add", "txed_pnames_addfile", "txed_pnames_delete", "txed_pnames_change" });
-	label_dimensions_ = new wxStaticText(this, -1, "Size: N/A");
-	label_textures_   = new wxStaticText(
-        this, -1, "In Textures: -", wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
-	patch_canvas_ = new GfxCanvas(this, -1);
-	patch_canvas_->setViewType(GfxCanvas::View::Centered);
-	patch_canvas_->allowDrag(true);
-	patch_canvas_->allowScroll(true);
-	zc_zoom_ = new ui::ZoomControl(this, patch_canvas_);
-
-	setupLayout();
-
-	// Bind events
-	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
-
 	// Update when main palette changed
 	sc_palette_changed_ = theMainWindow->paletteChooser()->signals().palette_changed.connect([this]
 																							 { updateDisplay(); });
@@ -236,27 +216,45 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, PatchTable* patch_table, Text
 // -----------------------------------------------------------------------------
 void PatchTablePanel::setupLayout()
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
 	// Patches List + actions
-	auto frame      = new wxStaticBox(this, -1, "Patch List (PNAMES)");
+	auto frame    = new wxStaticBox(this, -1, wxS("Patch List (PNAMES)"));
+	list_patches_ = new PatchTableListView(frame, patch_table_);
+	list_patches_->setSearchColumn(1); // Want to search by patch name not index
+	toolbar_ = new SAuiToolBar(frame, true);
+	toolbar_->loadLayoutFromResource("texturex_patch_table");
+	// toolbar_ = new SToolBar(frame, false, wxVERTICAL);
+	// toolbar_->addActionGroup(
+	// 	"_New", { "txed_pnames_add", "txed_pnames_addfile", "txed_pnames_delete", "txed_pnames_change" });
 	auto framesizer = new wxStaticBoxSizer(frame, wxHORIZONTAL);
-	sizer->Add(framesizer, wx::sfWithBorder().Expand());
-	framesizer->Add(toolbar_, wx::sfWithMinBorder(0, wxTOP | wxBOTTOM).Expand());
-	framesizer->AddSpacer(ui::padMin());
-	framesizer->Add(list_patches_, wx::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(framesizer, lh.sfWithBorder().Expand());
+	framesizer->Add(toolbar_, lh.sfWithSmallBorder(0, wxTOP | wxBOTTOM).Expand());
+	framesizer->AddSpacer(lh.padSmall());
+	framesizer->Add(list_patches_, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 
 	// Patch preview & info
-	frame      = new wxStaticBox(this, -1, "Patch Preview && Info");
+	frame             = new wxStaticBox(this, -1, wxS("Patch Preview && Info"));
+	label_dimensions_ = new wxStaticText(frame, -1, wxS("Size: N/A"));
+	label_textures_   = new wxStaticText(
+        frame, -1, wxS("In Textures: -"), wxDefaultPosition, wxDefaultSize, wxST_ELLIPSIZE_END);
+	patch_canvas_ = ui::createGfxCanvas(frame);
+	patch_canvas_->setViewType(GfxView::Centered);
+	patch_canvas_->allowDrag(true);
+	patch_canvas_->allowScroll(true);
+	zc_zoom_   = new ui::ZoomControl(frame, patch_canvas_);
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, wx::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
-	framesizer->Add(zc_zoom_, wx::sfWithBorder());
-	framesizer->Add(patch_canvas_, wx::sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
-	framesizer->Add(label_dimensions_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
-	framesizer->Add(label_textures_, wx::sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(framesizer, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(zc_zoom_, lh.sfWithBorder());
+	framesizer->Add(patch_canvas_->window(), lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(label_dimensions_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	framesizer->Add(label_textures_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+
+	// Bind events
+	list_patches_->Bind(wxEVT_LIST_ITEM_SELECTED, &PatchTablePanel::onDisplayChanged, this);
 }
 
 // -----------------------------------------------------------------------------
@@ -278,27 +276,28 @@ void PatchTablePanel::updateDisplay()
 		theMainWindow->paletteChooser()->setGlobalFromArchive(entry->parent());
 		patch_canvas_->setPalette(theMainWindow->paletteChooser()->selectedPalette());
 		label_dimensions_->SetLabel(
-			wxString::Format("Size: %d x %d", patch_canvas_->image().width(), patch_canvas_->image().height()));
+			WX_FMT("Size: {} x {}", patch_canvas_->image().width(), patch_canvas_->image().height()));
 	}
 	else
 	{
 		patch_canvas_->image().clear();
-		label_dimensions_->SetLabel("Size: ? x ?");
+		label_dimensions_->SetLabel(wxS("Size: ? x ?"));
 	}
-	patch_canvas_->Refresh();
+	patch_canvas_->resetViewOffsets();
+	patch_canvas_->window()->Refresh();
 
 	// List which textures use this patch
 	if (!patch.used_in.empty())
 	{
-		wxString alltextures = "";
-		int      count       = 0;
-		wxString previous    = "";
+		string alltextures;
+		int    count = 0;
+		string previous;
 		for (size_t a = 0; a < patch.used_in.size(); ++a)
 		{
-			wxString current = patch.used_in[a];
+			string current = patch.used_in[a];
 
 			// Is the use repeated for the same texture?
-			if (!current.CmpNoCase(previous))
+			if (!strutil::equalCI(current, previous))
 			{
 				count++;
 				// Else it's a new texture
@@ -308,7 +307,7 @@ void PatchTablePanel::updateDisplay()
 				// First add the count to the previous texture if needed
 				if (count)
 				{
-					alltextures += wxString::Format(" (%i)", count + 1);
+					alltextures += fmt::format(" ({})", count + 1);
 					count = 0;
 				}
 
@@ -317,7 +316,7 @@ void PatchTablePanel::updateDisplay()
 					alltextures += ';';
 
 				// Then print the new texture's name
-				alltextures += wxString::Format(" %s", patch.used_in[a]);
+				alltextures += fmt::format(" {}", patch.used_in[a]);
 
 				// And set it for comparison with the next one
 				previous = current;
@@ -325,13 +324,13 @@ void PatchTablePanel::updateDisplay()
 		}
 		// If count is still non-zero, it's because the patch was repeated in the last texture
 		if (count)
-			alltextures += wxString::Format(" (%i)", count + 1);
+			alltextures += fmt::format(" ({})", count + 1);
 
 		// Finally display the listing
-		label_textures_->SetLabel(wxString::Format("In Textures:%s", alltextures));
+		label_textures_->SetLabel(WX_FMT("In Textures:{}", alltextures));
 	}
 	else
-		label_textures_->SetLabel("In Textures: -");
+		label_textures_->SetLabel(wxS("In Textures: -"));
 
 	// Wrap the text label
 	label_textures_->Wrap(label_textures_->GetSize().GetWidth());
@@ -369,14 +368,14 @@ bool PatchTablePanel::handleAction(string_view id)
 void PatchTablePanel::addPatch()
 {
 	// Prompt for new patch name
-	auto patch = wxGetTextFromUser("Enter patch entry name:", "Add Patch", wxEmptyString, this);
+	auto patch = wxGetTextFromUser(wxS("Enter patch entry name:"), wxS("Add Patch"), wxEmptyString, this);
 
 	// Check something was entered
 	if (patch.IsEmpty())
 		return;
 
 	// Add to patch table
-	patch_table_->addPatch(wxutil::strToView(patch));
+	patch_table_->addPatch(patch.utf8_string());
 
 	// Update list
 	list_patches_->updateList();
@@ -392,7 +391,7 @@ void PatchTablePanel::addPatchFromFile()
 	auto etypes = EntryType::allTypes();
 
 	// Go through types
-	wxString ext_filter = "All files (*.*)|*.*|";
+	string ext_filter = "All files (*.*)|*|";
 	for (auto& etype : etypes)
 	{
 		// If the type is a valid image type, add its extension filter
@@ -406,10 +405,10 @@ void PatchTablePanel::addPatchFromFile()
 	// Create open file dialog
 	wxFileDialog dialog_open(
 		this,
-		"Choose file(s) to open",
+		wxS("Choose file(s) to open"),
 		dir_last,
 		wxEmptyString,
-		ext_filter,
+		wxString::FromUTF8(ext_filter),
 		wxFD_OPEN | wxFD_MULTIPLE | wxFD_FILE_MUST_EXIST,
 		wxDefaultPosition);
 
@@ -421,14 +420,14 @@ void PatchTablePanel::addPatchFromFile()
 		dialog_open.GetPaths(files);
 
 		// Save 'dir_last'
-		dir_last = wxutil::strToView(dialog_open.GetDirectory());
+		dir_last = dialog_open.GetDirectory().utf8_string();
 
 		// Go through file selection
 		for (const auto& file : files)
 		{
 			// Load the file into a temporary ArchiveEntry
 			auto entry = std::make_shared<ArchiveEntry>();
-			entry->importFile(file.ToStdString());
+			entry->importFile(file.utf8_string());
 
 			// Determine type
 			EntryType::detectEntryType(*entry);
@@ -436,24 +435,24 @@ void PatchTablePanel::addPatchFromFile()
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().contains("image"))
 			{
-				log::warning(wxString::Format("%s is not a valid image file", file));
+				log::warning("%s is not a valid image file", file.utf8_string());
 				continue;
 			}
 
 			// Ask for name for patch
 			wxFileName fn(file);
-			wxString   name = fn.GetName().Upper().Truncate(8);
+			auto       name = fn.GetName().Upper().Truncate(8);
 			name            = wxGetTextFromUser(
-                wxString::Format("Enter a patch name for %s:", fn.GetFullName()), "New Patch", name);
+                WX_FMT("Enter a patch name for {}:", fn.GetFullName().utf8_string()), wxS("New Patch"), name);
 			name = name.Truncate(8);
 
 			// Add patch to archive
-			entry->setName(name.ToStdString());
+			entry->setName(name.utf8_string());
 			entry->setExtensionByType();
 			parent_->archive()->addEntry(entry, "patches");
 
 			// Add patch to patch table
-			patch_table_->addPatch(wxutil::strToView(name));
+			patch_table_->addPatch(name.utf8_string());
 		}
 
 		// Refresh patch list
@@ -483,11 +482,11 @@ void PatchTablePanel::removePatch()
 		{
 			// In use, ask if it's ok to remove the patch
 			int answer = wxMessageBox(
-				wxString::Format(
-					"The patch \"%s\" is currently used by %lu texture(s), are you sure you wish to remove it?",
+				WX_FMT(
+					"The patch \"{}\" is currently used by {} texture(s), are you sure you wish to remove it?",
 					patch.name,
 					patch.used_in.size()),
-				"Confirm Remove Patch",
+				wxS("Confirm Remove Patch"),
 				wxYES_NO | wxCANCEL | wxICON_QUESTION,
 				this);
 			if (answer == wxYES)
@@ -530,11 +529,16 @@ void PatchTablePanel::changePatch()
 		auto& patch = patch_table_->patch(index);
 
 		// Prompt for new patch name
-		wxString newname = wxGetTextFromUser("Enter new patch entry name:", "Change Patch", patch.name, this);
+		auto newname = wxGetTextFromUser(
+						   wxS("Enter new patch entry name:"),
+						   wxS("Change Patch"),
+						   wxString::FromUTF8(patch.name),
+						   this)
+						   .utf8_string();
 
 		// Update the patch if it's not the Cancel button that was clicked
-		if (newname.Length() > 0)
-			patch_table_->replacePatch(index, wxutil::strToView(newname));
+		if (!newname.empty())
+			patch_table_->replacePatch(index, newname);
 
 		// Update the list
 		list_patches_->updateList();

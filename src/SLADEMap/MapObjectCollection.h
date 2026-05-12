@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 namespace slade
 {
@@ -9,7 +9,7 @@ class SideList;
 class VertexList;
 namespace map
 {
-	enum class ObjectType;
+	enum class ObjectType : u8;
 }
 
 class MapObjectCollection
@@ -52,16 +52,22 @@ public:
 	MapSide* duplicateSide(MapSide* side);
 
 	// Object remove
-	bool removeVertex(const MapVertex* vertex, bool merge_lines = false);
-	bool removeVertex(unsigned index, bool merge_lines = false);
-	bool removeLine(const MapLine* line);
-	bool removeLine(unsigned index);
-	bool removeSide(const MapSide* side, bool remove_from_line = true);
-	bool removeSide(unsigned index, bool remove_from_line = true);
-	bool removeSector(const MapSector* sector);
-	bool removeSector(unsigned index);
-	bool removeThing(const MapThing* thing);
-	bool removeThing(unsigned index);
+	bool removeVertex(const MapVertex* vertex, bool merge_lines = false, bool bulk = false);
+	bool removeVertex(unsigned index, bool merge_lines = false, bool bulk = false);
+	bool removeVertices(const vector<unsigned>& indices, bool merge_lines = false);
+	bool removeLine(const MapLine* line, bool bulk = false);
+	bool removeLine(unsigned index, bool bulk = false);
+	bool removeLines(const vector<unsigned>& indices);
+	bool removeSide(const MapSide* side, bool remove_from_line = true, bool bulk = false);
+	bool removeSide(unsigned index, bool remove_from_line = true, bool bulk = false);
+	bool removeSides(const vector<unsigned>& indices, bool remove_from_line = true);
+	bool removeSector(const MapSector* sector, bool bulk = false);
+	bool removeSector(unsigned index, bool bulk = false);
+	bool removeSectors(const vector<unsigned>& indices);
+	bool removeThing(const MapThing* thing, bool bulk = false);
+	bool removeThing(unsigned index, bool bulk = false);
+	bool removeThings(const vector<unsigned>& indices);
+	void removeMarkedObjects();
 
 	// Modified times
 	vector<MapObject*> modifiedObjects(long since, map::ObjectType type) const;
@@ -77,8 +83,8 @@ public:
 	int removeInvalidSides();
 
 	// Cleanup/Extra
-	void rebuildConnectedLines();
-	void rebuildConnectedSides();
+	void rebuildConnectedLines() const;
+	void rebuildConnectedSides() const;
 
 private:
 	struct MapObjectHolder
@@ -96,5 +102,11 @@ private:
 	unique_ptr<LineList>    lines_;
 	unique_ptr<SectorList>  sectors_;
 	unique_ptr<ThingList>   things_;
+
+	vector<unsigned> remove_vertices_;
+	vector<unsigned> remove_sides_;
+	vector<unsigned> remove_lines_;
+	vector<unsigned> remove_sectors_;
+	vector<unsigned> remove_things_;
 };
 } // namespace slade

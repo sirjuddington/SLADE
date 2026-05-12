@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,15 +36,13 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "General/UndoSteps/EntryDataUS.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchiveManagerPanel.h"
 #include "MainEditor/UI/MainWindow.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
 
 using namespace slade;
 
@@ -71,9 +69,9 @@ CVAR(Bool, confirm_entry_revert, true, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // EntryPanel class constructor
 // -----------------------------------------------------------------------------
-EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) : wxPanel(parent, -1), id_{ id }
+EntryPanel::EntryPanel(wxWindow* parent, const string& id, bool left_toolbar) : wxPanel(parent, -1), id_{ id }
 {
-	namespace wx = wxutil;
+	auto lh = ui::LayoutHelper(this);
 
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -81,20 +79,13 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) 
 	wxWindow::Show(false);
 
 	// Add toolbar
-	toolbar_ = new SToolBar(this);
-	sizer->Add(toolbar_, wx::sfWithMinBorder(0, wxLEFT).Expand());
-	sizer->AddSpacer(ui::padMin());
-
-	// Default entry toolbar group
-	auto tb_group = new SToolBarGroup(toolbar_, "Entry");
-	stb_save_     = tb_group->addActionButton("arch_entry_save", "save", true);
-	stb_revert_ = tb_group->addActionButton("revert", "Revert", "revert", "Revert any changes made to the entry", true);
-	toolbar_->addGroup(tb_group);
-	toolbar_->enableGroup("Entry", false);
+	toolbar_ = new SAuiToolBar(this);
+	sizer->Add(toolbar_, lh.sfWithSmallBorder(0, wxLEFT).Expand());
+	sizer->AddSpacer(lh.padSmall());
 
 	// Create left toolbar
 	if (left_toolbar)
-		toolbar_left_ = new SToolBar(this, false, wxVERTICAL);
+		toolbar_left_ = new SAuiToolBar(this, true);
 
 	// Setup sizer positions
 	sizer_bottom_ = new wxBoxSizer(wxHORIZONTAL);
@@ -102,16 +93,16 @@ EntryPanel::EntryPanel(wxWindow* parent, const wxString& id, bool left_toolbar) 
 	if (left_toolbar)
 	{
 		auto* hbox = new wxBoxSizer(wxHORIZONTAL);
-		hbox->Add(toolbar_left_, wx::sfWithMinBorder(0, wxRIGHT).Expand());
+		hbox->Add(toolbar_left_, lh.sfWithSmallBorder(0, wxRIGHT).Expand());
 		hbox->Add(sizer_main_, wxSizerFlags(1).Expand());
-		sizer->Add(hbox, wx::sfWithMinBorder(1, wxLEFT).Expand());
+		sizer->Add(hbox, lh.sfWithSmallBorder(1, wxLEFT).Expand());
 	}
 	else
-		sizer->Add(sizer_main_, wx::sfWithMinBorder(1, wxLEFT).Expand());
-	sizer->Add(sizer_bottom_, wx::sfWithBorder(0, wxTOP | wxLEFT).Expand());
+		sizer->Add(sizer_main_, lh.sfWithSmallBorder(1, wxLEFT).Expand());
+	sizer->Add(sizer_bottom_, lh.sfWithBorder(0, wxTOP | wxLEFT).Expand());
 
 	// Bind button events
-	Bind(wxEVT_STOOLBAR_BUTTON_CLICKED, &EntryPanel::onToolbarButton, this, toolbar_->GetId());
+	Bind(wxEVT_MENU, &EntryPanel::onToolbarButton, this);
 }
 
 // -----------------------------------------------------------------------------
@@ -127,20 +118,18 @@ EntryPanel::~EntryPanel()
 // -----------------------------------------------------------------------------
 void EntryPanel::setModified(bool c)
 {
+	bool prev  = modified_;
 	auto entry = entry_.lock();
-	if (!entry)
-	{
-		modified_ = c;
-		return;
-	}
+	modified_  = (entry && entry->isLocked()) ? false : c;
 
-	modified_ = entry->isLocked() ? false : c;
-
-	if (stb_save_ && stb_save_->IsEnabled() != modified_)
+	if (modified_ != prev)
 	{
-		toolbar_->enableGroup("Entry", modified_);
+		toolbar_->enableItem("arch_entry_save", modified_);
+		toolbar_->enableItem("revert", modified_);
 		callRefresh();
-		maineditor::window()->archiveManagerPanel()->updateEntryTabTitle(entry.get());
+
+		if (entry)
+			maineditor::window()->archiveManagerPanel()->updateEntryTabTitle(entry.get());
 	}
 }
 
@@ -151,9 +140,10 @@ void EntryPanel::addBorderPadding()
 {
 	Freeze();
 	auto* sizer = GetSizer();
+	auto  lh    = ui::LayoutHelper(this);
 	SetSizer(new wxBoxSizer(wxHORIZONTAL), false);
-	GetSizer()->AddSpacer(ui::padMin());
-	GetSizer()->Add(sizer, wxutil::sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
+	GetSizer()->AddSpacer(lh.padSmall());
+	GetSizer()->Add(sizer, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 	Layout();
 	Thaw();
 }
@@ -176,6 +166,8 @@ bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 
 	// Set unmodified
 	setModified(false);
+	toolbar_->enableItem("arch_entry_save", false);
+	toolbar_->enableItem("revert", false);
 
 	// Copy current entry content
 	entry_data_.clear();
@@ -186,14 +178,13 @@ bool EntryPanel::openEntry(shared_ptr<ArchiveEntry> entry)
 	{
 		entry_ = entry;
 		updateStatus();
-		toolbar_->updateLayout(true);
 		Layout();
 		return true;
 	}
 	else
 	{
-		theMainWindow->SetStatusText("", 1);
-		theMainWindow->SetStatusText("", 2);
+		theMainWindow->SetStatusText(wxEmptyString, 1);
+		theMainWindow->SetStatusText(wxEmptyString, 2);
 		return false;
 	}
 }
@@ -254,8 +245,8 @@ bool EntryPanel::revertEntry(bool confirm)
 		// Prompt to revert if configured to
 		if (confirm_entry_revert && confirm)
 			if (wxMessageBox(
-					"Are you sure you want to revert changes made to the entry?",
-					"Revert Changes",
+					wxS("Are you sure you want to revert changes made to the entry?"),
+					wxS("Revert Changes"),
 					wxICON_QUESTION | wxYES_NO)
 				== wxNO)
 				ok = false;
@@ -314,20 +305,21 @@ void EntryPanel::updateStatus()
 	// Basic info
 	if (auto entry = entry_.lock())
 	{
-		wxString name = entry->name();
-		wxString type = entry->typeString();
-		wxString text = wxString::Format("%d: %s, %d bytes, %s", entry->index(), name, entry->size(), type);
-
-		theMainWindow->CallAfter(&MainWindow::SetStatusText, text, 1);
+		// Basic info
+		theMainWindow->CallAfter(
+			&MainWindow::SetStatusText,
+			wxString::FromUTF8(
+				fmt::format("{}: {}, {} bytes, {}", entry->index(), entry->name(), entry->size(), entry->typeString())),
+			1);
 
 		// Extended info
-		theMainWindow->CallAfter(&MainWindow::SetStatusText, statusString(), 2);
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, wxString::FromUTF8(statusString()), 2);
 	}
 	else
 	{
 		// Clear status
-		theMainWindow->CallAfter(&MainWindow::SetStatusText, "", 1);
-		theMainWindow->CallAfter(&MainWindow::SetStatusText, "", 2);
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, wxEmptyString, 1);
+		theMainWindow->CallAfter(&MainWindow::SetStatusText, wxEmptyString, 2);
 	}
 }
 
@@ -375,15 +367,6 @@ void EntryPanel::removeCustomMenu() const
 bool EntryPanel::isActivePanel() const
 {
 	return (IsShown() && maineditor::currentEntryPanel() == this);
-}
-
-// -----------------------------------------------------------------------------
-// Updates the toolbar layout
-// -----------------------------------------------------------------------------
-void EntryPanel::updateToolbar()
-{
-	toolbar_->updateLayout(true);
-	Layout();
 }
 
 // -----------------------------------------------------------------------------
@@ -445,7 +428,11 @@ bool EntryPanel::handleStandaloneAction(const string_view id)
 // -----------------------------------------------------------------------------
 void EntryPanel::onToolbarButton(wxCommandEvent& e)
 {
-	wxString button = e.GetString();
+	string button;
+	if (e.GetEventObject() == toolbar_)
+		button = toolbar_->actionFromWxId(e.GetId());
+	else if (e.GetEventObject() == toolbar_left_)
+		button = toolbar_left_->actionFromWxId(e.GetId());
 
 	// Revert
 	if (button == "revert")

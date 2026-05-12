@@ -1,0 +1,185 @@
+// ZDoom action specials for hexen/udmf map formats
+// Scripting related specials
+{
+  "arg_presets": {
+    "which_players": {
+      "name": "Who",
+      "type": "choice",
+      "custom_values": [
+        { "value": 0, "name": "activator only" },
+        { "value": 1, "name": "all players" }
+      ]
+    }
+  },
+
+  "groups": [
+    {
+      "name": "Scripting",
+      "specials": [
+        {
+          "name": "ACS_Execute",
+          "id": 80,
+          "arg1": "Script Number",
+          "arg2": { "name": "Map Levelnum", "description": "Use 0 for current map" },
+          "arg3": { "name": "First Arg", "description": "First argument passed to the script" },
+          "arg4": { "name": "Second Arg", "description": "Second argument passed to the script" },
+          "arg5": { "name": "Third Arg", "description": "Third argument passed to the script" }
+        },
+        {
+          "name": "ACS_LockedExecute",
+          "id": 83,
+          "arg1": "Script Number",
+          "arg2": { "name": "Map Levelnum", "description": "Use 0 for current map" },
+          "arg3": { "name": "First Arg", "description": "First argument passed to the script" },
+          "arg4": { "name": "Second Arg", "description": "Second argument passed to the script" },
+          "arg5": { "name": "Lock Number", "description": "Lock value as defined in LOCKDEFS" }
+        },
+        {
+          "name": "ACS_LockedExecuteDoor",
+          "id": 85,
+          "arg1": "Script Number",
+          "arg2": { "name": "Map Levelnum", "description": "Use 0 for current map" },
+          "arg3": { "name": "First Arg", "description": "First argument passed to the script" },
+          "arg4": { "name": "Second Arg", "description": "Second argument passed to the script" },
+          "arg5": { "name": "Lock Number", "description": "Lock value as defined in LOCKDEFS" }
+        },
+        {
+          "name": "ACS_ExecuteWithResult",
+          "id": 84,
+          "arg1": "Script Number",
+          "arg2": { "name": "First Arg", "description": "First argument passed to the script" },
+          "arg3": { "name": "Second Arg", "description": "Second argument passed to the script" },
+          "arg4": { "name": "Third Arg", "description": "Third argument passed to the script" }
+        },
+        {
+          "name": "ACS_ExecuteAlways",
+          "id": 226,
+          "arg1": "Script Number",
+          "arg2": { "name": "Map Levelnum", "description": "Use 0 for current map" },
+          "arg3": { "name": "First Arg", "description": "First argument passed to the script" },
+          "arg4": { "name": "Second Arg", "description": "Second argument passed to the script" },
+          "arg5": { "name": "Third Arg", "description": "Third argument passed to the script" }
+        },
+        {
+          "name": "ACS_Suspend",
+          "id": 81,
+          "arg1": "Script Number",
+          "arg2": { "name": "Map Levelnum", "description": "Use 0 for current map" }
+        },
+        {
+          "name": "ACS_Terminate",
+          "id": 82,
+          "arg1": "Script Number",
+          "arg2": { "name": "Map Levelnum", "description": "Use 0 for current map" }
+        },
+        {
+          "name": "FS_Execute",
+          "id": 158,
+          "arg1": { "name": "Script Number", "description": "FraggleScript script number" },
+          "arg2": "Front Side Only?",
+          "arg3": { "name": "Lock Number", "description": "Lock value as defined in LOCKDEFS" },
+          "arg4": {
+            "name": "Remote Message?",
+            "description": "If locked, determines whether unsuccessful use gives the 'open door' or 'activate object' message"
+          }
+        },
+        {
+          "name": "SetPlayerProperty",
+          "id": 191,
+          "arg1": "$which_players",
+          "arg2": {
+            "name": "Set?",
+            "type": "choice",
+            "custom_values": [
+              { "value": 0, "name": "turn off" },
+              { "value": 1, "name": "turn on" }
+            ]
+          },
+          "arg3": {
+            "name": "Property",
+            "type": "choice",
+            "custom_values": [
+              { "value": 0, "name": "cannot move" },
+              { "value": 1, "name": "not auto targeted by monsters" },
+              { "value": 2, "name": "instant switch" },
+              { "value": 3, "name": "fly" },
+              { "value": 4, "name": "totally frozen" },
+              { "value": 5, "name": "invulnerable" },
+              { "value": 16, "name": "buddha mode (cannot drop below 1 health)" }
+            ]
+          }
+        },
+        {
+          "name": "ChangeCamera",
+          "id": 237,
+          "arg1": { "name": "Thing ID", "description": "TID of the camera object" },
+          "arg2": "$which_players",
+          "arg3": { "name": "Move Reverts?", "description": "Set to 1 if movement should cancel the special" },
+          "tagged": "thing"
+        },
+        {
+          "name": "Autosave",
+          "id": 15,
+          "description": "[RH] Save the game *now*"
+        },
+        {
+          "name": "ChangeSkill",
+          "id": 179,
+          "arg1": {
+            "name": "Skill Number",
+            "description": "Number of the new skill (standard go from 0 for easiest to 5 for hardest)"
+          }
+        },
+        {
+          "name": "StartConversation",
+          "id": 18,
+          "arg1": { "name": "Thing ID", "description": "TID of the talking actor" },
+          "arg2": { "name": "Face Talker?", "description": "Player turns to face talker if non-null" }
+        },
+        {
+          "name": "Radius_Quake",
+          "id": 120,
+          "arg1": { "name": "Intensity", "description": "Tremor intensity on a 1--9 scale" },
+          "arg2": { "name": "Duration", "description": "In tics" },
+          "arg3": { "name": "Damage Radius", "description": "Radius of damage in 64x64 cells" },
+          "arg4": { "name": "Tremor Radius", "description": "Radius of tremor in 64x64 cells" },
+          "arg5": { "name": "Thing ID", "description": "TID of the focus (0 = activator)" },
+          "tagged": "ex_5thing"
+        },
+        {
+          "name": "UsePuzzleItem",
+          "id": 129,
+          "arg1": { "name": "Puzzle Number", "description": "Value of the the item's PuzzleItem.Number property" },
+          "arg2": { "name": "Script Number", "description": "Script to run if item successfully used" },
+          "arg3": { "name": "First Arg", "description": "First argument passed to the script" },
+          "arg4": { "name": "Second Arg", "description": "Second argument passed to the script" },
+          "arg5": { "name": "Third Arg", "description": "Third argument passed to the script" }
+        },
+        {
+          "name": "NoiseAlert",
+          "id": 173,
+          "arg1": {
+            "name": "Target TID",
+            "description": "TID of the actor that is to be attacked by alerted monsters (0 = activator)"
+          },
+          "arg2": {
+            "name": "Emitter TID",
+            "description": "TID of the actor from which the alert emanates (0 = activator)"
+          },
+          "tagged": "ex_1thing_2thing"
+        },
+        {
+          "name": "SendToCommunicator",
+          "id": 174,
+          "arg1": { "name": "Voc ID", "description": "Number of the VOC lump to play and LOG lump to print" },
+          "arg2": { "name": "Front Only?", "description": "If non-zero, only activate on front side of the line" },
+          "arg3": { "name": "Identity?", "description": "If non-zero, also print the name of who sent the message" },
+          "arg4": {
+            "name": "No Log Message?",
+            "description": "If non-zero, the message will not be placed in the objectives popup"
+          }
+        }
+      ]
+    }
+  ]
+}

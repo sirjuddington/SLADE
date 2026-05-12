@@ -92,33 +92,44 @@
 #include <wx/msw/registry.h>
 #endif
 
+#define wxNO_UNSAFE_WXSTRING_CONV 1
 
 // Other Libraries -------------------------------------------------------------
 
 // fmt
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 // Sigslot
 #include "thirdparty/sigslot/signal.hpp"
 
 // GLM
+#define GLM_FORCE_CTOR_INIT
 #define GLM_FORCE_SWIZZLE
 #define GLM_FORCE_CTOR_INIT
 #include <glm/geometric.hpp>
+#include <glm/mat4x4.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
+
+// Cpptrace
+#include <cpptrace/from_current.hpp>
 
 
 // C++ -------------------------------------------------------------------------
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
+#include <filesystem>
 #include <functional>
 #include <map>
 #include <memory>
 #include <optional>
 #include <set>
+#include <string>
+#include <string_view>
+#include <thread>
 #include <unordered_map>
 #include <variant>
 #include <vector>

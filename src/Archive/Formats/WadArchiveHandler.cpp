@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -36,7 +36,8 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
-#include "General/UI.h"
+#include "UI/UI.h"
+#include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "WadJArchiveHandler.h"
@@ -564,7 +565,7 @@ bool WadArchiveHandler::write(Archive& archive, string_view filename)
 
 	// Open file for writing
 	wxFile file;
-	file.Open(wxString{ filename.data(), filename.size() }, wxFile::write);
+	file.Open(wxutil::strFromView(filename), wxFile::write);
 	if (!file.IsOpened())
 	{
 		global::error = "Unable to open file for writing";
@@ -766,7 +767,7 @@ bool WadArchiveHandler::moveEntry(Archive& archive, ArchiveEntry* entry, unsigne
 // If [maphead] is not really a map header entry, an invalid MapDesc will be
 // returned (MapDesc::head == nullptr)
 // -----------------------------------------------------------------------------
-MapDesc WadArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
+MapDesc WadArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead)
 {
 	MapDesc map;
 
@@ -910,7 +911,7 @@ MapDesc WadArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* maphead)
 // -----------------------------------------------------------------------------
 // Searches for any maps in the wad and adds them to the map list
 // -----------------------------------------------------------------------------
-vector<MapDesc> WadArchiveHandler::detectMaps(Archive& archive)
+vector<MapDesc> WadArchiveHandler::detectMaps(const Archive& archive)
 {
 	vector<MapDesc> maps;
 
@@ -1014,11 +1015,9 @@ vector<MapDesc> WadArchiveHandler::detectMaps(Archive& archive)
 			{
 				// Get map info
 				MapDesc md;
-				md.head = header_entry;         // Header lump
-				md.name = header_entry->name(); // Map title
-				md.end  = lastentryismapentry ? // End lump
-                             entry :
-							  archive.rootDir()->sharedEntryAt(--index);
+				md.head = header_entry;                                                            // Header lump
+				md.name = header_entry->name();                                                    // Map title
+				md.end  = lastentryismapentry ? entry : archive.rootDir()->sharedEntryAt(--index); // End lump
 
 				// If BEHAVIOR lump exists, it's a hexen format map
 				if (existing_map_lumps[LUMP_BEHAVIOR])
@@ -1078,7 +1077,7 @@ vector<MapDesc> WadArchiveHandler::detectMaps(Archive& archive)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string WadArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
+string WadArchiveHandler::detectNamespace(const Archive& archive, ArchiveEntry* entry)
 {
 	return detectNamespace(archive, archive.entryIndex(entry));
 }
@@ -1086,7 +1085,7 @@ string WadArchiveHandler::detectNamespace(Archive& archive, ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 // Returns the namespace that the entry at [index] in [dir] is within
 // -----------------------------------------------------------------------------
-string WadArchiveHandler::detectNamespace(Archive& archive, unsigned index, ArchiveDir* dir)
+string WadArchiveHandler::detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir)
 {
 	// Go through namespaces
 	for (auto& ns : namespaces_)
@@ -1162,7 +1161,7 @@ void WadArchiveHandler::detectIncludes(Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* WadArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	unsigned index     = 0;
@@ -1199,6 +1198,8 @@ ArchiveEntry* WadArchiveHandler::findFirst(Archive& archive, ArchiveSearchOption
 	for (; index < index_end; ++index)
 	{
 		entry = archive.entryAt(index);
+		if (!entry)
+			continue;
 
 		// Check type
 		if (options.match_type)
@@ -1231,7 +1232,7 @@ ArchiveEntry* WadArchiveHandler::findFirst(Archive& archive, ArchiveSearchOption
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* WadArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	int index       = archive.numEntries() - 1;
@@ -1272,6 +1273,8 @@ ArchiveEntry* WadArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions
 	for (; index >= index_start; --index)
 	{
 		entry = archive.entryAt(index);
+		if (!entry)
+			continue;
 
 		// Check type
 		if (options.match_type)
@@ -1303,7 +1306,7 @@ ArchiveEntry* WadArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> WadArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> WadArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	unsigned index     = 0;
@@ -1341,6 +1344,8 @@ vector<ArchiveEntry*> WadArchiveHandler::findAll(Archive& archive, ArchiveSearch
 	for (; index < index_end; ++index)
 	{
 		entry = archive.entryAt(index);
+		if (!entry)
+			continue;
 
 		// Check type
 		if (options.match_type)
@@ -1410,7 +1415,7 @@ bool WadArchiveHandler::isThisFormat(const MemChunk& mc)
 bool WadArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened())

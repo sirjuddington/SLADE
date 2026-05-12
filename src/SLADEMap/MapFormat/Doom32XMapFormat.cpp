@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd, Victor Luchits
+// Copyright(C) 2008 - 2026 Simon Judd, Victor Luchits
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -32,10 +32,10 @@
 #include "Main.h"
 #include "Doom32XMapFormat.h"
 #include "Archive/ArchiveEntry.h"
-#include "General/UI.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"
 #include "SLADEMap/MapObjectList/VertexList.h"
+#include "UI/UI.h"
 
 using namespace slade;
 

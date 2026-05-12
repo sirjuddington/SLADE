@@ -17,7 +17,7 @@ enum class EntryEncryption
 	TXB,
 };
 
-class ArchiveEntry
+class ArchiveEntry : public std::enable_shared_from_this<ArchiveEntry>
 {
 	friend class ArchiveDir;
 	friend class Archive;
@@ -32,12 +32,14 @@ public:
 	// Accessors
 	const string&            name() const { return name_; }
 	string_view              nameNoExt() const;
+	string_view              ext() const;
 	const string&            upperName() const { return upper_name_; }
 	string_view              upperNameNoExt() const;
+	string_view              upperExt() const;
 	uint32_t                 size() const { return data_.size(); }
 	const MemChunk&          data() const { return data_; }
 	const uint8_t*           rawData() const { return data_.data(); }
-	ArchiveDir*              parentDir() const { return parent_; }
+	ArchiveDir*              parentDir() const { return parent_.lock().get(); }
 	Archive*                 parent() const;
 	Archive*                 topParent() const;
 	string                   path(bool name = false) const;
@@ -74,7 +76,7 @@ public:
 	bool resize(uint32_t new_size, bool preserve_data);
 
 	// Data modification
-	bool clearData();
+	bool clearData(bool silent = false);
 
 	// Data import
 	bool importMem(const void* data, uint32_t size);
@@ -103,20 +105,22 @@ public:
 	string        sizeString() const;
 	string        typeString() const;
 	void          stateChanged();
+	void          dataChanged();
 	void          setExtensionByType();
 	int           typeReliability() const;
 	bool          isInNamespace(string_view ns);
 	ArchiveEntry* relativeEntry(string_view path, bool allow_absolute_path = true) const;
 	bool          isFolderType() const;
+	bool          isArchive() const;
 
 private:
 	// Entry Info
-	string       name_;
-	string       upper_name_;
-	MemChunk     data_;
-	EntryType*   type_   = nullptr;
-	ArchiveDir*  parent_ = nullptr;
-	PropertyList ex_props_;
+	string               name_;
+	string               upper_name_;
+	MemChunk             data_;
+	EntryType*           type_ = nullptr;
+	weak_ptr<ArchiveDir> parent_;
+	PropertyList         ex_props_;
 
 	// Entry status
 	EntryState      state_        = EntryState::New;

@@ -1,4 +1,4 @@
-################################################################################
+﻿################################################################################
 # This .gitignore file was automatically created by Microsoft(R) Visual Studio.
 ################################################################################
 
@@ -18,12 +18,14 @@
 /.vscode/*
 /release
 /build
+/.cache
 /dist/*.log
 /dist/*.map
 /dist/portable
 /dist/res/.vscode/*
 /docs/build/
 /ipch
+/src/build/
 /src/bzip2/Release
 /src/lzma/Release
 /src/zlib/Release
@@ -32,8 +34,6 @@
 /win_installer/Output
 /cmake-build-*
 /.idea/
-/msvc/.vs
-/msvc/x64/
 /.vs
 /out/
 
@@ -42,4 +42,17 @@
 !/dist/CMakeLists.txt
 !/dist/makebuild.ps1
 
+/msvc/*
+!/msvc/resource.h
+!/msvc/slade.ico
+!/msvc/SLADE.manifest
+!/msvc/SLADE.rc
+
+/unix/*
+!/unix/build-appimage.sh
+!/unix/net.mancubus.SLADE.desktop
+!/unix/net.mancubus.SLADE.metainfo.xml
+!/unix/net.mancubus.SLADE.svg
+
 CMakeSettings.json
+CMakeUserPresets.json

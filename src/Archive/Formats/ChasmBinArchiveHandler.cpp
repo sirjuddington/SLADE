@@ -1,7 +1,7 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -35,7 +35,7 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -51,7 +51,7 @@ namespace
 // -----------------------------------------------------------------------------
 // Fixes broken wav data
 // -----------------------------------------------------------------------------
-void fixBrokenWave(const ArchiveEntry* entry)
+void fixBrokenWave(ArchiveEntry* entry)
 {
 	static constexpr uint32_t MIN_WAVE_SIZE = 44;
 
@@ -59,9 +59,18 @@ void fixBrokenWave(const ArchiveEntry* entry)
 		return;
 
 	// Some wave files have an incorrect size of the format chunk
-	uint32_t* const format_size = reinterpret_cast<uint32_t*>(&entry->data()[0x10]);
-	if (0x12 == *format_size)
-		*format_size = 0x10;
+	// Read the format size at offset 0x10
+	uint32_t format_size = 0;
+	entry->seek(0x10, SEEK_SET);
+	entry->read(&format_size, sizeof(format_size));
+
+	// If it's incorrect, fix it
+	if (0x12 == format_size)
+	{
+		format_size = 0x10;
+		entry->seek(0x10, SEEK_SET);
+		entry->write(&format_size, sizeof(format_size));
+	}
 }
 } // namespace
 
@@ -300,7 +309,7 @@ bool ChasmBinArchiveHandler::isThisFormat(const MemChunk& mc)
 bool ChasmBinArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFile file(filename);
+	wxFile file(wxString::FromUTF8(filename));
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < HEADER_SIZE)

@@ -36,7 +36,7 @@
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
 #include "General/Misc.h"
-#include "General/UI.h"
+#include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include <archive.h>
@@ -380,7 +380,12 @@ bool Zip7ArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* ent
 bool Zip7ArchiveHandler::isThisFormat(const MemChunk& mc)
 {
 	// Just check the signature for now
-	return mc.size() > 6 && mc[0] == '7' && mc[1] == 'z' && mc[2] == 0xBC && mc[3] == 0xAF && mc[4] == 0x27
+	return mc.size() > 6
+		   && mc[0] == '7'
+		   && mc[1] == 'z'
+		   && mc[2] == 0xBC
+		   && mc[3] == 0xAF
+		   && mc[4] == 0x27
 		   && mc[5] == 0x1C;
 }
 

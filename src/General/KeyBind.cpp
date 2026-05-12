@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "KeyBind.h"
+#include "App.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -49,6 +50,62 @@ vector<KeyBind>         keybinds_sorted;
 KeyBind                 kb_none("-none-");
 vector<KeyBindHandler*> kb_handlers;
 } // namespace
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade
+{
+// -----------------------------------------------------------------------------
+// Returns the path to the keybinds config JSON file
+// -----------------------------------------------------------------------------
+string keybindConfigPath()
+{
+	return app::path("keybinds.json", app::Dir::User);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if two Keypress structs are equal
+// -----------------------------------------------------------------------------
+bool kpEqual(const Keypress& kp1, const Keypress& kp2)
+{
+	if (!strutil::equalCI(kp1.key, kp2.key))
+		return false;
+
+	return kp1.alt == kp2.alt && kp1.ctrl == kp2.ctrl && kp1.shift == kp2.shift;
+}
+} // namespace slade
+
+
+// -----------------------------------------------------------------------------
+//
+// Keypress Struct <-> JSON Object Conversion Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade
+{
+void to_json(json& j, const Keypress& kp)
+{
+	j = json{ { "key", kp.key } };
+	if (kp.alt)
+		j["mod_alt"] = true;
+	if (kp.ctrl)
+		j["mod_ctrl"] = true;
+	if (kp.shift)
+		j["mod_shift"] = true;
+}
+
+void from_json(const json& j, Keypress& kp)
+{
+	j.at("key").get_to(kp.key);
+	kp.alt   = j.value("mod_alt", false);
+	kp.ctrl  = j.value("mod_ctrl", false);
+	kp.shift = j.value("mod_shift", false);
+}
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -127,6 +184,21 @@ string KeyBind::keysAsString() const
 		return "None";
 	else
 		return ret;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if this keybind has default keys
+// -----------------------------------------------------------------------------
+bool KeyBind::isDefault() const
+{
+	if (keys_.size() != defaults_.size())
+		return false;
+
+	for (unsigned a = 0; a < keys_.size(); a++)
+		if (!kpEqual(keys_[a], defaults_[a]))
+			return false;
+
+	return true;
 }
 
 
@@ -507,8 +579,7 @@ void KeyBind::initBinds()
 	addBind("el_delete", Keypress("delete"), "Delete Entry", group);
 	addBind("el_move_up", Keypress("U", KPM_CTRL), "Move Entry up", group);
 	addBind("el_move_down", Keypress("D", KPM_CTRL), "Move Entry down", group);
-	addBind("el_rename", Keypress("R", KPM_CTRL), "Rename Entry", group);
-	addBind("el_rename", Keypress("f2"));
+	addBind("el_rename", Keypress("f2"), "Rename Entry", group);
 	addBind("el_import", Keypress("I", KPM_CTRL), "Import to Entry", group);
 	addBind("el_import_files", Keypress("I", KPM_CTRL | KPM_SHIFT), "Import Files", group);
 	addBind("el_import_dir", Keypress("I", KPM_CTRL | KPM_ALT), "Import Directory", group);
@@ -593,6 +664,7 @@ void KeyBind::initBinds()
 	addBind("me2d_mode_lines", Keypress("L"), "Lines mode", group);
 	addBind("me2d_mode_sectors", Keypress("S"), "Sectors mode", group);
 	addBind("me2d_mode_things", Keypress("T"), "Things mode", group);
+	addBind("me2d_mode_3d_at_mouse", Keypress("Q", KPM_SHIFT), "Enter 3d mode at the mouse cursor position", group);
 	addBind("me2d_flat_type", Keypress("F", KPM_CTRL), "Cycle flat type", group);
 	addBind("me2d_split_line", Keypress("S", KPM_SHIFT), "Split nearest line", group);
 	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock hilight", group);
@@ -653,7 +725,7 @@ void KeyBind::initBinds()
 	addBind("me3d_release_mouse", Keypress("tab"), "Release mouse cursor", group);
 	addBind("me3d_clear_selection", Keypress("C"), "Clear selection", group);
 	addBind("me3d_toggle_things", Keypress("T"), "Toggle thing display", group);
-	addBind("me3d_thing_style", Keypress("T", KPM_SHIFT), "Cycle thing render style", group);
+	addBind("me3d_thing_boxes", Keypress("T", KPM_SHIFT), "Toggle thing boxes", group);
 	addBind("me3d_toggle_hilight", Keypress("H"), "Toggle hilight", group);
 	addBind("me3d_copy_tex_type", Keypress("C", KPM_CTRL), "Copy texture or thing type", group);
 	addBind("me3d_copy_tex_type", Keypress("mouse3"));
@@ -674,10 +746,12 @@ void KeyBind::initBinds()
 	addBind("me3d_camera_back", Keypress("S"), "Camera backward", group, true);
 	addBind("me3d_camera_left", Keypress("A"), "Camera strafe left", group, true);
 	addBind("me3d_camera_right", Keypress("D"), "Camera strafe right", group, true);
-	addBind("me3d_camera_up", Keypress("up"), "Camera move up", group, true);
-	addBind("me3d_camera_down", Keypress("down"), "Camera move down", group, true);
+	addBind("me3d_camera_up", Keypress("up"), "Camera move or look up", group, true);
+	addBind("me3d_camera_down", Keypress("down"), "Camera move or look down", group, true);
 	addBind("me3d_camera_turn_left", Keypress("left"), "Camera turn left", group, true);
 	addBind("me3d_camera_turn_right", Keypress("right"), "Camera turn right", group, true);
+	addBind("me3d_camera_look_up", Keypress("up", KPM_ALT), "Camera look up", group, true);
+	addBind("me3d_camera_look_down", Keypress("down", KPM_ALT), "Camera look down", group, true);
 
 	// Map Editor 3D Light (me3d_light*)
 	group = "Map Editor 3D Mode Light";
@@ -719,7 +793,8 @@ void KeyBind::initBinds()
 	// Map Editor 3D Walls (me3d_wall*)
 	group = "Map Editor 3D Mode Walls";
 	addBind("me3d_wall_toggle_link_ofs", Keypress("O", KPM_CTRL), "Toggle linked wall offsets", group);
-	addBind("me3d_wall_autoalign_x", Keypress("A", KPM_CTRL), "Auto-align textures on X", group);
+	addBind("me3d_wall_autoalign_x", Keypress("A", KPM_CTRL), "Auto-align textures on X", group, false, 1);
+	addBind("me3d_wall_autoalign_y", Keypress("A", KPM_SHIFT), "Auto-align textures on Y", group, false, 1);
 	addBind("me3d_wall_unpeg_lower", Keypress("L"), "Toggle lower unpegged", group);
 	addBind("me3d_wall_unpeg_upper", Keypress("U"), "Toggle upper unpegged", group);
 
@@ -749,65 +824,50 @@ void KeyBind::initBinds()
 			keybind.defaults_.push_back(keybind.keys_[k]);
 	}
 
-	// Create sorted list
-	keybinds_sorted = keybinds;
-	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
+	// Load keybind user configuration
+	if (auto j = jsonutil::parseFile(keybindConfigPath()); !j.is_discarded())
+	{
+		for (auto& [name, keys] : j.items())
+		{
+			// Clear any current binds for the key
+			bind(name).keys_.clear();
+
+			// Add keybinds
+			for (auto& kb : keys)
+				addBind(name, kb);
+		}
+	}
+
+	updateSortedBindsList();
 }
 
 // -----------------------------------------------------------------------------
-// Writes all keybind definitions as a string
+// Saves non-default keybind definitions to keybinds.json in the user config dir
 // -----------------------------------------------------------------------------
-string KeyBind::writeBinds()
+void KeyBind::saveBinds()
 {
-	// Init string
-	string ret;
-
-	// Go through all keybinds
+	json j;
 	for (auto& kb : keybinds)
 	{
-		// Add keybind line
-		ret += "\t";
-		ret += kb.name_;
+		if (kb.isDefault())
+			continue;
 
-		// 'unbound' indicates no binds
-		if (kb.keys_.empty())
-			ret += " unbound";
+		auto kb_json = json::array();
 
-		// Go through all bound keys
-		for (unsigned a = 0; a < kb.keys_.size(); a++)
-		{
-			auto& kp = kb.keys_[a];
-			ret += " \"";
+		for (auto& key : kb.keys_)
+			kb_json.push_back(key);
 
-			// Add modifiers (if any)
-			if (kp.alt)
-				ret += "a";
-			if (kp.ctrl)
-				ret += "c";
-			if (kp.shift)
-				ret += "s";
-			if (kp.alt || kp.ctrl || kp.shift)
-				ret += "|";
-
-			// Add key
-			ret += kp.key;
-			ret += "\"";
-
-			// Add comma if there are any more keys
-			if (a < kb.keys_.size() - 1)
-				ret += ",";
-		}
-
-		ret += "\n";
+		j[kb.name_] = kb_json;
 	}
 
-	return ret;
+	jsonutil::writeFile(j, keybindConfigPath());
 }
 
 // -----------------------------------------------------------------------------
 // Reads keybind defeinitions from tokenizer [tz]
+// (in old format from pre-3.3.0 slade3.cfg)
 // -----------------------------------------------------------------------------
-bool KeyBind::readBinds(Tokenizer& tz)
+bool KeyBind::readOldBinds(Tokenizer& tz)
 {
 	// Parse until ending }
 	while (!tz.checkOrEnd("}"))
@@ -853,9 +913,7 @@ bool KeyBind::readBinds(Tokenizer& tz)
 		tz.adv();
 	}
 
-	// Create sorted list
-	keybinds_sorted = keybinds;
-	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
+	updateSortedBindsList();
 
 	return true;
 }

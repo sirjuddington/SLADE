@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Args.h"
-#include "Utility/ColRGBA.h"
+#include "General/JsonFwd.h"
 
 namespace slade
 {
@@ -57,7 +57,7 @@ namespace game
 		bool           decorate() const { return decorate_; }
 		const string&  className() const { return class_name_; }
 		bool           zHeightAbsolute() const { return z_height_absolute_; }
-		const string&  pointLight() const { return point_light_; }
+		bool           dynamicLight() const { return dynamic_light_; }
 
 		void setSprite(string_view sprite) { sprite_ = sprite; }
 
@@ -68,6 +68,7 @@ namespace game
 		void   parse(const ParseTreeNode* node);
 		string stringDesc() const;
 		void   loadProps(PropertyList& props, bool decorate = true, bool zscript = false);
+		void   fromJson(const Json& j);
 
 		static const ThingType& unknown() { return unknown_; }
 		static void             initGlobal();
@@ -99,7 +100,7 @@ namespace game
 		int     number_ = -1;
 		string  class_name_;
 		bool    z_height_absolute_ = false;
-		string  point_light_;
+		bool    dynamic_light_     = false;
 
 		static ThingType unknown_;
 	};

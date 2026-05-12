@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -117,11 +117,6 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(intersection);
-			LOG_DEBUG("Intersection point", intersection, "valid with", line);
-		}
-		else if (intersection != cutter.start())
-		{
-			LOG_DEBUG("Intersection point", intersection, "invalid");
 		}
 	}
 
@@ -136,28 +131,20 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 	{
 		// Sort points along x axis
 		if (xdif >= 0)
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.x < right.x; });
 		else
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.x > right.x; });
 	}
 	else
 	{
 		// Sort points along y axis
 		if (ydif >= 0)
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.y < right.y; });
 		else
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.y > right.y; });
 	}
 
@@ -170,7 +157,7 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 MapLine* LineList::firstWithId(int id) const
 {
 	for (auto& line : objects_)
-		if (line->id() == id)
+		if (line->hasId(id))
 			return line;
 
 	return nullptr;
@@ -182,7 +169,7 @@ MapLine* LineList::firstWithId(int id) const
 void LineList::putAllWithId(int id, vector<MapLine*>& list) const
 {
 	for (auto& line : objects_)
-		if (line->id() == id)
+		if (line->hasId(id))
 			list.push_back(line);
 }
 
@@ -247,9 +234,9 @@ void LineList::putAllTaggingWithId(int id, int type, vector<MapLine*>& list) con
 				arg3 = line->arg(2);
 				arg5 = line->arg(4);
 				fits =
-					(type == SLADEMap::SECTORS ?
-						 (IDEQ(tag)) :
-						 (type == SLADEMap::THINGS && (IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
+					(type == SLADEMap::SECTORS
+						 ? (IDEQ(tag))
+						 : (type == SLADEMap::THINGS && (IDEQ(arg2) || IDEQ(arg3) || IDEQ(arg5))));
 				break;
 			case TagType::LineId1Line2:
 				arg2 = line->arg(1);

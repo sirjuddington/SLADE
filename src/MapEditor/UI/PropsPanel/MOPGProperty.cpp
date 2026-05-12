@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         https://slade.mancubus.net
@@ -52,7 +52,7 @@
 #include "SLADEMap/MapObjectList/ThingList.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/Browser/BrowserItem.h"
-#include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
+#include "UI/WxUtils.h"
 #include "Utility/PropertyUtils.h"
 
 using namespace slade;
@@ -92,7 +92,7 @@ void MOPGProperty::resetValue()
 // MOPGBoolProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGBoolProperty::MOPGBoolProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
+	MOPGProperty{ name.utf8_string() },
 	wxBoolProperty(label, name, false)
 {
 }
@@ -111,12 +111,12 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	bool first = objects[0]->boolProperty(GetName().ToStdString());
+	bool first = objects[0]->boolProperty(GetName().utf8_string());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->boolProperty(GetName().ToStdString()) != first)
+		if (objects[a]->boolProperty(GetName().utf8_string()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -160,7 +160,22 @@ void MOPGBoolProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		object->setBoolProperty(GetName().ToStdString(), m_value.GetBool());
+		object->setBoolProperty(GetName().utf8_string(), m_value.GetBool());
+}
+
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGBoolProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	bool def = false;
+	if (udmf_prop_)
+		def = property::asBool(udmf_prop_->defaultValue());
+	GetGrid()->ChangePropertyValue(this, def);
 }
 
 
@@ -175,7 +190,7 @@ void MOPGBoolProperty::applyValue()
 // MOPGIntProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGIntProperty::MOPGIntProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
+	MOPGProperty{ name.utf8_string() },
 	wxIntProperty(label, name, 0)
 {
 }
@@ -194,12 +209,12 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 		return;
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName().ToStdString());
+	int first = objects[0]->intProperty(GetName().utf8_string());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName().ToStdString()) != first)
+		if (objects[a]->intProperty(GetName().utf8_string()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -243,7 +258,22 @@ void MOPGIntProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		object->setIntProperty(GetName().ToStdString(), m_value.GetInteger());
+		object->setIntProperty(GetName().utf8_string(), m_value.GetInteger());
+}
+
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGIntProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	int def = 0;
+	if (udmf_prop_)
+		def = property::asInt(udmf_prop_->defaultValue());
+	GetGrid()->ChangePropertyValue(this, def);
 }
 
 
@@ -258,7 +288,7 @@ void MOPGIntProperty::applyValue()
 // MOPGFloatProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGFloatProperty::MOPGFloatProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
+	MOPGProperty{ name.utf8_string() },
 	wxFloatProperty(label, name, 0)
 {
 }
@@ -277,12 +307,12 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	double first = objects[0]->floatProperty(GetName().ToStdString());
+	double first = objects[0]->floatProperty(GetName().utf8_string());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->floatProperty(GetName().ToStdString()) != first)
+		if (objects[a]->floatProperty(GetName().utf8_string()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -326,7 +356,22 @@ void MOPGFloatProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		object->setFloatProperty(GetName().ToStdString(), m_value.GetDouble());
+		object->setFloatProperty(GetName().utf8_string(), m_value.GetDouble());
+}
+
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGFloatProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	double def = 0.;
+	if (udmf_prop_)
+		def = property::asFloat(udmf_prop_->defaultValue());
+	GetGrid()->ChangePropertyValue(this, def);
 }
 
 
@@ -341,8 +386,8 @@ void MOPGFloatProperty::applyValue()
 // MOPGStringProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGStringProperty::MOPGStringProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
-	wxStringProperty(label, name, "")
+	MOPGProperty{ name.utf8_string() },
+	wxStringProperty(label, name, wxEmptyString)
 {
 }
 
@@ -361,7 +406,7 @@ void MOPGStringProperty::setUDMFProp(game::UDMFProperty* prop)
 		auto choices = wxPGChoices();
 
 		for (auto& val : prop->possibleValues())
-			choices.Add(property::asString(val));
+			choices.Add(wxString::FromUTF8(property::asString(val)));
 
 		SetChoices(choices);
 		SetEditor(wxPGEditor_ComboBox);
@@ -382,12 +427,12 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	wxString first = objects[0]->stringProperty(GetName().ToStdString());
+	auto first = objects[0]->stringProperty(GetName().utf8_string());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->stringProperty(GetName().ToStdString()) != first)
+		if (objects[a]->stringProperty(GetName().utf8_string()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -397,7 +442,7 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate_ = true;
-	SetValue(first);
+	SetValue(wxString::FromUTF8(first));
 	updateVisibility();
 	noupdate_ = false;
 }
@@ -408,7 +453,7 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 void MOPGStringProperty::updateVisibility()
 {
 	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
-		&& property::asString(udmf_prop_->defaultValue()) == GetValue().GetString())
+		&& property::asString(udmf_prop_->defaultValue()) == GetValue().GetString().utf8_string())
 		Hide(true);
 	else
 		Hide(false);
@@ -431,7 +476,22 @@ void MOPGStringProperty::applyValue()
 	// Go through objects and set this value
 	vector<MapObject*>& objects = parent_->objects();
 	for (auto& object : objects)
-		object->setStringProperty(GetName().ToStdString(), m_value.GetString().ToStdString());
+		object->setStringProperty(GetName().utf8_string(), m_value.GetString().utf8_string());
+}
+
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGStringProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	string def;
+	if (udmf_prop_)
+		def = property::asString(udmf_prop_->defaultValue());
+	GetGrid()->ChangePropertyValue(this, wxString::FromUTF8(def));
 }
 
 
@@ -490,13 +550,13 @@ void MOPGIntWithArgsProperty::updateArgs(wxPGProperty* args[5])
 
 		if (IsValueUnspecified())
 		{
-			args[a]->SetLabel(wxString::Format("Arg%d", a + 1));
-			args[a]->SetHelpString("");
+			args[a]->SetLabel(WX_FMT("Arg{}", a + 1));
+			args[a]->SetHelpString(wxEmptyString);
 		}
 		else
 		{
-			args[a]->SetLabel(argspec[a].name);
-			args[a]->SetHelpString(argspec[a].desc);
+			args[a]->SetLabel(wxString::FromUTF8(argspec[a].name));
+			args[a]->SetHelpString(wxString::FromUTF8(argspec[a].desc));
 		}
 
 		// Show any args that this special uses, hide the others, but never
@@ -527,7 +587,7 @@ void MOPGIntWithArgsProperty::applyValue()
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
 	{
-		object->setIntProperty(GetName().ToStdString(), m_value.GetInteger());
+		object->setIntProperty(GetName().utf8_string(), m_value.GetInteger());
 	}
 }
 
@@ -563,15 +623,19 @@ const game::ArgSpec& MOPGActionSpecialProperty::argSpec()
 // -----------------------------------------------------------------------------
 // Returns the action special value as a string (contains the special name)
 // -----------------------------------------------------------------------------
+#if wxCHECK_VERSION(3, 3, 0)
+wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
+#else
 wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags) const
+#endif
 {
 	// Get value as integer
 	int special = value.GetInteger();
 
 	if (special == 0)
-		return "0: None";
+		return wxS("0: None");
 	else
-		return wxString::Format("%d: %s", special, game::configuration().actionSpecial(special).name());
+		return WX_FMT("{}: {}", special, game::configuration().actionSpecial(special).name());
 }
 
 // -----------------------------------------------------------------------------
@@ -614,16 +678,20 @@ const game::ArgSpec& MOPGThingTypeProperty::argSpec()
 // -----------------------------------------------------------------------------
 // Returns the thing type value as a string (contains the thing type name)
 // -----------------------------------------------------------------------------
+#if wxCHECK_VERSION(3, 3, 0)
+wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
+#else
 wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) const
+#endif
 {
 	// Get value as integer
 	int type = value.GetInteger();
 
 	if (type == 0)
-		return "0: None";
+		return wxS("0: None");
 
 	auto& tt = game::configuration().thingType(type);
-	return wxString::Format("%d: %s", type, tt.name());
+	return WX_FMT("{}: {}", type, tt.name());
 }
 
 // -----------------------------------------------------------------------------
@@ -806,27 +874,27 @@ void MOPGThingFlagProperty::applyValue()
 // MOPGAngleProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGAngleProperty::MOPGAngleProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
+	MOPGProperty{ name.utf8_string() },
 	wxEditEnumProperty(label, name)
 {
 	// Setup combo box choices
 	wxArrayString labels;
 	wxArrayInt    values;
-	labels.Add("0: East");
+	labels.Add(wxS("0: East"));
 	values.Add(0);
-	labels.Add("45: Northeast");
+	labels.Add(wxS("45: Northeast"));
 	values.Add(45);
-	labels.Add("90: North");
+	labels.Add(wxS("90: North"));
 	values.Add(90);
-	labels.Add("135: Northwest");
+	labels.Add(wxS("135: Northwest"));
 	values.Add(135);
-	labels.Add("180: West");
+	labels.Add(wxS("180: West"));
 	values.Add(180);
-	labels.Add("225: Southwest");
+	labels.Add(wxS("225: Southwest"));
 	values.Add(225);
-	labels.Add("270: South");
+	labels.Add(wxS("270: South"));
 	values.Add(270);
-	labels.Add("315: Southeast");
+	labels.Add(wxS("315: Southeast"));
 	values.Add(315);
 
 	SetChoices(wxPGChoices(labels, values));
@@ -846,12 +914,12 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName().ToStdString());
+	int first = objects[0]->intProperty(GetName().utf8_string());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName().ToStdString()) != first)
+		if (objects[a]->intProperty(GetName().utf8_string()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -895,27 +963,46 @@ void MOPGAngleProperty::applyValue()
 	// Go through objects and set this value
 	auto& objects = parent_->objects();
 	for (auto& object : objects)
-		object->setIntProperty(GetName().ToStdString(), m_value.GetInteger());
+		object->setIntProperty(GetName().utf8_string(), m_value.GetInteger());
+}
+
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGAngleProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	int def = 0;
+	if (udmf_prop_)
+		def = property::asInt(udmf_prop_->defaultValue());
+	GetGrid()->ChangePropertyValue(this, def);
 }
 
 // -----------------------------------------------------------------------------
 // Returns the angle value as a string
 // -----------------------------------------------------------------------------
-wxString MOPGAngleProperty::ValueToString(wxVariant& value, int arg_flags) const
+#if wxCHECK_VERSION(3, 3, 0)
+wxString MOPGAngleProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
+#else
+wxString MOPGAngleProperty::ValueToString(wxVariant& value, int argFlags) const
+#endif
 {
 	int angle = value.GetInteger();
 
 	switch (angle)
 	{
-	case 0:   return "0: East";
-	case 45:  return "45: Northeast";
-	case 90:  return "90: North";
-	case 135: return "135: Northwest";
-	case 180: return "180: West";
-	case 225: return "225: Southwest";
-	case 270: return "270: South";
-	case 315: return "315: Southeast";
-	default:  return wxString::Format("%d", angle);
+	case 0:   return wxS("0: East");
+	case 45:  return wxS("45: Northeast");
+	case 90:  return wxS("90: North");
+	case 135: return wxS("135: Northwest");
+	case 180: return wxS("180: West");
+	case 225: return wxS("225: Southwest");
+	case 270: return wxS("270: South");
+	case 315: return wxS("315: Southeast");
+	default:  return WX_FMT("{}", angle);
 	}
 }
 
@@ -931,7 +1018,7 @@ wxString MOPGAngleProperty::ValueToString(wxVariant& value, int arg_flags) const
 // MOPGColourProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGColourProperty::MOPGColourProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
+	MOPGProperty{ name.utf8_string() },
 	wxColourProperty(label, name)
 {
 }
@@ -950,12 +1037,17 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName().ToStdString());
+	auto prop_name   = GetName().utf8_string();
+	int  first       = objects[0]->intProperty(prop_name);
+	object_has_prop_ = objects[0]->hasProp(prop_name);
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName().ToStdString()) != first)
+		if (!object_has_prop_ && objects[a]->hasProp(prop_name))
+			object_has_prop_ = true;
+
+		if (objects[a]->intProperty(prop_name) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -975,11 +1067,14 @@ void MOPGColourProperty::openObjects(vector<MapObject*>& objects)
 }
 
 // -----------------------------------------------------------------------------
-// Colours have no default and are always visible.
+// Colours have no default and are only visible if they have a value
 // -----------------------------------------------------------------------------
 void MOPGColourProperty::updateVisibility()
 {
-	Hide(false);
+	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways() && !object_has_prop_)
+		Hide(true);
+	else
+		Hide(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -1002,7 +1097,26 @@ void MOPGColourProperty::applyValue()
 	col << m_value;
 	col.Set(col.Blue(), col.Green(), col.Red());
 	for (auto& object : objects)
-		object->setIntProperty(GetName().ToStdString(), col.GetRGB());
+		object->setIntProperty(GetName().utf8_string(), col.GetRGB());
+
+	object_has_prop_ = true;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the property value to the default
+// -----------------------------------------------------------------------------
+void MOPGColourProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	wxColour def;
+	if (udmf_prop_)
+		def.SetRGB(property::asInt(udmf_prop_->defaultValue()));
+	wxVariant var;
+	var << def;
+	GetGrid()->ChangePropertyValue(this, var);
 }
 
 
@@ -1038,12 +1152,12 @@ void MOPGTextureProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	wxString first = objects[0]->stringProperty(GetName().ToStdString());
+	auto first = objects[0]->stringProperty(GetName().utf8_string());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->stringProperty(GetName().ToStdString()) != first)
+		if (objects[a]->stringProperty(GetName().utf8_string()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1053,7 +1167,7 @@ void MOPGTextureProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate_ = true;
-	SetValue(first);
+	SetValue(wxString::FromUTF8(first));
 	updateVisibility();
 	noupdate_ = false;
 }
@@ -1067,14 +1181,14 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 	if (e.GetEventType() == wxEVT_BUTTON)
 	{
 		// Get current texture (if any)
-		wxString tex_current = "";
+		string tex_current;
 		if (!IsValueUnspecified())
-			tex_current = GetValueAsString();
+			tex_current = GetValueAsString().utf8_string();
 
 		// Open map texture browser
 		MapTextureBrowser browser(mapeditor::windowWx(), textype_, tex_current, &(mapeditor::editContext().map()));
 		if (browser.ShowModal() == wxID_OK && browser.selectedItem())
-			GetGrid()->ChangePropertyValue(this, browser.selectedItem()->name());
+			GetGrid()->ChangePropertyValue(this, wxString::FromUTF8(browser.selectedItem()->name()));
 
 		// Refresh text
 		RefreshEditor();
@@ -1095,7 +1209,7 @@ bool MOPGTextureProperty::OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wx
 // MOPGSPACTriggerProperty class constructor
 // -----------------------------------------------------------------------------
 MOPGSPACTriggerProperty::MOPGSPACTriggerProperty(const wxString& label, const wxString& name) :
-	MOPGProperty{ name },
+	MOPGProperty{ name.utf8_string() },
 	wxEnumProperty(label, name)
 {
 	// Set to combo box editor
@@ -1120,8 +1234,8 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	auto     map_format = mapeditor::editContext().mapDesc().format;
-	wxString first      = game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
+	auto map_format = mapeditor::editContext().mapDesc().format;
+	auto first      = game::configuration().spacTriggerString(dynamic_cast<MapLine*>(objects[0]), map_format);
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
@@ -1136,7 +1250,7 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 
 	// Set to common value
 	noupdate_ = true;
-	SetValue(first);
+	SetValue(wxString::FromUTF8(first));
 	updateVisibility();
 	noupdate_ = false;
 }
@@ -1173,6 +1287,19 @@ void MOPGSPACTriggerProperty::applyValue()
 		game::configuration().setLineSpacTrigger(GetChoiceSelection(), dynamic_cast<MapLine*>(object));
 }
 
+// -----------------------------------------------------------------------------
+// Sets the property value to the default (whatever's first)
+// -----------------------------------------------------------------------------
+void MOPGSPACTriggerProperty::clearValue()
+{
+	// Do nothing if no parent (and thus no object list)
+	if (!parent_ || noupdate_)
+		return;
+
+	int def = 0;
+	GetGrid()->ChangePropertyValue(this, 0);
+}
+
 
 // -----------------------------------------------------------------------------
 // MOPGTagProperty Class Functions
@@ -1207,12 +1334,12 @@ void MOPGTagProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName().ToStdString());
+	int first = objects[0]->intProperty(GetName().utf8_string());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName().ToStdString()) != first)
+		if (objects[a]->intProperty(GetName().utf8_string()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1288,12 +1415,12 @@ void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Get property of first object
-	int first = objects[0]->intProperty(GetName().ToStdString());
+	int first = objects[0]->intProperty(GetName().utf8_string());
 
 	// Check whether all objects share the same value
 	for (unsigned a = 1; a < objects.size(); a++)
 	{
-		if (objects[a]->intProperty(GetName().ToStdString()) != first)
+		if (objects[a]->intProperty(GetName().utf8_string()) != first)
 		{
 			// Different value found, set unspecified
 			SetValueToUnspecified();
@@ -1311,11 +1438,15 @@ void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 // Returns the sector special value as a string
 // -----------------------------------------------------------------------------
+#if wxCHECK_VERSION(3, 3, 0)
+wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
+#else
 wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, int argFlags) const
+#endif
 {
 	int type = value.GetInteger();
 
-	return wxString::Format("%d: %s", type, game::configuration().sectorTypeName(type));
+	return WX_FMT("{}: {}", type, game::configuration().sectorTypeName(type));
 }
 
 // -----------------------------------------------------------------------------

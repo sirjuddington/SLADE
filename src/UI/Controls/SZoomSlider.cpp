@@ -1,13 +1,13 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    SZoomSlider.cpp
 // Description: A simple slider control for zooming, shows the selected zoom
-//              amount as a % and can be linked to a GfxCanvas
+//              amount as a % and can be linked to a GfxGLCanvas
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -32,8 +32,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SZoomSlider.h"
-#include "UI/Canvas/CTextureCanvas.h"
-#include "UI/Canvas/GfxCanvas.h"
+#include "UI/Canvas/GL/CTextureGLCanvas.h"
+#include "UI/Canvas/GfxCanvasBase.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -47,9 +48,9 @@ using namespace slade;
 
 
 // -----------------------------------------------------------------------------
-// SZoomSlider class constructor (linking GfxCanvas)
+// SZoomSlider class constructor (linking GfxGLCanvas)
 // -----------------------------------------------------------------------------
-SZoomSlider::SZoomSlider(wxWindow* parent, GfxCanvas* linked_canvas) :
+SZoomSlider::SZoomSlider(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 	wxPanel{ parent },
 	linked_gfx_canvas_{ linked_canvas }
 {
@@ -57,9 +58,9 @@ SZoomSlider::SZoomSlider(wxWindow* parent, GfxCanvas* linked_canvas) :
 }
 
 // -----------------------------------------------------------------------------
-// SZoomSlider class constructor (linking CTextureCanvas)
+// SZoomSlider class constructor (linking CTextureGLCanvas)
 // -----------------------------------------------------------------------------
-SZoomSlider::SZoomSlider(wxWindow* parent, CTextureCanvas* linked_canvas) :
+SZoomSlider::SZoomSlider(wxWindow* parent, CTextureGLCanvas* linked_canvas) :
 	wxPanel{ parent },
 	linked_texture_canvas_{ linked_canvas }
 {
@@ -71,15 +72,17 @@ SZoomSlider::SZoomSlider(wxWindow* parent, CTextureCanvas* linked_canvas) :
 // -----------------------------------------------------------------------------
 void SZoomSlider::setup()
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create controls
-	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, wxutil::scaledSize(150, -1));
+	slider_zoom_ = new wxSlider(this, -1, 100, 20, 800, wxDefaultPosition, lh.size(150, -1));
 	slider_zoom_->SetLineSize(10);
 	slider_zoom_->SetPageSize(100);
-	label_zoom_amount_ = new wxStaticText(this, -1, "100%");
+	label_zoom_amount_ = new wxStaticText(this, -1, wxS("100%"));
 
 	// Layout
 	SetSizer(new wxBoxSizer(wxHORIZONTAL));
-	GetSizer()->Add(wxutil::createLabelHBox(this, "Zoom:", slider_zoom_), wxutil::sfWithBorder(1, wxRIGHT).Expand());
+	GetSizer()->Add(wxutil::createLabelHBox(this, "Zoom:", slider_zoom_), lh.sfWithBorder(1, wxRIGHT).Expand());
 	GetSizer()->Add(label_zoom_amount_, wxSizerFlags().CenterVertical());
 
 	// Slider change event
@@ -88,13 +91,13 @@ void SZoomSlider::setup()
 		[&](wxCommandEvent&)
 		{
 			// Update zoom label
-			label_zoom_amount_->SetLabel(wxString::Format("%d%%", zoomPercent()));
+			label_zoom_amount_->SetLabel(WX_FMT("{}%", zoomPercent()));
 
 			// Zoom gfx/texture canvas and update
 			if (linked_gfx_canvas_)
 			{
 				linked_gfx_canvas_->setScale(zoomFactor());
-				linked_gfx_canvas_->Refresh();
+				linked_gfx_canvas_->window()->Refresh();
 			}
 			if (linked_texture_canvas_)
 			{

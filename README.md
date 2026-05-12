@@ -26,7 +26,7 @@ In addition to full Doom [WAD](http://doomwiki.org/wiki/WAD) and [ZIP/PK3](http:
 * [Many more](https://github.com/sirjuddington/SLADE/wiki/Supported-Data-Formats)
 
 **Advanced text editor**  
-The SLADE3 text editor can recognise many text based languages, and provide syntax hilighting, function calltips and autocomplete for them. It also has a bunch of other useful text editing features such as autoindent and find / replace.
+The SLADE3 text editor can recognise many text based languages, and provide syntax highlighting, function calltips and autocomplete for them. It also has a bunch of other useful text editing features such as autoindent and find / replace.
 
 **Graphic conversion**  
 All supported graphic formats can be converted to PNG/DoomGfx/DoomFlat and more, with an advanced graphic conversion dialog that provides conversion options and previews.

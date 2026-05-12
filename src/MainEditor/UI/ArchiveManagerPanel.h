@@ -3,14 +3,20 @@
 #include "General/SActionHandler.h"
 #include "General/Sigslot.h"
 #include "UI/Controls/DockPanel.h"
+#include "UI/Controls/STabCtrl.h"
 
 namespace slade
 {
+namespace ui
+{
+	class ArchiveListView;
+	struct LayoutHelper;
+} // namespace ui
+
 class ArchiveManagerPanel;
 class ArchivePanel;
 class EntryPanel;
 class ListView;
-class STabCtrl;
 class TextureXEditor;
 class WMFileBrowser;
 struct DirEntryChange;
@@ -25,14 +31,14 @@ public:
 	wxMenu* bookmarksMenu() const { return menu_bookmarks_; }
 
 	// DockPanel layout
-	void createArchivesPanel();
-	void createRecentPanel();
+	void createArchivesPanel(const ui::LayoutHelper& lh);
+	void createRecentPanel(const ui::LayoutHelper& lh);
 	void layoutNormal() override;
 	void layoutHorizontal() override;
 
 	void        disableArchiveListUpdate() const;
 	void        refreshArchiveList() const;
-	void        refreshRecentFileList() const;
+	void        refreshRecentFileList();
 	void        refreshBookmarkList() const;
 	void        refreshAllTabs() const;
 	void        updateOpenListItem(int index) const;
@@ -57,15 +63,15 @@ public:
 	ArchivePanel*   tabForArchive(const Archive* archive) const;
 	void            openTab(const Archive* archive) const;
 	void            closeTab(int archive_index) const;
-	void            openTextureTab(int archive_index, const ArchiveEntry* entry = nullptr) const;
+	void            openTextureTab(int archive_index, ArchiveEntry* entry = nullptr) const;
 	TextureXEditor* textureTabForArchive(int archive_index) const;
 	void            closeTextureTab(int archive_index) const;
 	void            openEntryTab(ArchiveEntry* entry) const;
 	void            closeEntryTab(const ArchiveEntry* entry) const;
 	void            closeEntryTabs(const Archive* parent) const;
-	void            openFile(const wxString& filename) const;
+	void            openFile(const string& filename) const;
 	void            openFiles(const wxArrayString& files) const;
-	void            openDirAsArchive(const wxString& dir) const;
+	void            openDirAsArchive(string_view dir) const;
 	bool            redirectToTab(const ArchiveEntry* entry) const;
 	bool            entryIsOpenInTab(const ArchiveEntry* entry) const;
 	void            closeCurrentTab();
@@ -82,7 +88,7 @@ public:
 	bool beforeCloseArchive(Archive* archive);
 	bool closeArchive(Archive* archive);
 
-	void createNewArchive(const wxString& format) const;
+	void createNewArchive(const string& format) const;
 	bool closeAll();
 	void saveAll() const;
 	void checkDirArchives();
@@ -92,7 +98,7 @@ public:
 	void saveSelectionAs() const;
 	bool closeSelection();
 	void openSelection() const;
-	void removeSelection() const;
+	void removeSelection();
 
 	// Bookmark functions
 	void deleteSelectedBookmarks() const;
@@ -118,22 +124,23 @@ public:
 	void onDirArchiveCheckCompleted(wxThreadEvent& e);
 
 private:
-	STabCtrl*        stc_tabs_                    = nullptr;
-	STabCtrl*        stc_archives_                = nullptr;
-	wxPanel*         panel_am_                    = nullptr;
-	wxPanel*         panel_archives_              = nullptr;
-	wxPanel*         panel_rf_                    = nullptr;
-	ListView*        list_archives_               = nullptr;
-	ListView*        list_recent_                 = nullptr;
-	ListView*        list_bookmarks_              = nullptr;
-	WMFileBrowser*   file_browser_                = nullptr;
-	wxMenu*          menu_recent_                 = nullptr;
-	wxMenu*          menu_bookmarks_              = nullptr;
-	Archive*         current_maps_                = nullptr;
-	Archive*         pending_closed_archive_      = nullptr;
-	bool             asked_save_unchanged_        = false;
-	bool             checked_dir_archive_changes_ = false;
-	vector<Archive*> checking_archives_;
+	TabControl*          stc_tabs_                    = nullptr;
+	STabCtrl*            stc_archives_                = nullptr;
+	wxPanel*             panel_am_                    = nullptr;
+	wxPanel*             panel_archives_              = nullptr;
+	wxPanel*             panel_rf_                    = nullptr;
+	ui::ArchiveListView* list_archives_               = nullptr;
+	ui::ArchiveListView* list_recent_                 = nullptr;
+	ListView*            list_bookmarks_              = nullptr;
+	WMFileBrowser*       file_browser_                = nullptr;
+	wxMenu*              menu_recent_                 = nullptr;
+	wxMenu*              menu_bookmarks_              = nullptr;
+	Archive*             current_maps_                = nullptr;
+	Archive*             pending_closed_archive_      = nullptr;
+	bool                 asked_save_unchanged_        = false;
+	bool                 checked_dir_archive_changes_ = false;
+	vector<Archive*>     checking_archives_;
+	vector<string>       recent_files_;
 
 	// Signal connections
 	ScopedConnectionList signal_connections;

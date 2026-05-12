@@ -1,7 +1,7 @@
 
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
-// Copyright(C) 2008 - 2024 Simon Judd
+// Copyright(C) 2008 - 2026 Simon Judd
 //
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
@@ -39,7 +39,8 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
 #include "Archive/MapDesc.h"
-#include "General/UI.h"
+#include "UI/UI.h"
+#include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -94,8 +95,8 @@ bool DirArchiveHandler::open(Archive& archive, string_view filename)
 	ui::setSplashProgress(0);
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs, ignore_hidden_);
-	const wxDir         dir(string{ filename });
-	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
+	const wxDir         dir(wxutil::strFromView(filename));
+	dir.Traverse(traverser, wxEmptyString, wxDIR_FILES | wxDIR_DIRS);
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	const ArchiveModSignalBlocker sig_blocker{ archive };
@@ -223,8 +224,8 @@ bool DirArchiveHandler::save(Archive& archive, string_view filename)
 	long                time = app::runTimer();
 	vector<string>      files, dirs;
 	DirArchiveTraverser traverser(files, dirs, archive_dir_ignore_hidden);
-	const wxDir         dir(archive.filename());
-	dir.Traverse(traverser, "", wxDIR_FILES | wxDIR_DIRS);
+	const wxDir         dir(wxString::FromUTF8(archive.filename()));
+	dir.Traverse(traverser, wxEmptyString, wxDIR_FILES | wxDIR_DIRS);
 	log::info(2, "GetAllFiles took {}ms", app::runTimer() - time);
 
 	// Check for any files to remove
@@ -450,7 +451,7 @@ bool DirArchiveHandler::renameEntry(Archive& archive, ArchiveEntry* entry, strin
 // Returns the mapdesc_t information about the map at [entry], if [entry] is
 // actually a valid map (ie. a wad archive in the maps folder)
 // -----------------------------------------------------------------------------
-MapDesc DirArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* entry)
+MapDesc DirArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* entry)
 {
 	MapDesc map;
 
@@ -479,7 +480,7 @@ MapDesc DirArchiveHandler::mapDesc(Archive& archive, ArchiveEntry* entry)
 // Detects all the maps in the archive and returns a vector of information about
 // them.
 // -----------------------------------------------------------------------------
-vector<MapDesc> DirArchiveHandler::detectMaps(Archive& archive)
+vector<MapDesc> DirArchiveHandler::detectMaps(const Archive& archive)
 {
 	vector<MapDesc> ret;
 
@@ -522,7 +523,7 @@ vector<MapDesc> DirArchiveHandler::detectMaps(Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchiveHandler::findFirst(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* DirArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -555,7 +556,7 @@ ArchiveEntry* DirArchiveHandler::findFirst(Archive& archive, ArchiveSearchOption
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* DirArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -587,7 +588,7 @@ ArchiveEntry* DirArchiveHandler::findLast(Archive& archive, ArchiveSearchOptions
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> DirArchiveHandler::findAll(Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> DirArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
@@ -761,7 +762,7 @@ DirArchiveTraverser::DirArchiveTraverser(vector<string>& pathlist, vector<string
 // -----------------------------------------------------------------------------
 wxDirTraverseResult DirArchiveTraverser::OnFile(const wxString& filename)
 {
-	auto path_str = filename.ToStdString();
+	auto path_str = filename.utf8_string();
 
 	if (ignore_hidden_ && strutil::startsWith(strutil::Path::fileNameOf(path_str), '.'))
 		return wxDIR_CONTINUE;
@@ -777,13 +778,13 @@ wxDirTraverseResult DirArchiveTraverser::OnDir(const wxString& dirname)
 {
 	if (ignore_hidden_)
 	{
-		auto path_str = dirname.ToStdString();
+		auto path_str = dirname.utf8_string();
 		std::replace(path_str.begin(), path_str.end(), '\\', '/');
 		auto dir = strutil::afterLastV(path_str, '/');
 		if (strutil::startsWith(dir, '.'))
 			return wxDIR_IGNORE;
 	}
 
-	dirs_.push_back(dirname.ToStdString());
+	dirs_.push_back(dirname.utf8_string());
 	return wxDIR_CONTINUE;
 }

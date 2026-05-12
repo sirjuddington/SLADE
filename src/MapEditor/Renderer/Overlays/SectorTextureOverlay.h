@@ -15,8 +15,15 @@ public:
 	void update(long frametime) override;
 
 	// Drawing
-	void draw(int width, int height, float fade) override;
-	void drawTexture(float alpha, int x, int y, int size, const vector<string>& textures, bool hover) const;
+	void draw(gl::draw2d::Context& dc, float fade = 1.0f) override;
+	void drawTexture(
+		gl::draw2d::Context&  dc,
+		float                 alpha,
+		float                 x,
+		float                 y,
+		float                 size,
+		const vector<string>& textures,
+		bool                  hover) const;
 
 	// Input
 	void mouseMotion(int x, int y) override;
