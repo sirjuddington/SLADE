@@ -78,27 +78,26 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	auto gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	psizer->Add(gbsizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
-	// Render distance
-	int row = 0;
-	gbsizer->Add(
-		new wxStaticText(this, -1, wxS("Render distance:")),
-		{ row, 0 },
-		{ 1, 1 },
-		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
-	slider_max_render_dist_ = new NumberSlider(this, 500, 20 * 500, 500);
-	gbsizer->Add(slider_max_render_dist_, { row, 1 }, { 1, 2 }, wxEXPAND);
-	cb_distance_unlimited_ = new wxCheckBox(this, -1, wxS("Unlimited"));
-	gbsizer->Add(cb_distance_unlimited_, { row, 3 }, { 1, 1 }, wxEXPAND);
-	gbsizer->AddGrowableCol(1, 1);
+	// // Render distance
+	// int row = 0;
+	// gbsizer->Add(
+	// 	new wxStaticText(this, -1, wxS("Render distance:")),
+	// 	{ row, 0 },
+	// 	{ 1, 1 },
+	// 	wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	// slider_max_render_dist_ = new NumberSlider(this, 500, 20 * 500, 500);
+	// gbsizer->Add(slider_max_render_dist_, { row, 1 }, { 1, 2 }, wxEXPAND);
+	// cb_distance_unlimited_ = new wxCheckBox(this, -1, wxS("Unlimited"));
+	// gbsizer->Add(cb_distance_unlimited_, { row, 3 }, { 1, 1 }, wxEXPAND);
+	// gbsizer->AddGrowableCol(1, 1);
 
 	// FOV
+	int row = 0;
 	gbsizer->Add(
-		new wxStaticText(this, -1, wxS("Camera FOV:")),
-		{ ++row, 0 },
-		{ 1, 1 },
-		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+		new wxStaticText(this, -1, wxS("Camera FOV:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	slider_fov_ = new NumberSlider(this, 70, 120, 5);
 	gbsizer->Add(slider_fov_, { row, 1 }, { 1, 2 }, wxEXPAND);
+	gbsizer->AddGrowableCol(1, 1);
 
 	// Max. dynamic lights
 	gbsizer->Add(
@@ -119,14 +118,14 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 		wxSizerFlags(0).Expand());
 
 	// Bind events
-	slider_max_render_dist_->Bind(
-		wxEVT_SLIDER,
-		[&](wxCommandEvent& e)
-		{
-			updateDistanceControls();
-			e.Skip();
-		});
-	cb_distance_unlimited_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDistanceControls(); });
+	// slider_max_render_dist_->Bind(
+	// 	wxEVT_SLIDER,
+	// 	[&](wxCommandEvent& e)
+	// 	{
+	// 		updateDistanceControls();
+	// 		e.Skip();
+	// 	});
+	// cb_distance_unlimited_->Bind(wxEVT_CHECKBOX, [&](wxCommandEvent&) { updateDistanceControls(); });
 	slider_fov_->Bind(
 		wxEVT_SLIDER,
 		[&](wxCommandEvent& e)
@@ -141,16 +140,16 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 // -----------------------------------------------------------------------------
 void Map3DSettingsPanel::loadSettings()
 {
-	if (map3d_max_render_dist <= 0)
-	{
-		cb_distance_unlimited_->SetValue(true);
-		slider_max_render_dist_->setValue(6 * 500);
-	}
-	else
-	{
-		slider_max_render_dist_->setValue(map3d_max_render_dist);
-		cb_distance_unlimited_->SetValue(false);
-	}
+	// if (map3d_max_render_dist <= 0)
+	// {
+	// 	cb_distance_unlimited_->SetValue(true);
+	// 	slider_max_render_dist_->setValue(6 * 500);
+	// }
+	// else
+	// {
+	// 	slider_max_render_dist_->setValue(map3d_max_render_dist);
+	// 	cb_distance_unlimited_->SetValue(false);
+	// }
 
 	slider_fov_->setValue(map3d_fov);
 	cb_render_sky_->SetValue(map3d_render_sky);
@@ -173,7 +172,7 @@ void Map3DSettingsPanel::loadSettings()
 // -----------------------------------------------------------------------------
 void Map3DSettingsPanel::updateDistanceControls() const
 {
-	slider_max_render_dist_->Enable(!cb_distance_unlimited_->GetValue());
+	// slider_max_render_dist_->Enable(!cb_distance_unlimited_->GetValue());
 }
 
 // -----------------------------------------------------------------------------
@@ -181,11 +180,11 @@ void Map3DSettingsPanel::updateDistanceControls() const
 // -----------------------------------------------------------------------------
 void Map3DSettingsPanel::applySettings()
 {
-	// Max render distance
-	if (cb_distance_unlimited_->GetValue())
-		map3d_max_render_dist = 0.0f;
-	else
-		map3d_max_render_dist = slider_max_render_dist_->value();
+	// // Max render distance
+	// if (cb_distance_unlimited_->GetValue())
+	// 	map3d_max_render_dist = 0.0f;
+	// else
+	// 	map3d_max_render_dist = slider_max_render_dist_->value();
 
 	// Highlight
 	switch (rbp_highlight_->getSelection())

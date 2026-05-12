@@ -49,7 +49,14 @@ struct CVar
 	// Static functions
 	static vector<CVar*> allCvars(bool sorted = true);
 	static void          set(const string& cvar_name, const string& value);
+	static void          setBool(const string& cvar_name, bool value);
+	static void          setInt(const string& cvar_name, int value);
+	static void          setFloat(const string& cvar_name, double value);
 	static CVar*         get(const string& cvar_name);
+	static bool          getBool(const string& cvar_name);
+	static int           getInt(const string& cvar_name);
+	static double        getFloat(const string& cvar_name);
+	static string        getString(const string& cvar_name);
 	static void          putList(vector<string>& list);
 };
 

@@ -140,7 +140,7 @@ void setupShaderUniforms(
 	shader.setUniform("fullbright", fullbright);
 	shader.setUniform("fog_density", fog ? map3d_fog_density : 0.0f);
 	shader.setUniform("brightness_mult", map3d_brightness.value);
-	shader.setUniform("max_dist", map3d_max_render_dist > 0.0f ? map3d_max_render_dist : 40000.0f);
+	shader.setUniform("max_dist", map3d_max_render_dist > 0.0f ? map3d_max_render_dist : 64000.0f);
 	shader.setUniform("colour", glm::vec4(1.0f));
 	if (sprite_shader)
 	{

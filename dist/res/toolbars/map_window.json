@@ -51,6 +51,13 @@
 
     // Display Options (3D)
     { "type": "action", "id": "mapw_3d_toggle_highlight" },
+    { "type": "action", "id": "mapw_3d_toggle_fog" },
+    { "type": "action", "id": "mapw_3d_toggle_fullbright" },
+    { "type": "action", "id": "mapw_3d_toggle_point_lights" },
+
+    { "type": "separator" },
+
+    // Thing display options (3D)
     {
       "type": "action",
       "id": "mapw_3d_toggle_things",
@@ -61,9 +68,10 @@
       "id": "mapw_3d_toggle_thing_boxes",
       "menu": [ "mapw_3d_thing_boxes_all", "mapw_3d_thing_boxes_solid" ]
     },
-    { "type": "action", "id": "mapw_3d_toggle_fog" },
-    { "type": "action", "id": "mapw_3d_toggle_fullbright" },
-    { "type": "action", "id": "mapw_3d_toggle_point_lights" }
+
+    { "type": "separator" },
+
+    { "type": "custom_control", "id": "view_distance", "label": "View Distance:" }
   ],
 
   "groups": [
@@ -87,7 +95,8 @@
         "mapw_3d_toggle_things",
         "mapw_3d_toggle_thing_boxes",
         "mapw_3d_toggle_fog",
-        "mapw_3d_toggle_fullbright" 
+        "mapw_3d_toggle_fullbright" ,
+        "view_distance"
       ]
     }
   ]

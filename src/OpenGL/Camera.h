@@ -79,7 +79,7 @@ private:
 	double fov_           = 0.9817477; // Vertical fov (is 90 degrees horizontal)
 	double aspect_        = 1.6;
 	double near_          = 2.0;
-	double far_           = 40000.0;
+	double far_           = 64000.0;
 	bool   reverse_depth_ = true; // Use reverse depth for better precision at distance
 
 	// Vectors & Matrices

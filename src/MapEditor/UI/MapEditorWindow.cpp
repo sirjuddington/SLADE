@@ -274,6 +274,33 @@ void MapEditorWindow::setupLayout()
 	auto toolbar_entry = app::programResource()->entryAtPath("toolbars/map_window.json");
 	toolbar_->loadLayout(toolbar_entry->data().asString(), false);
 
+	// View distance dropdown
+	unsigned      view_distances[]       = { 1000, 2000, 5000, 10000, 20000 };
+	wxArrayString view_distance_options  = { wxS("Very Low"), wxS("Low"),       wxS("Medium"),
+											 wxS("High"),     wxS("Very High"), wxS("Unlimited") };
+	unsigned      view_distance          = CVar::getFloat("map3d_max_render_dist");
+	auto          view_distance_selected = -1;
+	for (unsigned dist : view_distances)
+		if (view_distance >= dist)
+			view_distance_selected = view_distance_options.size() - 1;
+	view_distance_ = new wxChoice(toolbar_, wxID_ANY, wxDefaultPosition, wxDefaultSize, view_distance_options);
+	view_distance_->SetSelection(
+		view_distance_selected < 0 ? view_distance_options.size() - 1 : view_distance_selected);
+	view_distance_->Bind(
+		wxEVT_CHOICE,
+		[this, view_distances](wxCommandEvent&)
+		{
+			int selection = view_distance_->GetSelection();
+			if (selection >= 0 && static_cast<unsigned>(selection) < view_distance_->GetCount())
+			{
+				if (selection == view_distance_->GetCount() - 1)
+					CVar::setFloat("map3d_max_render_dist", 0);
+				else
+					CVar::setFloat("map3d_max_render_dist", view_distances[selection]);
+			}
+		});
+	toolbar_->registerCustomControl("view_distance", view_distance_);
+
 	// Init toolbar state
 	SAction::fromId("mapw_mode_lines")->setChecked(); // Lines mode by default
 	toolbar_->showGroup("sectors_mode", false);

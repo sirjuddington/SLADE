@@ -131,6 +131,13 @@ void FlatRenderer3D::updateVisibility(const gl::Camera& camera, float max_dist)
 
 	for (auto& sf : sector_flats_)
 	{
+		// Check if camera is within the bounding box
+		if (sf.sector->boundingBox().contains(cam_pos_2d))
+		{
+			sf.visible = true;
+			continue;
+		}
+
 		// Check sector bbox with camera frustum first
 		if (!camera.bboxInFrustum2d(sf.sector->boundingBox()))
 		{

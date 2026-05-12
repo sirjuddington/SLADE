@@ -135,6 +135,50 @@ CVar* CVar::get(const string& name)
 }
 
 // -----------------------------------------------------------------------------
+// Gets the value of the boolean CVar with matching [name]
+// -----------------------------------------------------------------------------
+bool CVar::getBool(const string& cvar_name)
+{
+	if (auto* cvar = get(cvar_name); cvar && cvar->type == Type::Boolean)
+		return *dynamic_cast<CBoolCVar*>(cvar);
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Gets the value of the integer CVar with matching [name]
+// -----------------------------------------------------------------------------
+int CVar::getInt(const string& cvar_name)
+{
+	if (auto* cvar = get(cvar_name); cvar && cvar->type == Type::Integer)
+		return *dynamic_cast<CIntCVar*>(cvar);
+
+	return 0;
+}
+
+// -----------------------------------------------------------------------------
+// Gets the value of the float CVar with matching [name]
+// -----------------------------------------------------------------------------
+double CVar::getFloat(const string& cvar_name)
+{
+	if (auto* cvar = get(cvar_name); cvar && cvar->type == Type::Float)
+		return *dynamic_cast<CFloatCVar*>(cvar);
+
+	return 0.0;
+}
+
+// -----------------------------------------------------------------------------
+// Gets the value of the string CVar with matching [name]
+// -----------------------------------------------------------------------------
+string CVar::getString(const string& cvar_name)
+{
+	if (auto* cvar = get(cvar_name); cvar && cvar->type == Type::String)
+		return *dynamic_cast<CStringCVar*>(cvar);
+
+	return "";
+}
+
+// -----------------------------------------------------------------------------
 // Adds all cvar names to a vector of strings
 // -----------------------------------------------------------------------------
 void CVar::putList(vector<string>& list)
@@ -157,7 +201,7 @@ vector<CVar*> CVar::allCvars(bool sorted)
 		cvarlist.push_back(cvars[i]);
 
 	if (sorted)
-		std::sort(cvarlist.begin(), cvarlist.end(), [](CVar* a, CVar* b) { return a->name < b->name; });
+		std::ranges::sort(cvarlist, [](const CVar* a, const CVar* b) { return a->name < b->name; });
 
 	return cvarlist;
 }
@@ -183,6 +227,54 @@ void CVar::set(const string& name, const string& value)
 
 			if (cvar->type == Type::String)
 				*dynamic_cast<CStringCVar*>(cvar) = value;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads [value] into the boolean CVar with matching [name],
+// or does nothing if no boolean CVar [name] exists
+// -----------------------------------------------------------------------------
+void CVar::setBool(const string& cvar_name, bool value)
+{
+	for (unsigned i = 0; i < n_cvars; ++i)
+	{
+		if (auto* cvar = cvars[i]; cvar_name == cvar->name && cvar->type == Type::Boolean)
+		{
+			*dynamic_cast<CBoolCVar*>(cvar) = value;
+			return;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads [value] into the integer CVar with matching [name],
+// or does nothing if no integer CVar [name] exists
+// -----------------------------------------------------------------------------
+void CVar::setInt(const string& cvar_name, int value)
+{
+	for (unsigned i = 0; i < n_cvars; ++i)
+	{
+		if (auto* cvar = cvars[i]; cvar_name == cvar->name && cvar->type == Type::Integer)
+		{
+			*dynamic_cast<CIntCVar*>(cvar) = value;
+			return;
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads [value] into the float CVar with matching [name],
+// or does nothing if no float CVar [name] exists
+// -----------------------------------------------------------------------------
+void CVar::setFloat(const string& cvar_name, double value)
+{
+	for (unsigned i = 0; i < n_cvars; ++i)
+	{
+		if (auto* cvar = cvars[i]; cvar_name == cvar->name && cvar->type == Type::Float)
+		{
+			*dynamic_cast<CFloatCVar*>(cvar) = value;
+			return;
 		}
 	}
 }

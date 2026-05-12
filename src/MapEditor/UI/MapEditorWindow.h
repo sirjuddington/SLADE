@@ -62,6 +62,7 @@ private:
 	MapChecksPanel*                  panel_checks_       = nullptr;
 	UndoManagerHistoryPanel*         panel_undo_history_ = nullptr;
 	wxMenu*                          menu_scripts_       = nullptr;
+	wxChoice*                        view_distance_      = nullptr;
 
 	void buildNodes(Archive* wad);
 	void lockMapEntries(bool lock = true) const;
