@@ -224,6 +224,9 @@ Shader::Shader(string_view name, const string& vertex_text, const string& fragme
 // -----------------------------------------------------------------------------
 Shader::~Shader()
 {
+	if (app::isExiting())
+		return;
+
 	// Remove this shader from loaded_shaders
 	if (auto it = std::ranges::find_if(loaded_shaders, [this](const LoadedShader& ls) { return ls.shader == this; });
 		it != loaded_shaders.end())
