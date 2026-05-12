@@ -35,10 +35,13 @@ jobs:
         run: |
           mkdir build
           BREW_PREFIX="$(brew --prefix)"
+          LIBARCHIVE_PREFIX="$(brew --prefix libarchive)"
           cmake -G Ninja -B build \
-          -DCMAKE_PREFIX_PATH="$BREW_PREFIX" \
-          -DCMAKE_INCLUDE_PATH="$BREW_PREFIX/include" \
-          -DCMAKE_LIBRARY_PATH="$BREW_PREFIX/lib" \
+          -DCMAKE_PREFIX_PATH="$BREW_PREFIX;$LIBARCHIVE_PREFIX" \
+          -DCMAKE_INCLUDE_PATH="$BREW_PREFIX/include;$LIBARCHIVE_PREFIX/include" \
+          -DCMAKE_LIBRARY_PATH="$BREW_PREFIX/lib;$LIBARCHIVE_PREFIX/lib" \
+          -DLibArchive_INCLUDE_DIR="$LIBARCHIVE_PREFIX/include" \
+          -DLibArchive_LIBRARY="$LIBARCHIVE_PREFIX/lib/libarchive.dylib" \
           ${{ matrix.config.extra_options }} .
 
       - name: Build
