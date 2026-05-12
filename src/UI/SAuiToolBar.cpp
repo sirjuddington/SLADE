@@ -754,7 +754,11 @@ void SAuiToolBar::createFromLayout()
 
 	Realize();
 	if (aui_mgr_)
+	{
+		auto& p_inf = aui_mgr_->GetPane(this);
+		p_inf.MinSize(-1, GetMinSize().y);
 		aui_mgr_->Update();
+	}
 	else
 		GetParent()->Layout();
 }

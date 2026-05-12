@@ -326,6 +326,9 @@ void MainWindow::setupLayout()
 			.PaneBorder(false)
 			.Movable(false)
 			.Floatable(false)
+#if !wxCHECK_VERSION(3, 3, 2)
+			.MinSize(-1, toolbar_->GetMinSize().y)
+#endif
 			.Name(wxS("toolbar")));
 
 
