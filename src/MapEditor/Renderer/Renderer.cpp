@@ -102,6 +102,7 @@ CVAR(Int, map2d_crosshair, 0, CVar::Flag::Save)
 CVAR(Bool, map2d_show_selection_numbers, true, CVar::Flag::Save)
 CVAR(Int, map2d_max_selection_numbers, 1000, CVar::Flag::Save)
 CVAR(Int, map3d_fov, 90, CVar::Flag::Save)
+CVAR(Bool, map_renderinfo, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -112,6 +113,51 @@ CVAR(Int, map3d_fov, 90, CVar::Flag::Save)
 EXTERN_CVAR(Bool, map2d_vertex_round)
 EXTERN_CVAR(Int, map2d_vertex_size)
 EXTERN_CVAR(Int, map2d_thing_shape)
+
+
+
+namespace
+{
+// -----------------------------------------------------------------------------
+// FPSCounter class
+//
+// Simple utility class for calculating and tracking FPS
+// -----------------------------------------------------------------------------
+class FPSCounter
+{
+public:
+	FPSCounter() = default;
+
+	int currentFPS() const { return displayed_fps_; }
+
+	void setUpdateInterval(unsigned ms) { fps_update_interval_us_ = ms * 1000; }
+
+	void update()
+	{
+		// Add latest frame time
+		frame_times_.push_back(frame_clock_.restart().asMicroseconds());
+		if (frame_times_.size() > 10)
+			frame_times_.pop_front();
+
+		// Update displayed FPS if enough time has passed
+		fps_update_acc_us_ += frame_times_.back();
+		if (fps_update_acc_us_ >= fps_update_interval_us_)
+		{
+			fps_update_acc_us_ = 0;
+			auto avg_frame_us  = std::accumulate(frame_times_.begin(), frame_times_.end(), static_cast<int64_t>(0))
+								/ static_cast<int64_t>(frame_times_.size());
+			displayed_fps_ = avg_frame_us > 0 ? static_cast<int>(1000000.0 / avg_frame_us) : 0;
+		}
+	}
+
+private:
+	sf::Clock       frame_clock_;
+	std::deque<i64> frame_times_;
+	int             displayed_fps_          = 0;
+	i64             fps_update_acc_us_      = 0;
+	i64             fps_update_interval_us_ = 250000;
+};
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -889,7 +935,9 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 		float width;
 
 		// Left
-		if (edit_state == State::Move || edit_state == State::Left || edit_state == State::TopLeft
+		if (edit_state == State::Move
+			|| edit_state == State::Left
+			|| edit_state == State::TopLeft
 			|| edit_state == State::BottomLeft)
 			width = 4.0f;
 		else
@@ -897,7 +945,9 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 		lb_objectedit_box_->add2d(bbox.min.x, bbox.min.y, bbox.min.x, bbox.max.y, glm::vec4{ 1.0f }, width);
 
 		// Bottom
-		if (edit_state == State::Move || edit_state == State::Bottom || edit_state == State::BottomLeft
+		if (edit_state == State::Move
+			|| edit_state == State::Bottom
+			|| edit_state == State::BottomLeft
 			|| edit_state == State::BottomRight)
 			width = 4.0f;
 		else
@@ -905,7 +955,9 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 		lb_objectedit_box_->add2d(bbox.min.x, bbox.min.y, bbox.max.x, bbox.min.y, glm::vec4{ 1.0f }, width);
 
 		// Right
-		if (edit_state == State::Move || edit_state == State::Right || edit_state == State::TopRight
+		if (edit_state == State::Move
+			|| edit_state == State::Right
+			|| edit_state == State::TopRight
 			|| edit_state == State::BottomRight)
 			width = 4.0f;
 		else
@@ -913,7 +965,9 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 		lb_objectedit_box_->add2d(bbox.max.x, bbox.max.y, bbox.max.x, bbox.min.y, glm::vec4{ 1.0f }, width);
 
 		// Top
-		if (edit_state == State::Move || edit_state == State::Top || edit_state == State::TopLeft
+		if (edit_state == State::Move
+			|| edit_state == State::Top
+			|| edit_state == State::TopLeft
 			|| edit_state == State::TopRight)
 			width = 4.0f;
 		else
@@ -982,7 +1036,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 			renderer_2d_->renderVertices(fade_vertices_);
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
+		if (mouse_state != Input::MouseState::Move
+			&& !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
 			renderer_2d_->renderVertexSelection(dc, context_->selection(), anim_flash_level_);
 
@@ -998,7 +1053,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 		renderer_2d_->renderLines(true);              // Lines
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
+		if (mouse_state != Input::MouseState::Move
+			&& !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
 			renderer_2d_->renderLineSelection(dc, context_->selection(), anim_flash_level_);
 
@@ -1014,7 +1070,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 		renderer_2d_->renderVertices(fade_vertices_);                   // Vertices
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
+		if (mouse_state != Input::MouseState::Move
+			&& !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
 			renderer_2d_->renderFlatSelection(dc, context_->selection(), anim_flash_level_);
 
@@ -1040,7 +1097,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 		renderer_2d_->renderPathedThings(dc, context_->pathedThings());
 
 		// Selection if needed
-		if (mouse_state != Input::MouseState::Move && !context_->overlayActive()
+		if (mouse_state != Input::MouseState::Move
+			&& !context_->overlayActive()
 			&& mouse_state != Input::MouseState::ObjectEdit)
 			renderer_2d_->renderThingSelection(dc, context_->selection(), anim_flash_level_);
 
@@ -1051,7 +1109,8 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 
 	// Draw tagged sectors/lines/things if needed
 	if (!context_->overlayActive()
-		&& (mouse_state == Input::MouseState::Normal || mouse_state == Input::MouseState::TagSectors
+		&& (mouse_state == Input::MouseState::Normal
+			|| mouse_state == Input::MouseState::TagSectors
 			|| mouse_state == Input::MouseState::TagThings))
 	{
 		if (!context_->taggedSectors().empty())
@@ -1184,9 +1243,11 @@ void Renderer::draw() const
 	static sf::Clock           clock;
 	static std::deque<int64_t> render_times;
 	static unsigned            draw_calls;
+	static FPSCounter          fps_counter;
 
 	draw2d::Context dc{ view_.get() };
 
+	fps_counter.update();
 	clock.restart();
 	gl::resetDrawCallCount();
 
@@ -1207,8 +1268,6 @@ void Renderer::draw() const
 	// Set view for overlays
 	dc.view = view_screen_.get();
 
-	// TODO: Crosshair (if mouselooking)
-
 	// Draw info overlay
 	dc.font       = draw2d::Font::Condensed;
 	dc.text_size  = 16 * ui_scale_;
@@ -1224,54 +1283,70 @@ void Renderer::draw() const
 	if (context_->loadingOverlayActive())
 		context_->loadingOverlay().draw(dc, 1.0f);
 
+	// FPS counter
+	if (map_showfps)
+	{
+		dc.font           = draw2d::Font::MonospaceBold;
+		dc.text_size      = 20 * ui_scale_;
+		dc.text_style     = draw2d::TextStyle::Outline;
+		dc.text_alignment = draw2d::Align::Left;
+		dc.colour         = colourconfig::colour("map_editor_message");
+		dc.outline_colour = colourconfig::colour("map_editor_message_outline");
+		dc.drawText(fmt::format("{} FPS", fps_counter.currentFPS()), { 4.0f, 4.0f });
+	}
+
 	// Editor messages
 	drawEditorMessages(dc);
 
 	// Help text
 	drawFeatureHelpText(dc);
 
-	// TESTING: Render performance info
-	auto avg_frame = std::accumulate(render_times.begin(), render_times.end(), static_cast<int64_t>(0))
-					 / render_times.size();
-	auto frame_ms     = static_cast<double>(avg_frame) / 1000.0;
-	auto fps          = static_cast<int>(1000.0 / frame_ms);
-	dc.text_alignment = draw2d::Align::Left;
-	dc.text_size      = 18;
-	dc.text_style     = draw2d::TextStyle::Normal;
-	dc.font           = draw2d::Font::Monospace;
-	dc.colour         = ColRGBA::WHITE;
-	dc.drawText(fmt::format("{:1.2f}ms ({}fps) - {} draw calls", frame_ms, fps, draw_calls), { 0.0f, 0.0f });
-
-	// TESTING: 3d mode misc info
-	if (context_->editMode() == Mode::Visual)
+	// RenderInfo
+	if (map_renderinfo)
 	{
-		auto y            = 0.0f;
-		dc.text_alignment = draw2d::Align::Right;
-		dc.drawText(
-			fmt::format(
-				"Position: {:1.2f},{:1.2f},{:1.2f} | Pitch: {:1.2f} | Direction: {:1.2f},{:1.2f},{:1.2f} | Up: "
-				"{:1.2f},{:1.2f},{:1.2f}",
-				camera_->position().x,
-				camera_->position().y,
-				camera_->position().z,
-				camera_->pitch(),
-				camera_->directionVector().x,
-				camera_->directionVector().y,
-				camera_->directionVector().z,
-				camera_->upVector().x,
-				camera_->upVector().y,
-				camera_->upVector().z),
-			{ view_->size().x, y });
+		// Render performance info
+		auto avg_frame = std::accumulate(render_times.begin(), render_times.end(), static_cast<int64_t>(0))
+						 / render_times.size();
+		auto frame_ms     = static_cast<double>(avg_frame) / 1000.0;
+		auto fps          = static_cast<int>(1000.0 / frame_ms);
+		dc.text_alignment = draw2d::Align::Left;
+		dc.text_size      = 18;
+		dc.text_style     = draw2d::TextStyle::Normal;
+		dc.font           = draw2d::Font::Monospace;
+		dc.colour         = ColRGBA::WHITE;
+		dc.drawText(fmt::format("{:1.2f}ms ({}fps) - {} draw calls", frame_ms, fps, draw_calls), { 0.0f, 0.0f });
 
-		y += dc.textLineHeight();
-		dc.drawText(
-			fmt::format("Flats vertex buffer: {}", misc::sizeAsString(renderer_3d_->flatsBufferSize())),
-			{ view_->size().x, y });
+		// 3d mode misc info
+		if (context_->editMode() == Mode::Visual)
+		{
+			auto y            = 0.0f;
+			dc.text_alignment = draw2d::Align::Right;
+			dc.drawText(
+				fmt::format(
+					"Position: {:1.2f},{:1.2f},{:1.2f} | Pitch: {:1.2f} | Direction: {:1.2f},{:1.2f},{:1.2f} | Up: "
+					"{:1.2f},{:1.2f},{:1.2f}",
+					camera_->position().x,
+					camera_->position().y,
+					camera_->position().z,
+					camera_->pitch(),
+					camera_->directionVector().x,
+					camera_->directionVector().y,
+					camera_->directionVector().z,
+					camera_->upVector().x,
+					camera_->upVector().y,
+					camera_->upVector().z),
+				{ view_->size().x, y });
 
-		y += dc.textLineHeight();
-		dc.drawText(
-			fmt::format("Quads vertex buffer: {}", misc::sizeAsString(renderer_3d_->quadsBufferSize())),
-			{ view_->size().x, y });
+			y += dc.textLineHeight();
+			dc.drawText(
+				fmt::format("Flats vertex buffer: {}", misc::sizeAsString(renderer_3d_->flatsBufferSize())),
+				{ view_->size().x, y });
+
+			y += dc.textLineHeight();
+			dc.drawText(
+				fmt::format("Quads vertex buffer: {}", misc::sizeAsString(renderer_3d_->quadsBufferSize())),
+				{ view_->size().x, y });
+		}
 	}
 }
 

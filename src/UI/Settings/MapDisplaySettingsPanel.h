@@ -31,6 +31,7 @@ private:
 	wxCheckBox*       cb_action_lines_      = nullptr;
 	wxCheckBox*       cb_show_help_         = nullptr;
 	RadioButtonPanel* rbp_tex_filter_       = nullptr;
+	wxCheckBox*       cb_showfps_           = nullptr;
 
 	NumberSlider*     slider_vertex_size_  = nullptr;
 	wxCheckBox*       cb_vertex_round_     = nullptr;

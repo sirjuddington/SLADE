@@ -78,6 +78,7 @@ EXTERN_CVAR(Bool, use_zeth_icons)
 EXTERN_CVAR(Int, map2d_thing_halo_width)
 EXTERN_CVAR(Int, map2d_64grid_style)
 EXTERN_CVAR(Bool, map2d_grid_show_origin)
+EXTERN_CVAR(Bool, map_showfps)
 
 
 // -----------------------------------------------------------------------------
@@ -134,13 +135,16 @@ wxPanel* MapDisplaySettingsPanel::createGeneralPanel(wxWindow* parent, const Lay
 	cb_action_lines_      = new wxCheckBox(panel, -1, wxS("Show action lines"));
 	cb_show_help_         = new wxCheckBox(panel, -1, wxS("Show help text"));
 	rbp_tex_filter_       = new RadioButtonPanel(panel, { "None", "Linear", "Mipmapped" }, "Texture filter:");
+	cb_showfps_           = new wxCheckBox(panel, -1, wxS("Show FPS counter"));
 
 	cb_action_lines_->SetToolTip(
 		wxS("Show lines from an object with an action special to the tagged object(s) when highlighted"));
 
 	// General
 	lh.layoutVertically(
-		sizer, { rbp_crosshair_, rbp_tex_filter_, cb_action_lines_, cb_show_help_ }, wxSizerFlags(0).Expand());
+		sizer,
+		{ rbp_crosshair_, rbp_tex_filter_, cb_action_lines_, cb_show_help_, cb_showfps_ },
+		wxSizerFlags(0).Expand());
 
 	// Grid
 	sizer->AddSpacer(lh.padXLarge());
@@ -304,6 +308,7 @@ void MapDisplaySettingsPanel::loadSettings()
 	cb_use_zeth_icons_->SetValue(use_zeth_icons);
 	rbp_grid_64_->setSelection(map2d_64grid_style);
 	cb_grid_show_origin_->SetValue(map2d_grid_show_origin);
+	cb_showfps_->SetValue(map_showfps);
 
 	map3d_panel_->loadSettings();
 }
@@ -342,6 +347,7 @@ void MapDisplaySettingsPanel::applySettings()
 	use_zeth_icons             = cb_use_zeth_icons_->GetValue();
 	map2d_64grid_style         = rbp_grid_64_->getSelection();
 	map2d_grid_show_origin     = cb_grid_show_origin_->GetValue();
+	map_showfps                = cb_showfps_->GetValue();
 
 	map3d_panel_->applySettings();
 }
