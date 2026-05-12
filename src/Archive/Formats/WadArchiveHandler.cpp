@@ -1374,14 +1374,6 @@ vector<ArchiveEntry*> WadArchiveHandler::findAll(const Archive& archive, Archive
 	return ret;
 }
 
-
-// -----------------------------------------------------------------------------
-//
-// WadArchiveHandler Class Static Functions
-//
-// -----------------------------------------------------------------------------
-
-
 // -----------------------------------------------------------------------------
 // Checks if the given data is a valid Doom wad archive
 // -----------------------------------------------------------------------------

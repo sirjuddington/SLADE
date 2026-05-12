@@ -310,13 +310,6 @@ bool ADatArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* ent
 }
 
 // -----------------------------------------------------------------------------
-//
-// ADatArchiveHandler Class Static Functions
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
 // Checks if the given data is a valid Anachronox dat archive
 // -----------------------------------------------------------------------------
 bool ADatArchiveHandler::isThisFormat(const MemChunk& mc)

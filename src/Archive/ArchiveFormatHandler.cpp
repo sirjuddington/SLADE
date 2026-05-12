@@ -37,6 +37,7 @@
 #include "ArchiveEntry.h"
 #include "ArchiveFormat.h"
 #include "EntryType/EntryType.h"
+#include "Formats/7zArchiveHandler.h"
 #include "Formats/All.h"
 #include "General/UndoRedo.h"
 #include "Utility/FileUtils.h"
@@ -1130,6 +1131,7 @@ unique_ptr<ArchiveFormatHandler> archive::formatHandler(ArchiveFormat format)
 	case ArchiveFormat::Wad2:     return std::make_unique<Wad2ArchiveHandler>();
 	case ArchiveFormat::Wolf:     return std::make_unique<WolfArchiveHandler>();
 	case ArchiveFormat::Zip:      return std::make_unique<ZipArchiveHandler>();
+	case ArchiveFormat::Zip7:     return std::make_unique<Zip7ArchiveHandler>();
 	default:                      break;
 	}
 

@@ -448,5 +448,24 @@
         "name": "IWD"
       }
     ]
+  },
+  "7z": {
+    "name": "7-Zip",
+    "supports_dirs": true,
+    "names_extensions": true,
+    "entry_format": "archive_7z",
+    "prefer_uppercase": false,
+    "create": true,
+    "allow_duplicate_names": false,
+    "extensions": [
+      {
+        "extension": "7z",
+        "name": "7-Zip"
+      },
+      {
+        "extension": "pk7",
+        "name": "PK7"
+      }
+    ]
   }
 }

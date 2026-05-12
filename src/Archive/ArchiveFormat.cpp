@@ -58,7 +58,7 @@ vector<Named<ArchiveFormat>> formats = { { "adat", ArchiveFormat::ADat }, { "bsp
 										 { "sin", ArchiveFormat::SiN },   { "tar", ArchiveFormat::Tar },
 										 { "wad", ArchiveFormat::Wad },   { "wadj", ArchiveFormat::WadJ },
 										 { "wad2", ArchiveFormat::Wad2 }, { "wolf", ArchiveFormat::Wolf },
-										 { "zip", ArchiveFormat::Zip } };
+										 { "zip", ArchiveFormat::Zip },   { "7z", ArchiveFormat::Zip7 } };
 
 std::map<ArchiveFormat, ArchiveFormatInfo> format_info;
 } // namespace slade::archive

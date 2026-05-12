@@ -72,6 +72,7 @@ find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glm REQUIRED)
 find_package(cpptrace CONFIG REQUIRED)
+find_package(LibArchive REQUIRED)
 
 
 # Include Search Paths ---------------------------------------------------------
@@ -133,6 +134,7 @@ target_link_libraries(slade
 	glm::glm
 	cpptrace::cpptrace
 	libxmp::xmp_static
+	LibArchive::LibArchive
 )
 
 if (NOT NO_LUA)

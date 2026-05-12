@@ -254,6 +254,7 @@ void EntryDataFormat::initBuiltinFormats()
 	// registerDataFormat<JediANIMFormat>();
 	registerDataFormat<WadDataFormat>();
 	registerDataFormat<ZipDataFormat>();
+	registerDataFormat<Zip7DataFormat>();
 	registerDataFormat<LibDataFormat>();
 	registerDataFormat<DatDataFormat>();
 	registerDataFormat<ResDataFormat>();

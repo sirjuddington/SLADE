@@ -247,14 +247,6 @@ void tarDefaultHeader(TarHeader* header)
 }
 } // namespace
 
-
-// -----------------------------------------------------------------------------
-//
-// TarArchiveHandler Class Functions
-//
-// -----------------------------------------------------------------------------
-
-
 // -----------------------------------------------------------------------------
 // Reads tar format data from a MemChunk
 // Returns true if successful, false otherwise
