@@ -455,7 +455,8 @@ bool SActionHandler::doAction(string_view id)
 	{
 		// Toggle action if necessary
 		if (auto* action = SAction::fromId(id))
-			if (action->type() != SAction::Type::Normal)
+			if (action->type() == SAction::Type::Check
+				|| action->type() == SAction::Type::Radio && !action->isChecked())
 			{
 				action->toggle();
 
