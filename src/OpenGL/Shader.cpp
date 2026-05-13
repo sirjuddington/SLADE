@@ -468,6 +468,7 @@ bool Shader::link()
 	glDeleteShader(id_fragment_);
 	if (id_geometry_ > 0)
 		glDeleteShader(id_geometry_);
+	id_vertex_ = id_fragment_ = id_geometry_ = 0;
 
 	return true;
 }
