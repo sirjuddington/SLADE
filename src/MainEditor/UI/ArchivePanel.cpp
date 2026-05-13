@@ -403,6 +403,8 @@ void ArchivePanel::bindEvents(Archive* archive)
 				setEntryListViewType(false);
 			else if (action == "elist_view_tree")
 				setEntryListViewType(true);
+			else
+				e.Skip();
 		});
 
 	// Update splitter position cvar when moved
