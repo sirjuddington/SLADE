@@ -151,7 +151,7 @@ SAuiToolBar::SAuiToolBar(wxWindow* parent, bool vertical, bool main_toolbar, wxA
 			// dropdown part
 			int  new_hover     = -1;
 			auto pos           = e.GetPosition();
-			auto dropdown_size = GetArtProvider()->GetElementSize(wxAUI_TBART_DROPDOWN_SIZE) + FromDIP(2);
+			auto dropdown_size = GetArtProvider()->GetElementSize(wxAUI_TBART_DROPDOWN_SIZE) + FromDIP(6);
 			for (const auto& item : items_)
 			{
 				if (!item.split_button || !item.menu)

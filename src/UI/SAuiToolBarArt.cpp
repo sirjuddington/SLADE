@@ -47,6 +47,10 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
+// -----------------------------------------------------------------------------
+// Returns a disabled version of the given [bmp], using the given [background]
+// colour to determine the brightness of the disabled image.
+// -----------------------------------------------------------------------------
 wxBitmap disabledBitmap(const wxBitmap& bmp, const wxColour& background)
 {
 #if wxCHECK_VERSION(3, 3, 0)
@@ -54,6 +58,58 @@ wxBitmap disabledBitmap(const wxBitmap& bmp, const wxColour& background)
 #else
 	return bmp.CreateDisabled();
 #endif
+}
+
+// -----------------------------------------------------------------------------
+// Returns the highlight colour to use for checked buttons
+// -----------------------------------------------------------------------------
+wxColour highlightColour()
+{
+	auto colour = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
+#ifdef __WXMSW__
+	if (app::isDarkTheme())
+		colour = wxColour(wxS("#4D6FB3")); // Custom highlight colour for dark mode on Windows
+#endif
+	return colour;
+}
+
+// -----------------------------------------------------------------------------
+// Returns an optional brush to use for the background of a button in the given
+// state, or nullopt if no background should be drawn
+// -----------------------------------------------------------------------------
+optional<wxBrush> buttonBackgroundBrush(bool pressed, bool hover, bool checked)
+{
+	if (checked)
+	{
+		auto alpha = app::isDarkTheme() ? 80 : 40;
+		auto c     = highlightColour();
+		if (hover || pressed)
+			alpha *= 2;
+		
+		return { wxColour(c.Red(), c.Green(), c.Blue(), alpha) };
+	}
+
+	if (hover || pressed)
+	{
+		if (app::isDarkTheme())
+			return { wxColour(255, 255, 255, pressed ? 60 : 30) };
+		else
+			return { wxColour(0, 0, 0, pressed ? 60 : 30) };
+	}
+
+	return std::nullopt;
+}
+
+// -----------------------------------------------------------------------------
+// Returns an optional pen to use for the border of a button in the given state,
+// or nullopt if no border should be drawn
+// -----------------------------------------------------------------------------
+optional<wxPen> buttonBorderPen(bool checked)
+{
+	if (checked)
+		return wxPen(highlightColour());
+
+	return std::nullopt;
 }
 } // namespace
 
@@ -200,11 +256,6 @@ void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem&
 		text_y = rect.y + (rect.height / 2) - (text_height / 2);
 	}
 
-	// Get colours
-	auto col_hilight    = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
-	auto col_background = wnd->GetBackgroundColour();
-	bool dark_theme     = app::isDarkTheme();
-
 	// Draw button background
 	bool checked = item.GetState() & wxAUI_BUTTON_STATE_CHECKED;
 	bool hover   = item.GetState() & wxAUI_BUTTON_STATE_HOVER;
@@ -219,32 +270,16 @@ void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem&
 		wxGCDC gcdc{ bmp_buffer };
 		auto   gc = gcdc.GetGraphicsContext();
 
-		// Draw background on mouseover
-		if (hover || pressed)
+		// Get brush/pen for button state
+		auto brush = buttonBackgroundBrush(pressed, hover, checked);
+		auto pen   = buttonBorderPen(checked);
+		if (brush || pen)
 		{
-			// Determine background colour
-			auto col = dark_theme ? col_background.ChangeLightness(pressed ? 125 : 115)
-										  : col_background.ChangeLightness(pressed ? 70 : 80);
-
-			// Draw background
-			gcdc.SetBrush(col);
-			gcdc.SetPen(*wxTRANSPARENT_PEN);
-			gcdc.DrawRoundedRectangle(0, 0, rect.width, rect.height, 3.0 * wnd->GetDPIScaleFactor());
-		}
-
-		// Draw checked outline
-		if (checked)
-		{
-			// Draw checked background if not already drawn by hover/pressed state
-			if (!hover && !pressed)
-				gcdc.SetBrush(
-					wxColour(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), dark_theme ? 80 : 40));
-			else
-				gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
-			
-			gcdc.SetPen(wxPen(col_hilight, 2));
+			// Draw rounded rectangle background
+			gcdc.SetBrush(brush ? *brush : *wxTRANSPARENT_BRUSH);
+			gcdc.SetPen(pen ? *pen : *wxTRANSPARENT_PEN);
 			auto px = wnd->FromDIP(1);
-			gcdc.DrawRoundedRectangle(px, px, rect.width - px, rect.height - px, 3.0 * wnd->GetDPIScaleFactor());
+			gcdc.DrawRoundedRectangle(0, 0, rect.width - px, rect.height - px, 3.0 * wnd->GetDPIScaleFactor());
 		}
 
 		// Draw buffer contents
@@ -323,11 +358,6 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 		text_y = rect.y + (rect.height / 2) - (text_height / 2);
 	}
 
-	// Get colours
-	auto col_hilight    = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
-	auto col_background = wnd->GetBackgroundColour();
-	bool dark_theme     = app::isDarkTheme();
-
 	// Draw button background
 	bool checked = item.GetState() & wxAUI_BUTTON_STATE_CHECKED;
 	bool hover   = item.GetState() & wxAUI_BUTTON_STATE_HOVER;
@@ -343,54 +373,23 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 		auto   gc     = gcdc.GetGraphicsContext();
 		auto   radius = 3.0 * wnd->GetDPIScaleFactor();
 
-		// Draw background on mouseover
-		if (hover || pressed)
+		// Get brush/pen for button state
+		auto brush = buttonBackgroundBrush(pressed, hover, checked);
+		auto pen   = buttonBorderPen(checked);
+		if (brush || pen)
 		{
-			auto col_full = dark_theme ? col_background.ChangeLightness(pressed ? 125 : 115)
-											   : col_background.ChangeLightness(pressed ? 70 : 80);
-
-			gcdc.SetPen(*wxTRANSPARENT_PEN);
-
-			if (split_button)
-			{
-				// For split buttons, use the hover state tracked by the toolbar
-				// via mouse events
-				bool btn_hovered = !toolbar_ || toolbar_->dropdown_hover_wx_id_ != item.GetId();
-
-				auto col_dim = dark_theme ? col_background.ChangeLightness(pressed ? 112 : 108)
-												  : col_background.ChangeLightness(pressed ? 85 : 90);
-
-				// Draw dimmed highlight across entire button
-				gcdc.SetBrush(col_dim);
-				gcdc.DrawRoundedRectangle(0, 0, rect.width, rect.height, radius);
-
-				// Full highlight for hovered part only
-				gcdc.SetBrush(col_full);
-				if (btn_hovered)
-					gcdc.DrawRoundedRectangle(0, 0, button_rect.width, rect.height, radius);
-				else
-					gcdc.DrawRoundedRectangle(button_rect.width, 0, dropdown_size, rect.height, radius);
-			}
-			else
-			{
-				gcdc.SetBrush(col_full);
-				gcdc.DrawRoundedRectangle(0, 0, rect.width, rect.height, radius);
-			}
-		}
-
-		// Draw checked outline
-		if (checked)
-		{
-			// Draw checked background if not already drawn by hover/pressed state
-			if (!hover && !pressed)
-				gcdc.SetBrush(
-					wxColour(col_hilight.Red(), col_hilight.Green(), col_hilight.Blue(), dark_theme ? 80 : 40));
-			else
-				gcdc.SetBrush(*wxTRANSPARENT_BRUSH);
-
-			gcdc.SetPen(wxPen(col_hilight, 2));
+			// Draw rounded rectangle background
+			gcdc.SetBrush(brush ? *brush : *wxTRANSPARENT_BRUSH);
+			gcdc.SetPen(pen ? *pen : *wxTRANSPARENT_PEN);
 			auto px = wnd->FromDIP(1);
-			gcdc.DrawRoundedRectangle(px, px, rect.width - px, rect.height - px, radius);
+			gcdc.DrawRoundedRectangle(0, 0, rect.width - px, rect.height - px, radius);
+
+			// Draw extra highlight if split button dropdown is hovered
+			if (split_button && toolbar_ && toolbar_->dropdown_hover_wx_id_ == item.GetId())
+			{
+				gcdc.SetPen(*wxTRANSPARENT_PEN);
+				gcdc.DrawRoundedRectangle(button_rect.width, 0, dropdown_size, rect.height, radius);
+			}
 		}
 
 		// Draw buffer contents
