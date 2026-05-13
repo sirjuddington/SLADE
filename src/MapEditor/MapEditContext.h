@@ -93,7 +93,7 @@ public:
 	void move3dCameraToCursor() const;
 
 	// General
-	bool update(double frametime);
+	void update(double frametime);
 
 	// Map loading
 	bool openMap(const MapDesc& map);
@@ -169,6 +169,7 @@ public:
 	void        set3DThingBoxes(int visibility);
 	void        toggle3DFog();
 	void        toggle3DFullbright();
+	bool        throttleFramerate() const;
 
 	// Misc
 	string modeString(bool plural = true) const;
@@ -250,6 +251,7 @@ private:
 
 	// Renderer
 	unique_ptr<Renderer> renderer_;
+	bool                 camera_moving_ = false;
 
 	// Input
 	unique_ptr<Input> input_;

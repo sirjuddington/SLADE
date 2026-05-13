@@ -70,9 +70,7 @@
 #include "Utility/MathStuff.h"
 #include <SFML/System/Clock.hpp>
 #include <SFML/System/Time.hpp>
-#include <cmath>
 #include <deque>
-#include <numeric>
 
 using namespace slade;
 using namespace mapeditor;
@@ -328,15 +326,11 @@ void Renderer::viewFitToObjects(const vector<MapObject*>& objects)
 		// Sector
 		else if (object->objType() == MapObject::Type::Sector)
 		{
-			auto sbb = dynamic_cast<MapSector*>(object)->boundingBox();
-			if (sbb.min.x < bbox.min.x)
-				bbox.min.x = sbb.min.x;
-			if (sbb.min.y < bbox.min.y)
-				bbox.min.y = sbb.min.y;
-			if (sbb.max.x > bbox.max.x)
-				bbox.max.x = sbb.max.x;
-			if (sbb.max.y > bbox.max.y)
-				bbox.max.y = sbb.max.y;
+			auto sbb   = dynamic_cast<MapSector*>(object)->boundingBox();
+			bbox.min.x = std::min(sbb.min.x, bbox.min.x);
+			bbox.min.y = std::min(sbb.min.y, bbox.min.y);
+			bbox.max.x = std::max(sbb.max.x, bbox.max.x);
+			bbox.max.y = std::max(sbb.max.y, bbox.max.y);
 		}
 
 		// Thing
@@ -371,8 +365,7 @@ double Renderer::interpolateView(bool smooth, double view_speed, double mult)
 		else
 		{
 			anim_view_speed += 0.05 * mult;
-			if (anim_view_speed > 0.4)
-				anim_view_speed = 0.4;
+			anim_view_speed = std::min(anim_view_speed, 0.4);
 		}
 	}
 	else
@@ -476,8 +469,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	{
 		glm::vec4 col_64grid = colourconfig::colour("map_64grid");
 		int       cross_size = 8;
-		if (gridsize < cross_size)
-			cross_size = gridsize;
+		cross_size           = std::min(gridsize, cross_size);
 
 		// Disable stipple if style set to crosses
 		if (map2d_64grid_style > 1)
@@ -555,13 +547,25 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 			constexpr auto width = 4.0f;
 
 			lb_crosshair_->add(
-				LineBuffer::Line{ { x + one, y, 0.0f, width }, col1, { x + size, y, 0.0f, width }, col2 });
+				LineBuffer::Line{ .v1_pos_width = { x + one, y, 0.0f, width },
+								  .v1_colour    = col1,
+								  .v2_pos_width = { x + size, y, 0.0f, width },
+								  .v2_colour    = col2 });
 			lb_crosshair_->add(
-				LineBuffer::Line{ { x - one, y, 0.0f, width }, col1, { x - size, y, 0.0f, width }, col2 });
+				LineBuffer::Line{ .v1_pos_width = { x - one, y, 0.0f, width },
+								  .v1_colour    = col1,
+								  .v2_pos_width = { x - size, y, 0.0f, width },
+								  .v2_colour    = col2 });
 			lb_crosshair_->add(
-				LineBuffer::Line{ { x, y + one, 0.0f, width }, col1, { x, y + size, 0.0f, width }, col2 });
+				LineBuffer::Line{ .v1_pos_width = { x, y + one, 0.0f, width },
+								  .v1_colour    = col1,
+								  .v2_pos_width = { x, y + size, 0.0f, width },
+								  .v2_colour    = col2 });
 			lb_crosshair_->add(
-				LineBuffer::Line{ { x, y - one, 0.0f, width }, col1, { x, y - size, 0.0f, width }, col2 });
+				LineBuffer::Line{ .v1_pos_width = { x, y - one, 0.0f, width },
+								  .v1_colour    = col1,
+								  .v2_pos_width = { x, y - size, 0.0f, width },
+								  .v2_colour    = col2 });
 		}
 
 		// Full
@@ -685,7 +689,7 @@ void Renderer::drawSelectionNumbers(draw2d::Context& dc) const
 	string text;
 	for (unsigned a = 0; a < selection.size(); a++)
 	{
-		if (map2d_max_selection_numbers > 0 && static_cast<int>(a) > map2d_max_selection_numbers)
+		if (map2d_max_selection_numbers > 0 && std::cmp_greater(a, map2d_max_selection_numbers.value))
 			break;
 		if (!selection[a])
 			continue;
@@ -1415,12 +1419,14 @@ void Renderer::updateAnimations(double mult)
 	if (anim_flash_inc_)
 	{
 		if (anim_flash_level_ < flash_min)
-			anim_flash_level_ += 0.053 * mult; // Initial fade in
+			anim_flash_level_ = std::min(
+				anim_flash_level_ + 0.053f * static_cast<float>(mult), flash_min); // Initial fade in
 		else
 		{
 			// Transition to sine: align anim_flash_time_ so sine starts at current level
-			anim_flash_time_ = std::asin((anim_flash_level_ - flash_mid) / flash_amp);
-			anim_flash_inc_  = false;
+			const float asin_arg = std::clamp((anim_flash_level_ - flash_mid) / flash_amp, -1.0f, 1.0f);
+			anim_flash_time_     = std::asin(asin_arg);
+			anim_flash_inc_      = false;
 		}
 	}
 	else
@@ -1790,16 +1796,17 @@ void Renderer::animateSelectionChange(const ItemSelection& selection)
 // -----------------------------------------------------------------------------
 void Renderer::animateHilightChange(const mapeditor::Item& old_item, MapObject* old_object)
 {
+	auto fade = std::isfinite(anim_flash_level_) ? std::clamp(anim_flash_level_, 0.0f, 1.0f) : 0.3f;
+
 	if (old_object)
 	{
 		// 2d mode
-		animations_.push_back(
-			std::make_unique<MCAHilightFade>(app::runTimer(), old_object, renderer_2d_.get(), anim_flash_level_));
+		animations_.push_back(std::make_unique<MCAHilightFade>(app::runTimer(), old_object, renderer_2d_.get(), fade));
 	}
 	else
 	{
 		// 3d mode
-		animations_.push_back(std::make_unique<MCAHilightFade3D>(app::runTimer(), old_item, anim_flash_level_));
+		animations_.push_back(std::make_unique<MCAHilightFade3D>(app::runTimer(), old_item, fade));
 	}
 
 	// Reset hilight flash

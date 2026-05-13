@@ -491,21 +491,21 @@ void MapEditContext::move3dCameraToCursor() const
 // -----------------------------------------------------------------------------
 // Updates the current map editor state (hilight, animations, etc.)
 // -----------------------------------------------------------------------------
-bool MapEditContext::update(double frametime)
+void MapEditContext::update(double frametime)
 {
 	if (!map_->isOpen())
-		return false;
+		return;
 
 	// Get frame time multiplier
 	double mult = frametime / 10.0;
 
 	// 3d mode
-	bool camera_moving = false;
+	camera_moving_ = false;
 	if (edit_mode_ == Mode::Visual && !overlayActive())
 	{
 		// Update camera
 		if (input_->updateCamera3d(mult))
-			camera_moving = true;
+			camera_moving_ = true;
 
 		// Update status bar
 		auto pos = renderer_->camera().position();
@@ -591,8 +591,6 @@ bool MapEditContext::update(double frametime)
 
 	// Update animations
 	renderer_->updateAnimations(mult);
-
-	return camera_moving || renderer_->animationsActive() || input_->panning();
 }
 
 // -----------------------------------------------------------------------------
@@ -1937,6 +1935,23 @@ void MapEditContext::toggle3DFullbright()
 
 	// Editor message
 	addEditorMessage(fullbright ? "Fullbright disabled" : "Fullbright enabled");
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the framerate should be throttled (i.e. if the editor is idle
+// and doesn't need to update as often)
+// -----------------------------------------------------------------------------
+bool MapEditContext::throttleFramerate() const
+{
+	// Always throttle if the map editor window is inactive
+	if (!window()->IsActive())
+		return true;
+
+	// Don't throttle if the camera is moving or there are active animations
+	if (camera_moving_ || renderer_->animationsActive())
+		return false;
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------

@@ -54,7 +54,7 @@ public:
 	void     clearHilight()
 	{
 		if (!hilight_lock_)
-			hilight_.index = -1;
+			hilight_ = {};
 	}
 
 	bool hasHilight() const { return hilight_.index >= 0; }

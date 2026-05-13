@@ -271,19 +271,29 @@ bool Camera::applyGravity(double floor_height, double view_height, double mult)
 	if (feet_z > floor_height)
 	{
 		auto diff = feet_z - floor_height;
-		position_.z -= diff * 0.2 * mult;
-		if (position_.z - view_height < floor_height)
+		if (diff < 0.01) // Snap to floor if close enough
 			position_.z = floor_height + view_height;
-		changed = true;
+		else
+		{
+			position_.z -= diff * 0.2 * mult;
+			if (position_.z - view_height < floor_height)
+				position_.z = floor_height + view_height;
+			changed = true;
+		}
 	}
 
 	else if (feet_z < floor_height)
 	{
 		auto diff = floor_height - feet_z;
-		position_.z += diff * 0.5 * mult;
-		if (position_.z - view_height > floor_height)
+		if (diff < 0.01) // Snap to floor if close enough
 			position_.z = floor_height + view_height;
-		changed = true;
+		else
+		{
+			position_.z += diff * 0.5 * mult;
+			if (position_.z - view_height > floor_height)
+				position_.z = floor_height + view_height;
+			changed = true;
+		}
 	}
 
 	updateView();

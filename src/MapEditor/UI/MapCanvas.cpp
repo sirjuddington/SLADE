@@ -59,7 +59,8 @@ using namespace mapeditor;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
+CVAR(Int, map_maxfps_bg, 30, CVar::Flag::Save)
+CVAR(Int, map_maxfps_fg, 0, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -68,6 +69,20 @@ CVAR(Int, map_bg_ms, 15, CVar::Flag::Save)
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Int, map3d_mlook_type)
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+int fpsToMs(int fps)
+{
+	return fps > 0 ? 1000 / fps : 1;
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -122,7 +137,7 @@ MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
 				return;
 
 			if (e.IsShown())
-				timer_.Start(map_bg_ms);
+				timer_.Start(1);
 			else
 				timer_.Stop();
 			e.Skip();
@@ -310,7 +325,18 @@ void MapCanvas::update()
 
 	// Don't update if we haven't reached the time for the next frame yet
 	if (frametime < next_frame_ms_)
+	{
+		// If the timer already expired (one-shot fired early) but we're not
+		// in the idle-spin window yet, restart it for the remaining time so
+		// we don't stall until the next external event.
+		if (!timer_.IsRunning())
+		{
+			auto remaining = std::max(1L, static_cast<long>(next_frame_ms_ - frametime) - 14);
+			timer_.Start(remaining, wxTIMER_ONE_SHOT);
+		}
+
 		return;
+	}
 
 	sf_clock_->restart();
 	timer_.Stop();
@@ -319,14 +345,19 @@ void MapCanvas::update()
 	if (context_->input().mouseState() == Input::MouseState::MouseLook && map3d_mlook_type != 1)
 		mouseLook3d();
 
-	if (context_->update(frametime))
-		next_frame_ms_ = 1;
-	else
-		next_frame_ms_ = map_bg_ms;
+	// Update editor context (animations, camera, etc.)
+	context_->update(frametime);
+
+	// Calculate next frame time
+	next_frame_ms_ = context_->throttleFramerate() ? fpsToMs(map_maxfps_bg) : fpsToMs(map_maxfps_fg);
 
 	Refresh(false);
 
-	timer_.Start(next_frame_ms_);
+	// Schedule the timer to fire ~15ms before the next frame is due so that
+	// onIdle's RequestMore() spin covers only the final ~15ms, giving accurate
+	// frame timing without spinning the full interval and wasting CPU.
+	auto timer_ms = std::max(1L, next_frame_ms_ - 14);
+	timer_.Start(timer_ms, wxTIMER_ONE_SHOT);
 }
 
 
@@ -533,7 +564,7 @@ void MapCanvas::onMouseMotion(wxMouseEvent& e)
 		return;
 
 	// Update as fast as possible while mouse is moving
-	next_frame_ms_ = 0;
+	next_frame_ms_ = fpsToMs(map_maxfps_fg);
 
 	e.Skip();
 }
@@ -592,6 +623,17 @@ void MapCanvas::onMouseEnter(wxMouseEvent& e)
 void MapCanvas::onIdle(wxIdleEvent& e)
 {
 	update();
+
+	// If a frame is imminent (within ~15ms), keep requesting idle events so
+	// the clock-based gate in update() fires at the precise moment rather than
+	// waiting for the next timer tick (~15ms coarse resolution on Windows) to
+	// avoid stutter.
+	if (context_->map().isOpen())
+	{
+		auto elapsed = sf_clock_->getElapsedTime().asSeconds() * 1000.0;
+		if (elapsed >= next_frame_ms_ - 15)
+			e.RequestMore();
+	}
 }
 
 // -----------------------------------------------------------------------------
