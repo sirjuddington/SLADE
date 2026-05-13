@@ -70,6 +70,14 @@
     "linked_cvar": "map3d_highlight_enabled"
   },
 
+  "mapw_3d_toggle_sky": {
+    "text": "Sky",
+    "icon": "sky",
+    "help_text": "Toggle sky rendering",
+    "type": "check",
+    "linked_cvar": "map3d_render_sky"
+  },
+
   // Walls
   "mapw_3d_wall_properties": {
     "text": "Line Properties",

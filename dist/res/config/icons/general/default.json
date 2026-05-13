@@ -480,6 +480,9 @@
     "shapedraw": {
       "svg": "icons/general/shapedraw.svg"
     },
+    "sky": {
+      "svg": "icons/general/sky.svg"
+    },
     "sliders": {
       "svg_light": "icons/general/sliders.svg",
       "svg_dark": "icons/general/dark/sliders.svg"

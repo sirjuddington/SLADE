@@ -53,6 +53,7 @@
     { "type": "action", "id": "mapw_3d_toggle_highlight" },
     { "type": "action", "id": "mapw_3d_toggle_fog" },
     { "type": "action", "id": "mapw_3d_toggle_fullbright" },
+    { "type": "action", "id": "mapw_3d_toggle_sky" },
     { "type": "action", "id": "mapw_3d_toggle_point_lights" },
 
     { "type": "separator" },
@@ -96,6 +97,7 @@
         "mapw_3d_toggle_thing_boxes",
         "mapw_3d_toggle_fog",
         "mapw_3d_toggle_fullbright" ,
+        "mapw_3d_toggle_sky",
         "view_distance"
       ]
     }

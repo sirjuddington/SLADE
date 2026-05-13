@@ -111,8 +111,7 @@ Map3DSettingsPanel::Map3DSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	// Other rendering options
 	lh.layoutVertically(
 		psizer,
-		{ cb_render_sky_       = new wxCheckBox(this, -1, wxS("Render sky preview")),
-		  cb_show_distance_    = new wxCheckBox(this, -1, wxS("Show distance under crosshair")),
+		{ // cb_show_distance_    = new wxCheckBox(this, -1, wxS("Show distance under crosshair")),
 		  cb_shade_orthogonal_ = new wxCheckBox(this, -1, wxS("Fake contrast on orthogonal walls")),
 		  rbp_highlight_       = new RadioButtonPanel(this, { "Fill", "Outline", "Both" }, "Item highlight:") },
 		wxSizerFlags(0).Expand());
@@ -152,8 +151,7 @@ void Map3DSettingsPanel::loadSettings()
 	// }
 
 	slider_fov_->setValue(map3d_fov);
-	cb_render_sky_->SetValue(map3d_render_sky);
-	cb_show_distance_->SetValue(map3d_crosshair_show_distance);
+	// cb_show_distance_->SetValue(map3d_crosshair_show_distance);
 	cb_shade_orthogonal_->SetValue(map3d_fake_contrast);
 	slider_max_lights_->setValue(map3d_lights_max);
 
@@ -204,8 +202,7 @@ void Map3DSettingsPanel::applySettings()
 	}
 
 	// Other
-	map3d_render_sky              = cb_render_sky_->GetValue();
-	map3d_crosshair_show_distance = cb_show_distance_->GetValue();
+	// map3d_crosshair_show_distance = cb_show_distance_->GetValue();
 	map3d_fov                     = slider_fov_->value();
 	map3d_fake_contrast           = cb_shade_orthogonal_->GetValue();
 	map3d_lights_max              = slider_max_lights_->value();

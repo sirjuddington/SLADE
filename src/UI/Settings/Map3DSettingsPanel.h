@@ -21,7 +21,6 @@ public:
 private:
 	NumberSlider*     slider_max_render_dist_ = nullptr;
 	wxCheckBox*       cb_distance_unlimited_  = nullptr;
-	wxCheckBox*       cb_render_sky_          = nullptr;
 	wxCheckBox*       cb_show_distance_       = nullptr;
 	wxCheckBox*       cb_shade_orthogonal_    = nullptr;
 	NumberSlider*     slider_fov_             = nullptr;
