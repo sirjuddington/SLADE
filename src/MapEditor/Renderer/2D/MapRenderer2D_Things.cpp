@@ -132,12 +132,11 @@ void MapRenderer2D::renderThingOverlays(
 	for (const auto thing : things)
 	{
 		const auto& tt     = game::configuration().thingType(thing->type());
-		float       radius = tt.radius() + hwidth;
+		float       radius = tt.radius() + hwidth + radius_extra;
 		if (tt.shrinkOnZoom())
 			radius = scaledRadius(radius);
 
-		thing_overlay_buffer_->add(
-			glm::vec2{ thing->xPos() + offset.x, thing->yPos() + offset.y }, radius + radius_extra);
+		thing_overlay_buffer_->add(glm::vec2{ thing->xPos() + offset.x, thing->yPos() + offset.y }, radius);
 	}
 	thing_overlay_buffer_->push();
 

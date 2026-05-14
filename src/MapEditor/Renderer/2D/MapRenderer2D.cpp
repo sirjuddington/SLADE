@@ -387,11 +387,11 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, const ObjectE
 		{
 			thing              = item.map_thing;
 			const auto& tt     = game::configuration().thingType(thing->type());
-			double      radius = tt.radius();
+			double      radius = tt.radius() + 4.0;
 			if (tt.shrinkOnZoom())
 				radius = scaledRadius(radius);
 
-			thing_overlay_buffer_->add({ item.position.x, item.position.y }, radius + 4.0f);
+			thing_overlay_buffer_->add({ item.position.x, item.position.y }, radius);
 		}
 		thing_overlay_buffer_->push();
 		thing_overlay_buffer_->setColour(colourconfig::colour("map_object_edit"));
@@ -423,7 +423,7 @@ void MapRenderer2D::forceUpdate(bool flats_ceilings)
 // Returns [radius] scaled such that it stays the same size on screen at all
 // zoom levels
 // -----------------------------------------------------------------------------
-double MapRenderer2D::scaledRadius(int radius) const
+double MapRenderer2D::scaledRadius(double radius) const
 {
 	// if (radius > 16)
 	//	radius = 16;
