@@ -252,6 +252,7 @@ private:
 	// Renderer
 	unique_ptr<Renderer> renderer_;
 	bool                 camera_moving_ = false;
+	int                  camera_angle_  = -1;
 
 	// Input
 	unique_ptr<Input> input_;

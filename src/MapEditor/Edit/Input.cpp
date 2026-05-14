@@ -135,14 +135,17 @@ bool Input::mouseMove(int new_x, int new_y)
 	mouse_pos_map_ = context_->renderer().view().canvasPos(mouse_pos_);
 
 	// Update coordinates on status bar
-	double mx = context_->snapToGrid(mouse_pos_map_.x, false);
-	double my = context_->snapToGrid(mouse_pos_map_.y, false);
-	string status_text;
-	if (context_->mapDesc().format == MapFormat::UDMF)
-		status_text = fmt::format("Position: ({:1.3f}, {:1.3f})", mx, my);
-	else
-		status_text = fmt::format("Position: ({}, {})", static_cast<int>(mx), static_cast<int>(my));
-	mapeditor::setStatusText(status_text, 3);
+	if (context_->editMode() != Mode::Visual)
+	{
+		double mx = context_->snapToGrid(mouse_pos_map_.x, false);
+		double my = context_->snapToGrid(mouse_pos_map_.y, false);
+		string status_text;
+		if (context_->mapDesc().format == MapFormat::UDMF)
+			status_text = fmt::format("{:1.3f}, {:1.3f}", mx, my);
+		else
+			status_text = fmt::format("{}, {}", static_cast<int>(mx), static_cast<int>(my));
+		mapeditor::setStatusText(status_text, 3);
+	}
 
 	// Object edit
 	auto edit_state = context_->objectEdit().state();

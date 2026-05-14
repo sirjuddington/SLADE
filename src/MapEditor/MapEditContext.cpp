@@ -47,6 +47,7 @@
 #include "General/Console.h"
 #include "General/SAction.h"
 #include "General/UndoRedo.h"
+#include "Geometry/Geometry.h"
 #include "ItemSelection.h"
 #include "MapChecks.h"
 #include "MapEditor.h"
@@ -507,12 +508,20 @@ void MapEditContext::update(double frametime)
 		if (input_->updateCamera3d(mult))
 			camera_moving_ = true;
 
-		// Update status bar
+		// Update position on status bar
 		auto pos = renderer_->camera().position();
 		mapeditor::setStatusText(
-			fmt::format(
-				"Position: ({}, {}, {})", static_cast<int>(pos.x), static_cast<int>(pos.y), static_cast<int>(pos.z)),
+			fmt::format("{}, {}, {}", static_cast<int>(pos.x), static_cast<int>(pos.y), static_cast<int>(pos.z)),
 			3);
+
+		// Update camera direction on status bar if changed
+		auto angle = geometry::angleFromVector(renderer_->camera().direction());
+		if (camera_angle_ != angle)
+		{
+			camera_angle_ = std::round(angle);
+			auto name     = geometry::angleClosestName(angle);
+			mapeditor::setStatusText(fmt::format("{}\u00B0 ({})", camera_angle_, name), 2);
+		}
 
 		// Update hilight
 		if (input_->mouseState() == Input::MouseState::MouseLook)
@@ -1570,27 +1579,60 @@ void MapEditContext::updateStatusText() const
 		}
 	}
 
-	if (edit_mode_ != Mode::Visual && !selection_->empty())
-		mode += fmt::format(" ({} selected)", static_cast<int>(selection_->size()));
+	if (!selection_->empty())
+	{
+		if (edit_mode_ != Mode::Visual)
+			mode += fmt::format(" ({} selected)", static_cast<int>(selection_->size()));
+		else
+		{
+			// 3d selection, show individual counts of walls/flats/things
+			int walls = 0, flats = 0, things = 0;
+			for (const auto& i : selection_->selectedItems())
+			{
+				auto type = baseItemType(i.type);
+				switch (type)
+				{
+				case ItemType::Side:
+				case ItemType::Line:   walls++; break;
+				case ItemType::Thing:  things++; break;
+				case ItemType::Sector: flats++; break;
+				default:               break;
+				}
+			}
+			mode += fmt::format(
+				" ({} wall{}, {} flat{}, {} thing{} selected)",
+				walls,
+				(walls == 1) ? "" : "s",
+				flats,
+				(flats == 1) ? "" : "s",
+				things,
+				(things == 1) ? "" : "s");
+		}
+	}
+	else
+		mode += " (No selection)";
 
 	mapeditor::setStatusText(mode, 1);
 
-	// Grid
-	string grid;
-	if (gridSize() < 1)
-		grid = fmt::format("Grid: {:1.2f}x{:1.2f}", gridSize(), gridSize());
-	else
+	// Grid (2d modes)
+	if (edit_mode_ != Mode::Visual)
 	{
-		auto gsize = static_cast<int>(round(gridSize()));
-		grid       = fmt::format("Grid: {}x{}", gsize, gsize);
+		string grid;
+		if (gridSize() < 1)
+			grid = fmt::format("Grid: {:1.2f}x{:1.2f}", gridSize(), gridSize());
+		else
+		{
+			auto gsize = static_cast<int>(round(gridSize()));
+			grid       = fmt::format("Grid: {}x{}", gsize, gsize);
+		}
+
+		if (grid_snap_)
+			grid += " (Snapping ON)";
+		else
+			grid += " (Snapping OFF)";
+
+		mapeditor::setStatusText(grid, 2);
 	}
-
-	if (grid_snap_)
-		grid += " (Snapping ON)";
-	else
-		grid += " (Snapping OFF)";
-
-	mapeditor::setStatusText(grid, 2);
 }
 
 void MapEditContext::updateToolbar() const

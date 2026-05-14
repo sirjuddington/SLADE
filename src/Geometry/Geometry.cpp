@@ -111,10 +111,8 @@ Vec2d geometry::closestPointOnLine(const Vec2d& point, const Seg2d& line)
 
 		// Limit intersection distance to the line
 		double lbound = 1 / len;
-		if (u < lbound)
-			u = lbound;
-		if (u > (1.0 - lbound))
-			u = 1.0 - lbound;
+		u             = std::max(u, lbound);
+		u             = std::min(u, 1.0 - lbound);
 	}
 
 	// Return intersection point
@@ -163,13 +161,17 @@ bool geometry::linesIntersect(const Seg2d& l1, const Seg2d& l2, Vec2d& out)
 		return false;
 
 	// Second, check if the lines share any endpoints
-	if ((l1.x1() == l2.x1() && l1.y1() == l2.y1()) || (l1.x2() == l2.x2() && l1.y2() == l2.y2())
-		|| (l1.x1() == l2.x2() && l1.y1() == l2.y2()) || (l1.x2() == l2.x1() && l1.y2() == l2.y1()))
+	if ((l1.x1() == l2.x1() && l1.y1() == l2.y1())
+		|| (l1.x2() == l2.x2() && l1.y2() == l2.y2())
+		|| (l1.x1() == l2.x2() && l1.y1() == l2.y2())
+		|| (l1.x2() == l2.x1() && l1.y2() == l2.y1()))
 		return false;
 
 	// Third, check bounding boxes
-	if (max(l1.x1(), l1.x2()) < min(l2.x1(), l2.x2()) || max(l2.x1(), l2.x2()) < min(l1.x1(), l1.x2())
-		|| max(l1.y1(), l1.y2()) < min(l2.y1(), l2.y2()) || max(l2.y1(), l2.y2()) < min(l1.y1(), l1.y2()))
+	if (max(l1.x1(), l1.x2()) < min(l2.x1(), l2.x2())
+		|| max(l2.x1(), l2.x2()) < min(l1.x1(), l1.x2())
+		|| max(l1.y1(), l1.y2()) < min(l2.y1(), l2.y2())
+		|| max(l2.y1(), l2.y2()) < min(l1.y1(), l1.y2()))
 		return false;
 
 	// Fourth, check for two perpendicular horizontal or vertical lines
@@ -210,9 +212,14 @@ bool geometry::linesIntersect(const Seg2d& l1, const Seg2d& l2, Vec2d& out)
 	out.y = std::floor(out.y * 1000.0 + 0.5) / 1000.0;
 
 	// Check that the intersection point is on both lines
-	if (min(l1.x1(), l1.x2()) <= out.x && out.x <= max(l1.x1(), l1.x2()) && min(l1.y1(), l1.y2()) <= out.y
-		&& out.y <= max(l1.y1(), l1.y2()) && min(l2.x1(), l2.x2()) <= out.x && out.x <= max(l2.x1(), l2.x2())
-		&& min(l2.y1(), l2.y2()) <= out.y && out.y <= max(l2.y1(), l2.y2()))
+	if (min(l1.x1(), l1.x2()) <= out.x
+		&& out.x <= max(l1.x1(), l1.x2())
+		&& min(l1.y1(), l1.y2()) <= out.y
+		&& out.y <= max(l1.y1(), l1.y2())
+		&& min(l2.x1(), l2.x2()) <= out.x
+		&& out.x <= max(l2.x1(), l2.x2())
+		&& min(l2.y1(), l2.y2()) <= out.y
+		&& out.y <= max(l2.y1(), l2.y2()))
 		return true;
 
 	// Intersection point does not lie on both lines
@@ -432,6 +439,31 @@ Vec2d geometry::vectorAngle(double angle_rad)
 }
 
 // -----------------------------------------------------------------------------
+// Converts [vector] to an angle in degrees
+// -----------------------------------------------------------------------------
+double geometry::angleFromVector(const Vec2d& vector)
+{
+	double angle = atan2(vector.y, vector.x) * RAD_TO_DEG;
+	return angle < 0.0 ? angle + 360.0 : angle;
+}
+
+// -----------------------------------------------------------------------------
+// Converts [angle] to the closest compass direction name
+// (e.g. "North", "Northeast", etc.)
+// -----------------------------------------------------------------------------
+string geometry::angleClosestName(double angle)
+{
+	// 0 = East, 90 = North, 180 = West, 270 = South
+	static const vector<string> names = { "East", "Northeast", "North", "Northwest",
+										  "West", "Southwest", "South", "Southeast" };
+
+	// We want to round to the nearest 45 degrees, so add 22.5 to the angle
+	// before dividing by 45
+	angle = fmod(angle + 22.5, 360.0);
+	return names[static_cast<int>(angle / 45)];
+}
+
+// -----------------------------------------------------------------------------
 // Returns the distance along the ray [r_o -> r_v] to [plane]
 // -----------------------------------------------------------------------------
 double geometry::distanceRayPlane(const Vec3d& r_o, const Vec3d& r_v, const Plane& plane)
@@ -462,10 +494,8 @@ bool geometry::boxLineIntersect(const Rectf& box, const Seg2d& line)
 	}
 
 	// Find the intersection of the segment's and rectangle's x-projections
-	if (maxX > box.x2())
-		maxX = box.x2();
-	if (minX < box.x1())
-		minX = box.x1();
+	maxX = std::min<double>(maxX, box.x2());
+	minX = std::max<double>(minX, box.x1());
 
 	// If their projections do not intersect return false
 	if (minX > maxX)
@@ -491,10 +521,8 @@ bool geometry::boxLineIntersect(const Rectf& box, const Seg2d& line)
 	}
 
 	// Find the intersection of the segment's and rectangle's y-projections
-	if (maxY > box.y2())
-		maxY = box.y2();
-	if (minY < box.y1())
-		minY = box.y1();
+	maxY = std::min<double>(maxY, box.y2());
+	minY = std::max<double>(minY, box.y1());
 
 	// If Y-projections do not intersect return false
 	if (minY > maxY)
@@ -539,10 +567,8 @@ Rectf geometry::lineTab(const Rectf& line, float tab, float tab_max)
 {
 	// Calculate tab length
 	auto tablen = line.length() * tab;
-	if (tablen > tab_max)
-		tablen = tab_max;
-	if (tablen < 2)
-		tablen = 2;
+	tablen      = std::min(tablen, tab_max);
+	tablen      = std::max<float>(tablen, 2);
 
 	// Calculate tab endpoint
 	auto invdir = glm::normalize(Vec2f{ -(line.br.y - line.tl.y), line.br.x - line.tl.x });

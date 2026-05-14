@@ -24,6 +24,8 @@ Vec3d         rotateVector3D(const Vec3d& vector, const Vec3d& axis, double angl
 double        degToRad(double angle);
 double        radToDeg(double angle);
 Vec2d         vectorAngle(double angle_rad);
+double        angleFromVector(const Vec2d& vector);
+string        angleClosestName(double angle);
 double        distanceRayPlane(const Vec3d& ray_origin, const Vec3d& ray_dir, const Plane& plane);
 bool          boxLineIntersect(const Rectf& box, const Seg2d& line);
 Plane         planeFromTriangle(const Vec3d& p1, const Vec3d& p2, const Vec3d& p3);
