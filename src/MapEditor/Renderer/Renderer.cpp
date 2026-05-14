@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Renderer.h"
+#include "2D/MapRenderer2D.h"
 #include "3D/MapRenderer3D.h"
 #include "App.h"
 #include "General/Clipboard.h"
@@ -47,7 +48,6 @@
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "MapRenderer2D.h"
 #include "OpenGL/Camera.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/IndexBuffer.h"
