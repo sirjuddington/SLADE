@@ -37,10 +37,10 @@ private:
 	wxCheckBox*       cb_vertex_round_     = nullptr;
 	RadioButtonPanel* rbp_vertices_always_ = nullptr;
 
-	NumberSlider* slider_line_width_   = nullptr;
-	wxCheckBox*   cb_line_smooth_      = nullptr;
-	wxCheckBox*   cb_line_tabs_always_ = nullptr;
-	wxCheckBox*   cb_line_fade_        = nullptr;
+	NumberSlider*     slider_line_width_   = nullptr;
+	wxCheckBox*       cb_line_smooth_      = nullptr;
+	wxCheckBox*       cb_line_tabs_always_ = nullptr;
+	RadioButtonPanel* rbp_line_fade_       = nullptr;
 
 	RadioButtonPanel* rbp_thing_shape_         = nullptr;
 	RadioButtonPanel* rbp_things_always_       = nullptr;

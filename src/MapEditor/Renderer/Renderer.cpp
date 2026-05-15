@@ -82,25 +82,25 @@ using namespace gl;
 // Variables
 //
 // -----------------------------------------------------------------------------
+CVAR(Bool, map_renderinfo, false, CVar::Flag::Save)
+CVAR(Bool, map_show_help, true, CVar::Flag::Save)
+CVAR(Bool, map_showfps, false, CVar::Flag::Save)
+CVAR(Int, map2d_64grid_style, 1, CVar::Flag::Save)
+CVAR(Int, map2d_crosshair, 0, CVar::Flag::Save)
+CVAR(Bool, map2d_flat_fade, 1, CVar::Flag::Save)
+CVAR(Bool, map2d_grid_dashed, false, CVar::Flag::Save)
+CVAR(Bool, map2d_grid_show_origin, true, CVar::Flag::Save)
+CVAR(Int, map2d_line_fade, 2, CVar::Flag::Save)
+CVAR(Bool, map2d_line_tabs_always, 1, CVar::Flag::Save)
+CVAR(Int, map2d_max_selection_numbers, 1000, CVar::Flag::Save)
+CVAR(Bool, map2d_scroll_smooth, true, CVar::Flag::Save)
+CVAR(Bool, map2d_show_selection_numbers, true, CVar::Flag::Save)
 CVAR(Int, map2d_things_always, 2, CVar::Flag::Save)
 CVAR(Int, map2d_vertices_always, 0, CVar::Flag::Save)
-CVAR(Bool, map2d_line_tabs_always, 1, CVar::Flag::Save)
-CVAR(Bool, map2d_flat_fade, 1, CVar::Flag::Save)
-CVAR(Bool, map2d_line_fade, 0, CVar::Flag::Save)
-CVAR(Bool, map2d_grid_dashed, false, CVar::Flag::Save)
-CVAR(Int, map2d_64grid_style, 1, CVar::Flag::Save)
-CVAR(Bool, map2d_grid_show_origin, true, CVar::Flag::Save)
-CVAR(Bool, map2d_scroll_smooth, true, CVar::Flag::Save)
-CVAR(Bool, map_showfps, false, CVar::Flag::Save)
-CVAR(Bool, map3d_gravity, true, CVar::Flag::Save)
 CVAR(Int, map3d_crosshair_size, 6, CVar::Flag::Save)
 CVAR(Bool, map3d_crosshair_show_distance, false, CVar::Flag::Save)
-CVAR(Bool, map_show_help, true, CVar::Flag::Save)
-CVAR(Int, map2d_crosshair, 0, CVar::Flag::Save)
-CVAR(Bool, map2d_show_selection_numbers, true, CVar::Flag::Save)
-CVAR(Int, map2d_max_selection_numbers, 1000, CVar::Flag::Save)
 CVAR(Int, map3d_fov, 90, CVar::Flag::Save)
-CVAR(Bool, map_renderinfo, false, CVar::Flag::Save)
+CVAR(Bool, map3d_gravity, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -540,11 +540,11 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 		// Small
 		if (map2d_crosshair == 1)
 		{
-			glm::vec4      col1  = col.ampf(1.0f, 1.0f, 1.0f, 2.0f);
+			glm::vec4      col1  = col.ampf(1.0f, 1.0f, 1.0f, 5.0f);
 			glm::vec4      col2  = col.ampf(1.0f, 1.0f, 1.0f, 0.0f);
 			double         size  = context_->gridSize();
 			double         one   = 1.0 / view_->scale(true).x;
-			constexpr auto width = 4.0f;
+			constexpr auto width = 2.0f;
 
 			lb_crosshair_->add(
 				LineBuffer::Line{ .v1_pos_width = { x + one, y, 0.0f, width },
@@ -1499,8 +1499,8 @@ bool Renderer::update2dModeCrossfade(double mult)
 		fa_things = 0.5f;
 
 	// Lines
-	if (map2d_line_fade)
-		fa_lines = 0.5f;
+	if (map2d_line_fade == 1 || context_->editMode() == Mode::Vertices && map2d_line_fade == 2)
+		fa_lines = 0.6f;
 	else
 		fa_lines = 1.0f;
 

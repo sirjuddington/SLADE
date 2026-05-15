@@ -264,7 +264,7 @@ void MapRenderer2D::updateLinesBuffer(bool show_direction)
 		auto col = lineColour(line);
 
 		if (map2d_line_smooth)
-			lines_buffer_->add2d(line->x1(), line->y1(), line->x2(), line->y2(), col, 1.0f);
+			lines_buffer_->add2d(line->x1(), line->y1(), line->x2(), line->y2(), col, line->s2() ? 1.0f : 1.15f);
 		else
 		{
 			lines_buffer_basic_->add(line->start(), col, {});

@@ -68,7 +68,7 @@ EXTERN_CVAR(Bool, map2d_line_tabs_always)
 EXTERN_CVAR(Bool, map_animate_hilight)
 EXTERN_CVAR(Bool, map_animate_selection)
 EXTERN_CVAR(Bool, map_animate_tagged)
-EXTERN_CVAR(Bool, map2d_line_fade)
+EXTERN_CVAR(Int, map2d_line_fade)
 EXTERN_CVAR(Bool, map2d_flat_fade)
 EXTERN_CVAR(Int, map2d_crosshair)
 EXTERN_CVAR(Bool, map2d_action_lines)
@@ -201,7 +201,8 @@ wxPanel* MapDisplaySettingsPanel::createLinesPanel(wxWindow* parent, const Layou
 			  panel, "Line thickness:", slider_line_width_ = new NumberSlider(panel, 10, 30, 1, true, 10)),
 		  cb_line_smooth_      = new wxCheckBox(panel, -1, wxS("Smooth lines")),
 		  cb_line_tabs_always_ = new wxCheckBox(panel, -1, wxS("Always show line direction tabs")),
-		  cb_line_fade_        = new wxCheckBox(panel, -1, wxS("Fade when not in lines mode")) },
+		  rbp_line_fade_       = new RadioButtonPanel(
+              panel, { "No", "Always", "Vertex mode only" }, "Fade when not in lines mode:") },
 		wxSizerFlags());
 
 	return panel;
@@ -294,7 +295,7 @@ void MapDisplaySettingsPanel::loadSettings()
 	cb_animate_tagged_->SetValue(map_animate_tagged);
 	rbp_vertices_always_->setSelection(map2d_vertices_always);
 	rbp_things_always_->setSelection(map2d_things_always);
-	cb_line_fade_->SetValue(map2d_line_fade);
+	rbp_line_fade_->setSelection(map2d_line_fade);
 	cb_flat_fade_->SetValue(map2d_flat_fade);
 	cb_grid_dashed_->SetValue(map2d_grid_dashed);
 	slider_vertex_size_->setValue(map2d_vertex_size);
@@ -338,7 +339,7 @@ void MapDisplaySettingsPanel::applySettings()
 	map_animate_tagged         = cb_animate_tagged_->GetValue();
 	map2d_vertices_always      = rbp_vertices_always_->getSelection();
 	map2d_things_always        = rbp_things_always_->getSelection();
-	map2d_line_fade            = cb_line_fade_->GetValue();
+	map2d_line_fade            = rbp_line_fade_->getSelection();
 	map2d_flat_fade            = cb_flat_fade_->GetValue();
 	map2d_crosshair            = rbp_crosshair_->getSelection();
 	map2d_action_lines         = cb_action_lines_->GetValue();
