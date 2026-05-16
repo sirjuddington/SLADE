@@ -6,6 +6,7 @@
       "defaults": {
         "colour": "rgb(0, 255, 0)",
         "radius": 16,
+        "height": 56,
         "solid": true
       },
       "things": [
@@ -24,21 +25,24 @@
           "type": 14,
           "name": "Teleport Destination",
           "colour": "rgb(255, 255, 0)",
-          "sprite": "TELEA0"
+          "sprite": "TELEA0",
+          "radius": 20
         },
         {
           "type": 52,
           "name": "Teleport Glitter (Blue: Exit)",
           "angle": false,
           "colour": "rgb(105, 88, 183)",
-          "sprite": "TGLTF0"
+          "sprite": "TGLTF0",
+          "radius": 20
         },
         {
           "type": 74,
           "name": "Teleport Glitter (Red)",
           "angle": false,
           "colour": "rgb(255, 95, 95)",
-          "sprite": "TGLTA0"
+          "sprite": "TGLTA0",
+          "radius": 20
         }
       ]
     },
@@ -54,12 +58,16 @@
           "type": 66,
           "name": "Gargoyle",
           "sprite": "IMPXA?",
+          "radius": 16,
+          "display_radius": 20,
           "height": 36
         },
         {
           "type": 5,
           "name": "Fire Gargoyle",
           "sprite": "IMPXF?",
+          "radius": 16,
+          "display_radius": 20,
           "height": 36
         },
         {
@@ -94,6 +102,8 @@
           "type": 15,
           "name": "Disciple Of D'Sparil",
           "sprite": "WZRDA?",
+          "radius": 16,
+          "display_radius": 20,
           "height": 68
         },
         {
@@ -113,7 +123,9 @@
         {
           "type": 56,
           "name": "D'Sparil Teleport Location",
-          "sprite": "SOR2I?"
+          "sprite": "SOR2I?",
+          "radius": 20,
+          "height": 16
         },
         {
           "type": 9,
@@ -127,7 +139,7 @@
           "name": "Undead Warrior",
           "sprite": "KNIGA?",
           "radius": 24,
-          "height": 48
+          "height": 78
         },
         {
           "type": 65,
@@ -167,9 +179,31 @@
         "colour": "rgb(0, 0, 200)"
       },
       "things": [
-        { "type": 81, "name": "Crystal Vial", "sprite": "PTN1A?", "colour": "rgb(100, 100, 200)" },
-        { "type": 85, "name": "Silver Shield", "sprite": "SHLDA?" },
-        { "type": 31, "name": "Enchanted Shield", "sprite": "SHD2A?" }
+        {
+          "type": 81,
+          "name": "Crystal Vial",
+          "sprite": "PTN1A?",
+          "colour": "rgb(100, 100, 200)",
+          "radius": 20,
+          "display_radius": 10,
+          "height": 16
+        },
+        {
+          "type": 85,
+          "name": "Silver Shield",
+          "sprite": "SHLDA?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 31,
+          "name": "Enchanted Shield",
+          "sprite": "SHD2A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        }
       ]
     },
 
@@ -201,19 +235,19 @@
         "height": 16
       },
       "things": [
-        { "type": 10, "name": "Wand Crystal", "sprite": "AMG1A?" },
-        { "type": 12, "name": "Crystal Geode", "sprite": "AMG2A?" },
-        { "type": 13, "name": "Mace Spheres", "sprite": "AMM1A?" },
-        { "type": 16, "name": "Pile Of Mace Spheres", "sprite": "AMM2A?" },
-        { "type": 18, "name": "Ethereal Arrows", "sprite": "AMC1A?" },
-        { "type": 19, "name": "Quiver Of Ethereal Arrows", "sprite": "AMC2A?" },
-        { "type": 20, "name": "Lesser Runes", "sprite": "AMS1A?" },
-        { "type": 21, "name": "Greater Runes", "sprite": "AMS2A?" },
-        { "type": 22, "name": "Flame Orb", "sprite": "AMP1A?" },
-        { "type": 23, "name": "Inferno Orb", "sprite": "AMP2A?" },
-        { "type": 54, "name": "Claw Orb", "sprite": "AMB1A?" },
-        { "type": 55, "name": "Energy Orb", "sprite": "AMB2A?" },
-        { "type": 8, "name": "Bag Of Holding", "sprite": "BAGHA?" }
+        { "type": 10, "name": "Wand Crystal", "sprite": "AMG1A?", "display_radius": 12 },
+        { "type": 12, "name": "Crystal Geode", "sprite": "AMG2A?", "display_radius": 14 },
+        { "type": 13, "name": "Mace Spheres", "sprite": "AMM1A?", "display_radius": 12 },
+        { "type": 16, "name": "Pile Of Mace Spheres", "sprite": "AMM2A?", "display_radius": 14 },
+        { "type": 18, "name": "Ethereal Arrows", "sprite": "AMC1A?", "display_radius": 12 },
+        { "type": 19, "name": "Quiver Of Ethereal Arrows", "sprite": "AMC2A?", "display_radius": 14 },
+        { "type": 20, "name": "Lesser Runes", "sprite": "AMS1A?", "display_radius": 12 },
+        { "type": 21, "name": "Greater Runes", "sprite": "AMS2A?", "display_radius": 14 },
+        { "type": 22, "name": "Flame Orb", "sprite": "AMP1A?", "display_radius": 12 },
+        { "type": 23, "name": "Inferno Orb", "sprite": "AMP2A?", "display_radius": 14 },
+        { "type": 54, "name": "Claw Orb", "sprite": "AMB1A?", "display_radius": 12 },
+        { "type": 55, "name": "Energy Orb", "sprite": "AMB2A?", "display_radius": 14 },
+        { "type": 8, "name": "Bag Of Holding", "sprite": "BAGHA?", "display_radius": 16 }
       ]
     },
 
@@ -222,7 +256,7 @@
       "defaults": {
         "colour": "rgb(220, 100, 220)",
         "radius": 20,
-        "height": 20,
+        "height": 16,
         "angle": false
       },
       "things": [
@@ -244,6 +278,7 @@
       "name": "Keys",
       "defaults": {
         "radius": 20,
+        "height": 16,
         "angle": false
       },
       "things": [
@@ -257,17 +292,18 @@
       "name": "Gore/Hanging Skulls & Bodies",
       "defaults": {
         "radius": 16,
+        "display_radius": 16,
         "angle": false,
         "decoration": true,
         "colour": "rgb(120, 0, 0)",
         "hanging": true
       },
       "things": [
-        { "type": 51, "name": "Hanging Corpse", "sprite": "HCORA?", "height": 104 },
-        { "type": 17, "name": "Hanging Skull (Long Rope)", "sprite": "SKH1A?", "height": 70 },
-        { "type": 24, "name": "Hanging Skull (Medium Rope)", "sprite": "SKH2A?", "height": 60 },
-        { "type": 25, "name": "Hanging Skull (Short Rope)", "sprite": "SKH3A?", "height": 45 },
-        { "type": 26, "name": "Hanging Skull (Shortest Rope)", "sprite": "SKH4A?", "height": 35 }
+        { "type": 51, "name": "Hanging Corpse", "sprite": "HCORA?", "radius": 8, "height": 104 },
+        { "type": 17, "name": "Hanging Skull (Long Rope)", "sprite": "SKH1A?", "radius": 20, "height": 70 },
+        { "type": 24, "name": "Hanging Skull (Medium Rope)", "sprite": "SKH2A?", "radius": 20, "height": 60 },
+        { "type": 25, "name": "Hanging Skull (Short Rope)", "sprite": "SKH3A?", "radius": 20, "height": 45 },
+        { "type": 26, "name": "Hanging Skull (Shortest Rope)", "sprite": "SKH4A?", "radius": 20, "height": 35 }
       ]
     },
 
@@ -276,14 +312,15 @@
       "defaults": {
         "colour": "rgb(220, 220, 200)",
         "radius": 16,
+        "display_radius": 16,
         "angle": false,
         "fullbright": true,
         "decoration": true
       },
       "things": [
-        { "type": 27, "name": "Serpent Torch", "sprite": "SRTCA?", "height": 54, "solid": true },
-        { "type": 28, "name": "Chandelier", "sprite": "CHDLA?", "hanging": true, "height": 62 },
-        { "type": 50, "name": "Wall Torch", "sprite": "WTRHA?", "height": 64 },
+        { "type": 27, "name": "Serpent Torch", "sprite": "SRTCA?", "radius": 12, "height": 54, "solid": true },
+        { "type": 28, "name": "Chandelier", "sprite": "CHDLA?", "hanging": true, "radius": 20, "height": 60 },
+        { "type": 50, "name": "Wall Torch", "sprite": "WTRHA?", "radius": 20, "height": 16 },
         { "type": 76, "name": "Fire Brazier", "sprite": "KFR1A?", "height": 44, "solid": true }
       ]
     },
@@ -293,6 +330,7 @@
       "defaults": {
         "colour": "rgb(200, 200, 200)",
         "radius": 16,
+        "display_radius": 16,
         "angle": false,
         "decoration": true,
         "solid": true
@@ -301,8 +339,8 @@
         { "type": 94, "name": "Blue Key Marker", "sprite": "KGZBA?", "height": 50 },
         { "type": 95, "name": "Green Key Marker", "sprite": "KGZGA?", "height": 50 },
         { "type": 96, "name": "Yellow Key Marker", "sprite": "KGZYA?", "height": 50 },
-        { "type": 44, "name": "Barrel", "sprite": "BARLA?", "height": 32 },
-        { "type": 47, "name": "Brown Pillar", "sprite": "BRPLA?", "height": 128 },
+        { "type": 44, "name": "Barrel", "sprite": "BARLA?", "radius": 12, "height": 32 },
+        { "type": 47, "name": "Brown Pillar", "sprite": "BRPLA?", "radius": 14, "height": 128 },
         { "type": 29, "name": "Small Pillar", "sprite": "SMPLA?", "height": 34 }
       ]
     },
@@ -312,14 +350,15 @@
       "defaults": {
         "colour": "rgb(80, 160, 80)",
         "radius": 16,
+        "display_radius": 16,
         "angle": false,
         "decoration": true
       },
       "things": [
-        { "type": 48, "name": "Moss 1", "sprite": "MOS1A?", "hanging": true, "height": 23 },
-        { "type": 49, "name": "Moss 2", "sprite": "MOS2A?", "hanging": true, "height": 27 },
+        { "type": 48, "name": "Moss 1", "sprite": "MOS1A?", "hanging": true, "radius": 20, "height": 23 },
+        { "type": 49, "name": "Moss 2", "sprite": "MOS2A?", "hanging": true, "radius": 20, "height": 27 },
         { "type": 2035, "name": "Gas Pod", "sprite": "PPODA?", "height": 54, "solid": true },
-        { "type": 43, "name": "Gas Pod Generator", "sprite": "PPODA?", "height": 16 }
+        { "type": 43, "name": "Gas Pod Generator", "sprite": "PPODA?", "radius": 20, "height": 16 }
       ]
     },
 
@@ -327,16 +366,16 @@
       "name": "Decorations/Rocks",
       "defaults": {
         "colour": "rgb(80, 160, 80)",
-        "radius": 16,
+        "display_radius": 16,
         "angle": false,
         "decoration": true
       },
       "things": [
-        { "type": 37, "name": "Stalagmite (Small)", "sprite": "STGSA?", "height": 32 },
-        { "type": 38, "name": "Stalagmite (Large)", "sprite": "STGLA?", "height": 64 },
-        { "type": 39, "name": "Stalactite (Small)", "sprite": "STCSA?", "hanging": true, "height": 36 },
-        { "type": 40, "name": "Stalactite (Large)", "sprite": "STCLA?", "hanging": true, "height": 68 },
-        { "type": 87, "name": "Volcano", "sprite": "VLCOE?", "height": 20 }
+        { "type": 37, "name": "Stalagmite (Small)", "sprite": "STGSA?", "radius": 8, "height": 32 },
+        { "type": 38, "name": "Stalagmite (Large)", "sprite": "STGLA?", "radius": 12, "height": 64 },
+        { "type": 39, "name": "Stalactite (Small)", "sprite": "STCSA?", "hanging": true, "radius": 8, "height": 36 },
+        { "type": 40, "name": "Stalactite (Large)", "sprite": "STCLA?", "hanging": true, "radius": 12, "height": 68 },
+        { "type": 87, "name": "Volcano", "sprite": "VLCOE?", "radius": 12, "height": 20 }
       ]
     },
 
@@ -345,7 +384,8 @@
       "defaults": {
         "icon": "sound",
         "colour": "rgb(200, 0, 200)",
-        "angle": false
+        "angle": false,
+        "shrink": true
       },
       "things": [
         { "type": 41, "name": "Waterfall" },
@@ -364,4 +404,3 @@
     }
   ]
 }
-

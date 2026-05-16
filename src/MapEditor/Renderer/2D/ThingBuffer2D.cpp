@@ -158,7 +158,7 @@ ThingBuffer2D::ThingBuffer2D()
 void ThingBuffer2D::setup(const game::ThingType& type)
 {
 	colour_         = type.colour();
-	radius_         = type.radius();
+	radius_         = type.displayRadius();
 	arrow_          = type.angled();
 	shrink_on_zoom_ = type.shrinkOnZoom();
 }

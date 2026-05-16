@@ -6,6 +6,7 @@
       "defaults": {
         "colour": "rgb(0, 255, 0)",
         "radius": 16,
+        "height": 56,
         "solid": true
       },
       "things": [
@@ -24,6 +25,7 @@
           "type": 14,
           "name": "Teleport Destination",
           "colour": "rgb(255, 255, 0)",
+          "radius": 20,
           "sprite": "TFOGB?"
         }
       ]
@@ -40,30 +42,35 @@
           "type": 3004,
           "name": "Former Human",
           "radius": 20,
+          "height": 56,
           "sprite": "POSSA?"
         },
         {
           "type": 9,
           "name": "Former Human Sergeant",
           "radius": 20,
+          "height": 56,
           "sprite": "SPOSA?"
         },
         {
           "type": 3001,
           "name": "Imp",
           "radius": 20,
+          "height": 56,
           "sprite": "TROOA?"
         },
         {
           "type": 3002,
           "name": "Demon",
           "radius": 30,
+          "height": 56,
           "sprite": "SARGA?"
         },
         {
           "type": 58,
           "name": "Spectre",
           "radius": 30,
+          "height": 56,
           "sprite": "SARGB?",
           "translation": "0:255=%[0.22,0.22,0.22]:[0.00,0.00,0.00]"
         },
@@ -71,30 +78,35 @@
           "type": 3006,
           "name": "Lost Soul",
           "radius": 16,
+          "height": 56,
           "sprite": "SKULA?"
         },
         {
           "type": 3005,
           "name": "Cacodemon",
-          "radius": 32,
+          "radius": 31,
+          "height": 56,
           "sprite": "HEADA?"
         },
         {
           "type": 3003,
           "name": "Baron Of Hell",
           "radius": 24,
+          "height": 64,
           "sprite": "BOSSA?"
         },
         {
           "type": 16,
           "name": "CyberDemon",
           "radius": 40,
+          "height": 110,
           "sprite": "CYBRA?"
         },
         {
           "type": 7,
           "name": "Spider Mastermind",
           "radius": 128,
+          "height": 100,
           "sprite": "SPIDA?"
         }
       ]
@@ -103,13 +115,15 @@
     {
       "name": "Health And Armour",
       "defaults": {
-        "angle": false
+        "angle": false,
+        "height": 16
       },
       "things": [
         {
           "type": 2011,
           "name": "Stimpack",
-          "radius": 12,
+          "radius": 20,
+          "display_radius": 12,
           "colour": "rgb(100, 100, 200)",
           "sprite": "STIMA?",
           "icon": "health"
@@ -117,7 +131,8 @@
         {
           "type": 2012,
           "name": "Medikit",
-          "radius": 12,
+          "radius": 20,
+          "display_radius": 12,
           "colour": "rgb(100, 100, 200)",
           "sprite": "MEDIA?",
           "icon": "health"
@@ -125,7 +140,8 @@
         {
           "type": 2014,
           "name": "Health Potion",
-          "radius": 10,
+          "radius": 20,
+          "display_radius": 10,
           "colour": "rgb(0, 0, 200)",
           "sprite": "BON1A?",
           "icon": "health"
@@ -133,7 +149,8 @@
         {
           "type": 2015,
           "name": "Armour Helmet",
-          "radius": 10,
+          "radius": 20,
+          "display_radius": 10,
           "colour": "rgb(0, 0, 200)",
           "sprite": "BON2A?",
           "icon": "armour"
@@ -141,7 +158,8 @@
         {
           "type": 2018,
           "name": "Green Armour",
-          "radius": 14,
+          "radius": 20,
+          "display_radius": 14,
           "colour": "rgb(100, 200, 100)",
           "sprite": "ARM1A?",
           "icon": "armour"
@@ -149,7 +167,8 @@
         {
           "type": 2019,
           "name": "Blue Armour",
-          "radius": 14,
+          "radius": 20,
+          "display_radius": 14,
           "colour": "rgb(100, 100, 200)",
           "sprite": "ARM2A?",
           "icon": "armour"
@@ -162,6 +181,7 @@
       "defaults": {
         "colour": "rgb(220, 180, 100)",
         "radius": 20,
+        "height": 16,
         "angle": false,
         "icon": "weapon"
       },
@@ -180,17 +200,19 @@
       "defaults": {
         "colour": "rgb(180, 150, 50)",
         "angle": false,
-        "radius": 16,
+        "radius": 20,
+        "display_radius": 16,
+        "height": 16,
         "icon": "ammo"
       },
       "things": [
-        { "type": 2007, "name": "Ammo Clip", "sprite": "CLIPA?", "radius": 10 },
+        { "type": 2007, "name": "Ammo Clip", "sprite": "CLIPA?", "display_radius": 10 },
         { "type": 2048, "name": "Box Of Ammo", "sprite": "AMMOA?" },
-        { "type": 2008, "name": "Shotgun Shells", "sprite": "SHELA?", "radius": 10 },
+        { "type": 2008, "name": "Shotgun Shells", "sprite": "SHELA?", "display_radius": 10 },
         { "type": 2049, "name": "Box Of Shells", "sprite": "SBOXA?" },
-        { "type": 2010, "name": "Rocket", "sprite": "ROCKA?", "radius": 10 },
+        { "type": 2010, "name": "Rocket", "sprite": "ROCKA?", "display_radius": 10 },
         { "type": 2046, "name": "Box Of Rockets", "sprite": "BROKA?" },
-        { "type": 2047, "name": "Energy Cell", "sprite": "CELLA?", "radius": 10 },
+        { "type": 2047, "name": "Energy Cell", "sprite": "CELLA?", "display_radius": 10 },
         { "type": 17, "name": "Energy Pack", "sprite": "CELPA?" },
         { "type": 8, "name": "Backpack", "sprite": "BPAKA?" }
       ]
@@ -200,7 +222,9 @@
       "name": "Powerups",
       "defaults": {
         "colour": "rgb(220, 100, 220)",
-        "radius": 16,
+        "radius": 20,
+        "display_radius": 16,
+        "height": 16,
         "angle": false,
         "icon": "powerup"
       },
@@ -218,7 +242,9 @@
     {
       "name": "Keys",
       "defaults": {
-        "radius": 12,
+        "radius": 20,
+        "display_radius": 12,
+        "height": 16,
         "angle": false,
         "icon": "key"
       },
@@ -234,7 +260,7 @@
           "name": "Red Skull Key",
           "colour": "rgb(255, 0, 0)",
           "sprite": "RSKUA?",
-          "radius": 14
+          "display_radius": 14
         },
         {
           "type": 5,
@@ -247,7 +273,7 @@
           "name": "Blue Skull Key",
           "colour": "rgb(0, 0, 255)",
           "sprite": "BSKUA?",
-          "radius": 14
+          "display_radius": 14
         },
         {
           "type": 6,
@@ -260,7 +286,7 @@
           "name": "Yellow Skull Key",
           "colour": "rgb(255, 255, 0)",
           "sprite": "YSKUA?",
-          "radius": 14
+          "display_radius": 14
         }
       ]
     },
@@ -268,7 +294,9 @@
     {
       "name": "Gore/Dead Things",
       "defaults": {
-        "radius": 16,
+        "radius": 20,
+        "display_radius": 16,
+        "height": 16,
         "angle": false,
         "decoration": true,
         "colour": "rgb(90, 0, 0)"
@@ -295,18 +323,95 @@
         "solid": true
       },
       "things": [
-        { "type": 25, "name": "Impaled Body", "sprite": "POL6A?", "hanging": false },
-        { "type": 26, "name": "Impaled Body (Twitching)", "sprite": "POL6B?", "hanging": false },
-        { "type": 63, "name": "Hanging Swaying Body", "sprite": "GOR1A?", "solid": false },
-        { "type": 49, "name": "Hanging Swaying Body (Blocking)", "sprite": "GOR1B?" },
-        { "type": 61, "name": "Hanging One-legged Body", "sprite": "GOR3A?", "solid": false },
-        { "type": 51, "name": "Hanging One-legged Body (Blocking)", "sprite": "GOR3A?" },
-        { "type": 62, "name": "Hanging Leg", "sprite": "GOR5A?", "solid": false },
-        { "type": 53, "name": "Hanging Leg (Blocking)", "sprite": "GOR5A?" },
-        { "type": 59, "name": "Hanging Body Arms Out", "sprite": "GOR2A?", "solid": false },
-        { "type": 50, "name": "Hanging Body Arms Out (Blocking)", "sprite": "GOR2A?" },
-        { "type": 60, "name": "Hanging Legs", "sprite": "GOR4A?", "solid": false },
-        { "type": 52, "name": "Hanging Legs (Blocking)", "sprite": "GOR4A?" }
+        {
+          "type": 25,
+          "name": "Impaled Body",
+          "sprite": "POL6A?",
+          "hanging": false,
+          "height": 16
+        },
+        {
+          "type": 26,
+          "name": "Impaled Body (Twitching)",
+          "sprite": "POL6B?",
+          "hanging": false,
+          "height": 16
+        },
+        {
+          "type": 63,
+          "name": "Hanging Swaying Body",
+          "sprite": "GOR1A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 68,
+          "solid": false
+        },
+        {
+          "type": 49,
+          "name": "Hanging Swaying Body (Blocking)",
+          "sprite": "GOR1B?",
+          "height": 68
+        },
+        {
+          "type": 61,
+          "name": "Hanging One-legged Body",
+          "sprite": "GOR3A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 52,
+          "solid": false
+        },
+        {
+          "type": 51,
+          "name": "Hanging One-legged Body (Blocking)",
+          "sprite": "GOR3A?",
+          "height": 84
+        },
+        {
+          "type": 62,
+          "name": "Hanging Leg",
+          "sprite": "GOR5A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 52,
+          "solid": false
+        },
+        {
+          "type": 53,
+          "name": "Hanging Leg (Blocking)",
+          "sprite": "GOR5A?",
+          "height": 52
+        },
+        {
+          "type": 59,
+          "name": "Hanging Body Arms Out",
+          "sprite": "GOR2A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 84,
+          "solid": false
+        },
+        {
+          "type": 50,
+          "name": "Hanging Body Arms Out (Blocking)",
+          "sprite": "GOR2A?",
+          "height": 84
+        },
+        {
+          "type": 60,
+          "name": "Hanging Legs",
+          "sprite": "GOR4A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 68,
+          "solid": false
+        },
+        {
+          "type": 52,
+          "name": "Hanging Legs (Blocking)",
+          "sprite": "GOR4A?",
+          "height": 68
+        }
       ]
     },
 
@@ -315,13 +420,14 @@
       "defaults": {
         "colour": "rgb(160, 0, 0)",
         "radius": 16,
+        "height": 16,
         "angle": false,
         "decoration": true
       },
       "things": [
-        { "type": 24, "name": "Pool of Blood", "sprite": "POL5A?" },
-        { "type": 10, "name": "Guts and Bones", "sprite": "PLAYW?" },
-        { "type": 12, "name": "Guts And Bones 2", "sprite": "PLAYW?" },
+        { "type": 24, "name": "Pool of Blood", "sprite": "POL5A?", "radius": 20, "display_radius": 16 },
+        { "type": 10, "name": "Guts and Bones", "sprite": "PLAYW?", "radius": 20, "display_radius": 16 },
+        { "type": 12, "name": "Guts And Bones 2", "sprite": "PLAYW?", "radius": 20, "display_radius": 16 },
         { "type": 27, "name": "Skull on Pole", "sprite": "POL4A?" },
         { "type": 28, "name": "Heads on Pole", "sprite": "POL2A?" },
         { "type": 42, "name": "Flaming Skulls", "sprite": "FSKUA?" },
@@ -334,6 +440,7 @@
       "defaults": {
         "colour": "rgb(220, 220, 200)",
         "radius": 16,
+        "height": 16,
         "angle": false,
         "icon": "light",
         "fullbright": true,
@@ -341,7 +448,7 @@
         "solid": true
       },
       "things": [
-        { "type": 34, "name": "Candle", "sprite": "CANDA?" },
+        { "type": 34, "name": "Candle", "sprite": "CANDA?", "radius": 20, "display_radius": 16 },
         { "type": 35, "name": "Candelabra", "sprite": "CBRAA?" },
         { "type": 2028, "name": "Yellow Lamp", "sprite": "COLUA?" },
         { "type": 57, "name": "Short Red Torch", "sprite": "SMRTA?" },
@@ -358,13 +465,14 @@
       "defaults": {
         "colour": "rgb(200, 200, 200)",
         "radius": 16,
+        "height": 16,
         "angle": false,
         "decoration": true,
         "solid": true
       },
       "things": [
         { "type": 48, "name": "Tech Column", "sprite": "ELECA?" },
-        { "type": 2035, "name": "Barrel", "sprite": "BAR1A?" }
+        { "type": 2035, "name": "Barrel", "sprite": "BAR1A?", "radius": 10, "display_radius": 16, "height": 42 }
       ]
     },
 
@@ -373,6 +481,7 @@
       "defaults": {
         "colour": "rgb(200, 200, 200)",
         "radius": 16,
+        "height": 16,
         "angle": false,
         "decoration": true,
         "solid": true
@@ -393,6 +502,7 @@
       "defaults": {
         "colour": "rgb(200, 200, 200)",
         "radius": 16,
+        "height": 16,
         "angle": false,
         "decoration": true,
         "solid": true

@@ -8,64 +8,20 @@
         "solid": true
       },
       "things": [
-        {
-          "type": 65,
-          "name": "Chaingunner",
-          "radius": 20,
-          "sprite": "CPOSA?"
-        },
-        {
-          "type": 69,
-          "name": "Hell Knight",
-          "radius": 24,
-          "sprite": "BOS2A?"
-        },
-        {
-          "type": 68,
-          "name": "Arachnotron",
-          "radius": 64,
-          "sprite": "BSPIA?"
-        },
-        {
-          "type": 71,
-          "name": "Pain Elemental",
-          "radius": 32,
-          "sprite": "PAINA?"
-        },
-        {
-          "type": 66,
-          "name": "Revenant",
-          "radius": 20,
-          "sprite": "SKELB?"
-        },
-        {
-          "type": 67,
-          "name": "Mancubus",
-          "radius": 48,
-          "sprite": "FATTC?"
-        },
-        {
-          "type": 64,
-          "name": "Arch-Vile",
-          "radius": 20,
-          "sprite": "VILEB?"
-        },
-        {
-          "type": 88,
-          "name": "Boss Brain",
-          "radius": 20,
-          "sprite": "BBRNA?"
-        },
-        {
-          "type": 89,
-          "name": "Boss Shooter",
-          "radius": 20,
-          "sprite": "BOSFC?"
-        },
+        { "type": 65, "name": "Chaingunner", "radius": 20, "height": 56, "sprite": "CPOSA?" },
+        { "type": 69, "name": "Hell Knight", "radius": 24, "height": 64, "sprite": "BOS2A?" },
+        { "type": 68, "name": "Arachnotron", "radius": 64, "height": 64, "sprite": "BSPIA?" },
+        { "type": 71, "name": "Pain Elemental", "radius": 31, "height": 56, "sprite": "PAINA?" },
+        { "type": 66, "name": "Revenant", "radius": 20, "height": 56, "sprite": "SKELB?" },
+        { "type": 67, "name": "Mancubus", "radius": 48, "height": 64, "sprite": "FATTC?" },
+        { "type": 64, "name": "Arch-Vile", "radius": 20, "height": 56, "sprite": "VILEB?" },
+        { "type": 88, "name": "Boss Brain", "radius": 16, "display_radius": 20, "height": 16, "sprite": "BBRNA?" },
+        { "type": 89, "name": "Boss Shooter", "radius": 20, "height": 32, "sprite": "BOSFC?" },
         {
           "type": 87,
           "name": "Boss Spawn Spot",
           "radius": 20,
+          "height": 32,
           "colour": "rgb(255, 255, 0)",
           "sprite": "BOSFB?"
         },
@@ -74,6 +30,7 @@
           "name": "Hanging Keen",
           "colour": "rgb(200, 200, 200)",
           "radius": 16,
+          "height": 72,
           "sprite": "KEENA?",
           "angle": false
         },
@@ -81,6 +38,7 @@
           "type": 84,
           "name": "Wolfenstein 3D SS",
           "radius": 20,
+          "height": 56,
           "sprite": "SSWVA?"
         }
       ]
@@ -93,6 +51,7 @@
           "type": 82,
           "name": "Super Shotgun",
           "radius": 20,
+          "height": 16,
           "colour": "rgb(220, 180, 100)",
           "sprite": "SGN2A?",
           "angle": false,
@@ -107,7 +66,9 @@
         {
           "type": 83,
           "name": "Megasphere",
-          "radius": 16,
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16,
           "colour": "rgb(220, 100, 220)",
           "sprite": "MEGAA?",
           "angle": false,
@@ -127,12 +88,12 @@
         "solid": true
       },
       "things": [
-        { "type": 73, "name": "Hanging Body, Guts Removed", "sprite": "HDB1A?" },
-        { "type": 74, "name": "Hanging Body, Guts & Brain Removed", "sprite": "HDB2A?" },
-        { "type": 75, "name": "Hanging Torso, Looking Down", "sprite": "HDB3A?" },
-        { "type": 76, "name": "Hanging Torso, Open Skull", "sprite": "HDB4A?" },
-        { "type": 77, "name": "Hanging Torso, Looking Up", "sprite": "HDB5A?" },
-        { "type": 78, "name": "Hanging Torso, Brain Removed", "sprite": "HDB6A?" }
+        { "type": 73, "name": "Hanging Body, Guts Removed", "sprite": "HDB1A?", "height": 88 },
+        { "type": 74, "name": "Hanging Body, Guts & Brain Removed", "sprite": "HDB2A?", "height": 88 },
+        { "type": 75, "name": "Hanging Torso, Looking Down", "sprite": "HDB3A?", "height": 64 },
+        { "type": 76, "name": "Hanging Torso, Open Skull", "sprite": "HDB4A?", "height": 64 },
+        { "type": 77, "name": "Hanging Torso, Looking Up", "sprite": "HDB5A?", "height": 64 },
+        { "type": 78, "name": "Hanging Torso, Brain Removed", "sprite": "HDB6A?", "height": 64 }
       ]
     },
 
@@ -140,7 +101,9 @@
       "name": "Gore/Blood & Stuff",
       "defaults": {
         "colour": "rgb(160, 0, 0)",
-        "radius": 16,
+        "radius": 20,
+        "display_radius": 16,
+        "height": 16,
         "angle": false,
         "decoration": true
       },
@@ -156,6 +119,7 @@
       "defaults": {
         "colour": "rgb(220, 220, 200)",
         "radius": 16,
+        "height": 16,
         "angle": false,
         "icon": "light",
         "fullbright": true,

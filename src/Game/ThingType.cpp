@@ -78,6 +78,7 @@ void ThingType::copy(const ThingType& copy)
 	shrink_            = copy.shrink_;
 	colour_            = copy.colour_;
 	radius_            = copy.radius_;
+	display_radius_    = copy.display_radius_;
 	height_            = copy.height_;
 	scale_             = copy.scale_;
 	fullbright_        = copy.fullbright_;
@@ -125,6 +126,7 @@ void ThingType::reset()
 	shrink_            = false;
 	colour_            = ColRGBA::WHITE;
 	radius_            = 20;
+	display_radius_    = -1;
 	height_            = -1;
 	scale_             = { 1.0, 1.0 };
 	fullbright_        = false;
@@ -481,6 +483,7 @@ void ThingType::fromJson(const Json& j)
 		jsonutil::getIf(j, "sprite", sprite_);
 		jsonutil::getIf(j, "icon", icon_);
 		jsonutil::getIf(j, "radius", radius_);
+		jsonutil::getIf(j, "display_radius", display_radius_);
 		jsonutil::getIf(j, "height", height_);
 		jsonutil::getIf(j, "angle", angled_);    // Show angle
 		jsonutil::getIf(j, "hanging", hanging_); // Hanging object

@@ -34,6 +34,7 @@ namespace game
 		const string&  group() const { return group_; }
 		ColRGBA        colour() const { return colour_; }
 		int            radius() const { return radius_; }
+		int            displayRadius() const { return display_radius_ < 0 ? radius_ : display_radius_; }
 		int            height() const { return height_; }
 		float          scaleX() const { return scale_.x; }
 		float          scaleY() const { return scale_.y; }
@@ -78,6 +79,7 @@ namespace game
 		string  group_;
 		ColRGBA colour_     = { 170, 170, 180, 255 };
 		int     radius_     = 20;
+		int     display_radius_ = -1;
 		int     height_     = -1;
 		Vec2f   scale_      = { 1., 1. };
 		bool    angled_     = true;

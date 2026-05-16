@@ -5,6 +5,7 @@
       "defaults": {
         "colour": "rgb(0, 255, 0)",
         "radius": 16,
+        "height": 64,
         "solid": true
       },
       "things": [
@@ -46,8 +47,21 @@
     {
       "name": "Teleports",
       "things": [
-        { "type": 14, "name": "Teleport Destination", "colour": "rgb(255, 255, 0)", "sprite": "TELEA0" },
-        { "type": 140, "name": "Teleport Smoke", "colour": "rgb(167, 0, 0)", "sprite": "TSMKA0", "angle": false }
+        {
+          "type": 14,
+          "name": "Teleport Destination",
+          "colour": "rgb(255, 255, 0)",
+          "sprite": "TELEA0",
+          "radius": 20
+        },
+        {
+          "type": 140,
+          "name": "Teleport Smoke",
+          "colour": "rgb(167, 0, 0)",
+          "sprite": "TSMKA0",
+          "angle": false,
+          "radius": 20
+        }
       ]
     },
     {
@@ -57,34 +71,42 @@
         "solid": true
       },
       "things": [
-        { "type": 107, "name": "Centaur", "sprite": "CENTA?" },
-        { "type": 10060, "name": "Affrit", "sprite": "FDMNA?" },
-        { "type": 115, "name": "Slaughtaur", "sprite": "CENTF?" },
-        { "type": 34, "name": "Reiver", "sprite": "WRTHA?" },
-        { "type": 10011, "name": "Reiver (buried)", "sprite": "WRTHA?" },
-        { "type": 254, "name": "Death Wyvern", "sprite": "DRAGC?", "dragon": true },
-        { "type": 10030, "name": "Ettin", "sprite": "ETTNA?", "radius": 25 },
-        { "type": 8020, "name": "Wendigo", "sprite": "ICEYA?", "radius": 22 },
-        { "type": 31, "name": "Green Chaos Serpent", "sprite": "DEMNA?", "radius": 32 },
-        { "type": 8080, "name": "Brown Chaos Serpent", "sprite": "DEM2A?", "radius": 32 },
-        { "type": 114, "name": "Dark Bishop", "sprite": "BISHA?", "radius": 22 },
-        { "type": 121, "name": "Stalker", "sprite": "SSPTB?", "radius": 32 },
-        { "type": 120, "name": "Stalker Boss", "sprite": "SSPTD?", "radius": 32 },
-        { "type": 10100, "name": "Zedek (fighter)", "sprite": "PLAYE?", "radius": 16 },
-        { "type": 10101, "name": "Traductus (cleric)", "sprite": "CLERE?", "radius": 16 },
-        { "type": 10102, "name": "Menelkir (mage)", "sprite": "MAGEE?", "radius": 16 },
-        { "type": 10080, "name": "Heresiarch", "sprite": "SORCA?", "radius": 40, "script": true },
-        { "type": 10200, "name": "Korax", "sprite": "KORXA?", "radius": 65 }
+        { "type": 107, "name": "Centaur", "sprite": "CENTA?", "radius": 20, "height": 64 },
+        { "type": 10060, "name": "Affrit", "sprite": "FDMNA?", "radius": 20, "height": 68 },
+        { "type": 115, "name": "Slaughtaur", "sprite": "CENTF?", "radius": 20, "height": 64 },
+        { "type": 34, "name": "Reiver", "sprite": "WRTHA?", "radius": 20, "height": 55 },
+        { "type": 10011, "name": "Reiver (buried)", "sprite": "WRTHA?", "radius": 20, "height": 68 },
+        { "type": 254, "name": "Death Wyvern", "sprite": "DRAGC?", "dragon": true, "radius": 20, "height": 65 },
+        { "type": 10030, "name": "Ettin", "sprite": "ETTNA?", "radius": 25, "height": 68 },
+        { "type": 8020, "name": "Wendigo", "sprite": "ICEYA?", "radius": 22, "height": 75 },
+        { "type": 31, "name": "Green Chaos Serpent", "sprite": "DEMNA?", "radius": 32, "height": 64 },
+        { "type": 8080, "name": "Brown Chaos Serpent", "sprite": "DEM2A?", "radius": 32, "height": 64 },
+        { "type": 114, "name": "Dark Bishop", "sprite": "BISHA?", "radius": 22, "height": 65 },
+        { "type": 121, "name": "Stalker", "sprite": "SSPTB?", "radius": 32, "height": 70 },
+        { "type": 120, "name": "Stalker Boss", "sprite": "SSPTD?", "radius": 32, "height": 70 },
+        { "type": 10100, "name": "Zedek (fighter)", "sprite": "PLAYE?", "radius": 16, "height": 64 },
+        { "type": 10101, "name": "Traductus (cleric)", "sprite": "CLERE?", "radius": 16, "height": 64 },
+        { "type": 10102, "name": "Menelkir (mage)", "sprite": "MAGEE?", "radius": 16, "height": 64 },
+        { "type": 10080, "name": "Heresiarch", "sprite": "SORCA?", "radius": 40, "height": 110, "script": true },
+        { "type": 10200, "name": "Korax", "sprite": "KORXA?", "radius": 65, "height": 115 }
       ]
     },
     {
       "name": "Health And Armour",
       "defaults": {
         "angle": false,
-        "colour": "rgb(0, 0, 200)"
+        "colour": "rgb(0, 0, 200)",
+        "radius": 20,
+        "height": 16
       },
       "things": [
-        { "type": 81, "name": "Crystal Vial", "sprite": "PTN1A?", "colour": "rgb(100, 100, 200)" },
+        {
+          "type": 81,
+          "name": "Crystal Vial",
+          "sprite": "PTN1A?",
+          "colour": "rgb(100, 100, 200)",
+          "display_radius": 10
+        },
         { "type": 8005, "name": "Mesh Armor", "sprite": "ARM1A?" },
         { "type": 8006, "name": "Falcon Shield", "sprite": "ARM2A?" },
         { "type": 8007, "name": "Platinum Helm", "sprite": "ARM3A?" },
@@ -123,7 +145,7 @@
       "defaults": {
         "colour": "rgb(220, 100, 220)",
         "radius": 20,
-        "height": 20,
+        "height": 16,
         "angle": false
       },
       "things": [
@@ -149,7 +171,8 @@
       "defaults": {
         "colour": "rgb(180, 150, 50)",
         "angle": false,
-        "radius": 8
+        "radius": 8,
+        "height": 8
       },
       "things": [
         { "type": 122, "name": "Blue Mana", "sprite": "MAN1H?" },
@@ -161,7 +184,9 @@
       "name": "Puzzle Items",
       "defaults": {
         "angle": false,
-        "colour": "rgb(114, 54, 0)"
+        "colour": "rgb(114, 54, 0)",
+        "radius": 20,
+        "height": 16
       },
       "things": [
         { "type": 9002, "name": "Yorick's Skull", "sprite": "ARTISKLL" },
@@ -186,7 +211,9 @@
     {
       "name": "Keys",
       "defaults": {
-        "radius": 12,
+        "radius": 8,
+        "display_radius": 12,
+        "height": 20,
         "angle": false,
         "icon": "key"
       },
@@ -212,16 +239,18 @@
         "colour": "rgb(114, 54, 0)"
       },
       "things": [
-        { "type": 8065, "name": "Bell", "sprite": "BBLLA?", "radius": 56 },
-        { "type": 9011, "name": "Yorick's Statue", "sprite": "STWNA?", "radius": 10 },
-        { "type": 9012, "name": "Pedestal of D'Sparil", "sprite": "GMPDA?", "radius": 10 },
-        { "type": 10090, "name": "Spike Down", "sprite": "TSPKD?", "radius": 20 },
-        { "type": 10091, "name": "Spike Up", "sprite": "TSPKB?", "radius": 20 },
-        { "type": 118, "name": "Glitter Bridge", "sprite": "TLGLB?", "radius": 32 },
+        { "type": 8065, "name": "Bell", "sprite": "BBLLA?", "radius": 56, "height": 120 },
+        { "type": 9011, "name": "Yorick's Statue", "sprite": "STWNA?", "radius": 10, "height": 62 },
+        { "type": 9012, "name": "Pedestal of D'Sparil", "sprite": "GMPDA?", "radius": 10, "height": 40 },
+        { "type": 10090, "name": "Spike Down", "sprite": "TSPKD?", "radius": 20, "height": 128 },
+        { "type": 10091, "name": "Spike Up", "sprite": "TSPKB?", "radius": 20, "height": 128 },
+        { "type": 118, "name": "Glitter Bridge", "sprite": "TLGLB?", "radius": 32, "height": 2 },
         {
           "type": 10225,
           "name": "Bat Spawner",
           "sprite": "ABATC?",
+          "radius": 20,
+          "height": 16,
           "arg1": "Spawn Frequency",
           "arg2": "Spread Angle",
           "arg4": "Spawn Duration",
@@ -232,6 +261,8 @@
           "name": "Fog Spawner",
           "sprite": "FOGME0",
           "angle": true,
+          "radius": 20,
+          "height": 16,
           "arg1": "Movement Speed",
           "arg2": "Spread Angle",
           "arg3": "Spawn Frequency",
@@ -242,6 +273,8 @@
           "name": "Fog Patch (small)",
           "sprite": "FOGSA0",
           "angle": true,
+          "radius": 20,
+          "height": 16,
           "arg1": "Movement Speed",
           "arg4": "Fog Lifetime",
           "arg5": "Moving Fog"
@@ -251,6 +284,8 @@
           "name": "Fog Patch (medium)",
           "sprite": "FOGMA0",
           "angle": true,
+          "radius": 20,
+          "height": 16,
           "arg1": "Movement Speed",
           "arg4": "Fog Lifetime",
           "arg5": "Moving Fog"
@@ -260,11 +295,13 @@
           "name": "Fog Patch (large)",
           "sprite": "FOGLA0",
           "angle": true,
+          "radius": 20,
+          "height": 16,
           "arg1": "Movement Speed",
           "arg4": "Fog Lifetime",
           "arg5": "Moving Fog"
         },
-        { "type": 113, "name": "Leaf Spawner", "sprite": "LEF1C0", "angle": true }
+        { "type": 113, "name": "Leaf Spawner", "sprite": "LEF1C0", "angle": true, "radius": 20, "height": 16 }
       ]
     },
     {
@@ -272,12 +309,13 @@
       "defaults": {
         "angle": false,
         "icon": "spot",
-        "colour": "rgb(180, 180, 60)"
+        "colour": "rgb(180, 180, 60)",
+        "display_radius": 16
       },
       "things": [
-        { "type": 3000, "name": "Polyobject Anchor", "sprite": "" },
-        { "type": 3001, "name": "Polyobject Start Spot", "sprite": "" },
-        { "type": 3002, "name": "Polyobject Start Spot (crush)", "sprite": "" }
+        { "type": 3000, "name": "Polyobject Anchor", "sprite": "", "radius": 20, "height": 16 },
+        { "type": 3001, "name": "Polyobject Start Spot", "sprite": "", "radius": 20, "height": 16 },
+        { "type": 3002, "name": "Polyobject Start Spot (crush)", "sprite": "", "radius": 20, "height": 16 }
       ]
     },
     {
@@ -301,13 +339,13 @@
         "hanging": true
       },
       "things": [
-        { "type": 111, "name": "Pool Of Blood", "sprite": "GIBSA?", "hanging": false },
-        { "type": 71, "name": "Hanging Corpse", "sprite": "CPS3A?", "radius": 6 },
-        { "type": 61, "name": "Impaled Corpse", "sprite": "CPS1A?", "radius": 10, "hanging": false, "solid": true },
-        { "type": 108, "name": "Lynched Corpse", "sprite": "CPS4A?", "radius": 11 },
-        { "type": 109, "name": "Lynched Corpse (heartless)", "sprite": "CPS5A?", "radius": 10 },
-        { "type": 110, "name": "Corpse (sitting)", "sprite": "CPS6A?", "radius": 15, "hanging": false },
-        { "type": 62, "name": "Corpse (sleeping)", "sprite": "CPS2A?", "hanging": false }
+        { "type": 111, "name": "Pool Of Blood", "sprite": "GIBSA?", "hanging": false, "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 71, "name": "Hanging Corpse", "sprite": "CPS3A?", "radius": 6, "display_radius": 10, "height": 75 },
+        { "type": 61, "name": "Impaled Corpse", "sprite": "CPS1A?", "radius": 10, "height": 92, "hanging": false, "solid": true },
+        { "type": 108, "name": "Lynched Corpse", "sprite": "CPS4A?", "radius": 11, "height": 95 },
+        { "type": 109, "name": "Lynched Corpse (heartless)", "sprite": "CPS5A?", "radius": 10, "height": 100 },
+        { "type": 110, "name": "Corpse (sitting)", "sprite": "CPS6A?", "radius": 15, "height": 35, "hanging": false },
+        { "type": 62, "name": "Corpse (sleeping)", "sprite": "CPS2A?", "radius": 20, "display_radius": 16, "height": 16, "hanging": false }
       ]
     },
     {
@@ -320,27 +358,27 @@
         "decoration": true
       },
       "things": [
-        { "type": 17, "name": "Chandelier (lit)", "sprite": "CDLRA?", "hanging": true },
-        { "type": 8063, "name": "Chandelier (unlit)", "sprite": "CDLRD?", "hanging": true },
-        { "type": 8066, "name": "Blue Candle (lit)", "sprite": "CANDA?" },
-        { "type": 8502, "name": "Candle With Web (unlit)", "sprite": "TST3A?" },
-        { "type": 8503, "name": "Small Gray Candle (unlit)", "sprite": "TST4A?" },
-        { "type": 8504, "name": "Small Candle (unlit)", "sprite": "TST5A?" },
-        { "type": 119, "name": "3 Candles (lit)", "sprite": "CNDLA?" },
-        { "type": 10500, "name": "Small Flame (timed)", "sprite": "FFSMA?" },
-        { "type": 10501, "name": "Small Flame", "sprite": "FFSMA?" },
-        { "type": 10502, "name": "Large Flame (timed)", "sprite": "FFLGD?" },
-        { "type": 10503, "name": "Large Flame", "sprite": "FFLGD?" },
-        { "type": 54, "name": "Wall Torch (lit)", "sprite": "WLTRB?" },
-        { "type": 55, "name": "Wall Torch (unlit)", "sprite": "WLTRI?" },
-        { "type": 8042, "name": "Minotaur Statue (lit)", "sprite": "FBULB?", "solid": true },
-        { "type": 8043, "name": "Minotaur Statue (unlit)", "sprite": "FBULH?", "solid": true },
-        { "type": 8069, "name": "Cauldron (lit)", "sprite": "CDRNG?", "radius": 12, "solid": true },
-        { "type": 8070, "name": "Cauldron (unlit)", "sprite": "CDRNA?", "radius": 12, "solid": true },
-        { "type": 8060, "name": "Skull With Flame", "sprite": "FSKLA?", "radius": 5, "solid": true },
-        { "type": 8061, "name": "Brazier With Flame", "sprite": "BRTRB?", "radius": 6, "solid": true },
-        { "type": 116, "name": "Twined Torch (lit)", "sprite": "TWTRA?", "radius": 10, "solid": true },
-        { "type": 117, "name": "Twined Torch (unlit)", "sprite": "TWTRI?", "radius": 10, "solid": true }
+        { "type": 17, "name": "Chandelier (lit)", "sprite": "CDLRA?", "hanging": true, "radius": 20, "display_radius": 16, "height": 60 },
+        { "type": 8063, "name": "Chandelier (unlit)", "sprite": "CDLRD?", "hanging": true, "radius": 20, "display_radius": 16, "height": 60 },
+        { "type": 8066, "name": "Blue Candle (lit)", "sprite": "CANDA?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 8502, "name": "Candle With Web (unlit)", "sprite": "TST3A?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 8503, "name": "Small Gray Candle (unlit)", "sprite": "TST4A?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 8504, "name": "Small Candle (unlit)", "sprite": "TST5A?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 119, "name": "3 Candles (lit)", "sprite": "CNDLA?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 10500, "name": "Small Flame (timed)", "sprite": "FFSMA?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 10501, "name": "Small Flame", "sprite": "FFSMA?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 10502, "name": "Large Flame (timed)", "sprite": "FFLGD?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 10503, "name": "Large Flame", "sprite": "FFLGD?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 54, "name": "Wall Torch (lit)", "sprite": "WLTRB?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 55, "name": "Wall Torch (unlit)", "sprite": "WLTRI?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 8042, "name": "Minotaur Statue (lit)", "sprite": "FBULB?", "solid": true, "radius": 20, "display_radius": 16, "height": 80 },
+        { "type": 8043, "name": "Minotaur Statue (unlit)", "sprite": "FBULH?", "solid": true, "radius": 20, "display_radius": 16, "height": 80 },
+        { "type": 8069, "name": "Cauldron (lit)", "sprite": "CDRNG?", "radius": 12, "height": 26, "solid": true },
+        { "type": 8070, "name": "Cauldron (unlit)", "sprite": "CDRNA?", "radius": 12, "height": 26, "solid": true },
+        { "type": 8060, "name": "Skull With Flame", "sprite": "FSKLA?", "radius": 5, "display_radius": 12, "height": 10, "solid": true },
+        { "type": 8061, "name": "Brazier With Flame", "sprite": "BRTRB?", "radius": 6, "display_radius": 12, "height": 35, "solid": true },
+        { "type": 116, "name": "Twined Torch (lit)", "sprite": "TWTRA?", "radius": 10, "height": 64, "solid": true },
+        { "type": 117, "name": "Twined Torch (unlit)", "sprite": "TWTRI?", "radius": 10, "height": 64, "solid": true }
       ]
     },
     {
@@ -348,22 +386,23 @@
       "defaults": {
         "colour": "rgb(200, 200, 200)",
         "radius": 16,
+        "display_radius": 16,
         "angle": false,
         "decoration": true,
         "solid": true
       },
       "things": [
-        { "type": 77, "name": "Battle Rag Banner", "sprite": "BNR1A?", "radius": 8 },
-        { "type": 8100, "name": "Barrel", "sprite": "BARLA?", "radius": 15 },
-        { "type": 103, "name": "Pillar With Vase", "sprite": "VASEA?", "radius": 12 },
-        { "type": 8103, "name": "Hanging Bucket", "sprite": "BCKTA?", "hanging": true, "radius": 8, "solid": false },
-        { "type": 8509, "name": "Meat Cleaver", "sprite": "TST0A?", "solid": false },
-        { "type": 8508, "name": "Goblet (silver)", "sprite": "TST9A?", "solid": false },
-        { "type": 8507, "name": "Goblet (small)", "sprite": "TST8A?", "solid": false },
-        { "type": 8506, "name": "Goblet (tall)", "sprite": "TST7A?", "solid": false },
-        { "type": 8505, "name": "Goblet (spilled)", "sprite": "TST6A?", "solid": false },
-        { "type": 8501, "name": "Small Silver Stein", "sprite": "TST2A?", "solid": false },
-        { "type": 8500, "name": "Large Brown Stein", "sprite": "TST1A?", "solid": false }
+        { "type": 77, "name": "Battle Rag Banner", "sprite": "BNR1A?", "radius": 8, "height": 120 },
+        { "type": 8100, "name": "Barrel", "sprite": "BARLA?", "radius": 15, "height": 32 },
+        { "type": 103, "name": "Pillar With Vase", "sprite": "VASEA?", "radius": 12, "height": 54 },
+        { "type": 8103, "name": "Hanging Bucket", "sprite": "BCKTA?", "hanging": true, "radius": 8, "height": 72, "solid": false },
+        { "type": 8509, "name": "Meat Cleaver", "sprite": "TST0A?", "solid": false, "radius": 20, "height": 16 },
+        { "type": 8508, "name": "Goblet (silver)", "sprite": "TST9A?", "solid": false, "radius": 20, "height": 16 },
+        { "type": 8507, "name": "Goblet (small)", "sprite": "TST8A?", "solid": false, "radius": 20, "height": 16 },
+        { "type": 8506, "name": "Goblet (tall)", "sprite": "TST7A?", "solid": false, "radius": 20, "height": 16 },
+        { "type": 8505, "name": "Goblet (spilled)", "sprite": "TST6A?", "solid": false, "radius": 20, "height": 16 },
+        { "type": 8501, "name": "Small Silver Stein", "sprite": "TST2A?", "solid": false, "radius": 20, "height": 16 },
+        { "type": 8500, "name": "Large Brown Stein", "sprite": "TST1A?", "solid": false, "radius": 20, "height": 16 }
       ]
     },
     {
@@ -371,22 +410,24 @@
       "defaults": {
         "colour": "rgb(200, 200, 200)",
         "radius": 16,
+        "display_radius": 16,
         "angle": false,
         "decoration": true,
         "solid": true
       },
       "things": [
-        { "type": 8067, "name": "Iron Maiden", "sprite": "IRONA?", "radius": 12 },
-        { "type": 8071, "name": "Chain (short)", "sprite": "CHNSA?", "hanging": true, "radius": 4, "solid": false },
-        { "type": 8072, "name": "Chain (long)", "sprite": "CHNSB?", "hanging": true, "radius": 4, "solid": false },
-        { "type": 8073, "name": "Hook With Heart", "sprite": "CHNSC?", "hanging": true, "radius": 4, "solid": false },
-        { "type": 8077, "name": "Hook With Skull", "sprite": "CHNSG?", "hanging": true, "radius": 4, "solid": false },
+        { "type": 8067, "name": "Iron Maiden", "sprite": "IRONA?", "radius": 12, "height": 60 },
+        { "type": 8071, "name": "Chain (short)", "sprite": "CHNSA?", "hanging": true, "radius": 4, "height": 32, "solid": false },
+        { "type": 8072, "name": "Chain (long)", "sprite": "CHNSB?", "hanging": true, "radius": 4, "height": 64, "solid": false },
+        { "type": 8073, "name": "Hook With Heart", "sprite": "CHNSC?", "hanging": true, "radius": 4, "height": 32, "solid": false },
+        { "type": 8077, "name": "Hook With Skull", "sprite": "CHNSG?", "hanging": true, "radius": 4, "height": 32, "solid": false },
         {
           "type": 8074,
           "name": "Chain With Large Hook",
           "sprite": "CHNSD?",
           "hanging": true,
           "radius": 4,
+          "height": 32,
           "solid": false
         },
         {
@@ -395,6 +436,7 @@
           "sprite": "CHNSE?",
           "hanging": true,
           "radius": 4,
+          "height": 32,
           "solid": false
         },
         {
@@ -403,6 +445,7 @@
           "sprite": "CHNSF?",
           "hanging": true,
           "radius": 4,
+          "height": 32,
           "solid": false
         }
       ]
@@ -412,18 +455,19 @@
       "defaults": {
         "colour": "rgb(200, 200, 200)",
         "radius": 16,
+        "display_radius": 16,
         "angle": false,
         "decoration": true,
         "solid": true
       },
       "things": [
-        { "type": 63, "name": "Tombstone (RIP)", "sprite": "TMS1A?", "radius": 10 },
-        { "type": 64, "name": "Tombstone (Shane)", "sprite": "TMS2A?", "radius": 10 },
-        { "type": 65, "name": "Tombstone (slimy)", "sprite": "TMS3A?", "radius": 10 },
-        { "type": 66, "name": "Tombstone (Brian R)", "sprite": "TMS4A?", "radius": 10 },
-        { "type": 67, "name": "Tombstone (cross circle)", "sprite": "TMS5A?", "radius": 10 },
-        { "type": 68, "name": "Tombstone (small cross)", "sprite": "TMS6A?", "radius": 8 },
-        { "type": 69, "name": "Tombstone (Brian P)", "sprite": "TMS7A?", "radius": 8 }
+        { "type": 63, "name": "Tombstone (RIP)", "sprite": "TMS1A?", "radius": 10, "height": 46 },
+        { "type": 64, "name": "Tombstone (Shane)", "sprite": "TMS2A?", "radius": 10, "height": 46 },
+        { "type": 65, "name": "Tombstone (slimy)", "sprite": "TMS3A?", "radius": 10, "height": 46 },
+        { "type": 66, "name": "Tombstone (Brian R)", "sprite": "TMS4A?", "radius": 10, "height": 52 },
+        { "type": 67, "name": "Tombstone (cross circle)", "sprite": "TMS5A?", "radius": 10, "height": 52 },
+        { "type": 68, "name": "Tombstone (small cross)", "sprite": "TMS6A?", "radius": 8, "height": 46 },
+        { "type": 69, "name": "Tombstone (Brian P)", "sprite": "TMS7A?", "radius": 8, "height": 46 }
       ]
     },
     {
@@ -431,25 +475,26 @@
       "defaults": {
         "colour": "rgb(200, 200, 200)",
         "radius": 16,
+        "display_radius": 16,
         "angle": false,
         "decoration": true,
         "solid": true
       },
       "things": [
-        { "type": 5, "name": "Winged Statue", "sprite": "STTWA?", "radius": 10 },
-        { "type": 8051, "name": "Bronze Gargoyle (short)", "sprite": "GAR8A?", "radius": 14 },
-        { "type": 8047, "name": "Bronze Gargoyle (tall)", "sprite": "GAR4A?", "radius": 14 },
-        { "type": 8044, "name": "Rusty Gargoyle (tall)", "sprite": "GAR1A?", "radius": 14 },
-        { "type": 76, "name": "Ice Gargoyle (short)", "sprite": "STT5A?", "radius": 14 },
-        { "type": 73, "name": "Ice Gargoyle (tall)", "sprite": "STT3A?", "radius": 14 },
-        { "type": 8050, "name": "Lava Gargoyle (short)", "sprite": "GAR7A?", "radius": 14 },
-        { "type": 8046, "name": "Lava Gargoyle (tall)", "sprite": "GAR3A?", "radius": 14 },
-        { "type": 8049, "name": "Dark Lava Gargoyle (short)", "sprite": "GAR6A?", "radius": 14 },
-        { "type": 8045, "name": "Dark Lava Gargoyle (tall)", "sprite": "GAR2A?", "radius": 14 },
-        { "type": 74, "name": "Stone Gargoyle (short)", "sprite": "STT4A?", "radius": 14 },
-        { "type": 72, "name": "Stone Gargoyle (tall)", "sprite": "STT2A?", "radius": 14 },
-        { "type": 8052, "name": "Steel Gargoyle (short)", "sprite": "GAR9A?", "radius": 14 },
-        { "type": 8048, "name": "Steel Gargoyle (tall)", "sprite": "GAR5A?", "radius": 14 }
+        { "type": 5, "name": "Winged Statue", "sprite": "STTWA?", "radius": 10, "height": 62 },
+        { "type": 8051, "name": "Bronze Gargoyle (short)", "sprite": "GAR8A?", "radius": 14, "height": 62 },
+        { "type": 8047, "name": "Bronze Gargoyle (tall)", "sprite": "GAR4A?", "radius": 14, "height": 108 },
+        { "type": 8044, "name": "Rusty Gargoyle (tall)", "sprite": "GAR1A?", "radius": 14, "height": 108 },
+        { "type": 76, "name": "Ice Gargoyle (short)", "sprite": "STT5A?", "radius": 14, "height": 62 },
+        { "type": 73, "name": "Ice Gargoyle (tall)", "sprite": "STT3A?", "radius": 14, "height": 108 },
+        { "type": 8050, "name": "Lava Gargoyle (short)", "sprite": "GAR7A?", "radius": 14, "height": 62 },
+        { "type": 8046, "name": "Lava Gargoyle (tall)", "sprite": "GAR3A?", "radius": 14, "height": 108 },
+        { "type": 8049, "name": "Dark Lava Gargoyle (short)", "sprite": "GAR6A?", "radius": 14, "height": 62 },
+        { "type": 8045, "name": "Dark Lava Gargoyle (tall)", "sprite": "GAR2A?", "radius": 14, "height": 108 },
+        { "type": 74, "name": "Stone Gargoyle (short)", "sprite": "STT4A?", "radius": 14, "height": 62 },
+        { "type": 72, "name": "Stone Gargoyle (tall)", "sprite": "STT2A?", "radius": 14, "height": 108 },
+        { "type": 8052, "name": "Steel Gargoyle (short)", "sprite": "GAR9A?", "radius": 14, "height": 62 },
+        { "type": 8048, "name": "Steel Gargoyle (tall)", "sprite": "GAR5A?", "radius": 14, "height": 108 }
       ]
     },
     {
@@ -457,40 +502,41 @@
       "defaults": {
         "colour": "rgb(80, 160, 80)",
         "radius": 16,
+        "display_radius": 16,
         "angle": false,
         "decoration": true,
         "solid": true
       },
       "things": [
-        { "type": 80, "name": "Gnarled Tree 1", "sprite": "TRE6A?", "radius": 22 },
-        { "type": 87, "name": "Gnarled Tree 2", "sprite": "TRE7A?", "radius": 22 },
-        { "type": 78, "name": "Tall Tree 1", "sprite": "TRE5A?", "radius": 15 },
-        { "type": 79, "name": "Tall Tree 2", "sprite": "TRE4A?", "radius": 15 },
-        { "type": 8068, "name": "Evergreen Tree", "sprite": "XMASA?", "radius": 11 },
-        { "type": 8062, "name": "Rotten Dead Tree (destructible)", "sprite": "TRDTA?", "radius": 15 },
-        { "type": 24, "name": "Dead Tree", "sprite": "TRE1A?", "radius": 10 },
-        { "type": 25, "name": "Leafless Tree", "sprite": "TRE1A?", "radius": 15 },
-        { "type": 60, "name": "Dead Tree (mossy)", "sprite": "SWMVA?", "radius": 8 },
-        { "type": 26, "name": "Mossy Tree 1", "sprite": "TRE2A?", "radius": 10 },
-        { "type": 27, "name": "Mossy Tree 2", "sprite": "TRE3A?", "radius": 10 },
-        { "type": 88, "name": "Log", "sprite": "SLTRA?" },
-        { "type": 29, "name": "Tree Stump (bare)", "sprite": "STM2A?", "radius": 12 },
-        { "type": 28, "name": "Tree Stump (burned)", "sprite": "STM1A?", "radius": 12 },
-        { "type": 37, "name": "Tree Stump 1", "sprite": "STM3A?" },
-        { "type": 38, "name": "Tree Stump 2", "sprite": "STM4A?" },
-        { "type": 39, "name": "Large Mushroom 1", "sprite": "MSH1A?" },
-        { "type": 40, "name": "Large Mushroom 2", "sprite": "MSH2A?" },
-        { "type": 8104, "name": "Large Mushroom (explodes)", "sprite": "SHRMB?", "radius": 6 },
-        { "type": 41, "name": "Medium Mushroom", "sprite": "MSH3A?" },
-        { "type": 42, "name": "Small Mushroom 1", "sprite": "MSH4A?" },
-        { "type": 44, "name": "Small Mushroom 2", "sprite": "MSH5A?" },
-        { "type": 45, "name": "Small Mushroom 3", "sprite": "MSH6A?" },
-        { "type": 46, "name": "Small Mushroom 4", "sprite": "MSH7A?" },
-        { "type": 47, "name": "Small Mushroom 5", "sprite": "MSH8A?" },
-        { "type": 8101, "name": "Shrub", "sprite": "SHB1A?", "radius": 8 },
-        { "type": 8102, "name": "Shrub 2", "sprite": "SHB2A?", "radius": 16 },
-        { "type": 58, "name": "Hanging Moss 1", "sprite": "MSS1A?", "hanging": true },
-        { "type": 59, "name": "Hanging Moss 2", "sprite": "MSS2A?", "hanging": true }
+        { "type": 80, "name": "Gnarled Tree 1", "sprite": "TRE6A?", "radius": 22, "height": 100 },
+        { "type": 87, "name": "Gnarled Tree 2", "sprite": "TRE7A?", "radius": 22, "height": 100 },
+        { "type": 78, "name": "Tall Tree 1", "sprite": "TRE5A?", "radius": 15, "height": 180 },
+        { "type": 79, "name": "Tall Tree 2", "sprite": "TRE4A?", "radius": 15, "height": 180 },
+        { "type": 8068, "name": "Evergreen Tree", "sprite": "XMASA?", "radius": 11, "height": 130 },
+        { "type": 8062, "name": "Rotten Dead Tree (destructible)", "sprite": "TRDTA?", "radius": 15, "height": 180 },
+        { "type": 24, "name": "Dead Tree", "sprite": "TRE1A?", "radius": 10, "height": 96 },
+        { "type": 25, "name": "Leafless Tree", "sprite": "TRE1A?", "radius": 15, "height": 128 },
+        { "type": 60, "name": "Dead Tree (mossy)", "sprite": "SWMVA?", "radius": 8, "height": 52 },
+        { "type": 26, "name": "Mossy Tree 1", "sprite": "TRE2A?", "radius": 10, "height": 150 },
+        { "type": 27, "name": "Mossy Tree 2", "sprite": "TRE3A?", "radius": 10, "height": 120 },
+        { "type": 88, "name": "Log", "sprite": "SLTRA?", "radius": 20, "height": 25 },
+        { "type": 29, "name": "Tree Stump (bare)", "sprite": "STM2A?", "radius": 12, "height": 20 },
+        { "type": 28, "name": "Tree Stump (burned)", "sprite": "STM1A?", "radius": 12, "height": 20 },
+        { "type": 37, "name": "Tree Stump 1", "sprite": "STM3A?", "radius": 20, "height": 16 },
+        { "type": 38, "name": "Tree Stump 2", "sprite": "STM4A?", "radius": 20, "height": 16 },
+        { "type": 39, "name": "Large Mushroom 1", "sprite": "MSH1A?", "radius": 20, "height": 16 },
+        { "type": 40, "name": "Large Mushroom 2", "sprite": "MSH2A?", "radius": 20, "height": 16 },
+        { "type": 8104, "name": "Large Mushroom (explodes)", "sprite": "SHRMB?", "radius": 6, "height": 20 },
+        { "type": 41, "name": "Medium Mushroom", "sprite": "MSH3A?", "radius": 20, "height": 16 },
+        { "type": 42, "name": "Small Mushroom 1", "sprite": "MSH4A?", "radius": 20, "height": 16 },
+        { "type": 44, "name": "Small Mushroom 2", "sprite": "MSH5A?", "radius": 20, "height": 16 },
+        { "type": 45, "name": "Small Mushroom 3", "sprite": "MSH6A?", "radius": 20, "height": 16 },
+        { "type": 46, "name": "Small Mushroom 4", "sprite": "MSH7A?", "radius": 20, "height": 16 },
+        { "type": 47, "name": "Small Mushroom 5", "sprite": "MSH8A?", "radius": 20, "height": 16 },
+        { "type": 8101, "name": "Shrub", "sprite": "SHB1A?", "radius": 8, "height": 24 },
+        { "type": 8102, "name": "Shrub 2", "sprite": "SHB2A?", "radius": 16, "height": 40 },
+        { "type": 58, "name": "Hanging Moss 1", "sprite": "MSS1A?", "hanging": true, "radius": 20, "height": 20 },
+        { "type": 59, "name": "Hanging Moss 2", "sprite": "MSS2A?", "hanging": true, "radius": 20, "height": 24 }
       ]
     },
     {
@@ -503,31 +549,31 @@
         "solid": true
       },
       "things": [
-        { "type": 98, "name": "Small Rock (brown)", "sprite": "RKBSA?", "radius": 15 },
-        { "type": 97, "name": "Big Rock (brown)", "sprite": "RKBLA?", "radius": 17 },
-        { "type": 99, "name": "Big Rock (grey)", "sprite": "RKBKA?" },
-        { "type": 57, "name": "Stalactite (small)", "sprite": "SLC3A?", "radius": 8 },
-        { "type": 56, "name": "Stalactite (medium)", "sprite": "SLC2A?", "radius": 6 },
-        { "type": 52, "name": "Stalactite (large)", "sprite": "SLC1A?", "radius": 8 },
-        { "type": 48, "name": "Stalagmite (pillar)", "sprite": "SGMPA?", "radius": 8 },
-        { "type": 51, "name": "Stalagmite (small)", "sprite": "SGM3A?", "radius": 8 },
-        { "type": 50, "name": "Stalagmite (medium)", "sprite": "SGM2A?", "radius": 6 },
-        { "type": 49, "name": "Stalagmite (large)", "sprite": "SGM1A?", "radius": 8 },
-        { "type": 96, "name": "Ice Spike (tiny)", "sprite": "ICM4A?", "radius": 4 },
-        { "type": 95, "name": "Ice Spike (small)", "sprite": "ICM3A?", "radius": 5 },
-        { "type": 94, "name": "Ice Spike (medium)", "sprite": "ICM2A?", "radius": 5 },
-        { "type": 93, "name": "Ice Spike (large)", "sprite": "ICM1A?", "radius": 8 },
-        { "type": 92, "name": "Icicle (tiny)", "sprite": "ICT4A?", "radius": 4 },
-        { "type": 91, "name": "Icicle (small)", "sprite": "ICT3A?", "radius": 4 },
-        { "type": 90, "name": "Icicle (medium)", "sprite": "ICT2A?", "radius": 5 },
-        { "type": 89, "name": "Icicle (large)", "sprite": "ICT1A?", "radius": 8 },
-        { "type": 6, "name": "Tiny Rock (mossy)", "sprite": "RCK1A?" },
-        { "type": 7, "name": "Small Rock (mossy)", "sprite": "RCK2A?" },
-        { "type": 9, "name": "Medium Rock (mossy)", "sprite": "RCK3A?" },
-        { "type": 15, "name": "Big Rock (mossy)", "sprite": "RCK4A?" },
-        { "type": 101, "name": "Brick Rubble (small)", "sprite": "RBL2A?" },
-        { "type": 102, "name": "Brick Rubble (medium)", "sprite": "RBL3A?" },
-        { "type": 100, "name": "Brick Rubble (large)", "sprite": "RBL1A?" }
+        { "type": 98, "name": "Small Rock (brown)", "sprite": "RKBSA?", "radius": 15, "height": 50 },
+        { "type": 97, "name": "Big Rock (brown)", "sprite": "RKBLA?", "radius": 17, "height": 72 },
+        { "type": 99, "name": "Big Rock (grey)", "sprite": "RKBKA?", "radius": 20, "display_radius": 16, "height": 40 },
+        { "type": 57, "name": "Stalactite (small)", "sprite": "SLC3A?", "radius": 8, "height": 40 },
+        { "type": 56, "name": "Stalactite (medium)", "sprite": "SLC2A?", "radius": 6, "height": 50 },
+        { "type": 52, "name": "Stalactite (large)", "sprite": "SLC1A?", "radius": 8, "height": 66 },
+        { "type": 48, "name": "Stalagmite (pillar)", "sprite": "SGMPA?", "radius": 8, "height": 138 },
+        { "type": 51, "name": "Stalagmite (small)", "sprite": "SGM3A?", "radius": 8, "height": 36 },
+        { "type": 50, "name": "Stalagmite (medium)", "sprite": "SGM2A?", "radius": 6, "height": 40 },
+        { "type": 49, "name": "Stalagmite (large)", "sprite": "SGM1A?", "radius": 8, "height": 48 },
+        { "type": 96, "name": "Ice Spike (tiny)", "sprite": "ICM4A?", "radius": 4, "height": 8 },
+        { "type": 95, "name": "Ice Spike (small)", "sprite": "ICM3A?", "radius": 4, "display_radius": 5, "height": 32 },
+        { "type": 94, "name": "Ice Spike (medium)", "sprite": "ICM2A?", "radius": 5, "height": 50 },
+        { "type": 93, "name": "Ice Spike (large)", "sprite": "ICM1A?", "radius": 8, "height": 66 },
+        { "type": 92, "name": "Icicle (tiny)", "sprite": "ICT4A?", "radius": 4, "height": 8 },
+        { "type": 91, "name": "Icicle (small)", "sprite": "ICT3A?", "radius": 4, "height": 32 },
+        { "type": 90, "name": "Icicle (medium)", "sprite": "ICT2A?", "radius": 5, "height": 50 },
+        { "type": 89, "name": "Icicle (large)", "sprite": "ICT1A?", "radius": 8, "height": 66 },
+        { "type": 6, "name": "Tiny Rock (mossy)", "sprite": "RCK1A?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 7, "name": "Small Rock (mossy)", "sprite": "RCK2A?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 9, "name": "Medium Rock (mossy)", "sprite": "RCK3A?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 15, "name": "Big Rock (mossy)", "sprite": "RCK4A?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 101, "name": "Brick Rubble (small)", "sprite": "RBL2A?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 102, "name": "Brick Rubble (medium)", "sprite": "RBL3A?", "radius": 20, "display_radius": 16, "height": 16 },
+        { "type": 100, "name": "Brick Rubble (large)", "sprite": "RBL1A?", "radius": 20, "display_radius": 16, "height": 16 }
       ]
     },
     {

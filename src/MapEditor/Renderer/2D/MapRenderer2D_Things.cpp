@@ -132,7 +132,7 @@ void MapRenderer2D::renderThingOverlays(
 	for (const auto thing : things)
 	{
 		const auto& tt     = game::configuration().thingType(thing->type());
-		float       radius = tt.radius() + hwidth + radius_extra;
+		float       radius = tt.displayRadius() + hwidth + radius_extra;
 		if (tt.shrinkOnZoom())
 			radius = scaledRadius(radius);
 
