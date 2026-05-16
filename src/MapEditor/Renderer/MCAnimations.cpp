@@ -203,8 +203,7 @@ void MCAThingSelection::draw(gl::draw2d::Context& dc)
 
 float MCAThingSelection::scaledRadius(float radius, float view_scale)
 {
-	if (radius > 16.0f)
-		radius = 16.0f;
+	radius = std::min(radius, 16.0f);
 
 	if (view_scale > 1.0)
 		return radius / view_scale;
@@ -414,125 +413,16 @@ void MCASectorSelection::draw(gl::draw2d::Context& dc)
 
 // -----------------------------------------------------------------------------
 //
-// MCA3dWallSelection Class Functions
+// MCA3dSelection Class Functions
 //
 // -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
-// MCA3dWallSelection class constructor
+// MCA3dSelection class constructor
 // -----------------------------------------------------------------------------
-MCA3dWallSelection::MCA3dWallSelection(long start, Vec3f points[4], bool select) :
-	MCAnimation(start, true),
-	points_{ points[0], points[1], points[2], points[3] },
-	select_{ select }
-{
-}
-
-// -----------------------------------------------------------------------------
-// Updates the animation based on [time] elapsed in ms
-// -----------------------------------------------------------------------------
-bool MCA3dWallSelection::update(long time)
-{
-	// Determine fade amount (0.0-1.0 over 150ms)
-	fade_ = 1.0f - ((time - starttime_) * 0.004f);
-
-	// Check if animation is finished
-	return !(fade_ < 0.0f || fade_ > 1.0f);
-}
-
-// -----------------------------------------------------------------------------
-// Draws the animation
-// -----------------------------------------------------------------------------
-void MCA3dWallSelection::draw(MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view)
-{
-	//// Setup colour
-	// if (select_)
-	//	gl::setColour(255, 255, 255, 90 * fade_, gl::Blend::Additive);
-	// else
-	//	colourconfig::setGLColour("map_3d_selection", fade_);
-
-	//// Draw quad outline
-	// glLineWidth(2.0f);
-	// glEnable(GL_LINE_SMOOTH);
-	// glBegin(GL_LINE_LOOP);
-	// for (auto& point : points_)
-	//	glVertex3d(point.x, point.y, point.z);
-	// glEnd();
-
-	//// Draw quad fill
-	// colourconfig::setGLColour("map_3d_selection", fade_ * 0.5f);
-	// glBegin(GL_QUADS);
-	// for (auto& point : points_)
-	//	glVertex3d(point.x, point.y, point.z);
-	// glEnd();
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// MCA3dFlatSelection Class Functions
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// MCA3dFlatSelection class constructor
-// -----------------------------------------------------------------------------
-MCA3dFlatSelection::MCA3dFlatSelection(long start, MapSector* sector, const Plane& plane, bool select) :
-	MCAnimation(start, true),
-	sector_{ sector },
-	plane_{ plane },
-	select_{ select }
-{
-}
-
-// -----------------------------------------------------------------------------
-// Updates the animation based on [time] elapsed in ms
-// -----------------------------------------------------------------------------
-bool MCA3dFlatSelection::update(long time)
-{
-	// Determine fade amount (0.0-1.0 over 150ms)
-	fade_ = 1.0f - ((time - starttime_) * 0.004f);
-
-	// Check if animation is finished
-	return !(fade_ < 0.0f || fade_ > 1.0f);
-}
-
-// -----------------------------------------------------------------------------
-// Draws the animation
-// -----------------------------------------------------------------------------
-void MCA3dFlatSelection::draw(MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view)
-{
-	// if (!sector_)
-	//	return;
-
-	//// Setup colour
-	// if (select_)
-	//	gl::setColour(255, 255, 255, 60 * fade_, gl::Blend::Additive);
-	// else
-	//	colourconfig::setGLColour("map_3d_selection", fade_);
-	// glDisable(GL_CULL_FACE);
-
-	////// Set polygon to plane height
-	////sector_->polygon()->setZ(plane_);
-
-	////// Render flat
-	////sector_->polygon()->render();
-
-	////// Reset polygon height
-	////sector_->polygon()->setZ(0);
-
-	// glEnable(GL_CULL_FACE);
-}
-
-
-
-
-
-MCA3dSelection::MCA3dSelection(const vector<Item>& items, MapRenderer3D& renderer, bool select) :
-	MCAnimation{ app::runTimer(), true },
-	select_{ select }
+MCA3dSelection::MCA3dSelection(const vector<Item>& items, const MapRenderer3D& renderer, bool select) :
+	MCAnimation{ app::runTimer(), true }
 {
 	renderer.populateSelectionOverlay(overlay_, items);
 	if (select)
@@ -548,6 +438,9 @@ MCA3dSelection::MCA3dSelection(const vector<Item>& items, MapRenderer3D& rendere
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Updates the animation based on [time] elapsed in ms
+// -----------------------------------------------------------------------------
 bool MCA3dSelection::update(long time)
 {
 	// Determine fade amount (0.0-1.0 over 150ms)
@@ -557,16 +450,15 @@ bool MCA3dSelection::update(long time)
 	return !(fade_ < 0.0f || fade_ > 1.0f);
 }
 
+// -----------------------------------------------------------------------------
+// Draws the animation
+// -----------------------------------------------------------------------------
 void MCA3dSelection::draw(MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view)
 {
 	auto colour = colour_;
 	colour.a *= fade_;
 	renderer.renderSelectionOverlay(camera, view, overlay_, colour);
 }
-
-
-
-
 
 
 // -----------------------------------------------------------------------------

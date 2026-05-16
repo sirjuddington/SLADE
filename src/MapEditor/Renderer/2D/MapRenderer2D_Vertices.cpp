@@ -149,7 +149,7 @@ void MapRenderer2D::renderVertexHilight(gl::draw2d::Context& dc, int index, floa
 	dc.setColourFromConfig("map_hilight", fade);
 	dc.texture            = vertexTexture(true);
 	dc.pointsprite_type   = gl::PointSpriteType::Textured;
-	dc.pointsprite_radius = 1.8f * vertexRadius();
+	dc.pointsprite_radius = 2.5f * vertexRadius();
 	dc.drawPointSprites(vector{ vertex->position() });
 }
 
@@ -176,7 +176,7 @@ void MapRenderer2D::renderVertexSelection(gl::draw2d::Context& dc, const ItemSel
 	dc.setColourFromConfig("map_selection", fade);
 	dc.texture            = vertexTexture(true);
 	dc.pointsprite_type   = gl::PointSpriteType::Textured;
-	dc.pointsprite_radius = 1.8f * vertexRadius();
+	dc.pointsprite_radius = 2.0f * vertexRadius();
 	dc.drawPointSprites(vertices);
 }
 

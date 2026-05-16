@@ -83,9 +83,6 @@ public:
 	void draw(gl::draw2d::Context& dc) override;
 
 private:
-	double              x_      = 0.;
-	double              y_      = 0.;
-	double              radius_ = 0.;
 	bool                select_ = true;
 	float               fade_   = 1.f;
 	gl::PointSpriteType ps_type_;
@@ -147,51 +144,18 @@ private:
 	gl::Blend                      blend_;
 };
 
-// Selection/deselection animation for 3d mode walls
-class MCA3dWallSelection : public MCAnimation
-{
-public:
-	MCA3dWallSelection(long start, Vec3f points[4], bool select = true);
-	~MCA3dWallSelection() override = default;
-
-	bool update(long time) override;
-	void draw(mapeditor::MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view) override;
-
-private:
-	Vec3f points_[4];
-	bool  select_ = true;
-	float fade_   = 1.f;
-};
-
-// Selection/deselection animation for 3d mode flats
-class MCA3dFlatSelection : public MCAnimation
-{
-public:
-	MCA3dFlatSelection(long start, MapSector* sector, const Plane& plane, bool select = true);
-	~MCA3dFlatSelection() override = default;
-
-	bool update(long time) override;
-	void draw(mapeditor::MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view) override;
-
-private:
-	MapSector* sector_ = nullptr;
-	Plane      plane_;
-	bool       select_ = true;
-	float      fade_   = 1.f;
-};
-
+// Selection/deselection animation for all 3d mode items
 class MCA3dSelection : public MCAnimation
 {
 public:
-	MCA3dSelection(const vector<mapeditor::Item>& items, mapeditor::MapRenderer3D& renderer, bool select = true);
+	MCA3dSelection(const vector<mapeditor::Item>& items, const mapeditor::MapRenderer3D& renderer, bool select = true);
 
 	bool update(long time) override;
 	void draw(mapeditor::MapRenderer3D& renderer, const gl::Camera& camera, const gl::View& view) override;
 
 private:
 	mapeditor::SelectionOverlay3D overlay_;
-	bool                          select_ = true;
-	float                         fade_   = 1.f;
+	float                         fade_ = 1.f;
 	glm::vec4                     colour_;
 	bool                          additive_ = false;
 };
