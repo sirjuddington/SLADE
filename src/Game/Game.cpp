@@ -203,6 +203,11 @@ bool PortDef::parse(const MemChunk& mc)
 // -----------------------------------------------------------------------------
 void game::updateCustomDefinitions()
 {
+	// Wait for the base ZScript parse thread to finish before touching
+	// TextLanguage, to prevent possible data race issues
+	if (zscript_parse_thread && zscript_parse_thread->joinable())
+		zscript_parse_thread->join();
+
 	auto& config_current = configuration();
 
 	// Clear out all existing custom definitions
@@ -409,7 +414,9 @@ void game::init()
 					configuration().parseMapInfo(zdoom_pk3);
 				}
 			});
-		zscript_parse_thread->detach();
+		// Don't detach - we need to rejoin it in updateCustomDefinitions
+		// to prevent possible data races if an archive is opened while still
+		// processing
 	}
 
 	// Update custom definitions when an archive is opened or closed
