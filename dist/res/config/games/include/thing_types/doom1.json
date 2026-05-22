@@ -23,6 +23,7 @@
       "things": [
         {
           "type": 14,
+          "class_name": "TeleportDest",
           "name": "Teleport Destination",
           "colour": "rgb(255, 255, 0)",
           "radius": 20,
@@ -40,6 +41,7 @@
       "things": [
         {
           "type": 3004,
+          "class_name": "Zombieman",
           "name": "Former Human",
           "radius": 20,
           "height": 56,
@@ -47,6 +49,7 @@
         },
         {
           "type": 9,
+          "class_name": "ShotgunGuy",
           "name": "Former Human Sergeant",
           "radius": 20,
           "height": 56,
@@ -54,6 +57,7 @@
         },
         {
           "type": 3001,
+          "class_name": "DoomImp",
           "name": "Imp",
           "radius": 20,
           "height": 56,
@@ -61,6 +65,7 @@
         },
         {
           "type": 3002,
+          "class_name": "Demon",
           "name": "Demon",
           "radius": 30,
           "height": 56,
@@ -68,6 +73,7 @@
         },
         {
           "type": 58,
+          "class_name": "Spectre",
           "name": "Spectre",
           "radius": 30,
           "height": 56,
@@ -76,6 +82,7 @@
         },
         {
           "type": 3006,
+          "class_name": "LostSoul",
           "name": "Lost Soul",
           "radius": 16,
           "height": 56,
@@ -83,6 +90,7 @@
         },
         {
           "type": 3005,
+          "class_name": "Cacodemon",
           "name": "Cacodemon",
           "radius": 31,
           "height": 56,
@@ -90,6 +98,7 @@
         },
         {
           "type": 3003,
+          "class_name": "BaronOfHell",
           "name": "Baron Of Hell",
           "radius": 24,
           "height": 64,
@@ -97,6 +106,7 @@
         },
         {
           "type": 16,
+          "class_name": "Cyberdemon",
           "name": "CyberDemon",
           "radius": 40,
           "height": 110,
@@ -104,6 +114,7 @@
         },
         {
           "type": 7,
+          "class_name": "SpiderMastermind",
           "name": "Spider Mastermind",
           "radius": 128,
           "height": 100,
@@ -121,6 +132,7 @@
       "things": [
         {
           "type": 2011,
+          "class_name": "Stimpack",
           "name": "Stimpack",
           "radius": 20,
           "display_radius": 12,
@@ -130,6 +142,7 @@
         },
         {
           "type": 2012,
+          "class_name": "Medikit",
           "name": "Medikit",
           "radius": 20,
           "display_radius": 12,
@@ -139,6 +152,7 @@
         },
         {
           "type": 2014,
+          "class_name": "HealthBonus",
           "name": "Health Potion",
           "radius": 20,
           "display_radius": 10,
@@ -148,6 +162,7 @@
         },
         {
           "type": 2015,
+          "class_name": "ArmorBonus",
           "name": "Armour Helmet",
           "radius": 20,
           "display_radius": 10,
@@ -157,6 +172,7 @@
         },
         {
           "type": 2018,
+          "class_name": "GreenArmor",
           "name": "Green Armour",
           "radius": 20,
           "display_radius": 14,
@@ -166,6 +182,7 @@
         },
         {
           "type": 2019,
+          "class_name": "BlueArmor",
           "name": "Blue Armour",
           "radius": 20,
           "display_radius": 14,
@@ -186,12 +203,12 @@
         "icon": "weapon"
       },
       "things": [
-        { "type": 2005, "name": "Chainsaw", "sprite": "CSAWA?" },
-        { "type": 2001, "name": "Shotgun", "sprite": "SHOTA?" },
-        { "type": 2002, "name": "Chaingun", "sprite": "MGUNA?" },
-        { "type": 2003, "name": "Rocket Launcher", "sprite": "LAUNA?" },
-        { "type": 2004, "name": "Plasma Gun", "sprite": "PLASA?" },
-        { "type": 2006, "name": "BFG9000", "sprite": "BFUGA?" }
+        { "type": 2005, "class_name": "Chainsaw", "name": "Chainsaw", "sprite": "CSAWA?" },
+        { "type": 2001, "class_name": "Shotgun", "name": "Shotgun", "sprite": "SHOTA?" },
+        { "type": 2002, "class_name": "Chaingun", "name": "Chaingun", "sprite": "MGUNA?" },
+        { "type": 2003, "class_name": "RocketLauncher", "name": "Rocket Launcher", "sprite": "LAUNA?" },
+        { "type": 2004, "class_name": "PlasmaRifle", "name": "Plasma Gun", "sprite": "PLASA?" },
+        { "type": 2006, "class_name": "BFG9000", "name": "BFG9000", "sprite": "BFUGA?" }
       ]
     },
 
@@ -206,15 +223,15 @@
         "icon": "ammo"
       },
       "things": [
-        { "type": 2007, "name": "Ammo Clip", "sprite": "CLIPA?", "display_radius": 10 },
-        { "type": 2048, "name": "Box Of Ammo", "sprite": "AMMOA?" },
-        { "type": 2008, "name": "Shotgun Shells", "sprite": "SHELA?", "display_radius": 10 },
-        { "type": 2049, "name": "Box Of Shells", "sprite": "SBOXA?" },
-        { "type": 2010, "name": "Rocket", "sprite": "ROCKA?", "display_radius": 10 },
-        { "type": 2046, "name": "Box Of Rockets", "sprite": "BROKA?" },
-        { "type": 2047, "name": "Energy Cell", "sprite": "CELLA?", "display_radius": 10 },
-        { "type": 17, "name": "Energy Pack", "sprite": "CELPA?" },
-        { "type": 8, "name": "Backpack", "sprite": "BPAKA?" }
+        { "type": 2007, "class_name": "Clip", "name": "Ammo Clip", "sprite": "CLIPA?", "display_radius": 10 },
+        { "type": 2048, "class_name": "ClipBox", "name": "Box Of Ammo", "sprite": "AMMOA?" },
+        { "type": 2008, "class_name": "Shell", "name": "Shotgun Shells", "sprite": "SHELA?", "display_radius": 10 },
+        { "type": 2049, "class_name": "ShellBox", "name": "Box Of Shells", "sprite": "SBOXA?" },
+        { "type": 2010, "class_name": "RocketAmmo", "name": "Rocket", "sprite": "ROCKA?", "display_radius": 10 },
+        { "type": 2046, "class_name": "RocketBox", "name": "Box Of Rockets", "sprite": "BROKA?" },
+        { "type": 2047, "class_name": "Cell", "name": "Energy Cell", "sprite": "CELLA?", "display_radius": 10 },
+        { "type": 17, "class_name": "CellPack", "name": "Energy Pack", "sprite": "CELPA?" },
+        { "type": 8, "class_name": "Backpack", "name": "Backpack", "sprite": "BPAKA?" }
       ]
     },
 
@@ -229,13 +246,13 @@
         "icon": "powerup"
       },
       "things": [
-        { "type": 2024, "name": "Partial Invisibility Sphere", "sprite": "PINSB?" },
-        { "type": 2013, "name": "Soul Sphere", "sprite": "SOULA?" },
-        { "type": 2022, "name": "Invulnerability Sphere", "sprite": "PINVA?" },
-        { "type": 2025, "name": "Radiation Shielding Suit", "sprite": "SUITA?" },
-        { "type": 2023, "name": "Berserk Pack", "sprite": "PSTRA?" },
-        { "type": 2045, "name": "Lite-Amp Goggles", "sprite": "PVISA?" },
-        { "type": 2026, "name": "Computer Area Map", "sprite": "PMAPA?" }
+        { "type": 2024, "class_name": "BlurSphere", "name": "Partial Invisibility Sphere", "sprite": "PINSB?" },
+        { "type": 2013, "class_name": "Soulsphere", "name": "Soul Sphere", "sprite": "SOULA?" },
+        { "type": 2022, "class_name": "InvulnerabilitySphere", "name": "Invulnerability Sphere", "sprite": "PINVA?" },
+        { "type": 2025, "class_name": "RadSuit", "name": "Radiation Shielding Suit", "sprite": "SUITA?" },
+        { "type": 2023, "class_name": "Berserk", "name": "Berserk Pack", "sprite": "PSTRA?" },
+        { "type": 2045, "class_name": "Infrared", "name": "Lite-Amp Goggles", "sprite": "PVISA?" },
+        { "type": 2026, "class_name": "Allmap", "name": "Computer Area Map", "sprite": "PMAPA?" }
       ]
     },
 
@@ -251,12 +268,14 @@
       "things": [
         {
           "type": 13,
+          "class_name": "RedCard",
           "name": "Red Keycard",
           "colour": "rgb(255, 0, 0)",
           "sprite": "RKEYA?"
         },
         {
           "type": 38,
+          "class_name": "RedSkull",
           "name": "Red Skull Key",
           "colour": "rgb(255, 0, 0)",
           "sprite": "RSKUA?",
@@ -264,12 +283,14 @@
         },
         {
           "type": 5,
+          "class_name": "BlueCard",
           "name": "Blue Keycard",
           "colour": "rgb(0, 0, 255)",
           "sprite": "BKEYA?"
         },
         {
           "type": 40,
+          "class_name": "BlueSkull",
           "name": "Blue Skull Key",
           "colour": "rgb(0, 0, 255)",
           "sprite": "BSKUA?",
@@ -277,12 +298,14 @@
         },
         {
           "type": 6,
+          "class_name": "YellowCard",
           "name": "Yellow Keycard",
           "colour": "rgb(255, 255, 0)",
           "sprite": "YKEYA?"
         },
         {
           "type": 39,
+          "class_name": "YellowSkull",
           "name": "Yellow Skull Key",
           "colour": "rgb(255, 255, 0)",
           "sprite": "YSKUA?",
@@ -302,13 +325,13 @@
         "colour": "rgb(90, 0, 0)"
       },
       "things": [
-        { "type": 15, "name": "Dead Player", "sprite": "PLAYN?" },
-        { "type": 18, "name": "Dead Former Human", "sprite": "POSSL?" },
-        { "type": 19, "name": "Dead Former Human Sargeant", "sprite": "SPOSL?" },
-        { "type": 20, "name": "Dead Imp", "sprite": "TROOM?" },
-        { "type": 21, "name": "Dead Demon", "sprite": "SARGN?" },
-        { "type": 23, "name": "Dead Lost Soul", "sprite": "SKULK?" },
-        { "type": 22, "name": "Dead Cacodemon", "sprite": "HEADL?" }
+        { "type": 15, "class_name": "DeadMarine", "name": "Dead Player", "sprite": "PLAYN?" },
+        { "type": 18, "class_name": "DeadZombieMan", "name": "Dead Former Human", "sprite": "POSSL?" },
+        { "type": 19, "class_name": "DeadShotgunGuy", "name": "Dead Former Human Sargeant", "sprite": "SPOSL?" },
+        { "type": 20, "class_name": "DeadDoomImp", "name": "Dead Imp", "sprite": "TROOM?" },
+        { "type": 21, "class_name": "DeadDemon", "name": "Dead Demon", "sprite": "SARGN?" },
+        { "type": 23, "class_name": "DeadLostSoul", "name": "Dead Lost Soul", "sprite": "SKULK?" },
+        { "type": 22, "class_name": "DeadCacodemon", "name": "Dead Cacodemon", "sprite": "HEADL?" }
       ]
     },
 
@@ -325,6 +348,7 @@
       "things": [
         {
           "type": 25,
+          "class_name": "DeadStick",
           "name": "Impaled Body",
           "sprite": "POL6A?",
           "hanging": false,
@@ -332,6 +356,7 @@
         },
         {
           "type": 26,
+          "class_name": "LiveStick",
           "name": "Impaled Body (Twitching)",
           "sprite": "POL6B?",
           "hanging": false,
@@ -339,6 +364,7 @@
         },
         {
           "type": 63,
+          "class_name": "NonsolidTwitch",
           "name": "Hanging Swaying Body",
           "sprite": "GOR1A?",
           "radius": 20,
@@ -348,12 +374,14 @@
         },
         {
           "type": 49,
+          "class_name": "BloodyTwitch",
           "name": "Hanging Swaying Body (Blocking)",
           "sprite": "GOR1B?",
           "height": 68
         },
         {
           "type": 61,
+          "class_name": "NonsolidMeat3",
           "name": "Hanging One-legged Body",
           "sprite": "GOR3A?",
           "radius": 20,
@@ -363,12 +391,14 @@
         },
         {
           "type": 51,
+          "class_name": "Meat3",
           "name": "Hanging One-legged Body (Blocking)",
           "sprite": "GOR3A?",
           "height": 84
         },
         {
           "type": 62,
+          "class_name": "NonsolidMeat5",
           "name": "Hanging Leg",
           "sprite": "GOR5A?",
           "radius": 20,
@@ -378,12 +408,14 @@
         },
         {
           "type": 53,
+          "class_name": "Meat5",
           "name": "Hanging Leg (Blocking)",
           "sprite": "GOR5A?",
           "height": 52
         },
         {
           "type": 59,
+          "class_name": "NonsolidMeat2",
           "name": "Hanging Body Arms Out",
           "sprite": "GOR2A?",
           "radius": 20,
@@ -393,12 +425,14 @@
         },
         {
           "type": 50,
+          "class_name": "Meat2",
           "name": "Hanging Body Arms Out (Blocking)",
           "sprite": "GOR2A?",
           "height": 84
         },
         {
           "type": 60,
+          "class_name": "NonsolidMeat4",
           "name": "Hanging Legs",
           "sprite": "GOR4A?",
           "radius": 20,
@@ -408,6 +442,7 @@
         },
         {
           "type": 52,
+          "class_name": "Meat4",
           "name": "Hanging Legs (Blocking)",
           "sprite": "GOR4A?",
           "height": 68
@@ -425,13 +460,13 @@
         "decoration": true
       },
       "things": [
-        { "type": 24, "name": "Pool of Blood", "sprite": "POL5A?", "radius": 20, "display_radius": 16 },
-        { "type": 10, "name": "Guts and Bones", "sprite": "PLAYW?", "radius": 20, "display_radius": 16 },
-        { "type": 12, "name": "Guts And Bones 2", "sprite": "PLAYW?", "radius": 20, "display_radius": 16 },
-        { "type": 27, "name": "Skull on Pole", "sprite": "POL4A?" },
-        { "type": 28, "name": "Heads on Pole", "sprite": "POL2A?" },
-        { "type": 42, "name": "Flaming Skulls", "sprite": "FSKUA?" },
-        { "type": 29, "name": "Pile of Skulls", "sprite": "POL3A?" }
+        { "type": 24, "class_name": "Gibs", "name": "Pool of Blood", "sprite": "POL5A?", "radius": 20, "display_radius": 16 },
+        { "type": 10, "class_name": "GibbedMarine", "name": "Guts and Bones", "sprite": "PLAYW?", "radius": 20, "display_radius": 16 },
+        { "type": 12, "class_name": "GibbedMarineExtra", "name": "Guts And Bones 2", "sprite": "PLAYW?", "radius": 20, "display_radius": 16 },
+        { "type": 27, "class_name": "HeadOnAStick", "name": "Skull on Pole", "sprite": "POL4A?" },
+        { "type": 28, "class_name": "HeadsOnAStick", "name": "Heads on Pole", "sprite": "POL2A?" },
+        { "type": 42, "class_name": "FloatingSkull", "name": "Flaming Skulls", "sprite": "FSKUA?" },
+        { "type": 29, "class_name": "HeadCandles", "name": "Pile of Skulls", "sprite": "POL3A?" }
       ]
     },
 
@@ -448,15 +483,15 @@
         "solid": true
       },
       "things": [
-        { "type": 34, "name": "Candle", "sprite": "CANDA?", "radius": 20, "display_radius": 16 },
-        { "type": 35, "name": "Candelabra", "sprite": "CBRAA?" },
-        { "type": 2028, "name": "Yellow Lamp", "sprite": "COLUA?" },
-        { "type": 57, "name": "Short Red Torch", "sprite": "SMRTA?" },
-        { "type": 46, "name": "Tall Red Torch", "sprite": "TREDA?" },
-        { "type": 55, "name": "Short Blue Torch", "sprite": "SMBTA?" },
-        { "type": 44, "name": "Tall Blue Torch", "sprite": "TBLUA?" },
-        { "type": 56, "name": "Short Green Torch", "sprite": "SMGTA?" },
-        { "type": 45, "name": "Tall Green Torch", "sprite": "TGRNA?" }
+        { "type": 34, "class_name": "Candlestick", "name": "Candle", "sprite": "CANDA?", "radius": 20, "display_radius": 16 },
+        { "type": 35, "class_name": "Candelabra", "name": "Candelabra", "sprite": "CBRAA?" },
+        { "type": 2028, "class_name": "Column", "name": "Yellow Lamp", "sprite": "COLUA?" },
+        { "type": 57, "class_name": "ShortRedTorch", "name": "Short Red Torch", "sprite": "SMRTA?" },
+        { "type": 46, "class_name": "RedTorch", "name": "Tall Red Torch", "sprite": "TREDA?" },
+        { "type": 55, "class_name": "ShortBlueTorch", "name": "Short Blue Torch", "sprite": "SMBTA?" },
+        { "type": 44, "class_name": "BlueTorch", "name": "Tall Blue Torch", "sprite": "TBLUA?" },
+        { "type": 56, "class_name": "ShortGreenTorch", "name": "Short Green Torch", "sprite": "SMGTA?" },
+        { "type": 45, "class_name": "GreenTorch", "name": "Tall Green Torch", "sprite": "TGRNA?" }
       ]
     },
 
@@ -471,8 +506,8 @@
         "solid": true
       },
       "things": [
-        { "type": 48, "name": "Tech Column", "sprite": "ELECA?" },
-        { "type": 2035, "name": "Barrel", "sprite": "BAR1A?", "radius": 10, "display_radius": 16, "height": 42 }
+        { "type": 48, "class_name": "TechPillar", "name": "Tech Column", "sprite": "ELECA?" },
+        { "type": 2035, "class_name": "ExplosiveBarrel", "name": "Barrel", "sprite": "BAR1A?", "radius": 10, "display_radius": 16, "height": 42 }
       ]
     },
 
@@ -487,13 +522,13 @@
         "solid": true
       },
       "things": [
-        { "type": 33, "name": "Short Red Pillar", "sprite": "COL4A?" },
-        { "type": 32, "name": "Tall Red Pillar", "sprite": "COL3A?" },
-        { "type": 31, "name": "Short Green Pillar", "sprite": "COL2A?" },
-        { "type": 30, "name": "Tall Green Pillar", "sprite": "COL1A?" },
-        { "type": 37, "name": "Red Pillar + Skull", "sprite": "COL6A?" },
-        { "type": 36, "name": "Pillar + Pumping Heart", "sprite": "COL5A?" },
-        { "type": 41, "name": "Evil Eye", "sprite": "CEYEA?", "fullbright": true }
+        { "type": 33, "class_name": "ShortRedColumn", "name": "Short Red Pillar", "sprite": "COL4A?" },
+        { "type": 32, "class_name": "TallRedColumn", "name": "Tall Red Pillar", "sprite": "COL3A?" },
+        { "type": 31, "class_name": "ShortGreenColumn", "name": "Short Green Pillar", "sprite": "COL2A?" },
+        { "type": 30, "class_name": "TallGreenColumn", "name": "Tall Green Pillar", "sprite": "COL1A?" },
+        { "type": 37, "class_name": "SkullColumn", "name": "Red Pillar + Skull", "sprite": "COL6A?" },
+        { "type": 36, "class_name": "HeartColumn", "name": "Pillar + Pumping Heart", "sprite": "COL5A?" },
+        { "type": 41, "class_name": "EvilEye", "name": "Evil Eye", "sprite": "CEYEA?", "fullbright": true }
       ]
     },
 
@@ -508,9 +543,9 @@
         "solid": true
       },
       "things": [
-        { "type": 54, "name": "Large Brown Tree", "sprite": "TRE2A?", "radius": 32 },
-        { "type": 43, "name": "Short Grey Tree", "sprite": "TRE1A?" },
-        { "type": 47, "name": "Tree Stump", "sprite": "SMITA?" }
+        { "type": 54, "class_name": "BigTree", "name": "Large Brown Tree", "sprite": "TRE2A?", "radius": 32 },
+        { "type": 43, "class_name": "TorchTree", "name": "Short Grey Tree", "sprite": "TRE1A?" },
+        { "type": 47, "class_name": "Stalagtite", "name": "Tree Stump", "sprite": "SMITA?" }
       ]
     }
   ]

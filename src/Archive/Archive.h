@@ -127,15 +127,15 @@ public:
 	bool revertEntry(ArchiveEntry* entry, bool force = false);
 
 	// Detection
-	MapDesc         mapDesc(ArchiveEntry* maphead);
+	MapDesc         mapDesc(ArchiveEntry* maphead) const;
 	vector<MapDesc> detectMaps() const;
-	string          detectNamespace(ArchiveEntry* entry);
-	string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr);
+	string          detectNamespace(ArchiveEntry* entry) const;
+	string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr) const;
 
 	// Search
-	ArchiveEntry*         findFirst(ArchiveSearchOptions& options);
-	ArchiveEntry*         findLast(ArchiveSearchOptions& options);
-	vector<ArchiveEntry*> findAll(ArchiveSearchOptions& options);
+	ArchiveEntry*         findFirst(ArchiveSearchOptions& options) const;
+	ArchiveEntry*         findLast(ArchiveSearchOptions& options) const;
+	vector<ArchiveEntry*> findAll(ArchiveSearchOptions& options) const;
 	vector<ArchiveEntry*> findModifiedEntries(ArchiveDir* dir = nullptr);
 
 	// Signals

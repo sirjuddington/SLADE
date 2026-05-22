@@ -425,6 +425,9 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 	}
 #endif
 
+	// (Re-)link editor numbers for custom (ZScript/DECORATE) thing types
+	linkDoomEdNums();
+
 	return true;
 }
 

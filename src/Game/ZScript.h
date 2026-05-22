@@ -124,9 +124,11 @@ namespace zscript
 			string sprite_base;
 			string sprite_frame;
 			int    duration;
+			string light;
 		};
 
 		string editorSprite();
+		string light();
 
 		vector<Frame> frames;
 	};
@@ -140,6 +142,7 @@ namespace zscript
 
 		bool   parse(ParsedStatement& states);
 		string editorSprite();
+		string light();
 
 	private:
 		std::map<string, State> states_;

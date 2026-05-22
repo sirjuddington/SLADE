@@ -40,6 +40,7 @@
 #include "Archive/ArchiveFormat.h"
 #include "Archive/ArchiveManager.h"
 #include "Configuration.h"
+#include "GLDefs.h"
 #include "SpecialPreset.h"
 #include "TextEditor/TextLanguage.h"
 #include "ThingType.h"
@@ -214,6 +215,7 @@ void game::updateCustomDefinitions()
 	config_current.clearDecorateDefs();
 	config_current.clearMapInfo();
 	zscript_custom.clear();
+	GLDefs::get().clear();
 
 	// Parse custom definitions in base resource
 	auto base_resource = app::archiveManager().baseResourceArchive();
@@ -236,6 +238,7 @@ void game::updateCustomDefinitions()
 	{
 		config_current.parseDecorateDefs(archive.get());
 		config_current.parseMapInfo(*archive);
+		GLDefs::get().parse(*archive);
 	}
 
 	// Process custom definitions
@@ -418,10 +421,6 @@ void game::init()
 		// to prevent possible data races if an archive is opened while still
 		// processing
 	}
-
-	// Update custom definitions when an archive is opened or closed
-	app::archiveManager().signals().archive_added.connect([](unsigned) { updateCustomDefinitions(); });
-	app::archiveManager().signals().archive_closed.connect([](unsigned) { updateCustomDefinitions(); });
 }
 
 // -----------------------------------------------------------------------------

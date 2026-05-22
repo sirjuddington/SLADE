@@ -97,6 +97,7 @@ void ThingType::copy(const ThingType& copy)
 	palette_           = copy.palette_;
 	z_height_absolute_ = copy.z_height_absolute_;
 	dynamic_light_     = copy.dynamic_light_;
+	light_name_        = copy.light_name_;
 }
 
 // -----------------------------------------------------------------------------
@@ -139,6 +140,7 @@ void ThingType::reset()
 	tagged_            = TagType::None;
 	z_height_absolute_ = false;
 	dynamic_light_     = false;
+	light_name_        = "";
 
 	// Reset args
 	args_.count = 0;
@@ -456,6 +458,8 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 		solid_ = *val;
 	if (props.getIf<bool>("obsolete"))
 		flags_ |= Obsolete;
+	if (auto val = props.getIf<string>("light_name"))
+		light_name_ = *val;
 
 	// ZScript-only props
 	if (zscript)
@@ -493,6 +497,7 @@ void ThingType::fromJson(const Json& j)
 		jsonutil::getIf(j, "solid", solid_);
 		jsonutil::getIf(j, "palette", palette_); // Palette override
 		jsonutil::getIf(j, "zeth", zeth_icon_);
+		jsonutil::getIf(j, "class_name", class_name_);
 
 		// Scale
 		if (j.contains("scale"))

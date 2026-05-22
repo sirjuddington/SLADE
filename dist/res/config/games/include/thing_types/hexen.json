@@ -49,6 +49,7 @@
       "things": [
         {
           "type": 14,
+          "class_name": "TeleportDest",
           "name": "Teleport Destination",
           "colour": "rgb(255, 255, 0)",
           "sprite": "TELEA0",
@@ -56,6 +57,7 @@
         },
         {
           "type": 140,
+          "class_name": "TeleSmoke",
           "name": "Teleport Smoke",
           "colour": "rgb(167, 0, 0)",
           "sprite": "TSMKA0",
@@ -71,24 +73,96 @@
         "solid": true
       },
       "things": [
-        { "type": 107, "name": "Centaur", "sprite": "CENTA?", "radius": 20, "height": 64 },
-        { "type": 10060, "name": "Affrit", "sprite": "FDMNA?", "radius": 20, "height": 68 },
-        { "type": 115, "name": "Slaughtaur", "sprite": "CENTF?", "radius": 20, "height": 64 },
-        { "type": 34, "name": "Reiver", "sprite": "WRTHA?", "radius": 20, "height": 55 },
-        { "type": 10011, "name": "Reiver (buried)", "sprite": "WRTHA?", "radius": 20, "height": 68 },
-        { "type": 254, "name": "Death Wyvern", "sprite": "DRAGC?", "dragon": true, "radius": 20, "height": 65 },
-        { "type": 10030, "name": "Ettin", "sprite": "ETTNA?", "radius": 25, "height": 68 },
-        { "type": 8020, "name": "Wendigo", "sprite": "ICEYA?", "radius": 22, "height": 75 },
-        { "type": 31, "name": "Green Chaos Serpent", "sprite": "DEMNA?", "radius": 32, "height": 64 },
-        { "type": 8080, "name": "Brown Chaos Serpent", "sprite": "DEM2A?", "radius": 32, "height": 64 },
-        { "type": 114, "name": "Dark Bishop", "sprite": "BISHA?", "radius": 22, "height": 65 },
-        { "type": 121, "name": "Stalker", "sprite": "SSPTB?", "radius": 32, "height": 70 },
-        { "type": 120, "name": "Stalker Boss", "sprite": "SSPTD?", "radius": 32, "height": 70 },
-        { "type": 10100, "name": "Zedek (fighter)", "sprite": "PLAYE?", "radius": 16, "height": 64 },
-        { "type": 10101, "name": "Traductus (cleric)", "sprite": "CLERE?", "radius": 16, "height": 64 },
-        { "type": 10102, "name": "Menelkir (mage)", "sprite": "MAGEE?", "radius": 16, "height": 64 },
-        { "type": 10080, "name": "Heresiarch", "sprite": "SORCA?", "radius": 40, "height": 110, "script": true },
-        { "type": 10200, "name": "Korax", "sprite": "KORXA?", "radius": 65, "height": 115 }
+        { "type": 107, "class_name": "Centaur", "name": "Centaur", "sprite": "CENTA?", "radius": 20, "height": 64 },
+        { "type": 10060, "class_name": "FireDemon", "name": "Affrit", "sprite": "FDMNA?", "radius": 20, "height": 68 },
+        {
+          "type": 115,
+          "class_name": "CentaurLeader",
+          "name": "Slaughtaur",
+          "sprite": "CENTF?",
+          "radius": 20,
+          "height": 64
+        },
+        { "type": 34, "class_name": "Wraith", "name": "Reiver", "sprite": "WRTHA?", "radius": 20, "height": 55 },
+        {
+          "type": 10011,
+          "class_name": "WraithBuried",
+          "name": "Reiver (buried)",
+          "sprite": "WRTHA?",
+          "radius": 20,
+          "height": 68
+        },
+        {
+          "type": 254,
+          "class_name": "Dragon",
+          "name": "Death Wyvern",
+          "sprite": "DRAGC?",
+          "dragon": true,
+          "radius": 20,
+          "height": 65
+        },
+        { "type": 10030, "class_name": "Ettin", "name": "Ettin", "sprite": "ETTNA?", "radius": 25, "height": 68 },
+        { "type": 8020, "class_name": "IceGuy", "name": "Wendigo", "sprite": "ICEYA?", "radius": 22, "height": 75 },
+        {
+          "type": 31,
+          "class_name": "Demon1",
+          "name": "Green Chaos Serpent",
+          "sprite": "DEMNA?",
+          "radius": 32,
+          "height": 64
+        },
+        {
+          "type": 8080,
+          "class_name": "Demon2",
+          "name": "Brown Chaos Serpent",
+          "sprite": "DEM2A?",
+          "radius": 32,
+          "height": 64
+        },
+        { "type": 114, "class_name": "Bishop", "name": "Dark Bishop", "sprite": "BISHA?", "radius": 22, "height": 65 },
+        { "type": 121, "class_name": "Serpent", "name": "Stalker", "sprite": "SSPTB?", "radius": 32, "height": 70 },
+        {
+          "type": 120,
+          "class_name": "SerpentLeader",
+          "name": "Stalker Boss",
+          "sprite": "SSPTD?",
+          "radius": 32,
+          "height": 70
+        },
+        {
+          "type": 10100,
+          "class_name": "FighterBoss",
+          "name": "Zedek (fighter)",
+          "sprite": "PLAYE?",
+          "radius": 16,
+          "height": 64
+        },
+        {
+          "type": 10101,
+          "class_name": "ClericBoss",
+          "name": "Traductus (cleric)",
+          "sprite": "CLERE?",
+          "radius": 16,
+          "height": 64
+        },
+        {
+          "type": 10102,
+          "class_name": "MageBoss",
+          "name": "Menelkir (mage)",
+          "sprite": "MAGEE?",
+          "radius": 16,
+          "height": 64
+        },
+        {
+          "type": 10080,
+          "class_name": "Heresiarch",
+          "name": "Heresiarch",
+          "sprite": "SORCA?",
+          "radius": 40,
+          "height": 110,
+          "script": true
+        },
+        { "type": 10200, "class_name": "Korax", "name": "Korax", "sprite": "KORXA?", "radius": 65, "height": 115 }
       ]
     },
     {
@@ -102,15 +176,16 @@
       "things": [
         {
           "type": 81,
+          "class_name": "CrystalVial",
           "name": "Crystal Vial",
           "sprite": "PTN1A?",
           "colour": "rgb(100, 100, 200)",
           "display_radius": 10
         },
-        { "type": 8005, "name": "Mesh Armor", "sprite": "ARM1A?" },
-        { "type": 8006, "name": "Falcon Shield", "sprite": "ARM2A?" },
-        { "type": 8007, "name": "Platinum Helm", "sprite": "ARM3A?" },
-        { "type": 8008, "name": "Amulet Of Warding", "sprite": "ARM4A?" }
+        { "type": 8005, "class_name": "MeshArmor", "name": "Mesh Armor", "sprite": "ARM1A?" },
+        { "type": 8006, "class_name": "FalconShield", "name": "Falcon Shield", "sprite": "ARM2A?" },
+        { "type": 8007, "class_name": "PlatinumHelm", "name": "Platinum Helm", "sprite": "ARM3A?" },
+        { "type": 8008, "class_name": "AmuletOfWarding", "name": "Amulet Of Warding", "sprite": "ARM4A?" }
       ]
     },
     {
@@ -123,21 +198,21 @@
         "icon": "weapon"
       },
       "things": [
-        { "type": 10, "name": "Serpent Staff", "sprite": "WCSSA?" },
-        { "type": 12, "name": "Quietus Piece 1", "sprite": "WFR1A?" },
-        { "type": 13, "name": "Quietus Piece 2", "sprite": "WFR2A?" },
-        { "type": 16, "name": "Quietus Piece 3", "sprite": "WFR3A?" },
-        { "type": 18, "name": "Wraithverge Piece 1", "sprite": "WCH1A?" },
-        { "type": 19, "name": "Wraithverge Piece 2", "sprite": "WCH2A?" },
-        { "type": 20, "name": "Wraithverge Piece 3", "sprite": "WCH3A?" },
-        { "type": 21, "name": "BloodScourge Piece 1", "sprite": "WMS1A?" },
-        { "type": 22, "name": "BloodScourge Piece 2", "sprite": "WMS2A?" },
-        { "type": 23, "name": "BloodScourge Piece 3", "sprite": "WMS3A?" },
-        { "type": 53, "name": "Frost Shards", "sprite": "WMCSA?" },
-        { "type": 123, "name": "Hammer of Retribution", "sprite": "WFHMA?" },
-        { "type": 8009, "name": "Firestorm", "sprite": "WCFMA?" },
-        { "type": 8010, "name": "Timon's Axe", "sprite": "WFAXA?" },
-        { "type": 8040, "name": "Arc of Death", "sprite": "WMCSA?" }
+        { "type": 10, "class_name": "CWeapStaff", "name": "Serpent Staff", "sprite": "WCSSA?" },
+        { "type": 12, "class_name": "FWeaponPiece1", "name": "Quietus Piece 1", "sprite": "WFR1A?" },
+        { "type": 13, "class_name": "FWeaponPiece2", "name": "Quietus Piece 2", "sprite": "WFR2A?" },
+        { "type": 16, "class_name": "FWeaponPiece3", "name": "Quietus Piece 3", "sprite": "WFR3A?" },
+        { "type": 18, "class_name": "CWeaponPiece1", "name": "Wraithverge Piece 1", "sprite": "WCH1A?" },
+        { "type": 19, "class_name": "CWeaponPiece2", "name": "Wraithverge Piece 2", "sprite": "WCH2A?" },
+        { "type": 20, "class_name": "CWeaponPiece3", "name": "Wraithverge Piece 3", "sprite": "WCH3A?" },
+        { "type": 21, "class_name": "MWeaponPiece1", "name": "BloodScourge Piece 1", "sprite": "WMS1A?" },
+        { "type": 22, "class_name": "MWeaponPiece2", "name": "BloodScourge Piece 2", "sprite": "WMS2A?" },
+        { "type": 23, "class_name": "MWeaponPiece3", "name": "BloodScourge Piece 3", "sprite": "WMS3A?" },
+        { "type": 53, "class_name": "MWeapFrost", "name": "Frost Shards", "sprite": "WMCSA?" },
+        { "type": 123, "class_name": "FWeapHammer", "name": "Hammer of Retribution", "sprite": "WFHMA?" },
+        { "type": 8009, "class_name": "CWeapFlame", "name": "Firestorm", "sprite": "WCFMA?" },
+        { "type": 8010, "class_name": "FWeapAxe", "name": "Timon's Axe", "sprite": "WFAXA?" },
+        { "type": 8040, "class_name": "MWeapLightning", "name": "Arc of Death", "sprite": "WMCSA?" }
       ]
     },
     {
@@ -149,21 +224,21 @@
         "angle": false
       },
       "things": [
-        { "type": 30, "name": "Porkalator", "sprite": "ARTIPORK" },
-        { "type": 32, "name": "Mystic Urn", "sprite": "ARTISPHL" },
-        { "type": 33, "name": "Torch", "sprite": "ARTITRCH" },
-        { "type": 36, "name": "Chaos Device", "sprite": "ARTIATLP" },
-        { "type": 82, "name": "Quartz Flask", "sprite": "ARTIPTN2" },
-        { "type": 83, "name": "Wings Of Wrath", "sprite": "ARTISOAR" },
-        { "type": 84, "name": "Icon Of The Defender", "sprite": "ARTIINVU" },
-        { "type": 86, "name": "Dark Servant", "sprite": "ARTISUMN" },
-        { "type": 8000, "name": "Flechette", "sprite": "ARTIPSBG" },
-        { "type": 8002, "name": "Boots Of Speed", "sprite": "ARTISPED" },
-        { "type": 8003, "name": "Krater Of Might", "sprite": "ARTIBMAN" },
-        { "type": 8041, "name": "Dragonskin Bracers", "sprite": "ARTIBRAC" },
-        { "type": 10040, "name": "Banishment Device", "sprite": "ARTITELO" },
-        { "type": 10110, "name": "Disc Of Repulsion", "sprite": "ARTIBLST" },
-        { "type": 10120, "name": "Mystic Ambit Incant", "sprite": "ARTIHRAD" }
+        { "type": 30, "class_name": "ArtiPork", "name": "Porkalator", "sprite": "ARTIPORK" },
+        { "type": 32, "class_name": "ArtiSuperHealth", "name": "Mystic Urn", "sprite": "ARTISPHL" },
+        { "type": 33, "class_name": "ArtiTorch", "name": "Torch", "sprite": "ARTITRCH" },
+        { "type": 36, "class_name": "ArtiTeleport", "name": "Chaos Device", "sprite": "ARTIATLP" },
+        { "type": 82, "class_name": "ArtiHealth", "name": "Quartz Flask", "sprite": "ARTIPTN2" },
+        { "type": 83, "class_name": "ArtiFly", "name": "Wings Of Wrath", "sprite": "ARTISOAR" },
+        { "type": 84, "class_name": "ArtiInvulnerability2", "name": "Icon Of The Defender", "sprite": "ARTIINVU" },
+        { "type": 86, "class_name": "ArtiDarkServant", "name": "Dark Servant", "sprite": "ARTISUMN" },
+        { "type": 8000, "class_name": "ArtiPoisonBag", "name": "Flechette", "sprite": "ARTIPSBG" },
+        { "type": 8002, "class_name": "ArtiSpeedBoots", "name": "Boots Of Speed", "sprite": "ARTISPED" },
+        { "type": 8003, "class_name": "ArtiBoostMana", "name": "Krater Of Might", "sprite": "ARTIBMAN" },
+        { "type": 8041, "class_name": "ArtiBoostArmor", "name": "Dragonskin Bracers", "sprite": "ARTIBRAC" },
+        { "type": 10040, "class_name": "ArtiTeleportOther", "name": "Banishment Device", "sprite": "ARTITELO" },
+        { "type": 10110, "class_name": "ArtiBlastRadius", "name": "Disc Of Repulsion", "sprite": "ARTIBLST" },
+        { "type": 10120, "class_name": "ArtiHealingRadius", "name": "Mystic Ambit Incant", "sprite": "ARTIHRAD" }
       ]
     },
     {
@@ -175,9 +250,9 @@
         "height": 8
       },
       "things": [
-        { "type": 122, "name": "Blue Mana", "sprite": "MAN1H?" },
-        { "type": 124, "name": "Green Mana", "sprite": "MAN2H?" },
-        { "type": 8004, "name": "Combined Mana", "sprite": "MAN3A?" }
+        { "type": 122, "class_name": "Mana1", "name": "Blue Mana", "sprite": "MAN1H?" },
+        { "type": 124, "class_name": "Mana2", "name": "Green Mana", "sprite": "MAN2H?" },
+        { "type": 8004, "class_name": "Mana3", "name": "Combined Mana", "sprite": "MAN3A?" }
       ]
     },
     {
@@ -189,23 +264,23 @@
         "height": 16
       },
       "things": [
-        { "type": 9002, "name": "Yorick's Skull", "sprite": "ARTISKLL" },
-        { "type": 9003, "name": "Heart Of D'Sparil", "sprite": "ARTIBGEM" },
-        { "type": 9004, "name": "Ruby Planet", "sprite": "ARTIGEMR" },
-        { "type": 9005, "name": "Emerald Planet 1", "sprite": "ARTIGEMG" },
-        { "type": 9006, "name": "Sapphire Planet 1", "sprite": "ARTIGEMB" },
-        { "type": 9007, "name": "Daemon Codex", "sprite": "ARTIBOK1" },
-        { "type": 9008, "name": "Liber Obscura", "sprite": "ARTIBOK2" },
-        { "type": 9009, "name": "Emerald Planet 2", "sprite": "ARTIGMG2" },
-        { "type": 9010, "name": "Sapphire Planet 2", "sprite": "ARTIGMB2" },
-        { "type": 9014, "name": "Flame mask", "sprite": "ARTISKL2" },
-        { "type": 9015, "name": "Glaive seal", "sprite": "ARTIFWEP" },
-        { "type": 9016, "name": "Holy relic", "sprite": "ARTICWEP" },
-        { "type": 9017, "name": "Sigil of the magus", "sprite": "ARTIMWEP" },
-        { "type": 9018, "name": "Gear (Steel)", "sprite": "ARTIGEAR" },
-        { "type": 9019, "name": "Gear (Bronze)", "sprite": "ARTIGER2" },
-        { "type": 9020, "name": "Gear (Bronze In Steel)", "sprite": "ARTIGER3" },
-        { "type": 9021, "name": "Gear (Silver In Bronze)", "sprite": "ARTIGER4" }
+        { "type": 9002, "class_name": "PuzzSkull", "name": "Yorick's Skull", "sprite": "ARTISKLL" },
+        { "type": 9003, "class_name": "PuzzGemBig", "name": "Heart Of D'Sparil", "sprite": "ARTIBGEM" },
+        { "type": 9004, "class_name": "PuzzGemRed", "name": "Ruby Planet", "sprite": "ARTIGEMR" },
+        { "type": 9005, "class_name": "PuzzGemGreen1", "name": "Emerald Planet 1", "sprite": "ARTIGEMG" },
+        { "type": 9006, "class_name": "PuzzGemBlue1", "name": "Sapphire Planet 1", "sprite": "ARTIGEMB" },
+        { "type": 9007, "class_name": "PuzzBook1", "name": "Daemon Codex", "sprite": "ARTIBOK1" },
+        { "type": 9008, "class_name": "PuzzBook2", "name": "Liber Obscura", "sprite": "ARTIBOK2" },
+        { "type": 9009, "class_name": "PuzzGemGreen2", "name": "Emerald Planet 2", "sprite": "ARTIGMG2" },
+        { "type": 9010, "class_name": "PuzzGemBlue2", "name": "Sapphire Planet 2", "sprite": "ARTIGMB2" },
+        { "type": 9014, "class_name": "PuzzFlameMask", "name": "Flame mask", "sprite": "ARTISKL2" },
+        { "type": 9015, "class_name": "PuzzFWeapon", "name": "Glaive seal", "sprite": "ARTIFWEP" },
+        { "type": 9016, "class_name": "PuzzCWeapon", "name": "Holy relic", "sprite": "ARTICWEP" },
+        { "type": 9017, "class_name": "PuzzMWeapon", "name": "Sigil of the magus", "sprite": "ARTIMWEP" },
+        { "type": 9018, "class_name": "PuzzGear1", "name": "Gear (Steel)", "sprite": "ARTIGEAR" },
+        { "type": 9019, "class_name": "PuzzGear2", "name": "Gear (Bronze)", "sprite": "ARTIGER2" },
+        { "type": 9020, "class_name": "PuzzGear3", "name": "Gear (Bronze In Steel)", "sprite": "ARTIGER3" },
+        { "type": 9021, "class_name": "PuzzGear4", "name": "Gear (Silver In Bronze)", "sprite": "ARTIGER4" }
       ]
     },
     {
@@ -218,17 +293,59 @@
         "icon": "key"
       },
       "things": [
-        { "type": 8030, "name": "Steel Key", "colour": "rgb(150, 150, 150)", "sprite": "KEY1A0" },
-        { "type": 8031, "name": "Cave Key", "colour": "rgb(255, 218, 0)", "sprite": "KEY2A0" },
-        { "type": 8032, "name": "Axe Key", "colour": "rgb(64, 64, 255)", "sprite": "KEY3A0" },
-        { "type": 8033, "name": "Fire Key", "colour": "rgb(255, 128, 0)", "sprite": "KEY4A0" },
-        { "type": 8034, "name": "Emerald Key", "colour": "rgb(0, 255, 0)", "sprite": "KEY5A0" },
-        { "type": 8035, "name": "Dungeon Key", "colour": "rgb(47, 151, 255)", "sprite": "KEY6A0" },
-        { "type": 8036, "name": "Silver Key", "colour": "rgb(154, 152, 188)", "sprite": "KEY7A0" },
-        { "type": 8037, "name": "Rusty Key", "colour": "rgb(156, 76, 0)", "sprite": "KEY8A0" },
-        { "type": 8038, "name": "Horn Key", "colour": "rgb(255, 218, 0)", "sprite": "KEY9A0" },
-        { "type": 8039, "name": "Swamp Key", "colour": "rgb(64, 255, 64)", "sprite": "KEYAA0" },
-        { "type": 8200, "name": "Castle Key", "colour": "rgb(255, 64, 64)", "sprite": "KEYBA0" }
+        {
+          "type": 8030,
+          "class_name": "KeySteel",
+          "name": "Steel Key",
+          "colour": "rgb(150, 150, 150)",
+          "sprite": "KEY1A0"
+        },
+        { "type": 8031, "class_name": "KeyCave", "name": "Cave Key", "colour": "rgb(255, 218, 0)", "sprite": "KEY2A0" },
+        { "type": 8032, "class_name": "KeyAxe", "name": "Axe Key", "colour": "rgb(64, 64, 255)", "sprite": "KEY3A0" },
+        { "type": 8033, "class_name": "KeyFire", "name": "Fire Key", "colour": "rgb(255, 128, 0)", "sprite": "KEY4A0" },
+        {
+          "type": 8034,
+          "class_name": "KeyEmerald",
+          "name": "Emerald Key",
+          "colour": "rgb(0, 255, 0)",
+          "sprite": "KEY5A0"
+        },
+        {
+          "type": 8035,
+          "class_name": "KeyDungeon",
+          "name": "Dungeon Key",
+          "colour": "rgb(47, 151, 255)",
+          "sprite": "KEY6A0"
+        },
+        {
+          "type": 8036,
+          "class_name": "KeySilver",
+          "name": "Silver Key",
+          "colour": "rgb(154, 152, 188)",
+          "sprite": "KEY7A0"
+        },
+        {
+          "type": 8037,
+          "class_name": "KeyRusted",
+          "name": "Rusty Key",
+          "colour": "rgb(156, 76, 0)",
+          "sprite": "KEY8A0"
+        },
+        { "type": 8038, "class_name": "KeyHorn", "name": "Horn Key", "colour": "rgb(255, 218, 0)", "sprite": "KEY9A0" },
+        {
+          "type": 8039,
+          "class_name": "KeySwamp",
+          "name": "Swamp Key",
+          "colour": "rgb(64, 255, 64)",
+          "sprite": "KEYAA0"
+        },
+        {
+          "type": 8200,
+          "class_name": "KeyCastle",
+          "name": "Castle Key",
+          "colour": "rgb(255, 64, 64)",
+          "sprite": "KEYBA0"
+        }
       ]
     },
     {
@@ -239,14 +356,50 @@
         "colour": "rgb(114, 54, 0)"
       },
       "things": [
-        { "type": 8065, "name": "Bell", "sprite": "BBLLA?", "radius": 56, "height": 120 },
-        { "type": 9011, "name": "Yorick's Statue", "sprite": "STWNA?", "radius": 10, "height": 62 },
-        { "type": 9012, "name": "Pedestal of D'Sparil", "sprite": "GMPDA?", "radius": 10, "height": 40 },
-        { "type": 10090, "name": "Spike Down", "sprite": "TSPKD?", "radius": 20, "height": 128 },
-        { "type": 10091, "name": "Spike Up", "sprite": "TSPKB?", "radius": 20, "height": 128 },
-        { "type": 118, "name": "Glitter Bridge", "sprite": "TLGLB?", "radius": 32, "height": 2 },
+        { "type": 8065, "class_name": "ZBell", "name": "Bell", "sprite": "BBLLA?", "radius": 56, "height": 120 },
+        {
+          "type": 9011,
+          "class_name": "ZWingedStatueNoSkull",
+          "name": "Yorick's Statue",
+          "sprite": "STWNA?",
+          "radius": 10,
+          "height": 62
+        },
+        {
+          "type": 9012,
+          "class_name": "ZGemPedestal",
+          "name": "Pedestal of D'Sparil",
+          "sprite": "GMPDA?",
+          "radius": 10,
+          "height": 40
+        },
+        {
+          "type": 10090,
+          "class_name": "ThrustFloorDown",
+          "name": "Spike Down",
+          "sprite": "TSPKD?",
+          "radius": 20,
+          "height": 128
+        },
+        {
+          "type": 10091,
+          "class_name": "ThrustFloorUp",
+          "name": "Spike Up",
+          "sprite": "TSPKB?",
+          "radius": 20,
+          "height": 128
+        },
+        {
+          "type": 118,
+          "class_name": "Bridge",
+          "name": "Glitter Bridge",
+          "sprite": "TLGLB?",
+          "radius": 32,
+          "height": 2
+        },
         {
           "type": 10225,
+          "class_name": "BatSpawner",
           "name": "Bat Spawner",
           "sprite": "ABATC?",
           "radius": 20,
@@ -258,6 +411,7 @@
         },
         {
           "type": 10000,
+          "class_name": "FogSpawner",
           "name": "Fog Spawner",
           "sprite": "FOGME0",
           "angle": true,
@@ -270,6 +424,7 @@
         },
         {
           "type": 10001,
+          "class_name": "FogPatchSmall",
           "name": "Fog Patch (small)",
           "sprite": "FOGSA0",
           "angle": true,
@@ -281,6 +436,7 @@
         },
         {
           "type": 10002,
+          "class_name": "FogPatchMedium",
           "name": "Fog Patch (medium)",
           "sprite": "FOGMA0",
           "angle": true,
@@ -292,6 +448,7 @@
         },
         {
           "type": 10003,
+          "class_name": "FogPatchLarge",
           "name": "Fog Patch (large)",
           "sprite": "FOGLA0",
           "angle": true,
@@ -301,7 +458,15 @@
           "arg4": "Fog Lifetime",
           "arg5": "Moving Fog"
         },
-        { "type": 113, "name": "Leaf Spawner", "sprite": "LEF1C0", "angle": true, "radius": 20, "height": 16 }
+        {
+          "type": 113,
+          "class_name": "LeafSpawner",
+          "name": "Leaf Spawner",
+          "sprite": "LEF1C0",
+          "angle": true,
+          "radius": 20,
+          "height": 16
+        }
       ]
     },
     {
@@ -325,8 +490,8 @@
         "shrink": true
       },
       "things": [
-        { "type": 9001, "name": "Map Spot" },
-        { "type": 9013, "name": "Map Spot (gravity)" }
+        { "type": 9001, "class_name": "MapSpot", "name": "Map Spot" },
+        { "type": 9013, "class_name": "MapSpotGravity", "name": "Map Spot (gravity)" }
       ]
     },
     {
@@ -339,13 +504,70 @@
         "hanging": true
       },
       "things": [
-        { "type": 111, "name": "Pool Of Blood", "sprite": "GIBSA?", "hanging": false, "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 71, "name": "Hanging Corpse", "sprite": "CPS3A?", "radius": 6, "display_radius": 10, "height": 75 },
-        { "type": 61, "name": "Impaled Corpse", "sprite": "CPS1A?", "radius": 10, "height": 92, "hanging": false, "solid": true },
-        { "type": 108, "name": "Lynched Corpse", "sprite": "CPS4A?", "radius": 11, "height": 95 },
-        { "type": 109, "name": "Lynched Corpse (heartless)", "sprite": "CPS5A?", "radius": 10, "height": 100 },
-        { "type": 110, "name": "Corpse (sitting)", "sprite": "CPS6A?", "radius": 15, "height": 35, "hanging": false },
-        { "type": 62, "name": "Corpse (sleeping)", "sprite": "CPS2A?", "radius": 20, "display_radius": 16, "height": 16, "hanging": false }
+        {
+          "type": 111,
+          "class_name": "BloodPool",
+          "name": "Pool Of Blood",
+          "sprite": "GIBSA?",
+          "hanging": false,
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 71,
+          "class_name": "ZCorpseHanging",
+          "name": "Hanging Corpse",
+          "sprite": "CPS3A?",
+          "radius": 6,
+          "display_radius": 10,
+          "height": 75
+        },
+        {
+          "type": 61,
+          "class_name": "ZCorpseKabob",
+          "name": "Impaled Corpse",
+          "sprite": "CPS1A?",
+          "radius": 10,
+          "height": 92,
+          "hanging": false,
+          "solid": true
+        },
+        {
+          "type": 108,
+          "class_name": "ZCorpseLynched",
+          "name": "Lynched Corpse",
+          "sprite": "CPS4A?",
+          "radius": 11,
+          "height": 95
+        },
+        {
+          "type": 109,
+          "class_name": "ZCorpseLynchedNoHeart",
+          "name": "Lynched Corpse (heartless)",
+          "sprite": "CPS5A?",
+          "radius": 10,
+          "height": 100
+        },
+        {
+          "type": 110,
+          "class_name": "ZCorpseSitting",
+          "name": "Corpse (sitting)",
+          "sprite": "CPS6A?",
+          "radius": 15,
+          "height": 35,
+          "hanging": false
+        },
+        {
+          "type": 62,
+          "class_name": "ZCorpseSleeping",
+          "name": "Corpse (sleeping)",
+          "sprite": "CPS2A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16,
+          "hanging": false
+        }
       ]
     },
     {
@@ -358,27 +580,201 @@
         "decoration": true
       },
       "things": [
-        { "type": 17, "name": "Chandelier (lit)", "sprite": "CDLRA?", "hanging": true, "radius": 20, "display_radius": 16, "height": 60 },
-        { "type": 8063, "name": "Chandelier (unlit)", "sprite": "CDLRD?", "hanging": true, "radius": 20, "display_radius": 16, "height": 60 },
-        { "type": 8066, "name": "Blue Candle (lit)", "sprite": "CANDA?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 8502, "name": "Candle With Web (unlit)", "sprite": "TST3A?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 8503, "name": "Small Gray Candle (unlit)", "sprite": "TST4A?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 8504, "name": "Small Candle (unlit)", "sprite": "TST5A?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 119, "name": "3 Candles (lit)", "sprite": "CNDLA?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 10500, "name": "Small Flame (timed)", "sprite": "FFSMA?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 10501, "name": "Small Flame", "sprite": "FFSMA?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 10502, "name": "Large Flame (timed)", "sprite": "FFLGD?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 10503, "name": "Large Flame", "sprite": "FFLGD?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 54, "name": "Wall Torch (lit)", "sprite": "WLTRB?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 55, "name": "Wall Torch (unlit)", "sprite": "WLTRI?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 8042, "name": "Minotaur Statue (lit)", "sprite": "FBULB?", "solid": true, "radius": 20, "display_radius": 16, "height": 80 },
-        { "type": 8043, "name": "Minotaur Statue (unlit)", "sprite": "FBULH?", "solid": true, "radius": 20, "display_radius": 16, "height": 80 },
-        { "type": 8069, "name": "Cauldron (lit)", "sprite": "CDRNG?", "radius": 12, "height": 26, "solid": true },
-        { "type": 8070, "name": "Cauldron (unlit)", "sprite": "CDRNA?", "radius": 12, "height": 26, "solid": true },
-        { "type": 8060, "name": "Skull With Flame", "sprite": "FSKLA?", "radius": 5, "display_radius": 12, "height": 10, "solid": true },
-        { "type": 8061, "name": "Brazier With Flame", "sprite": "BRTRB?", "radius": 6, "display_radius": 12, "height": 35, "solid": true },
-        { "type": 116, "name": "Twined Torch (lit)", "sprite": "TWTRA?", "radius": 10, "height": 64, "solid": true },
-        { "type": 117, "name": "Twined Torch (unlit)", "sprite": "TWTRI?", "radius": 10, "height": 64, "solid": true }
+        {
+          "type": 17,
+          "class_name": "ZChandelier",
+          "name": "Chandelier (lit)",
+          "sprite": "CDLRA?",
+          "hanging": true,
+          "radius": 20,
+          "display_radius": 16,
+          "height": 60
+        },
+        {
+          "type": 8063,
+          "class_name": "ZChandelierUnlit",
+          "name": "Chandelier (unlit)",
+          "sprite": "CDLRD?",
+          "hanging": true,
+          "radius": 20,
+          "display_radius": 16,
+          "height": 60
+        },
+        {
+          "type": 8066,
+          "class_name": "ZBlueCandle",
+          "name": "Blue Candle (lit)",
+          "sprite": "CANDA?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 8502,
+          "class_name": "TableShit3",
+          "name": "Candle With Web (unlit)",
+          "sprite": "TST3A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 8503,
+          "class_name": "TableShit4",
+          "name": "Small Gray Candle (unlit)",
+          "sprite": "TST4A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 8504,
+          "class_name": "TableShit5",
+          "name": "Small Candle (unlit)",
+          "sprite": "TST5A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 119,
+          "class_name": "ZCandle",
+          "name": "3 Candles (lit)",
+          "sprite": "CNDLA?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 10500,
+          "class_name": "FlameSmallTemp",
+          "name": "Small Flame (timed)",
+          "sprite": "FFSMA?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 10501,
+          "class_name": "FlameSmall",
+          "name": "Small Flame",
+          "sprite": "FFSMA?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 10502,
+          "class_name": "FlameLargeTemp",
+          "name": "Large Flame (timed)",
+          "sprite": "FFLGD?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 10503,
+          "class_name": "FlameLarge",
+          "name": "Large Flame",
+          "sprite": "FFLGD?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 54,
+          "class_name": "ZWallTorch",
+          "name": "Wall Torch (lit)",
+          "sprite": "WLTRB?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 55,
+          "class_name": "ZWallTorchUnlit",
+          "name": "Wall Torch (unlit)",
+          "sprite": "WLTRI?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 8042,
+          "class_name": "ZFireBull",
+          "name": "Minotaur Statue (lit)",
+          "sprite": "FBULB?",
+          "solid": true,
+          "radius": 20,
+          "display_radius": 16,
+          "height": 80
+        },
+        {
+          "type": 8043,
+          "class_name": "ZFireBullUnlit",
+          "name": "Minotaur Statue (unlit)",
+          "sprite": "FBULH?",
+          "solid": true,
+          "radius": 20,
+          "display_radius": 16,
+          "height": 80
+        },
+        {
+          "type": 8069,
+          "class_name": "ZCauldron",
+          "name": "Cauldron (lit)",
+          "sprite": "CDRNG?",
+          "radius": 12,
+          "height": 26,
+          "solid": true
+        },
+        {
+          "type": 8070,
+          "class_name": "ZCauldronUnlit",
+          "name": "Cauldron (unlit)",
+          "sprite": "CDRNA?",
+          "radius": 12,
+          "height": 26,
+          "solid": true
+        },
+        {
+          "type": 8060,
+          "class_name": "FireThing",
+          "name": "Skull With Flame",
+          "sprite": "FSKLA?",
+          "radius": 5,
+          "display_radius": 12,
+          "height": 10,
+          "solid": true
+        },
+        {
+          "type": 8061,
+          "class_name": "BrassTorch",
+          "name": "Brazier With Flame",
+          "sprite": "BRTRB?",
+          "radius": 6,
+          "display_radius": 12,
+          "height": 35,
+          "solid": true
+        },
+        {
+          "type": 116,
+          "class_name": "ZTwinedTorch",
+          "name": "Twined Torch (lit)",
+          "sprite": "TWTRA?",
+          "radius": 10,
+          "height": 64,
+          "solid": true
+        },
+        {
+          "type": 117,
+          "class_name": "ZTwinedTorchUnlit",
+          "name": "Twined Torch (unlit)",
+          "sprite": "TWTRI?",
+          "radius": 10,
+          "height": 64,
+          "solid": true
+        }
       ]
     },
     {
@@ -392,17 +788,96 @@
         "solid": true
       },
       "things": [
-        { "type": 77, "name": "Battle Rag Banner", "sprite": "BNR1A?", "radius": 8, "height": 120 },
-        { "type": 8100, "name": "Barrel", "sprite": "BARLA?", "radius": 15, "height": 32 },
-        { "type": 103, "name": "Pillar With Vase", "sprite": "VASEA?", "radius": 12, "height": 54 },
-        { "type": 8103, "name": "Hanging Bucket", "sprite": "BCKTA?", "hanging": true, "radius": 8, "height": 72, "solid": false },
-        { "type": 8509, "name": "Meat Cleaver", "sprite": "TST0A?", "solid": false, "radius": 20, "height": 16 },
-        { "type": 8508, "name": "Goblet (silver)", "sprite": "TST9A?", "solid": false, "radius": 20, "height": 16 },
-        { "type": 8507, "name": "Goblet (small)", "sprite": "TST8A?", "solid": false, "radius": 20, "height": 16 },
-        { "type": 8506, "name": "Goblet (tall)", "sprite": "TST7A?", "solid": false, "radius": 20, "height": 16 },
-        { "type": 8505, "name": "Goblet (spilled)", "sprite": "TST6A?", "solid": false, "radius": 20, "height": 16 },
-        { "type": 8501, "name": "Small Silver Stein", "sprite": "TST2A?", "solid": false, "radius": 20, "height": 16 },
-        { "type": 8500, "name": "Large Brown Stein", "sprite": "TST1A?", "solid": false, "radius": 20, "height": 16 }
+        {
+          "type": 77,
+          "class_name": "ZBannerTattered",
+          "name": "Battle Rag Banner",
+          "sprite": "BNR1A?",
+          "radius": 8,
+          "height": 120
+        },
+        { "type": 8100, "class_name": "ZBarrel", "name": "Barrel", "sprite": "BARLA?", "radius": 15, "height": 32 },
+        {
+          "type": 103,
+          "class_name": "ZVasePillar",
+          "name": "Pillar With Vase",
+          "sprite": "VASEA?",
+          "radius": 12,
+          "height": 54
+        },
+        {
+          "type": 8103,
+          "class_name": "ZBucket",
+          "name": "Hanging Bucket",
+          "sprite": "BCKTA?",
+          "hanging": true,
+          "radius": 8,
+          "height": 72,
+          "solid": false
+        },
+        {
+          "type": 8509,
+          "class_name": "TableShit10",
+          "name": "Meat Cleaver",
+          "sprite": "TST0A?",
+          "solid": false,
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 8508,
+          "class_name": "TableShit9",
+          "name": "Goblet (silver)",
+          "sprite": "TST9A?",
+          "solid": false,
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 8507,
+          "class_name": "TableShit8",
+          "name": "Goblet (small)",
+          "sprite": "TST8A?",
+          "solid": false,
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 8506,
+          "class_name": "TableShit7",
+          "name": "Goblet (tall)",
+          "sprite": "TST7A?",
+          "solid": false,
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 8505,
+          "class_name": "TableShit6",
+          "name": "Goblet (spilled)",
+          "sprite": "TST6A?",
+          "solid": false,
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 8501,
+          "class_name": "TableShit2",
+          "name": "Small Silver Stein",
+          "sprite": "TST2A?",
+          "solid": false,
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 8500,
+          "class_name": "TableShit1",
+          "name": "Large Brown Stein",
+          "sprite": "TST1A?",
+          "solid": false,
+          "radius": 20,
+          "height": 16
+        }
       ]
     },
     {
@@ -416,13 +891,57 @@
         "solid": true
       },
       "things": [
-        { "type": 8067, "name": "Iron Maiden", "sprite": "IRONA?", "radius": 12, "height": 60 },
-        { "type": 8071, "name": "Chain (short)", "sprite": "CHNSA?", "hanging": true, "radius": 4, "height": 32, "solid": false },
-        { "type": 8072, "name": "Chain (long)", "sprite": "CHNSB?", "hanging": true, "radius": 4, "height": 64, "solid": false },
-        { "type": 8073, "name": "Hook With Heart", "sprite": "CHNSC?", "hanging": true, "radius": 4, "height": 32, "solid": false },
-        { "type": 8077, "name": "Hook With Skull", "sprite": "CHNSG?", "hanging": true, "radius": 4, "height": 32, "solid": false },
+        {
+          "type": 8067,
+          "class_name": "ZIronMaiden",
+          "name": "Iron Maiden",
+          "sprite": "IRONA?",
+          "radius": 12,
+          "height": 60
+        },
+        {
+          "type": 8071,
+          "class_name": "ZChainBit32",
+          "name": "Chain (short)",
+          "sprite": "CHNSA?",
+          "hanging": true,
+          "radius": 4,
+          "height": 32,
+          "solid": false
+        },
+        {
+          "type": 8072,
+          "class_name": "ZChainBit64",
+          "name": "Chain (long)",
+          "sprite": "CHNSB?",
+          "hanging": true,
+          "radius": 4,
+          "height": 64,
+          "solid": false
+        },
+        {
+          "type": 8073,
+          "class_name": "ZChainEndHeart",
+          "name": "Hook With Heart",
+          "sprite": "CHNSC?",
+          "hanging": true,
+          "radius": 4,
+          "height": 32,
+          "solid": false
+        },
+        {
+          "type": 8077,
+          "class_name": "ZChainEndSkull",
+          "name": "Hook With Skull",
+          "sprite": "CHNSG?",
+          "hanging": true,
+          "radius": 4,
+          "height": 32,
+          "solid": false
+        },
         {
           "type": 8074,
+          "class_name": "ZChainEndHook1",
           "name": "Chain With Large Hook",
           "sprite": "CHNSD?",
           "hanging": true,
@@ -432,6 +951,7 @@
         },
         {
           "type": 8075,
+          "class_name": "ZChainEndHook2",
           "name": "Chain With Small Hook",
           "sprite": "CHNSE?",
           "hanging": true,
@@ -441,6 +961,7 @@
         },
         {
           "type": 8076,
+          "class_name": "ZChainEndSpike",
           "name": "Chain with Spike Ball",
           "sprite": "CHNSF?",
           "hanging": true,
@@ -461,13 +982,62 @@
         "solid": true
       },
       "things": [
-        { "type": 63, "name": "Tombstone (RIP)", "sprite": "TMS1A?", "radius": 10, "height": 46 },
-        { "type": 64, "name": "Tombstone (Shane)", "sprite": "TMS2A?", "radius": 10, "height": 46 },
-        { "type": 65, "name": "Tombstone (slimy)", "sprite": "TMS3A?", "radius": 10, "height": 46 },
-        { "type": 66, "name": "Tombstone (Brian R)", "sprite": "TMS4A?", "radius": 10, "height": 52 },
-        { "type": 67, "name": "Tombstone (cross circle)", "sprite": "TMS5A?", "radius": 10, "height": 52 },
-        { "type": 68, "name": "Tombstone (small cross)", "sprite": "TMS6A?", "radius": 8, "height": 46 },
-        { "type": 69, "name": "Tombstone (Brian P)", "sprite": "TMS7A?", "radius": 8, "height": 46 }
+        {
+          "type": 63,
+          "class_name": "ZTombstoneRIP",
+          "name": "Tombstone (RIP)",
+          "sprite": "TMS1A?",
+          "radius": 10,
+          "height": 46
+        },
+        {
+          "type": 64,
+          "class_name": "ZTombstoneShane",
+          "name": "Tombstone (Shane)",
+          "sprite": "TMS2A?",
+          "radius": 10,
+          "height": 46
+        },
+        {
+          "type": 65,
+          "class_name": "ZTombstoneBigCross",
+          "name": "Tombstone (slimy)",
+          "sprite": "TMS3A?",
+          "radius": 10,
+          "height": 46
+        },
+        {
+          "type": 66,
+          "class_name": "ZTombstoneBrianR",
+          "name": "Tombstone (Brian R)",
+          "sprite": "TMS4A?",
+          "radius": 10,
+          "height": 52
+        },
+        {
+          "type": 67,
+          "class_name": "ZTombstoneCrossCircle",
+          "name": "Tombstone (cross circle)",
+          "sprite": "TMS5A?",
+          "radius": 10,
+          "height": 52
+        },
+        {
+          "type": 68,
+          "class_name": "ZTombstoneSmallCross",
+          "name": "Tombstone (small cross)",
+          "sprite": "TMS6A?",
+          "radius": 8,
+          "height": 46
+        },
+        {
+          "type": 69,
+          "class_name": "ZTombstoneBrianP",
+          "name": "Tombstone (Brian P)",
+          "sprite": "TMS7A?",
+          "radius": 8,
+          "height": 46
+        }
       ]
     },
     {
@@ -481,20 +1051,118 @@
         "solid": true
       },
       "things": [
-        { "type": 5, "name": "Winged Statue", "sprite": "STTWA?", "radius": 10, "height": 62 },
-        { "type": 8051, "name": "Bronze Gargoyle (short)", "sprite": "GAR8A?", "radius": 14, "height": 62 },
-        { "type": 8047, "name": "Bronze Gargoyle (tall)", "sprite": "GAR4A?", "radius": 14, "height": 108 },
-        { "type": 8044, "name": "Rusty Gargoyle (tall)", "sprite": "GAR1A?", "radius": 14, "height": 108 },
-        { "type": 76, "name": "Ice Gargoyle (short)", "sprite": "STT5A?", "radius": 14, "height": 62 },
-        { "type": 73, "name": "Ice Gargoyle (tall)", "sprite": "STT3A?", "radius": 14, "height": 108 },
-        { "type": 8050, "name": "Lava Gargoyle (short)", "sprite": "GAR7A?", "radius": 14, "height": 62 },
-        { "type": 8046, "name": "Lava Gargoyle (tall)", "sprite": "GAR3A?", "radius": 14, "height": 108 },
-        { "type": 8049, "name": "Dark Lava Gargoyle (short)", "sprite": "GAR6A?", "radius": 14, "height": 62 },
-        { "type": 8045, "name": "Dark Lava Gargoyle (tall)", "sprite": "GAR2A?", "radius": 14, "height": 108 },
-        { "type": 74, "name": "Stone Gargoyle (short)", "sprite": "STT4A?", "radius": 14, "height": 62 },
-        { "type": 72, "name": "Stone Gargoyle (tall)", "sprite": "STT2A?", "radius": 14, "height": 108 },
-        { "type": 8052, "name": "Steel Gargoyle (short)", "sprite": "GAR9A?", "radius": 14, "height": 62 },
-        { "type": 8048, "name": "Steel Gargoyle (tall)", "sprite": "GAR5A?", "radius": 14, "height": 108 }
+        {
+          "type": 5,
+          "class_name": "ZWingedStatue",
+          "name": "Winged Statue",
+          "sprite": "STTWA?",
+          "radius": 10,
+          "height": 62
+        },
+        {
+          "type": 8051,
+          "class_name": "ZStatueGargoyleTanShort",
+          "name": "Bronze Gargoyle (short)",
+          "sprite": "GAR8A?",
+          "radius": 14,
+          "height": 62
+        },
+        {
+          "type": 8047,
+          "class_name": "ZStatueGargoyleTanTall",
+          "name": "Bronze Gargoyle (tall)",
+          "sprite": "GAR4A?",
+          "radius": 14,
+          "height": 108
+        },
+        {
+          "type": 8044,
+          "class_name": "ZStatueGargoyleStripeTall",
+          "name": "Rusty Gargoyle (tall)",
+          "sprite": "GAR1A?",
+          "radius": 14,
+          "height": 108
+        },
+        {
+          "type": 76,
+          "class_name": "ZStatueGargoyleBlueShort",
+          "name": "Ice Gargoyle (short)",
+          "sprite": "STT5A?",
+          "radius": 14,
+          "height": 62
+        },
+        {
+          "type": 73,
+          "class_name": "ZStatueGargoyleBlueTall",
+          "name": "Ice Gargoyle (tall)",
+          "sprite": "STT3A?",
+          "radius": 14,
+          "height": 108
+        },
+        {
+          "type": 8050,
+          "class_name": "ZStatueGargoyleRedShort",
+          "name": "Lava Gargoyle (short)",
+          "sprite": "GAR7A?",
+          "radius": 14,
+          "height": 62
+        },
+        {
+          "type": 8046,
+          "class_name": "ZStatueGargoyleRedTall",
+          "name": "Lava Gargoyle (tall)",
+          "sprite": "GAR3A?",
+          "radius": 14,
+          "height": 108
+        },
+        {
+          "type": 8049,
+          "class_name": "ZStatueGargoyleDarkRedShort",
+          "name": "Dark Lava Gargoyle (short)",
+          "sprite": "GAR6A?",
+          "radius": 14,
+          "height": 62
+        },
+        {
+          "type": 8045,
+          "class_name": "ZStatueGargoyleDarkRedTall",
+          "name": "Dark Lava Gargoyle (tall)",
+          "sprite": "GAR2A?",
+          "radius": 14,
+          "height": 108
+        },
+        {
+          "type": 74,
+          "class_name": "ZStatueGargoyleGreenShort",
+          "name": "Stone Gargoyle (short)",
+          "sprite": "STT4A?",
+          "radius": 14,
+          "height": 62
+        },
+        {
+          "type": 72,
+          "class_name": "ZStatueGargoyleGreenTall",
+          "name": "Stone Gargoyle (tall)",
+          "sprite": "STT2A?",
+          "radius": 14,
+          "height": 108
+        },
+        {
+          "type": 8052,
+          "class_name": "ZStatueGargoyleRustShort",
+          "name": "Steel Gargoyle (short)",
+          "sprite": "GAR9A?",
+          "radius": 14,
+          "height": 62
+        },
+        {
+          "type": 8048,
+          "class_name": "ZStatueGargoyleRustTall",
+          "name": "Steel Gargoyle (tall)",
+          "sprite": "GAR5A?",
+          "radius": 14,
+          "height": 108
+        }
       ]
     },
     {
@@ -508,35 +1176,205 @@
         "solid": true
       },
       "things": [
-        { "type": 80, "name": "Gnarled Tree 1", "sprite": "TRE6A?", "radius": 22, "height": 100 },
-        { "type": 87, "name": "Gnarled Tree 2", "sprite": "TRE7A?", "radius": 22, "height": 100 },
-        { "type": 78, "name": "Tall Tree 1", "sprite": "TRE5A?", "radius": 15, "height": 180 },
-        { "type": 79, "name": "Tall Tree 2", "sprite": "TRE4A?", "radius": 15, "height": 180 },
-        { "type": 8068, "name": "Evergreen Tree", "sprite": "XMASA?", "radius": 11, "height": 130 },
-        { "type": 8062, "name": "Rotten Dead Tree (destructible)", "sprite": "TRDTA?", "radius": 15, "height": 180 },
-        { "type": 24, "name": "Dead Tree", "sprite": "TRE1A?", "radius": 10, "height": 96 },
-        { "type": 25, "name": "Leafless Tree", "sprite": "TRE1A?", "radius": 15, "height": 128 },
-        { "type": 60, "name": "Dead Tree (mossy)", "sprite": "SWMVA?", "radius": 8, "height": 52 },
-        { "type": 26, "name": "Mossy Tree 1", "sprite": "TRE2A?", "radius": 10, "height": 150 },
-        { "type": 27, "name": "Mossy Tree 2", "sprite": "TRE3A?", "radius": 10, "height": 120 },
-        { "type": 88, "name": "Log", "sprite": "SLTRA?", "radius": 20, "height": 25 },
-        { "type": 29, "name": "Tree Stump (bare)", "sprite": "STM2A?", "radius": 12, "height": 20 },
-        { "type": 28, "name": "Tree Stump (burned)", "sprite": "STM1A?", "radius": 12, "height": 20 },
-        { "type": 37, "name": "Tree Stump 1", "sprite": "STM3A?", "radius": 20, "height": 16 },
-        { "type": 38, "name": "Tree Stump 2", "sprite": "STM4A?", "radius": 20, "height": 16 },
-        { "type": 39, "name": "Large Mushroom 1", "sprite": "MSH1A?", "radius": 20, "height": 16 },
-        { "type": 40, "name": "Large Mushroom 2", "sprite": "MSH2A?", "radius": 20, "height": 16 },
-        { "type": 8104, "name": "Large Mushroom (explodes)", "sprite": "SHRMB?", "radius": 6, "height": 20 },
-        { "type": 41, "name": "Medium Mushroom", "sprite": "MSH3A?", "radius": 20, "height": 16 },
-        { "type": 42, "name": "Small Mushroom 1", "sprite": "MSH4A?", "radius": 20, "height": 16 },
-        { "type": 44, "name": "Small Mushroom 2", "sprite": "MSH5A?", "radius": 20, "height": 16 },
-        { "type": 45, "name": "Small Mushroom 3", "sprite": "MSH6A?", "radius": 20, "height": 16 },
-        { "type": 46, "name": "Small Mushroom 4", "sprite": "MSH7A?", "radius": 20, "height": 16 },
-        { "type": 47, "name": "Small Mushroom 5", "sprite": "MSH8A?", "radius": 20, "height": 16 },
-        { "type": 8101, "name": "Shrub", "sprite": "SHB1A?", "radius": 8, "height": 24 },
-        { "type": 8102, "name": "Shrub 2", "sprite": "SHB2A?", "radius": 16, "height": 40 },
-        { "type": 58, "name": "Hanging Moss 1", "sprite": "MSS1A?", "hanging": true, "radius": 20, "height": 20 },
-        { "type": 59, "name": "Hanging Moss 2", "sprite": "MSS2A?", "hanging": true, "radius": 20, "height": 24 }
+        {
+          "type": 80,
+          "class_name": "ZTreeGnarled1",
+          "name": "Gnarled Tree 1",
+          "sprite": "TRE6A?",
+          "radius": 22,
+          "height": 100
+        },
+        {
+          "type": 87,
+          "class_name": "ZTreeGnarled2",
+          "name": "Gnarled Tree 2",
+          "sprite": "TRE7A?",
+          "radius": 22,
+          "height": 100
+        },
+        {
+          "type": 78,
+          "class_name": "ZTreeLarge1",
+          "name": "Tall Tree 1",
+          "sprite": "TRE5A?",
+          "radius": 15,
+          "height": 180
+        },
+        {
+          "type": 79,
+          "class_name": "ZTreeLarge2",
+          "name": "Tall Tree 2",
+          "sprite": "TRE4A?",
+          "radius": 15,
+          "height": 180
+        },
+        {
+          "type": 8068,
+          "class_name": "ZXmasTree",
+          "name": "Evergreen Tree",
+          "sprite": "XMASA?",
+          "radius": 11,
+          "height": 130
+        },
+        {
+          "type": 8062,
+          "class_name": "TreeDestructible",
+          "name": "Rotten Dead Tree (destructible)",
+          "sprite": "TRDTA?",
+          "radius": 15,
+          "height": 180
+        },
+        { "type": 24, "class_name": "ZTreeDead", "name": "Dead Tree", "sprite": "TRE1A?", "radius": 10, "height": 96 },
+        { "type": 25, "class_name": "ZTree", "name": "Leafless Tree", "sprite": "TRE1A?", "radius": 15, "height": 128 },
+        {
+          "type": 60,
+          "class_name": "ZSwampVine",
+          "name": "Dead Tree (mossy)",
+          "sprite": "SWMVA?",
+          "radius": 8,
+          "height": 52
+        },
+        {
+          "type": 26,
+          "class_name": "ZTreeSwamp150",
+          "name": "Mossy Tree 1",
+          "sprite": "TRE2A?",
+          "radius": 10,
+          "height": 150
+        },
+        {
+          "type": 27,
+          "class_name": "ZTreeSwamp120",
+          "name": "Mossy Tree 2",
+          "sprite": "TRE3A?",
+          "radius": 10,
+          "height": 120
+        },
+        { "type": 88, "class_name": "ZLog", "name": "Log", "sprite": "SLTRA?", "radius": 20, "height": 25 },
+        {
+          "type": 29,
+          "class_name": "ZStumpBare",
+          "name": "Tree Stump (bare)",
+          "sprite": "STM2A?",
+          "radius": 12,
+          "height": 20
+        },
+        {
+          "type": 28,
+          "class_name": "ZStumpBurned",
+          "name": "Tree Stump (burned)",
+          "sprite": "STM1A?",
+          "radius": 12,
+          "height": 20
+        },
+        {
+          "type": 37,
+          "class_name": "ZStumpSwamp1",
+          "name": "Tree Stump 1",
+          "sprite": "STM3A?",
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 38,
+          "class_name": "ZStumpSwamp2",
+          "name": "Tree Stump 2",
+          "sprite": "STM4A?",
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 39,
+          "class_name": "ZShroomLarge1",
+          "name": "Large Mushroom 1",
+          "sprite": "MSH1A?",
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 40,
+          "class_name": "ZShroomLarge2",
+          "name": "Large Mushroom 2",
+          "sprite": "MSH2A?",
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 8104,
+          "class_name": "ZPoisonShroom",
+          "name": "Large Mushroom (explodes)",
+          "sprite": "SHRMB?",
+          "radius": 6,
+          "height": 20
+        },
+        {
+          "type": 41,
+          "class_name": "ZShroomLarge3",
+          "name": "Medium Mushroom",
+          "sprite": "MSH3A?",
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 42,
+          "class_name": "ZShroomSmall1",
+          "name": "Small Mushroom 1",
+          "sprite": "MSH4A?",
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 44,
+          "class_name": "ZShroomSmall2",
+          "name": "Small Mushroom 2",
+          "sprite": "MSH5A?",
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 45,
+          "class_name": "ZShroomSmall3",
+          "name": "Small Mushroom 3",
+          "sprite": "MSH6A?",
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 46,
+          "class_name": "ZShroomSmall4",
+          "name": "Small Mushroom 4",
+          "sprite": "MSH7A?",
+          "radius": 20,
+          "height": 16
+        },
+        {
+          "type": 47,
+          "class_name": "ZShroomSmall5",
+          "name": "Small Mushroom 5",
+          "sprite": "MSH8A?",
+          "radius": 20,
+          "height": 16
+        },
+        { "type": 8101, "class_name": "ZShrub1", "name": "Shrub", "sprite": "SHB1A?", "radius": 8, "height": 24 },
+        { "type": 8102, "class_name": "ZShrub2", "name": "Shrub 2", "sprite": "SHB2A?", "radius": 16, "height": 40 },
+        {
+          "type": 58,
+          "class_name": "ZMossCeiling1",
+          "name": "Hanging Moss 1",
+          "sprite": "MSS1A?",
+          "hanging": true,
+          "radius": 20,
+          "height": 20
+        },
+        {
+          "type": 59,
+          "class_name": "ZMossCeiling2",
+          "name": "Hanging Moss 2",
+          "sprite": "MSS2A?",
+          "hanging": true,
+          "radius": 20,
+          "height": 24
+        }
       ]
     },
     {
@@ -549,31 +1387,215 @@
         "solid": true
       },
       "things": [
-        { "type": 98, "name": "Small Rock (brown)", "sprite": "RKBSA?", "radius": 15, "height": 50 },
-        { "type": 97, "name": "Big Rock (brown)", "sprite": "RKBLA?", "radius": 17, "height": 72 },
-        { "type": 99, "name": "Big Rock (grey)", "sprite": "RKBKA?", "radius": 20, "display_radius": 16, "height": 40 },
-        { "type": 57, "name": "Stalactite (small)", "sprite": "SLC3A?", "radius": 8, "height": 40 },
-        { "type": 56, "name": "Stalactite (medium)", "sprite": "SLC2A?", "radius": 6, "height": 50 },
-        { "type": 52, "name": "Stalactite (large)", "sprite": "SLC1A?", "radius": 8, "height": 66 },
-        { "type": 48, "name": "Stalagmite (pillar)", "sprite": "SGMPA?", "radius": 8, "height": 138 },
-        { "type": 51, "name": "Stalagmite (small)", "sprite": "SGM3A?", "radius": 8, "height": 36 },
-        { "type": 50, "name": "Stalagmite (medium)", "sprite": "SGM2A?", "radius": 6, "height": 40 },
-        { "type": 49, "name": "Stalagmite (large)", "sprite": "SGM1A?", "radius": 8, "height": 48 },
-        { "type": 96, "name": "Ice Spike (tiny)", "sprite": "ICM4A?", "radius": 4, "height": 8 },
-        { "type": 95, "name": "Ice Spike (small)", "sprite": "ICM3A?", "radius": 4, "display_radius": 5, "height": 32 },
-        { "type": 94, "name": "Ice Spike (medium)", "sprite": "ICM2A?", "radius": 5, "height": 50 },
-        { "type": 93, "name": "Ice Spike (large)", "sprite": "ICM1A?", "radius": 8, "height": 66 },
-        { "type": 92, "name": "Icicle (tiny)", "sprite": "ICT4A?", "radius": 4, "height": 8 },
-        { "type": 91, "name": "Icicle (small)", "sprite": "ICT3A?", "radius": 4, "height": 32 },
-        { "type": 90, "name": "Icicle (medium)", "sprite": "ICT2A?", "radius": 5, "height": 50 },
-        { "type": 89, "name": "Icicle (large)", "sprite": "ICT1A?", "radius": 8, "height": 66 },
-        { "type": 6, "name": "Tiny Rock (mossy)", "sprite": "RCK1A?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 7, "name": "Small Rock (mossy)", "sprite": "RCK2A?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 9, "name": "Medium Rock (mossy)", "sprite": "RCK3A?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 15, "name": "Big Rock (mossy)", "sprite": "RCK4A?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 101, "name": "Brick Rubble (small)", "sprite": "RBL2A?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 102, "name": "Brick Rubble (medium)", "sprite": "RBL3A?", "radius": 20, "display_radius": 16, "height": 16 },
-        { "type": 100, "name": "Brick Rubble (large)", "sprite": "RBL1A?", "radius": 20, "display_radius": 16, "height": 16 }
+        {
+          "type": 98,
+          "class_name": "ZRockBrown2",
+          "name": "Small Rock (brown)",
+          "sprite": "RKBSA?",
+          "radius": 15,
+          "height": 50
+        },
+        {
+          "type": 97,
+          "class_name": "ZRockBrown1",
+          "name": "Big Rock (brown)",
+          "sprite": "RKBLA?",
+          "radius": 17,
+          "height": 72
+        },
+        {
+          "type": 99,
+          "class_name": "ZRockBlack",
+          "name": "Big Rock (grey)",
+          "sprite": "RKBKA?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 40
+        },
+        {
+          "type": 57,
+          "class_name": "ZStalactiteSmall",
+          "name": "Stalactite (small)",
+          "sprite": "SLC3A?",
+          "radius": 8,
+          "height": 40
+        },
+        {
+          "type": 56,
+          "class_name": "ZStalactiteMedium",
+          "name": "Stalactite (medium)",
+          "sprite": "SLC2A?",
+          "radius": 6,
+          "height": 50
+        },
+        {
+          "type": 52,
+          "class_name": "ZStalactiteLarge",
+          "name": "Stalactite (large)",
+          "sprite": "SLC1A?",
+          "radius": 8,
+          "height": 66
+        },
+        {
+          "type": 48,
+          "class_name": "ZStalagmitePillar",
+          "name": "Stalagmite (pillar)",
+          "sprite": "SGMPA?",
+          "radius": 8,
+          "height": 138
+        },
+        {
+          "type": 51,
+          "class_name": "ZStalagmiteSmall",
+          "name": "Stalagmite (small)",
+          "sprite": "SGM3A?",
+          "radius": 8,
+          "height": 36
+        },
+        {
+          "type": 50,
+          "class_name": "ZStalagmiteMedium",
+          "name": "Stalagmite (medium)",
+          "sprite": "SGM2A?",
+          "radius": 6,
+          "height": 40
+        },
+        {
+          "type": 49,
+          "class_name": "ZStalagmiteLarge",
+          "name": "Stalagmite (large)",
+          "sprite": "SGM1A?",
+          "radius": 8,
+          "height": 48
+        },
+        {
+          "type": 96,
+          "class_name": "ZStalagmiteIceTiny",
+          "name": "Ice Spike (tiny)",
+          "sprite": "ICM4A?",
+          "radius": 4,
+          "height": 8
+        },
+        {
+          "type": 95,
+          "class_name": "ZStalagmiteIceSmall",
+          "name": "Ice Spike (small)",
+          "sprite": "ICM3A?",
+          "radius": 4,
+          "display_radius": 5,
+          "height": 32
+        },
+        {
+          "type": 94,
+          "class_name": "ZStalagmiteIceMedium",
+          "name": "Ice Spike (medium)",
+          "sprite": "ICM2A?",
+          "radius": 5,
+          "height": 50
+        },
+        {
+          "type": 93,
+          "class_name": "ZStalagmiteIceLarge",
+          "name": "Ice Spike (large)",
+          "sprite": "ICM1A?",
+          "radius": 8,
+          "height": 66
+        },
+        {
+          "type": 92,
+          "class_name": "ZStalactiteIceTiny",
+          "name": "Icicle (tiny)",
+          "sprite": "ICT4A?",
+          "radius": 4,
+          "height": 8
+        },
+        {
+          "type": 91,
+          "class_name": "ZStalactiteIceSmall",
+          "name": "Icicle (small)",
+          "sprite": "ICT3A?",
+          "radius": 4,
+          "height": 32
+        },
+        {
+          "type": 90,
+          "class_name": "ZStalactiteIceMedium",
+          "name": "Icicle (medium)",
+          "sprite": "ICT2A?",
+          "radius": 5,
+          "height": 50
+        },
+        {
+          "type": 89,
+          "class_name": "ZStalactiteIceLarge",
+          "name": "Icicle (large)",
+          "sprite": "ICT1A?",
+          "radius": 8,
+          "height": 66
+        },
+        {
+          "type": 6,
+          "class_name": "ZRock1",
+          "name": "Tiny Rock (mossy)",
+          "sprite": "RCK1A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 7,
+          "class_name": "ZRock2",
+          "name": "Small Rock (mossy)",
+          "sprite": "RCK2A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 9,
+          "class_name": "ZRock3",
+          "name": "Medium Rock (mossy)",
+          "sprite": "RCK3A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 15,
+          "class_name": "ZRock4",
+          "name": "Big Rock (mossy)",
+          "sprite": "RCK4A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 101,
+          "class_name": "ZRubble2",
+          "name": "Brick Rubble (small)",
+          "sprite": "RBL2A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 102,
+          "class_name": "ZRubble3",
+          "name": "Brick Rubble (medium)",
+          "sprite": "RBL3A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        },
+        {
+          "type": 100,
+          "class_name": "ZRubble1",
+          "name": "Brick Rubble (large)",
+          "sprite": "RBL1A?",
+          "radius": 20,
+          "display_radius": 16,
+          "height": 16
+        }
       ]
     },
     {
@@ -594,7 +1616,7 @@
         { "type": 1407, "name": "Ice" },
         { "type": 1408, "name": "Earth Crack" },
         { "type": 1409, "name": "Metal2" },
-        { "type": 1410, "name": "Wind" }
+        { "type": 1410, "class_name": "SoundWindHexen", "name": "Wind" }
       ]
     }
   ]

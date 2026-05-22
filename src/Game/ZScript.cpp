@@ -549,6 +549,21 @@ string State::editorSprite()
 	return "";
 }
 
+// -----------------------------------------------------------------------------
+// Returns the first valid light name
+// -----------------------------------------------------------------------------
+string State::light()
+{
+	if (frames.empty())
+		return "";
+
+	for (auto& f : frames)
+		if (!f.light.empty())
+			return f.light;
+
+	return "";
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -594,6 +609,7 @@ bool StateTable::parse(ParsedStatement& states)
 				current_states.push_back(state);
 				if (state_first_.empty())
 					state_first_ = state;
+				states_[state].frames.clear();
 				states_added = true;
 
 				index = a + 1;
@@ -610,26 +626,50 @@ bool StateTable::parse(ParsedStatement& states)
 		}
 
 		// Ignore state commands
-		if (strutil::equalCI(statement.tokens[index], "stop") || strutil::equalCI(statement.tokens[index], "goto")
-			|| strutil::equalCI(statement.tokens[index], "loop") || strutil::equalCI(statement.tokens[index], "wait")
+		if (strutil::equalCI(statement.tokens[index], "stop")
+			|| strutil::equalCI(statement.tokens[index], "goto")
+			|| strutil::equalCI(statement.tokens[index], "loop")
+			|| strutil::equalCI(statement.tokens[index], "wait")
 			|| strutil::equalCI(statement.tokens[index], "fail"))
 			continue;
 
 		if (index + 2 < statement.tokens.size())
 		{
 			// Parse duration
-			int duration = 0;
+			int      duration    = 0;
+			unsigned idx_command = 0;
 			if (statement.tokens[index + 2] == '-' && index + 3 < statement.tokens.size())
 			{
 				// Negative number
 				strutil::toInt(statement.tokens[index + 3], duration);
-				duration = -duration;
+				duration    = -duration;
+				idx_command = index + 4;
 			}
-			else
+			else if (index + 2 < statement.tokens.size())
+			{
 				strutil::toInt(statement.tokens[index + 2], duration);
+				idx_command = index + 3;
+			}
+
+			// Check for light
+			string light;
+			for (auto a = idx_command; a < statement.tokens.size(); ++a)
+			{
+				if (a + 2 < statement.tokens.size()
+					&& strutil::equalCI(statement.tokens[a], "light")
+					&& statement.tokens[a + 1] == "(")
+				{
+					light = statement.tokens[a + 2];
+					break;
+				}
+			}
 
 			for (auto& state : current_states)
-				states_[state].frames.push_back({ statement.tokens[index], statement.tokens[index + 1], duration });
+				states_[state].frames.push_back(
+					{ .sprite_base  = statement.tokens[index],
+					  .sprite_frame = statement.tokens[index + 1],
+					  .duration     = duration,
+					  .light        = light });
 		}
 	}
 
@@ -668,6 +708,15 @@ string StateTable::editorSprite()
 		return states_[state_first_].editorSprite();
 
 	return "";
+}
+
+// -----------------------------------------------------------------------------
+// Returns the most appropriate light from the state table to use for the
+// editor (spawn state only)
+// -----------------------------------------------------------------------------
+string StateTable::light()
+{
+	return states_["spawn"].light();
 }
 
 
@@ -727,8 +776,10 @@ bool Class::parse(ParsedStatement& class_statement, const vector<Class>& parsed_
 		return false;
 	}
 
-	// Set editor sprite from parsed states
+	// Set editor sprite & light name from parsed states
 	default_properties_["sprite"] = states_.editorSprite();
+	if (auto light_name = states_.light(); !light_name.empty())
+		default_properties_["light_name"] = light_name;
 
 	// Add DB comment props to default properties
 	for (auto& i : db_properties_)
@@ -763,6 +814,10 @@ bool Class::parse(ParsedStatement& class_statement, const vector<Class>& parsed_
 		// Obsolete thing
 		else if (strutil::equalCI(i.first, "Obsolete"))
 			default_properties_["obsolete"] = true;
+
+		// Light name
+		else if (strutil::equalCI(i.first, "LightName"))
+			default_properties_["light_name"] = i.second;
 	}
 
 	return true;
@@ -1022,7 +1077,8 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 
 		// Extend Class
 		else if (
-			block.tokens.size() > 2 && strutil::equalCI(block.tokens[0], "extend")
+			block.tokens.size() > 2
+			&& strutil::equalCI(block.tokens[0], "extend")
 			&& strutil::equalCI(block.tokens[1], "class"))
 		{
 			for (auto& c : classes_)

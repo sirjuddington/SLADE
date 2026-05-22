@@ -1,5 +1,9 @@
 #pragma once
 
+namespace slade::game
+{
+class ThingType;
+}
 namespace slade::map
 {
 struct PointLight
@@ -39,12 +43,13 @@ private:
 	vector<PointLight> point_lights_;
 
 	void addPointLight(
-		const MapThing&  thing,
-		u8               r,
-		u8               g,
-		u8               b,
-		unsigned         radius,
-		PointLight::Type type               = PointLight::Type::Normal,
-		bool             radius_sector_sync = false);
+		const MapThing&        thing,
+		const game::ThingType& tt,
+		u8                     r,
+		u8                     g,
+		u8                     b,
+		unsigned               radius,
+		PointLight::Type       type               = PointLight::Type::Normal,
+		bool                   radius_sector_sync = false);
 };
 } // namespace slade::map

@@ -59,8 +59,10 @@ namespace game
 		const string&  className() const { return class_name_; }
 		bool           zHeightAbsolute() const { return z_height_absolute_; }
 		bool           dynamicLight() const { return dynamic_light_; }
+		const string&  lightName() const { return light_name_; }
 
 		void setSprite(string_view sprite) { sprite_ = sprite; }
+		void setClassName(string_view class_name) { class_name_ = class_name; }
 
 		bool defined() const { return number_ >= 0; }
 		void define(int number, string_view name, string_view group);
@@ -103,6 +105,7 @@ namespace game
 		string  class_name_;
 		bool    z_height_absolute_ = false;
 		bool    dynamic_light_     = false;
+		string  light_name_;
 
 		static ThingType unknown_;
 	};

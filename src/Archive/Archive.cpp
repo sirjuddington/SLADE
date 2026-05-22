@@ -938,7 +938,7 @@ bool Archive::revertEntry(ArchiveEntry* entry, bool force)
 // Returns the MapDesc information about the map beginning at [maphead].
 // To be implemented in Archive sub-classes.
 // -----------------------------------------------------------------------------
-MapDesc Archive::mapDesc(ArchiveEntry* maphead)
+MapDesc Archive::mapDesc(ArchiveEntry* maphead) const
 {
 	return format_handler_->mapDesc(*this, maphead);
 }
@@ -955,7 +955,7 @@ vector<MapDesc> Archive::detectMaps() const
 // -----------------------------------------------------------------------------
 // Returns the namespace of the entry at [index] within [dir]
 // -----------------------------------------------------------------------------
-string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
+string Archive::detectNamespace(unsigned index, ArchiveDir* dir) const
 {
 	return format_handler_->detectNamespace(*this, index, dir);
 }
@@ -963,7 +963,7 @@ string Archive::detectNamespace(unsigned index, ArchiveDir* dir)
 // -----------------------------------------------------------------------------
 // Returns the namespace that [entry] is within
 // -----------------------------------------------------------------------------
-string Archive::detectNamespace(ArchiveEntry* entry)
+string Archive::detectNamespace(ArchiveEntry* entry) const
 {
 	return format_handler_->detectNamespace(*this, entry);
 }
@@ -972,7 +972,7 @@ string Archive::detectNamespace(ArchiveEntry* entry)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::findFirst(ArchiveSearchOptions& options)
+ArchiveEntry* Archive::findFirst(ArchiveSearchOptions& options) const
 {
 	return format_handler_->findFirst(*this, options);
 }
@@ -981,7 +981,7 @@ ArchiveEntry* Archive::findFirst(ArchiveSearchOptions& options)
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::findLast(ArchiveSearchOptions& options)
+ArchiveEntry* Archive::findLast(ArchiveSearchOptions& options) const
 {
 	return format_handler_->findLast(*this, options);
 }
@@ -989,7 +989,7 @@ ArchiveEntry* Archive::findLast(ArchiveSearchOptions& options)
 // -----------------------------------------------------------------------------
 // Returns a list of entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> Archive::findAll(ArchiveSearchOptions& options)
+vector<ArchiveEntry*> Archive::findAll(ArchiveSearchOptions& options) const
 {
 	return format_handler_->findAll(*this, options);
 }

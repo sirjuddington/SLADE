@@ -40,6 +40,7 @@
 #include "Database/Database.h"
 #include "Database/Tables/ArchiveFile.h"
 #include "EntryType/EntryType.h"
+#include "Game/Game.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
 #include "MainEditor/MainEditor.h"
@@ -394,7 +395,10 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 
 			// Announce open
 			if (!silent)
+			{
 				signals_.archive_opened(index);
+				game::updateCustomDefinitions();
+			}
 		}
 
 		// Return the opened archive
@@ -464,7 +468,10 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 
 			// Announce open
 			if (!silent)
+			{
 				signals_.archive_opened(index);
+				game::updateCustomDefinitions();
+			}
 
 			entry->lock();
 		}
@@ -520,7 +527,10 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 
 			// Announce open
 			if (!silent)
+			{
 				signals_.archive_opened(index);
+				game::updateCustomDefinitions();
+			}
 		}
 
 		// Return the opened archive
@@ -595,6 +605,7 @@ bool ArchiveManager::closeArchive(int index)
 	}
 
 	// Remove ourselves from our parent's open-child list
+	bool child = false;
 	if (auto parent = open_archives_[index].archive->parentEntry())
 	{
 		if (auto gp = parent->parent())
@@ -615,6 +626,7 @@ bool ArchiveManager::closeArchive(int index)
 		}
 
 		parent->unlock();
+		child = true;
 	}
 
 	// Close the archive
@@ -625,6 +637,10 @@ bool ArchiveManager::closeArchive(int index)
 
 	// Announce closed
 	signals_.archive_closed(index);
+
+	// Update custom definitions in case the archive contained any
+	if (!child)
+		game::updateCustomDefinitions();
 
 	return true;
 }

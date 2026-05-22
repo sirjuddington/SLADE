@@ -8,17 +8,82 @@
         "solid": true
       },
       "things": [
-        { "type": 65, "name": "Chaingunner", "radius": 20, "height": 56, "sprite": "CPOSA?" },
-        { "type": 69, "name": "Hell Knight", "radius": 24, "height": 64, "sprite": "BOS2A?" },
-        { "type": 68, "name": "Arachnotron", "radius": 64, "height": 64, "sprite": "BSPIA?" },
-        { "type": 71, "name": "Pain Elemental", "radius": 31, "height": 56, "sprite": "PAINA?" },
-        { "type": 66, "name": "Revenant", "radius": 20, "height": 56, "sprite": "SKELB?" },
-        { "type": 67, "name": "Mancubus", "radius": 48, "height": 64, "sprite": "FATTC?" },
-        { "type": 64, "name": "Arch-Vile", "radius": 20, "height": 56, "sprite": "VILEB?" },
-        { "type": 88, "name": "Boss Brain", "radius": 16, "display_radius": 20, "height": 16, "sprite": "BBRNA?" },
-        { "type": 89, "name": "Boss Shooter", "radius": 20, "height": 32, "sprite": "BOSFC?" },
+        {
+          "type": 65,
+          "class_name": "ChaingunGuy",
+          "name": "Chaingunner",
+          "radius": 20,
+          "height": 56,
+          "sprite": "CPOSA?"
+        },
+        {
+          "type": 69,
+          "class_name": "HellKnight",
+          "name": "Hell Knight",
+          "radius": 24,
+          "height": 64,
+          "sprite": "BOS2A?"
+        },
+        {
+          "type": 68,
+          "class_name": "Arachnotron",
+          "name": "Arachnotron",
+          "radius": 64,
+          "height": 64,
+          "sprite": "BSPIA?"
+        },
+        {
+          "type": 71,
+          "class_name": "PainElemental",
+          "name": "Pain Elemental",
+          "radius": 31,
+          "height": 56,
+          "sprite": "PAINA?"
+        },
+        {
+          "type": 66,
+          "class_name": "Revenant",
+          "name": "Revenant",
+          "radius": 20,
+          "height": 56,
+          "sprite": "SKELB?"
+        },
+        {
+          "type": 67,
+          "class_name": "Fatso",
+          "name": "Mancubus",
+          "radius": 48,
+          "height": 64,
+          "sprite": "FATTC?"
+        },
+        {
+          "type": 64,
+          "class_name": "Archvile",
+          "name": "Arch-Vile",
+          "radius": 20,
+          "height": 56,
+          "sprite": "VILEB?"
+        },
+        {
+          "type": 88,
+          "class_name": "BossBrain",
+          "name": "Boss Brain",
+          "radius": 16,
+          "display_radius": 20,
+          "height": 16,
+          "sprite": "BBRNA?"
+        },
+        {
+          "type": 89,
+          "class_name": "BossEye",
+          "name": "Boss Shooter",
+          "radius": 20,
+          "height": 32,
+          "sprite": "BOSFC?"
+        },
         {
           "type": 87,
+          "class_name": "BossTarget",
           "name": "Boss Spawn Spot",
           "radius": 20,
           "height": 32,
@@ -27,6 +92,7 @@
         },
         {
           "type": 72,
+          "class_name": "CommanderKeen",
           "name": "Hanging Keen",
           "colour": "rgb(200, 200, 200)",
           "radius": 16,
@@ -36,6 +102,7 @@
         },
         {
           "type": 84,
+          "class_name": "WolfensteinSS",
           "name": "Wolfenstein 3D SS",
           "radius": 20,
           "height": 56,
@@ -49,6 +116,7 @@
       "things": [
         {
           "type": 82,
+          "class_name": "SuperShotgun",
           "name": "Super Shotgun",
           "radius": 20,
           "height": 16,
@@ -65,6 +133,7 @@
       "things": [
         {
           "type": 83,
+          "class_name": "Megasphere",
           "name": "Megasphere",
           "radius": 20,
           "display_radius": 16,
@@ -88,12 +157,48 @@
         "solid": true
       },
       "things": [
-        { "type": 73, "name": "Hanging Body, Guts Removed", "sprite": "HDB1A?", "height": 88 },
-        { "type": 74, "name": "Hanging Body, Guts & Brain Removed", "sprite": "HDB2A?", "height": 88 },
-        { "type": 75, "name": "Hanging Torso, Looking Down", "sprite": "HDB3A?", "height": 64 },
-        { "type": 76, "name": "Hanging Torso, Open Skull", "sprite": "HDB4A?", "height": 64 },
-        { "type": 77, "name": "Hanging Torso, Looking Up", "sprite": "HDB5A?", "height": 64 },
-        { "type": 78, "name": "Hanging Torso, Brain Removed", "sprite": "HDB6A?", "height": 64 }
+        {
+          "type": 73,
+          "class_name": "HangNoGuts",
+          "name": "Hanging Body, Guts Removed",
+          "sprite": "HDB1A?",
+          "height": 88
+        },
+        {
+          "type": 74,
+          "class_name": "HangBNoBrain",
+          "name": "Hanging Body, Guts & Brain Removed",
+          "sprite": "HDB2A?",
+          "height": 88
+        },
+        {
+          "type": 75,
+          "class_name": "HangTLookingDown",
+          "name": "Hanging Torso, Looking Down",
+          "sprite": "HDB3A?",
+          "height": 64
+        },
+        {
+          "type": 76,
+          "class_name": "HangTSkull",
+          "name": "Hanging Torso, Open Skull",
+          "sprite": "HDB4A?",
+          "height": 64
+        },
+        {
+          "type": 77,
+          "class_name": "HangTLookingUp",
+          "name": "Hanging Torso, Looking Up",
+          "sprite": "HDB5A?",
+          "height": 64
+        },
+        {
+          "type": 78,
+          "class_name": "HangTNoBrain",
+          "name": "Hanging Torso, Brain Removed",
+          "sprite": "HDB6A?",
+          "height": 64
+        }
       ]
     },
 
@@ -108,9 +213,9 @@
         "decoration": true
       },
       "things": [
-        { "type": 79, "name": "Pool Of Blood 2", "sprite": "POB1A?" },
-        { "type": 80, "name": "Pool Of Blood 3", "sprite": "POB2A?" },
-        { "type": 81, "name": "Pool Of Brains", "sprite": "BRS1A?" }
+        { "type": 79, "class_name": "ColonGibs", "name": "Pool Of Blood 2", "sprite": "POB1A?" },
+        { "type": 80, "class_name": "SmallBloodPool", "name": "Pool Of Blood 3", "sprite": "POB2A?" },
+        { "type": 81, "class_name": "BrainStem", "name": "Pool Of Brains", "sprite": "BRS1A?" }
       ]
     },
 
@@ -127,9 +232,9 @@
         "solid": true
       },
       "things": [
-        { "type": 85, "name": "Tall Techno Lamp", "sprite": "TLMPA?" },
-        { "type": 86, "name": "Short Techno Lamp", "sprite": "TLP2A?" },
-        { "type": 70, "name": "Burning Barrel", "sprite": "FCANA?" }
+        { "type": 85, "class_name": "TechLamp", "name": "Tall Techno Lamp", "sprite": "TLMPA?" },
+        { "type": 86, "class_name": "TechLamp2", "name": "Short Techno Lamp", "sprite": "TLP2A?" },
+        { "type": 70, "class_name": "BurningBarrel", "name": "Burning Barrel", "sprite": "FCANA?" }
       ]
     }
   ]
