@@ -286,9 +286,16 @@ void MapThing::setZ(double z)
 // -----------------------------------------------------------------------------
 void MapThing::setType(int type)
 {
+	if (type == type_)
+		return;
+
 	beginModify();
+	auto prev_type = type_;
 	type_ = type;
 	endModify();
+
+	if (parent_map_)
+		parent_map_->signals().thing_type_changed(this, prev_type);
 }
 
 // -----------------------------------------------------------------------------

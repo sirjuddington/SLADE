@@ -165,6 +165,8 @@ public:
 		sigslot::signal<const vector<MapObject*>&> object_created;
 		sigslot::signal<const vector<MapObject*>&> object_modified;
 		sigslot::signal<const vector<MapObject*>&> object_deleted;
+
+		sigslot::signal<const MapThing*, int> thing_type_changed; // thing, previous type
 	};
 	Signals  signals_;
 	Signals& signals() { return signals_; }

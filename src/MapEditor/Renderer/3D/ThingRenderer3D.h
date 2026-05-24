@@ -90,6 +90,7 @@ private:
 	long               groups_updated_      = 0;
 	int                things_processed_    = -1;
 	bool               force_update_groups_ = false;
+	vector<int>        update_types_;
 
 	Item                       prev_highlight_;
 	unique_ptr<gl::LineBuffer> highlight_lines_;
@@ -97,5 +98,7 @@ private:
 
 	const ThingGroup* thingGroup(unsigned type) const;
 	ThingGroup*       thingGroup(unsigned type);
+
+	sigslot::scoped_connection sc_thing_type_changed;
 };
 } // namespace slade::mapeditor

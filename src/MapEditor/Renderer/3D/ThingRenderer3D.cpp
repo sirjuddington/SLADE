@@ -408,7 +408,16 @@ float ThingRenderer3D::ThingGroup::height() const
 // -----------------------------------------------------------------------------
 // ThingRenderer3D class constructor
 // -----------------------------------------------------------------------------
-ThingRenderer3D::ThingRenderer3D(MapRenderer3D* renderer) : renderer_{ renderer } {}
+ThingRenderer3D::ThingRenderer3D(MapRenderer3D* renderer) : renderer_{ renderer }
+{
+	// Update thing groups when things change type
+	sc_thing_type_changed = renderer->map()->signals().thing_type_changed.connect_scoped(
+		[this](const MapThing* thing, int prev_type)
+		{
+			vectorAddUnique(update_types_, prev_type);
+			vectorAddUnique(update_types_, static_cast<int>(thing->type()));
+		});
+}
 
 // -----------------------------------------------------------------------------
 // ThingRenderer3D class destructor
@@ -476,7 +485,7 @@ bool ThingRenderer3D::update(bool vis_check)
 		for (const auto thing : map->things().all())
 		{
 			// Ignore if already processed
-			if (static_cast<int>(thing->index()) <= things_processed_)
+			if (std::cmp_less_equal(thing->index(), things_processed_))
 				continue;
 
 			// Ignore if not visible
@@ -513,9 +522,18 @@ bool ThingRenderer3D::update(bool vis_check)
 		prev_highlight_ = {}; // Ensure highlight is updated
 	}
 
-	else if (thingsNeedUpdate(groups_updated_, map))
+	else if (!update_types_.empty() || thingsNeedUpdate(groups_updated_, map))
 	{
 		vector<ThingGroup*> groups_to_rebuild;
+
+		// Initially mark groups with things that have changed type for rebuild
+		for (int type_id : update_types_)
+		{
+			auto group = thingGroup(type_id);
+			if (group)
+				groups_to_rebuild.push_back(group);
+		}
+		update_types_.clear();
 
 		for (const auto thing : map->things().all())
 		{
@@ -532,17 +550,6 @@ bool ThingRenderer3D::update(bool vis_check)
 			// Create group if needed
 			if (!group)
 				group = &groups_.emplace_back(thing->type(), game::configuration().thingType(thing->type()));
-
-			// If the thing is in a group with the wrong type, it's type has
-			// been changed, so we will need to rebuild both groups
-			if (group->type != thing->type())
-			{
-				auto new_group = thingGroup(thing->type());
-				if (!new_group)
-					new_group = &groups_.emplace_back(thing->type(), game::configuration().thingType(thing->type()));
-
-				vectorAddUnique(groups_to_rebuild, new_group);
-			}
 
 			// Mark group for rebuild
 			vectorAddUnique(groups_to_rebuild, group);
@@ -866,7 +873,7 @@ optional<Item> ThingRenderer3D::nearestIntersectingThing(const gl::Camera& camer
 const ThingRenderer3D::ThingGroup* ThingRenderer3D::thingGroup(unsigned type) const
 {
 	for (auto& group : groups_)
-		if (group.type == type)
+		if (std::cmp_equal(group.type, type))
 			return &group;
 
 	return nullptr;
@@ -879,7 +886,7 @@ const ThingRenderer3D::ThingGroup* ThingRenderer3D::thingGroup(unsigned type) co
 ThingRenderer3D::ThingGroup* ThingRenderer3D::thingGroup(unsigned type)
 {
 	for (auto& group : groups_)
-		if (group.type == type)
+		if (std::cmp_equal(group.type, type))
 			return &group;
 
 	return nullptr;
