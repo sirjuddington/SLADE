@@ -225,7 +225,7 @@ void BaseResourceArchiveSettingsPanel::autodetect() const
 	// If a 32-bit ZDoom runs on a 64-bit Windows, this will be transparently and
 	// automatically redirected to the Wow6432Node address instead, so this address
 	// should be safe to use in all cases.
-	wxString gogregistrypath = "Software\\GOG.com";
+	string gogregistrypath = "Software\\GOG.com";
 #endif
 	if (queryPathKey(wxRegKey::HKLM, wxString::FromUTF8(gogregistrypath), wxS("DefaultPackPath"), path))
 	{

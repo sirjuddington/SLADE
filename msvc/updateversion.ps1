@@ -1,8 +1,8 @@
 # Current version
 $version_major =    "3"
-$version_minor =    "2"
-$version_revision = "12"
-$version_beta =     "0"
+$version_minor =    "3"
+$version_revision = "0"
+$version_beta =     "1"
 
 # Prompt for new version numbers
 Write-Host "Major version number: $version_major (locked)"
@@ -44,7 +44,7 @@ if ($version_beta -eq "0")
 }
 else
 {
-	$new_version_line = "version = `"${version_major}.${version_minor}.${version_revision}_b${version_beta}`""
+	$new_version_line = "version = `"${version_major}.${version_minor}.${version_revision}-beta${version_beta}`""
 }
 
 if ($null -eq $version_line)

@@ -44,6 +44,16 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Named to sort alphabetically before wxICON_AAA (from wx.rc) so that
+// Explorer uses this as the application icon instead of the wx default.
+AAAAA_SLADE_ICON        ICON                    "slade.ico"
+IDI_ICON1               ICON                    "slade.ico"
+
 #include <wx/msw/wx.rc>
 
 /////////////////////////////////////////////////////////////////////////////
@@ -51,8 +61,8 @@ END
 // Version
 //
 
-#define SLADE_VERSION 3,2,12,0
-#define SLADE_VERSION_STR "3.2.12"
+#define SLADE_VERSION 3,3,0,0
+#define SLADE_VERSION_STR "3.3.0 Beta 1"
 #define SLADE_COPYRIGHT "Copyright (C) 2008-2026"
 
 VS_VERSION_INFO VERSIONINFO
@@ -86,16 +96,6 @@ BEGIN
         VALUE "Translation", 0xc09, 1200
     END
 END
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-IDI_ICON1               ICON                    "slade.ico"
 
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
