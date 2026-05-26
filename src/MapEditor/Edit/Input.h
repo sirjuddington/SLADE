@@ -65,7 +65,7 @@ public:
 	bool mouseMove(int new_x, int new_y);
 	bool mouseDown(MouseButton button, int x, int y, bool double_click = false);
 	bool mouseUp(MouseButton button);
-	void mouseWheel(bool up, double amount);
+	void mouseWheel(double amount);
 	void mouseLeave();
 
 	// Keyboard handling
@@ -100,7 +100,7 @@ private:
 	Vec2i      mouse_down_pos_       = { -1, -1 };
 	Vec2d      mouse_down_pos_map_   = { -1, -1 };
 	DragType   mouse_drag_           = DragType::None;
-	double     mouse_wheel_speed_    = 0;
+	double     mouse_wheel_accum_    = 0;
 	bool       panning_              = false;
 
 	// Keyboard

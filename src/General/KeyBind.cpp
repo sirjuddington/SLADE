@@ -132,7 +132,7 @@ string Keypress::asString() const
 		ret += "Shift+";
 
 	string keyname = key;
-	std::replace(keyname.begin(), keyname.end(), '_', ' ');
+	std::ranges::replace(keyname, '_', ' ');
 	strutil::capitalizeIP(keyname);
 	ret += keyname;
 
@@ -172,7 +172,7 @@ string KeyBind::keysAsString() const
 			ret += "Shift+";
 
 		auto keyname = keys_[a].key;
-		std::replace(keyname.begin(), keyname.end(), '_', ' ');
+		std::ranges::replace(keyname, '_', ' ');
 		strutil::capitalizeIP(keyname);
 		ret += keyname;
 
@@ -645,10 +645,8 @@ void KeyBind::initBinds()
 	addBind("me2d_pan_view", Keypress("mouse3"), "Pan view", group);
 	addBind("me2d_pan_view", Keypress("space", KPM_CTRL));
 	addBind("me2d_move", Keypress("Z"), "Toggle item move mode", group);
-	addBind("me2d_zoom_in_m", Keypress("mwheelup"), "Zoom in (towards mouse)", group);
-	addBind("me2d_zoom_out_m", Keypress("mwheeldown"), "Zoom out (towards mouse)", group);
-	addBind("me2d_zoom_in", Keypress("="), "Zoom in (towards screen center)", group);
-	addBind("me2d_zoom_out", Keypress("-"), "Zoom out (towards screen center)", group);
+	addBind("me2d_zoom_in", Keypress("="), "Zoom in", group);
+	addBind("me2d_zoom_out", Keypress("-"), "Zoom out", group);
 	addBind("me2d_show_object", Keypress("=", KPM_SHIFT), "Zoom in, show current object", group);
 	addBind("me2d_show_object", Keypress("mwheelup", KPM_SHIFT));
 	addBind("me2d_show_all", Keypress("-", KPM_SHIFT), "Zoom out, show full map", group);

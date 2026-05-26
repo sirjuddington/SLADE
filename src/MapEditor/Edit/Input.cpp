@@ -481,13 +481,25 @@ bool Input::mouseUp(MouseButton button)
 }
 
 // -----------------------------------------------------------------------------
-// Handles mouse wheel movement depending on [up]
+// Handles mouse wheel movement, where [amount] is the amount the wheel moved
+// (positive for up, negative for down), with 1.0 being one full 'notch' of
+// movement
 // -----------------------------------------------------------------------------
-void Input::mouseWheel(bool up, double amount)
+void Input::mouseWheel(double amount)
 {
-	mouse_wheel_speed_ = amount;
+	// Handle 2d mode mousewheel zooming
+	if (context_->editMode() != Mode::Visual)
+	{
+		if (amount < 0)
+			context_->renderer().zoom(1.0 + (0.2 * amount), true);
+		else
+			context_->renderer().zoom(1.0 + (0.25 * amount), true);
+	}
 
-	if (up)
+	// Accumulate mouse wheel movement, and trigger keybinds when it reaches a
+	// full 'notch'
+	mouse_wheel_accum_ += amount;
+	if (mouse_wheel_accum_ >= 1)
 	{
 		KeyBind::keyPressed(Keypress("mwheelup", alt_down_, ctrl_down_, shift_down_));
 
@@ -496,8 +508,9 @@ void Input::mouseWheel(bool up, double amount)
 			context_->currentOverlay()->keyDown("mwheelup");
 
 		KeyBind::keyReleased("mwheelup");
+		mouse_wheel_accum_ -= 1;
 	}
-	else
+	else if (mouse_wheel_accum_ <= -1)
 	{
 		KeyBind::keyPressed(Keypress("mwheeldown", alt_down_, ctrl_down_, shift_down_));
 
@@ -506,6 +519,7 @@ void Input::mouseWheel(bool up, double amount)
 			context_->currentOverlay()->keyDown("mwheeldown");
 
 		KeyBind::keyReleased("mwheeldown");
+		mouse_wheel_accum_ += 1;
 	}
 }
 
@@ -663,14 +677,6 @@ void Input::handleKeyBind2dView(string_view name)
 	// Zoom in
 	else if (name == "me2d_zoom_in")
 		context_->renderer().zoom(1.25);
-
-	// Zoom out (follow mouse)
-	if (name == "me2d_zoom_out_m")
-		context_->renderer().zoom(1.0 - (0.2 * mouse_wheel_speed_), true);
-
-	// Zoom in (follow mouse)
-	else if (name == "me2d_zoom_in_m")
-		context_->renderer().zoom(1.0 + (0.25 * mouse_wheel_speed_), true);
 
 	// Zoom in (show object)
 	else if (name == "me2d_show_object")

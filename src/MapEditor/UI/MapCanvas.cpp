@@ -586,18 +586,7 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 	else
 		last_wheel_timestamp_ = e.GetTimestamp();
 
-#ifdef __WXOSX__
-	double mwheel_rotation = (double)e.GetWheelRotation() / (double)e.GetWheelDelta();
-	if (mwheel_rotation < 0)
-		mwheel_rotation = 0 - mwheel_rotation;
-#else
-	double mwheel_rotation = 1;
-#endif
-
-	if (mwheel_rotation < 0.001)
-		return;
-
-	context_->input().mouseWheel(e.GetWheelRotation() > 0, mwheel_rotation);
+	context_->input().mouseWheel(static_cast<double>(e.GetWheelRotation()) / static_cast<double>(e.GetWheelDelta()));
 }
 
 // -----------------------------------------------------------------------------
