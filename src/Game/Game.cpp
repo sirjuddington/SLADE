@@ -424,6 +424,15 @@ void game::init()
 }
 
 // -----------------------------------------------------------------------------
+// Cleans up game namespace resources
+// -----------------------------------------------------------------------------
+void game::cleanup()
+{
+	if (zscript_parse_thread && zscript_parse_thread->joinable())
+		zscript_parse_thread->join();
+}
+
+// -----------------------------------------------------------------------------
 // Returns a vector of all basic game definitions
 // -----------------------------------------------------------------------------
 const vector<GameDef>& game::gameDefs()

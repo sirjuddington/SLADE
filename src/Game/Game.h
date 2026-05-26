@@ -81,6 +81,7 @@ namespace game
 
 	// General
 	void init();
+	void cleanup();
 
 	// Basic Game/Port Definitions
 	const vector<GameDef>& gameDefs();
@@ -95,6 +96,5 @@ namespace game
 
 	// Custom definitions (ZScript, DECORATE, EDF, etc.)
 	void updateCustomDefinitions();
-
 } // namespace game
 } // namespace slade

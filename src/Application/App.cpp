@@ -777,6 +777,7 @@ void app::exit(bool save_config)
 	// Clean up
 	gl::Texture::clearAll();
 	audio::resetMIDIPlayer();
+	game::cleanup();
 
 	// Clear temp folder
 	auto temp_files = fileutil::allFilesInDir(path("", Dir::Temp), true, true);
