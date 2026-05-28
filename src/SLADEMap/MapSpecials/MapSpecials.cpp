@@ -314,6 +314,8 @@ const PointLight* MapSpecials::pointLightForThing(const MapThing& thing) const
 // -----------------------------------------------------------------------------
 void MapSpecials::processAllSpecials() const
 {
+	specials_updating_ = true;
+
 	// Clear existing specials
 	slope_specials_->clearSpecials();
 	extrafloor_specials_->clearSpecials();
@@ -359,6 +361,7 @@ void MapSpecials::processAllSpecials() const
 	}
 
 	specials_updated_ = app::runTimer();
+	specials_updating_ = false;
 }
 
 void MapSpecials::updateSpecials() const

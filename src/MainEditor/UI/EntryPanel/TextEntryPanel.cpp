@@ -252,7 +252,6 @@ void TextEntryPanel::refreshPanel()
 	text_area_->Refresh();
 
 	Refresh();
-	Update();
 }
 
 // -----------------------------------------------------------------------------
