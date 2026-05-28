@@ -7,6 +7,7 @@ namespace slade
 class NumberTextCtrl;
 namespace ui
 {
+	class RadioButtonPanel;
 	class NodeBuildersSettingsPanel;
 } // namespace ui
 } // namespace slade
@@ -25,17 +26,18 @@ public:
 	void applySettings() override;
 
 private:
-	wxCheckBox*     cb_selection_clear_click_     = nullptr;
-	wxCheckBox*     cb_selection_clear_move_      = nullptr;
-	wxCheckBox*     cb_property_edit_dclick_      = nullptr;
-	wxCheckBox*     cb_merge_undo_step_           = nullptr;
-	wxCheckBox*     cb_props_auto_apply_          = nullptr;
-	wxCheckBox*     cb_remove_invalid_lines_      = nullptr;
-	wxCheckBox*     cb_merge_lines_vertex_delete_ = nullptr;
-	wxCheckBox*     cb_split_auto_offset_         = nullptr;
-	NumberTextCtrl* text_max_backups_             = nullptr;
-	wxCheckBox*     cb_save_archive_with_map_     = nullptr;
-	wxCheckBox*     cb_3d_invert_y_               = nullptr;
+	wxCheckBox*       cb_selection_clear_click_     = nullptr;
+	wxCheckBox*       cb_selection_clear_move_      = nullptr;
+	wxCheckBox*       cb_property_edit_dclick_      = nullptr;
+	wxCheckBox*       cb_merge_undo_step_           = nullptr;
+	wxCheckBox*       cb_props_auto_apply_          = nullptr;
+	wxCheckBox*       cb_remove_invalid_lines_      = nullptr;
+	wxCheckBox*       cb_merge_lines_vertex_delete_ = nullptr;
+	wxCheckBox*       cb_split_auto_offset_         = nullptr;
+	NumberTextCtrl*   text_max_backups_             = nullptr;
+	wxCheckBox*       cb_save_archive_with_map_     = nullptr;
+	wxCheckBox*       cb_3d_invert_y_               = nullptr;
+	RadioButtonPanel* rbp_compress_sides_           = nullptr;
 
 	NodeBuildersSettingsPanel* nodebuilders_panel_ = nullptr;
 

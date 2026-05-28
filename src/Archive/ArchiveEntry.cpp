@@ -79,13 +79,16 @@ unsigned maxEntrySizeBytes()
 // -----------------------------------------------------------------------------
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
-ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
+ArchiveEntry::ArchiveEntry(string_view name, u32 size, const void* data) :
 	name_{ name },
 	upper_name_{ name },
 	data_{ size },
 	type_{ EntryType::unknownType() }
 {
 	strutil::upperIP(upper_name_);
+
+	if (data)
+		this->data_.importMem(static_cast<const u8*>(data), size);
 }
 
 // -----------------------------------------------------------------------------
@@ -119,18 +122,6 @@ string_view ArchiveEntry::nameNoExt() const
 }
 
 // -----------------------------------------------------------------------------
-// Returns the entry name in uppercase with no file extension
-// -----------------------------------------------------------------------------
-string_view ArchiveEntry::upperNameNoExt() const
-{
-	auto ext_pos = upper_name_.find('.');
-	if (ext_pos != string::npos)
-		return { upper_name_.data(), ext_pos };
-
-	return upper_name_;
-}
-
-// -----------------------------------------------------------------------------
 // Returns the entry file extension
 // -----------------------------------------------------------------------------
 string_view ArchiveEntry::ext() const
@@ -140,6 +131,18 @@ string_view ArchiveEntry::ext() const
 		return { name_.data() + ext_pos };
 
 	return {};
+}
+
+// -----------------------------------------------------------------------------
+// Returns the entry name in uppercase with no file extension
+// -----------------------------------------------------------------------------
+string_view ArchiveEntry::upperNameNoExt() const
+{
+	auto ext_pos = upper_name_.find('.');
+	if (ext_pos != string::npos)
+		return { upper_name_.data(), ext_pos };
+
+	return upper_name_;
 }
 
 // -----------------------------------------------------------------------------
@@ -285,7 +288,7 @@ void ArchiveEntry::formatName(const ArchiveFormatInfo& format)
 	name_ = misc::fileNameToLumpName(name_, true);
 
 	// Max length
-	if (format.max_name_length > 0 && static_cast<int>(name_.size()) > format.max_name_length)
+	if (format.max_name_length > 0 && std::cmp_greater(name_.size(), format.max_name_length))
 		strutil::truncateIP(name_, format.max_name_length);
 
 	// Uppercase
@@ -328,7 +331,7 @@ bool ArchiveEntry::rename(string_view new_name)
 // Resizes the entry to [new_size]. If [preserve_data] is true, any existing
 // data is preserved
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
+bool ArchiveEntry::resize(u32 new_size, bool preserve_data)
 {
 	// Check if locked
 	if (locked_)
@@ -377,7 +380,7 @@ bool ArchiveEntry::clearData(bool silent)
 // currently existing data.
 // Returns false if data pointer is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importMem(const void* data, uint32_t size)
+bool ArchiveEntry::importMem(const void* data, u32 size)
 {
 	// Check parameters
 	if (!data)
@@ -417,7 +420,7 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 // of the MemChunk will be read.
 // Returns false if the MemChunk has no data, or true otherwise.
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importMemChunk(const MemChunk& mc, uint32_t offset, uint32_t size)
+bool ArchiveEntry::importMemChunk(const MemChunk& mc, u32 offset, u32 size)
 {
 	// Check that the given MemChunk has data
 	if (mc.hasData())
@@ -452,7 +455,7 @@ bool ArchiveEntry::importMemChunk(const MemChunk& mc, uint32_t offset, uint32_t 
 // Returns false if the file does not exist or the given offset/size are out of
 // bounds, otherwise returns true.
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t size)
+bool ArchiveEntry::importFile(string_view filename, u32 offset, u32 size)
 {
 	// Check if locked
 	if (locked_)
@@ -500,7 +503,7 @@ bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t si
 // -----------------------------------------------------------------------------
 // Imports [len] data from [file]
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
+bool ArchiveEntry::importFileStream(wxFile& file, u32 len)
 {
 	// Check if locked
 	if (locked_)
@@ -580,7 +583,7 @@ bool ArchiveEntry::exportFile(string_view filename) const
 // -----------------------------------------------------------------------------
 // Writes data to the entry MemChunk
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::write(const void* data, uint32_t size)
+bool ArchiveEntry::write(const void* data, u32 size)
 {
 	// Check if locked
 	if (locked_)
@@ -605,7 +608,7 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 // -----------------------------------------------------------------------------
 // Reads data from the entry MemChunk
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::read(void* buf, uint32_t size) const
+bool ArchiveEntry::read(void* buf, u32 size) const
 {
 	return data_.read(buf, size);
 }

@@ -53,6 +53,26 @@ using namespace slade;
 
 // -----------------------------------------------------------------------------
 //
+// Constants
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+constexpr size_t MAX_NAME_LEN = 8;
+constexpr u16    INDEX_NONE   = 65535;
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Int, map_compress_sides, 1, CVar::Flag::Save) // 0 = never, 1 = when necessary, 2 = always
+
+
+// -----------------------------------------------------------------------------
+//
 // DoomMapFormat Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -134,12 +154,34 @@ vector<unique_ptr<ArchiveEntry>> DoomMapFormat::writeMap(
 	const MapObjectCollection& map_data,
 	const PropertyList&        map_extra_props)
 {
+	// Build doom format map data
+	auto vertexes = buildVertices(map_data.vertices());
+	auto sidedefs = buildSides(map_data.sides());
+	auto linedefs = buildLines(map_data.lines());
+	auto sectors  = buildSectors(map_data.sectors());
+	auto things   = buildThings(map_data.things());
+
+	// Check if we need to compress sides
+	if (map_compress_sides == 2 || map_compress_sides == 1 && sidedefs.size() > 65535)
+	{
+		// Compress sides & update linedefs with compressed side indices
+		auto side_index_map = compressSides(sidedefs);
+		remapLineSides(linedefs, map_data.lines(), side_index_map);
+	}
+
+	// TODO: Check for exceeded limits and abort with error if so
+
+	// Create map data entries
 	vector<unique_ptr<ArchiveEntry>> map_entries;
-	map_entries.push_back(writeTHINGS(map_data.things()));
-	map_entries.push_back(writeLINEDEFS(map_data.lines()));
-	map_entries.push_back(writeSIDEDEFS(map_data.sides()));
-	map_entries.push_back(writeVERTEXES(map_data.vertices()));
-	map_entries.push_back(writeSECTORS(map_data.sectors()));
+	map_entries.push_back(
+		std::make_unique<ArchiveEntry>("VERTEXES", vertexes.size() * sizeof(Vertex), vertexes.data()));
+	map_entries.push_back(
+		std::make_unique<ArchiveEntry>("LINEDEFS", linedefs.size() * sizeof(LineDef), linedefs.data()));
+	map_entries.push_back(
+		std::make_unique<ArchiveEntry>("SIDEDEFS", sidedefs.size() * sizeof(SideDef), sidedefs.data()));
+	map_entries.push_back(std::make_unique<ArchiveEntry>("SECTORS", sectors.size() * sizeof(Sector), sectors.data()));
+	map_entries.push_back(std::make_unique<ArchiveEntry>("THINGS", things.size() * sizeof(Thing), things.data()));
+
 	return map_entries;
 }
 
@@ -380,172 +422,169 @@ bool DoomMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_dat
 }
 
 // -----------------------------------------------------------------------------
-// Creates and returns a Doom-format VERTEXES entry from [vertices]
+// Builds a vector of Doom-format Vertices from the given [vertices]
 // -----------------------------------------------------------------------------
-unique_ptr<ArchiveEntry> DoomMapFormat::writeVERTEXES(const VertexList& vertices) const
+vector<DoomMapFormat::Vertex> DoomMapFormat::buildVertices(const VertexList& vertices) const
 {
-	auto entry = std::make_unique<ArchiveEntry>("VERTEXES");
+	vector<Vertex> data;
+	data.reserve(vertices.size());
 
-	// Init entry data
-	entry->clearData();
-	entry->resize(vertices.size() * 4, false);
-	entry->seek(0, 0);
-
-	// Write vertex data
-	short x, y;
 	for (auto& vertex : vertices)
-	{
-		x = vertex->xPos();
-		y = vertex->yPos();
-		entry->write(&x, 2);
-		entry->write(&y, 2);
-	}
+		data.push_back({ .x = static_cast<short>(vertex->xPos()), .y = static_cast<short>(vertex->yPos()) });
 
-	return entry;
+	return data;
 }
 
 // -----------------------------------------------------------------------------
-// Creates and returns a Doom-format SIDEDEFS entry from [sides]
+// Builds a vector of Doom-format SideDefs from the given [sides]
 // -----------------------------------------------------------------------------
-unique_ptr<ArchiveEntry> DoomMapFormat::writeSIDEDEFS(const SideList& sides) const
+vector<DoomMapFormat::SideDef> DoomMapFormat::buildSides(const SideList& sides) const
 {
-	auto entry = std::make_unique<ArchiveEntry>("SIDEDEFS");
+	vector<SideDef> data;
+	data.reserve(sides.size());
 
-	// Init entry data
-	entry->clearData();
-	entry->resize(sides.size() * 30, false);
-	entry->seek(0, 0);
-
-	// Write side data
-	SideDef data;
 	for (auto& side : sides)
 	{
-		memset(&data, 0, 30);
-
-		// Offsets
-		data.x_offset = side->texOffsetX();
-		data.y_offset = side->texOffsetY();
-
-		// Sector
-		data.sector = -1;
-		if (side->sector())
-			data.sector = side->sector()->index();
-
-		// Textures
-		memcpy(data.tex_middle, side->texMiddle().data(), side->texMiddle().size());
-		memcpy(data.tex_upper, side->texUpper().data(), side->texUpper().size());
-		memcpy(data.tex_lower, side->texLower().data(), side->texLower().size());
-
-		entry->write(&data, 30);
+		SideDef sdef{ .x_offset   = side->texOffsetX(),
+					  .y_offset   = side->texOffsetY(),
+					  .tex_upper  = {},
+					  .tex_lower  = {},
+					  .tex_middle = {},
+					  .sector     = side->sector() ? static_cast<u16>(side->sector()->index()) : INDEX_NONE };
+		memcpy(sdef.tex_upper, side->texUpper().data(), std::min(side->texUpper().size(), MAX_NAME_LEN));
+		memcpy(sdef.tex_lower, side->texLower().data(), std::min(side->texLower().size(), MAX_NAME_LEN));
+		memcpy(sdef.tex_middle, side->texMiddle().data(), std::min(side->texMiddle().size(), MAX_NAME_LEN));
+		data.push_back(sdef);
 	}
 
-	return entry;
+	return data;
 }
 
 // -----------------------------------------------------------------------------
-// Creates and returns a Doom-format LINEDEFS entry from [lines]
+// Builds a vector of Doom-format LineDefs from the given [lines]
 // -----------------------------------------------------------------------------
-unique_ptr<ArchiveEntry> DoomMapFormat::writeLINEDEFS(const LineList& lines) const
+vector<DoomMapFormat::LineDef> DoomMapFormat::buildLines(const LineList& lines) const
 {
-	auto entry = std::make_unique<ArchiveEntry>("LINEDEFS");
+	vector<LineDef> data;
+	data.reserve(lines.size());
 
-	// Init entry data
-	entry->clearData();
-	entry->resize(lines.size() * 14, false);
-	entry->seek(0, 0);
-
-	// Write line data
-	LineDef data;
 	for (auto& line : lines)
 	{
-		data.vertex1 = line->v1Index();
-		data.vertex2 = line->v2Index();
-
-		// Properties
-		data.flags      = line->flags();
-		data.type       = line->special();
-		data.sector_tag = line->arg(0);
-
-		// Sides
-		data.side1 = line->s1Index();
-		data.side2 = line->s2Index();
-
-		entry->write(&data, 14);
+		data.push_back(
+			{ .vertex1    = static_cast<u16>(line->v1Index()),
+			  .vertex2    = static_cast<u16>(line->v2Index()),
+			  .flags      = static_cast<u16>(line->flags()),
+			  .type       = static_cast<u16>(line->special()),
+			  .sector_tag = static_cast<u16>(line->arg(0)),
+			  .side1      = static_cast<u16>(line->s1Index()),
+			  .side2      = static_cast<u16>(line->s2Index()) });
 	}
 
-	return entry;
+	return data;
 }
 
 // -----------------------------------------------------------------------------
-// Creates and returns a Doom-format SECTORS entry from [sectors]
+// Builds a vector of Doom-format Sectors from the given [sectors]
 // -----------------------------------------------------------------------------
-unique_ptr<ArchiveEntry> DoomMapFormat::writeSECTORS(const SectorList& sectors) const
+vector<DoomMapFormat::Sector> DoomMapFormat::buildSectors(const SectorList& sectors) const
 {
-	auto entry = std::make_unique<ArchiveEntry>("SECTORS");
+	vector<Sector> data;
+	data.reserve(sectors.size());
 
-	// Init entry data
-	entry->clearData();
-	entry->resize(sectors.size() * 26, false);
-	entry->seek(0, 0);
-
-	// Write sector data
-	Sector data;
 	for (auto& sector : sectors)
 	{
-		memset(&data, 0, 26);
-
-		// Height
-		data.f_height = sector->floor().height;
-		data.c_height = sector->ceiling().height;
-
-		// Textures
-		memcpy(data.f_tex, sector->floor().texture.data(), sector->floor().texture.size());
-		memcpy(data.c_tex, sector->ceiling().texture.data(), sector->ceiling().texture.size());
-
-		// Properties
-		data.light   = sector->lightLevel();
-		data.special = sector->special();
-		data.tag     = sector->id();
-
-		entry->write(&data, 26);
+		Sector s{ .f_height = static_cast<short>(sector->floor().height),
+				  .c_height = static_cast<short>(sector->ceiling().height),
+				  .f_tex    = {},
+				  .c_tex    = {},
+				  .light    = sector->lightLevel(),
+				  .special  = sector->special(),
+				  .tag      = sector->id() };
+		memcpy(s.f_tex, sector->floor().texture.data(), std::min(sector->floor().texture.size(), MAX_NAME_LEN));
+		memcpy(s.c_tex, sector->ceiling().texture.data(), std::min(sector->ceiling().texture.size(), MAX_NAME_LEN));
+		data.push_back(s);
 	}
 
-	return entry;
+	return data;
 }
 
 // -----------------------------------------------------------------------------
-// Creates and returns a Doom-format THINGS entry from [things]
+// Builds a vector of Doom-format Things from the given [things]
 // -----------------------------------------------------------------------------
-unique_ptr<ArchiveEntry> DoomMapFormat::writeTHINGS(const ThingList& things) const
+vector<DoomMapFormat::Thing> DoomMapFormat::buildThings(const ThingList& things) const
 {
-	auto entry = std::make_unique<ArchiveEntry>("THINGS");
+	vector<Thing> data;
+	data.reserve(things.size());
 
-	// Init entry data
-	entry->clearData();
-	entry->resize(things.size() * 10, false);
-	entry->seek(0, 0);
-
-	// Write thing data
-	Thing data;
 	for (auto& thing : things)
 	{
-		// Position
-		data.x = thing->xPos();
-		data.y = thing->yPos();
+		Thing t{ .x     = static_cast<short>(thing->xPos()),
+				 .y     = static_cast<short>(thing->yPos()),
+				 .angle = thing->angle(),
+				 .type  = static_cast<u16>(thing->type()),
+				 .flags = static_cast<u16>(thing->flags()) };
 
-		// Properties
-		data.angle = thing->angle();
-		data.type  = thing->type();
-		data.flags = thing->flags();
-
-		if (game::configuration().currentGame() == "srb2") // Sonic robo blast 2
+		// Sonic robo blast 2
+		if (game::configuration().currentGame() == "srb2")
 		{
 			// Srb2 stores thing's z position at the upper 12 bits from the thing's flags
-			data.flags = (data.flags & 0xf) | (static_cast<unsigned>(thing->zPos()) << 4);
+			t.flags = (t.flags & 0xf) | (static_cast<unsigned>(thing->zPos()) << 4);
 		}
 
-		entry->write(&data, 10);
+		data.push_back(t);
 	}
 
-	return entry;
+	return data;
+}
+
+// -----------------------------------------------------------------------------
+// Compresses the given [sides] by removing duplicates, returning a map of old
+// side indices to new compressed indices
+// -----------------------------------------------------------------------------
+std::unordered_map<unsigned, u16> DoomMapFormat::compressSides(vector<SideDef>& sides) const
+{
+	// Hash and equality functors for SideDef struct
+	struct SideHash
+	{
+		size_t operator()(const SideDef& s) const
+		{
+			// FNV-1a over the struct bytes
+			// (see: http://www.isthe.com/chongo/tech/comp/fnv/)
+			const auto* p = reinterpret_cast<const u8*>(&s);
+			size_t      h = 14695981039346656037ull;
+			for (size_t i = 0; i < sizeof(SideDef); ++i)
+				h = (h ^ p[i]) * 1099511628211ull;
+			return h;
+		}
+	};
+	struct SideEqual
+	{
+		bool operator()(const SideDef& a, const SideDef& b) const { return memcmp(&a, &b, sizeof(SideDef)) == 0; }
+	};
+
+	std::unordered_map<unsigned, u16>                     index_map;
+	std::unordered_map<SideDef, u16, SideHash, SideEqual> lookup;
+	vector<SideDef>                                       compressed;
+
+	index_map.reserve(sides.size());
+	lookup.reserve(sides.size());
+	compressed.reserve(sides.size());
+
+	// Build lookup of unique sides and map of old side indices to new
+	// compressed indices
+	for (unsigned i = 0; i < sides.size(); ++i)
+	{
+		// Insert side into lookup, get compressed index
+		auto [it, inserted] = lookup.emplace(sides[i], static_cast<u16>(compressed.size()));
+
+		// If side was unique, add to compressed list
+		if (inserted)
+			compressed.push_back(sides[i]);
+
+		index_map[i] = it->second;
+	}
+
+	sides = std::move(compressed);
+
+	return index_map;
 }

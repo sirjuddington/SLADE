@@ -25,7 +25,7 @@ class ArchiveEntry : public std::enable_shared_from_this<ArchiveEntry>
 
 public:
 	// Constructor/Destructor
-	ArchiveEntry(string_view name = "", uint32_t size = 0);
+	ArchiveEntry(string_view name = "", u32 size = 0, const void* data = nullptr);
 	ArchiveEntry(const ArchiveEntry& copy);
 	~ArchiveEntry() = default;
 
@@ -36,7 +36,7 @@ public:
 	const string&            upperName() const { return upper_name_; }
 	string_view              upperNameNoExt() const;
 	string_view              upperExt() const;
-	uint32_t                 size() const { return data_.size(); }
+	u32                      size() const { return data_.size(); }
 	const MemChunk&          data() const { return data_; }
 	const uint8_t*           rawData() const { return data_.data(); }
 	ArchiveDir*              parentDir() const { return parent_.lock().get(); }
@@ -73,26 +73,26 @@ public:
 
 	// Entry modification (will change entry state)
 	bool rename(string_view new_name);
-	bool resize(uint32_t new_size, bool preserve_data);
+	bool resize(u32 new_size, bool preserve_data);
 
 	// Data modification
 	bool clearData(bool silent = false);
 
 	// Data import
-	bool importMem(const void* data, uint32_t size);
-	bool importMemChunk(const MemChunk& mc, uint32_t offset = 0, uint32_t size = 0);
-	bool importFile(string_view filename, uint32_t offset = 0, uint32_t size = 0);
-	bool importFileStream(wxFile& file, uint32_t len = 0);
+	bool importMem(const void* data, u32 size);
+	bool importMemChunk(const MemChunk& mc, u32 offset = 0, u32 size = 0);
+	bool importFile(string_view filename, u32 offset = 0, u32 size = 0);
+	bool importFileStream(wxFile& file, u32 len = 0);
 	bool importEntry(const ArchiveEntry* entry);
 
 	// Data export
 	bool exportFile(string_view filename) const;
 
 	// Data access
-	bool     write(const void* data, uint32_t size);
-	bool     read(void* buf, uint32_t size) const;
-	bool     seek(uint32_t offset, uint32_t start) const { return data_.seek(offset, start); }
-	uint32_t currentPos() const { return data_.currentPos(); }
+	bool write(const void* data, u32 size);
+	bool read(void* buf, u32 size) const;
+	bool seek(u32 offset, u32 start) const { return data_.seek(offset, start); }
+	u32  currentPos() const { return data_.currentPos(); }
 
 	// Data on disk
 	int  sizeOnDisk() const { return ex_props_.getOr("SizeOnDisk", -1); }
