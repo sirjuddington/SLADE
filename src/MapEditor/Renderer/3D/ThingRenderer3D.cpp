@@ -537,15 +537,11 @@ bool ThingRenderer3D::update(bool vis_check)
 
 	else if (!update_types_.empty() || thingsNeedUpdate(groups_updated_, map))
 	{
-		vector<ThingGroup*> groups_to_rebuild;
+		vector<int> groups_to_rebuild;
 
 		// Initially mark groups with things that have changed type for rebuild
 		for (int type_id : update_types_)
-		{
-			auto group = thingGroup(type_id);
-			if (group)
-				groups_to_rebuild.push_back(group);
-		}
+			groups_to_rebuild.push_back(type_id);
 		update_types_.clear();
 
 		for (const auto thing : map->things().all())
@@ -565,14 +561,18 @@ bool ThingRenderer3D::update(bool vis_check)
 				group = &groups_.emplace_back(thing->type(), game::configuration().thingType(thing->type()));
 
 			// Mark group for rebuild
-			vectorAddUnique(groups_to_rebuild, group);
+			vectorAddUnique(groups_to_rebuild, group->type);
 		}
 
 		// Rebuild groups that need it
 		// TODO: This can probably be optimized by not iterating through *all*
 		//       things each time
-		for (auto group : groups_to_rebuild)
+		for (auto type_id : groups_to_rebuild)
 		{
+			auto group = thingGroup(type_id);
+			if (!group)
+				continue;
+
 			group->things.clear();
 			group->line_buffer->buffer().clear();
 
