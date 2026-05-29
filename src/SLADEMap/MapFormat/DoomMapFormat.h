@@ -1,12 +1,13 @@
 #pragma once
 
 #include "MapFormatHandler.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObjectList/LineList.h"
 
 namespace slade
 {
 class ThingList;
 class SectorList;
-class LineList;
 class SideList;
 class VertexList;
 
