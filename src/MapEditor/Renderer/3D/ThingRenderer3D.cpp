@@ -411,11 +411,24 @@ float ThingRenderer3D::ThingGroup::height() const
 ThingRenderer3D::ThingRenderer3D(MapRenderer3D* renderer) : renderer_{ renderer }
 {
 	// Update thing groups when things change type
-	sc_thing_type_changed = renderer->map()->signals().thing_type_changed.connect_scoped(
+	connections_ += renderer->map()->signals().thing_type_changed.connect(
 		[this](const MapThing* thing, int prev_type)
 		{
 			vectorAddUnique(update_types_, prev_type);
 			vectorAddUnique(update_types_, static_cast<int>(thing->type()));
+		});
+
+	// Refresh thing groups when things are deleted
+	// (since thing indices will be changed and now invalid)
+	connections_ += renderer->map()->signals().object_deleted.connect(
+		[this](const vector<MapObject*>& objects)
+		{
+			for (const auto obj : objects)
+				if (obj->objType() == map::ObjectType::Thing)
+				{
+					groups_.clear();
+					return;
+				}
 		});
 }
 
@@ -818,7 +831,8 @@ optional<Item> ThingRenderer3D::nearestIntersectingThing(const gl::Camera& camer
 		{
 			// Ignore if not visible
 			auto thing = renderer_->map()->thing(ti.index);
-			if ((!thing_visibility_.empty() && thing_visibility_[thing->index()] == 0)
+			if (!thing
+				|| (!thing_visibility_.empty() && thing_visibility_[thing->index()] == 0)
 				|| geometry::lineSide(thing->position(), camera.strafeLine()) > 0)
 				continue;
 

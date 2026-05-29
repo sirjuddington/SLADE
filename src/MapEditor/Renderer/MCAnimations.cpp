@@ -138,7 +138,7 @@ MCAThingSelection::MCAThingSelection(
 	{
 		auto& tt = game::configuration().thingType(thing->type());
 
-		float radius = tt.radius();
+		float radius = tt.displayRadius();
 		if (tt.shrinkOnZoom())
 			radius = scaledRadius(radius, view_scale);
 		radius += 4.0f;

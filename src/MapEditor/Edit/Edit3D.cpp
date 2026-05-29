@@ -129,14 +129,14 @@ void Edit3D::changeSectorLight(int amount) const
 			if (link_light_)
 			{
 				// Ignore if sector already processed
-				if (processed.count(sector))
+				if (processed.contains(sector))
 					continue;
 				processed.insert(sector);
 			}
 			else
 			{
 				// Ignore if side already processed
-				if (processed.count(side))
+				if (processed.contains(side))
 					continue;
 				processed.insert(side);
 			}
@@ -520,7 +520,7 @@ void Edit3D::autoAlign(Item start, AlignType align_type) const
 		jobs.pop();
 
 		// Skip if side has already been processed
-		if (processed_sides.find(job.side->index()) != processed_sides.end())
+		if (processed_sides.contains(job.side->index()))
 			continue;
 
 		// Skip if this wall does not have the desired texture
@@ -546,6 +546,7 @@ void Edit3D::autoAlign(Item start, AlignType align_type) const
 			// Set X offset
 			job.side->setIntProperty("offsetx", job.tex_offset_x);
 			break;
+		default: break;
 		}
 
 		// Perform Y-alignment
@@ -575,6 +576,7 @@ void Edit3D::autoAlign(Item start, AlignType align_type) const
 			// Set Y offset
 			job.side->setIntProperty("offsety", current_offset_y);
 			break;
+		default: break;
 		}
 
 		// Enqueue all sides connected to the start vertex of the current side
@@ -608,7 +610,8 @@ void Edit3D::resetOffsets() const
 	auto         hilight_3d   = context_->hilightItem();
 	if (selection_3d.empty())
 	{
-		if (hilight_3d.type == ItemType::WallTop || hilight_3d.type == ItemType::WallBottom
+		if (hilight_3d.type == ItemType::WallTop
+			|| hilight_3d.type == ItemType::WallBottom
 			|| hilight_3d.type == ItemType::WallMiddle)
 			walls.push_back(hilight_3d);
 		else if (hilight_3d.type == ItemType::Floor || hilight_3d.type == ItemType::Ceiling)
@@ -620,7 +623,8 @@ void Edit3D::resetOffsets() const
 	{
 		for (auto& item : selection_3d)
 		{
-			if (item.type == ItemType::WallTop || item.type == ItemType::WallBottom
+			if (item.type == ItemType::WallTop
+				|| item.type == ItemType::WallBottom
 				|| item.type == ItemType::WallMiddle)
 				walls.push_back(item);
 			else if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
@@ -781,7 +785,8 @@ void Edit3D::toggleUnpegged(bool lower) const
 	vector<Item> items;
 	if (selection_3d.empty())
 	{
-		if (hilight_3d.type == ItemType::WallTop || hilight_3d.type == ItemType::WallBottom
+		if (hilight_3d.type == ItemType::WallTop
+			|| hilight_3d.type == ItemType::WallBottom
 			|| hilight_3d.type == ItemType::WallMiddle)
 			items.push_back(hilight_3d);
 	}
@@ -789,7 +794,8 @@ void Edit3D::toggleUnpegged(bool lower) const
 	{
 		for (auto& item : selection_3d)
 		{
-			if (item.type == ItemType::WallTop || item.type == ItemType::WallBottom
+			if (item.type == ItemType::WallTop
+				|| item.type == ItemType::WallBottom
 				|| item.type == ItemType::WallMiddle)
 				items.push_back(item);
 		}
@@ -1183,19 +1189,19 @@ void Edit3D::changeThingZ(int amount) const
 // -----------------------------------------------------------------------------
 void Edit3D::deleteThing() const
 {
-	// Begin undo level
-	context_->beginUndoRecord("Delete Thing", false, false, true);
+	// Get thing indices to delete
+	vector<unsigned> delete_things;
+	for (const auto& thing : context_->selection().selectedThings())
+		delete_things.push_back(thing->index());
 
-	// Go through 3d selection
-	auto& selection_3d = context_->selection();
-	for (auto& item : selection_3d)
-	{
-		// Check if thing
-		if (item.type == ItemType::Thing)
-			context_->map().removeThing(item.index);
-	}
+	if (delete_things.empty())
+		return;
 
+	context_->beginUndoRecord("Delete Thing(s)", false, false, true);
+	context_->map().removeThings(delete_things);
 	context_->endUndoRecord();
+
+	context_->clearSelection();
 }
 
 // -----------------------------------------------------------------------------
@@ -1871,7 +1877,7 @@ void Edit3D::getAdjacentFlats(Item item, vector<Item>& list) const
 		bool listed = false;
 		for (auto& i : list)
 		{
-			if (i.type == item.type && i.index == static_cast<int>(osector->index()))
+			if (i.type == item.type && std::cmp_equal(i.index, osector->index()))
 			{
 				listed = true;
 				break;
@@ -1891,30 +1897,30 @@ void Edit3D::getAdjacentFlats(Item item, vector<Item>& list) const
 // Determine the height of the top end of the texture on the respective wall part
 // of the given line using the given texture height.
 // -----------------------------------------------------------------------------
-int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_height) const
+int Edit3D::getTextureTopHeight(const MapLine* first_line, ItemType wall_type, int tex_height) const
 {
-	assert(wallType == ItemType::WallBottom || wallType == ItemType::WallMiddle || wallType == ItemType::WallTop);
-	if (wallType == ItemType::WallBottom)
+	assert(wall_type == ItemType::WallBottom || wall_type == ItemType::WallMiddle || wall_type == ItemType::WallTop);
+	if (wall_type == ItemType::WallBottom)
 	{
 		const bool unpegged = game::configuration().lineBasicFlagSet(
-			"dontpegbottom", firstLine, context_->mapDesc().format);
+			"dontpegbottom", first_line, context_->mapDesc().format);
 		// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
 		// Otherwise: Top of texture is at the highest floor
 		if (unpegged)
-			return firstLine->highestCeiling();
+			return first_line->highestCeiling();
 		else
-			return firstLine->highestFloor();
+			return first_line->highestFloor();
 	}
-	else if (wallType == ItemType::WallMiddle)
+	else if (wall_type == ItemType::WallMiddle)
 	{
 		const bool unpegged = game::configuration().lineBasicFlagSet(
-			"dontpegbottom", firstLine, context_->mapDesc().format);
+			"dontpegbottom", first_line, context_->mapDesc().format);
 		// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
 		// Otherwise: Top of texture is at the lowest ceiling
 		if (unpegged)
-			return firstLine->highestFloor() + tex_height;
+			return first_line->highestFloor() + tex_height;
 		else
-			return firstLine->lowestCeiling();
+			return first_line->lowestCeiling();
 	}
 	else
 	{
@@ -1922,11 +1928,11 @@ int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_h
 		// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
 		// Otherwise: Top of texture is at lowest ceiling plus texture height
 		const bool unpegged = game::configuration().lineBasicFlagSet(
-			"dontpegtop", firstLine, context_->mapDesc().format);
+			"dontpegtop", first_line, context_->mapDesc().format);
 		if (unpegged)
-			return firstLine->highestCeiling();
+			return first_line->highestCeiling();
 		else
-			return firstLine->lowestCeiling() + tex_height;
+			return first_line->lowestCeiling() + tex_height;
 	}
 }
 
@@ -1935,7 +1941,7 @@ int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_h
 // Calculates the correct texture x-offset for the respective sides.
 // tex_offset_x gives the texture x-offset to be assumed for the common vertex.
 // -----------------------------------------------------------------------------
-void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* common_vertex, int tex_offset_x)
+void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, const MapVertex* common_vertex, int tex_offset_x)
 {
 	for (MapLine* line : common_vertex->connectedLines())
 	{
@@ -1953,7 +1959,11 @@ void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* co
 // Calculates the correct texture x-offset for the respective sides.
 // tex_offset_x gives the texture x-offset to be assumed for the common vertex.
 // -----------------------------------------------------------------------------
-void Edit3D::enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* common_vertex, int tex_offset_x)
+void Edit3D::enqueueSide(
+	std::queue<AlignmentJob>& jobs,
+	MapSide*                  side,
+	const MapVertex*          common_vertex,
+	int                       tex_offset_x)
 {
 	AlignmentJob job;
 	job.side         = side;

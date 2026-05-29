@@ -60,7 +60,7 @@ public:
 	void changeSectorLight(int amount) const;
 	void changeOffset(int amount, bool x) const;
 	void changeSectorHeight(int amount) const;
-	void autoAlign(Item start, AlignType alignType = AlignType::AlignX) const;
+	void autoAlign(Item start, AlignType align_type = AlignType::AlignX) const;
 	void resetOffsets() const;
 	void toggleUnpegged(bool lower) const;
 	void copy(CopyType type);
@@ -102,8 +102,12 @@ private:
 	};
 
 	// Helper functions for texture auto-alignment
-	int         getTextureTopHeight(MapLine* firstLine, mapeditor::ItemType wall_type, int tex_height) const;
-	static void enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* common_vertex, int tex_offset_x);
-	static void enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* common_vertex, int tex_offset_x);
+	int         getTextureTopHeight(const MapLine* first_line, mapeditor::ItemType wall_type, int tex_height) const;
+	static void enqueueConnectedLines(std::queue<AlignmentJob>& jobs, const MapVertex* common_vertex, int tex_offset_x);
+	static void enqueueSide(
+		std::queue<AlignmentJob>& jobs,
+		MapSide*                  side,
+		const MapVertex*          common_vertex,
+		int                       tex_offset_x);
 };
 } // namespace slade::mapeditor

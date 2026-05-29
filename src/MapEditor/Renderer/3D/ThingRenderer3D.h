@@ -1,5 +1,6 @@
 #pragma once
 
+#include "General/Sigslot.h"
 #include "MapEditor/Item.h"
 
 // Forward declarations
@@ -99,6 +100,6 @@ private:
 	const ThingGroup* thingGroup(unsigned type) const;
 	ThingGroup*       thingGroup(unsigned type);
 
-	sigslot::scoped_connection sc_thing_type_changed;
+	ScopedConnectionList connections_;
 };
 } // namespace slade::mapeditor

@@ -612,9 +612,6 @@ bool MapObjectCollection::removeThings(const vector<unsigned>& indices)
 
 	removeMarkedObjects();
 
-	if (parent_map_)
-		parent_map_->setGeometryUpdated();
-
 	return true;
 }
 

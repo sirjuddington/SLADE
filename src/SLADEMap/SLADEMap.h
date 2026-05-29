@@ -101,6 +101,7 @@ public:
 	bool removeSector(unsigned index) { return data_.removeSector(index); }
 	bool removeThing(const MapThing* thing) { return data_.removeThing(thing); }
 	bool removeThing(unsigned index) { return data_.removeThing(index); }
+	bool removeThings(const vector<unsigned>& indices) { return data_.removeThings(indices); }
 	int  removeDetachedVertices() { return data_.removeDetachedVertices(); }
 
 	// Geometry
