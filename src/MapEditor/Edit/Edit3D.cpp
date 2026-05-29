@@ -1699,120 +1699,81 @@ bool Edit3D::wallMatches(const MapSide* side, ItemType part, string_view tex)
 // Adds all adjacent walls to [item] to [list].
 // Adjacent meaning connected and sharing a texture
 // -----------------------------------------------------------------------------
-void Edit3D::getAdjacentWalls(Item item, vector<Item>& list) const
+void Edit3D::getAdjacentWalls(Item start_item, vector<Item>& list) const
 {
-	// Add item to list if needed
-	for (auto& list_item : list)
+	// Keep a set of visited items to avoid infinite loops
+	std::set<std::pair<int, ItemType>> visited;
+
+	// Initialize visited set with items already in the list
+	for (auto& i : list)
+		visited.insert({ i.index, i.type });
+
+	// Queue for breadth-first search of adjacent walls
+	std::queue<Item> queue;
+	if (!visited.contains({ start_item.index, start_item.type }))
+		queue.push(start_item);
+
+	while (!queue.empty())
 	{
-		if (list_item.type == item.type && list_item.index == item.index)
-			return;
-	}
-	list.push_back(item);
+		auto item = queue.front();
+		queue.pop();
 
-	// Get initial side
-	auto side = item.asSide(context_->map());
-	if (!side)
-		return;
+		// Skip if already visited
+		if (visited.contains({ item.index, item.type }))
+			continue;
+		visited.insert({ item.index, item.type });
+		list.push_back(item);
 
-	// Get initial line
-	auto line = side->parentLine();
-	if (!line)
-		return;
-
-	// Get texture to match
-	string tex;
-	if (item.type == ItemType::WallBottom)
-		tex = side->texLower();
-	else if (item.type == ItemType::WallMiddle)
-		tex = side->texMiddle();
-	else
-		tex = side->texUpper();
-
-	// Go through attached lines (vertex 1)
-	for (unsigned a = 0; a < line->v1()->nConnectedLines(); a++)
-	{
-		auto oline = line->v1()->connectedLine(a);
-		if (!oline || oline == line)
+		// Get side
+		auto side = item.asSide(context_->map());
+		if (!side)
 			continue;
 
-		// Get line sides
-		auto side1 = oline->s1();
-		auto side2 = oline->s2();
-
-		// Front side
-		if (side1)
-		{
-			// Upper texture
-			if (wallMatches(side1, ItemType::WallTop, tex))
-				getAdjacentWalls({ static_cast<int>(side1->index()), ItemType::WallTop }, list);
-
-			// Middle texture
-			if (wallMatches(side1, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ static_cast<int>(side1->index()), ItemType::WallMiddle }, list);
-
-			// Lower texture
-			if (wallMatches(side1, ItemType::WallBottom, tex))
-				getAdjacentWalls({ static_cast<int>(side1->index()), ItemType::WallBottom }, list);
-		}
-
-		// Back side
-		if (side2)
-		{
-			// Upper texture
-			if (wallMatches(side2, ItemType::WallTop, tex))
-				getAdjacentWalls({ static_cast<int>(side2->index()), ItemType::WallTop }, list);
-
-			// Middle texture
-			if (wallMatches(side2, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ static_cast<int>(side2->index()), ItemType::WallMiddle }, list);
-
-			// Lower texture
-			if (wallMatches(side2, ItemType::WallBottom, tex))
-				getAdjacentWalls({ static_cast<int>(side2->index()), ItemType::WallBottom }, list);
-		}
-	}
-
-	// Go through attached lines (vertex 2)
-	for (unsigned a = 0; a < line->v2()->nConnectedLines(); a++)
-	{
-		auto oline = line->v2()->connectedLine(a);
-		if (!oline || oline == line)
+		// Get line
+		auto line = side->parentLine();
+		if (!line)
 			continue;
 
-		// Get line sides
-		auto side1 = oline->s1();
-		auto side2 = oline->s2();
+		// Get texture to check for match
+		string tex;
+		if (item.type == ItemType::WallBottom)
+			tex = side->texLower();
+		else if (item.type == ItemType::WallMiddle)
+			tex = side->texMiddle();
+		else
+			tex = side->texUpper();
 
-		// Front side
-		if (side1)
+		// Lambda to enqueue all matching wall parts from a given side
+		auto enqueue_side = [&](const MapSide* s)
 		{
-			// Upper texture
-			if (wallMatches(side1, ItemType::WallTop, tex))
-				getAdjacentWalls({ static_cast<int>(side1->index()), ItemType::WallTop }, list);
+			if (!s)
+				return;
+			if (wallMatches(s, ItemType::WallTop, tex))
+				queue.emplace(static_cast<int>(s->index()), ItemType::WallTop);
+			if (wallMatches(s, ItemType::WallMiddle, tex))
+				queue.emplace(static_cast<int>(s->index()), ItemType::WallMiddle);
+			if (wallMatches(s, ItemType::WallBottom, tex))
+				queue.emplace(static_cast<int>(s->index()), ItemType::WallBottom);
+		};
 
-			// Middle texture
-			if (wallMatches(side1, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ static_cast<int>(side1->index()), ItemType::WallMiddle }, list);
-
-			// Lower texture
-			if (wallMatches(side1, ItemType::WallBottom, tex))
-				getAdjacentWalls({ static_cast<int>(side1->index()), ItemType::WallBottom }, list);
+		// Go through attached lines (vertex 1)
+		for (unsigned a = 0; a < line->v1()->nConnectedLines(); a++)
+		{
+			auto oline = line->v1()->connectedLine(a);
+			if (!oline || oline == line)
+				continue;
+			enqueue_side(oline->s1());
+			enqueue_side(oline->s2());
 		}
 
-		// Back side
-		if (side2)
+		// Go through attached lines (vertex 2)
+		for (unsigned a = 0; a < line->v2()->nConnectedLines(); a++)
 		{
-			// Upper texture
-			if (wallMatches(side2, ItemType::WallTop, tex))
-				getAdjacentWalls({ static_cast<int>(side2->index()), ItemType::WallTop }, list);
-
-			// Middle texture
-			if (wallMatches(side2, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ static_cast<int>(side2->index()), ItemType::WallMiddle }, list);
-
-			// Lower texture
-			if (wallMatches(side2, ItemType::WallBottom, tex))
-				getAdjacentWalls({ static_cast<int>(side2->index()), ItemType::WallBottom }, list);
+			auto oline = line->v2()->connectedLine(a);
+			if (!oline || oline == line)
+				continue;
+			enqueue_side(oline->s1());
+			enqueue_side(oline->s2());
 		}
 	}
 }
