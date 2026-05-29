@@ -250,10 +250,10 @@ void Camera::pitch(double amount)
 // -----------------------------------------------------------------------------
 // Moves the camera direction/pitch based on [xrel],[yrel]
 // -----------------------------------------------------------------------------
-void Camera::look(double xrel, double yrel)
+void Camera::look(double xrel, double yrel, bool ignore_invert)
 {
 	turn(-xrel * 0.1 * map3d_mlook_sensitivity_x);
-	if (map3d_mlook_invert_y)
+	if (map3d_mlook_invert_y && !ignore_invert)
 		pitch(yrel * 0.003 * map3d_mlook_sensitivity_y);
 	else
 		pitch(-yrel * 0.003 * map3d_mlook_sensitivity_y);

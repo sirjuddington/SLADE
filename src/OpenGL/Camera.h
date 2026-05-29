@@ -61,7 +61,7 @@ public:
 	void moveUp(double distance);
 	void strafe(double distance);
 	void pitch(double amount);
-	void look(double xrel, double yrel);
+	void look(double xrel, double yrel, bool ignore_invert = false);
 	bool applyGravity(double floor_height, double view_height, double mult);
 
 	bool pointInFrustum2d(const Vec2d& point) const;

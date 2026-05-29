@@ -1188,7 +1188,7 @@ bool Input::updateCamera3d(double mult) const
 	if (KeyBind::isPressed("me3d_camera_up"))
 	{
 		if (map3d_gravity)
-			camera.look(0.0, -speed);
+			camera.look(0.0, -speed, true);
 		else
 			camera.moveUp(speed);
 		moving = true;
@@ -1198,7 +1198,7 @@ bool Input::updateCamera3d(double mult) const
 	if (KeyBind::isPressed("me3d_camera_down"))
 	{
 		if (map3d_gravity)
-			camera.look(0.0, speed);
+			camera.look(0.0, speed, true);
 		else
 			camera.moveUp(-speed);
 		moving = true;

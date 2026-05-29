@@ -550,16 +550,17 @@ void Edit3D::autoAlign(Item start, AlignType align_type) const
 		}
 
 		// Perform Y-alignment
+		MapLine* current_line = nullptr;
+		int      current_offset_y, current_tex_top_height;
 		switch (align_type)
 		{
 		case AlignType::AlignY:
 		case AlignType::AlignXY:
 			// First we need to determine the top height for the respective texture
-			int  current_tex_top_height = -1;
-			auto current_line           = job.side->parentLine();
-			current_tex_top_height      = getTextureTopHeight(current_line, start.type, tex_height);
+			current_line           = job.side->parentLine();
+			current_tex_top_height = getTextureTopHeight(current_line, start.type, tex_height);
 			// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
-			int current_offset_y = first_tex_top_height - current_tex_top_height;
+			current_offset_y = first_tex_top_height - current_tex_top_height;
 
 			// Adjust the y-offset (but only, if we're not adjusting the middle part on a two-sided wall)
 			if (start.type != ItemType::WallMiddle
