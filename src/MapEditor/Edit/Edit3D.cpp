@@ -1131,9 +1131,17 @@ void Edit3D::changeThingType(bool force_highlight) const
 	if (items.empty())
 		return;
 
+	// Find first selected thing
+	MapThing* first_thing = nullptr;
+	for (auto& item : items)
+		if (auto thing = item.asThing(context_->map()))
+		{
+			first_thing = thing;
+			break;
+		}
+
 	// Browse for new thing type
-	auto first_thing = items[0].asThing(context_->map());
-	auto type        = first_thing->type();
+	auto type = first_thing->type();
 	if (int new_type = mapeditor::browseThingType(type, context_->map()); new_type >= 0)
 	{
 		// Begin undo level
