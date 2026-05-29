@@ -295,7 +295,9 @@ bool KeyBind::addBind(
 	// Check if the key is already bound to it
 	for (unsigned a = 0; a < bind->keys_.size(); a++)
 	{
-		if (bind->keys_[a].alt == key.alt && bind->keys_[a].ctrl == key.ctrl && bind->keys_[a].shift == key.shift
+		if (bind->keys_[a].alt == key.alt
+			&& bind->keys_[a].ctrl == key.ctrl
+			&& bind->keys_[a].shift == key.shift
 			&& bind->keys_[a].key == key.key)
 		{
 			// It is, remove the bind
@@ -460,7 +462,9 @@ bool KeyBind::keyPressed(const Keypress& key)
 			auto& kp = kb.keys_[a];
 
 			// Check for match with keypress
-			if ((kp.shift == key.shift || kb.ignore_shift_) && kp.alt == key.alt && kp.ctrl == key.ctrl
+			if ((kp.shift == key.shift || kb.ignore_shift_)
+				&& kp.alt == key.alt
+				&& kp.ctrl == key.ctrl
 				&& kp.key == key.key)
 			{
 				// Set bind state
@@ -720,7 +724,7 @@ void KeyBind::initBinds()
 	addBind("me3d_toggle_fullbright", Keypress("B"), "Toggle full brightness", group);
 	addBind("me3d_adjust_brightness", Keypress("B", KPM_SHIFT), "Adjust brightness", group);
 	addBind("me3d_toggle_gravity", Keypress("G"), "Toggle camera gravity", group);
-	addBind("me3d_release_mouse", Keypress("tab"), "Release mouse cursor", group);
+	addBind("me3d_lock_mouselook", Keypress("M"), "Toggle mouselook", group);
 	addBind("me3d_clear_selection", Keypress("C"), "Clear selection", group);
 	addBind("me3d_toggle_things", Keypress("T"), "Toggle thing display", group);
 	addBind("me3d_thing_boxes", Keypress("T", KPM_SHIFT), "Toggle thing boxes", group);

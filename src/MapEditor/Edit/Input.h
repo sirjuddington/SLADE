@@ -84,7 +84,7 @@ public:
 	void onKeyBindRelease(string_view name) override;
 	void handleKeyBind2dView(string_view name);
 	void handleKeyBind2d(string_view name);
-	void handleKeyBind3d(string_view name) const;
+	void handleKeyBind3d(string_view name);
 	bool updateCamera3d(double mult) const;
 
 	static string mouseButtonKBName(MouseButton button);

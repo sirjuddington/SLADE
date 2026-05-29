@@ -200,7 +200,8 @@ void mapeditor::openContextMenu()
 // -----------------------------------------------------------------------------
 void mapeditor::openObjectProperties(MapObject* object)
 {
-	map_window->propsPanel()->openObject(object);
+	if (map_window->propsPanel()->IsShown())
+		map_window->propsPanel()->openObject(object);
 }
 
 // -----------------------------------------------------------------------------
@@ -208,7 +209,8 @@ void mapeditor::openObjectProperties(MapObject* object)
 // -----------------------------------------------------------------------------
 void mapeditor::openMultiObjectProperties(vector<MapObject*>& objects)
 {
-	map_window->propsPanel()->openObjects(objects);
+	if (map_window->propsPanel()->IsShown())
+		map_window->propsPanel()->openObjects(objects);
 }
 
 // -----------------------------------------------------------------------------
@@ -233,11 +235,6 @@ void mapeditor::showObjectEditPanel(bool show, ObjectEditGroup* group)
 // -----------------------------------------------------------------------------
 string mapeditor::browseTexture(string_view init_texture, TextureType tex_type, SLADEMap& map, string_view title)
 {
-	// Unlock cursor if locked
-	bool cursor_locked = edit_context->mouseLocked();
-	if (cursor_locked)
-		edit_context->lockMouse(false);
-
 	// Setup texture browser
 	MapTextureBrowser browser(map_window, tex_type, init_texture, &map);
 	browser.SetTitle(wxutil::strFromView(title));
@@ -246,10 +243,6 @@ string mapeditor::browseTexture(string_view init_texture, TextureType tex_type, 
 	string tex{ init_texture };
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 		tex = browser.selectedItem()->name();
-
-	// Re-lock cursor if needed
-	if (cursor_locked)
-		edit_context->lockMouse(true);
 
 	return tex;
 }

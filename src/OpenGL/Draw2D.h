@@ -95,7 +95,7 @@ namespace gl
 
 			void drawRect(const Rectf& rect) const;
 			void drawRectOutline(const Rectf& rect) const;
-			void drawLines(const vector<Rectf>& lines) const;
+			void drawLines(const vector<Rectf>& lines, bool gradient_to_outline_colour = false) const;
 			void drawPointSprites(const vector<Vec2f>& points) const;
 			void drawPointSprites(const vector<Vec2d>& points) const;
 			void drawText(const string& text, const Vec2f& pos) const;

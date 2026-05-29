@@ -97,7 +97,6 @@ CVAR(Bool, map2d_scroll_smooth, true, CVar::Flag::Save)
 CVAR(Bool, map2d_show_selection_numbers, true, CVar::Flag::Save)
 CVAR(Int, map2d_things_always, 2, CVar::Flag::Save)
 CVAR(Int, map2d_vertices_always, 0, CVar::Flag::Save)
-CVAR(Int, map3d_crosshair_size, 6, CVar::Flag::Save)
 CVAR(Bool, map3d_crosshair_show_distance, false, CVar::Flag::Save)
 CVAR(Int, map3d_fov, 90, CVar::Flag::Save)
 CVAR(Bool, map3d_gravity, true, CVar::Flag::Save)
@@ -111,6 +110,7 @@ CVAR(Bool, map3d_gravity, true, CVar::Flag::Save)
 EXTERN_CVAR(Bool, map2d_vertex_round)
 EXTERN_CVAR(Int, map2d_vertex_size)
 EXTERN_CVAR(Int, map2d_thing_shape)
+EXTERN_CVAR(Bool, map3d_mlook_always)
 
 
 
@@ -1227,7 +1227,8 @@ void Renderer::drawMap3d() const
 	renderer_3d_->render(*camera_, *view_);
 
 	// Render highlight
-	if (context_->input().mouseState() == Input::MouseState::Normal)
+	if (context_->input().mouseState() == Input::MouseState::Normal
+		|| (context_->input().mouseState() == Input::MouseState::MouseLook && map3d_mlook_always))
 		renderer_3d_->renderHighlight(context_->hilightItem(), *camera_, *view_, anim_flash_level_);
 
 	// Render selection
@@ -1271,6 +1272,22 @@ void Renderer::draw() const
 
 	// Set view for overlays
 	dc.view = view_screen_.get();
+
+	// Draw crosshair if in 3d mode + locked mouselook
+	if (context_->editMode() == Mode::Visual && map3d_mlook_always)
+	{
+		dc.setColourFromConfig("map_3d_crosshair");
+		dc.line_thickness = 2.0f;
+		auto center       = Vec2f(view_->size().x * 0.5f, view_->size().y * 0.5f);
+		auto inner        = 3.0f * ui_scale_;
+		auto outer        = 10.0f * ui_scale_;
+		dc.drawLines(
+			{ { Vec2f(center.x - inner, center.y), Vec2f(center.x - outer, center.y) },
+			  { Vec2f(center.x + inner, center.y), Vec2f(center.x + outer, center.y) },
+			  { Vec2f(center.x, center.y - inner), Vec2f(center.x, center.y - outer) },
+			  { Vec2f(center.x, center.y + inner), Vec2f(center.x, center.y + outer) } },
+			true);
+	}
 
 	// Draw info overlay
 	dc.font       = draw2d::Font::Condensed;

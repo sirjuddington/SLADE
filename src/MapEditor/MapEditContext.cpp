@@ -114,6 +114,7 @@ EXTERN_CVAR(Bool, map2d_thing_preview_lights)
 EXTERN_CVAR(Bool, map3d_highlight_enabled)
 EXTERN_CVAR(Int, map3d_things)
 EXTERN_CVAR(Int, map3d_things_boxes)
+EXTERN_CVAR(Bool, map3d_mlook_always)
 
 
 // -----------------------------------------------------------------------------
@@ -423,7 +424,14 @@ void MapEditContext::setEditMode(Mode mode)
 
 	// Setup for 3d mode if switching to it
 	if (mode == Mode::Visual)
+	{
 		KeyBind::releaseAll();
+		if (map3d_mlook_always)
+		{
+			lockMouse(true);
+			input_->setMouseState(Input::MouseState::MouseLook);
+		}
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -511,8 +519,7 @@ void MapEditContext::update(double frametime)
 		// Update position on status bar
 		auto pos = renderer_->camera().position();
 		mapeditor::setStatusText(
-			fmt::format("{}, {}, {}", static_cast<int>(pos.x), static_cast<int>(pos.y), static_cast<int>(pos.z)),
-			3);
+			fmt::format("{}, {}, {}", static_cast<int>(pos.x), static_cast<int>(pos.y), static_cast<int>(pos.z)), 3);
 
 		// Update camera direction on status bar if changed
 		auto angle = geometry::angleFromVector(renderer_->camera().direction());
@@ -524,7 +531,7 @@ void MapEditContext::update(double frametime)
 		}
 
 		// Update hilight
-		if (input_->mouseState() == Input::MouseState::MouseLook)
+		if (input_->mouseState() == Input::MouseState::MouseLook && !map3d_mlook_always)
 		{
 			selection_->clearHilight();
 			info_showing_ = false;
@@ -1760,8 +1767,9 @@ void MapEditContext::recordPropertyChangeUndoStep(MapObject* object) const
 // -----------------------------------------------------------------------------
 void MapEditContext::doUndo()
 {
-	// Don't undo if the input state isn't normal
-	if (input_->mouseState() != Input::MouseState::Normal)
+	// Don't undo if the input state isn't normal (or locked mouselook)
+	if (!(input_->mouseState() == Input::MouseState::Normal
+		  || (input_->mouseState() == Input::MouseState::MouseLook && map3d_mlook_always)))
 		return;
 
 	// Clear selection first, since part of it may become invalid
@@ -1794,8 +1802,9 @@ void MapEditContext::doUndo()
 // -----------------------------------------------------------------------------
 void MapEditContext::doRedo()
 {
-	// Don't redo if the input state isn't normal
-	if (input_->mouseState() != Input::MouseState::Normal)
+	// Don't redo if the input state isn't normal (or locked mouselook)
+	if (!(input_->mouseState() == Input::MouseState::Normal
+		  || (input_->mouseState() == Input::MouseState::MouseLook && map3d_mlook_always)))
 		return;
 
 	// Clear selection first, since part of it may become invalid

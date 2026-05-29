@@ -1260,6 +1260,7 @@ bool MapEditorWindow::handleAction(string_view id)
 
 		// Toggle window and focus
 		p_inf.Show(!p_inf.IsShown());
+		mapeditor::openObjectProperties(nullptr);
 		map_canvas_->SetFocus();
 
 		p_inf.MinSize(FromDIP(wxSize(256, 256)));

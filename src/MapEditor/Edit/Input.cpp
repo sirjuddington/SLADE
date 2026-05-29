@@ -71,7 +71,8 @@ using namespace mapeditor;
 // -----------------------------------------------------------------------------
 CVAR(Bool, property_edit_dclick, true, CVar::Flag::Save)
 CVAR(Bool, selection_clear_click, false, CVar::Flag::Save)
-CVAR(Int, map3d_mlook_type, 0, CVar::Flag::Save) // 0 = hold rmb, 1 = rmb drag, 2 = always
+CVAR(Int, map3d_mlook_type, 0, CVar::Flag::Save) // 0 = hold rmb, 1 = rmb drag
+CVAR(Bool, map3d_mlook_always, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -278,8 +279,8 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 		if (context_->editMode() == Mode::Visual)
 		{
 			// Double-click, change texture or thing type depending on current
-			// highlight
-			if (double_click)
+			// highlight (but not if locked mouselook)
+			if (double_click && !map3d_mlook_always)
 				context_->edit3D().changeTextureOrType();
 
 			// Shift down, select all matching adjacent structures
@@ -370,8 +371,18 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 		// 3d mode
 		if (context_->editMode() == Mode::Visual)
 		{
-			// Begin mouselook on drag
-			mouse_drag_ = DragType::MouseLook;
+			if (mouse_state_ == MouseState::MouseLook && map3d_mlook_always)
+			{
+				context_->selection().lockHilight(true);
+				context_->edit3D().changeTextureOrType();
+				context_->selection().lockHilight(false);
+
+				// Return to mouselook mode after dialog is closed
+				lockMouse(true);
+				mouse_state_ = MouseState::MouseLook;
+			}
+			else
+				mouse_drag_ = DragType::MouseLook; // Begin mouselook on drag
 		}
 
 		// Remove line draw point if in line drawing state
@@ -463,7 +474,7 @@ bool Input::mouseUp(MouseButton button)
 			mouse_state_ = MouseState::Normal;
 
 		// Mouselook state, unlock mouse cursor
-		else if (mouse_state_ == MouseState::MouseLook)
+		else if (mouse_state_ == MouseState::MouseLook && !map3d_mlook_always)
 		{
 			context_->canvas()->lockMouse(false);
 			mouse_state_ = MouseState::Normal;
@@ -605,7 +616,10 @@ void Input::onKeyBindPress(string_view name)
 	if (name == "map_toggle_3d")
 	{
 		if (context_->editMode() == Mode::Visual)
+		{
 			context_->setPrevEditMode();
+			mouse_state_ = MouseState::Normal;
+		}
 		else
 			context_->setEditMode(Mode::Visual);
 	}
@@ -1068,11 +1082,14 @@ void Input::handleKeyBind2d(string_view name)
 // -----------------------------------------------------------------------------
 // Handles 3d mode key binds
 // -----------------------------------------------------------------------------
-void Input::handleKeyBind3d(string_view name) const
+void Input::handleKeyBind3d(string_view name)
 {
 	// Escape from 3D mode
 	if (name == "map_edit_cancel")
+	{
 		context_->setPrevEditMode();
+		mouse_state_ = MouseState::Normal;
+	}
 
 	// Toggle fog
 	else if (name == "me3d_toggle_fog")
@@ -1100,10 +1117,6 @@ void Input::handleKeyBind3d(string_view name) const
 		else
 			context_->addEditorMessage("Gravity enabled");
 	}
-
-	// Release mouse cursor
-	else if (name == "me3d_release_mouse")
-		context_->lockMouse(false);
 
 	// Toggle things
 	else if (name == "me3d_toggle_things")
@@ -1139,6 +1152,23 @@ void Input::handleKeyBind3d(string_view name) const
 	else if (name == "me3d_quick_texture")
 		context_->openQuickTextureOverlay();
 
+	// Toggle mouselook lock
+	else if (name == "me3d_lock_mouselook")
+	{
+		if (mouse_state_ == MouseState::MouseLook)
+		{
+			context_->canvas()->lockMouse(false);
+			mouse_state_       = MouseState::Normal;
+			map3d_mlook_always = false;
+		}
+		else
+		{
+			context_->canvas()->lockMouse(true);
+			mouse_state_       = MouseState::MouseLook;
+			map3d_mlook_always = true;
+		}
+	}
+
 	// Send to map editor
 	else
 		context_->handleKeyBind(name, mouse_pos_map_);
@@ -1157,7 +1187,7 @@ bool Input::updateCamera3d(double mult) const
 
 	// Camera forward
 	if (KeyBind::isPressed("me3d_camera_forward")
-		|| (mouse_button_down_[Left] && mouse_state_ == MouseState::MouseLook))
+		|| (mouse_button_down_[Left] && mouse_state_ == MouseState::MouseLook && !map3d_mlook_always))
 	{
 		camera.move(speed, !map3d_gravity || !sector);
 		moving = true;

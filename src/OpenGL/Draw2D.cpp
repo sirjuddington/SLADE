@@ -313,19 +313,25 @@ void draw2d::Context::drawRectOutline(const Rectf& rect) const
 	lb_rect.draw(view, colour, model);
 }
 
-void draw2d::Context::drawLines(const vector<Rectf>& lines) const
+// -----------------------------------------------------------------------------
+// Draws the given [lines] with the current context settings.
+// If [gradient_to_outline_colour] is true, the line will be drawn as a gradient
+// from the current colour (start) to the outline colour (end)
+// -----------------------------------------------------------------------------
+void draw2d::Context::drawLines(const vector<Rectf>& lines, bool gradient_to_outline_colour) const
 {
 	if (!line_buffer)
 		line_buffer = std::make_unique<LineBuffer>();
 
 	// Build line buffer
 	glm::vec4 col = colour;
+	glm::vec4 col2 = gradient_to_outline_colour ? outline_colour : colour;
 	for (const auto& line : lines)
 	{
 		if (line_arrow_length > 0.0f)
 			line_buffer->addArrow(line, col, line_thickness, line_arrow_length, line_arrow_angle);
 		else
-			line_buffer->add2d(line.x1(), line.y1(), line.x2(), line.y2(), col, line_thickness);
+			line_buffer->add2d(line.x1(), line.y1(), line.x2(), line.y2(), col, line_thickness, col2);
 	}
 	line_buffer->push();
 	line_buffer->setAaRadius(line_aa_radius, line_aa_radius);
