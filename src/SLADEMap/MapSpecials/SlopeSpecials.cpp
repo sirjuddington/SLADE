@@ -517,10 +517,8 @@ void SlopeSpecials::applyPlaneCopySpecials(const MapSector& sector)
 	// Sort by line index (descending) if needed
 	if (!plane_copy_specials_sorted_)
 	{
-		std::sort(
-			plane_copy_specials_.begin(),
-			plane_copy_specials_.end(),
-			[](const auto& a, const auto& b) { return a.line->index() > b.line->index(); });
+		std::ranges::sort(
+			plane_copy_specials_, [](const auto& a, const auto& b) { return a.line->index() > b.line->index(); });
 
 		plane_copy_specials_sorted_ = true;
 	}
@@ -565,7 +563,8 @@ void SlopeSpecials::addSRB2VertexSlope(const MapLine& line, SectorSurfaceType su
 			continue;
 
 		if ((line.flagSet(8192)
-			 && (thing->angle() == line.id() || thing->angle() == sidedef->texOffsetX()
+			 && (thing->angle() == line.id()
+				 || thing->angle() == sidedef->texOffsetX()
 				 || thing->angle() == sidedef->texOffsetY()))
 			|| thing->angle() == line.id())
 		{
@@ -609,9 +608,8 @@ void SlopeSpecials::applySRB2VertexSlopeSpecials(const MapSector& sector)
 	// Sort by line index (descending) if needed
 	if (!srb2_vertex_slope_specials_sorted_)
 	{
-		std::sort(
-			srb2_vertex_slope_specials_.begin(),
-			srb2_vertex_slope_specials_.end(),
+		std::ranges::sort(
+			srb2_vertex_slope_specials_,
 			[](const auto& a, const auto& b) { return a.line->index() > b.line->index(); });
 
 		srb2_vertex_slope_specials_sorted_ = true;

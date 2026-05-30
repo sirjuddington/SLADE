@@ -79,6 +79,20 @@ MapSpecials::MapSpecials(SLADEMap& map) : map_{ &map }
 			for (auto obj : objects)
 				vectorAddUnique(updated_objects_, obj);
 		});
+
+	// Handle deleted objects
+	connections_ += map.signals().object_deleted.connect(
+		[&](const vector<MapObject*>& objects)
+		{
+			for (auto obj : objects)
+			{
+				switch (obj->objType())
+				{
+				case MapObject::Type::Thing: point_lights_->thingDeleted(static_cast<MapThing&>(*obj)); break;
+				default:                     break;
+				}
+			}
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -325,7 +339,8 @@ void MapSpecials::processAllSpecials() const
 	// Setup splash message/progress
 	ui::setSplashProgressMessage("Processing map specials...");
 	ui::setSplashProgress(0.0f);
-	auto total = map_->nLines() + map_->nThings()
+	auto total = map_->nLines()
+				 + map_->nThings()
 				 + (map_->nSectors() * 2); // Lines + Things + Sectors (slopes and extrafloors)
 	int count = 0;
 
@@ -360,7 +375,7 @@ void MapSpecials::processAllSpecials() const
 			ui::setSplashProgress(static_cast<float>(count) / total);
 	}
 
-	specials_updated_ = app::runTimer();
+	specials_updated_  = app::runTimer();
 	specials_updating_ = false;
 }
 
@@ -369,7 +384,7 @@ void MapSpecials::updateSpecials() const
 	if (updated_objects_.empty() || specials_updating_)
 		return;
 
-	bool updated = false;
+	bool updated       = false;
 	specials_updating_ = true;
 	for (auto obj : updated_objects_)
 	{

@@ -183,10 +183,8 @@ void SlopeSpecials::applyPlaneAlignSpecials(const MapSector& sector)
 	// Sort by line index (descending) if needed
 	if (!plane_align_specials_sorted_)
 	{
-		std::sort(
-			plane_align_specials_.begin(),
-			plane_align_specials_.end(),
-			[](const auto& a, const auto& b) { return a.line->index() > b.line->index(); });
+		std::ranges::sort(
+			plane_align_specials_, [](const auto& a, const auto& b) { return a.line->index() > b.line->index(); });
 
 		plane_align_specials_sorted_ = true;
 	}
