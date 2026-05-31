@@ -1092,7 +1092,6 @@ void SLADEMap::setLineSide(MapLine* line, MapSide* side, bool front)
 		line->setS1(side);
 	else
 		line->setS2(side);
-	side->setParent(line);
 }
 
 // -----------------------------------------------------------------------------
@@ -1159,7 +1158,9 @@ bool SLADEMap::mergeArch(const vector<MapVertex*>& vertices)
 			auto* line2 = line(b);
 
 			// Can't intersect if they share a vertex
-			if (line1->v1() == line2->v1() || line1->v1() == line2->v2() || line2->v1() == line1->v2()
+			if (line1->v1() == line2->v1()
+				|| line1->v1() == line2->v2()
+				|| line2->v1() == line1->v2()
 				|| line2->v2() == line1->v2())
 				continue;
 

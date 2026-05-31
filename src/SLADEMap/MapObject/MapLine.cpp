@@ -531,6 +531,8 @@ void MapLine::setS1(MapSide* side)
 {
 	beginModify();
 	side1_ = side;
+	if (side1_)
+		side1_->setParent(this);
 	endModify();
 }
 
@@ -543,6 +545,8 @@ void MapLine::setS2(MapSide* side)
 {
 	beginModify();
 	side2_ = side;
+	if (side2_)
+		side2_->setParent(this);
 	endModify();
 }
 

@@ -755,7 +755,7 @@ void TextEditorCtrl::selectAllOccurrences()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::checkBraceMatch()
 {
-#ifdef __WXMAC__
+#if defined(__WXMAC__) || defined(__WXGTK__)
 	bool refresh = false;
 #else
 	bool refresh = true;
@@ -765,43 +765,48 @@ void TextEditorCtrl::checkBraceMatch()
 	if (GetCurrentPos() == prev_cursor_pos_)
 		return;
 
+	const int prev_brace_match = prev_brace_match_;
+	const int current_pos      = GetCurrentPos();
+
 	// Check for brace match at current position
-	int bracematch = BraceMatch(GetCurrentPos());
+	int bracematch = BraceMatch(current_pos);
 	if (bracematch != wxSTC_INVALID_POSITION)
 	{
-		BraceHighlight(GetCurrentPos(), bracematch);
-		if (refresh && prev_brace_match_ != bracematch)
+		BraceHighlight(current_pos, bracematch);
+		prev_brace_match_ = bracematch;
+		if (refresh && prev_brace_match != bracematch)
 		{
 			Refresh();
 			Update();
 		}
-		prev_brace_match_ = bracematch;
 		return;
 	}
 
 	// No match, check for match at previous position
-	bracematch = BraceMatch(GetCurrentPos() - 1);
+	if (current_pos > 0)
+		bracematch = BraceMatch(current_pos - 1);
+	else
+		bracematch = wxSTC_INVALID_POSITION;
 	if (bracematch != wxSTC_INVALID_POSITION)
 	{
-		BraceHighlight(GetCurrentPos() - 1, bracematch);
-		if (refresh && prev_brace_match_ != bracematch)
+		BraceHighlight(current_pos - 1, bracematch);
+		prev_brace_match_ = bracematch;
+		if (refresh && prev_brace_match != bracematch)
 		{
 			Refresh();
 			Update();
 		}
-		prev_brace_match_ = bracematch;
 		return;
 	}
 
 	// No match at all, clear any previous brace match
 	BraceHighlight(-1, -1);
-	if (refresh && prev_brace_match_ != -1)
+	prev_brace_match_ = -1;
+	if (refresh && prev_brace_match != -1)
 	{
 		Refresh();
 		Update();
 	}
-
-	prev_brace_match_ = -1;
 }
 
 // -----------------------------------------------------------------------------
