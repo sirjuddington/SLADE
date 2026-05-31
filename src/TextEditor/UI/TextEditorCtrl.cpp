@@ -755,7 +755,8 @@ void TextEditorCtrl::selectAllOccurrences()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::checkBraceMatch()
 {
-#if defined(__WXMAC__) || defined(__WXGTK__)
+	// Is this still needed now we removed calls to Update()?
+#if defined(__WXMAC__)
 	bool refresh = false;
 #else
 	bool refresh = true;
@@ -775,10 +776,7 @@ void TextEditorCtrl::checkBraceMatch()
 		BraceHighlight(current_pos, bracematch);
 		prev_brace_match_ = bracematch;
 		if (refresh && prev_brace_match != bracematch)
-		{
 			Refresh();
-			Update();
-		}
 		return;
 	}
 
@@ -792,10 +790,7 @@ void TextEditorCtrl::checkBraceMatch()
 		BraceHighlight(current_pos - 1, bracematch);
 		prev_brace_match_ = bracematch;
 		if (refresh && prev_brace_match != bracematch)
-		{
 			Refresh();
-			Update();
-		}
 		return;
 	}
 
@@ -803,10 +798,7 @@ void TextEditorCtrl::checkBraceMatch()
 	BraceHighlight(-1, -1);
 	prev_brace_match_ = -1;
 	if (refresh && prev_brace_match != -1)
-	{
 		Refresh();
-		Update();
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1449,7 +1441,10 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 	}
 
 	// Check for up/down keys while calltip with multiple arg sets is open
-	if (txed_calltips_argset_kb && call_tip_->IsShown() && ct_function_ && ct_function_->contexts().size() > 1
+	if (txed_calltips_argset_kb
+		&& call_tip_->IsShown()
+		&& ct_function_
+		&& ct_function_->contexts().size() > 1
 		&& !ct_dwell_)
 	{
 		if (e.GetKeyCode() == WXK_UP)
