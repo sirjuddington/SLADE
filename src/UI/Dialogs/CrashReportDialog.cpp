@@ -40,6 +40,7 @@
 #include "General/SAction.h"
 #include "OpenGL/OpenGL.h"
 #include "Utility/JsonUtils.h"
+#include "Utility/StringUtils.h"
 #include <cpptrace/formatting.hpp>
 #include <wx/statbmp.h>
 #include <wx/url.h>
@@ -47,6 +48,101 @@
 
 using namespace slade;
 using namespace ui;
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Checks if [line] is a stack frame line in a formatted stack trace
+// -----------------------------------------------------------------------------
+bool isStackFrameLine(string_view line)
+{
+	line = strutil::trimV(line);
+	if (line.size() < 2 || line[0] != '#')
+		return false;
+
+	return std::isdigit(static_cast<unsigned char>(line[1])) != 0;
+}
+
+// -----------------------------------------------------------------------------
+// Checks if [line] is a stack frame line that is part of an exception wrapper
+// -----------------------------------------------------------------------------
+bool isExceptionWrapperFrame(string_view line)
+{
+	if (!isStackFrameLine(line))
+		return false;
+
+	static const vector<string_view> wrapper_symbols = { "SLADEWxApp::OnFatalException",
+														 "wxGlobalSEHandler",
+														 "wxFatalSignalHandler",
+														 "wxWndProc",
+														 "__C_specific_handler",
+														 "KiUserExceptionDispatcher",
+														 "_chkstk",
+														 "RtlRaiseException",
+														 "RtlLocateExtendedFeature" };
+
+	for (auto symbol : wrapper_symbols)
+	{
+		if (strutil::contains(line, symbol))
+			return true;
+	}
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Strips known exception wrapper frames from the start of [formatted_trace]
+// -----------------------------------------------------------------------------
+string stripBeginningStackTrace(string_view formatted_trace)
+{
+	// Split into lines
+	auto lines = strutil::splitV(formatted_trace, '\n');
+	if (lines.empty())
+		return string{ formatted_trace };
+
+	// Find first stack frame line
+	const auto first_frame = std::ranges::find_if(lines, isStackFrameLine);
+	if (first_frame == lines.end())
+		return string{ formatted_trace };
+
+	// Only trim known exception wrapper frames
+	auto frame_it      = first_frame;
+	auto removed_count = 0u;
+	while (frame_it != lines.end() && removed_count < 8 && isExceptionWrapperFrame(*frame_it))
+	{
+		++frame_it;
+		++removed_count;
+	}
+
+	// Keep original trace if no wrapper prefix was found,
+	// or if everything would be removed
+	if (removed_count == 0 || frame_it == lines.end())
+		return string{ formatted_trace };
+
+	// Rebuild filtered trace
+	string filtered;
+	filtered.reserve(formatted_trace.size());
+	for (auto it = lines.begin(); it != lines.end(); ++it)
+	{
+		// Skip frames that are part of the exception wrapper
+		if (it >= first_frame && it < frame_it)
+			continue;
+
+		// Keep all other lines
+		filtered += *it;
+		if (it + 1 != lines.end())
+			filtered += '\n';
+	}
+
+	return filtered;
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -187,7 +283,7 @@ void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace)
 							   .paths(cpptrace::formatter::path_mode::basename)
 							   .symbols(cpptrace::formatter::symbol_mode::pruned);
 	trace_ += "\n";
-	trace_ += formatter_short.format(trace);
+	trace_ += stripBeginningStackTrace(formatter_short.format(trace));
 	trace_ += "\n";
 
 	// Detailed stack trace for report
@@ -316,7 +412,8 @@ void CrashReportDialog::onWebRequestUpdate(wxWebRequestEvent& e)
 		return;
 
 	// Failed to send report - show error message
-	if (e.GetState() == wxWebRequest::State::State_Failed || e.GetState() == wxWebRequest::State::State_Unauthorized
+	if (e.GetState() == wxWebRequest::State::State_Failed
+		|| e.GetState() == wxWebRequest::State::State_Unauthorized
 		|| e.GetState() == wxWebRequest::State::State_Cancelled)
 	{
 		wxMessageBox(
