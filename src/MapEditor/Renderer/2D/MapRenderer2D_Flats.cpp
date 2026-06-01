@@ -348,7 +348,8 @@ void MapRenderer2D::renderFlatSelection(gl::draw2d::Context& dc, const ItemSelec
 	// Render flat overlays for selection
 	vector<MapSector*> sectors;
 	for (const auto& item : selection)
-		sectors.push_back(item.asSector(*map_));
+		if (auto sector = item.asSector(*map_))
+			sectors.push_back(sector);
 	renderFlatOverlays(dc, sectors);
 }
 

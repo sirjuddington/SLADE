@@ -1708,39 +1708,39 @@ void Renderer::animateSelectionChange(const ItemSelection& selection)
 	for (auto& change : selection.lastChange())
 	{
 		// 2d mode vertex
-		if (change.first.type == ItemType::Vertex)
+		if (auto vertex = change.first.asVertex(map))
 		{
 			if (change.second)
-				vertices_selected.push_back(change.first.asVertex(map));
+				vertices_selected.push_back(vertex);
 			else
-				vertices_deselected.push_back(change.first.asVertex(map));
+				vertices_deselected.push_back(vertex);
 		}
 
 		// 2d mode line
-		else if (change.first.type == ItemType::Line)
+		else if (auto line = change.first.asLine(map))
 		{
 			if (change.second)
-				lines_selected.push_back(change.first.asLine(map));
+				lines_selected.push_back(line);
 			else
-				lines_deselected.push_back(change.first.asLine(map));
+				lines_deselected.push_back(line);
 		}
 
 		// 2d mode sector
-		else if (change.first.type == ItemType::Sector)
+		else if (auto sector = change.first.asSector(map))
 		{
 			if (change.second)
-				sectors_selected.push_back(change.first.asSector(map));
+				sectors_selected.push_back(sector);
 			else
-				sectors_deselected.push_back(change.first.asSector(map));
+				sectors_deselected.push_back(sector);
 		}
 
 		// 2d mode thing
-		else if (change.first.type == ItemType::Thing && context_->editMode() != Mode::Visual)
+		else if (auto thing = change.first.asThing(map); thing && context_->editMode() != Mode::Visual)
 		{
 			if (change.second)
-				things_selected.push_back(change.first.asThing(map));
+				things_selected.push_back(thing);
 			else
-				things_deselected.push_back(change.first.asThing(map));
+				things_deselected.push_back(thing);
 		}
 
 		// Other (3d mode)
