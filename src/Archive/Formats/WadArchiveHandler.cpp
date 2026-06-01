@@ -790,7 +790,7 @@ MapDesc WadArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead
 	int  entry_count = dir->numEntries();
 
 	// Check for UDMF format map
-	if (head_index < entry_count && dir->entryAt(head_index + 1)->upperName() == "TEXTMAP")
+	if (head_index < entry_count - 1 && dir->entryAt(head_index + 1)->upperName() == "TEXTMAP")
 	{
 		// Get map info
 		map.head   = s_maphead;

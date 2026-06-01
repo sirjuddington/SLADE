@@ -71,18 +71,29 @@ SDataViewCtrl::SDataViewCtrl(wxWindow* parent, long style) :
 	// Update column width UI state vars when possible/needed
 #ifdef __WXMSW__
 	// On Windows we can get the header control and handle the column size event
-	GenericGetHeader()->Bind(
-		wxEVT_HEADER_END_RESIZE,
-		[this](wxHeaderCtrlEvent& e)
+	CallAfter(
+		[this]
 		{
-			auto col = GetColumn(e.GetColumn());
-			if (col == lastVisibleColumn())
-				return; // Ignore last column - is stretched
+			auto* header = GenericGetHeader();
+			if (!header)
+			{
+				log::warning("SDataViewCtrl: Failed to get header control, column resize events won't be detected");
+				return;
+			}
 
-			onColumnResized(col);
-			wxDataViewEvent de{ EVT_SDVC_COLUMN_RESIZED, this, col };
-			ProcessWindowEvent(de);
-			onAnyColumnResized();
+			header->Bind(
+				wxEVT_HEADER_END_RESIZE,
+				[this](wxHeaderCtrlEvent& e)
+				{
+					auto col = GetColumn(e.GetColumn());
+					if (col == lastVisibleColumn())
+						return; // Ignore last column - is stretched
+
+					onColumnResized(col);
+					wxDataViewEvent de{ EVT_SDVC_COLUMN_RESIZED, this, col };
+					ProcessWindowEvent(de);
+					onAnyColumnResized();
+				});
 		});
 #else
 	// On Linux/Mac we don't have any way to know if a column is resized so check for column size changes on a timer
