@@ -33,7 +33,6 @@
 #include "Main.h"
 #include "TranslationEditorDialog.h"
 #include "App.h"
-// #include "UI/UI.h"
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
@@ -848,6 +847,9 @@ void TranslationEditorDialog::onSize(wxSizeEvent& e)
 {
 	// Update image preview
 	gfx_preview_->zoomToFit(true, 0.05);
+
+	// Ensure both palettes match in size
+	pal_canvas_target_->SetSize(pal_canvas_original_->GetSize());
 
 	e.Skip();
 }
