@@ -333,8 +333,9 @@ bool AudioEntryPanel::open(ArchiveEntry* entry)
 		path.setExtension("mid");
 	}
 	else if (
-		entry->type()->formatId() == "midi_xmi" || // HMI/HMP/XMI -> MIDI
-		entry->type()->formatId() == "midi_hmi" || entry->type()->formatId() == "midi_hmp")
+		entry->type()->formatId() == "midi_xmi" // HMI/HMP/XMI -> MIDI
+		|| entry->type()->formatId() == "midi_hmi"
+		|| entry->type()->formatId() == "midi_hmp")
 	{
 		conversion::zmusToMidi(mcdata, data_, 0, &num_tracks_);
 		path.setExtension("mid");
@@ -636,8 +637,6 @@ void AudioEntryPanel::updateTimeText(int ms) const
 // -----------------------------------------------------------------------------
 bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 {
-	txt_info_->Clear();
-
 	string info = entry.typeString() + "\n";
 	auto&  mc   = entry.data();
 	switch (audio_type_)
@@ -645,19 +644,19 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 	case Sound:
 	case Music:
 	case Mp3:
-		if (entry.type() == EntryType::fromId("snd_doom"))
+		if (entry.type() == EntryType::fromId("snd_doom") && mc.size() >= 6)
 		{
 			size_t samplerate = mc.readL16(2);
 			size_t samples    = mc.readL16(4);
 			info += fmt::format(
 				"{} samples at {} Hz", static_cast<unsigned long>(samples), static_cast<unsigned long>(samplerate));
 		}
-		else if (entry.type() == EntryType::fromId("snd_speaker"))
+		else if (entry.type() == EntryType::fromId("snd_speaker") && mc.size() >= 4)
 		{
 			size_t samples = mc.readL16(2);
 			info += fmt::format("{} samples", static_cast<unsigned long>(samples));
 		}
-		else if (entry.type() == EntryType::fromId("snd_audiot"))
+		else if (entry.type() == EntryType::fromId("snd_audiot") && mc.size() >= 2)
 		{
 			size_t samples = mc.readL16(0);
 			info += fmt::format("{} samples", static_cast<unsigned long>(samples));
@@ -694,9 +693,27 @@ bool AudioEntryPanel::updateInfo(ArchiveEntry& entry) const
 		break;
 	default: break;
 	}
-	txt_info_->SetValue(wxString::FromUTF8(info));
-	if (info.length())
+
+	auto info_text = wxString::FromUTF8(info);
+#ifdef __WXGTK__
+	// Avoid mutating the GTK text buffer directly from selection/key handlers
+	const_cast<AudioEntryPanel*>(this)->CallAfter(
+		[this, info_text]
+		{
+			if (!txt_info_ || txt_info_->IsBeingDeleted())
+				return;
+
+			txt_info_->ChangeValue(info_text);
+			txt_info_->SetInsertionPoint(0);
+		});
+#else
+	txt_info_->ChangeValue(info_text);
+	txt_info_->SetInsertionPoint(0);
+#endif
+
+	if (!info.empty())
 		return true;
+
 	return false;
 }
 
@@ -816,13 +833,15 @@ void AudioEntryPanel::onTimer(wxTimerEvent& e)
 
 // Stop the timer if playback has reached the end
 #if (SFML_VERSION_MAJOR > 2)
-	if (pos >= slider_seek_->GetMax() || (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Status::Stopped)
+	if (pos >= slider_seek_->GetMax()
+		|| (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Status::Stopped)
 		|| (audio_type_ == Music && music_->getStatus() == sf::Sound::Status::Stopped)
 		|| (audio_type_ == Mod && mod_->getStatus() == sf::Sound::Status::Stopped)
 		|| (audio_type_ == Mp3 && mp3_->getStatus() == sf::Sound::Status::Stopped)
 		|| (audio_type_ == MIDI && !audio::midiPlayer().isPlaying()))
 #else
-	if (pos >= slider_seek_->GetMax() || (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Stopped)
+	if (pos >= slider_seek_->GetMax()
+		|| (audio_type_ == Sound && sound_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Music && music_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Mod && mod_->getStatus() == sf::Sound::Stopped)
 		|| (audio_type_ == Mp3 && mp3_->getStatus() == sf::Sound::Stopped)
