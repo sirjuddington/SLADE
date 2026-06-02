@@ -358,3 +358,25 @@ wxPalette wxutil::paletteToWx(const Palette& palette)
 
 	return { size, reds.data(), greens.data(), blues.data() };
 }
+
+// -----------------------------------------------------------------------------
+// Sets the selection of a wxChoice [choice] to the index of the value in
+// [steps] that is closest to [value]
+// eg. for a sample rate choice with steps of 22050, 44100, 48000, etc. and a
+// value of 30000, this would select 44100 as it's the closest step to 30000
+// -----------------------------------------------------------------------------
+void wxutil::setNumericChoiceFromValue(wxChoice* choice, const vector<int>& steps, int value)
+{
+	int selected = 0;
+	for (auto step : steps)
+	{
+		if (value <= step)
+			break;
+		selected++;
+	}
+
+	if (selected >= choice->GetCount())
+		selected = choice->GetCount() - 1;
+
+	choice->SetSelection(selected);
+}

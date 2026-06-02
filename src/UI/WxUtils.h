@@ -29,6 +29,7 @@ void      setWindowIcon(wxTopLevelWindow* window, string_view icon);
 wxImage   createImageFromSVG(const string& svg_text, int width, int height);
 Palette   paletteFromWx(const wxPalette& palette);
 wxPalette paletteToWx(const Palette& palette);
+void      setNumericChoiceFromValue(wxChoice* choice, const vector<int>& steps, int value);
 
 // From CodeLite
 wxColour systemPanelBGColour();

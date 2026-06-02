@@ -24,21 +24,11 @@ else ()
 	find_package(SFML 3 COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
 endif ()
 
-# Fluidsynth
-if (NO_FLUIDSYNTH)
-	ADD_DEFINITIONS(-DNO_FLUIDSYNTH)
-endif (NO_FLUIDSYNTH)
-
 if (CMAKE_INSTALL_PREFIX)
 	ADD_DEFINITIONS(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 endif (CMAKE_INSTALL_PREFIX)
 
-if (NOT NO_FLUIDSYNTH)
-	find_package(FluidSynth REQUIRED)
-else (NO_FLUIDSYNTH)
-	message(STATUS "Fluidsynth support is disabled.")
-endif ()
-
+find_package(FluidSynth REQUIRED)
 find_package(OpenGL REQUIRED)
 if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
@@ -65,15 +55,12 @@ include_directories(
 	${LUA_INCLUDE_DIR}
 	${MPG123_INCLUDE_DIR}
 	${WebP_INCLUDE_DIRS}
+	${FLUIDSYNTH_INCLUDE_DIR}
 	.
 	..
 	../thirdparty/glad/include
 	./Application
 )
-
-if (NOT NO_FLUIDSYNTH)
-	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
-endif ()
 
 if (APPLE)
 	set(OSX_ICON "${CMAKE_SOURCE_DIR}/SLADE-osx.icns")
@@ -126,6 +113,7 @@ target_link_libraries(slade
 	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
 	${WebP_LIBRARIES}
+	${FLUIDSYNTH_LIBRARIES}
 	glm::glm
 	cpptrace::cpptrace
 	PNG::PNG
@@ -135,10 +123,6 @@ target_link_libraries(slade
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)
 	target_link_libraries(slade -lstdc++fs)
-endif ()
-
-if (NOT NO_FLUIDSYNTH)
-	target_link_libraries(slade ${FLUIDSYNTH_LIBRARIES})
 endif ()
 
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})

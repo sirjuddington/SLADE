@@ -50,13 +50,12 @@ using namespace audio;
 // Variables
 //
 // -----------------------------------------------------------------------------
-#ifndef NO_FLUIDSYNTH
-CVAR(String, snd_midi_player, "fluidsynth", CVar::Flag::Save)
-#else
-CVAR(String, snd_midi_player, "none", CVar::Flag::Save)
-#endif
+CVAR(Int, snd_midiplayer, 0, CVar::Flag::Save) // 0 = Fluidsynth, 1 = Timidity
 CVAR(String, fs_soundfont_path, "", CVar::Flag::Save)
 CVAR(String, fs_driver, "", CVar::Flag::Save)
+CVAR(Bool, fs_chorus, false, CVar::Flag::Save)
+CVAR(Bool, fs_reverb, false, CVar::Flag::Save)
+CVAR(Int, fs_sample_rate, 22050, CVar::Flag::Save)
 CVAR(String, snd_timidity_path, "", CVar::Flag::Save)
 CVAR(String, snd_timidity_options, "", CVar::Flag::Save)
 namespace slade::audio
@@ -87,7 +86,6 @@ EXTERN_CVAR(Int, snd_volume)
 // A MIDIPlayer that uses fluidsynth to play MIDI
 // Requires a soundfont file to be configured (fs_soundfont_path cvar)
 // -----------------------------------------------------------------------------
-#ifndef NO_FLUIDSYNTH
 class FluidSynthMIDIPlayer : public MIDIPlayer
 {
 public:
@@ -396,6 +394,11 @@ private:
 		string fs_driver_str = fs_driver;
 		if (!fs_driver_str.empty())
 			fluid_settings_setstr(fs_settings_, "audio.driver", fs_driver_str.c_str());
+		fluid_settings_setint(fs_settings_, "synth.chorus.active", fs_chorus ? 1 : 0);
+		fluid_settings_setint(fs_settings_, "synth.reverb.active", fs_reverb ? 1 : 0);
+		//  fluid_settings_setint(fs_settings_, "synth.note-cut", 1);
+		fluid_settings_setint(fs_settings_, "synth.device-id", 0);
+		fluid_settings_setnum(fs_settings_, "synth.sample-rate", fs_sample_rate.value);
 
 		// Create fluidsynth objects
 		fs_synth_   = new_fluid_synth(fs_settings_);
@@ -572,8 +575,8 @@ private:
 
 			// Record this tempo change
 			change.milliseconds = current_ms;
-			current_tick = change.tick;
-			tempo        = change.tempo;
+			current_tick        = change.tick;
+			tempo               = change.tempo;
 			tempo_changes_.push_back(change);
 		}
 	}
@@ -648,7 +651,6 @@ private:
 		return tick_info.milliseconds + static_cast<int>(ms_offset);
 	}
 };
-#endif // !NO_FLUIDSYNTH
 
 
 // -----------------------------------------------------------------------------
@@ -825,18 +827,12 @@ MIDIPlayer& midiPlayer()
 {
 	if (!midi_player)
 	{
-#ifndef NO_FLUIDSYNTH
-		if (strutil::equalCI(snd_midi_player, "fluidsynth"))
-			midi_player = std::make_unique<FluidSynthMIDIPlayer>();
-		else if (strutil::equalCI(snd_midi_player, "timidity"))
-			midi_player = std::make_unique<TimidityMIDIPlayer>();
-#else
-		if (strutil::equalCI(snd_midi_player, "timidity"))
-			midi_player = std::make_unique<TimidityMIDIPlayer>();
-#endif
-
-		if (!midi_player)
-			midi_player = std::make_unique<NullMIDIPlayer>();
+		switch (snd_midiplayer)
+		{
+		case 0:  midi_player = std::make_unique<FluidSynthMIDIPlayer>(); break;
+		case 1:  midi_player = std::make_unique<TimidityMIDIPlayer>(); break;
+		default: midi_player = std::make_unique<NullMIDIPlayer>(); break;
+		}
 	}
 
 	return *midi_player;

@@ -10,11 +10,6 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 # Enable big objects and utf8
 add_compile_options(/bigobj /utf-8)
 
-# NO_FLUIDSYNTH preprocessor definition
-if (NO_FLUIDSYNTH)
-	add_definitions(-DNO_FLUIDSYNTH)
-endif ()
-
 # Define a SLADE_DEBUG macro
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSLADE_DEBUG")
 
@@ -27,17 +22,9 @@ if (NOT BUILD_WX)
 endif ()
 set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net)
 
-# FreeType
-find_package(Freetype REQUIRED)
-
 # Lua
 if (NOT NO_LUA)
 	find_package(Lua REQUIRED)
-endif ()
-
-# FluidSynth
-if (NOT NO_FLUIDSYNTH)
-	find_package(FluidSynth CONFIG REQUIRED)
 endif ()
 
 # WebP/Png
@@ -47,6 +34,8 @@ if (NOT BUILD_WX)
 endif ()
 
 # Other
+find_package(Freetype REQUIRED)
+find_package(FluidSynth CONFIG REQUIRED)
 find_package(libxmp CONFIG)
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -60,11 +49,6 @@ if (SFML_FOUND)
 else ()
 	list(TRANSFORM SFML_FIND_COMPONENTS PREPEND SFML:: OUTPUT_VARIABLE SFML_LIBRARIES)
 	find_package(SFML 3 COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
-endif ()
-
-# WebP
-if (NOT BUILD_WX)
-	find_package(WebP CONFIG REQUIRED)
 endif ()
 
 # Other
@@ -135,14 +119,11 @@ target_link_libraries(slade
 	cpptrace::cpptrace
 	libxmp::xmp_static
 	LibArchive::LibArchive
+	FluidSynth::libfluidsynth
 )
 
 if (NOT NO_LUA)
 	target_link_libraries(slade ${LUA_LIBRARIES})
-endif ()
-
-if (NOT NO_FLUIDSYNTH)
-	target_link_libraries(slade FluidSynth::libfluidsynth)
 endif ()
 
 if (NOT BUILD_WX)

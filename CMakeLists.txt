@@ -11,7 +11,6 @@ endif ()
 
 # Build options
 OPTION(NO_LUA "Disable Lua/Scripting features to reduce compile time" OFF)
-OPTION(NO_FLUIDSYNTH "Disable FluidSynth MIDI playback" OFF)
 OPTION(BUILD_PK3 "Build the SLADE pk3 file from dist/res" ON)
 OPTION(BUILD_WX "Download and build wxWidgets instead of using system-installed libs" OFF)
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)

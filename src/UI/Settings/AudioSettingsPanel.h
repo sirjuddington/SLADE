@@ -8,6 +8,8 @@ class FileLocationPanel;
 
 namespace ui
 {
+	class SettingsTable;
+
 	class AudioSettingsPanel : public SettingsPanel
 	{
 	public:
@@ -20,17 +22,11 @@ namespace ui
 		void applySettings() override;
 
 	private:
-		wxCheckBox*        cb_snd_autoplay_       = nullptr;
-		wxCheckBox*        cb_dmx_padding_        = nullptr;
-		wxRadioButton*     rb_fluidsynth_         = nullptr;
-		wxRadioButton*     rb_timidity_           = nullptr;
-		wxTextCtrl*        text_timidity_options_ = nullptr;
-		wxButton*          btn_reset_player_      = nullptr;
-		FileLocationPanel* flp_soundfont_         = nullptr;
-		FileLocationPanel* flp_timidity_          = nullptr;
-
-		void setupLayout();
-		void updateControls() const;
+		wxButton*          btn_reset_player_     = nullptr;
+		FileLocationPanel* flp_soundfont_        = nullptr;
+		FileLocationPanel* flp_timidity_         = nullptr;
+		wxChoice*          choice_fs_samplerate_ = nullptr;
+		SettingsTable*     settings_panel_       = nullptr;
 	};
 } // namespace ui
 } // namespace slade
