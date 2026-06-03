@@ -46,7 +46,6 @@
 #include "UI/Settings/GraphicsSettingsPanel.h"
 #include "UI/Settings/InputSettingsPanel.h"
 #include "UI/Settings/InterfaceSettingsPanel.h"
-#include "UI/Settings/Map3DSettingsPanel.h"
 #include "UI/Settings/MapDisplaySettingsPanel.h"
 #include "UI/Settings/MapGeneralSettingsPanel.h"
 #include "UI/Settings/NodeBuildersSettingsPanel.h"
@@ -54,7 +53,6 @@
 #include "UI/Settings/TextEditorSettingsPanel.h"
 #include "UI/Settings/TextEditorStyleSettingsPanel.h"
 #include "UI/WxUtils.h"
-#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace ui;
@@ -226,7 +224,6 @@ bool SettingsDialog::popupSettingsPage(wxWindow* parent, SettingsPage page)
 	case SettingsPage::Colour:          settings_panel = new ColourSettingsPanel(&dlg); break;
 	case SettingsPage::Colorimetry:     settings_panel = new ColorimetrySettingsPanel(&dlg); break;
 	case SettingsPage::TextStyle:       settings_panel = new TextEditorStyleSettingsPanel(&dlg); break;
-	case SettingsPage::Map3d:           settings_panel = new Map3DSettingsPanel(&dlg); break;
 	case SettingsPage::NodeBuilders:    settings_panel = new NodeBuildersSettingsPanel(&dlg); break;
 	case SettingsPage::ExternalEditors: settings_panel = new ExternalEditorsSettingsPanel(&dlg); break;
 	default:                            return false;

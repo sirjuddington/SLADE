@@ -33,8 +33,8 @@
 #include "InterfaceSettingsPanel.h"
 #include "ColourSettingsPanel.h"
 #include "Graphics/Icons.h"
-#include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Controls/SettingsTable.h"
 #include "UI/Layout.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
@@ -48,19 +48,8 @@ using namespace ui;
 // External Variables
 //
 // ----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, list_font_monospace)
-EXTERN_CVAR(Bool, elist_type_bgcol)
 EXTERN_CVAR(Int, toolbar_size)
-EXTERN_CVAR(Bool, am_file_browser_tab) // keep? move?
-EXTERN_CVAR(String, iconset_general)
-EXTERN_CVAR(String, iconset_entry_list)
-EXTERN_CVAR(Bool, tabs_condensed)
 EXTERN_CVAR(Int, elist_icon_size)
-EXTERN_CVAR(Int, elist_icon_padding)
-EXTERN_CVAR(Int, win_darkmode)
-EXTERN_CVAR(Int, edata_col_padding)
-EXTERN_CVAR(Int, edata_row_padding)
-EXTERN_CVAR(Bool, edata_font_monospace)
 
 
 // ----------------------------------------------------------------------------
@@ -108,10 +97,13 @@ InterfaceSettingsPanel::InterfaceSettingsPanel(wxWindow* parent) : SettingsPanel
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	colour_panel_ = new ColourSettingsPanel(this);
+	auto tabs       = STabCtrl::createControl(this);
+	settings_table_ = new SettingsTable(tabs, true, "Appearance");
+	colour_panel_   = new ColourSettingsPanel(this);
 
-	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createInterfacePanel(tabs), wxS("Interface"));
+	setupInterfaceSettingsTable();
+
+	tabs->AddPage(settings_table_, wxS("Interface"));
 	tabs->AddPage(wxutil::createPadPanel(tabs, colour_panel_, padLarge()), wxS("Colours && Theme"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
@@ -121,11 +113,7 @@ InterfaceSettingsPanel::InterfaceSettingsPanel(wxWindow* parent) : SettingsPanel
 // ----------------------------------------------------------------------------
 void InterfaceSettingsPanel::loadSettings()
 {
-	cb_monospace_list_->SetValue(list_font_monospace);
-	cb_elist_bgcol_->SetValue(elist_type_bgcol);
-	cb_condensed_tabs_->SetValue(tabs_condensed);
-	spin_elist_icon_pad_->SetValue(elist_icon_padding);
-
+	// Toolbar icon size
 	if (toolbar_size <= 16)
 		choice_toolbar_size_->Select(0);
 	else if (toolbar_size <= 24)
@@ -133,6 +121,8 @@ void InterfaceSettingsPanel::loadSettings()
 	else
 		choice_toolbar_size_->Select(2);
 
+	// Toolbar icon set
+	auto iconset_general = wxString::FromUTF8(CVar::getString("iconset_general"));
 	choice_toolbar_iconset_->SetSelection(0);
 	for (unsigned a = 0; a < choice_toolbar_iconset_->GetCount(); a++)
 		if (choice_toolbar_iconset_->GetString(a) == iconset_general)
@@ -141,6 +131,8 @@ void InterfaceSettingsPanel::loadSettings()
 			break;
 		}
 
+	// Entrylist icon set
+	auto iconset_entry_list = wxString::FromUTF8(CVar::getString("iconset_entry_list"));
 	choice_iconset_entry_->SetSelection(0);
 	for (unsigned a = 0; a < choice_iconset_entry_->GetCount(); a++)
 		if (choice_iconset_entry_->GetString(a) == iconset_entry_list)
@@ -149,6 +141,7 @@ void InterfaceSettingsPanel::loadSettings()
 			break;
 		}
 
+	// Entrylist icon size
 	if (elist_icon_size <= 16)
 		choice_elist_icon_size_->Select(0);
 	else if (elist_icon_size <= 24)
@@ -156,12 +149,7 @@ void InterfaceSettingsPanel::loadSettings()
 	else
 		choice_elist_icon_size_->Select(2);
 
-	rbp_windows_darkmode_->setSelection(win_darkmode);
-
-	spin_grid_row_pad_->SetValue(edata_row_padding);
-	spin_grid_col_pad_->SetValue(edata_col_padding);
-	cb_grid_monospace_->SetValue(edata_font_monospace);
-
+	settings_table_->loadSettings();
 	colour_panel_->loadSettings();
 }
 
@@ -170,152 +158,59 @@ void InterfaceSettingsPanel::loadSettings()
 // ----------------------------------------------------------------------------
 void InterfaceSettingsPanel::applySettings()
 {
-	win_darkmode        = rbp_windows_darkmode_->getSelection();
-	list_font_monospace = cb_monospace_list_->GetValue();
-	tabs_condensed      = cb_condensed_tabs_->GetValue();
-
 	// Toolbar icons
-	iconset_general = choice_toolbar_iconset_->GetString(choice_toolbar_iconset_->GetSelection()).utf8_string();
-	toolbar_size    = iconSize(toolbar_size, choice_toolbar_size_->GetSelection());
+	CVar::set(
+		"iconset_general", choice_toolbar_iconset_->GetString(choice_toolbar_iconset_->GetSelection()).utf8_string());
+	toolbar_size = iconSize(toolbar_size, choice_toolbar_size_->GetSelection());
 
 	// Entry List
-	iconset_entry_list = choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()).utf8_string();
-	elist_icon_padding = spin_elist_icon_pad_->GetValue();
-	elist_icon_size    = iconSize(elist_icon_size, choice_elist_icon_size_->GetSelection());
-	elist_type_bgcol   = cb_elist_bgcol_->GetValue();
+	CVar::set(
+		"iconset_entry_list", choice_iconset_entry_->GetString(choice_iconset_entry_->GetSelection()).utf8_string());
+	elist_icon_size = iconSize(elist_icon_size, choice_elist_icon_size_->GetSelection());
 
-	// Data Grid
-	edata_col_padding    = spin_grid_col_pad_->GetValue();
-	edata_row_padding    = spin_grid_row_pad_->GetValue();
-	edata_font_monospace = cb_grid_monospace_->GetValue();
-
+	settings_table_->applySettings();
 	colour_panel_->applySettings();
 }
 
 // ----------------------------------------------------------------------------
 // Creates the Interface tab panel
 // ----------------------------------------------------------------------------
-wxPanel* InterfaceSettingsPanel::createInterfacePanel(wxWindow* parent)
+void InterfaceSettingsPanel::setupInterfaceSettingsTable()
 {
-	auto panel = new wxPanel(parent, -1);
-	auto lh    = LayoutHelper(panel);
+	auto lh = LayoutHelper(settings_table_);
 
 	// Create controls
+	choice_toolbar_iconset_ = new wxChoice(
+		settings_table_, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(icons::iconSets(icons::General)));
+	choice_toolbar_size_ = new wxChoice(
+		settings_table_, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd({ "16x16", "24x24", "32x32" }));
+	choice_iconset_entry_ = new wxChoice(
+		settings_table_, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(icons::iconSets(icons::Entry)));
+	choice_elist_icon_size_ = new wxChoice(
+		settings_table_, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd({ "16x16", "24x24", "32x32" }));
 
 	// Appearance
-	vector<string> darkmodes = { "Off", "Use System Setting", "On" };
-	rbp_windows_darkmode_    = new RadioButtonPanel(panel, darkmodes, "Use dark UI theme if supported:");
-	cb_monospace_list_       = new wxCheckBox(panel, -1, wxS("Use monospace font in lists"));
-	cb_condensed_tabs_       = new wxCheckBox(panel, -1, wxS("Condensed tabs"));
-	vector<string> sizes     = { "16x16", "24x24", "32x32" };
-	choice_toolbar_size_     = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(sizes));
-	auto sets_toolbar        = wxutil::arrayStringStd(icons::iconSets(icons::General));
-	choice_toolbar_iconset_  = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets_toolbar);
+#ifdef __WXMSW__
+	settings_table_->addRadioButtons(
+		"Application theme|"
+		"Dark theme is only supported on Windows 10 20H1 or later",
+		"win_darkmode",
+		{ "Light", "System", "Dark" });
+#endif
+	settings_table_->addCheckBox("Use monospace font in lists", "list_font_monospace");
+	settings_table_->addCheckBox("Condensed tabs", "tabs_condensed");
+	settings_table_->addCustomSizer(
+		"Toolbar icons", lh.layoutHorizontally({ choice_toolbar_iconset_, choice_toolbar_size_ }));
 
 	// Entry List
-	cb_elist_bgcol_           = new wxCheckBox(panel, -1, wxS("Colour entry list item background by entry type"));
-	auto sets_entry           = wxutil::arrayStringStd(icons::iconSets(icons::Entry));
-	choice_iconset_entry_     = new wxChoice(panel, -1, wxDefaultPosition, wxDefaultSize, sets_entry);
-	vector<string> icon_sizes = { "16x16", "24x24", "32x32" };
-	choice_elist_icon_size_   = new wxChoice(
-        panel, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(icon_sizes));
-	spin_elist_icon_pad_ = new wxSpinCtrl(
-		panel, -1, wxS("1"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 0, 4, 1);
-	vector<string> tree_styles = { "Tree", "Flat List" };
+	settings_table_->addSectionSeparator("Entry List");
+	settings_table_->addCheckBox("Colour background by entry type", "elist_type_bgcol");
+	settings_table_->addCustomSizer("Icons", lh.layoutHorizontally({ choice_iconset_entry_, choice_elist_icon_size_ }));
+	settings_table_->addSpinControl("Row padding", "elist_icon_padding", 0, 4, 1);
 
 	// Data Grid
-	spin_grid_row_pad_ = new wxSpinCtrl(
-		panel, -1, wxS("0"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 0, 4, 0);
-	spin_grid_col_pad_ = new wxSpinCtrl(
-		panel, -1, wxS("0"), wxDefaultPosition, lh.spinSize(), wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER, 0, 4, 0);
-	cb_grid_monospace_ = new wxCheckBox(panel, -1, wxS("Use monospace font in data grid"));
-
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sizer);
-
-	auto vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(vbox, lh.sfWithLargeBorder(0).Expand());
-
-	// Appearance settings
-	vbox->Add(wxutil::createSectionSeparator(panel, "Appearance"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	vbox->Add(layoutAppearanceSettings(panel), lh.sfWithBorder(0, wxLEFT));
-
-	// Entry List settings
-	vbox->AddSpacer(lh.padXLarge());
-	vbox->Add(wxutil::createSectionSeparator(panel, "Entry List"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	vbox->Add(layoutEntryListSettings(panel), lh.sfWithBorder(0, wxLEFT));
-
-	// Data Grid settings
-	vbox->AddSpacer(lh.padXLarge());
-	vbox->Add(wxutil::createSectionSeparator(panel, "Data Grid"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	vbox->Add(layoutDataGridSettings(panel), lh.sfWithBorder(0, wxLEFT));
-
-	return panel;
-}
-
-// ----------------------------------------------------------------------------
-// Creates layout sizer for the Appearance settings
-// ----------------------------------------------------------------------------
-wxSizer* InterfaceSettingsPanel::layoutAppearanceSettings(wxWindow* panel) const
-{
-	auto sizer = new wxGridBagSizer(pad(panel), padLarge(panel));
-
-	int row = 0;
-#ifdef __WXMSW__
-	sizer->Add(rbp_windows_darkmode_, { row++, 0 }, { 1, 3 }, wxEXPAND);
-#else
-	rbp_windows_darkmode_->Hide();
-#endif
-	sizer->Add(new wxStaticText(panel, -1, wxS("Toolbar icon set:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	sizer->Add(choice_toolbar_iconset_, { row, 1 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(choice_toolbar_size_, { row++, 2 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(cb_monospace_list_, { row++, 0 }, { 1, 3 }, wxALIGN_CENTER_VERTICAL);
-	sizer->Add(cb_condensed_tabs_, { row, 0 }, { 1, 3 }, wxALIGN_CENTER_VERTICAL);
-
-	sizer->AddGrowableCol(1);
-	sizer->AddGrowableCol(2);
-
-	return sizer;
-}
-
-// ----------------------------------------------------------------------------
-// Creates layout sizer for the Entry List settings
-// ----------------------------------------------------------------------------
-wxSizer* InterfaceSettingsPanel::layoutEntryListSettings(wxWindow* panel) const
-{
-	auto sizer = new wxGridBagSizer(pad(panel), padLarge(panel));
-
-	auto row = 0;
-	sizer->Add(
-		new wxStaticText(panel, -1, wxS("Icon set:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
-	sizer->Add(choice_iconset_entry_, { row, 1 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(choice_elist_icon_size_, { row++, 2 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(
-		new wxStaticText(panel, -1, wxS("Row padding:")),
-		{ row, 0 },
-		{ 1, 1 },
-		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
-	sizer->Add(spin_elist_icon_pad_, { row++, 1 }, { 1, 2 }, wxEXPAND);
-	sizer->Add(cb_elist_bgcol_, { row++, 0 }, { 1, 3 }, wxALIGN_CENTER_VERTICAL);
-
-	sizer->AddGrowableCol(1);
-
-	return sizer;
-}
-
-// -----------------------------------------------------------------------------
-// Creates layout sizer for the Data Grid settings
-// -----------------------------------------------------------------------------
-wxSizer* InterfaceSettingsPanel::layoutDataGridSettings(wxWindow* panel) const
-{
-	auto sizer = new wxGridBagSizer(pad(panel), padLarge(panel));
-
-	auto row = 0;
-	sizer->Add(new wxStaticText(panel, -1, wxS("Row padding:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	sizer->Add(spin_grid_row_pad_, { row, 1 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(new wxStaticText(panel, -1, wxS("Column padding:")), { row, 2 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	sizer->Add(spin_grid_col_pad_, { row, 3 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(cb_grid_monospace_, { ++row, 0 }, { 1, 3 }, wxALIGN_CENTER_VERTICAL);
-
-	return sizer;
+	settings_table_->addSectionSeparator("Data Grid");
+	settings_table_->addSpinControl("Row padding", "edata_row_padding", 0, 4, 0);
+	settings_table_->addSpinControl("Column padding", "edata_col_padding", 0, 4, 0);
+	settings_table_->addCheckBox("Use monospace font in data grid", "edata_font_monospace");
 }

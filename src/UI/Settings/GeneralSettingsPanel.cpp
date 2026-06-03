@@ -33,6 +33,7 @@
 #include "GeneralSettingsPanel.h"
 #include "BaseResourceArchiveSettingsPanel.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Controls/SettingsTable.h"
 #include "UI/Layout.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
@@ -43,24 +44,10 @@ using namespace ui;
 
 // -----------------------------------------------------------------------------
 //
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, show_start_page)
-EXTERN_CVAR(Bool, close_archive_with_tab)
-EXTERN_CVAR(Bool, auto_open_wads_root)
-EXTERN_CVAR(Bool, update_check)
-EXTERN_CVAR(Bool, update_check_beta)
-EXTERN_CVAR(Bool, confirm_exit)
-EXTERN_CVAR(Bool, backup_archives)
-EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
-
-
-// -----------------------------------------------------------------------------
-//
 // GeneralSettingsPanel Class Functions
 //
 // -----------------------------------------------------------------------------
+
 
 // -----------------------------------------------------------------------------
 // GeneralSettingsPanel class constructor
@@ -73,7 +60,8 @@ GeneralSettingsPanel::GeneralSettingsPanel(wxWindow* parent) : SettingsPanel(par
 	base_resource_panel_ = new BaseResourceArchiveSettingsPanel(this);
 
 	auto tabs = STabCtrl::createControl(this);
-	tabs->AddPage(createProgramSettingsPanel(tabs), wxS("Program"));
+	createProgramSettingsTable(tabs);
+	tabs->AddPage(settings_table_, wxS("Program"));
 	tabs->AddPage(wxutil::createPadPanel(tabs, base_resource_panel_, padLarge()), wxS("Base Resource Archive"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 
@@ -85,15 +73,7 @@ GeneralSettingsPanel::GeneralSettingsPanel(wxWindow* parent) : SettingsPanel(par
 // -----------------------------------------------------------------------------
 void GeneralSettingsPanel::loadSettings()
 {
-	cb_show_start_page_->SetValue(show_start_page);
-	cb_confirm_exit_->SetValue(confirm_exit);
-	cb_update_check_->SetValue(update_check);
-	cb_update_check_beta_->SetValue(update_check_beta);
-	cb_close_archive_with_tab_->SetValue(close_archive_with_tab);
-	cb_auto_open_wads_root_->SetValue(auto_open_wads_root);
-	cb_backup_archives_->SetValue(backup_archives);
-	cb_archive_dir_ignore_hidden_->SetValue(archive_dir_ignore_hidden);
-
+	settings_table_->loadSettings();
 	base_resource_panel_->loadSettings();
 }
 
@@ -102,58 +82,34 @@ void GeneralSettingsPanel::loadSettings()
 // -----------------------------------------------------------------------------
 void GeneralSettingsPanel::applySettings()
 {
-	show_start_page           = cb_show_start_page_->GetValue();
-	confirm_exit              = cb_confirm_exit_->GetValue();
-	update_check              = cb_update_check_->GetValue();
-	update_check_beta         = cb_update_check_beta_->GetValue();
-	close_archive_with_tab    = cb_close_archive_with_tab_->GetValue();
-	auto_open_wads_root       = cb_auto_open_wads_root_->GetValue();
-	backup_archives           = cb_backup_archives_->GetValue();
-	archive_dir_ignore_hidden = cb_archive_dir_ignore_hidden_->GetValue();
-
+	settings_table_->applySettings();
 	base_resource_panel_->applySettings();
 }
 
 // -----------------------------------------------------------------------------
 // Creates the program settings panel
 // -----------------------------------------------------------------------------
-wxPanel* GeneralSettingsPanel::createProgramSettingsPanel(wxWindow* parent)
+void GeneralSettingsPanel::createProgramSettingsTable(wxWindow* parent)
 {
-	auto panel = new wxPanel(parent);
-	auto lh    = LayoutHelper(panel);
+	settings_table_ = new SettingsTable(parent);
 
-	// Create controls
-	cb_show_start_page_           = new wxCheckBox(panel, -1, wxS("Show the Start Page on startup"));
-	cb_confirm_exit_              = new wxCheckBox(panel, -1, wxS("Show confirmation dialog on exit"));
-	cb_update_check_              = new wxCheckBox(panel, -1, wxS("Check for updates on startup"));
-	cb_update_check_beta_         = new wxCheckBox(panel, -1, wxS("Include beta versions when checking for updates"));
-	cb_close_archive_with_tab_    = new wxCheckBox(panel, -1, wxS("Close archive when its tab is closed"));
-	cb_auto_open_wads_root_       = new wxCheckBox(panel, -1, wxS("Automatically open nested Wad Archives"));
-	cb_backup_archives_           = new wxCheckBox(panel, -1, wxS("Backup archives before saving"));
-	cb_archive_dir_ignore_hidden_ = new wxCheckBox(panel, -1, wxS("Ignore hidden files in directories"));
-
-	// Layout
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sizer);
-	auto vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(vbox, lh.sfWithLargeBorder(1).Expand());
-
-	lh.layoutVertically(vbox, { cb_show_start_page_, cb_confirm_exit_, cb_update_check_, cb_update_check_beta_ });
-
-	// Archive
-	vbox->AddSpacer(lh.padXLarge());
-	vbox->Add(wxutil::createSectionSeparator(panel, "Archives"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(
-		vbox,
-		{ cb_close_archive_with_tab_, cb_auto_open_wads_root_, cb_backup_archives_, cb_archive_dir_ignore_hidden_ },
-		lh.sfWithBorder(0, wxLEFT));
-
-#ifndef __WXMSW__
-	cb_update_check_->Hide();
-	cb_update_check_beta_->Hide();
+	settings_table_->addCheckBox("Show the Start Page on startup", "show_start_page");
+	settings_table_->addCheckBox("Show confirmation dialog on exit", "confirm_exit");
+#ifdef __WXMSW__
+	settings_table_->addCheckBox("Check for updates on startup", "update_check");
+	settings_table_->addCheckBox("Include beta versions when checking for updates", "update_check_beta");
 #endif
-
-	return panel;
+	settings_table_->addSectionSeparator("Archives");
+	settings_table_->addCheckBox("Close archive when its tab is closed", "close_archive_with_tab");
+	settings_table_->addCheckBox(
+		"Automatically open nested Wad Archives|"
+		"When opening a zip or directory, automatically open all wad entries in the root directory",
+		"auto_open_wads_root");
+	settings_table_->addCheckBox("Backup archives before saving", "backup_archives");
+	settings_table_->addCheckBox(
+		"Ignore hidden files in directories|"
+		"When opening a directory, ignore any files or subdirectories beginning with a '.'",
+		"archive_dir_ignore_hidden");
 }
 
 // -----------------------------------------------------------------------------

@@ -31,12 +31,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapGeneralSettingsPanel.h"
-#include "Map3DSettingsPanel.h"
 #include "NodeBuildersSettingsPanel.h"
 #include "UI/Controls/NumberTextCtrl.h"
-#include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Controls/STabCtrl.h"
-#include "UI/Layout.h"
+#include "UI/Controls/SettingsTable.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
 
@@ -72,19 +70,8 @@ MapGeneralSettingsPanel::MapGeneralSettingsPanel(wxWindow* parent) : SettingsPan
 // -----------------------------------------------------------------------------
 void MapGeneralSettingsPanel::loadSettings()
 {
-	cb_selection_clear_click_->SetValue(CVar::getBool("selection_clear_click"));
-	cb_selection_clear_move_->SetValue(CVar::getBool("selection_clear_move"));
-	cb_property_edit_dclick_->SetValue(CVar::getBool("property_edit_dclick"));
-	cb_merge_undo_step_->SetValue(CVar::getBool("map_merge_undo_step"));
-	cb_props_auto_apply_->SetValue(CVar::getBool("mobj_props_auto_apply"));
-	cb_remove_invalid_lines_->SetValue(CVar::getBool("map_remove_invalid_lines"));
-	cb_merge_lines_vertex_delete_->SetValue(CVar::getBool("map_merge_lines_on_delete_vertex"));
-	cb_split_auto_offset_->SetValue(CVar::getBool("map_split_auto_offset"));
 	text_max_backups_->setNumber(CVar::getInt("max_map_backups"));
-	cb_save_archive_with_map_->SetValue(CVar::getBool("save_archive_with_map"));
-	cb_3d_invert_y_->SetValue(CVar::getBool("map3d_mlook_invert_y"));
-	rbp_compress_sides_->setSelection(CVar::getInt("map_compress_sides"));
-
+	settings_table_->loadSettings();
 	nodebuilders_panel_->loadSettings();
 }
 
@@ -93,19 +80,8 @@ void MapGeneralSettingsPanel::loadSettings()
 // -----------------------------------------------------------------------------
 void MapGeneralSettingsPanel::applySettings()
 {
-	CVar::setBool("selection_clear_click", cb_selection_clear_click_->GetValue());
-	CVar::setBool("selection_clear_move", cb_selection_clear_move_->GetValue());
-	CVar::setBool("property_edit_dclick", cb_property_edit_dclick_->GetValue());
-	CVar::setBool("map_merge_undo_step", cb_merge_undo_step_->GetValue());
-	CVar::setBool("mobj_props_auto_apply", cb_props_auto_apply_->GetValue());
-	CVar::setBool("map_remove_invalid_lines", cb_remove_invalid_lines_->GetValue());
-	CVar::setBool("map_merge_lines_on_delete_vertex", cb_merge_lines_vertex_delete_->GetValue());
-	CVar::setBool("map_split_auto_offset", cb_split_auto_offset_->GetValue());
 	CVar::setInt("max_map_backups", text_max_backups_->number());
-	CVar::setBool("save_archive_with_map", cb_save_archive_with_map_->GetValue());
-	CVar::setBool("map3d_mlook_invert_y", cb_3d_invert_y_->GetValue());
-	CVar::setInt("map_compress_sides", rbp_compress_sides_->getSelection());
-
+	settings_table_->applySettings();
 	nodebuilders_panel_->applySettings();
 }
 
@@ -114,60 +90,34 @@ void MapGeneralSettingsPanel::applySettings()
 // -----------------------------------------------------------------------------
 wxPanel* MapGeneralSettingsPanel::createGeneralPanel(wxWindow* parent)
 {
-	auto panel     = new wxPanel(parent);
-	auto lh        = LayoutHelper(panel);
-	auto sz_border = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sz_border);
+	settings_table_ = new SettingsTable(parent);
 
-	// Create controls
-	cb_save_archive_with_map_ = new wxCheckBox(panel, -1, wxS("When saving a map, also save its parent archive"));
-	rbp_compress_sides_ = new RadioButtonPanel(panel, { "Never", "When necessary", "Always" }, "Compress SIDEDEFS:");
-	cb_selection_clear_click_ = new wxCheckBox(panel, -1, wxS("Clear selection when nothing is clicked"));
-	cb_selection_clear_move_  = new wxCheckBox(panel, -1, wxS("Clear selection after moving (dragging) map elements"));
-	cb_property_edit_dclick_  = new wxCheckBox(panel, -1, wxS("Double-click to edit properties"));
-	cb_merge_undo_step_  = new wxCheckBox(panel, -1, wxS("Create a 'Merge' undo level on move/edit map architecture"));
-	cb_props_auto_apply_ = new wxCheckBox(panel, -1, wxS("Automatically apply property panel changes"));
-	cb_remove_invalid_lines_ = new wxCheckBox(panel, -1, wxS("Remove any resulting invalid lines on sector delete"));
-	cb_merge_lines_vertex_delete_ = new wxCheckBox(panel, -1, wxS("Merge lines when deleting a vertex"));
-	cb_split_auto_offset_         = new wxCheckBox(panel, -1, wxS("Automatically offset split lines"));
-	text_max_backups_             = new NumberTextCtrl(panel);
-	cb_3d_invert_y_               = new wxCheckBox(panel, -1, wxS("Invert mouse Y axis in 3D mode"));
-
-	// Layout
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
-
-	sizer->Add(cb_save_archive_with_map_, lh.sfWithBorder(0, wxBOTTOM).Expand());
-	sizer->Add(rbp_compress_sides_, lh.sfWithBorder(0, wxBOTTOM).Expand());
+	settings_table_->addCheckBox("When saving a map, also save its parent archive", "save_archive_with_map");
+	settings_table_->addRadioButtons(
+		"Compress SIDEDEFS|"
+		"Applies to Doom and Hexen format maps only, which are limited to a maximum of 65535 sides",
+		"map_compress_sides",
+		{ "Never", "When necessary", "Always" });
+	settings_table_->addCustomControl(
+		"Max backups to keep", text_max_backups_ = new NumberTextCtrl(settings_table_), wxALIGN_CENTER_VERTICAL);
 
 	// Selection
-	sizer->Add(wxutil::createSectionSeparator(panel, "Selection"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(sizer, { cb_selection_clear_click_, cb_selection_clear_move_ }, lh.sfWithBorder(0, wxLEFT));
+	settings_table_->addSectionSeparator("Selection");
+	settings_table_->addCheckBox("Clear selection when nothing is clicked", "selection_clear_click");
+	settings_table_->addCheckBox("Clear selection after moving (dragging) map elements", "selection_clear_move");
 
 	// Editing
-	sizer->AddSpacer(lh.padXLarge());
-	sizer->Add(wxutil::createSectionSeparator(panel, "Editing"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(
-		sizer,
-		{ cb_merge_undo_step_,
-		  cb_remove_invalid_lines_,
-		  cb_merge_lines_vertex_delete_,
-		  cb_split_auto_offset_,
-		  cb_props_auto_apply_ },
-		lh.sfWithBorder(0, wxLEFT));
+	settings_table_->addSectionSeparator("Editing");
+	settings_table_->addCheckBox("Create a 'Merge' undo level on move/edit map architecture", "map_merge_undo_step");
+	settings_table_->addCheckBox("Remove any resulting invalid lines on sector delete", "map_remove_invalid_lines");
+	settings_table_->addCheckBox("Merge lines when deleting a vertex", "map_merge_lines_on_delete_vertex");
+	settings_table_->addCheckBox("Automatically offset split lines", "map_split_auto_offset");
+	settings_table_->addCheckBox("Automatically apply property panel changes", "mobj_props_auto_apply");
 
 	// Controls
-	sizer->AddSpacer(lh.padXLarge());
-	sizer->Add(wxutil::createSectionSeparator(panel, "Controls"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(sizer, { cb_property_edit_dclick_, cb_3d_invert_y_ }, lh.sfWithBorder(0, wxLEFT));
+	settings_table_->addSectionSeparator("Controls");
+	settings_table_->addCheckBox("Double-click to edit properties", "property_edit_dclick");
+	settings_table_->addCheckBox("Invert mouse Y axis in 3D mode", "map3d_mlook_invert_y");
 
-	// Backups
-	sizer->AddSpacer(lh.padXLarge());
-	sizer->Add(wxutil::createSectionSeparator(panel, "Backups"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(
-		sizer,
-		{ wxutil::createLabelHBox(panel, "Max backups to keep:", text_max_backups_) },
-		lh.sfWithBorder(0, wxLEFT));
-
-	return panel;
+	return settings_table_;
 }

@@ -37,9 +37,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SettingsTable.h"
+#include "NumberSlider.h"
 #include "RadioButtonPanel.h"
 #include "UI/Layout.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace ui;
@@ -55,7 +57,7 @@ namespace slade::ui
 // -----------------------------------------------------------------------------
 // SettingRow (and derived structs)
 //
-// Base struct for a setting row, which may be linked to a cvar.
+// Base struct for a setting row in the table, which may be linked to a cvar.
 // Derived structs implement different control types (checkbox, radio buttons,
 // text box, etc.) and handle loading/applying to cvars of different types.
 // -----------------------------------------------------------------------------
@@ -100,7 +102,75 @@ struct TextSettingRow : SettingRow
 	void load() override { text_ctrl->SetValue(wxString::FromUTF8(CVar::getString(cvar))); }
 	void apply() override { CVar::set(cvar, text_ctrl->GetValue().utf8_string()); }
 };
+struct SpinSettingRow : SettingRow
+{
+	wxSpinCtrl* spin_ctrl = nullptr;
+
+	SpinSettingRow(const string& cvar, wxSpinCtrl* spin_ctrl) : SettingRow(cvar), spin_ctrl(spin_ctrl) {}
+
+	void load() override { spin_ctrl->SetValue(CVar::getInt(cvar)); }
+	void apply() override { CVar::setInt(cvar, spin_ctrl->GetValue()); }
+};
+struct SliderSettingRow : SettingRow
+{
+	NumberSlider* slider  = nullptr;
+	bool          decimal = false;
+
+	SliderSettingRow(const string& cvar, NumberSlider* slider, bool decimal) :
+		SettingRow(cvar),
+		slider(slider),
+		decimal(decimal)
+	{
+	}
+
+	void load() override
+	{
+		if (decimal)
+			slider->setDecimalValue(CVar::getFloat(cvar));
+		else
+			slider->setValue(CVar::getInt(cvar));
+	}
+
+	void apply() override
+	{
+		if (decimal)
+			CVar::setFloat(cvar, slider->decimalValue());
+		else
+			CVar::setInt(cvar, slider->value());
+	}
+};
 } // namespace slade::ui
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Creates a horizontal sizer containing the given [control] with a tooltip
+// label to the right of it (with [pad] spacing between).
+// The tooltip label is a small (i) symbol which shows the given [tooltip] text
+// when hovered over.
+// -----------------------------------------------------------------------------
+wxSizer* createTipSizer(wxWindow* parent, wxWindow* control, const string& tooltip, int pad = 0)
+{
+	// Create tooltip label with (i) symbol
+	auto st_tip = new wxStaticText(parent, wxID_ANY, wxString::FromUTF8("\u24D8"));
+	st_tip->SetForegroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_HOTLIGHT));
+	st_tip->SetFont(st_tip->GetFont().MakeLarger());
+	st_tip->SetToolTip(wxString::FromUTF8(tooltip));
+
+	// Layout to right of control
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox->Add(control, wxSizerFlags(1).Align(wxALIGN_CENTER_VERTICAL));
+	hbox->Add(st_tip, wxSizerFlags().Align(wxALIGN_CENTER_VERTICAL).Border(wxLEFT, pad));
+
+	return hbox;
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -109,25 +179,55 @@ struct TextSettingRow : SettingRow
 //
 // -----------------------------------------------------------------------------
 
+
 // -----------------------------------------------------------------------------
 // SettingsTable class constructor
 // -----------------------------------------------------------------------------
-SettingsTable::SettingsTable(wxWindow* parent) : wxPanel(parent)
+SettingsTable::SettingsTable(wxWindow* parent, bool border, const string& top_section_title) : wxPanel(parent)
 {
 	layout_ = new LayoutHelper(this);
-	sizer_  = new wxGridBagSizer(layout_->pad(), layout_->pad());
-	SetSizer(sizer_);
+	sizer_  = new wxGridBagSizer(layout_->pad(), layout_->padLarge());
+
+	if (border)
+	{
+		auto sizer = new wxBoxSizer(wxVERTICAL);
+		SetSizer(sizer);
+		if (top_section_title.empty())
+			sizer->Add(sizer_, layout_->sfWithLargeBorder(1).Expand());
+		else
+		{
+			sizer->AddSpacer(layout_->pad());
+			sizer->Add(sizer_, layout_->sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+		}
+	}
+	else
+		SetSizer(sizer_);
+
+	if (!top_section_title.empty())
+		addSectionSeparator(top_section_title, true);
+
+	Bind(
+		wxEVT_SIZE,
+		[this](wxSizeEvent& event)
+		{
+			if (sizer_->GetCols() > 1 && !sizer_->IsColGrowable(1))
+				sizer_->AddGrowableCol(1, 1);
+			event.Skip();
+		});
 }
 
 // -----------------------------------------------------------------------------
 // Adds a section separator with the given [label] to the settings table
 // -----------------------------------------------------------------------------
-void SettingsTable::addSectionSeparator(const string& label)
+void SettingsTable::addSectionSeparator(const string& label, bool top)
 {
 	auto row = sizer_->GetRows();
-	sizer_->Add(wxutil::createSectionSeparator(this, label), { row, 0 }, { 1, 2 }, wxEXPAND | wxTOP, layout_->pad());
-	if (row == 0)
-		sizer_->AddGrowableCol(1, 1);
+	if (top)
+		sizer_->Add(new wxStaticText(this, -1, wxString::FromUTF8(label)), { row, 0 }, { 1, 2 }, wxEXPAND);
+	else
+		sizer_->Add(
+			wxutil::createSectionSeparator(this, label), { row, 0 }, { 1, 2 }, wxEXPAND | wxTOP, layout_->pad());
+	in_section_ = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -136,13 +236,26 @@ void SettingsTable::addSectionSeparator(const string& label)
 // -----------------------------------------------------------------------------
 void SettingsTable::addCheckBox(const string& label, const string& cvar)
 {
-	auto row = sizer_->GetRows();
-	addLabel(label, row);
-	auto cb = new wxCheckBox(this, wxID_ANY, wxEmptyString);
-	sizer_->Add(cb, { row, 1 }, { 1, 1 }, wxEXPAND | wxALIGN_CENTER_VERTICAL);
+	// Get label text and optional tooltip
+	string text = label;
+	string tooltip;
+	if (strutil::contains(label, "|"))
+	{
+		text    = strutil::beforeFirst(label, "|");
+		tooltip = strutil::afterFirst(label, "|");
+	}
+
+	auto row      = sizer_->GetRows();
+	auto cb       = new wxCheckBox(this, wxID_ANY, wxString::FromUTF8(text));
+	auto left_pad = in_section_ ? layout_->padLarge() : 0;
+
+	if (!tooltip.empty())
+		sizer_->Add(
+			createTipSizer(this, cb, tooltip), { row, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL | wxLEFT, left_pad);
+	else
+		sizer_->Add(cb, { row, 0 }, { 1, 2 }, wxALIGN_CENTER_VERTICAL | wxLEFT, left_pad);
+
 	settings_.push_back(std::make_unique<CheckSettingRow>(cvar, cb));
-	if (row == 0)
-		sizer_->AddGrowableCol(1, 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -156,8 +269,6 @@ void SettingsTable::addRadioButtons(const string& label, const string& cvar, con
 	auto rbp = new RadioButtonPanel(this, options);
 	sizer_->Add(rbp, { row, 1 }, { 1, 1 }, wxEXPAND | wxALIGN_CENTER_VERTICAL);
 	settings_.push_back(std::make_unique<RadioSettingRow>(cvar, rbp));
-	if (row == 0)
-		sizer_->AddGrowableCol(1, 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -170,8 +281,50 @@ void SettingsTable::addTextBox(const string& label, const string& cvar)
 	auto text_ctrl = new wxTextCtrl(this, wxID_ANY);
 	sizer_->Add(text_ctrl, { row, 1 }, { 1, 1 }, wxEXPAND | wxALIGN_CENTER_VERTICAL);
 	settings_.push_back(std::make_unique<TextSettingRow>(cvar, text_ctrl));
-	if (row == 0)
-		sizer_->AddGrowableCol(1, 1);
+}
+
+// -----------------------------------------------------------------------------
+// Adds a spin control with the given [label] linked to the given int [cvar],
+// constructed with the given [min], [max] and [initial] values
+// -----------------------------------------------------------------------------
+void SettingsTable::addSpinControl(const string& label, const string& cvar, int min, int max, int initial)
+{
+	auto row = sizer_->GetRows();
+	addLabel(label, row);
+	auto spin_ctrl = new wxSpinCtrl(
+		this,
+		wxID_ANY,
+		wxEmptyString,
+		wxDefaultPosition,
+		layout_->spinSize(),
+		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
+		min,
+		max,
+		initial);
+	sizer_->Add(spin_ctrl, { row, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	settings_.push_back(std::make_unique<SpinSettingRow>(cvar, spin_ctrl));
+}
+
+// -----------------------------------------------------------------------------
+// Adds a slider with the given [label] linked to the given int/float [cvar],
+// constructed with the given [min], [max], [step] and [scale] values.
+// If [decimal] is true, the slider will be treated as a float with the given
+// [scale] factor (see NumberSlider)
+// -----------------------------------------------------------------------------
+void SettingsTable::addSlider(
+	const string& label,
+	const string& cvar,
+	bool          decimal,
+	int           min,
+	int           max,
+	int           step,
+	int           scale)
+{
+	auto row = sizer_->GetRows();
+	addLabel(label, row);
+	auto slider = new NumberSlider(this, min, max, step, decimal, scale);
+	sizer_->Add(slider, { row, 1 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+	settings_.push_back(std::make_unique<SliderSettingRow>(cvar, slider, decimal));
 }
 
 // -----------------------------------------------------------------------------
@@ -184,8 +337,18 @@ void SettingsTable::addCustomControl(const string& label, wxWindow* control, int
 	auto row = sizer_->GetRows();
 	addLabel(label, row);
 	sizer_->Add(control, { row, 1 }, { 1, 1 }, flags);
-	if (row == 0)
-		sizer_->AddGrowableCol(1, 1);
+}
+
+// -----------------------------------------------------------------------------
+// Adds a custom [sizer] with the given [label] and layout [flags].
+// Loading/applying of the control's value to/from cvars needs to be handled
+// manually outside this table.
+// -----------------------------------------------------------------------------
+void SettingsTable::addCustomSizer(const string& label, wxSizer* sizer, int flags)
+{
+	auto row = sizer_->GetRows();
+	addLabel(label, row);
+	sizer_->Add(sizer, { row, 1 }, { 1, 1 }, flags);
 }
 
 // -----------------------------------------------------------------------------
@@ -211,7 +374,26 @@ void SettingsTable::applySettings() const
 // -----------------------------------------------------------------------------
 void SettingsTable::addLabel(const string& label, int row)
 {
-	auto label_ctrl = new wxStaticText(this, wxID_ANY, wxString::FromUTF8(label));
-	label_ctrl->Wrap(FromDIP(300));
-	sizer_->Add(label_ctrl, { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
+	// Get label text and optional tooltip
+	string tooltip;
+	string text = label;
+	if (strutil::contains(label, "|"))
+	{
+		tooltip = strutil::afterFirst(label, "|");
+		text    = strutil::beforeFirst(label, "|");
+	}
+
+	auto wxst     = new wxStaticText(this, wxID_ANY, wxString::FromUTF8(text));
+	auto left_pad = in_section_ ? layout_->padLarge() : 0;
+	wxst->Wrap(FromDIP(300) - left_pad);
+
+	if (!tooltip.empty())
+		sizer_->Add(
+			createTipSizer(this, wxst, tooltip, layout_->padSmall()),
+			{ row, 0 },
+			{ 1, 1 },
+			wxALIGN_CENTER_VERTICAL | wxLEFT,
+			left_pad);
+	else
+		sizer_->Add(wxst, { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxLEFT, left_pad);
 }

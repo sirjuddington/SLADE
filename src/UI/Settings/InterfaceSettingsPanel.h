@@ -5,7 +5,7 @@
 namespace slade::ui
 {
 class ColourSettingsPanel;
-class RadioButtonPanel;
+class SettingsTable;
 
 class InterfaceSettingsPanel : public SettingsPanel
 {
@@ -18,23 +18,13 @@ public:
 	void applySettings() override;
 
 private:
-	RadioButtonPanel*    rbp_windows_darkmode_   = nullptr;
-	wxCheckBox*          cb_monospace_list_      = nullptr;
-	wxCheckBox*          cb_condensed_tabs_      = nullptr;
 	wxChoice*            choice_toolbar_iconset_ = nullptr;
 	wxChoice*            choice_toolbar_size_    = nullptr;
-	wxCheckBox*          cb_elist_bgcol_         = nullptr;
 	wxChoice*            choice_iconset_entry_   = nullptr;
 	wxChoice*            choice_elist_icon_size_ = nullptr;
-	wxSpinCtrl*          spin_elist_icon_pad_    = nullptr;
+	SettingsTable*       settings_table_         = nullptr;
 	ColourSettingsPanel* colour_panel_           = nullptr;
-	wxSpinCtrl*          spin_grid_row_pad_      = nullptr;
-	wxSpinCtrl*          spin_grid_col_pad_      = nullptr;
-	wxCheckBox*          cb_grid_monospace_      = nullptr;
 
-	wxPanel* createInterfacePanel(wxWindow* parent);
-	wxSizer* layoutAppearanceSettings(wxWindow* panel) const;
-	wxSizer* layoutEntryListSettings(wxWindow* panel) const;
-	wxSizer* layoutDataGridSettings(wxWindow* panel) const;
+	void setupInterfaceSettingsTable();
 };
 } // namespace slade::ui

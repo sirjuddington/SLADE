@@ -8,7 +8,7 @@ class VirtualListView;
 namespace ui
 {
 	class ExternalEditorsSettingsPanel;
-	class RadioButtonPanel;
+	class SettingsTable;
 } // namespace ui
 } // namespace slade
 
@@ -25,15 +25,7 @@ public:
 	void applySettings() override;
 
 private:
-	wxCheckBox*       cb_wad_force_uppercase_  = nullptr;
-	wxCheckBox*       cb_zip_percent_encoding_ = nullptr;
-	wxCheckBox*       cb_auto_entry_replace_   = nullptr;
-	wxCheckBox*       cb_filter_dirs_          = nullptr;
-	RadioButtonPanel* rbp_entry_mod_           = nullptr;
-	wxCheckBox*       cb_confirm_entry_delete_ = nullptr;
-	wxCheckBox*       cb_confirm_entry_revert_ = nullptr;
-	RadioButtonPanel* rbp_dir_mod_             = nullptr;
-
+	SettingsTable*                settings_table_    = nullptr;
 	ExternalEditorsSettingsPanel* ext_editors_panel_ = nullptr;
 
 	wxPanel* createArchiveEditorPanel(wxWindow* parent);

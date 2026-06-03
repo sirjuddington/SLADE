@@ -73,7 +73,7 @@ RadioButtonPanel::RadioButtonPanel(
 	for (size_t i = 0; i < choices.size(); i++)
 	{
 		if (i > 0)
-			sizer->AddSpacer(lh.pad());
+			sizer->AddSpacer(lh.padSmall());
 
 		auto rb = new wxRadioButton(this, wxID_ANY, wxString::FromUTF8(choices[i]));
 		sizer->Add(rb, wxSizerFlags());

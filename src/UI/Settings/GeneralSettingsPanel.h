@@ -5,6 +5,7 @@
 namespace slade::ui
 {
 class BaseResourceArchiveSettingsPanel;
+class SettingsTable;
 
 class GeneralSettingsPanel : public SettingsPanel
 {
@@ -18,18 +19,10 @@ public:
 	void applySettings() override;
 
 private:
-	wxCheckBox* cb_show_start_page_           = nullptr;
-	wxCheckBox* cb_confirm_exit_              = nullptr;
-	wxCheckBox* cb_update_check_              = nullptr;
-	wxCheckBox* cb_update_check_beta_         = nullptr;
-	wxCheckBox* cb_close_archive_with_tab_    = nullptr;
-	wxCheckBox* cb_auto_open_wads_root_       = nullptr;
-	wxCheckBox* cb_backup_archives_           = nullptr;
-	wxCheckBox* cb_archive_dir_ignore_hidden_ = nullptr;
-
+	SettingsTable*                    settings_table_      = nullptr;
 	BaseResourceArchiveSettingsPanel* base_resource_panel_ = nullptr;
 
-	wxPanel* createProgramSettingsPanel(wxWindow* parent);
+	void     createProgramSettingsTable(wxWindow* parent);
 	wxPanel* createBaseResourceArchivePanel(wxWindow* parent);
 };
 } // namespace slade::ui

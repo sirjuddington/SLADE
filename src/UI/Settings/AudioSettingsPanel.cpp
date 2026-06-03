@@ -52,6 +52,7 @@ namespace
 vector sample_rates = { 22050, 44100, 48000, 96000 };
 }
 
+
 // -----------------------------------------------------------------------------
 //
 // AudioSettingsPanel Class Functions
@@ -65,7 +66,7 @@ vector sample_rates = { 22050, 44100, 48000, 96000 };
 AudioSettingsPanel::AudioSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 {
 	// Create controls
-	settings_panel_ = new SettingsTable(this);
+	settings_panel_ = new SettingsTable(this, false);
 	flp_soundfont_  = new FileLocationPanel(
         settings_panel_,
         "",
@@ -91,7 +92,10 @@ AudioSettingsPanel::AudioSettingsPanel(wxWindow* parent) : SettingsPanel(parent)
 	settings_panel_->addRadioButtons("MIDI player", "snd_midiplayer", { "Fluidsynth", "Timidity (external)" });
 	settings_panel_->addCustomControl("", btn_reset_player_);
 	settings_panel_->addSectionSeparator("Fluidsynth Options");
-	settings_panel_->addCustomControl("Use custom MIDI soundfont", flp_soundfont_);
+	settings_panel_->addCustomControl(
+		"Custom soundfont|"
+		"This can be left blank to use SLADE's internal soundfont that matches the default Windows MIDI sound",
+		flp_soundfont_);
 	settings_panel_->addCustomControl("Sample rate", choice_fs_samplerate_, wxALIGN_CENTER_VERTICAL);
 	settings_panel_->addCheckBox("Enable chorus effect", "fs_chorus");
 	settings_panel_->addCheckBox("Enable reverb effect", "fs_reverb");

@@ -232,7 +232,22 @@ wxSizer* wxutil::createSectionSeparator(wxWindow* parent, const string& text)
 	hbox->Add(
 		new wxStaticText(parent, -1, wxString::FromUTF8(text)),
 		wxSizerFlags().CenterVertical().Border(wxRIGHT, ui::pad(parent)));
-	hbox->Add(new wxStaticLine(parent), wxSizerFlags(1).CenterVertical());
+
+	wxWindow* separator = nullptr;
+	if (app::platform() == app::Windows && app::isDarkTheme())
+	{
+		// Use a custom separator on windows dark mode as wxStaticLine is way
+		// too bright
+		auto* line = new wxPanel(parent);
+		line->SetMinSize(parent->FromDIP(wxSize{ -1, 1 }));
+		line->SetMaxSize(wxSize{ -1, parent->FromDIP(1) });
+		line->SetBackgroundColour(lightColour(systemPanelBGColour(), 5.0f));
+		separator = line;
+	}
+	else
+		separator = new wxStaticLine(parent);
+
+	hbox->Add(separator, wxSizerFlags(1).CenterVertical());
 	return hbox;
 }
 

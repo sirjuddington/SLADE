@@ -32,53 +32,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapDisplaySettingsPanel.h"
-#include "Map3DSettingsPanel.h"
-#include "UI/Controls/NumberSlider.h"
 #include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Controls/SettingsTable.h"
 #include "UI/Layout.h"
-#include "UI/WxUtils.h"
 
 using namespace slade;
 using namespace ui;
-
-
-// -----------------------------------------------------------------------------
-//
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(Bool, map2d_grid_dashed)
-EXTERN_CVAR(Bool, map2d_vertex_round)
-EXTERN_CVAR(Int, map2d_vertex_size)
-EXTERN_CVAR(Int, map2d_vertices_always)
-EXTERN_CVAR(Float, map2d_line_width)
-EXTERN_CVAR(Bool, map2d_line_smooth)
-EXTERN_CVAR(Int, map2d_things_always)
-EXTERN_CVAR(Bool, map2d_thing_force_dir)
-EXTERN_CVAR(Bool, map2d_thing_overlay_square)
-EXTERN_CVAR(Float, map2d_thing_shadow)
-EXTERN_CVAR(Int, map2d_thing_shape)
-EXTERN_CVAR(Bool, map2d_thing_sprites)
-EXTERN_CVAR(Float, map2d_flat_brightness)
-EXTERN_CVAR(Bool, map2d_sector_hilight_fill)
-EXTERN_CVAR(Bool, map2d_sector_selected_fill)
-EXTERN_CVAR(Bool, map2d_flat_ignore_light)
-EXTERN_CVAR(Bool, map2d_line_tabs_always)
-EXTERN_CVAR(Bool, map_animate_hilight)
-EXTERN_CVAR(Bool, map_animate_selection)
-EXTERN_CVAR(Bool, map_animate_tagged)
-EXTERN_CVAR(Int, map2d_line_fade)
-EXTERN_CVAR(Bool, map2d_flat_fade)
-EXTERN_CVAR(Int, map2d_crosshair)
-EXTERN_CVAR(Bool, map2d_action_lines)
-EXTERN_CVAR(Bool, map_show_help)
-EXTERN_CVAR(Int, map_tex_filter)
-EXTERN_CVAR(Bool, use_zeth_icons)
-EXTERN_CVAR(Int, map2d_thing_halo_width)
-EXTERN_CVAR(Int, map2d_64grid_style)
-EXTERN_CVAR(Bool, map2d_grid_show_origin)
-EXTERN_CVAR(Bool, map_showfps)
 
 
 // -----------------------------------------------------------------------------
@@ -108,7 +68,7 @@ MapDisplaySettingsPanel::MapDisplaySettingsPanel(wxWindow* parent) : SettingsPan
 	tabs->AddPage(createLinesPanel(tabs, lh), wxS("Lines"));
 	tabs->AddPage(createThingsPanel(tabs, lh), wxS("Things"));
 	tabs->AddPage(createSectorsPanel(tabs, lh), wxS("Sectors"));
-	tabs->AddPage(map3d_panel_ = new Map3DSettingsPanel(tabs), wxS("3D"));
+	tabs->AddPage(create3DPanel(tabs, lh), wxS("3D"));
 
 	wxWindowBase::Layout();
 }
@@ -118,47 +78,31 @@ MapDisplaySettingsPanel::MapDisplaySettingsPanel(wxWindow* parent) : SettingsPan
 // -----------------------------------------------------------------------------
 wxPanel* MapDisplaySettingsPanel::createGeneralPanel(wxWindow* parent, const LayoutHelper& lh)
 {
-	auto panel     = new wxPanel(parent, -1);
-	auto sz_border = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sz_border);
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
-
-	// Create controls
-	rbp_crosshair_        = new RadioButtonPanel(panel, { "None", "Small", "Full" }, "Cursor crosshair:");
-	rbp_grid_64_          = new RadioButtonPanel(panel, { "None", "Full", "Crosses" }, "64x64 grid:");
-	cb_grid_dashed_       = new wxCheckBox(panel, -1, wxS("Dashed grid"));
-	cb_grid_show_origin_  = new wxCheckBox(panel, -1, wxS("Hilight origin (0,0) on grid"));
-	cb_animate_hilight_   = new wxCheckBox(panel, -1, wxS("Animated hilight"));
-	cb_animate_selection_ = new wxCheckBox(panel, -1, wxS("Animated selection"));
-	cb_animate_tagged_    = new wxCheckBox(panel, -1, wxS("Animated tag indicator"));
-	cb_action_lines_      = new wxCheckBox(panel, -1, wxS("Show action lines"));
-	cb_show_help_         = new wxCheckBox(panel, -1, wxS("Show help text"));
-	rbp_tex_filter_       = new RadioButtonPanel(panel, { "None", "Linear", "Mipmapped" }, "Texture filter:");
-	cb_showfps_           = new wxCheckBox(panel, -1, wxS("Show FPS counter"));
-
-	cb_action_lines_->SetToolTip(
-		wxS("Show lines from an object with an action special to the tagged object(s) when highlighted"));
+	st_general_ = new SettingsTable(parent);
 
 	// General
-	lh.layoutVertically(
-		sizer,
-		{ rbp_crosshair_, rbp_tex_filter_, cb_action_lines_, cb_show_help_, cb_showfps_ },
-		wxSizerFlags(0).Expand());
+	st_general_->addRadioButtons("Cursor crosshair", "map2d_crosshair", { "None", "Small", "Full" });
+	st_general_->addRadioButtons("Texture filter", "map_tex_filter", { "None", "Linear", "Mipmapped" });
+	st_general_->addCheckBox(
+		"Show action lines|"
+		"Show lines from an object with an action special to the tagged object(s) when highlighted",
+		"map2d_action_lines");
+	st_general_->addCheckBox("Show help text", "map_show_help");
+	st_general_->addCheckBox("Show FPS counter", "map_showfps");
 
 	// Grid
-	sizer->AddSpacer(lh.padXLarge());
-	sizer->Add(wxutil::createSectionSeparator(panel, "Grid"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(
-		sizer, { rbp_grid_64_, cb_grid_dashed_, cb_grid_show_origin_ }, lh.sfWithBorder(0, wxLEFT).Expand());
+	st_general_->addSectionSeparator("Grid");
+	st_general_->addRadioButtons("64x64 grid", "map2d_64grid_style", { "None", "Full", "Crosses" });
+	st_general_->addCheckBox("Dashed grid", "map2d_grid_dashed");
+	st_general_->addCheckBox("Hilight origin (0,0) on grid", "map2d_grid_show_origin");
 
 	// Animation
-	sizer->AddSpacer(lh.padXLarge());
-	sizer->Add(wxutil::createSectionSeparator(panel, "Animation"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(
-		sizer, { cb_animate_hilight_, cb_animate_selection_, cb_animate_tagged_ }, lh.sfWithBorder(0, wxLEFT).Expand());
+	st_general_->addSectionSeparator("Animation");
+	st_general_->addCheckBox("Animated hilight", "map_animate_hilight");
+	st_general_->addCheckBox("Animated selection", "map_animate_selection");
+	st_general_->addCheckBox("Animated tag indicator", "map_animate_tagged");
 
-	return panel;
+	return st_general_;
 }
 
 // -----------------------------------------------------------------------------
@@ -166,22 +110,13 @@ wxPanel* MapDisplaySettingsPanel::createGeneralPanel(wxWindow* parent, const Lay
 // -----------------------------------------------------------------------------
 wxPanel* MapDisplaySettingsPanel::createVerticesPanel(wxWindow* parent, const LayoutHelper& lh)
 {
-	auto panel     = new wxPanel(parent, -1);
-	auto sz_border = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sz_border);
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
+	st_vertices_ = new SettingsTable(parent);
 
-	slider_vertex_size_  = new NumberSlider(panel, 2, 16, 1);
-	rbp_vertices_always_ = new RadioButtonPanel(panel, { "Hide", "Show", "Fade" }, "When not in vertices mode:");
-	cb_vertex_round_     = new wxCheckBox(panel, -1, wxS("Round vertices"));
+	st_vertices_->addCheckBox("Round vertices", "map2d_vertex_round");
+	st_vertices_->addSlider("Vertex size", "map2d_vertex_size", false, 2, 16, 1);
+	st_vertices_->addRadioButtons("When not in vertices mode", "map2d_vertices_always", { "Hide", "Show", "Fade" });
 
-	lh.layoutVertically(
-		sizer,
-		{ cb_vertex_round_, wxutil::createLabelHBox(panel, "Vertex Size:", slider_vertex_size_), rbp_vertices_always_ },
-		wxSizerFlags());
-
-	return panel;
+	return st_vertices_;
 }
 
 // -----------------------------------------------------------------------------
@@ -189,23 +124,15 @@ wxPanel* MapDisplaySettingsPanel::createVerticesPanel(wxWindow* parent, const La
 // -----------------------------------------------------------------------------
 wxPanel* MapDisplaySettingsPanel::createLinesPanel(wxWindow* parent, const LayoutHelper& lh)
 {
-	auto panel     = new wxPanel(parent, -1);
-	auto sz_border = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sz_border);
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
+	st_lines_ = new SettingsTable(parent);
 
-	lh.layoutVertically(
-		sizer,
-		{ wxutil::createLabelHBox(
-			  panel, "Line thickness:", slider_line_width_ = new NumberSlider(panel, 10, 30, 1, true, 10)),
-		  cb_line_smooth_      = new wxCheckBox(panel, -1, wxS("Smooth lines")),
-		  cb_line_tabs_always_ = new wxCheckBox(panel, -1, wxS("Always show line direction tabs")),
-		  rbp_line_fade_       = new RadioButtonPanel(
-              panel, { "No", "Always", "Vertex mode only" }, "Fade when not in lines mode:") },
-		wxSizerFlags());
+	st_lines_->addCheckBox("Smooth lines", "map2d_line_smooth");
+	st_lines_->addCheckBox("Always show line direction tabs", "map2d_line_tabs_always");
+	st_lines_->addSlider("Line thickness", "map2d_line_width", true, 10, 30, 1, 10);
+	st_lines_->addRadioButtons(
+		"Fade when not in lines mode", "map2d_line_fade", { "No", "Always", "Vertex mode only" });
 
-	return panel;
+	return st_lines_;
 }
 
 // -----------------------------------------------------------------------------
@@ -213,41 +140,17 @@ wxPanel* MapDisplaySettingsPanel::createLinesPanel(wxWindow* parent, const Layou
 // -----------------------------------------------------------------------------
 wxPanel* MapDisplaySettingsPanel::createThingsPanel(wxWindow* parent, const LayoutHelper& lh)
 {
-	auto panel     = new wxPanel(parent, -1);
-	auto sz_border = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sz_border);
-	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
-	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
+	st_things_ = new SettingsTable(parent);
 
-	// Create controls
-	rbp_thing_shape_         = new RadioButtonPanel(panel, { "Round", "Square", "Sprite Only" });
-	cb_thing_sprites_        = new wxCheckBox(panel, -1, wxS("Show Sprites"));
-	slider_thing_shadow_     = new NumberSlider(panel, 0, 10, 1, true, 10);
-	cb_thing_force_dir_      = new wxCheckBox(panel, -1, wxS("Always show direction arrows"));
-	cb_thing_overlay_square_ = new wxCheckBox(panel, -1, wxS("Force square hilight/selection overlay"));
-	cb_use_zeth_icons_       = new wxCheckBox(panel, -1, wxS("Use ZETH thing type icons"));
-	rbp_things_always_       = new RadioButtonPanel(panel, { "Hide", "Show", "Fade" }, "When not in things mode:");
+	st_things_->addRadioButtons("Thing shape", "map2d_thing_shape", { "Round", "Square", "Sprite Only" });
+	st_things_->addCheckBox("Show sprites on round or square things", "map2d_thing_sprites");
+	st_things_->addSlider("Thing shadow opacity", "map2d_thing_shadow", true, 0, 10, 1, 10);
+	st_things_->addCheckBox("Always show direction arrows", "map2d_thing_force_dir");
+	st_things_->addCheckBox("Force square hilight/selection overlay", "map2d_thing_overlay_square");
+	st_things_->addCheckBox("Use ZETH thing type icons", "use_zeth_icons");
+	st_things_->addRadioButtons("When not in things mode", "map2d_things_always", { "Hide", "Show", "Fade" });
 
-	int row = 0;
-	sizer->Add(
-		new wxStaticText(panel, -1, wxS("Thing shape:")),
-		{ row, 0 },
-		{ 1, 1 },
-		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
-	sizer->Add(rbp_thing_shape_, { row, 1 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(cb_thing_sprites_, { row++, 2 }, { 1, 1 }, wxEXPAND);
-	sizer->Add(
-		new wxStaticText(panel, -1, wxS("Thing shadow opacity:")),
-		{ row, 0 },
-		{ 1, 1 },
-		wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
-	sizer->Add(slider_thing_shadow_, { row++, 1 }, { 1, 2 }, wxEXPAND);
-	sizer->Add(cb_thing_force_dir_, { row++, 0 }, { 1, 3 }, wxEXPAND);
-	sizer->Add(cb_thing_overlay_square_, { row++, 0 }, { 1, 3 }, wxEXPAND);
-	sizer->Add(cb_use_zeth_icons_, { row++, 0 }, { 1, 3 }, wxEXPAND);
-	sizer->Add(rbp_things_always_, { row++, 0 }, { 1, 3 }, wxEXPAND);
-
-	return panel;
+	return st_things_;
 }
 
 // -----------------------------------------------------------------------------
@@ -255,24 +158,32 @@ wxPanel* MapDisplaySettingsPanel::createThingsPanel(wxWindow* parent, const Layo
 // -----------------------------------------------------------------------------
 wxPanel* MapDisplaySettingsPanel::createSectorsPanel(wxWindow* parent, const LayoutHelper& lh)
 {
-	// Add tab
-	auto panel     = new wxPanel(parent, -1);
-	auto sz_border = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sz_border);
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	sz_border->Add(sizer, lh.sfWithLargeBorder(1).Expand());
+	st_sectors_ = new SettingsTable(parent);
 
-	lh.layoutVertically(
-		sizer,
-		{ wxutil::createLabelHBox(
-			  panel, "Flat brightness:", slider_flat_brightness_ = new NumberSlider(panel, 0, 10, 1, true, 10)),
-		  cb_flat_ignore_light_    = new wxCheckBox(panel, -1, wxS("Flats ignore sector brightness")),
-		  cb_sector_hilight_fill_  = new wxCheckBox(panel, -1, wxS("Filled sector hilight")),
-		  cb_sector_selected_fill_ = new wxCheckBox(panel, -1, wxS("Filled sector selection")),
-		  cb_flat_fade_            = new wxCheckBox(panel, -1, wxS("Fade flats when not in sectors mode")) },
-		wxSizerFlags());
+	st_sectors_->addSlider("Flat brightness", "map2d_flat_brightness", true, 0, 10, 1, 10);
+	st_sectors_->addCheckBox("Flats ignore sector brightness", "map2d_flat_ignore_light");
+	st_sectors_->addCheckBox("Filled sector hilight", "map2d_sector_hilight_fill");
+	st_sectors_->addCheckBox("Filled sector selection", "map2d_sector_selected_fill");
+	st_sectors_->addCheckBox("Fade flats when not in sectors mode", "map2d_flat_fade");
 
-	return panel;
+	return st_sectors_;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the 3D mode tab panel
+// -----------------------------------------------------------------------------
+wxPanel* MapDisplaySettingsPanel::create3DPanel(wxWindow* parent, const LayoutHelper& lh)
+{
+	st_3d_ = new SettingsTable(parent);
+
+	st_3d_->addSlider("Camera FOV", "map3d_fov", false, 70, 120, 5);
+	st_3d_->addSlider("Max dynamic lights", "map3d_lights_max", false, 32, 512, 32);
+	// st_3d_->addCheckBox("Show distance under crosshair", "map3d_crosshair_show_distance");
+	st_3d_->addCustomControl(
+		"Item highlight:", rbp_3d_highlight_ = new RadioButtonPanel(st_3d_, { "Fill", "Outline", "Both" }));
+	st_3d_->addCheckBox("Fake contrast on orthogonal walls", "map3d_fake_contrast");
+
+	return st_3d_;
 }
 
 // -----------------------------------------------------------------------------
@@ -280,38 +191,22 @@ wxPanel* MapDisplaySettingsPanel::createSectorsPanel(wxWindow* parent, const Lay
 // -----------------------------------------------------------------------------
 void MapDisplaySettingsPanel::loadSettings()
 {
-	cb_vertex_round_->SetValue(map2d_vertex_round);
-	cb_line_smooth_->SetValue(map2d_line_smooth);
-	cb_line_tabs_always_->SetValue(map2d_line_tabs_always);
-	rbp_thing_shape_->setSelection(map2d_thing_shape);
-	cb_thing_sprites_->SetValue(map2d_thing_sprites);
-	cb_thing_force_dir_->SetValue(map2d_thing_force_dir);
-	cb_thing_overlay_square_->SetValue(map2d_thing_overlay_square);
-	cb_flat_ignore_light_->SetValue(map2d_flat_ignore_light);
-	cb_sector_hilight_fill_->SetValue(map2d_sector_hilight_fill);
-	cb_sector_selected_fill_->SetValue(map2d_sector_selected_fill);
-	cb_animate_hilight_->SetValue(map_animate_hilight);
-	cb_animate_selection_->SetValue(map_animate_selection);
-	cb_animate_tagged_->SetValue(map_animate_tagged);
-	rbp_vertices_always_->setSelection(map2d_vertices_always);
-	rbp_things_always_->setSelection(map2d_things_always);
-	rbp_line_fade_->setSelection(map2d_line_fade);
-	cb_flat_fade_->SetValue(map2d_flat_fade);
-	cb_grid_dashed_->SetValue(map2d_grid_dashed);
-	slider_vertex_size_->setValue(map2d_vertex_size);
-	slider_line_width_->setDecimalValue(map2d_line_width);
-	slider_thing_shadow_->setDecimalValue(map2d_thing_shadow);
-	slider_flat_brightness_->setDecimalValue(map2d_flat_brightness);
-	rbp_crosshair_->setSelection(map2d_crosshair);
-	cb_action_lines_->SetValue(map2d_action_lines);
-	cb_show_help_->SetValue(map_show_help);
-	rbp_tex_filter_->setSelection(map_tex_filter);
-	cb_use_zeth_icons_->SetValue(use_zeth_icons);
-	rbp_grid_64_->setSelection(map2d_64grid_style);
-	cb_grid_show_origin_->SetValue(map2d_grid_show_origin);
-	cb_showfps_->SetValue(map_showfps);
+	// 3D Highlight
+	auto map3d_highlight_fill    = CVar::getBool("map3d_highlight_fill");
+	auto map3d_highlight_outline = CVar::getBool("map3d_highlight_outline");
+	if (map3d_highlight_fill && map3d_highlight_outline)
+		rbp_3d_highlight_->setSelection(2);
+	else if (map3d_highlight_outline)
+		rbp_3d_highlight_->setSelection(1);
+	else
+		rbp_3d_highlight_->setSelection(0);
 
-	map3d_panel_->loadSettings();
+	st_general_->loadSettings();
+	st_vertices_->loadSettings();
+	st_lines_->loadSettings();
+	st_things_->loadSettings();
+	st_sectors_->loadSettings();
+	st_3d_->loadSettings();
 }
 
 // -----------------------------------------------------------------------------
@@ -319,36 +214,27 @@ void MapDisplaySettingsPanel::loadSettings()
 // -----------------------------------------------------------------------------
 void MapDisplaySettingsPanel::applySettings()
 {
-	map2d_grid_dashed          = cb_grid_dashed_->GetValue();
-	map2d_vertex_round         = cb_vertex_round_->GetValue();
-	map2d_vertex_size          = slider_vertex_size_->value();
-	map2d_line_width           = slider_line_width_->decimalValue();
-	map2d_line_smooth          = cb_line_smooth_->GetValue();
-	map2d_line_tabs_always     = cb_line_tabs_always_->GetValue();
-	map2d_thing_shape          = rbp_thing_shape_->getSelection();
-	map2d_thing_sprites        = cb_thing_sprites_->GetValue();
-	map2d_thing_force_dir      = cb_thing_force_dir_->GetValue();
-	map2d_thing_overlay_square = cb_thing_overlay_square_->GetValue();
-	map2d_thing_shadow         = slider_thing_shadow_->decimalValue();
-	map2d_flat_brightness      = slider_flat_brightness_->decimalValue();
-	map2d_flat_ignore_light    = cb_flat_ignore_light_->GetValue();
-	map2d_sector_hilight_fill  = cb_sector_hilight_fill_->GetValue();
-	map2d_sector_selected_fill = cb_sector_selected_fill_->GetValue();
-	map_animate_hilight        = cb_animate_hilight_->GetValue();
-	map_animate_selection      = cb_animate_selection_->GetValue();
-	map_animate_tagged         = cb_animate_tagged_->GetValue();
-	map2d_vertices_always      = rbp_vertices_always_->getSelection();
-	map2d_things_always        = rbp_things_always_->getSelection();
-	map2d_line_fade            = rbp_line_fade_->getSelection();
-	map2d_flat_fade            = cb_flat_fade_->GetValue();
-	map2d_crosshair            = rbp_crosshair_->getSelection();
-	map2d_action_lines         = cb_action_lines_->GetValue();
-	map_show_help              = cb_show_help_->GetValue();
-	map_tex_filter             = rbp_tex_filter_->getSelection();
-	use_zeth_icons             = cb_use_zeth_icons_->GetValue();
-	map2d_64grid_style         = rbp_grid_64_->getSelection();
-	map2d_grid_show_origin     = cb_grid_show_origin_->GetValue();
-	map_showfps                = cb_showfps_->GetValue();
+	// 3D Highlight
+	switch (rbp_3d_highlight_->getSelection())
+	{
+	case 1:
+		CVar::setBool("map3d_highlight_fill", false);
+		CVar::setBool("map3d_highlight_outline", true);
+		break;
+	case 2:
+		CVar::setBool("map3d_highlight_fill", true);
+		CVar::setBool("map3d_highlight_outline", true);
+		break;
+	default:
+		CVar::setBool("map3d_highlight_fill", true);
+		CVar::setBool("map3d_highlight_outline", false);
+		break;
+	}
 
-	map3d_panel_->applySettings();
+	st_general_->applySettings();
+	st_vertices_->applySettings();
+	st_lines_->applySettings();
+	st_things_->applySettings();
+	st_sectors_->applySettings();
+	st_3d_->applySettings();
 }

@@ -34,7 +34,7 @@
 #include "TextEditorStyleSettingsPanel.h"
 #include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Controls/STabCtrl.h"
-#include "UI/Layout.h"
+#include "UI/Controls/SettingsTable.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
 
@@ -57,29 +57,6 @@ constexpr int MINIMAP_LARGE  = 140;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(Int, txed_tab_width)
-EXTERN_CVAR(Bool, txed_auto_indent)
-EXTERN_CVAR(Bool, txed_syntax_hilight)
-EXTERN_CVAR(Bool, txed_brace_match)
-EXTERN_CVAR(Int, txed_edge_column)
-EXTERN_CVAR(Bool, txed_indent_guides)
-EXTERN_CVAR(String, txed_style_set)
-EXTERN_CVAR(Bool, txed_trim_whitespace)
-EXTERN_CVAR(Bool, txed_calltips_mouse)
-EXTERN_CVAR(Bool, txed_calltips_parenthesis)
-EXTERN_CVAR(Bool, txed_calltips_colourise)
-EXTERN_CVAR(Bool, txed_calltips_dim_optional)
-EXTERN_CVAR(Bool, txed_calltips_use_font)
-EXTERN_CVAR(Bool, txed_fold_enable)
-EXTERN_CVAR(Bool, txed_fold_comments)
-EXTERN_CVAR(Bool, txed_fold_preprocessor)
-EXTERN_CVAR(Bool, txed_fold_lines)
-EXTERN_CVAR(Bool, txed_match_cursor_word)
-EXTERN_CVAR(Int, txed_hilight_current_line)
-EXTERN_CVAR(Int, txed_line_extra_height)
-EXTERN_CVAR(Bool, txed_tab_spaces)
-EXTERN_CVAR(Int, txed_show_whitespace)
-EXTERN_CVAR(Bool, txed_calltips_argset_kb)
 EXTERN_CVAR(Int, txed_minimap_width)
 
 
@@ -111,70 +88,34 @@ TextEditorSettingsPanel::TextEditorSettingsPanel(wxWindow* parent) : SettingsPan
 // -----------------------------------------------------------------------------
 wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 {
-	auto panel = new wxPanel(parent);
-	auto lh    = LayoutHelper(panel);
+	settings_general_ = new SettingsTable(parent, true, "Whitespace && Indentation");
 
-	// Create controls
-	spin_tab_width_       = wxutil::createSpinCtrl(panel, txed_tab_width, 1, 100);
-	cb_tab_spaces_        = new wxCheckBox(panel, -1, wxS("Indent with spaces"));
-	cb_auto_indent_       = new wxCheckBox(panel, -1, wxS("Enable auto-indent"));
-	cb_trim_whitespace_   = new wxCheckBox(panel, -1, wxS("Trim whitespace on save"));
-	cb_brace_match_       = new wxCheckBox(panel, -1, wxS("Hilight matching braces"));
-	spin_right_margin_    = wxutil::createSpinCtrl(panel, txed_edge_column, 0, 1000);
-	spin_line_spacing_    = wxutil::createSpinCtrl(panel, txed_line_extra_height, 0, 10);
-	cb_indent_guides_     = new wxCheckBox(panel, -1, wxS("Show indentation guides"));
-	cb_match_cursor_word_ = new wxCheckBox(panel, -1, wxS("Hilight matching words"));
-	rbp_line_hilight_     = new RadioButtonPanel(
-        panel, { "Off", "Background", "Background+Underline" }, "Current line hilight:");
-	rbp_show_whitespace_ = new RadioButtonPanel(
-		panel, { "Off", "After indentation only", "Always" }, "Show whitespace:");
+	// Whitespace/Indentation
+	settings_general_->addCheckBox("Enable auto-indent", "txed_auto_indent");
+	settings_general_->addCheckBox("Trim whitespace on save", "txed_trim_whitespace");
+	settings_general_->addCheckBox("Indent with spaces", "txed_tab_spaces");
+	settings_general_->addSpinControl("Indentation width", "txed_tab_width", 1, 100);
+
+	// Display
+	settings_general_->addSectionSeparator("Display");
+	settings_general_->addCheckBox("Show indentation guides", "txed_indent_guides");
+	settings_general_->addCheckBox("Hilight matching braces", "txed_brace_match");
+	settings_general_->addCheckBox(
+		"Hilight matching words|"
+		"When enabled, any words matching the word at the current cursor position or selection will be hilighted",
+		"txed_match_cursor_word");
+	settings_general_->addSpinControl("Right margin at column", "txed_edge_column", 0, 1000);
+	settings_general_->addSpinControl("Extra line spacing", "txed_line_extra_height", 0, 10);
+	settings_general_->addRadioButtons(
+		"Current line hilight", "txed_hilight_current_line", { "Off", "Background", "Background+Underline" });
+	settings_general_->addRadioButtons(
+		"Show whitespace", "txed_show_whitespace", { "Off", "After indentation only", "Always" });
 #if wxCHECK_VERSION(3, 3, 2)
-	rbp_minimap_ = new RadioButtonPanel(panel, { "Off", "Small", "Medium", "Large" }, "Minimap:");
+	rbp_minimap_ = new RadioButtonPanel(settings_general_, { "Off", "Small", "Medium", "Large" });
+	settings_general_->addCustomControl("Minimap", rbp_minimap_);
 #endif
 
-
-	// Create main sizer
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sizer);
-
-	auto vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(vbox, lh.sfWithLargeBorder(1).Expand());
-
-	// --- Whitespace/indentation ---
-	vbox->Add(
-		wxutil::createSectionSeparator(panel, "Whitespace && Indentation"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(
-		vbox,
-		{ cb_auto_indent_,
-		  cb_trim_whitespace_,
-		  cb_tab_spaces_,
-		  wxutil::createLabelHBox(panel, "Indentation width: ", spin_tab_width_) },
-		lh.sfWithBorder(0, wxLEFT));
-
-	// --- Display ---
-	vbox->AddSpacer(lh.padXLarge());
-	vbox->Add(wxutil::createSectionSeparator(panel, "Display"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-
-	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.padLarge());
-	vbox->Add(gb_sizer, lh.sfWithBorder(0, wxLEFT));
-
-	int row = 0;
-	gb_sizer->Add(cb_indent_guides_, { row++, 0 }, { 1, 3 });
-	gb_sizer->Add(cb_brace_match_, { row++, 0 }, { 1, 3 });
-	gb_sizer->Add(cb_match_cursor_word_, { row++, 0 }, { 1, 3 });
-	gb_sizer->Add(
-		new wxStaticText(panel, -1, wxS("Right margin at column:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(spin_right_margin_, { row++, 1 }, { 1, 1 });
-	gb_sizer->Add(
-		new wxStaticText(panel, -1, wxS("Extra line spacing:")), { row, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
-	gb_sizer->Add(spin_line_spacing_, { row++, 1 }, { 1, 1 });
-	gb_sizer->Add(rbp_line_hilight_, { row++, 0 }, { 1, 3 });
-	gb_sizer->Add(rbp_show_whitespace_, { row++, 0 }, { 1, 3 });
-#if wxCHECK_VERSION(3, 3, 2)
-	gb_sizer->Add(rbp_minimap_, { row++, 0 }, { 1, 3 });
-#endif
-
-	return panel;
+	return settings_general_;
 }
 
 // -----------------------------------------------------------------------------
@@ -182,54 +123,33 @@ wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 // -----------------------------------------------------------------------------
 wxPanel* TextEditorSettingsPanel::createCodePanel(wxWindow* parent)
 {
-	auto panel = new wxPanel(parent);
-	auto lh    = LayoutHelper(panel);
-	auto sizer = new wxBoxSizer(wxVERTICAL);
-	panel->SetSizer(sizer);
+	settings_code_ = new SettingsTable(parent);
 
-	// Create controls
-	cb_syntax_hilight_        = new wxCheckBox(panel, -1, wxS("Enable syntax hilighting"));
-	cb_calltips_mouse_        = new wxCheckBox(panel, -1, wxS("Show calltips on mouse hover"));
-	cb_calltips_parenthesis_  = new wxCheckBox(panel, -1, wxS("Show calltips on opening parenthesis"));
-	cb_calltips_colourise_    = new wxCheckBox(panel, -1, wxS("Colourise calltip text"));
-	cb_calltips_dim_optional_ = new wxCheckBox(panel, -1, wxS("Dim optional function parameters"));
-	cb_calltips_use_font_     = new wxCheckBox(panel, -1, wxS("Use the text editor font in calltips"));
-	cb_calltips_argset_kb_    = new wxCheckBox(panel, -1, wxS("Use up/down keys to cycle function signatures"));
-	cb_fold_enable_           = new wxCheckBox(panel, -1, wxS("Enable code folding"));
-	cb_fold_comments_         = new wxCheckBox(panel, -1, wxS("Fold comment blocks"));
-	cb_fold_preprocessor_     = new wxCheckBox(panel, -1, wxS("Fold preprocessor regions"));
-	cb_fold_lines_            = new wxCheckBox(panel, -1, wxS("Show lines at contracted code folding regions"));
-	cb_calltips_dim_optional_->SetToolTip(wxS("If disabled, optional parameters will be shown between [] brackets"));
-
-	auto vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(vbox, lh.sfWithLargeBorder(1).Expand());
-
-	// Syntax Hilighting
-	vbox->Add(cb_syntax_hilight_, wxSizerFlags().Expand());
+	settings_code_->addCheckBox("Enable syntax hilighting", "txed_syntax_hilight");
 
 	// Calltips
-	vbox->AddSpacer(lh.padXLarge());
-	vbox->Add(wxutil::createSectionSeparator(panel, "Calltips"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(
-		vbox,
-		{ cb_calltips_mouse_,
-		  cb_calltips_colourise_,
-		  cb_calltips_parenthesis_,
-		  cb_calltips_dim_optional_,
-		  cb_calltips_use_font_,
-		  cb_calltips_argset_kb_ },
-		lh.sfWithBorder(0, wxLEFT));
+	settings_code_->addSectionSeparator("Calltips");
+	settings_code_->addCheckBox("Show calltips on mouse hover", "txed_calltips_mouse");
+	settings_code_->addCheckBox("Show calltips on opening parenthesis", "txed_calltips_parenthesis");
+	settings_code_->addCheckBox("Colourise calltip text", "txed_calltips_colourise");
+	settings_code_->addCheckBox(
+		"Dim optional function parameters|"
+		"If disabled, optional parameters will be shown between [] brackets",
+		"txed_calltips_dim_optional");
+	settings_code_->addCheckBox("Use the text editor font in calltips", "txed_calltips_use_font");
+	settings_code_->addCheckBox("Use up/down keys to cycle function signatures", "txed_calltips_argset_kb");
 
 	// Code Folding
-	vbox->AddSpacer(lh.padXLarge());
-	vbox->Add(wxutil::createSectionSeparator(panel, "Code Folding"), lh.sfWithBorder(0, wxBOTTOM).Expand());
-	lh.layoutVertically(
-		vbox,
-		{ cb_fold_enable_, cb_fold_comments_, cb_fold_lines_, cb_fold_preprocessor_ },
-		lh.sfWithBorder(0, wxLEFT));
+	settings_code_->addSectionSeparator("Code Folding");
+	settings_code_->addCheckBox("Enable code folding", "txed_fold_enable");
+	settings_code_->addCheckBox("Fold comment blocks", "txed_fold_comments");
+	settings_code_->addCheckBox(
+		"Fold preprocessor regions|"
+		"Enable folding for preprocessor regions, eg. #if/#endif, #region/#endregion",
+		"txed_fold_preprocessor");
+	settings_code_->addCheckBox("Show lines at contracted code folding regions", "txed_fold_lines");
 
-
-	return panel;
+	return settings_code_;
 }
 
 // -----------------------------------------------------------------------------
@@ -237,29 +157,6 @@ wxPanel* TextEditorSettingsPanel::createCodePanel(wxWindow* parent)
 // -----------------------------------------------------------------------------
 void TextEditorSettingsPanel::loadSettings()
 {
-	cb_auto_indent_->SetValue(txed_auto_indent);
-	cb_trim_whitespace_->SetValue(txed_trim_whitespace);
-	cb_syntax_hilight_->SetValue(txed_syntax_hilight);
-	cb_indent_guides_->SetValue(txed_indent_guides);
-	cb_brace_match_->SetValue(txed_brace_match);
-	cb_match_cursor_word_->SetValue(txed_match_cursor_word);
-	cb_calltips_mouse_->SetValue(txed_calltips_mouse);
-	cb_calltips_parenthesis_->SetValue(txed_calltips_parenthesis);
-	cb_calltips_colourise_->SetValue(txed_calltips_colourise);
-	cb_calltips_dim_optional_->SetValue(txed_calltips_dim_optional);
-	cb_calltips_use_font_->SetValue(txed_calltips_use_font);
-	cb_calltips_argset_kb_->SetValue(txed_calltips_argset_kb);
-	spin_right_margin_->SetValue(txed_edge_column);
-	spin_tab_width_->SetValue(txed_tab_width);
-	cb_fold_enable_->SetValue(txed_fold_enable);
-	cb_fold_comments_->SetValue(txed_fold_comments);
-	cb_fold_preprocessor_->SetValue(txed_fold_preprocessor);
-	cb_fold_lines_->SetValue(txed_fold_lines);
-	rbp_line_hilight_->setSelection(txed_hilight_current_line);
-	spin_line_spacing_->SetValue(txed_line_extra_height);
-	cb_tab_spaces_->SetValue(txed_tab_spaces);
-	rbp_show_whitespace_->setSelection(txed_show_whitespace);
-
 #if wxCHECK_VERSION(3, 3, 2)
 	if (txed_minimap_width <= 0)
 		rbp_minimap_->setSelection(0);
@@ -271,6 +168,8 @@ void TextEditorSettingsPanel::loadSettings()
 		rbp_minimap_->setSelection(3);
 #endif
 
+	settings_general_->loadSettings();
+	settings_code_->loadSettings();
 	style_panel_->loadSettings();
 }
 
@@ -279,29 +178,6 @@ void TextEditorSettingsPanel::loadSettings()
 // -----------------------------------------------------------------------------
 void TextEditorSettingsPanel::applySettings()
 {
-	txed_auto_indent           = cb_auto_indent_->GetValue();
-	txed_trim_whitespace       = cb_trim_whitespace_->GetValue();
-	txed_syntax_hilight        = cb_syntax_hilight_->GetValue();
-	txed_indent_guides         = cb_indent_guides_->GetValue();
-	txed_brace_match           = cb_brace_match_->GetValue();
-	txed_match_cursor_word     = cb_match_cursor_word_->GetValue();
-	txed_tab_width             = spin_tab_width_->GetValue();
-	txed_edge_column           = spin_right_margin_->GetValue();
-	txed_calltips_mouse        = cb_calltips_mouse_->GetValue();
-	txed_calltips_parenthesis  = cb_calltips_parenthesis_->GetValue();
-	txed_calltips_colourise    = cb_calltips_colourise_->GetValue();
-	txed_calltips_dim_optional = cb_calltips_dim_optional_->GetValue();
-	txed_calltips_use_font     = cb_calltips_use_font_->GetValue();
-	txed_calltips_argset_kb    = cb_calltips_argset_kb_->GetValue();
-	txed_fold_enable           = cb_fold_enable_->GetValue();
-	txed_fold_comments         = cb_fold_comments_->GetValue();
-	txed_fold_preprocessor     = cb_fold_preprocessor_->GetValue();
-	txed_fold_lines            = cb_fold_lines_->GetValue();
-	txed_hilight_current_line  = rbp_line_hilight_->getSelection();
-	txed_line_extra_height     = spin_line_spacing_->GetValue();
-	txed_tab_spaces            = cb_tab_spaces_->GetValue();
-	txed_show_whitespace       = rbp_show_whitespace_->getSelection();
-
 #if wxCHECK_VERSION(3, 3, 2)
 	// Apply minimap width (allowing for custom width values)
 	if (rbp_minimap_->getSelection() == 0)
@@ -316,5 +192,7 @@ void TextEditorSettingsPanel::applySettings()
 		txed_minimap_width = MINIMAP_LARGE;
 #endif
 
+	settings_general_->applySettings();
+	settings_code_->applySettings();
 	style_panel_->applySettings();
 }
