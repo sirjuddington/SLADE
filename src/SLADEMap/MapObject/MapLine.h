@@ -20,6 +20,10 @@ public:
 		BackMiddle  = 0x08,
 		BackUpper   = 0x10,
 		BackLower   = 0x20,
+
+		AnyMiddle = FrontMiddle | BackMiddle,
+		AnyUpper  = FrontUpper | BackUpper,
+		AnyLower  = FrontLower | BackLower
 	};
 
 	inline static const string PROP_V1      = "v1";
@@ -107,6 +111,7 @@ public:
 	int    needsTexture() const;
 	bool   overlaps(const MapLine* other) const;
 	bool   intersects(const MapLine* other, Vec2d& intersect_point) const;
+	void   fillMissingTextures(bool upper, bool lower, string_view texture, bool use_flat = false) const;
 
 	int lowestCeiling() const;
 	int highestCeiling() const;

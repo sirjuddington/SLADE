@@ -359,7 +359,9 @@ void Edit3D::changeSectorHeight(int amount) const
 	context_->beginUndoRecordLocked("Change Sector Height", true, false, false);
 
 	// Go through items
-	vector<int> ceilings;
+	vector<int>      ceilings;
+	bool             floors_changed = false;
+	vector<MapLine*> lines;
 	for (auto& item : items)
 	{
 		// Wall (ceiling only for now)
@@ -380,6 +382,10 @@ void Edit3D::changeSectorHeight(int amount) const
 
 			// Set to changed
 			ceilings.push_back(index);
+
+			// Add sector lines for later processing
+			for (auto s : sector->connectedSides())
+				vectorAddUnique(lines, s->parentLine());
 		}
 
 		// Floor or ceiling
@@ -396,6 +402,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			{
 				// Change height
 				sector->setFloorHeight(sector->floor().height + amount);
+				floors_changed = true;
 			}
 			else
 			{
@@ -410,6 +417,31 @@ void Edit3D::changeSectorHeight(int amount) const
 				// Set to changed
 				ceilings.push_back(sector->index());
 			}
+
+			// Add sector lines for later processing
+			for (auto s : sector->connectedSides())
+				vectorAddUnique(lines, s->parentLine());
+		}
+	}
+
+	if (CVar::getBool("map_fill_missing_textures"))
+	{
+		// Find adjacent textures to use (separate for upper/lower since we don't
+		// want eg. an upper texture propogating to a 'disconnected' lower texture)
+		auto tex_default = game::configuration().defaultString(MapObject::Type::Side, "texturemiddle");
+		auto tex_upper = context_->map().adjacentLineTexture(lines, MapLine::Part::AnyUpper | MapLine::Part::AnyMiddle);
+		auto tex_lower = context_->map().adjacentLineTexture(lines, MapLine::Part::AnyLower | MapLine::Part::AnyMiddle);
+
+		// Fill any resulting missing textures
+		bool mix_tex_flats = game::configuration().featureSupported(game::Feature::MixTexFlats);
+		bool found_upper   = tex_upper != MapSide::TEX_NONE;
+		bool found_lower   = tex_lower != MapSide::TEX_NONE;
+		for (auto line : lines)
+		{
+			line->fillMissingTextures(
+				!ceilings.empty(), false, found_upper ? tex_upper : tex_default, mix_tex_flats && !found_upper);
+			line->fillMissingTextures(
+				false, floors_changed, found_lower ? tex_lower : tex_default, mix_tex_flats && !found_lower);
 		}
 	}
 

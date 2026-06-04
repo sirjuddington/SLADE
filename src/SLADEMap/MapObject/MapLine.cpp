@@ -863,6 +863,52 @@ bool MapLine::intersects(const MapLine* other, Vec2d& intersect_point) const
 }
 
 // -----------------------------------------------------------------------------
+// Fills any missing [upper] and/or [lower] textures on the line with [texture].
+// If [use_flat] is true, missing textures will be filled with the floor or
+// ceiling texture of the opposite sector instead of [texture]
+// -----------------------------------------------------------------------------
+void MapLine::fillMissingTextures(bool upper, bool lower, string_view texture, bool use_flat) const
+{
+	auto required = needsTexture();
+
+	// Front Upper texture
+	if (upper && side1_ && required & FrontUpper && side1_->texUpper() == MapSide::TEX_NONE)
+	{
+		if (use_flat && backSector())
+			side1_->setTexUpper(backSector()->ceiling().texture);
+		else
+			side1_->setTexUpper(texture);
+	}
+
+	// Front Lower texture
+	if (lower && side1_ && required & FrontLower && side1_->texLower() == MapSide::TEX_NONE)
+	{
+		if (use_flat && backSector())
+			side1_->setTexLower(backSector()->floor().texture);
+		else
+			side1_->setTexLower(texture);
+	}
+
+	// Back Upper texture
+	if (upper && side2_ && required & BackUpper && side2_->texUpper() == MapSide::TEX_NONE)
+	{
+		if (use_flat && frontSector())
+			side2_->setTexUpper(frontSector()->ceiling().texture);
+		else
+			side2_->setTexUpper(texture);
+	}
+
+	// Back Lower texture
+	if (lower && side2_ && required & BackLower && side2_->texLower() == MapSide::TEX_NONE)
+	{
+		if (use_flat && frontSector())
+			side2_->setTexLower(frontSector()->floor().texture);
+		else
+			side2_->setTexLower(texture);
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Returns the height of the lowest ceiling of any of the adjacent sectors
 // -----------------------------------------------------------------------------
 int MapLine::lowestCeiling() const

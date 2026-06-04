@@ -61,6 +61,7 @@ MapGeneralSettingsPanel::MapGeneralSettingsPanel(wxWindow* parent) : SettingsPan
 
 	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createGeneralPanel(tabs), wxS("General"));
+	tabs->AddPage(createEditingPanel(tabs), wxS("Editing"));
 	tabs->AddPage(wxutil::createPadPanel(tabs, nodebuilders_panel_, padLarge()), wxS("Node Builders"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
@@ -71,7 +72,8 @@ MapGeneralSettingsPanel::MapGeneralSettingsPanel(wxWindow* parent) : SettingsPan
 void MapGeneralSettingsPanel::loadSettings()
 {
 	text_max_backups_->setNumber(CVar::getInt("max_map_backups"));
-	settings_table_->loadSettings();
+	st_general_->loadSettings();
+	st_editing_->loadSettings();
 	nodebuilders_panel_->loadSettings();
 }
 
@@ -81,7 +83,8 @@ void MapGeneralSettingsPanel::loadSettings()
 void MapGeneralSettingsPanel::applySettings()
 {
 	CVar::setInt("max_map_backups", text_max_backups_->number());
-	settings_table_->applySettings();
+	st_general_->applySettings();
+	st_editing_->applySettings();
 	nodebuilders_panel_->applySettings();
 }
 
@@ -90,34 +93,47 @@ void MapGeneralSettingsPanel::applySettings()
 // -----------------------------------------------------------------------------
 wxPanel* MapGeneralSettingsPanel::createGeneralPanel(wxWindow* parent)
 {
-	settings_table_ = new SettingsTable(parent);
+	st_general_ = new SettingsTable(parent, true, "Map Saving");
 
-	settings_table_->addCheckBox("When saving a map, also save its parent archive", "save_archive_with_map");
-	settings_table_->addRadioButtons(
+	st_general_->addCheckBox("When saving a map, also save its parent archive", "save_archive_with_map");
+	st_general_->addRadioButtons(
 		"Compress SIDEDEFS|"
 		"Applies to Doom and Hexen format maps only, which are limited to a maximum of 65535 sides",
 		"map_compress_sides",
 		{ "Never", "When necessary", "Always" });
-	settings_table_->addCustomControl(
-		"Max backups to keep", text_max_backups_ = new NumberTextCtrl(settings_table_), wxALIGN_CENTER_VERTICAL);
+	st_general_->addCustomControl(
+		"Max backups to keep", text_max_backups_ = new NumberTextCtrl(st_general_), wxALIGN_CENTER_VERTICAL);
 
 	// Selection
-	settings_table_->addSectionSeparator("Selection");
-	settings_table_->addCheckBox("Clear selection when nothing is clicked", "selection_clear_click");
-	settings_table_->addCheckBox("Clear selection after moving (dragging) map elements", "selection_clear_move");
-
-	// Editing
-	settings_table_->addSectionSeparator("Editing");
-	settings_table_->addCheckBox("Create a 'Merge' undo level on move/edit map architecture", "map_merge_undo_step");
-	settings_table_->addCheckBox("Remove any resulting invalid lines on sector delete", "map_remove_invalid_lines");
-	settings_table_->addCheckBox("Merge lines when deleting a vertex", "map_merge_lines_on_delete_vertex");
-	settings_table_->addCheckBox("Automatically offset split lines", "map_split_auto_offset");
-	settings_table_->addCheckBox("Automatically apply property panel changes", "mobj_props_auto_apply");
+	st_general_->addSectionSeparator("Selection");
+	st_general_->addCheckBox("Clear selection when nothing is clicked", "selection_clear_click");
+	st_general_->addCheckBox("Clear selection after moving (dragging) map elements", "selection_clear_move");
 
 	// Controls
-	settings_table_->addSectionSeparator("Controls");
-	settings_table_->addCheckBox("Double-click to edit properties", "property_edit_dclick");
-	settings_table_->addCheckBox("Invert mouse Y axis in 3D mode", "map3d_mlook_invert_y");
+	st_general_->addSectionSeparator("Controls");
+	st_general_->addCheckBox("Double-click to edit properties", "property_edit_dclick");
+	st_general_->addCheckBox("Invert mouse Y axis in 3D mode", "map3d_mlook_invert_y");
 
-	return settings_table_;
+	return st_general_;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the editing tab panel
+// -----------------------------------------------------------------------------
+wxPanel* MapGeneralSettingsPanel::createEditingPanel(wxWindow* parent)
+{
+	st_editing_ = new SettingsTable(parent);
+
+	st_editing_->addCheckBox("Automatically apply property panel changes", "mobj_props_auto_apply");
+
+	st_editing_->addSectionSeparator("Map Architecture");
+	st_editing_->addCheckBox("Create a 'Merge' undo step on move/edit map architecture", "map_merge_undo_step");
+	st_editing_->addCheckBox("Remove any resulting invalid lines after deleting a sector", "map_remove_invalid_lines");
+	st_editing_->addCheckBox("Merge lines when deleting a vertex", "map_merge_lines_on_delete_vertex");
+
+	st_editing_->addSectionSeparator("Textures");
+	st_editing_->addCheckBox("Automatically adjust texture offsets on split lines", "map_split_auto_offset");
+	st_editing_->addCheckBox("Fill in missing textures when changing sector heights", "map_fill_missing_textures");
+
+	return st_editing_;
 }

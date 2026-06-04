@@ -521,6 +521,23 @@ string SLADEMap::adjacentLineTexture(const MapVertex* vertex, int tex_part) cons
 }
 
 // -----------------------------------------------------------------------------
+// Returns the first texture at [tex_part] found on lines connected to
+// (and including) the given [lines]
+// -----------------------------------------------------------------------------
+string SLADEMap::adjacentLineTexture(const vector<MapLine*>& lines, int tex_part) const
+{
+	for (auto line : lines)
+	{
+		if (auto tex = adjacentLineTexture(line->v1(), tex_part); tex != MapSide::TEX_NONE)
+			return tex;
+		if (auto tex = adjacentLineTexture(line->v2(), tex_part); tex != MapSide::TEX_NONE)
+			return tex;
+	}
+
+	return MapSide::TEX_NONE;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the sector on the front or back side of [line]
 // (ignoring the line side itself, used for correcting sector refs)
 // -----------------------------------------------------------------------------

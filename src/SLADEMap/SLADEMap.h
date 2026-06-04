@@ -115,6 +115,7 @@ public:
 
 	// Info
 	string     adjacentLineTexture(const MapVertex* vertex, int tex_part = 255) const;
+	string     adjacentLineTexture(const vector<MapLine*>& lines, int tex_part = 255) const;
 	MapSector* lineSideSector(MapLine* line, bool front = true);
 	bool       isModified() const;
 	void       setOpenedTime();

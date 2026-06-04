@@ -50,6 +50,7 @@
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
 using namespace mapeditor;
@@ -62,6 +63,7 @@ using namespace mapeditor;
 // -----------------------------------------------------------------------------
 CVAR(Bool, map_merge_lines_on_delete_vertex, false, CVar::Flag::Save)
 CVAR(Bool, map_remove_invalid_lines, false, CVar::Flag::Save)
+CVAR(Bool, map_fill_missing_textures, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -332,6 +334,35 @@ void Edit2D::changeSectorHeight(int amount, bool floor, bool ceiling) const
 		// Change ceiling height
 		if (ceiling)
 			sector->setCeilingHeight(sector->ceiling().height + amount);
+	}
+
+	if (map_fill_missing_textures)
+	{
+		// Get all lines of selected sectors
+		vector<MapLine*> lines;
+		for (auto& sector : selection)
+			for (auto& side : sector->connectedSides())
+				vectorAddUnique(lines, side->parentLine());
+
+		// Find adjacent textures to use (separate for upper/lower since we don't
+		// want eg. an upper texture propogating to a 'disconnected' lower texture)
+		auto tex_default = game::configuration().defaultString(MapObject::Type::Side, "texturemiddle");
+		auto tex_upper = context_->map().adjacentLineTexture(lines, MapLine::Part::AnyUpper | MapLine::Part::AnyMiddle);
+		auto tex_lower = context_->map().adjacentLineTexture(lines, MapLine::Part::AnyLower | MapLine::Part::AnyMiddle);
+
+		// Fill any resulting missing textures
+		bool mix_tex_flats = game::configuration().featureSupported(game::Feature::MixTexFlats);
+		bool found_upper   = tex_upper != MapSide::TEX_NONE;
+		bool found_lower   = tex_lower != MapSide::TEX_NONE;
+		for (auto line : lines)
+		{
+			if (ceiling)
+				line->fillMissingTextures(
+					true, false, found_upper ? tex_upper : tex_default, mix_tex_flats && !found_upper);
+			if (floor)
+				line->fillMissingTextures(
+					false, true, found_lower ? tex_lower : tex_default, mix_tex_flats && !found_lower);
+		}
 	}
 
 	// End record undo level

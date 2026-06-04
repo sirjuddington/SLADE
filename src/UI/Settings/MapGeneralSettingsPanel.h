@@ -26,10 +26,12 @@ public:
 	void applySettings() override;
 
 private:
-	SettingsTable*             settings_table_     = nullptr;
+	SettingsTable*             st_general_         = nullptr;
 	NumberTextCtrl*            text_max_backups_   = nullptr;
+	SettingsTable*             st_editing_         = nullptr;
 	NodeBuildersSettingsPanel* nodebuilders_panel_ = nullptr;
 
 	wxPanel* createGeneralPanel(wxWindow* parent);
+	wxPanel* createEditingPanel(wxWindow* parent);
 };
 } // namespace slade::ui
