@@ -71,12 +71,11 @@ MapVertex::MapVertex(const Vec2d& pos, const ParseTreeNode* udmf_def) : MapObjec
 }
 
 // -----------------------------------------------------------------------------
-// Copies another MapVertex object [c]
+// Copies another MapVertex object [c] (does not copy position)
 // -----------------------------------------------------------------------------
 void MapVertex::copy(MapObject* c)
 {
 	beginModify();
-	position_ = static_cast<MapVertex*>(c)->position_;
 	MapObject::copy(c);
 	endModify();
 }
