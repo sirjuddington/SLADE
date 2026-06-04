@@ -20,7 +20,7 @@
       "blend_additive": true,
       "colour": "rgba(0, 200, 255, 220)",
       "group": "Map Editor",
-      "name": "3D Hilight"
+      "name": "3D Highlight"
     },
     "map_3d_overlay_background": {
       "colour": "rgba(0, 0, 0, 180)",

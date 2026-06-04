@@ -94,11 +94,11 @@ wxPanel* MapDisplaySettingsPanel::createGeneralPanel(wxWindow* parent, const Lay
 	st_general_->addSectionSeparator("Grid");
 	st_general_->addRadioButtons("64x64 grid", "map2d_64grid_style", { "None", "Full", "Crosses" });
 	st_general_->addCheckBox("Dashed grid", "map2d_grid_dashed");
-	st_general_->addCheckBox("Hilight origin (0,0) on grid", "map2d_grid_show_origin");
+	st_general_->addCheckBox("Highlight origin (0,0) on grid", "map2d_grid_show_origin");
 
 	// Animation
 	st_general_->addSectionSeparator("Animation");
-	st_general_->addCheckBox("Animated hilight", "map_animate_hilight");
+	st_general_->addCheckBox("Animated highlight", "map_animate_hilight");
 	st_general_->addCheckBox("Animated selection", "map_animate_selection");
 	st_general_->addCheckBox("Animated tag indicator", "map_animate_tagged");
 
@@ -146,7 +146,7 @@ wxPanel* MapDisplaySettingsPanel::createThingsPanel(wxWindow* parent, const Layo
 	st_things_->addCheckBox("Show sprites on round or square things", "map2d_thing_sprites");
 	st_things_->addSlider("Thing shadow opacity", "map2d_thing_shadow", true, 0, 10, 1, 10);
 	st_things_->addCheckBox("Always show direction arrows", "map2d_thing_force_dir");
-	st_things_->addCheckBox("Force square hilight/selection overlay", "map2d_thing_overlay_square");
+	st_things_->addCheckBox("Force square highlight/selection overlay", "map2d_thing_overlay_square");
 	st_things_->addCheckBox("Use ZETH thing type icons", "use_zeth_icons");
 	st_things_->addRadioButtons("When not in things mode", "map2d_things_always", { "Hide", "Show", "Fade" });
 
@@ -162,7 +162,7 @@ wxPanel* MapDisplaySettingsPanel::createSectorsPanel(wxWindow* parent, const Lay
 
 	st_sectors_->addSlider("Flat brightness", "map2d_flat_brightness", true, 0, 10, 1, 10);
 	st_sectors_->addCheckBox("Flats ignore sector brightness", "map2d_flat_ignore_light");
-	st_sectors_->addCheckBox("Filled sector hilight", "map2d_sector_hilight_fill");
+	st_sectors_->addCheckBox("Filled sector highlight", "map2d_sector_hilight_fill");
 	st_sectors_->addCheckBox("Filled sector selection", "map2d_sector_selected_fill");
 	st_sectors_->addCheckBox("Fade flats when not in sectors mode", "map2d_flat_fade");
 

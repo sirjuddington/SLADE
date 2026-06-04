@@ -19,7 +19,7 @@
     "map_3d_hilight": {
       "colour": "rgba(255, 255, 140, 170)",
       "group": "Map Editor",
-      "name": "3D Hilight"
+      "name": "3D Highlight"
     },
     "map_3d_overlay_background": {
       "colour": "rgba(0, 0, 0, 180)",

@@ -99,15 +99,15 @@ wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 	// Display
 	settings_general_->addSectionSeparator("Display");
 	settings_general_->addCheckBox("Show indentation guides", "txed_indent_guides");
-	settings_general_->addCheckBox("Hilight matching braces", "txed_brace_match");
+	settings_general_->addCheckBox("Highlight matching braces", "txed_brace_match");
 	settings_general_->addCheckBox(
-		"Hilight matching words|"
+		"Highlight matching words|"
 		"When enabled, any words matching the word at the current cursor position or selection will be hilighted",
 		"txed_match_cursor_word");
 	settings_general_->addSpinControl("Right margin at column", "txed_edge_column", 0, 1000);
 	settings_general_->addSpinControl("Extra line spacing", "txed_line_extra_height", 0, 10);
 	settings_general_->addRadioButtons(
-		"Current line hilight", "txed_hilight_current_line", { "Off", "Background", "Background+Underline" });
+		"Current line highlight", "txed_hilight_current_line", { "Off", "Background", "Background+Underline" });
 	settings_general_->addRadioButtons(
 		"Show whitespace", "txed_show_whitespace", { "Off", "After indentation only", "Always" });
 #if wxCHECK_VERSION(3, 3, 2)

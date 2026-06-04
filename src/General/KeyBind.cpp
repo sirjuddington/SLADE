@@ -669,7 +669,7 @@ void KeyBind::initBinds()
 	addBind("me2d_mode_3d_at_mouse", Keypress("Q", KPM_SHIFT), "Enter 3d mode at the mouse cursor position", group);
 	addBind("me2d_flat_type", Keypress("F", KPM_CTRL), "Cycle flat type", group);
 	addBind("me2d_split_line", Keypress("S", KPM_SHIFT), "Split nearest line", group);
-	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock hilight", group);
+	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock highlight", group);
 	addBind("me2d_begin_linedraw", Keypress("space"), "Begin line drawing", group);
 	addBind("me2d_begin_shapedraw", Keypress("space", KPM_SHIFT), "Begin shape drawing", group);
 	addBind("me2d_create_object", Keypress("insert"), "Create object", group);
@@ -728,7 +728,7 @@ void KeyBind::initBinds()
 	addBind("me3d_clear_selection", Keypress("C"), "Clear selection", group);
 	addBind("me3d_toggle_things", Keypress("T"), "Toggle thing display", group);
 	addBind("me3d_thing_boxes", Keypress("T", KPM_SHIFT), "Toggle thing boxes", group);
-	addBind("me3d_toggle_hilight", Keypress("H"), "Toggle hilight", group);
+	addBind("me3d_toggle_hilight", Keypress("H"), "Toggle highlight", group);
 	addBind("me3d_copy_tex_type", Keypress("C", KPM_CTRL), "Copy texture or thing type", group);
 	addBind("me3d_copy_tex_type", Keypress("mouse3"));
 	addBind("me3d_paste_tex_type", Keypress("V", KPM_CTRL), "Paste texture or thing type", group);

@@ -146,7 +146,7 @@ void ColourSettingsPanel::refreshPropGrid() const
 	pg_colours_->AppendIn(
 		g_theme,
 		new wxFloatProperty(
-			wxS("Line Hilight Width Multiplier"), wxS("line_hilight_width"), colourconfig::lineHilightWidth()));
+			wxS("Line Highlight Width Multiplier"), wxS("line_hilight_width"), colourconfig::lineHilightWidth()));
 	pg_colours_->AppendIn(
 		g_theme,
 		new wxFloatProperty(

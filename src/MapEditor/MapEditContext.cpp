@@ -1317,9 +1317,9 @@ bool MapEditContext::handleKeyBind(string_view key, Vec2d position)
 
 			// Add editor message
 			if (selection_->hilightLocked())
-				addEditorMessage("Locked current hilight");
+				addEditorMessage("Locked current highlight");
 			else
-				addEditorMessage("Unlocked hilight");
+				addEditorMessage("Unlocked highlight");
 		}
 
 		// Copy
