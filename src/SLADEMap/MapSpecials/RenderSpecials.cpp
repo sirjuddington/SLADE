@@ -154,6 +154,16 @@ void RenderSpecials::lineUpdated(const MapLine& line)
 }
 
 // -----------------------------------------------------------------------------
+// Called when [line] is deleted
+// -----------------------------------------------------------------------------
+void RenderSpecials::lineDeleted(const MapLine& line)
+{
+	// Remove existing specials for line
+	removeTranslucentLine(line);
+	removeSectorFade(line);
+}
+
+// -----------------------------------------------------------------------------
 // Adds a translucency special for [line]
 // If [zdoom] is true, the line special is a ZDoom translucency special, and
 // [alpha] and [additive] are determined by the line's arguments.

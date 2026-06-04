@@ -18,8 +18,11 @@ public:
 	void updateOutdatedSectorPlanes();
 
 	bool lineUpdated(const MapLine& line, bool update_planes = true);
+	void lineDeleted(const MapLine& line);
 	bool sectorUpdated(MapSector& sector, bool update_planes = true);
+	void sectorDeleted(const MapSector& sector);
 	bool thingUpdated(const MapThing& thing, bool update_planes = true);
+	void thingDeleted(const MapThing& thing);
 
 private:
 	struct VertexHeightThing

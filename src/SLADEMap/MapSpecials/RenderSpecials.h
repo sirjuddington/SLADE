@@ -17,6 +17,7 @@ public:
 	void clearSpecials();
 
 	void lineUpdated(const MapLine& line);
+	void lineDeleted(const MapLine& line);
 
 private:
 	SLADEMap* map_;

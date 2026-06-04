@@ -11,7 +11,7 @@ public:
 	MapBackupPanel(wxWindow* parent);
 	~MapBackupPanel() override = default;
 
-	Archive* selectedMapData() const { return archive_mapdata_.get(); }
+	unique_ptr<Archive> releaseMapData() { return std::move(archive_mapdata_); }
 
 	bool loadBackups(string archive_name, string_view map_name);
 	void updateMapPreview();
