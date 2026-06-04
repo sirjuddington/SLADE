@@ -23,8 +23,10 @@ public:
 	void updateOutdatedSectorExtraFloors();
 
 	bool lineUpdated(const MapLine& line, bool update_outdated = true);
+	void lineDeleted(const MapLine& line);
 	bool sideUpdated(const MapSide& side, bool update_outdated = true);
 	bool sectorUpdated(const MapSector& sector, bool update_outdated = true);
+	void sectorDeleted(const MapSector& sector);
 
 private:
 	struct SectorExtraFloors

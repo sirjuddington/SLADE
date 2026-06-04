@@ -170,7 +170,7 @@ bool MapBackupManager::writeBackup(
 // Shows the map backups for [map_name] in [archive_name], returns the selected
 // map backup data in a WadArchive
 // -----------------------------------------------------------------------------
-Archive* MapBackupManager::openBackup(string_view archive_name, string_view map_name) const
+unique_ptr<Archive> MapBackupManager::openBackup(string_view archive_name, string_view map_name) const
 {
 	SDialog dlg(mapeditor::windowWx(), fmt::format("Restore {} backup", map_name), "map_backup", 500, 400);
 	auto    sizer = new wxBoxSizer(wxVERTICAL);
@@ -184,7 +184,7 @@ Archive* MapBackupManager::openBackup(string_view archive_name, string_view map_
 	if (panel_backup->loadBackups(string{ archive_name }, map_name))
 	{
 		if (dlg.ShowModal() == wxID_OK)
-			return panel_backup->selectedMapData();
+			return panel_backup->releaseMapData();
 	}
 	else
 		wxMessageBox(

@@ -508,7 +508,12 @@ bool MapObjectCollection::removeSide(unsigned index, bool remove_from_line, bool
 
 	// Finalize removals if not part of a bulk removal
 	if (!bulk)
+	{
 		removeMarkedObjects();
+
+		if (parent_map_)
+			parent_map_->setGeometryUpdated();
+	}
 
 	return true;
 }
@@ -554,7 +559,12 @@ bool MapObjectCollection::removeSector(unsigned index, bool bulk)
 
 	// Finalize removals if not part of a bulk removal
 	if (!bulk)
+	{
 		removeMarkedObjects();
+
+		if (parent_map_)
+			parent_map_->setGeometryUpdated();
+	}
 
 	return true;
 }

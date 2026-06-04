@@ -88,8 +88,20 @@ MapSpecials::MapSpecials(SLADEMap& map) : map_{ &map }
 			{
 				switch (obj->objType())
 				{
-				case MapObject::Type::Thing: point_lights_->thingDeleted(static_cast<MapThing&>(*obj)); break;
-				default:                     break;
+				case MapObject::Type::Line:
+					extrafloor_specials_->lineDeleted(static_cast<MapLine&>(*obj));
+					render_specials_->lineDeleted(static_cast<MapLine&>(*obj));
+					slope_specials_->lineDeleted(static_cast<MapLine&>(*obj));
+					break;
+				case MapObject::Type::Sector:
+					extrafloor_specials_->sectorDeleted(static_cast<MapSector&>(*obj));
+					slope_specials_->sectorDeleted(static_cast<MapSector&>(*obj));
+					break;
+				case MapObject::Type::Thing:
+					point_lights_->thingDeleted(static_cast<MapThing&>(*obj));
+					slope_specials_->thingDeleted(static_cast<MapThing&>(*obj));
+					break;
+				default: break;
 				}
 			}
 		});

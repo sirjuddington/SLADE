@@ -152,6 +152,14 @@ bool ExtraFloorSpecials::lineUpdated(const MapLine& line, bool update_outdated)
 	return specials_updated_;
 }
 
+void ExtraFloorSpecials::lineDeleted(const MapLine& line)
+{
+	removeSet3dFloorSpecial(line);
+
+	if (specials_updated_)
+		updateOutdatedSectorExtraFloors();
+}
+
 bool ExtraFloorSpecials::sideUpdated(const MapSide& side, bool update_outdated)
 {
 	// Sector_Set3dFloor - if [side] is on a control line, it may be used as the
@@ -179,6 +187,29 @@ bool ExtraFloorSpecials::sectorUpdated(const MapSector& sector, bool update_outd
 	return false;
 }
 
+void ExtraFloorSpecials::sectorDeleted(const MapSector& sector)
+{
+	// Sector_Set3dFloor - if [sector] is a control or target sector, remove the special
+	unsigned i = 0;
+	while (i < set_3d_floor_specials_.size())
+	{
+		if (set_3d_floor_specials_[i].target == &sector || set_3d_floor_specials_[i].control_sector == &sector)
+		{
+			vectorAddUnique(sectors_to_update_, set_3d_floor_specials_[i].target);
+			vectorAddUnique(sectors_to_update_, set_3d_floor_specials_[i].control_sector);
+			set_3d_floor_specials_.erase(set_3d_floor_specials_.begin() + i);
+			specials_updated_ = true;
+			continue;
+		}
+		i++;
+	}
+
+	clearExtraFloors(sector);
+
+	if (specials_updated_)
+		updateOutdatedSectorExtraFloors();
+}
+
 ExtraFloorSpecials::SectorExtraFloors* ExtraFloorSpecials::getSectorExtraFloors(const MapSector& sector)
 {
 	// Find existing extra floors for this sector
@@ -200,6 +231,8 @@ void ExtraFloorSpecials::clearExtraFloors(const MapSector& sector)
 			sector_extra_floors_, [&sector](const auto& sef) { return sef.sector == &sector; });
 		it != sector_extra_floors_.end())
 		sector_extra_floors_.erase(it);
+
+	sector.setRenderInfoUpdated();
 }
 
 void ExtraFloorSpecials::addExtraFloor(SectorExtraFloors& sef, const ExtraFloor& extra_floor)
