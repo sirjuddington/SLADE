@@ -50,16 +50,9 @@
 #include "UI/Layout.h"
 #include "UI/Lists/VirtualListView.h"
 #include "UI/SAuiToolBar.h"
+#include "Utility/SFileDialog.h"
 
 using namespace slade;
-
-
-// -----------------------------------------------------------------------------
-//
-// External Variables
-//
-// -----------------------------------------------------------------------------
-EXTERN_CVAR(String, dir_last)
 
 
 // -----------------------------------------------------------------------------
@@ -402,32 +395,18 @@ void PatchTablePanel::addPatchFromFile()
 		}
 	}
 
-	// Create open file dialog
-	wxFileDialog dialog_open(
-		this,
-		wxS("Choose file(s) to open"),
-		dir_last,
-		wxEmptyString,
-		wxString::FromUTF8(ext_filter),
-		wxFD_OPEN | wxFD_MULTIPLE | wxFD_FILE_MUST_EXIST,
-		wxDefaultPosition);
+	// Popup open file dialog that filters by valid image types
+	auto fd_info = filedialog::openFiles("Choose file(s) to open", ext_filter, this);
 
-	// Run the dialog & check that the user didn't cancel
-	if (dialog_open.ShowModal() == wxID_OK)
+	// Check that the user didn't cancel
+	if (!fd_info.filenames.empty())
 	{
-		// Get file selection
-		wxArrayString files;
-		dialog_open.GetPaths(files);
-
-		// Save 'dir_last'
-		dir_last = dialog_open.GetDirectory().utf8_string();
-
 		// Go through file selection
-		for (const auto& file : files)
+		for (const auto& file : fd_info.filenames)
 		{
 			// Load the file into a temporary ArchiveEntry
 			auto entry = std::make_shared<ArchiveEntry>();
-			entry->importFile(file.utf8_string());
+			entry->importFile(file);
 
 			// Determine type
 			EntryType::detectEntryType(*entry);
@@ -435,12 +414,12 @@ void PatchTablePanel::addPatchFromFile()
 			// If it's not a valid image type, ignore this file
 			if (!entry->type()->extraProps().contains("image"))
 			{
-				log::warning("%s is not a valid image file", file.utf8_string());
+				log::warning("{} is not a valid image file", file);
 				continue;
 			}
 
 			// Ask for name for patch
-			wxFileName fn(file);
+			wxFileName fn(wxString::FromUTF8(file));
 			auto       name = fn.GetName().Upper().Truncate(8);
 			name            = wxGetTextFromUser(
                 WX_FMT("Enter a patch name for {}:", fn.GetFullName().utf8_string()), wxS("New Patch"), name);

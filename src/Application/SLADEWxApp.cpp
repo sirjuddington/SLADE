@@ -88,7 +88,6 @@ const string update_check_url{
 };
 } // namespace
 
-CVAR(String, dir_last, "", CVar::Flag::Save)
 CVAR(Bool, update_check, true, CVar::Flag::Save)
 CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
 

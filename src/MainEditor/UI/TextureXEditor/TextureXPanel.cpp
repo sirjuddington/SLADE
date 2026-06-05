@@ -68,7 +68,6 @@ using namespace slade;
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Bool, wad_force_uppercase)
 
 
@@ -1017,31 +1016,15 @@ void TextureXPanel::newTextureFromFile()
 		}
 	}
 
-	// Create open file dialog
-	wxFileDialog dialog_open(
-		this,
-		wxS("Choose file(s) to open"),
-		dir_last,
-		wxEmptyString,
-		wxString::FromUTF8(ext_filter),
-		wxFD_OPEN | wxFD_MULTIPLE | wxFD_FILE_MUST_EXIST,
-		wxDefaultPosition);
+	// Popup a file dialog to choose patch file(s)
+	auto fd_info = filedialog::openFiles("Choose file(s) to open", ext_filter, this);
 
 	// Run the dialog & check that the user didn't cancel
-	if (dialog_open.ShowModal() == wxID_OK)
+	if (!fd_info.filenames.empty())
 	{
-		// Get file selection
-		wxArrayString files;
-		dialog_open.GetPaths(files);
-
-		// Save 'dir_last'
-		dir_last = dialog_open.GetDirectory().utf8_string();
-
 		// Go through file selection
-		for (const auto& f : files)
+		for (const auto& file : fd_info.filenames)
 		{
-			auto file = f.utf8_string();
-
 			// Load the file into a temporary ArchiveEntry
 			auto entry = std::make_shared<ArchiveEntry>();
 			entry->importFile(file);

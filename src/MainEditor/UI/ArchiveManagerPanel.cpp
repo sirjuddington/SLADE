@@ -60,6 +60,7 @@
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
+#include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -81,7 +82,6 @@ CVAR(Int, dir_archive_change_action, 2, CVar::Flag::Save) // 0=always ignore, 1=
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Int, autosave_entry_changes)
 
 
@@ -594,7 +594,8 @@ void ArchiveManagerPanel::updateRecentListItem(int index) const
 	if (strutil::equalCI(fn.extension(), "wad"))
 		icon = 1;
 	else if (
-		strutil::equalCI(fn.extension(), "zip") || strutil::equalCI(fn.extension(), "pk3")
+		strutil::equalCI(fn.extension(), "zip")
+		|| strutil::equalCI(fn.extension(), "pk3")
 		|| strutil::equalCI(fn.extension(), "pke"))
 		icon = 2;
 	else if (fileutil::dirExists(path))
@@ -1409,28 +1410,20 @@ void ArchiveManagerPanel::saveAll() const
 			// If the archive is newly created, do Save As instead
 
 			// Popup file save dialog
-			wxString formats  = wxString::FromUTF8(archive->fileExtensionString());
-			wxString filename = wxFileSelector(
-				wxString::FromUTF8("Save Archive " + archive->filename(false) + " As"),
-				dir_last,
-				wxEmptyString,
-				wxEmptyString,
-				formats,
-				wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+			auto filename = filedialog::saveFile(
+				fmt::format("Save Archive {} As", archive->filename(false)),
+				archive->fileExtensionString(),
+				const_cast<ArchiveManagerPanel*>(this));
 
 			// Check a filename was selected
 			if (!filename.empty())
 			{
 				// Save the archive
-				if (!archive->save(filename.utf8_string()))
+				if (!archive->save(filename))
 				{
 					// If there was an error pop up a message box
 					wxMessageBox(WX_FMT("Error: {}", global::error), wxS("Error"), wxICON_ERROR);
 				}
-
-				// Save 'dir_last'
-				wxFileName fn(filename);
-				dir_last = fn.GetPath(true).utf8_string();
 			}
 		}
 	}
@@ -1882,31 +1875,14 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 
 		// Open a file browser dialog that allows multiple selection
 		// and filters by wad, zip and pk3 file extensions
-		wxFileDialog dialog_open(
-			this,
-			wxS("Choose file(s) to open"),
-			dir_last,
-			wxEmptyString,
-			wxString::FromUTF8(extensions),
-			wxFD_OPEN | wxFD_MULTIPLE | wxFD_FILE_MUST_EXIST,
-			wxDefaultPosition);
+		auto files = filedialog::openFiles("Choose file(s) to open", extensions, this);
 
-		// Run the dialog & check that the user didn't cancel
-		if (dialog_open.ShowModal() == wxID_OK)
+		// Open selected files (if any)
+		if (!files.filenames.empty())
 		{
 			wxBeginBusyCursor();
-
-			// Get an array of selected filenames
-			wxArrayString files;
-			dialog_open.GetPaths(files);
-
-			// Open them
-			openFiles(files);
-
+			openFiles(wxutil::arrayStringStd(files.filenames));
 			wxEndBusyCursor();
-
-			// Save 'dir_last'
-			dir_last = dialog_open.GetDirectory().utf8_string();
 		}
 	}
 
@@ -1914,21 +1890,14 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	else if (id == "aman_opendir")
 	{
 		// Open a directory browser dialog
-		wxDirDialog dialog_open(
-			this, wxS("Select a Directory to open"), dir_last, wxDD_DIR_MUST_EXIST | wxDD_NEW_DIR_BUTTON);
+		auto dir = filedialog::openDirectory("Select a Directory to open", this);
 
-		// Run the dialog & check the user didn't cancel
-		if (dialog_open.ShowModal() == wxID_OK)
+		// Open directory if not cancelled
+		if (!dir.empty())
 		{
 			wxBeginBusyCursor();
-
-			// Open directory
-			openDirAsArchive(dialog_open.GetPath().utf8_string());
-
+			openDirAsArchive(dir);
 			wxEndBusyCursor();
-
-			// Save 'dir_last'
-			dir_last = dialog_open.GetPath().utf8_string();
 		}
 	}
 
