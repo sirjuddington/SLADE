@@ -19,6 +19,7 @@ namespace fileutil
 	time_t         fileModifiedTime(string_view path);
 	string         findExecutable(string_view exe_name, string_view bundle_dir = {});
 	string         fileHash(string_view path);
+	string         systemPath(string_view path);
 } // namespace fileutil
 
 class SFile : public SeekableData

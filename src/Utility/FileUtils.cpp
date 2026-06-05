@@ -215,16 +215,22 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 	if (path.empty())
 		return paths;
 
+	// Get system-specific path (so that include_dir_paths == false works correctly)
+	auto sys_path = systemPath(path);
+
 	wxArrayString all_files;
 	wxDir::GetAllFiles(
-		fromUtf8(path), &all_files, wxEmptyString, include_subdirs ? wxDIR_FILES | wxDIR_DIRS : wxDIR_FILES);
+		wxString::FromUTF8(sys_path),
+		&all_files,
+		wxEmptyString,
+		include_subdirs ? wxDIR_FILES | wxDIR_DIRS : wxDIR_FILES);
 
 	for (const auto& file : all_files)
 	{
 		if (include_dir_paths)
 			paths.push_back(file.utf8_string());
 		else
-			paths.push_back(strutil::replace(file.utf8_string(), path, ""));
+			paths.push_back(strutil::replace(file.utf8_string(), sys_path, ""));
 	}
 
 	return paths;
@@ -306,6 +312,18 @@ string fileutil::findExecutable(string_view exe_name, string_view bundle_dir)
 	}
 
 	return {};
+}
+
+// -----------------------------------------------------------------------------
+// Converts a path to use the platform-specific path separator
+// -----------------------------------------------------------------------------
+string fileutil::systemPath(string_view path)
+{
+#ifdef __WXMSW__
+	return strutil::replace(path, "/", "\\");
+#else
+	return strutil::replace(path, "\\", "/");
+#endif
 }
 
 

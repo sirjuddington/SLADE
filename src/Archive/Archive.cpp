@@ -845,13 +845,17 @@ bool Archive::renameEntry(ArchiveEntry* entry, string_view name, bool force)
 // -----------------------------------------------------------------------------
 bool Archive::importDir(string_view directory, bool ignore_hidden, shared_ptr<ArchiveDir> base, bool set_filepath)
 {
+	// Ensure we have system path separators so removing the directory part from
+	// the file paths below works correctly
+	auto sys_dir = fileutil::systemPath(directory);
+
 	// Get a list of all files in the directory
-	auto files = fileutil::allFilesInDir(directory, true, true);
+	auto files = fileutil::allFilesInDir(sys_dir, true, true);
 
 	// Go through files
 	for (const auto& file : files)
 	{
-		strutil::Path fn{ strutil::replace(file, directory, "") }; // Remove directory from entry name
+		strutil::Path fn{ strutil::replace(file, sys_dir, "") }; // Remove directory from entry name
 
 		// Split filename into dir+name
 		const auto ename = fn.fileName();
