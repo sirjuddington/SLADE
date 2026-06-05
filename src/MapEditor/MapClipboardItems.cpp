@@ -57,22 +57,15 @@ using namespace mapeditor;
 // This really only works for value types right now, like maps to pointers.
 // -----------------------------------------------------------------------------
 template<typename M>
-#if defined(_MSC_VER) && (_MSC_VER < 1500)
-// MSVC++ 2005 will give error C2899 if attempting to compile "typename M::mapped_type()".
-typename M::mapped_type findInMap(M& m, const typename M::key_type& k, typename M::mapped_type def = M::mapped_type())
-{
-#else
-// On the other hand, other compilers will fail if this typename isn't there.
-typename M::mapped_type findInMap(
+M::mapped_type findInMap(
 	M&                          m,
 	const typename M::key_type& k,
 	typename M::mapped_type     def = typename M::mapped_type())
 {
-#endif
 	typename M::iterator i = m.find(k);
 	if (i == m.end())
 	{
-		return const_cast<typename M::mapped_type&>(def);
+		return const_cast<M::mapped_type&>(def);
 	}
 	else
 	{
@@ -104,7 +97,7 @@ void MapArchClipboardItem::addLines(const vector<MapLine*>& lines)
 		if (s1)
 		{
 			copy_sides.push_back(s1);
-			if (std::find(copy_sectors.begin(), copy_sectors.end(), s1->sector()) == copy_sectors.end())
+			if (std::ranges::find(copy_sectors, s1->sector()) == copy_sectors.end())
 				copy_sectors.push_back(s1->sector());
 		}
 
@@ -112,7 +105,7 @@ void MapArchClipboardItem::addLines(const vector<MapLine*>& lines)
 		if (s2)
 		{
 			copy_sides.push_back(s2);
-			if (std::find(copy_sectors.begin(), copy_sectors.end(), s2->sector()) == copy_sectors.end())
+			if (std::ranges::find(copy_sectors, s2->sector()) == copy_sectors.end())
 				copy_sectors.push_back(s2->sector());
 		}
 	}
@@ -156,28 +149,20 @@ void MapArchClipboardItem::addLines(const vector<MapLine*>& lines)
 		auto v2 = line->v2();
 
 		// Add vertices to copy list
-		if (std::find(copy_verts.begin(), copy_verts.end(), v1) == copy_verts.end())
+		if (std::ranges::find(copy_verts, v1) == copy_verts.end())
 			copy_verts.push_back(v1);
-		if (std::find(copy_verts.begin(), copy_verts.end(), v2) == copy_verts.end())
+		if (std::ranges::find(copy_verts, v2) == copy_verts.end())
 			copy_verts.push_back(v2);
 
 		// Update min/max
-		if (v1->xPos() < min_x)
-			min_x = v1->xPos();
-		if (v1->xPos() > max_x)
-			max_x = v1->xPos();
-		if (v1->yPos() < min_y)
-			min_y = v1->yPos();
-		if (v1->yPos() > max_y)
-			max_y = v1->yPos();
-		if (v2->xPos() < min_x)
-			min_x = v2->xPos();
-		if (v2->xPos() > max_x)
-			max_x = v2->xPos();
-		if (v2->yPos() < min_y)
-			min_y = v2->yPos();
-		if (v2->yPos() > max_y)
-			max_y = v2->yPos();
+		min_x = std::min(v1->xPos(), min_x);
+		max_x = std::max(v1->xPos(), max_x);
+		min_y = std::min(v1->yPos(), min_y);
+		max_y = std::max(v1->yPos(), max_y);
+		min_x = std::min(v2->xPos(), min_x);
+		max_x = std::max(v2->xPos(), max_x);
+		min_y = std::min(v2->yPos(), min_y);
+		max_y = std::max(v2->yPos(), max_y);
 	}
 
 	// Determine midpoint
@@ -381,14 +366,10 @@ void MapThingsClipboardItem::addThings(const vector<MapThing*>& things)
 		copy_thing->copy(thing);
 		things_.push_back(std::move(copy_thing));
 
-		if (thing->xPos() < min_x)
-			min_x = thing->xPos();
-		if (thing->yPos() < min_y)
-			min_y = thing->yPos();
-		if (thing->xPos() > max_x)
-			max_x = thing->xPos();
-		if (thing->yPos() > max_y)
-			max_y = thing->yPos();
+		min_x = std::min(thing->xPos(), min_x);
+		min_y = std::min(thing->yPos(), min_y);
+		max_x = std::max(thing->xPos(), max_x);
+		max_y = std::max(thing->yPos(), max_y);
 	}
 
 	// Get midpoint

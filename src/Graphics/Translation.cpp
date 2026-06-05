@@ -76,7 +76,7 @@ ColRGBA IceRange[16] = {
 	ColRGBA(118, 118, 141), ColRGBA(128, 128, 151), ColRGBA(138, 138, 162), ColRGBA(148, 148, 172),
 };
 
-enum SpecialBlend
+enum SpecialBlend : u8
 {
 	Ice        = 0,
 	DesatFirst = 1,
@@ -140,7 +140,7 @@ void Translation::parse(string_view def)
 	else if (strutil::startsWith(test, "desaturate,"))
 	{
 		built_in_name_ = "Desaturate";
-		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(strutil::asInt(def.substr(11)), 31), 1);
+		desat_amount_  = std::max<u8>(std::min<u8>(strutil::asInt(def.substr(11)), 31), 1);
 		return;
 	}
 
@@ -231,8 +231,8 @@ TransRange* Translation::parseRange(string_view range)
 			return nullptr;
 
 		// Add translation
-		const ColRGBA col_start{ static_cast<uint8_t>(sr), static_cast<uint8_t>(sg), static_cast<uint8_t>(sb) };
-		const ColRGBA col_end{ static_cast<uint8_t>(er), static_cast<uint8_t>(eg), static_cast<uint8_t>(eb) };
+		const ColRGBA col_start{ static_cast<u8>(sr), static_cast<u8>(sg), static_cast<u8>(sb) };
+		const ColRGBA col_end{ static_cast<u8>(er), static_cast<u8>(eg), static_cast<u8>(eb) };
 		if (reverse)
 			translations_.emplace_back(new TransRangeColour{ { o_end, o_start }, col_end, col_start });
 		else
@@ -297,8 +297,8 @@ TransRange* Translation::parseRange(string_view range)
 		if (!tz.advIfNext(']'))
 			return nullptr;
 
-		translations_.emplace_back(new TransRangeBlend{
-			{ o_start, o_end }, { static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b) } });
+		translations_.emplace_back(
+			new TransRangeBlend{ { o_start, o_end }, { static_cast<u8>(r), static_cast<u8>(g), static_cast<u8>(b) } });
 	}
 	else if (tz.advIfNext('@'))
 	{
@@ -318,10 +318,9 @@ TransRange* Translation::parseRange(string_view range)
 		if (!tz.advIfNext(']'))
 			return nullptr;
 
-		translations_.emplace_back(
-			new TransRangeTint{ { o_start, o_end },
-								{ static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b) },
-								static_cast<uint8_t>(amount) });
+		translations_.emplace_back(new TransRangeTint{ { o_start, o_end },
+													   { static_cast<u8>(r), static_cast<u8>(g), static_cast<u8>(b) },
+													   static_cast<u8>(amount) });
 	}
 	else if (tz.advIfNext('$'))
 	{
@@ -358,10 +357,10 @@ TransRange* Translation::parseRange(string_view range)
 // handling any sort of palettized translations to RGB gradients. In short,
 // converting a translation string to a translation table would be lossy.
 // -----------------------------------------------------------------------------
-void Translation::read(const uint8_t* data)
+void Translation::read(const u8* data)
 {
-	int     i = 0;
-	uint8_t val, o_start, o_end, d_start, d_end;
+	int i = 0;
+	u8  val, o_start, o_end, d_start, d_end;
 	o_start = 0;
 	d_start = val = data[0];
 	while (i < 255)
@@ -468,7 +467,7 @@ ColRGBA Translation::translate(const ColRGBA& col, const Palette* pal) const
 	ColRGBA colour(col);
 	if (pal == nullptr)
 		pal = maineditor::currentPalette();
-	const uint8_t i = (col.index == -1) ? pal->nearestColour(col) : col.index;
+	const u8 i = (col.index == -1) ? pal->nearestColour(col) : col.index;
 
 	// Handle ZDoom's predefined texture blending:
 	// blue, gold, green, red, ice, inverse, and desaturate
@@ -521,7 +520,7 @@ ColRGBA Translation::translate(const ColRGBA& col, const Palette* pal) const
 				range_frac = static_cast<double>(i - tp->start()) / static_cast<double>(tp->end() - tp->start());
 
 			// Determine destination palette index
-			const uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
+			const u8 di = static_cast<u8>(std::round(tp->dStart() + range_frac * (tp->dEnd() - tp->dStart())));
 
 			// Apply new colour
 			const auto c = pal->colour(di);
@@ -577,8 +576,7 @@ ColRGBA Translation::translate(const ColRGBA& col, const Palette* pal) const
 
 			// Colourise
 			float grey = (col.r * col_greyscale_r + col.g * col_greyscale_g + col.b * col_greyscale_b) / 255.0f;
-			if (grey > 1.0f)
-				grey = 1.0f;
+			grey       = std::min(grey, 1.0f);
 
 			// Apply new colour
 			colour.r     = blend.r * grey;
@@ -611,7 +609,7 @@ ColRGBA Translation::translate(const ColRGBA& col, const Palette* pal) const
 		{
 			const auto  ts   = dynamic_cast<TransRangeSpecial*>(range.get());
 			const auto& spec = ts->special();
-			uint8_t     type = Invalid;
+			u8          type = Invalid;
 			if (strutil::equalCI(spec, "ice"))
 				type = SpecialBlend::Ice;
 			else if (strutil::equalCI(spec, "inverse"))
@@ -658,7 +656,7 @@ TransRange* Translation::addRange(TransRange::Type type, int pos, int range_star
 
 	// Add to list
 	const auto ptr = tr.get();
-	if (pos < 0 || pos >= static_cast<int>(translations_.size()))
+	if (pos < 0 || std::cmp_greater_equal(pos, translations_.size()))
 		translations_.push_back(std::move(tr));
 	else
 		translations_.insert(translations_.begin() + pos, std::move(tr));
@@ -672,7 +670,7 @@ TransRange* Translation::addRange(TransRange::Type type, int pos, int range_star
 void Translation::removeRange(int pos)
 {
 	// Check position
-	if (pos < 0 || pos >= static_cast<int>(translations_.size()))
+	if (pos < 0 || std::cmp_greater_equal(pos, translations_.size()))
 		return;
 
 	// Remove it
@@ -685,8 +683,10 @@ void Translation::removeRange(int pos)
 void Translation::swapRanges(int pos1, int pos2)
 {
 	// Check positions
-	if (pos1 < 0 || pos2 < 0 || pos1 >= static_cast<int>(translations_.size())
-		|| pos2 >= static_cast<int>(translations_.size()))
+	if (pos1 < 0
+		|| pos2 < 0
+		|| std::cmp_greater_equal(pos1, translations_.size())
+		|| std::cmp_greater_equal(pos2, translations_.size()))
 		return;
 
 	// Swap them
@@ -697,7 +697,7 @@ void Translation::swapRanges(int pos1, int pos2)
 // Apply one of the special colour blending modes from ZDoom:
 // Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
 // -----------------------------------------------------------------------------
-ColRGBA Translation::specialBlend(const ColRGBA& col, uint8_t type, const Palette* pal)
+ColRGBA Translation::specialBlend(const ColRGBA& col, u8 type, const Palette* pal)
 {
 	// Abort just in case
 	if (type == SpecialBlend::Invalid)
@@ -713,13 +713,13 @@ ColRGBA Translation::specialBlend(const ColRGBA& col, uint8_t type, const Palett
 	if (type == Ice)
 	{
 		// Determine destination palette index in IceRange
-		const uint8_t di = std::min((static_cast<int>(grey) >> 4), 15);
-		const auto    c  = IceRange[di];
-		colour.r         = c.r;
-		colour.g         = c.g;
-		colour.b         = c.b;
-		colour.a         = c.a;
-		colour.index     = pal->nearestColour(colour);
+		const u8   di = std::min((static_cast<int>(grey) >> 4), 15);
+		const auto c  = IceRange[di];
+		colour.r      = c.r;
+		colour.g      = c.g;
+		colour.b      = c.b;
+		colour.a      = c.a;
+		colour.index  = pal->nearestColour(colour);
 	}
 	// Desaturated blending goes from no effect to nearly fully desaturated
 	else if (type >= DesatFirst && type <= DesatLast)

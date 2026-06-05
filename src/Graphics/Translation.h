@@ -21,10 +21,10 @@ public:
 
 	struct IndexRange
 	{
-		uint8_t start = 0;
-		uint8_t end   = 0;
+		u8 start = 0;
+		u8 end   = 0;
 
-		IndexRange(int start, int end) : start{ static_cast<uint8_t>(start) }, end{ static_cast<uint8_t>(end) } {}
+		IndexRange(int start, int end) : start{ static_cast<u8>(start) }, end{ static_cast<u8>(end) } {}
 
 		string asText() const { return fmt::format("{}:{}", start, end); }
 	};
@@ -34,12 +34,12 @@ public:
 
 	Type              type() const { return type_; }
 	const IndexRange& range() const { return range_; }
-	uint8_t           start() const { return range_.start; }
-	uint8_t           end() const { return range_.end; }
+	u8                start() const { return range_.start; }
+	u8                end() const { return range_.end; }
 
 	void setRange(const IndexRange& range) { range_ = range; }
-	void setStart(uint8_t val) { range_.start = val; }
-	void setEnd(uint8_t val) { range_.end = val; }
+	void setStart(u8 val) { range_.start = val; }
+	void setEnd(u8 val) { range_.end = val; }
 
 	virtual string asText() { return ""; }
 
@@ -64,11 +64,11 @@ public:
 	{
 	}
 
-	uint8_t dStart() const { return dest_range_.start; }
-	uint8_t dEnd() const { return dest_range_.end; }
+	u8 dStart() const { return dest_range_.start; }
+	u8 dEnd() const { return dest_range_.end; }
 
-	void setDStart(uint8_t val) { dest_range_.start = val; }
-	void setDEnd(uint8_t val) { dest_range_.end = val; }
+	void setDStart(u8 val) { dest_range_.start = val; }
+	void setDEnd(u8 val) { dest_range_.end = val; }
 
 	string asText() override
 	{
@@ -201,7 +201,7 @@ class TransRangeTint : public TransRange
 	friend class Translation;
 
 public:
-	TransRangeTint(IndexRange range, const ColRGBA& colour = ColRGBA::RED, uint8_t amount = 50) :
+	TransRangeTint(IndexRange range, const ColRGBA& colour = ColRGBA::RED, u8 amount = 50) :
 		TransRange{ Type::Tint, range },
 		colour_{ colour },
 		amount_{ amount }
@@ -215,9 +215,9 @@ public:
 	}
 
 	ColRGBA colour() const { return colour_; }
-	uint8_t amount() const { return amount_; }
+	u8      amount() const { return amount_; }
 	void    setColour(const ColRGBA& c) { colour_ = c; }
-	void    setAmount(uint8_t a) { amount_ = a; }
+	void    setAmount(u8 a) { amount_ = a; }
 
 	string asText() override
 	{
@@ -226,7 +226,7 @@ public:
 
 private:
 	ColRGBA colour_;
-	uint8_t amount_;
+	u8      amount_;
 };
 
 class TransRangeSpecial : public TransRange
@@ -264,7 +264,7 @@ public:
 
 	void        parse(string_view def);
 	TransRange* parseRange(string_view range);
-	void        read(const uint8_t* data);
+	void        read(const u8* data);
 	string      asText();
 	void        clear();
 	void        copy(const Translation& copy);
@@ -273,10 +273,10 @@ public:
 	unsigned      nRanges() const { return translations_.size(); }
 	TransRange*   range(unsigned index) const;
 	const string& builtInName() const { return built_in_name_; }
-	uint8_t       desaturationAmount() const { return desat_amount_; }
+	u8            desaturationAmount() const { return desat_amount_; }
 
 	void setBuiltInName(string_view name) { built_in_name_ = name; }
-	void setDesaturationAmount(uint8_t amount) { desat_amount_ = amount; }
+	void setDesaturationAmount(u8 amount) { desat_amount_ = amount; }
 
 	ColRGBA translate(const ColRGBA& col, const Palette* pal = nullptr) const;
 
@@ -284,12 +284,12 @@ public:
 	void        removeRange(int pos);
 	void        swapRanges(int pos1, int pos2);
 
-	static ColRGBA specialBlend(const ColRGBA& col, uint8_t type, const Palette* pal = nullptr);
+	static ColRGBA specialBlend(const ColRGBA& col, u8 type, const Palette* pal = nullptr);
 	static string  getPredefined(string_view def);
 
 private:
 	vector<unique_ptr<TransRange>> translations_;
 	string                         built_in_name_;
-	uint8_t                        desat_amount_ = 0;
+	u8                             desat_amount_ = 0;
 };
 } // namespace slade
