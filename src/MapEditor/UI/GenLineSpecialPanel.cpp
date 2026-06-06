@@ -398,6 +398,8 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 		// Change
 		if (prop == 5)
 		{
+			auto selection = choice_props_[2]->GetSelection();
+
 			// 0 (No Change), prop 2 is monster
 			if (value == 0)
 			{
@@ -405,7 +407,7 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 				choice_props_[2]->Clear();
 				choice_props_[2]->AppendString(wxS("No"));
 				choice_props_[2]->AppendString(wxS("Yes"));
-				choice_props_[2]->Select(0);
+				choice_props_[2]->Select(selection);
 			}
 
 			// > 0, prop 2 is model
@@ -415,7 +417,7 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 				choice_props_[2]->Clear();
 				choice_props_[2]->AppendString(wxS("Trigger: Front Side of Trigger Line"));
 				choice_props_[2]->AppendString(wxS("Numeric: Sector at Target Height"));
-				choice_props_[2]->Select(0);
+				choice_props_[2]->Select(selection);
 			}
 
 			Layout();
