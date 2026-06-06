@@ -187,7 +187,6 @@ void GLCanvas::init()
 	gl::init();
 
 	glClearDepth(1.0);
-	glShadeModel(GL_SMOOTH);
 	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
