@@ -86,7 +86,7 @@ LinePropsPanel::LinePropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 	}
 
 	// Textures tab
-	stc_tabs_->AddPage(wxutil::createPadPanel(stc_tabs_, setupTexturesTab()), wxS("Textures"));
+	stc_tabs_->AddPage(setupTexturesTab(), wxS("Textures"));
 
 	// All properties tab
 	mopp_all_props_ = new MapObjectPropsPanel(stc_tabs_, true);
@@ -479,13 +479,13 @@ wxPanel* LinePropsPanel::setupTexturesTab()
 	auto sbs_front = new wxStaticBoxSizer(wxVERTICAL, panel, wxS("Front Side"));
 	sbs_front->AddSpacer(lh.padSmall());
 	sbs_front->Add(panel_side1_ = new SidePropsPanel(sbs_front->GetStaticBox()), wxSizerFlags(1).Expand());
-	sizer->Add(sbs_front, lh.sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(sbs_front, lh.sfWithBorder(0).Expand());
 
 	// Back side
 	auto sbs_back = new wxStaticBoxSizer(wxVERTICAL, panel, wxS("Back Side"));
 	sbs_back->AddSpacer(lh.padSmall());
 	sbs_back->Add(panel_side2_ = new SidePropsPanel(sbs_back->GetStaticBox()), wxSizerFlags(1).Expand());
-	sizer->Add(sbs_back, lh.sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(sbs_back, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	return panel;
 }

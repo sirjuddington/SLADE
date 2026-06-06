@@ -71,18 +71,8 @@ public:
 	// Sets the texture to display
 	void setTexture(const string& tex)
 	{
-		activateContext();
-
 		texname_ = tex;
-		if (tex.empty() || tex == "-")
-			texture_ = 0;
-		else
-		{
-			auto& texture = mapeditor::textureManager().texture(
-				tex, game::configuration().featureSupported(game::Feature::MixTexFlats));
-
-			texture_ = texture.gl_id;
-		}
+		texture_ = 0;
 
 		Update();
 		Refresh();
@@ -92,6 +82,15 @@ public:
 	void draw() override
 	{
 		gl::draw2d::Context dc(&view_);
+
+		// Load texture if needed
+		if (!texture_ && !(texname_.empty() || texname_ == "-"))
+		{
+			auto& texture = mapeditor::textureManager().texture(
+				texname_, game::configuration().featureSupported(game::Feature::MixTexFlats));
+
+			texture_ = texture.gl_id;
+		}
 
 		// Draw texture
 		if (texture_ && texture_ != gl::Texture::missingTexture())
