@@ -12,8 +12,8 @@ uniform float softness;
 
 void main()
 {
-	float distance = texture2D(tex_unit, vertex_in.tex_coord).a;
-	float alpha = smoothstep(0.5 - softness, 0.5 + softness, distance);
+	float sdf_dist = texture(tex_unit, vertex_in.tex_coord).a;
+	float alpha = smoothstep(0.5 - softness, 0.5 + softness, sdf_dist);
 	
 	f_colour.rgb = colour.rgb;
 	f_colour.a = colour.a * alpha;
