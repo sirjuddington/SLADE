@@ -65,31 +65,42 @@ bool PakArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	mc.read(&dir_offset, 4);
 	mc.read(&dir_size, 4);
 
+	bool isPack = pack[0] == 'P' && pack[1] == 'A' && pack[2] == 'C' && pack[3] == 'K';
+	bool isHrot = pack[0] == 'H' && pack[1] == 'R' && pack[2] == 'O' && pack[3] == 'T';
+
 	// Check it
-	if (pack[0] != 'P' || pack[1] != 'A' || pack[2] != 'C' || pack[3] != 'K')
+	if (!isPack && !isHrot)
 	{
 		log::error("PakArchiveHandler::open: Opening failed, invalid header");
 		global::error = "Invalid pak header";
 		return false;
 	}
 
+	if (isHrot)
+		hrot_archive_ = true;
+
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	ArchiveModSignalBlocker sig_blocker{ archive };
 
 	// Read the directory
 	size_t num_entries = dir_size / 64;
+	if (hrot_archive_)
+		num_entries = dir_size / 128;
 	mc.seek(dir_offset, SEEK_SET);
 	ui::setSplashProgressMessage("Reading pak archive data");
+	int max_name_size = 56;
+	if (hrot_archive_)
+		max_name_size = 120;
 	for (uint32_t d = 0; d < num_entries; d++)
 	{
 		// Update splash window progress
 		ui::setSplashProgress(d, num_entries);
 
 		// Read entry info
-		char    name[56];
+		char    name[max_name_size];
 		int32_t offset;
 		int32_t size;
-		mc.read(name, 56);
+		mc.read(name, max_name_size);
 		mc.read(&offset, 4);
 		mc.read(&size, 4);
 
@@ -159,7 +170,10 @@ bool PakArchiveHandler::write(Archive& archive, MemChunk& mc)
 
 		// Increment directory offset and size
 		dir_offset += entry->size();
-		dir_size += 64;
+		if (hrot_archive_)
+			dir_size += 128;
+		else
+			dir_size += 64;
 	}
 
 	// Init data size
@@ -167,14 +181,21 @@ bool PakArchiveHandler::write(Archive& archive, MemChunk& mc)
 
 	// Write header
 	char pack[4] = { 'P', 'A', 'C', 'K' };
+	char hrot[4] = { 'H', 'R', 'O', 'T' };
 	mc.seek(0, SEEK_SET);
-	mc.write(pack, 4);
+	if (hrot_archive_)
+		mc.write(hrot, 4);
+	else
+		mc.write(pack, 4);
 	mc.write(&dir_offset, 4);
 	mc.write(&dir_size, 4);
 
 	// Write directory
 	mc.seek(dir_offset, SEEK_SET);
 	int32_t offset = 12;
+	int max_name_size = 56;
+	if (hrot_archive_)
+		max_name_size = 120;
 	for (auto& entry : entries)
 	{
 		// Skip folders
@@ -189,19 +210,20 @@ bool PakArchiveHandler::write(Archive& archive, MemChunk& mc)
 		// Check entry name
 		auto name = entry->path(true);
 		name.erase(name.begin()); // Remove leading /
-		if (name.size() > 56)
+		if (name.size() > max_name_size)
 		{
 			log::warning(
-				"Warning: Entry {} path is too long (> 56 characters), putting it in the root directory", name);
+				"Warning: Entry {} path is too long (> {} characters), putting it in the root directory", name, max_name_size);
 			name = strutil::Path::fileNameOf(name);
-			if (name.size() > 56)
-				strutil::truncateIP(name, 56);
+			if (name.size() > max_name_size)
+				strutil::truncateIP(name, max_name_size);
 		}
 
 		// Write entry name
-		char name_data[56] = {};
+		char name_data[max_name_size];
+		memset(name_data, 0, max_name_size);
 		memcpy(name_data, name.data(), name.size());
-		mc.write(name_data, 56);
+		mc.write(name_data, max_name_size);
 
 		// Write entry offset
 		mc.write(&offset, 4);
@@ -251,8 +273,11 @@ bool PakArchiveHandler::isThisFormat(const MemChunk& mc)
 	dir_size   = wxINT32_SWAP_ON_BE(dir_size);
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
+	bool isPack = pack[0] == 'P' && pack[1] == 'A' && pack[2] == 'C' && pack[3] == 'K';
+	bool isHrot = pack[0] == 'H' && pack[1] == 'R' && pack[2] == 'O' && pack[3] == 'T';
+
 	// Check header
-	if (pack[0] != 'P' || pack[1] != 'A' || pack[2] != 'C' || pack[3] != 'K')
+	if (!isPack && !isHrot)
 		return false;
 
 	// Check directory is sane
@@ -288,8 +313,11 @@ bool PakArchiveHandler::isThisFormat(const string& filename)
 	dir_size   = wxINT32_SWAP_ON_BE(dir_size);
 	dir_offset = wxINT32_SWAP_ON_BE(dir_offset);
 
+	bool isPack = pack[0] == 'P' && pack[1] == 'A' && pack[2] == 'C' && pack[3] == 'K';
+	bool isHrot = pack[0] == 'H' && pack[1] == 'R' && pack[2] == 'O' && pack[3] == 'T';
+
 	// Check header
-	if (pack[0] != 'P' || pack[1] != 'A' || pack[2] != 'C' || pack[3] != 'K')
+	if (!isPack && !isHrot)
 		return false;
 
 	// Check directory is sane
