@@ -41,6 +41,11 @@
     "match_name": [ "animdefs" ],
     "text_language": "z_animdefs"
   },
+  "brghtmps": {
+    "inherits": "text",
+    "name": "Brightmaps",
+    "match_name": [ "brghtmps" ]
+  },
   "complvl": {
     "inherits": "text",
     "name": "Compatibility level",
@@ -61,7 +66,7 @@
   "decohack": {
     "inherits": "text",
     "name": "DECOHack",
-    "match_name": [ "decohack" ],
+    "match_name": [ "decohack", "dehsrc" ],
     "match_ext": [ "dh" ],
     "match_extorname": true,
     "text_language": "decohack",
@@ -451,6 +456,12 @@
     "match_ext": [ "htm", "html" ],
     "icon": "code"
   },
+  "css": {
+    "inherits": "text",
+    "name": "CSS",
+    "match_ext": [ "css" ],
+    "icon": "code"
+  },
   "qrc": {
     "inherits": "text",
     "name": "Quake Resources",
@@ -572,30 +583,35 @@
     "inherits": "text",
     "name": "Game Configuration",
     "match_name": [ "gameconf" ],
+    "export_ext": "json",
     "text_language": "json"
   },
   "sbardef": {
     "inherits": "text",
     "name": "Statusbar Definition",
     "match_name": [ "sbardef" ],
+    "export_ext": "json",
     "text_language": "json"
   },
   "intermission": {
     "inherits": "text",
     "name": "Interlevel Definition",
     "match_name": [ "xwinter0", "xwinter1" ],
+    "export_ext": "json",
     "text_language": "json"
   },
   "finale": {
     "inherits": "text",
     "name": "Finale Definition",
     "match_name": [ "xfinale1" ],
+    "export_ext": "json",
     "text_language": "json"
   },
   "trakinfo": {
     "inherits": "text",
     "name": "Music Track Info",
     "match_name": [ "trakinfo" ],
+    "export_ext": "json",
     "text_language": "json"
   },
   "kfont": {
@@ -607,6 +623,14 @@
     "inherits": "text",
     "name": "Demo Loop",
     "match_name": [ "demoloop" ],
+    "export_ext": "json",
+    "text_language": "json"
+  },
+  "skydefs": {
+    "inherits": "text",
+    "name": "Sky definitions",
+    "match_name": [ "skydefs" ],
+    "export_ext": "json",
     "text_language": "json"
   },
   "ol_level": {

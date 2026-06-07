@@ -45,6 +45,13 @@
     "size": [ 11908 ],
     "editor": "data"
   },
+  "dmxmidi": {
+    "name": "DMX MIDI set",
+    "match_name": [ "dmxmidi" ],
+    "export_ext": "lmp",
+    "icon": "data",
+    "size": [ 212069 ]
+  },
   "sndcurve": {
     "name": "Sound curve",
     "match_name": [ "sndcurve" ],
