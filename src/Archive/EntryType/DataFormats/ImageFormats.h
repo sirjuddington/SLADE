@@ -253,13 +253,9 @@ public:
 		if (mc.size() > 128)
 		{
 			// Check for JPEG header
-			if ((mc[6] == 'J' && mc[7] == 'F' && mc[8] == 'I' && mc[9] == 'F')
-				|| (mc[6] == 'E' && mc[7] == 'x' && mc[8] == 'i' && mc[9] == 'f'))
+			if (mc[0] == 255 && mc[1] == 216 && mc[2] == 255)
 			{
-				if (mc[0] == 255 && mc[1] == 216 && mc[2] == 255)
-				{
-					return MATCH_TRUE;
-				}
+				return MATCH_TRUE;
 			}
 		}
 
