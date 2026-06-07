@@ -654,8 +654,11 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 			SetTitle(WX_FMT("SLADE - {} (UNSAVED)", map.name));
 
 		// Create backup
-		auto head = map.head.lock();
-		if (head && !backupManager().writeBackup(map_data_, head->topParent()->filename(false), head->nameNoExt()))
+		auto head       = map.head.lock();
+		auto top_parent = head ? head->topParent() : nullptr;
+		if (!head
+			|| !top_parent
+			|| !backupManager().writeBackup(map_data_, top_parent->filename(false), head->nameNoExt()))
 			log::warning("Failed to backup map data");
 	}
 
@@ -899,7 +902,8 @@ bool MapEditorWindow::saveMap()
 		archive->removeEntry(entry);
 
 	// Create backup
-	if (!backupManager().writeBackup(map_data_, m_head->topParent()->filename(false), m_head->nameNoExt()))
+	auto top_parent = m_head->topParent();
+	if (!top_parent || !backupManager().writeBackup(map_data_, top_parent->filename(false), m_head->nameNoExt()))
 		log::warning(1, "Warning: Failed to backup map data");
 
 	// Add new map entries
@@ -1195,7 +1199,11 @@ bool MapEditorWindow::handleAction(string_view id)
 	{
 		if (auto head = mdesc_current.head.lock())
 		{
-			auto data = backupManager().openBackup(head->topParent()->filename(false), mdesc_current.name);
+			auto top_parent = head->topParent();
+			if (!top_parent)
+				return true;
+
+			auto data = backupManager().openBackup(top_parent->filename(false), mdesc_current.name);
 
 			if (data)
 			{

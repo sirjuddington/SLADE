@@ -1751,14 +1751,14 @@ bool ArchivePanel::swanConvert() const
 	}
 
 	// Close off ANIMATED lump if needed
-	if (mca.size())
+	if (!mca.empty())
 	{
 		uint8_t buffer = 255;
 		error |= !mca.reSize(mca.size() + 1, true);
 		error |= !mca.write(&buffer, 1);
 	}
 	// Close off SWITCHES lump if needed
-	if (mcs.size())
+	if (!mcs.empty())
 	{
 		uint8_t buffer[20] = {};
 		error |= !mcs.reSize(mcs.size() + 20, true);
@@ -1772,7 +1772,7 @@ bool ArchivePanel::swanConvert() const
 	string    etypeids[2] = { "animated", "switches" };
 	for (int e = 0; e < 2; ++e)
 	{
-		if (mc[e]->size())
+		if (!mc[e]->empty())
 		{
 			// Begin recording undo level
 			undo_manager_->beginRecord(fmt::format("Create {}", wadnames[e]));
