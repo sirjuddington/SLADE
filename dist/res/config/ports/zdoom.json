@@ -113,6 +113,13 @@
 
       "boom_sector_flag_start": 256, // Not sure what this is used for if boom extensions aren't enabled?
 
+      // Defaults
+      "defaults": {
+        "thing": {
+          "flags": 1799
+        }
+      },
+
       // Action specials
       "action_specials": {
         "clear_existing": true,
