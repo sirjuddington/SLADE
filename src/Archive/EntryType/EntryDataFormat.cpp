@@ -342,6 +342,7 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<MDLModelDataFormat>();
 	registerDataFormat<MD2ModelDataFormat>();
 	registerDataFormat<MD3ModelDataFormat>();
+	registerDataFormat<ThreeDSModelDataFormat>();
 	registerDataFormat<VOXVoxelDataFormat>();
 	registerDataFormat<KVXVoxelDataFormat>();
 	registerDataFormat<RLE0DataFormat>();
