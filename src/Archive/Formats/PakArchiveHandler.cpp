@@ -97,7 +97,7 @@ bool PakArchiveHandler::open(Archive& archive, const MemChunk& mc)
 		ui::setSplashProgress(d, num_entries);
 
 		// Read entry info
-		char    name[max_name_size];
+		char    name[120] = {};
 		int32_t offset;
 		int32_t size;
 		mc.read(name, max_name_size);
@@ -128,11 +128,15 @@ bool PakArchiveHandler::open(Archive& archive, const MemChunk& mc)
 		if (entry->size() > 0)
 			entry->importMemChunk(mc, offset, size);
 
-		entry->setState(EntryState::Unmodified);
-
 		// Add to directory
 		dir->addEntry(entry);
 	}
+
+	// Set all entries/directories to unmodified
+	vector<ArchiveEntry*> entry_list;
+	archive.putEntryTreeAsList(entry_list);
+	for (auto& entry : entry_list)
+		entry->setState(EntryState::Unmodified);
 
 	// Detect all entry types
 	detectAllEntryTypes(archive);
@@ -220,8 +224,7 @@ bool PakArchiveHandler::write(Archive& archive, MemChunk& mc)
 		}
 
 		// Write entry name
-		char name_data[max_name_size];
-		memset(name_data, 0, max_name_size);
+		char name_data[120] = {};
 		memcpy(name_data, name.data(), name.size());
 		mc.write(name_data, max_name_size);
 

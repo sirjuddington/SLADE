@@ -79,8 +79,8 @@ public:
 class ThreeDSModelDataFormat : public EntryDataFormat
 {
 public:
-	ThreeDSModelDataFormat() : EntryDataFormat("mesh_3ds") {};
-	~ThreeDSModelDataFormat() = default;
+	ThreeDSModelDataFormat() : EntryDataFormat("mesh_3ds") {}
+	~ThreeDSModelDataFormat() override = default;
 
 	int isThisFormat(const MemChunk& mc) override
 	{
@@ -88,9 +88,16 @@ public:
 		if (mc.size() > 4)
 		{
 			// Check for MM header
-			if (mc[0] == 'M' && mc[1] == 'M')
-				return MATCH_TRUE;
+			if (mc[0] != 'M' || mc[1] != 'M')
+				return MATCH_FALSE;
+
+			// Check MM chunk size (should be the whole file)
+			if (mc.readL32(2) != mc.size())
+				return MATCH_FALSE;
+
+			return MATCH_TRUE;
 		}
+
 		return MATCH_FALSE;
 	}
 };
