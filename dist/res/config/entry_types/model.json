@@ -20,6 +20,11 @@
     "format": "mesh_md3",
     "category": "3d Models"
   },
+  "model_3ds": {
+    "name": "Model (3ds Max)",
+    "format": "mesh_3ds",
+    "category": "3d Models"
+  },
   // Also, voxels!
   "voxel_vox": {
     "name": "Voxel (VOX)",

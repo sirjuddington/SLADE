@@ -76,6 +76,25 @@ public:
 	}
 };
 
+class ThreeDSModelDataFormat : public EntryDataFormat
+{
+public:
+	ThreeDSModelDataFormat() : EntryDataFormat("mesh_3ds") {};
+	~ThreeDSModelDataFormat() = default;
+
+	int isThisFormat(const MemChunk& mc) override
+	{
+		// Check size
+		if (mc.size() > 4)
+		{
+			// Check for MM header
+			if (mc[0] == 'M' && mc[1] == 'M')
+				return MATCH_TRUE;
+		}
+		return MATCH_FALSE;
+	}
+};
+
 class VOXVoxelDataFormat : public EntryDataFormat
 {
 public:
