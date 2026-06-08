@@ -17,5 +17,8 @@ public:
 	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;
 	bool isThisFormat(const string& filename) override;
+
+private:
+	bool hrot_archive_ = false;
 };
 } // namespace slade
