@@ -6,7 +6,8 @@
     "keywords": [
       "map", "true", "false", "clear", "levelname", "label", "author", "levelpic", "next", "nextsecret", "skytexture",
       "music", "exitpic", "enterpic", "exitanim", "enteranim", "partime", "endgame", "endpic", "endbunny", "endcast",
-      "nointermission", "intertext", "intertextsecret", "interbackdrop", "intermusic", "episode", "bossaction"
+      "nointermission", "intertext", "intertextsecret", "interbackdrop", "intermusic", "episode", "bossaction",
+      "endfinale"
     ],
     "constants": [
       "DoomPlayer", "ZombieMan", "ShotgunGuy", "Archvile", "ArchvileFire", "Revenant", "RevenantTracer",
