@@ -1512,8 +1512,8 @@ bool entryoperations::compileACS(ArchiveEntry* entry, bool hexen, ArchiveEntry* 
 		{
 			ExtMessageDialog dlg(nullptr, success ? "ACC Output" : "Error Compiling");
 			dlg.setMessage(
-				success ? "The following errors were encountered while compiling, please fix them and recompile:"
-						: "Compiler output shown below: ");
+				success ? "Compiler output shown below: "
+						: "The following errors were encountered while compiling, please fix them and recompile:");
 			dlg.setExt(errors);
 			dlg.ShowModal();
 		}
@@ -1677,8 +1677,8 @@ bool entryoperations::compileDECOHack(ArchiveEntry* entry, ArchiveEntry* target,
 		{
 			ExtMessageDialog dlg(nullptr, success ? "DECOHack Output" : "Error Compiling");
 			dlg.setMessage(
-				success ? "The following errors were encountered while compiling, please fix them and recompile:"
-						: "Compiler output shown below: ");
+				success ? "Compiler output shown below: "
+						: "The following errors were encountered while compiling, please fix them and recompile:");
 			dlg.setExt(errors);
 			dlg.ShowModal();
 		}
