@@ -60,7 +60,7 @@ namespace mapeditor
 		Vec2d cameraDir2D() const;
 
 		// Drawing
-		void draw() const;
+		void draw(bool focused) const;
 
 		// Animation
 		bool animationsActive() const { return !animations_.empty() || animations_active_; }
@@ -115,8 +115,8 @@ namespace mapeditor
 		void drawLineDrawLines(gl::draw2d::Context& dc, bool snap_nearest_vertex) const;
 		void drawPasteLines(gl::draw2d::Context& dc) const;
 		void drawObjectEdit(gl::draw2d::Context& dc) const;
-		void drawMap2d(gl::draw2d::Context& dc) const;
-		void drawMap3d() const;
+		void drawMap2d(gl::draw2d::Context& dc, bool focused) const;
+		void drawMap3d(bool focused) const;
 
 		// Animation
 		bool update2dModeCrossfade(double mult);

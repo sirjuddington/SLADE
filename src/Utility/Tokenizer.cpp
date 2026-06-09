@@ -43,7 +43,13 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 const string     Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
-Tokenizer::Token Tokenizer::invalid_token_{ "", 0, false, 0, 0, 0, false };
+Tokenizer::Token Tokenizer::invalid_token_{ .text          = "",
+											.line_no       = 0,
+											.quoted_string = false,
+											.pos_start     = 0,
+											.pos_end       = 0,
+											.length        = 0,
+											.valid         = false };
 
 
 // -----------------------------------------------------------------------------
@@ -1043,7 +1049,10 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 		while (!tz.atEnd())
 		{
 			if (a == 0)
-				t_new.push_back({ tz.current().text, tz.current().quoted_string, tz.current().line_no });
+				t_new.push_back(
+					{ .text          = tz.current().text,
+					  .quoted_string = tz.current().quoted_string,
+					  .line_no       = tz.current().line_no });
 
 			tz.next();
 		}

@@ -1005,7 +1005,7 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 // -----------------------------------------------------------------------------
 // Draws the 2d map
 // -----------------------------------------------------------------------------
-void Renderer::drawMap2d(draw2d::Context& dc) const
+void Renderer::drawMap2d(draw2d::Context& dc, bool focused) const
 {
 	if (!context_->map().isOpen())
 	{
@@ -1046,7 +1046,7 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 			renderer_2d_->renderVertexSelection(dc, context_->selection(), anim_flash_level_);
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+		if (focused && mouse_state == Input::MouseState::Normal && !context_->overlayActive())
 			renderer_2d_->renderVertexHilight(dc, context_->hilightItem().index, anim_flash_level_);
 	}
 	else if (context_->editMode() == Mode::Lines)
@@ -1063,7 +1063,7 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 			renderer_2d_->renderLineSelection(dc, context_->selection(), anim_flash_level_);
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+		if (focused && mouse_state == Input::MouseState::Normal && !context_->overlayActive())
 			renderer_2d_->renderLineHilight(dc, context_->hilightItem().index, anim_flash_level_);
 	}
 	else if (context_->editMode() == Mode::Sectors)
@@ -1082,7 +1082,7 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 		// splitter.testRender();	// Testing
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+		if (focused && mouse_state == Input::MouseState::Normal && !context_->overlayActive())
 			renderer_2d_->renderFlatHilight(dc, context_->hilightItem().index, anim_flash_level_);
 	}
 	else if (context_->editMode() == Mode::Things)
@@ -1107,12 +1107,13 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 			renderer_2d_->renderThingSelection(dc, context_->selection(), anim_flash_level_);
 
 		// Hilight if needed
-		if (mouse_state == Input::MouseState::Normal && !context_->overlayActive())
+		if (focused && mouse_state == Input::MouseState::Normal && !context_->overlayActive())
 			renderer_2d_->renderThingHilight(dc, context_->hilightItem().index, anim_flash_level_);
 	}
 
 	// Draw tagged sectors/lines/things if needed
-	if (!context_->overlayActive()
+	if (focused
+		&& !context_->overlayActive()
 		&& (mouse_state == Input::MouseState::Normal
 			|| mouse_state == Input::MouseState::TagSectors
 			|| mouse_state == Input::MouseState::TagThings))
@@ -1218,7 +1219,7 @@ void Renderer::drawMap2d(draw2d::Context& dc) const
 // -----------------------------------------------------------------------------
 // Draws the 3d map
 // -----------------------------------------------------------------------------
-void Renderer::drawMap3d() const
+void Renderer::drawMap3d(bool focused) const
 {
 	// Setup camera
 	camera_->setProjection(view_->size().x, view_->size().y, 2.0f, 40000.0f, map3d_fov);
@@ -1227,8 +1228,9 @@ void Renderer::drawMap3d() const
 	renderer_3d_->render(*camera_, *view_);
 
 	// Render highlight
-	if (context_->input().mouseState() == Input::MouseState::Normal
-		|| (context_->input().mouseState() == Input::MouseState::MouseLook && map3d_mlook_always))
+	if (focused
+		&& (context_->input().mouseState() == Input::MouseState::Normal
+			|| (context_->input().mouseState() == Input::MouseState::MouseLook && map3d_mlook_always)))
 		renderer_3d_->renderHighlight(context_->hilightItem(), *camera_, *view_, anim_flash_level_);
 
 	// Render selection
@@ -1243,7 +1245,7 @@ void Renderer::drawMap3d() const
 // -----------------------------------------------------------------------------
 // Draws the current map editor state
 // -----------------------------------------------------------------------------
-void Renderer::draw() const
+void Renderer::draw(bool focused) const
 {
 	static sf::Clock           clock;
 	static std::deque<int64_t> render_times;
@@ -1258,9 +1260,9 @@ void Renderer::draw() const
 
 	// Draw 2d or 3d map depending on mode
 	if (context_->editMode() == Mode::Visual)
-		drawMap3d();
+		drawMap3d(focused);
 	else
-		drawMap2d(dc);
+		drawMap2d(dc, focused);
 
 	// Disable depth testing for 2d overlays
 	glDisable(GL_DEPTH_TEST);
@@ -1274,7 +1276,7 @@ void Renderer::draw() const
 	dc.view = view_screen_.get();
 
 	// Draw crosshair if in 3d mode + locked mouselook
-	if (context_->editMode() == Mode::Visual && map3d_mlook_always)
+	if (focused && context_->editMode() == Mode::Visual && map3d_mlook_always)
 	{
 		dc.setColourFromConfig("map_3d_crosshair");
 		dc.line_thickness = 2.0f;
@@ -1290,11 +1292,15 @@ void Renderer::draw() const
 	}
 
 	// Draw info overlay
-	dc.font       = draw2d::Font::Condensed;
-	dc.text_size  = 16 * ui_scale_;
-	dc.text_style = draw2d::TextStyle::Normal;
-	dc.blend      = Blend::Normal;
+	if (focused)
+	{
+	dc.font            = draw2d::Font::Condensed;
+	dc.text_size       = 16 * ui_scale_;
+	dc.text_style      = draw2d::TextStyle::Normal;
+	dc.text_dropshadow = false;
+	dc.blend           = Blend::Normal;
 	context_->drawInfoOverlay(dc, anim_info_fade_);
+	}
 
 	// Draw current fullscreen overlay
 	if (context_->currentOverlay() && anim_overlay_fade_ > 0.01f)
@@ -1368,6 +1374,14 @@ void Renderer::draw() const
 				fmt::format("Quads vertex buffer: {}", misc::sizeAsString(renderer_3d_->quadsBufferSize())),
 				{ view_->size().x, y });
 		}
+	}
+
+	// Fade screen if not focused
+	if (!focused)
+	{
+		dc.setColourFromConfig("map_background");
+		dc.colour.a *= 0.5f;
+		dc.drawRect({ 0.0f, 0.0f, static_cast<float>(view_->size().x), static_cast<float>(view_->size().y) });
 	}
 }
 

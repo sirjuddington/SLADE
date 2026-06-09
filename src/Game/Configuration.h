@@ -113,7 +113,7 @@ public:
 	// JSON Configuration reading
 	bool openConfig(const string& game, const string& port = "", MapFormat format = MapFormat::Unknown);
 	bool readGameConfiguration(const Json& j, ConfigDesc desc, ArchiveEntry* entry = nullptr);
-	void readConfigurationSection(const Json& j, ConfigDesc cfg, ArchiveEntry* entry = nullptr);
+	void readConfigurationSection(const Json& j, const ConfigDesc& cfg, const ArchiveEntry* entry = nullptr);
 	void readActionSpecials(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
 	void readThingTypes(const Json& j, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);
 	void readFlags(const Json& j, vector<Flag>& flags, const ConfigDesc& config, const ArchiveEntry* entry = nullptr);

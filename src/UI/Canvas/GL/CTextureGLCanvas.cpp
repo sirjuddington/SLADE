@@ -210,7 +210,7 @@ void CTextureGLCanvas::draw()
 			drawPatchOutline(dc, a);
 
 	// Draw hilighted patch outline
-	if (hilight_patch_ >= 0 && hilight_patch_ < static_cast<int>(texture_->nPatches()))
+	if (hilight_patch_ >= 0 && std::cmp_less(hilight_patch_, texture_->nPatches()))
 	{
 		dc.colour = { 255, 255, 255, 150 };
 		dc.blend  = gl::Blend::Additive;

@@ -471,7 +471,7 @@ bool Configuration::readGameConfiguration(const Json& j, ConfigDesc cfg, Archive
 // If the section contains a filter, it will be ignored if the filter does not
 // match [cfg]
 // -----------------------------------------------------------------------------
-void Configuration::readConfigurationSection(const Json& j, ConfigDesc cfg, ArchiveEntry* entry)
+void Configuration::readConfigurationSection(const Json& j, const ConfigDesc& cfg, const ArchiveEntry* entry)
 {
 	// General properties
 	jsonutil::getIf(j, "boom_sector_flag_start", boom_sector_flag_start_);

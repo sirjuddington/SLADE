@@ -152,7 +152,7 @@ void MapCanvas::draw()
 	setBackground(BGStyle::Colour, colourconfig::colour("map_background"));
 
 	context_->renderer().setUIScale(GetDPIScaleFactor());
-	context_->renderer().draw();
+	context_->renderer().draw(HasFocus());
 }
 
 // -----------------------------------------------------------------------------
@@ -228,6 +228,9 @@ void MapCanvas::lockMouse(bool lock)
 // -----------------------------------------------------------------------------
 void MapCanvas::mouseLook3d()
 {
+	if (!HasFocus())
+		return;
+
 	// Check for 3d mode
 	if (context_->editMode() != Mode::Visual)
 		return;
@@ -490,6 +493,12 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
 	using namespace mapeditor;
 
+	if (!HasFocus())
+	{
+		e.Skip();
+		return;
+	}
+
 	// Send to editor context
 	bool skip = true;
 	auto x    = e.GetX() * GetContentScaleFactor();
@@ -556,6 +565,12 @@ void MapCanvas::onMouseUp(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void MapCanvas::onMouseMotion(wxMouseEvent& e)
 {
+	if (!HasFocus())
+	{
+		e.Skip();
+		return;
+	}
+
 	// Update as fast as possible while mouse is moving
 	next_frame_ms_ = fpsToMs(map_maxfps_fg);
 
@@ -595,7 +610,6 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 void MapCanvas::onMouseLeave(wxMouseEvent& e)
 {
 	context_->input().mouseLeave();
-	mouse_looking_ = false;
 
 	e.Skip();
 }
@@ -645,8 +659,22 @@ void MapCanvas::onFocus(wxFocusEvent& e)
 {
 	if (e.GetEventType() == wxEVT_KILL_FOCUS)
 	{
+		// Unlock the mouse on losing focus
 		context_->lockMouse(false);
-		context_->input().mouseLeave();
 		mouse_looking_ = false;
+
+		context_->input().mouseLeave();
 	}
+
+	if (e.GetEventType() == wxEVT_SET_FOCUS)
+	{
+		// Restore mouse lock if we were mouselooking before losing focus
+		if (context_->input().mouseState() == Input::MouseState::MouseLook)
+		{
+			context_->lockMouse(true);
+			mouse_looking_ = true;
+		}
+	}
+
+	Refresh(false);
 }
