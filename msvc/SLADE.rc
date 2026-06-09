@@ -62,7 +62,7 @@ IDI_ICON1               ICON                    "slade.ico"
 //
 
 #define SLADE_VERSION 3,3,0,0
-#define SLADE_VERSION_STR "3.3.0 Beta 1"
+#define SLADE_VERSION_STR "3.3.0 Beta 2"
 #define SLADE_COPYRIGHT "Copyright (C) 2008-2026"
 
 VS_VERSION_INFO VERSIONINFO

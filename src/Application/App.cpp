@@ -90,7 +90,7 @@ static bool     exiting         = false;
 std::thread::id main_thread_id;
 
 // Version
-Version version_num{ 3, 3, 0, 1 };
+Version version_num{ 3, 3, 0, 2 };
 
 // Directory paths
 bool   dirs_portable = false;
