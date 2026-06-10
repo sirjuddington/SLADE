@@ -219,12 +219,18 @@ SLADEWxApp::SLADEWxApp()
 // -----------------------------------------------------------------------------
 bool SLADEWxApp::singleInstanceCheck()
 {
-	auto data_dir = wxStandardPaths::Get().GetUserDataDir();
-	if (!wxDirExists(data_dir))
-		wxMkdir(data_dir);
+#ifdef __WXGTK__
+	wxStandardPaths::Get().SetFileLayout(wxStandardPathsBase::FileLayout_XDG);
+	auto dir_user = wxStandardPaths::Get().GetUserConfigDir().Append(wxS("/")).Append(wxTheApp->GetAppName());
+#else
+	auto dir_user = wxStandardPaths::Get().GetUserDataDir();
+#endif
+
+	if (!wxDirExists(dir_user))
+		wxMkdir(dir_user);
 
 	single_instance_checker_ = new wxSingleInstanceChecker;
-	single_instance_checker_->Create(WX_FMT("SLADE-{}", app::version().toString()), data_dir);
+	single_instance_checker_->Create(WX_FMT("SLADE-{}", app::version().toString()), dir_user);
 
 	if (argc == 1)
 		return true;
