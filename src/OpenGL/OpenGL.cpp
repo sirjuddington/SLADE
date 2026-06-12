@@ -104,7 +104,12 @@ void GLAPIENTRY glMessageCallback(
 	const void*   userParam)
 {
 	if (type == GL_DEBUG_TYPE_ERROR)
-		log::error("OpenGL Error: {}", message);
+	{
+		// Don't spam the same error multiple times
+		auto line = fmt::format("OpenGL Error: {}", message);
+		if (log::history().back().message != line)
+			log::error("OpenGL Error: {}", message);
+	}
 	// else
 	//	log::info("OpenGL: {}", message);
 }
