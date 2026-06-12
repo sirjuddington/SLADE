@@ -60,7 +60,7 @@ namespace
 {
 constexpr size_t MAX_NAME_LEN = 8;
 constexpr u16    INDEX_NONE   = 65535;
-}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -173,14 +173,14 @@ vector<unique_ptr<ArchiveEntry>> DoomMapFormat::writeMap(
 
 	// Create map data entries
 	vector<unique_ptr<ArchiveEntry>> map_entries;
-	map_entries.push_back(
-		std::make_unique<ArchiveEntry>("VERTEXES", vertexes.size() * sizeof(Vertex), vertexes.data()));
+	map_entries.push_back(std::make_unique<ArchiveEntry>("THINGS", things.size() * sizeof(Thing), things.data()));
 	map_entries.push_back(
 		std::make_unique<ArchiveEntry>("LINEDEFS", linedefs.size() * sizeof(LineDef), linedefs.data()));
 	map_entries.push_back(
 		std::make_unique<ArchiveEntry>("SIDEDEFS", sidedefs.size() * sizeof(SideDef), sidedefs.data()));
+	map_entries.push_back(
+		std::make_unique<ArchiveEntry>("VERTEXES", vertexes.size() * sizeof(Vertex), vertexes.data()));
 	map_entries.push_back(std::make_unique<ArchiveEntry>("SECTORS", sectors.size() * sizeof(Sector), sectors.data()));
-	map_entries.push_back(std::make_unique<ArchiveEntry>("THINGS", things.size() * sizeof(Thing), things.data()));
 
 	return map_entries;
 }
