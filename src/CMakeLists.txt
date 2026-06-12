@@ -18,6 +18,7 @@ file(GLOB_RECURSE SLADE_SOURCES CONFIGURE_DEPENDS
 	OpenGL/*.cpp
 	SLADEMap/*.cpp
 	TextEditor/*.cpp
+	TextureEditor/*.cpp
 	UI/*.cpp
 	Utility/*.cpp
 	ZReaders/*.cpp

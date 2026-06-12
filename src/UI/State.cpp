@@ -137,7 +137,17 @@ void ui::initStateProps()
 									  { MAINWINDOW_MAXIMIZED, true },
 									  { MAPEDITORWINDOW_MAXIMIZED, true },
 									  { SCRIPTMANAGERWINDOW_MAXIMIZED, false },
-									  { SETUP_WIZARD_RUN, false } };
+									  { SETUP_WIZARD_RUN, false },
+									  { TEXTURELIST_INDEX_VISIBLE, false },
+									  { TEXTURELIST_INDEX_WIDTH, 50 },
+									  { TEXTURELIST_SIZE_VISIBLE, true },
+									  { TEXTURELIST_SIZE_WIDTH, 70 },
+									  { TEXTURELIST_TYPE_VISIBLE, true },
+									  { TEXTURELIST_TYPE_WIDTH, 180 },
+									  { TEXTURELIST_NAME_WIDTH, 110 },
+									  { TEXTURELIST_PATCHES_VISIBLE, true },
+									  { TEXTURELIST_PATCHES_WIDTH, 70 },
+									  { TEXEDITOR_SPLIT_POS, 450 } };
 
 	auto ps = database::context().preparedStatement("init_ui_state", "INSERT INTO ui_state VALUES (?,?,?)", true);
 

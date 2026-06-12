@@ -284,10 +284,10 @@ bool GZipArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* ent
 // Returns the entry if it matches the search criteria in [options], or null
 // otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* GZipArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* GZipArchiveHandler::findFirst(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
-	strutil::upperIP(options.match_name);
+	auto match_name_upper = strutil::upper(options.match_name);
 	auto entry = archive.entryAt(0);
 	if (entry == nullptr)
 		return entry;
@@ -309,9 +309,9 @@ ArchiveEntry* GZipArchiveHandler::findFirst(const Archive& archive, ArchiveSearc
 	}
 
 	// Check name
-	if (!options.match_name.empty())
+	if (!match_name_upper.empty())
 	{
-		if (!strutil::matches(entry->upperName(), options.match_name))
+		if (!strutil::matches(entry->upperName(), match_name_upper))
 		{
 			return nullptr;
 		}
@@ -325,7 +325,7 @@ ArchiveEntry* GZipArchiveHandler::findFirst(const Archive& archive, ArchiveSearc
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* GZipArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* GZipArchiveHandler::findLast(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	return findFirst(archive, options);
 }
@@ -333,7 +333,7 @@ ArchiveEntry* GZipArchiveHandler::findLast(const Archive& archive, ArchiveSearch
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> GZipArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> GZipArchiveHandler::findAll(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
 	vector<ArchiveEntry*> ret;

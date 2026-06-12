@@ -1052,7 +1052,7 @@ void ZTextureEditorPanel::onBtnEditTranslation(wxCommandEvent& e)
 	Translation trans;
 	for (auto i : selection)
 	{
-		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(selection[i]));
+		auto patch = dynamic_cast<CTPatchEx*>(tex_current_->patch(i));
 		if (patch->hasTranslation())
 		{
 			trans.copy(*patch->translation());

@@ -50,6 +50,7 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
+#include "TextureEditor/UI/TextureEditorPanel.h"
 #include "TextureXEditor/TextureXEditor.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Dialogs/DirArchiveUpdateDialog.h"
@@ -977,6 +978,14 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::Entry, "texturex"));
 		txed->setSelection(entry);
 		txed->Show(true);
+
+		// TEST new texture editor
+		stc_archives_->AddPage(
+			new texeditor::TextureEditorPanel(stc_archives_, archive),
+			WX_FMT("NEW Texture Editor ({})", archive->filename(false)),
+			true);
+		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::General, "texeditor"));
+
 		// Select the new tab
 		for (size_t a = 0; a < stc_archives_->GetPageCount(); a++)
 		{

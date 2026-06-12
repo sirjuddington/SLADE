@@ -36,6 +36,16 @@ inline constexpr string_view RUNDIALOG_START_3D            = "RunDialogStart3d";
 inline constexpr string_view MAPDIALOG_LAST_GAME           = "MapDialogLastGame";
 inline constexpr string_view MAPDIALOG_LAST_PORT           = "MapDialogLastPort";
 inline constexpr string_view FILEDIALOG_LAST_DIR           = "FileDialogLastDir";
+inline constexpr string_view TEXTURELIST_INDEX_VISIBLE     = "TextureListIndexVisible";
+inline constexpr string_view TEXTURELIST_INDEX_WIDTH       = "TextureListIndexWidth";
+inline constexpr string_view TEXTURELIST_SIZE_VISIBLE      = "TextureListSizeVisible";
+inline constexpr string_view TEXTURELIST_SIZE_WIDTH        = "TextureListSizeWidth";
+inline constexpr string_view TEXTURELIST_TYPE_VISIBLE      = "TextureListTypeVisible";
+inline constexpr string_view TEXTURELIST_TYPE_WIDTH        = "TextureListTypeWidth";
+inline constexpr string_view TEXTURELIST_NAME_WIDTH        = "TextureListNameWidth";
+inline constexpr string_view TEXTURELIST_PATCHES_VISIBLE   = "TextureListPatchesVisible";
+inline constexpr string_view TEXTURELIST_PATCHES_WIDTH     = "TextureListPatchesWidth";
+inline constexpr string_view TEXEDITOR_SPLIT_POS           = "TexEditorSplitPos";
 
 void initStateProps();
 bool hasSavedState(string_view name, const Archive* archive = nullptr);

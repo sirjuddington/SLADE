@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "WadArchiveHandler.h"
+
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
@@ -41,6 +42,7 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 #include "WadJArchiveHandler.h"
+#include <utility>
 
 using namespace slade;
 
@@ -234,7 +236,8 @@ void WadArchiveHandler::updateNamespaces(Archive& archive)
 	// ROTT stuff. The first lump in the archive is always WALLSTRT, the last lump is either
 	// LICENSE (darkwar.wad) or VENDOR (huntbgin.wad), with TABLES just before in both cases.
 	// The shareware version has 2091 lumps, the complete version has about 50% more.
-	if (archive.numEntries() > 2090 && archive.rootDir()->entryAt(0)->upperName() == "WALLSTRT"
+	if (archive.numEntries() > 2090
+		&& archive.rootDir()->entryAt(0)->upperName() == "WALLSTRT"
 		&& archive.rootDir()->entryAt(archive.numEntries() - 2)->upperName() == "TABLES")
 	{
 		NSPair ns(archive.rootDir()->entryAt(0), archive.rootDir()->entryAt(archive.numEntries() - 1));
@@ -436,8 +439,7 @@ bool WadArchiveHandler::open(Archive& archive, const MemChunk& mc)
 			mc.exportMemChunk(edata, offset, size);
 			if (nlump->encryption() != EntryEncryption::None)
 			{
-				if (nlump->exProps().contains("FullSize")
-					&& static_cast<unsigned>(nlump->exProp<int>("FullSize")) > size)
+				if (nlump->exProps().contains("FullSize") && std::cmp_greater(nlump->exProp<int>("FullSize"), size))
 					edata.reSize((nlump->exProp<int>("FullSize")), true);
 				if (!WadJArchiveHandler::jaguarDecode(edata))
 					log::warning(
@@ -1024,7 +1026,8 @@ vector<MapDesc> WadArchiveHandler::detectMaps(const Archive& archive)
 					md.format = MapFormat::Hexen;
 				// If LEAFS, LIGHTS and MACROS exist, it's a doom 64 format map
 				else if (
-					existing_map_lumps[LUMP_LEAFS] && existing_map_lumps[LUMP_LIGHTS]
+					existing_map_lumps[LUMP_LEAFS]
+					&& existing_map_lumps[LUMP_LIGHTS]
 					&& existing_map_lumps[LUMP_MACROS])
 					md.format = MapFormat::Doom64;
 				else if (playpals)
@@ -1107,7 +1110,7 @@ string WadArchiveHandler::detectNamespace(const Archive& archive, unsigned index
 // Parses the DECORATE, GLDEFS, etc. lumps for included files, and mark them as
 // being of the same type
 // -----------------------------------------------------------------------------
-void WadArchiveHandler::detectIncludes(Archive& archive)
+void WadArchiveHandler::detectIncludes(const Archive& archive)
 {
 	// DECORATE: #include "lumpname"
 	// GLDEFS: #include "lumpname"
@@ -1161,25 +1164,26 @@ void WadArchiveHandler::detectIncludes(Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* WadArchiveHandler::findFirst(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
-	unsigned index     = 0;
-	auto     index_end = archive.numEntries();
-	strutil::upperIP(options.match_name);
+	unsigned index            = 0;
+	auto     index_end        = archive.numEntries();
+	auto     match_name_upper = strutil::upper(options.match_name);
 
 	// "graphics" namespace is the global namespace in a wad
-	if (options.match_namespace == "graphics")
-		options.match_namespace = "";
+	auto match_namespace = options.match_namespace;
+	if (match_namespace == "graphics")
+		match_namespace = "";
 
 	// Check for namespace to search
-	if (!options.match_namespace.empty())
+	if (!match_namespace.empty())
 	{
 		// Find matching namespace
 		bool ns_found = false;
 		for (auto& ns : namespaces_)
 		{
-			if (ns.name == options.match_namespace)
+			if (ns.name == match_namespace)
 			{
 				index     = ns.start_index + 1;
 				index_end = ns.end_index + 1;
@@ -1214,9 +1218,9 @@ ArchiveEntry* WadArchiveHandler::findFirst(const Archive& archive, ArchiveSearch
 		}
 
 		// Check name
-		if (!options.match_name.empty())
+		if (!match_name_upper.empty())
 		{
-			if (!strutil::matches(options.match_name, entry->upperName()))
+			if (!strutil::matches(match_name_upper, entry->upperName()))
 				continue;
 		}
 
@@ -1232,29 +1236,30 @@ ArchiveEntry* WadArchiveHandler::findFirst(const Archive& archive, ArchiveSearch
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* WadArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* WadArchiveHandler::findLast(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
-	int index       = archive.numEntries() - 1;
-	int index_start = 0;
-	strutil::upperIP(options.match_name);
+	int  index            = archive.numEntries() - 1;
+	int  index_start      = 0;
+	auto match_name_upper = strutil::upper(options.match_name);
+	auto match_namespace  = options.match_namespace;
 
 	// "graphics" namespace is the global namespace in a wad
-	if (options.match_namespace == "graphics")
-		options.match_namespace = "";
+	if (match_namespace == "graphics")
+		match_namespace = "";
 
 	// "global" namespace has no name, by the way
-	if (options.match_namespace == "global")
-		options.match_namespace = "";
+	if (match_namespace == "global")
+		match_namespace = "";
 
 	// Check for namespace to search
-	if (!options.match_namespace.empty())
+	if (!match_namespace.empty())
 	{
 		// Find matching namespace
 		bool ns_found = false;
 		for (auto& ns : namespaces_)
 		{
-			if (ns.name == options.match_namespace)
+			if (ns.name == match_namespace)
 			{
 				index       = ns.end_index - 1;
 				index_start = ns.start_index + 1;
@@ -1289,9 +1294,9 @@ ArchiveEntry* WadArchiveHandler::findLast(const Archive& archive, ArchiveSearchO
 		}
 
 		// Check name
-		if (!options.match_name.empty())
+		if (!match_name_upper.empty())
 		{
-			if (!strutil::matches(entry->upperName(), options.match_name))
+			if (!strutil::matches(match_name_upper, entry->upperName()))
 				continue;
 		}
 
@@ -1306,27 +1311,28 @@ ArchiveEntry* WadArchiveHandler::findLast(const Archive& archive, ArchiveSearchO
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> WadArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> WadArchiveHandler::findAll(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
-	unsigned index     = 0;
-	auto     index_end = archive.numEntries();
-	strutil::upperIP(options.match_name);
+	unsigned              index            = 0;
+	auto                  index_end        = archive.numEntries();
+	auto                  match_name_upper = strutil::upper(options.match_name);
+	auto                  match_namespace  = options.match_namespace;
 	vector<ArchiveEntry*> ret;
 
 	// "graphics" namespace is the global namespace in a wad
-	if (options.match_namespace == "graphics")
-		options.match_namespace = "";
+	if (match_namespace == "graphics")
+		match_namespace = "";
 
 	// Check for namespace to search
-	if (!options.match_namespace.empty())
+	if (!match_namespace.empty())
 	{
 		// Find matching namespace
 		bool   ns_found        = false;
 		size_t namespaces_size = namespaces_.size();
 		for (unsigned a = 0; a < namespaces_size; a++)
 		{
-			if (namespaces_[a].name == options.match_namespace)
+			if (namespaces_[a].name == match_namespace)
 			{
 				index     = namespaces_[a].start_index + 1;
 				index_end = namespaces_[a].end_index + 1;
@@ -1360,9 +1366,9 @@ vector<ArchiveEntry*> WadArchiveHandler::findAll(const Archive& archive, Archive
 		}
 
 		// Check name
-		if (!options.match_name.empty())
+		if (!match_name_upper.empty())
 		{
-			if (!strutil::matches(entry->upperName(), options.match_name))
+			if (!strutil::matches(match_name_upper, entry->upperName()))
 				continue;
 		}
 

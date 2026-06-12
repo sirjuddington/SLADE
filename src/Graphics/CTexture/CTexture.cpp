@@ -453,6 +453,25 @@ Vec2d CTexture::scaleFactor() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the texture type as a CTexture::Type enum value
+// -----------------------------------------------------------------------------
+CTexture::Type CTexture::typeEnum() const
+{
+	if (strutil::equalCI(type_, "Sprite"))
+		return Type::Sprite;
+	if (strutil::equalCI(type_, "Graphic"))
+		return Type::Graphic;
+	if (strutil::equalCI(type_, "WallTexture"))
+		return Type::WallTexture;
+	if (strutil::equalCI(type_, "Flat"))
+		return Type::Flat;
+	if (strutil::equalCI(type_, "Define"))
+		return Type::HiRes;
+
+	return Type::Texture;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the patch at [index], or NULL if [index] is out of bounds
 // -----------------------------------------------------------------------------
 CTPatch* CTexture::patch(size_t index) const
@@ -476,6 +495,22 @@ int CTexture::index() const
 
 	// Find this texture in the parent list
 	return in_list_->textureIndex(name());
+}
+
+// -----------------------------------------------------------------------------
+// Sets the texture type based on the given CTexture::Type enum value
+// -----------------------------------------------------------------------------
+void CTexture::setType(Type type)
+{
+	switch (type)
+	{
+	case Type::Sprite:      type_ = "Sprite"; break;
+	case Type::Graphic:     type_ = "Graphic"; break;
+	case Type::WallTexture: type_ = "WallTexture"; break;
+	case Type::Flat:        type_ = "Flat"; break;
+	case Type::HiRes:       type_ = "Define"; break;
+	default:                type_ = "Texture"; break;
+	}
 }
 
 // -----------------------------------------------------------------------------

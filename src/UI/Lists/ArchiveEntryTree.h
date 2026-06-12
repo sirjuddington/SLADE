@@ -88,6 +88,8 @@ namespace ui
 			const Archive*      parent_archive = nullptr,
 			const ArchiveDir*   parent_dir     = nullptr) const;
 		bool dirIsInList(const ArchiveDir& dir, bool filter = true, const ArchiveDir* parent_dir = nullptr) const;
+
+		static std::unordered_map<string, wxBitmapBundle>& iconCache();
 	};
 
 	class ArchiveEntryTree : public SDataViewCtrl

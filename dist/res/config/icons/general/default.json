@@ -545,6 +545,22 @@
       "svg_light": "icons/general/tint.svg",
       "svg_dark": "icons/general/dark/tint.svg"
     },
+    "tlist_folder": {
+      "svg_light": "icons/general/tlist_folder.svg",
+      "svg_dark": "icons/general/dark/tlist_folder.svg"
+    },
+    "tlist_graphic": {
+      "svg_light": "icons/general/tlist_graphic.svg",
+      "svg_dark": "icons/general/dark/tlist_graphic.svg"
+    },
+    "tlist_sprite": {
+      "svg_light": "icons/general/tlist_sprite.svg",
+      "svg_dark": "icons/general/dark/tlist_sprite.svg"
+    },
+    "tlist_texture": {
+      "svg_light": "icons/general/tlist_texture.svg",
+      "svg_dark": "icons/general/dark/tlist_texture.svg"
+    },
     "tool_text": {
       "svg_light": "icons/general/tool_text.svg",
       "svg_dark": "icons/general/dark/tool_text.svg"

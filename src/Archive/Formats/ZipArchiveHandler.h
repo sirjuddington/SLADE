@@ -32,9 +32,9 @@ public:
 	vector<MapDesc> detectMaps(const Archive& archive) override;
 
 	// Search
-	ArchiveEntry*         findFirst(const Archive& archive, ArchiveSearchOptions& options) override;
-	ArchiveEntry*         findLast(const Archive& archive, ArchiveSearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(const Archive& archive, ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findFirst(const Archive& archive, const ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findLast(const Archive& archive, const ArchiveSearchOptions& options) override;
+	vector<ArchiveEntry*> findAll(const Archive& archive, const ArchiveSearchOptions& options) override;
 
 	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;

@@ -863,13 +863,13 @@ string ArchiveFormatHandler::detectNamespace(const Archive& archive, ArchiveEntr
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveFormatHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ArchiveFormatHandler::findFirst(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
 	if (!dir)
 		dir = archive.dir_root_.get();
-	strutil::upperIP(options.match_name); // Force case-insensitive
+	auto match_name_upper = strutil::upper(options.match_name); // Force case-insensitive
 
 	// Begin search
 
@@ -891,11 +891,11 @@ ArchiveEntry* ArchiveFormatHandler::findFirst(const Archive& archive, ArchiveSea
 		}
 
 		// Check name
-		if (!options.match_name.empty())
+		if (!match_name_upper.empty())
 		{
 			// Cut extension if ignoring
 			const auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
-			if (!strutil::matches(check_name, options.match_name))
+			if (!strutil::matches(check_name, match_name_upper))
 				continue;
 		}
 
@@ -932,13 +932,13 @@ ArchiveEntry* ArchiveFormatHandler::findFirst(const Archive& archive, ArchiveSea
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveFormatHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ArchiveFormatHandler::findLast(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
 	if (!dir)
 		dir = archive.dir_root_.get();
-	strutil::upperIP(options.match_name); // Force case-insensitive
+	auto match_name_upper = strutil::upper(options.match_name); // Force case-insensitive
 
 	// Begin search
 
@@ -960,11 +960,11 @@ ArchiveEntry* ArchiveFormatHandler::findLast(const Archive& archive, ArchiveSear
 		}
 
 		// Check name
-		if (!options.match_name.empty())
+		if (!match_name_upper.empty())
 		{
 			// Cut extension if ignoring
 			const auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
-			if (!strutil::matches(check_name, options.match_name))
+			if (!strutil::matches(check_name, match_name_upper))
 				continue;
 		}
 
@@ -1000,14 +1000,14 @@ ArchiveEntry* ArchiveFormatHandler::findLast(const Archive& archive, ArchiveSear
 // -----------------------------------------------------------------------------
 // Returns a list of entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveFormatHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> ArchiveFormatHandler::findAll(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = options.dir;
 	if (!dir)
 		dir = archive.dir_root_.get();
 	vector<ArchiveEntry*> ret;
-	strutil::upperIP(options.match_name); // Force case-insensitive
+	auto                  match_name_upper = strutil::upper(options.match_name); // Force case-insensitive
 
 	// Begin search
 
@@ -1029,11 +1029,11 @@ vector<ArchiveEntry*> ArchiveFormatHandler::findAll(const Archive& archive, Arch
 		}
 
 		// Check name
-		if (!options.match_name.empty())
+		if (!match_name_upper.empty())
 		{
 			// Cut extension if ignoring
 			const auto check_name = options.ignore_ext ? entry->upperNameNoExt() : entry->upperName();
-			if (!strutil::matches(check_name, options.match_name))
+			if (!strutil::matches(check_name, match_name_upper))
 				continue;
 		}
 

@@ -74,9 +74,9 @@ public:
 	virtual string          detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir = nullptr);
 
 	// Search
-	virtual ArchiveEntry*         findFirst(const Archive& archive, ArchiveSearchOptions& options);
-	virtual ArchiveEntry*         findLast(const Archive& archive, ArchiveSearchOptions& options);
-	virtual vector<ArchiveEntry*> findAll(const Archive& archive, ArchiveSearchOptions& options);
+	virtual ArchiveEntry*         findFirst(const Archive& archive, const ArchiveSearchOptions& options);
+	virtual ArchiveEntry*         findLast(const Archive& archive, const ArchiveSearchOptions& options);
+	virtual vector<ArchiveEntry*> findAll(const Archive& archive, const ArchiveSearchOptions& options);
 
 	// Format detection
 	virtual bool isThisFormat(const MemChunk& mc);

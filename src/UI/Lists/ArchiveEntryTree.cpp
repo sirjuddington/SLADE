@@ -58,10 +58,9 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-wxColour                                   col_text_modified(0, 0, 0, 0);
-wxColour                                   col_text_new(0, 0, 0, 0);
-wxColour                                   col_text_locked(0, 0, 0, 0);
-std::unordered_map<string, wxBitmapBundle> icon_cache;
+wxColour col_text_modified(0, 0, 0, 0);
+wxColour col_text_new(0, 0, 0, 0);
+wxColour col_text_locked(0, 0, 0, 0);
 } // namespace slade::ui
 
 #ifdef __WXGTK__
@@ -408,6 +407,7 @@ void ArchiveViewModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 		string icon = entry->type() ? entry->type()->icon() : "default";
 
 		// Find icon in cache
+		auto& icon_cache = iconCache();
 		if (!icon_cache.contains(icon))
 		{
 			// Not found, add to cache
@@ -905,6 +905,12 @@ bool ArchiveViewModel::dirIsInList(const ArchiveDir& dir, bool filter, const Arc
 	case ViewType::List: return parent_dir == root_dir_.lock().get();
 	default:             return true;
 	}
+}
+
+std::unordered_map<string, wxBitmapBundle>& ArchiveViewModel::iconCache()
+{
+	static std::unordered_map<string, wxBitmapBundle> cache;
+	return cache;
 }
 
 // -----------------------------------------------------------------------------

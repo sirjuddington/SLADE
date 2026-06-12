@@ -133,6 +133,7 @@ public:
 	int16_t        offsetY() const { return offset_.y; }
 	bool           worldPanning() const { return world_panning_; }
 	const string&  type() const { return type_; }
+	Type           typeEnum() const;
 	bool           isExtended() const { return extended_; }
 	bool           isOptional() const { return optional_; }
 	bool           noDecals() const { return no_decals_; }
@@ -154,6 +155,7 @@ public:
 	void setOffsetY(int16_t offset) { offset_.y = offset; }
 	void setWorldPanning(bool wp) { world_panning_ = wp; }
 	void setType(string_view type) { type_ = type; }
+	void setType(Type type);
 	void setExtended(bool ext) { extended_ = ext; }
 	void setOptional(bool opt) { optional_ = opt; }
 	void setNoDecals(bool nd) { no_decals_ = nd; }

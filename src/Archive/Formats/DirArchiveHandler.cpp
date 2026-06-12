@@ -143,7 +143,7 @@ bool DirArchiveHandler::open(Archive& archive, string_view filename)
 		auto name = subdir;
 		name.erase(0, filename.size());
 		strutil::removePrefixIP(name, separator_);
-		std::replace(name.begin(), name.end(), '\\', '/');
+		std::ranges::replace(name, '\\', '/');
 
 		const auto ndir                      = createDir(archive, name);
 		ndir->dirEntry()->exProp("filePath") = subdir;
@@ -217,7 +217,7 @@ bool DirArchiveHandler::save(Archive& archive, string_view filename)
 	{
 		entry_paths.push_back(archive.filename() + entry->path(true));
 		if (separator_ != '/')
-			std::replace(entry_paths.back().begin(), entry_paths.back().end(), '/', separator_);
+			std::ranges::replace(entry_paths.back(), '/', separator_);
 	}
 
 	// Get current directory structure
@@ -286,7 +286,8 @@ bool DirArchiveHandler::save(Archive& archive, string_view filename)
 		}
 
 		// Check if entry needs to be (re)written
-		if (entries[a]->state() == EntryState::Unmodified && entries[a]->exProps().contains("filePath")
+		if (entries[a]->state() == EntryState::Unmodified
+			&& entries[a]->exProps().contains("filePath")
 			&& path == entries[a]->exProp<string>("filePath"))
 			continue;
 
@@ -371,7 +372,7 @@ bool DirArchiveHandler::renameDir(Archive& archive, ArchiveDir* dir, string_view
 {
 	auto path = dir->parent()->path();
 	if (separator_ != '/')
-		std::replace(path.begin(), path.end(), '/', separator_);
+		std::ranges::replace(path, '/', separator_);
 	const StringPair rename(path + dir->name(), fmt::format("{}{}", path, new_name));
 	renamed_dirs_.push_back(rename);
 
@@ -523,10 +524,11 @@ vector<MapDesc> DirArchiveHandler::detectMaps(const Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* DirArchiveHandler::findFirst(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
-	auto dir = archive.rootDir().get();
+	auto dir            = archive.rootDir().get();
+	auto search_subdirs = options.search_subdirs;
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -542,13 +544,14 @@ ArchiveEntry* DirArchiveHandler::findFirst(const Archive& archive, ArchiveSearch
 		if (!dir)
 			return nullptr;
 		else
-			options.search_subdirs = true; // Namespace search always includes namespace subdirs
+			search_subdirs = true; // Namespace search always includes namespace subdirs
 	}
 
 	// Do default search
 	auto opt            = options;
 	opt.dir             = dir;
 	opt.match_namespace = "";
+	opt.search_subdirs  = search_subdirs;
 	return ArchiveFormatHandler::findFirst(archive, opt);
 }
 
@@ -556,10 +559,11 @@ ArchiveEntry* DirArchiveHandler::findFirst(const Archive& archive, ArchiveSearch
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* DirArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* DirArchiveHandler::findLast(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
-	auto dir = archive.rootDir().get();
+	auto dir            = archive.rootDir().get();
+	auto search_subdirs = options.search_subdirs;
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -575,23 +579,25 @@ ArchiveEntry* DirArchiveHandler::findLast(const Archive& archive, ArchiveSearchO
 		if (!dir)
 			return nullptr;
 		else
-			options.search_subdirs = true; // Namespace search always includes namespace subdirs
+			search_subdirs = true; // Namespace search always includes namespace subdirs
 	}
 
 	// Do default search
 	auto opt            = options;
 	opt.dir             = dir;
 	opt.match_namespace = "";
+	opt.search_subdirs  = search_subdirs;
 	return ArchiveFormatHandler::findLast(archive, opt);
 }
 
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> DirArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> DirArchiveHandler::findAll(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
-	auto dir = archive.rootDir().get();
+	auto dir            = archive.rootDir().get();
+	auto search_subdirs = options.search_subdirs;
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -607,12 +613,13 @@ vector<ArchiveEntry*> DirArchiveHandler::findAll(const Archive& archive, Archive
 		if (!dir)
 			return {};
 		else
-			options.search_subdirs = true; // Namespace search always includes namespace subdirs
+			search_subdirs = true; // Namespace search always includes namespace subdirs
 	}
 
 	// Do default search
 	auto opt            = options;
 	opt.dir             = dir;
+	opt.search_subdirs  = search_subdirs;
 	opt.match_namespace = "";
 	return ArchiveFormatHandler::findAll(archive, opt);
 }
@@ -664,7 +671,7 @@ void DirArchiveHandler::updateChangedEntries(Archive& archive, vector<DirEntryCh
 			auto name = change.file_path;
 			name.erase(0, archive.filename().size());
 			strutil::removePrefixIP(name, separator_);
-			std::replace(name.begin(), name.end(), '\\', '/');
+			std::ranges::replace(name, '\\', '/');
 
 			const auto ndir = createDir(archive, name);
 			ndir->dirEntry()->setState(EntryState::Unmodified);
@@ -678,7 +685,7 @@ void DirArchiveHandler::updateChangedEntries(Archive& archive, vector<DirEntryCh
 			name.erase(0, archive.filename().size());
 			if (strutil::startsWith(name, separator_))
 				name.erase(0, 1);
-			std::replace(name.begin(), name.end(), '\\', '/');
+			std::ranges::replace(name, '\\', '/');
 
 			// Create entry
 			strutil::Path fn(name);
@@ -779,7 +786,7 @@ wxDirTraverseResult DirArchiveTraverser::OnDir(const wxString& dirname)
 	if (ignore_hidden_)
 	{
 		auto path_str = dirname.utf8_string();
-		std::replace(path_str.begin(), path_str.end(), '\\', '/');
+		std::ranges::replace(path_str, '\\', '/');
 		auto dir = strutil::afterLastV(path_str, '/');
 		if (strutil::startsWith(dir, '.'))
 			return wxDIR_IGNORE;

@@ -149,7 +149,7 @@ void registerCTextureType(lua_State* lua)
 	lua_ctexture.addProperty("offsetX", &CTexture::offsetX, &CTexture::setOffsetX);
 	lua_ctexture.addProperty("offsetY", &CTexture::offsetY, &CTexture::setOffsetY);
 	lua_ctexture.addProperty("worldPanning", &CTexture::worldPanning, &CTexture::setWorldPanning);
-	lua_ctexture.addProperty("type", &CTexture::type, &CTexture::setType);
+	lua_ctexture.addProperty("type", &CTexture::type, [](CTexture& self, const string& type) { self.setType(type); });
 	lua_ctexture.addProperty("extended", &CTexture::isExtended, &CTexture::setExtended);
 	lua_ctexture.addProperty("optional", &CTexture::isOptional, &CTexture::setOptional);
 	lua_ctexture.addProperty("noDecals", &CTexture::noDecals, &CTexture::setNoDecals);

@@ -10,22 +10,12 @@ struct MapDesc;
 
 struct ArchiveSearchOptions
 {
-	string      match_name;      // Ignore if empty
-	EntryType*  match_type;      // Ignore if NULL
-	string      match_namespace; // Ignore if empty
-	ArchiveDir* dir;             // Root if NULL
-	bool        ignore_ext;      // Defaults true
-	bool        search_subdirs;  // Defaults false
-
-	ArchiveSearchOptions()
-	{
-		match_name      = "";
-		match_type      = nullptr;
-		match_namespace = "";
-		dir             = nullptr;
-		ignore_ext      = true;
-		search_subdirs  = false;
-	}
+	string      match_name      = {};      // Ignore if empty
+	EntryType*  match_type      = nullptr; // Ignore if NULL
+	string      match_namespace = {};      // Ignore if empty
+	ArchiveDir* dir             = nullptr; // Root if NULL
+	bool        ignore_ext      = true;    // Defaults true
+	bool        search_subdirs  = false;   // Defaults false
 };
 
 class Archive : public std::enable_shared_from_this<Archive>
@@ -133,9 +123,9 @@ public:
 	string          detectNamespace(unsigned index, ArchiveDir* dir = nullptr) const;
 
 	// Search
-	ArchiveEntry*         findFirst(ArchiveSearchOptions& options) const;
-	ArchiveEntry*         findLast(ArchiveSearchOptions& options) const;
-	vector<ArchiveEntry*> findAll(ArchiveSearchOptions& options) const;
+	ArchiveEntry*         findFirst(const ArchiveSearchOptions& options) const;
+	ArchiveEntry*         findLast(const ArchiveSearchOptions& options) const;
+	vector<ArchiveEntry*> findAll(const ArchiveSearchOptions& options) const;
 	vector<ArchiveEntry*> findModifiedEntries(ArchiveDir* dir = nullptr);
 
 	// Signals
