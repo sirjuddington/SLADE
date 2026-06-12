@@ -62,12 +62,12 @@ struct dtx_font {
 };
 
 
-struct dtx_font *dtx_font;
-int dtx_font_sz;
-int dtx_buf_mode;	/* DTX_NBF is 0 */
-float dtx_cur_color[4];
-int dtx_cur_color_int[4];
-float dtx_cur_offset[2];
+extern struct dtx_font *dtx_font;
+extern int dtx_font_sz;
+extern int dtx_buf_mode;	/* DTX_NBF is 0 */
+extern float dtx_cur_color[4];
+extern int dtx_cur_color_int[4];
+extern float dtx_cur_offset[2];
 
 #define fperror(str) \
 	fprintf(stderr, "%s: %s: %s\n", __func__, (str), strerror(errno))
@@ -80,8 +80,8 @@ float dtx_cur_offset[2];
 /* implemented in font.c */
 struct dtx_glyphmap *dtx_proc_char(int code, float *xpos, float *ypos);
 
-const char *(*dtx_drawchar)(const char*, float*, float*, int*);
-void (*dtx_drawflush)(void);
+extern const char *(*dtx_drawchar)(const char*, float*, float*, int*);
+extern void (*dtx_drawflush)(void);
 
 int dtx_gl_setopt(enum dtx_option opt, int val);
 int dtx_gl_getopt(enum dtx_option opt, int *ret);

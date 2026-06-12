@@ -296,10 +296,11 @@ bool SLADEMap::readMap(const MapDesc& map)
 // -----------------------------------------------------------------------------
 void SLADEMap::clearMap()
 {
-	// map_specials_->reset();
-
 	// Clear map objects
 	data_.clear();
+
+	// Clear MapSpecials
+	map_specials_ = std::make_unique<map::MapSpecials>(*this);
 
 	// Clear usage counts
 	usage_thing_type_.clear();

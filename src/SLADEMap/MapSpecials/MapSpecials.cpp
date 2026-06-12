@@ -86,6 +86,9 @@ MapSpecials::MapSpecials(SLADEMap& map) : map_{ &map }
 		{
 			for (auto obj : objects)
 			{
+				// Remove from pending updates
+				std::erase(updated_objects_, obj);
+
 				switch (obj->objType())
 				{
 				case MapObject::Type::Line:
@@ -389,6 +392,7 @@ void MapSpecials::processAllSpecials() const
 
 	specials_updated_  = app::runTimer();
 	specials_updating_ = false;
+	updated_objects_.clear();
 }
 
 void MapSpecials::updateSpecials() const

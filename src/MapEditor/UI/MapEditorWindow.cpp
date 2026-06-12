@@ -837,13 +837,7 @@ bool MapEditorWindow::writeMap(Archive& wad, const string& name, bool nodes)
 	if (acs && panel_script_editor_->scriptEntry()->size() > 0) // SCRIPTS (if any)
 		wad.addEntry(std::make_shared<ArchiveEntry>(*panel_script_editor_->scriptEntry()), "");
 	if (mdesc_current.format == MapFormat::UDMF)
-	{
-		// Add extra UDMF entries
-		for (auto& entry : map.udmfExtraEntries())
-			wad.addEntry(std::make_shared<ArchiveEntry>(*entry), -1, nullptr);
-
 		wad.addNewEntry("ENDMAP");
-	}
 
 	// Build nodes
 	if (nodes)
