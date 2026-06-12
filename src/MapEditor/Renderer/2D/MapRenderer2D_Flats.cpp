@@ -229,11 +229,14 @@ void MapRenderer2D::renderFlats(bool ceilings, float alpha)
 // -----------------------------------------------------------------------------
 // Renders the flat hilight overlay for sector [index]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderFlatHilight(gl::draw2d::Context& dc, int index, float fade) const
+void MapRenderer2D::renderFlatHilight(gl::draw2d::Context& dc, int index, float fade)
 {
 	// Check hilight
 	if (!map_->sector(index) || index >= flats_.size())
 		return;
+
+	// Update flats buffer if needed
+	updateFlatsBuffer(false);
 
 	// Reset fade if hilight animation is disabled
 	if (!map_animate_hilight)
@@ -285,8 +288,11 @@ void MapRenderer2D::renderFlatHilight(gl::draw2d::Context& dc, int index, float 
 // -----------------------------------------------------------------------------
 // Renders flat overlays for the given [sectors]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderFlatOverlays(const gl::draw2d::Context& dc, const vector<MapSector*>& sectors) const
+void MapRenderer2D::renderFlatOverlays(const gl::draw2d::Context& dc, const vector<MapSector*>& sectors)
 {
+	// Update flats buffer if needed
+	updateFlatsBuffer(false);
+
 	// Setup shader (for fill)
 	const auto& shader = gl::draw2d::defaultShader(false);
 	shader.setUniform("colour", dc.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f));
@@ -297,10 +303,6 @@ void MapRenderer2D::renderFlatOverlays(const gl::draw2d::Context& dc, const vect
 	vector<Rectf>   render_lines;
 	for (const auto sector : sectors)
 	{
-		// Don't draw if outside screen (but still draw if it's small)
-		// if (vis_s_[sector->index()] > 0 && vis_s_[sector->index()] != VIS_SMALL)
-		//	continue;
-
 		// Render fill if needed
 		if (map2d_sector_selected_fill)
 			flats_buffer_->draw(
@@ -331,7 +333,7 @@ void MapRenderer2D::renderFlatOverlays(const gl::draw2d::Context& dc, const vect
 // -----------------------------------------------------------------------------
 // Renders the flat selection overlay for sectors in [selection]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderFlatSelection(gl::draw2d::Context& dc, const ItemSelection& selection, float fade) const
+void MapRenderer2D::renderFlatSelection(gl::draw2d::Context& dc, const ItemSelection& selection, float fade)
 {
 	// Check anything is selected
 	if (selection.empty())
@@ -356,7 +358,7 @@ void MapRenderer2D::renderFlatSelection(gl::draw2d::Context& dc, const ItemSelec
 // -----------------------------------------------------------------------------
 // Renders the tagged flat overlay for sectors in [sectors]
 // -----------------------------------------------------------------------------
-void MapRenderer2D::renderTaggedFlats(gl::draw2d::Context& dc, const vector<MapSector*>& sectors, float fade) const
+void MapRenderer2D::renderTaggedFlats(gl::draw2d::Context& dc, const vector<MapSector*>& sectors, float fade)
 {
 	// Reset fade if tagged animation is disabled
 	if (!map_animate_tagged)

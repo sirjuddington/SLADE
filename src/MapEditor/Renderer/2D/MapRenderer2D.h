@@ -75,10 +75,10 @@ public:
 
 	// Flats (sectors)
 	void renderFlats(bool ceilings, float alpha = 1.0f);
-	void renderFlatHilight(gl::draw2d::Context& dc, int index, float fade) const;
-	void renderFlatOverlays(const gl::draw2d::Context& dc, const vector<MapSector*>& sectors) const;
-	void renderFlatSelection(gl::draw2d::Context& dc, const ItemSelection& selection, float fade = 1.0f) const;
-	void renderTaggedFlats(gl::draw2d::Context& dc, const vector<MapSector*>& sectors, float fade) const;
+	void renderFlatHilight(gl::draw2d::Context& dc, int index, float fade);
+	void renderFlatOverlays(const gl::draw2d::Context& dc, const vector<MapSector*>& sectors);
+	void renderFlatSelection(gl::draw2d::Context& dc, const ItemSelection& selection, float fade = 1.0f);
+	void renderTaggedFlats(gl::draw2d::Context& dc, const vector<MapSector*>& sectors, float fade);
 
 	// Moving
 	void renderMovingVertices(gl::draw2d::Context& dc, const vector<mapeditor::Item>& vertices, const Vec2d& move_vec)
