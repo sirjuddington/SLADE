@@ -47,7 +47,7 @@ const wxArrayString colouring_names = { wxS("None"), wxS("Translation"), wxS("Bl
 
 namespace
 {
-wxPGProperty* createUIntSpinProp(string_view label, string_view name, int step = 1)
+wxPGProperty* createUIntSpinProp(const string& label, const string& name, int step = 1)
 {
 	auto prop = new wxUIntProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0);
 	prop->SetEditor(new wxPGSpinCtrlEditor());
@@ -55,7 +55,7 @@ wxPGProperty* createUIntSpinProp(string_view label, string_view name, int step =
 	return prop;
 }
 
-wxPGProperty* createIntSpinProp(string_view label, string_view name, int step = 1)
+wxPGProperty* createIntSpinProp(const string& label, const string& name, int step = 1)
 {
 	auto prop = new wxIntProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0);
 	prop->SetEditor(new wxPGSpinCtrlEditor());
@@ -63,7 +63,7 @@ wxPGProperty* createIntSpinProp(string_view label, string_view name, int step = 
 	return prop;
 }
 
-wxPGProperty* createDoubleSpinProp(string_view label, string_view name, double step = 0.1)
+wxPGProperty* createDoubleSpinProp(const string& label, const string& name, double step = 0.1)
 {
 	auto prop = new wxFloatProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0.0);
 	prop->SetEditor(new wxPGSpinCtrlEditor());
@@ -124,7 +124,7 @@ wxPanel* TextureEditorPanel::createTextureListPanel(wxWindow* parent)
 
 	// Texture tree
 	tree_view_ = new TextureTreeView(panel, *editor_);
-	hbox->Add(tree_view_, wxSizerFlags(1).Expand());
+	hbox->Add(tree_view_, lh.sfWithSmallBorder(1, wxRIGHT).Expand());
 
 	return panel;
 }
@@ -157,11 +157,12 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	// Canvas
 	tex_canvas_ = ui::createCTextureCanvas(panel);
 	tex_canvas_->setPalette(maineditor::currentPalette()); // TODO: Update when main palette is changed
-	sizer->Add(tex_canvas_->window(), wxSizerFlags(1).Expand());
+	sizer->Add(tex_canvas_->window(), lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
 
 	// Bottom toolbar
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, lh.sfWithBorder(0, wxTOP).Expand());
+	hbox->AddSpacer(lh.padSmall());
 
 	// Offsets
 	spin_offset_x_ = new wxSpinCtrl(
@@ -205,7 +206,7 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 
 	// Zoom
 	zc_zoom_ = new ui::ZoomControl(panel, tex_canvas_);
-	hbox->Add(zc_zoom_, wxSizerFlags().Expand());
+	hbox->Add(zc_zoom_, lh.sfWithSmallBorder(0, wxRIGHT).Expand());
 
 	return panel;
 }
@@ -219,8 +220,9 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 
 	// Patch list
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxS("Patches")), lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
-	sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxS("Patches")), lh.sfWithSmallBorder(0, wxBOTTOM | wxLEFT).Expand());
+	sizer->Add(hbox, lh.sfWithSmallBorder(0, wxLEFT).Expand());
+	sizer->AddSpacer(lh.pad());
 	list_patches_ = new wxDataViewListCtrl(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE);
 	list_patches_->AppendTextColumn(wxS("#"));
 	list_patches_->AppendTextColumn(wxS("Name"));
@@ -234,7 +236,9 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 	// Texture/Patch properties grid
 	pg_properties_ = new wxPropertyGrid(panel);
 	setupPropertyGrid();
-	sizer->Add(pg_properties_, lh.sfWithBorder(1, wxRIGHT).Expand());
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, lh.sfWithSmallBorder(1, wxLEFT).Expand());
+	hbox->Add(pg_properties_, lh.sfWithBorder(1, wxRIGHT).Expand());
 
 	// Set all bool properties to use checkboxes
 	pg_properties_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
@@ -284,7 +288,7 @@ void TextureEditorPanel::openTexture(CTexture& tex) const
 	int patch_index = 0;
 	for (auto& p : tex.patches())
 		list_patches_->AppendItem({ WX_FMT("{}", patch_index++), wxString::FromUTF8(p->name()) });
-	list_patches_->GetColumn(0)->SetWidth(list_patches_->GetBestColumnWidth(0));
+	list_patches_->GetColumn(0)->SetWidth(FromDIP(30));
 
 	// Set basic properties
 	pg_properties_->SetPropertyValue(wxS("tex_width"), tex.width());
@@ -396,7 +400,7 @@ void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
 				pg_properties_->SetPropertyValue(wxS("patch_y"), patch->yOffset());
 				if (tex_canvas_->texture()->isExtended())
 				{
-					auto ex_patch = dynamic_cast<CTPatchEx*>(patch);
+					auto     ex_patch = dynamic_cast<CTPatchEx*>(patch);
 					wxColour wx_col   = ex_patch->colour();
 					pg_properties_->SetPropertyValue(wxS("patch_use_offsets"), ex_patch->useOffsets());
 					pg_properties_->SetPropertyValue(wxS("patch_flip_x"), ex_patch->flipX());
