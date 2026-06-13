@@ -186,8 +186,8 @@ void CTextureGLCanvas::draw()
 	// Setup shader
 	initShader();
 	shader_->bind();
-	shader_->setUniform("view_tl", glm::vec2(view_.screenX(0), view_.screenY(0)));
-	shader_->setUniform("view_br", glm::vec2(view_.screenX(texture_->width()), view_.screenY(texture_->height())));
+	shader_->setUniform("view_tl", glm::vec2(view_.screenX(-offset.x*scale.x), view_.screenY(-offset.y*scale.x)));
+	shader_->setUniform("view_br", glm::vec2(view_.screenX((texture_->width()-offset.x)*scale.x), view_.screenY((texture_->height()-offset.y)*scale.y)));
 	shader_->setUniform("outside_colour", draw_outside_ ? glm::vec4{ 0.8f, 0.2f, 0.2f, 0.3f } : glm::vec4{ 0.0f });
 	shader_->setUniform("colour", glm::vec4{ 1.0f });
 	view_.setupShader(*shader_);
@@ -270,10 +270,10 @@ void CTextureGLCanvas::drawPatch(int num)
 		patch_gl_textures_[num] = gl::Texture::createFromImage(*patches_[num].image, palette_.get());
 	}
 
-	auto xoff   = static_cast<float>(patch->xOffset());
-	auto yoff   = static_cast<float>(patch->yOffset());
-	auto width  = static_cast<float>(patches_[num].image->width());
-	auto height = static_cast<float>(patches_[num].image->height());
+	auto xoff   = static_cast<float>((patch->xOffset() - texture_->offsetX())/ texture_->scaleX());
+	auto yoff   = static_cast<float>(patch->yOffset() - texture_->offsetY())/ texture_->scaleY();
+	auto width  = static_cast<float>(patches_[num].image->width() / texture_->scaleX());
+	auto height = static_cast<float>(patches_[num].image->height() / texture_->scaleY());
 	auto colour = glm::vec4{ 1.0f };
 
 	gl::VertexBuffer2D vb_patch;
@@ -317,10 +317,10 @@ void CTextureGLCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) 
 void CTextureGLCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
 {
 	constexpr float ext = 0.0f;
-	const auto      x1  = offset.x;
-	const auto      x2  = offset.x + texture_->width() * scale.x;
-	const auto      y1  = offset.y;
-	const auto      y2  = offset.y + texture_->height() * scale.y;
+	const auto      x1  = -offset.x*scale.x;
+	const auto      x2  = (-offset.x + texture_->width())*scale.x;// * scale.x;
+	const auto      y1  = -offset.y*scale.y;
+	const auto      y2  = (-offset.y + texture_->height())*scale.y;// * scale.y;
 
 	// Setup border buffer if needed
 	if (!lb_border_)
