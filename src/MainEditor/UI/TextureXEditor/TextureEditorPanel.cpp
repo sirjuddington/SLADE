@@ -870,8 +870,8 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 						continue;
 					int16_t cx = sel_patch->xOffset();
 					int16_t cy = sel_patch->yOffset();
-					sel_patch->setOffsetX(cx + diff.x);
-					sel_patch->setOffsetY(cy + diff.y);
+					sel_patch->setOffsetX(cx + diff.x * tex_current_->scaleX());
+					sel_patch->setOffsetY(cy + diff.y * tex_current_->scaleY());
 					tex_modified_ = true;
 				}
 
@@ -889,8 +889,8 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				Vec2i diff = tex_cur - tex_prev;
 
 				// Modify offsets
-				tex_current_->setOffsetX(tex_current_->offsetX() - diff.x);
-				tex_current_->setOffsetY(tex_current_->offsetY() - diff.y);
+				tex_current_->setOffsetX(tex_current_->offsetX() - diff.x * tex_current_->scaleX());
+				tex_current_->setOffsetY(tex_current_->offsetY() - diff.y * tex_current_->scaleY());
 				tex_modified_ = true;
 
 				// Refresh texture canvas
