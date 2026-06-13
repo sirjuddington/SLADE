@@ -297,10 +297,10 @@ void CTextureGLCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) 
 	if (!patch)
 		return;
 
-	auto x1 = static_cast<float>(patch->xOffset());
-	auto y1 = static_cast<float>(patch->yOffset());
-	auto x2 = x1 + static_cast<float>(patches_[num].image->width());
-	auto y2 = y1 + static_cast<float>(patches_[num].image->height());
+	auto x1 = static_cast<float>((patch->xOffset()-texture_->offsetX())/texture_->scaleX());
+	auto y1 = static_cast<float>((patch->yOffset()-texture_->offsetY())/texture_->scaleY());
+	auto x2 = x1 + static_cast<float>(patches_[num].image->width()/texture_->scaleX());
+	auto y2 = y1 + static_cast<float>(patches_[num].image->height()/texture_->scaleY());
 
 	vector<Rectf> lines;
 	lines.emplace_back(x1, y1, x1, y2);
