@@ -218,6 +218,20 @@ void CTextureGLCanvas::draw()
 	}
 }
 
+
+// -----------------------------------------------------------------------------
+// Unloads the preview image, so it is recreated on next draw
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::refreshTexturePreview() {
+	CTextureCanvasBase::refreshTexturePreview();
+
+	// Whenever this happens (e.g. on drag-and-drop finish) we should update the border position.
+	// Note: Maybe we should do this more often while dragging, it would be nice to have a live
+	// update
+	if (lb_border_)
+		lb_border_->buffer().clear();
+}
+
 // -----------------------------------------------------------------------------
 // Draws the currently opened composite texture
 // -----------------------------------------------------------------------------
@@ -231,21 +245,6 @@ void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm
 	{
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
 			drawPatch(a);
-	}
-
-	// If we aren't currently dragging a patch, draw the fully generated texture
-	if (!dragging_)
-	{
-		// Generate if needed
-		if (!tex_preview_ || gl_tex_preview_ == 0)
-		{
-			loadTexturePreview();
-			gl_tex_preview_ = gl::Texture::createFromImage(*tex_preview_, palette_.get());
-		}
-
-		// Draw the texture
-		dc.texture = gl_tex_preview_;
-		dc.drawRect({ offset.x, offset.y, offset.x + width * scale.x, offset.y + height * scale.y, false });
 	}
 }
 
