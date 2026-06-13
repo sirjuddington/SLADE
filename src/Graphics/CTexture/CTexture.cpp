@@ -498,6 +498,18 @@ int CTexture::index() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the index of [patch] in this texture, or -1 if not found
+// -----------------------------------------------------------------------------
+int CTexture::patchIndex(const CTPatch* patch) const
+{
+	for (unsigned a = 0; a < patches_.size(); a++)
+		if (patches_[a].get() == patch)
+			return a;
+
+	return -1;
+}
+
+// -----------------------------------------------------------------------------
 // Sets the texture type based on the given CTexture::Type enum value
 // -----------------------------------------------------------------------------
 void CTexture::setType(Type type)
@@ -554,7 +566,7 @@ bool CTexture::addPatch(string_view patch, int16_t offset_x, int16_t offset_y, i
 	defined_ = false;
 
 	// Announce
-	signals_.patches_modified(*this);
+	signals_.patch_list_changed();
 
 	return true;
 }
@@ -576,7 +588,7 @@ bool CTexture::removePatch(size_t index)
 	defined_ = false;
 
 	// Announce
-	signals_.patches_modified(*this);
+	signals_.patch_list_changed();
 
 	return true;
 }
@@ -603,7 +615,7 @@ bool CTexture::removePatch(string_view patch)
 	defined_ = false;
 
 	if (removed)
-		signals_.patches_modified(*this);
+		signals_.patch_list_changed();
 
 	return removed;
 }
@@ -623,7 +635,7 @@ bool CTexture::replacePatch(size_t index, string_view newpatch)
 	patches_[index]->setName(newpatch);
 
 	// Announce
-	signals_.patches_modified(*this);
+	signals_.patch_list_changed();
 
 	return true;
 }
@@ -659,7 +671,7 @@ bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y)
 	defined_ = false;
 
 	// Announce
-	signals_.patches_modified(*this);
+	signals_.patch_list_changed();
 
 	return true;
 }
@@ -678,7 +690,7 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 	patches_[p1].swap(patches_[p2]);
 
 	// Announce
-	signals_.patches_modified(*this);
+	signals_.patch_list_changed();
 
 	return true;
 }

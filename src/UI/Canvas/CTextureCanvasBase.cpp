@@ -126,7 +126,7 @@ bool CTextureCanvasBase::patchSelected(int index) const
 void CTextureCanvasBase::clearTexture()
 {
 	// Clear texture
-	sc_patches_modified_.disconnect();
+	connections_.disconnect();
 	texture_ = nullptr;
 
 	// Clear patch info
@@ -185,9 +185,12 @@ bool CTextureCanvasBase::openTexture(CTexture* tex, Archive* parent)
 	for (uint32_t a = 0; a < tex->nPatches(); a++)
 		patches_.emplace_back();
 
+	// Update when texture is modified
+	connections_ += tex->signals().texture_modified.connect([this] { redraw(true); });
+
 	// Update when texture patches are modified
-	sc_patches_modified_ = tex->signals().patches_modified.connect(
-		[this](CTexture&)
+	connections_ += tex->signals().patch_list_changed.connect(
+		[this]
 		{
 			// Reload patches
 			clearPatches();
@@ -195,6 +198,19 @@ bool CTextureCanvasBase::openTexture(CTexture* tex, Archive* parent)
 			for (uint32_t a = 0; a < texture_->nPatches(); a++)
 				patches_.emplace_back();
 
+			redraw(true);
+		});
+	connections_ += tex->signals().patch_modified.connect(
+		[this](unsigned index)
+		{
+			refreshPatch(index);
+			redraw(true);
+		});
+	connections_ += tex->signals().patches_modified.connect(
+		[this](const vector<unsigned>& indices)
+		{
+			for (unsigned index : indices)
+				refreshPatch(index);
 			redraw(true);
 		});
 
@@ -248,7 +264,9 @@ int CTextureCanvasBase::patchAt(int x, int y) const
 
 		// Check if x,y is within patch bounds
 		const auto patch = texture_->patch(a);
-		if (x >= patch->xOffset() && x < patch->xOffset() + img->width() && y >= patch->yOffset()
+		if (x >= patch->xOffset()
+			&& x < patch->xOffset() + img->width()
+			&& y >= patch->yOffset()
 			&& y < patch->yOffset() + img->height())
 		{
 			return a;

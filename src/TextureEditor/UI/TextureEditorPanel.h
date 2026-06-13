@@ -15,6 +15,7 @@ class ZoomControl;
 }
 namespace slade::texeditor
 {
+class TexturePropGrid;
 class TextureEditor;
 class TextureTreeView;
 } // namespace slade::texeditor
@@ -34,7 +35,7 @@ private:
 	wxSplitterWindow*         splitter_right_     = nullptr;
 	CTextureCanvasBase*       tex_canvas_         = nullptr;
 	SAuiToolBar*              toolbar_texlist_    = nullptr;
-	wxPropertyGrid*           pg_properties_      = nullptr;
+	TexturePropGrid*          pg_properties_      = nullptr;
 	ui::ZoomControl*          zc_zoom_            = nullptr;
 	wxDataViewListCtrl*       list_patches_       = nullptr;
 	SAuiToolBar*              toolbar_patches_    = nullptr;
@@ -50,7 +51,7 @@ private:
 	void     setupPropertyGrid() const;
 
 	void openTexture(CTexture& tex) const;
-	void updateUI() const;
+	void clearTexture() const;
 
 	// Events
 	void onTextureSelectionChanged(wxDataViewEvent& e);

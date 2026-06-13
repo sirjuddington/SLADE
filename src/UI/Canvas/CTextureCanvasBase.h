@@ -1,4 +1,5 @@
 #pragma once
+#include "General/Sigslot.h"
 
 namespace slade
 {
@@ -57,7 +58,7 @@ public:
 	virtual void clearTexture();
 	virtual void clearPatches();
 	virtual void refreshPatch(unsigned index);
-	void         refreshTexturePreview();
+	virtual void refreshTexturePreview();
 	bool         openTexture(CTexture* tex, Archive* parent);
 	void         resetViewOffsets();
 	void         redraw(bool update_tex = false);
@@ -93,7 +94,7 @@ protected:
 	View  view_type_    = View::Normal;
 
 	// Signal connections
-	sigslot::scoped_connection sc_patches_modified_;
+	ScopedConnectionList connections_;
 
 	void loadPatchImage(unsigned index);
 	void loadTexturePreview();

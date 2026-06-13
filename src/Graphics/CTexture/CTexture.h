@@ -142,6 +142,7 @@ public:
 	CTPatch*       patch(size_t index) const;
 	uint8_t        state() const { return state_; }
 	int            index() const;
+	int            patchIndex(const CTPatch* patch) const;
 
 	void setName(string_view name) { name_ = name; }
 	void setSize(const Vec2<uint16_t>& size) { size_ = size; }
@@ -194,7 +195,10 @@ public:
 	// Signals
 	struct Signals
 	{
-		sigslot::signal<CTexture&> patches_modified;
+		sigslot::signal<>                        texture_modified;
+		sigslot::signal<>                        patch_list_changed;
+		sigslot::signal<unsigned>                patch_modified;
+		sigslot::signal<const vector<unsigned>&> patches_modified;
 	};
 	Signals& signals() { return signals_; }
 

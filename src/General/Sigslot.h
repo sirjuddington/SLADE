@@ -10,4 +10,5 @@ struct ScopedConnectionList
 	vector<sigslot::scoped_connection> connections;
 
 	void operator+=(sigslot::connection c) { connections.emplace_back(c); }
+	void disconnect() { connections.clear(); }
 };

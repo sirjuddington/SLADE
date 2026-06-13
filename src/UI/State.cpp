@@ -142,12 +142,12 @@ void ui::initStateProps()
 									  { TEXTURELIST_INDEX_WIDTH, 50 },
 									  { TEXTURELIST_SIZE_VISIBLE, true },
 									  { TEXTURELIST_SIZE_WIDTH, 70 },
-									  { TEXTURELIST_TYPE_VISIBLE, true },
+									  { TEXTURELIST_TYPE_VISIBLE, false },
 									  { TEXTURELIST_TYPE_WIDTH, 180 },
-									  { TEXTURELIST_NAME_WIDTH, 110 },
-									  { TEXTURELIST_PATCHES_VISIBLE, true },
+									  { TEXTURELIST_NAME_WIDTH, 130 },
+									  { TEXTURELIST_PATCHES_VISIBLE, false },
 									  { TEXTURELIST_PATCHES_WIDTH, 70 },
-									  { TEXEDITOR_SPLIT_POS, 450 } };
+									  { TEXEDITOR_SPLIT_POS, 280 } };
 
 	auto ps = database::context().preparedStatement("init_ui_state", "INSERT INTO ui_state VALUES (?,?,?)", true);
 

@@ -5,10 +5,10 @@
 #include "General/KeyBind.h"
 #include "General/SAction.h"
 #include "Graphics/CTexture/CTexture.h"
-#include "Graphics/Translation.h"
 #include "MainEditor/MainEditor.h"
 #include "OpenGL/View.h"
 #include "TextureEditor/TextureEditor.h"
+#include "TexturePropGrid.h"
 #include "TextureTreeView.h"
 #include "UI/Canvas/CTextureCanvasBase.h"
 #include "UI/Canvas/Canvas.h"
@@ -25,54 +25,6 @@ using namespace slade;
 using namespace texeditor;
 
 
-namespace
-{
-const wxArrayString type_names  = { wxS("Texture"), wxS("WallTexture"), wxS("Flat"), wxS("Sprite"), wxS("Graphic") };
-const wxArrayInt    type_values = { static_cast<int>(CTexture::Type::Texture),
-									static_cast<int>(CTexture::Type::WallTexture),
-									static_cast<int>(CTexture::Type::Flat),
-									static_cast<int>(CTexture::Type::Sprite),
-									static_cast<int>(CTexture::Type::Graphic) };
-
-const wxArrayString rotation_names  = { wxS("None"), wxS("90°"), wxS("180°"), wxS("270°") };
-const wxArrayInt    rotation_values = { 0, 90, 180, 270 };
-
-const wxArrayString alphastyle_names = { wxS("Copy"),      wxS("Translucent"),     wxS("Add"),
-										 wxS("Subtract"),  wxS("ReverseSubtract"), wxS("Modulate"),
-										 wxS("CopyAlpha"), wxS("CopyNewAlpha"),    wxS("Overlay") };
-
-const wxArrayString colouring_names = { wxS("None"), wxS("Translation"), wxS("Blend"), wxS("Tint") };
-} // namespace
-
-
-namespace
-{
-wxPGProperty* createUIntSpinProp(const string& label, const string& name, int step = 1)
-{
-	auto prop = new wxUIntProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0);
-	prop->SetEditor(new wxPGSpinCtrlEditor());
-	prop->SetAttribute(wxPG_ATTR_SPINCTRL_STEP, step);
-	return prop;
-}
-
-wxPGProperty* createIntSpinProp(const string& label, const string& name, int step = 1)
-{
-	auto prop = new wxIntProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0);
-	prop->SetEditor(new wxPGSpinCtrlEditor());
-	prop->SetAttribute(wxPG_ATTR_SPINCTRL_STEP, step);
-	return prop;
-}
-
-wxPGProperty* createDoubleSpinProp(const string& label, const string& name, double step = 0.1)
-{
-	auto prop = new wxFloatProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0.0);
-	prop->SetEditor(new wxPGSpinCtrlEditor());
-	prop->SetAttribute(wxPG_ATTR_SPINCTRL_STEP, step);
-	return prop;
-}
-} // namespace
-
-
 TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive) : wxPanel(parent, wxID_ANY)
 {
 	editor_        = std::make_unique<TextureEditor>(archive);
@@ -83,7 +35,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 
 	// Setup left splitter
 	auto lh = ui::LayoutHelper(this);
-	splitter_left_->SetMinimumPaneSize(FromDIP(300));
+	splitter_left_->SetMinimumPaneSize(FromDIP(200));
 	sizer->Add(splitter_left_, lh.sfWithBorder(1, wxTOP | wxBOTTOM).Expand());
 	auto split_pos = ui::getStateInt(ui::TEXEDITOR_SPLIT_POS, archive.get());
 	splitter_left_->SplitVertically(
@@ -102,7 +54,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 
 	// Init UI (expandAll must be deferred until the native window exists)
 	CallAfter([this]() { tree_view_->expandAll(); });
-	updateUI();
+	toolbar_patches_->enableGroup("Patch", false);
 }
 
 TextureEditorPanel::~TextureEditorPanel() = default;
@@ -234,128 +186,32 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 	hbox->Add(toolbar_patches_, lh.sfWithSmallBorder(0, wxLEFT | wxRIGHT).Expand());
 
 	// Texture/Patch properties grid
-	pg_properties_ = new wxPropertyGrid(panel);
-	setupPropertyGrid();
+	pg_properties_ = new TexturePropGrid(panel);
 	hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, lh.sfWithSmallBorder(1, wxLEFT).Expand());
 	hbox->Add(pg_properties_, lh.sfWithBorder(1, wxRIGHT).Expand());
 
-	// Set all bool properties to use checkboxes
-	pg_properties_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
-
 	return panel;
-}
-
-void TextureEditorPanel::setupPropertyGrid() const
-{
-	// Texture Properties
-	pg_properties_->Append(new wxPropertyCategory(wxS("Texture Properties"), wxS("texture")));
-	pg_properties_->Append(createUIntSpinProp("Width", "tex_width"));
-	pg_properties_->Append(createUIntSpinProp("Height", "tex_height"));
-	pg_properties_->Append(createUIntSpinProp("X Scale", "tex_scale_x"));
-	pg_properties_->Append(createUIntSpinProp("Y Scale", "tex_scale_y"));
-	pg_properties_->Append(createDoubleSpinProp("X Scale", "tex_scale_xd"));
-	pg_properties_->Append(createDoubleSpinProp("Y Scale", "tex_scale_yd"));
-	pg_properties_->Append(new wxEnumProperty(wxS("Type"), wxS("tex_type"), type_names, type_values))->Hide(true);
-	pg_properties_->Append(new wxBoolProperty(wxS("World Panning"), wxS("world_panning"), false));
-	pg_properties_->Append(new wxBoolProperty(wxS("Optional"), wxS("optional"), false))->Hide(true);
-	pg_properties_->Append(new wxBoolProperty(wxS("No Decals"), wxS("no_decals"), false))->Hide(true);
-	pg_properties_->Append(new wxBoolProperty(wxS("Null Texture"), wxS("null_texture"), false))->Hide(true);
-
-	// Patch properties
-	pg_properties_->Append(new wxPropertyCategory(wxS("Patch Properties"), wxS("patch")));
-	pg_properties_->Append(createIntSpinProp("X Position", "patch_x"));
-	pg_properties_->Append(createIntSpinProp("Y Position", "patch_y"));
-	pg_properties_->Append(new wxBoolProperty(wxS("Use Source Offsets"), wxS("patch_use_offsets"), false))->Hide(true);
-	pg_properties_->Append(new wxBoolProperty(wxS("Flip X"), wxS("patch_flip_x"), false))->Hide(true);
-	pg_properties_->Append(new wxBoolProperty(wxS("Flip Y"), wxS("patch_flip_y"), false))->Hide(true);
-	pg_properties_->Append(new wxEnumProperty(wxS("Rotation"), wxS("patch_rotation"), rotation_names, rotation_values))
-		->Hide(true);
-	pg_properties_->Append(createDoubleSpinProp("Alpha", "patch_alpha"))->Hide(true);
-	pg_properties_->Append(new wxEnumProperty(wxS("Alpha Style"), wxS("patch_alpha_style"), alphastyle_names))
-		->Hide(true);
-	pg_properties_->Append(new wxEnumProperty(wxS("Colouring"), wxS("patch_colouring"), colouring_names))->Hide(true);
-	pg_properties_->Append(new wxColourProperty(wxS("Colour"), wxS("patch_colour")))->Hide(true);
-	pg_properties_->Append(createDoubleSpinProp("Amount", "patch_tint_amount"))->Hide(true);
-
-	// TODO: Custom wxPGProperty for translation
-	pg_properties_->Append(new wxStringProperty(wxS("Translation"), wxS("patch_translation")))->Hide(true);
 }
 
 void TextureEditorPanel::openTexture(CTexture& tex) const
 {
 	tex_canvas_->openTexture(&tex, editor_->archive());
+
 	int patch_index = 0;
 	for (auto& p : tex.patches())
 		list_patches_->AppendItem({ WX_FMT("{}", patch_index++), wxString::FromUTF8(p->name()) });
 	list_patches_->GetColumn(0)->SetWidth(FromDIP(30));
 
-	// Set basic properties
-	pg_properties_->SetPropertyValue(wxS("tex_width"), tex.width());
-	pg_properties_->SetPropertyValue(wxS("tex_height"), tex.height());
-	pg_properties_->SetPropertyValue(wxS("world_panning"), tex.worldPanning());
-
-	// Set extended properties
-	if (tex.isExtended())
-	{
-		pg_properties_->SetPropertyValue(wxS("tex_scale_xd"), tex.scaleX());
-		pg_properties_->SetPropertyValue(wxS("tex_scale_yd"), tex.scaleY());
-		pg_properties_->SetPropertyValue(wxS("tex_type"), static_cast<int>(tex.typeEnum()));
-		pg_properties_->SetPropertyValue(wxS("optional"), tex.isOptional());
-		pg_properties_->SetPropertyValue(wxS("no_decals"), tex.noDecals());
-		pg_properties_->SetPropertyValue(wxS("null_texture"), tex.nullTexture());
-	}
-	else
-	{
-		pg_properties_->SetPropertyValue(wxS("tex_scale_x"), static_cast<int>(tex.scaleX() * 8));
-		pg_properties_->SetPropertyValue(wxS("tex_scale_y"), static_cast<int>(tex.scaleY() * 8));
-	}
+	pg_properties_->openTexture(&tex);
 }
 
-void TextureEditorPanel::updateUI() const
+void TextureEditorPanel::clearTexture() const
 {
-	pg_properties_->ClearSelection();
-
-	if (auto tex = tex_canvas_->texture())
-	{
-		pg_properties_->HideProperty(wxS("texture"), false);
-		pg_properties_->HideProperty(wxS("patch"), list_patches_->GetSelectedItemsCount() == 0);
-		toolbar_patches_->enableGroup("Patch");
-
-		// Set texture properties visibility
-		pg_properties_->HideProperty(wxS("tex_type"), !tex->isExtended());
-		pg_properties_->HideProperty(wxS("optional"), !tex->isExtended());
-		pg_properties_->HideProperty(wxS("no_decals"), !tex->isExtended());
-		pg_properties_->HideProperty(wxS("null_texture"), !tex->isExtended());
-		pg_properties_->HideProperty(wxS("tex_scale_x"), tex->isExtended());
-		pg_properties_->HideProperty(wxS("tex_scale_y"), tex->isExtended());
-		pg_properties_->HideProperty(wxS("tex_scale_xd"), !tex->isExtended());
-		pg_properties_->HideProperty(wxS("tex_scale_yd"), !tex->isExtended());
-
-		// Set patch properties visibility
-		if (list_patches_->GetSelectedItemsCount() > 0)
-		{
-			pg_properties_->HideProperty(wxS("patch_use_offsets"), !tex->isExtended());
-			pg_properties_->HideProperty(wxS("patch_flip_x"), !tex->isExtended());
-			pg_properties_->HideProperty(wxS("patch_flip_y"), !tex->isExtended());
-			pg_properties_->HideProperty(wxS("patch_rotation"), !tex->isExtended());
-			pg_properties_->HideProperty(wxS("patch_alpha"), !tex->isExtended());
-			pg_properties_->HideProperty(wxS("patch_alpha_style"), !tex->isExtended());
-			pg_properties_->HideProperty(wxS("patch_colouring"), !tex->isExtended());
-
-			// Colouring properties visibility depends on colouring type
-			auto colouring = pg_properties_->GetPropertyValue(wxS("patch_colouring")).GetInteger();
-			pg_properties_->HideProperty(wxS("patch_colour"), !(colouring == 2 || colouring == 3));
-			pg_properties_->HideProperty(wxS("patch_tint_amount"), colouring != 3);
-			pg_properties_->HideProperty(wxS("patch_translation"), colouring != 1);
-		}
-	}
-	else
-	{
-		pg_properties_->HideProperty(wxS("texture"), true);
-		pg_properties_->HideProperty(wxS("patch"), true);
-		toolbar_patches_->enableGroup("Patch", false);
-	}
+	tex_canvas_->clearTexture();
+	list_patches_->DeleteAllItems();
+	pg_properties_->openTexture(nullptr);
+	toolbar_patches_->enableGroup("Patch", false);
 }
 
 void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
@@ -365,82 +221,38 @@ void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
 	wxDataViewItemArray selection;
 	tree_view_->GetSelections(selection);
 
-	pg_properties_->Freeze();
-
 	if (selection.Count() == 1)
 	{
 		// Single selection, open texture if one is selected
 		if (auto ctex = tree_view_->textureForItem(e.GetItem()))
 			openTexture(*ctex);
 		else
-			tex_canvas_->clearTexture();
+			clearTexture();
 	}
 	else
-		tex_canvas_->clearTexture();
+		clearTexture();
 
-	updateUI();
-
-	pg_properties_->Thaw();
+	toolbar_patches_->enableGroup("Patch", false);
 }
 
 void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
 {
-	pg_properties_->Freeze();
-
-	if (list_patches_->GetSelectedItemsCount() == 1)
-	{
-		// Single patch selected, show properties
-		auto sel = list_patches_->GetSelection();
-		if (sel.IsOk())
-		{
-			int index = list_patches_->ItemToRow(sel);
-			if (auto patch = tex_canvas_->texture()->patch(index))
-			{
-				pg_properties_->SetPropertyValue(wxS("patch_x"), patch->xOffset());
-				pg_properties_->SetPropertyValue(wxS("patch_y"), patch->yOffset());
-				if (tex_canvas_->texture()->isExtended())
-				{
-					auto     ex_patch = dynamic_cast<CTPatchEx*>(patch);
-					wxColour wx_col   = ex_patch->colour();
-					pg_properties_->SetPropertyValue(wxS("patch_use_offsets"), ex_patch->useOffsets());
-					pg_properties_->SetPropertyValue(wxS("patch_flip_x"), ex_patch->flipX());
-					pg_properties_->SetPropertyValue(wxS("patch_flip_y"), ex_patch->flipY());
-					pg_properties_->SetPropertyValue(wxS("patch_rotation"), ex_patch->rotation());
-					pg_properties_->SetPropertyValue(wxS("patch_alpha"), ex_patch->alpha());
-					pg_properties_->SetPropertyValue(wxS("patch_alpha_style"), wxString::FromUTF8(ex_patch->style()));
-					pg_properties_->SetPropertyValue(wxS("patch_colouring"), static_cast<int>(ex_patch->blendType()));
-					pg_properties_->SetPropertyValue(wxS("patch_colour"), wx_col);
-					pg_properties_->SetPropertyValue(wxS("patch_tint_amount"), wx_col.Alpha() / 255.0);
-					pg_properties_->SetPropertyValue(
-						wxS("patch_translation"),
-						ex_patch->hasTranslation() ? wxString::FromUTF8(ex_patch->translation()->asText())
-												   : wxString());
-				}
-			}
-		}
-	}
-	else if (list_patches_->GetSelectedItemsCount() > 1)
-	{
-		// Multiple patches selected
-		// TODO: Keep common values
-		pg_properties_->GetProperty(wxS("patch_x"))->SetValueToUnspecified();
-		pg_properties_->GetProperty(wxS("patch_y"))->SetValueToUnspecified();
-	}
-
-	// Update selection on canvas
+	vector<CTPatch*> selected_patches;
 	for (unsigned i = 0; std::cmp_less(i, list_patches_->GetItemCount()); ++i)
 	{
 		auto item = list_patches_->RowToItem(i);
 		if (item.IsOk() && list_patches_->IsSelected(item))
+		{
+			selected_patches.push_back(tex_canvas_->texture()->patch(i));
 			tex_canvas_->selectPatch(i);
+		}
 		else
 			tex_canvas_->deSelectPatch(i);
 	}
+
+	pg_properties_->openPatches(selected_patches);
 	tex_canvas_->window()->Refresh();
-
-	updateUI();
-
-	pg_properties_->Thaw();
+	toolbar_patches_->enableGroup("Patch", !selected_patches.empty());
 }
 
 // -----------------------------------------------------------------------------
@@ -636,6 +448,7 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 			// TODO: tex_modified_ = true;
 		}
 
+		pg_properties_->refreshPatchProperties();
 		tex_canvas_->redraw(true);
 		handled = true;
 	}

@@ -1,0 +1,27 @@
+#pragma once
+
+namespace slade
+{
+class CTexture;
+class CTPatch;
+} // namespace slade
+
+namespace slade::texeditor
+{
+class TexturePropGrid : public wxPropertyGrid
+{
+public:
+	TexturePropGrid(wxWindow* parent);
+
+	void openTexture(CTexture* texture);
+	void openPatches(const vector<CTPatch*>& patches);
+	void refreshPatchProperties();
+
+private:
+	CTexture*        tex_ = nullptr;
+	vector<CTPatch*> patches_;
+	vector<unsigned> patch_indices_;
+
+	void onPropertyChanged(wxPropertyGridEvent& e);
+};
+} // namespace slade::texeditor

@@ -146,6 +146,16 @@ void CTextureGLCanvas::refreshPatch(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
+// Unloads the full preview image, so it is recreated on next draw.
+// We also need to reset the border buffer in case the texture size changed
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::refreshTexturePreview()
+{
+	CTextureCanvasBase::refreshTexturePreview();
+	lb_border_.reset();
+}
+
+// -----------------------------------------------------------------------------
 // Draws the canvas contents
 // -----------------------------------------------------------------------------
 void CTextureGLCanvas::draw()
