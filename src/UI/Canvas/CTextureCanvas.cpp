@@ -134,20 +134,6 @@ void CTextureCanvas::drawTexture(wxgfx::Context& ctx, Vec2d scale, Vec2i offset,
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
 			drawPatch(ctx, a);
 	}
-
-	// If we aren't currently dragging a patch, draw the fully generated texture
-	if (!dragging_)
-	{
-		// Generate wxBitmap if needed
-		if (!tex_preview_ || !tex_bitmap_.IsOk())
-		{
-			loadTexturePreview();
-			sImageToBitmap(*tex_preview_, palette_.get(), tex_bitmap_, view_.scale());
-		}
-
-		// Draw the texture
-		ctx.drawBitmap(tex_bitmap_, offset.x, offset.y, 1.0, texture_->width() * scale.x, texture_->height() * scale.y);
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -156,10 +142,10 @@ void CTextureCanvas::drawTexture(wxgfx::Context& ctx, Vec2d scale, Vec2i offset,
 void CTextureCanvas::drawTextureBorder(wxgfx::Context& ctx, Vec2d scale, Vec2i offset) const
 {
 	constexpr float ext = 0.0f;
-	const auto      x1  = offset.x;
-	const auto      x2  = offset.x + texture_->width() * scale.x;
-	const auto      y1  = offset.y;
-	const auto      y2  = offset.y + texture_->height() * scale.y;
+	const auto      x1  = -offset.x*scale.x;
+	const auto      x2  = (-offset.x + texture_->width())*scale.x-1;
+	const auto      y1  = -offset.y*scale.y;
+	const auto      y2  = (-offset.y + texture_->height())*scale.y-1;
 
 	// Border
 	ctx.setPen({ 0, 0, 0 }, 2.0);
@@ -218,7 +204,7 @@ void CTextureCanvas::drawPatch(const wxgfx::Context& ctx, int index)
 
 	// Draw patch
 	ctx.drawBitmap(
-		patch_bitmaps_[index], patch->xOffset(), patch->yOffset(), 1.0, patch_image->width(), patch_image->height());
+		patch_bitmaps_[index], (patch->xOffset() - texture_->offsetX())/texture_->scaleX(), (patch->yOffset() - texture_->offsetY())/texture_->scaleY(), 1.0, patch_image->width() / texture_->scaleX(), patch_image->height() / texture_->scaleY());
 }
 
 
@@ -301,7 +287,7 @@ void CTextureCanvas::onPaint(wxPaintEvent& e)
 		if (patches_[a].selected)
 		{
 			auto patch = texture_->patch(a);
-			ctx.drawRect(patch->xOffset(), patch->yOffset(), patches_[a].image->width(), patches_[a].image->height());
+			ctx.drawRect((patch->xOffset()-texture_->offsetX())/texture_->scaleX(), (patch->yOffset()-texture_->offsetY())/texture_->scaleY(), patches_[a].image->width()/texture_->scaleX(), patches_[a].image->height()/texture_->scaleY());
 		}
 
 	// Draw hilighted patch outline
@@ -312,10 +298,10 @@ void CTextureCanvas::onPaint(wxPaintEvent& e)
 		ctx.setPen({ 255, 255, 255, 150 }, 2.0);
 		auto patch = texture_->patch(hilight_patch_);
 		ctx.drawRect(
-			patch->xOffset(),
-			patch->yOffset(),
-			patches_[hilight_patch_].image->width(),
-			patches_[hilight_patch_].image->height());
+			(patch->xOffset()-texture_->offsetX())/texture_->scaleX(),
+			(patch->yOffset()-texture_->offsetY())/texture_->scaleY(),
+			patches_[hilight_patch_].image->width()/texture_->scaleX(),
+			patches_[hilight_patch_].image->height()/texture_->scaleY());
 		ctx.gc->SetCompositionMode(cm);
 	}
 }
