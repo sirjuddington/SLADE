@@ -137,8 +137,9 @@ bool GfxCanvas::shouldUpdateImage() const
 		return true;
 
 	// Check if resize required
-	if (!wxgfx::nearestInterpolationSupported() && image_bitmap_.GetWidth() != image_->width() * view_.scale().x
-		|| image_bitmap_.GetHeight() != image_->height() * view_.scale().y)
+	if (!wxgfx::nearestInterpolationSupported()
+		&& (image_bitmap_.GetWidth() != image_->width() * view_.scale().x
+			|| image_bitmap_.GetHeight() != image_->height() * view_.scale().y))
 		return true;
 
 	return false;
@@ -182,7 +183,10 @@ void GfxCanvas::updateImage(bool hilight)
 void GfxCanvas::drawImage(const wxgfx::Context& ctx)
 {
 	auto dragging = drag_origin_.x > 0;
-	auto hilight  = show_hilight_ && !dragging && image_hover_ && gfx_hilight_mouseover
+	auto hilight  = show_hilight_
+				   && !dragging
+				   && image_hover_
+				   && gfx_hilight_mouseover
 				   && editing_mode_ == EditMode::None;
 
 	// Load/update image if needed

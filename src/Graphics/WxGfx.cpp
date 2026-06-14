@@ -192,7 +192,7 @@ void Context::drawRect(int x, int y, int width, int height) const
 // -----------------------------------------------------------------------------
 void Context::drawBitmap(const wxBitmap& bitmap, int x, int y, double alpha, int width, int height) const
 {
-	if (!gc)
+	if (!gc || !bitmap.IsOk())
 		return;
 
 	const auto scale = gc->GetContentScaleFactor();
