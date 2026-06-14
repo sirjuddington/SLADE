@@ -85,6 +85,7 @@ TexturePropGrid::TexturePropGrid(wxWindow* parent) : wxPropertyGrid(parent)
 	Append(new wxBoolProperty(wxS("Optional"), wxS("optional"), false));
 	Append(new wxBoolProperty(wxS("No Decals"), wxS("no_decals"), false));
 	Append(new wxBoolProperty(wxS("Null Texture"), wxS("null_texture"), false));
+	Append(new wxBoolProperty(wxS("No Trim"), wxS("no_trim"), false));
 
 	// Patch properties
 	Append(new wxPropertyCategory(wxS("Patch Properties"), wxS("patch")));
@@ -135,6 +136,7 @@ void TexturePropGrid::openTexture(CTexture* texture)
 		HideProperty(wxS("optional"), !tex_->isExtended());
 		HideProperty(wxS("no_decals"), !tex_->isExtended());
 		HideProperty(wxS("null_texture"), !tex_->isExtended());
+		HideProperty(wxS("no_trim"), !tex_->isExtended());
 		HideProperty(wxS("tex_scale_x"), tex_->isExtended());
 		HideProperty(wxS("tex_scale_y"), tex_->isExtended());
 		HideProperty(wxS("tex_scale_xd"), !tex_->isExtended());
@@ -154,6 +156,7 @@ void TexturePropGrid::openTexture(CTexture* texture)
 			SetPropertyValue(wxS("optional"), tex_->isOptional());
 			SetPropertyValue(wxS("no_decals"), tex_->noDecals());
 			SetPropertyValue(wxS("null_texture"), tex_->nullTexture());
+			SetPropertyValue(wxS("no_trim"), tex_->noTrim());
 		}
 		else
 		{
@@ -369,6 +372,10 @@ void TexturePropGrid::onPropertyChanged(wxPropertyGridEvent& e)
 	// Null texture flag
 	else if (e.GetPropertyName() == wxS("null_texture"))
 		tex_->setNullTexture(e.GetValue().GetBool());
+
+	// NoTrim flag
+	else if (e.GetPropertyName() == wxS("no_trim"))
+		tex_->setNoTrim(e.GetValue().GetBool());
 
 	// Patch X position
 	else if (e.GetPropertyName() == wxS("patch_x") && !patches_.empty())

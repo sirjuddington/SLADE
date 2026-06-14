@@ -755,6 +755,10 @@ bool CTexture::parse(Tokenizer& tz, string_view type)
 			else if (tz.checkNC("NullTexture"))
 				null_texture_ = true;
 
+			// NoTrim
+			else if (tz.checkNC("NoTrim"))
+				no_trim_ = true;
+
 			// Patch
 			else if (tz.checkNC("Patch"))
 			{
@@ -840,6 +844,8 @@ string CTexture::asText()
 		text += "\tNoDecals\n";
 	if (null_texture_)
 		text += "\tNullTexture\n";
+	if (no_trim_)
+		text += "\tNoTrim\n";
 
 	// Write patches
 	for (auto& patch : patches_)

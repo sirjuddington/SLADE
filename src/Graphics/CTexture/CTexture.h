@@ -141,6 +141,7 @@ public:
 	bool           isOptional() const { return optional_; }
 	bool           noDecals() const { return no_decals_; }
 	bool           nullTexture() const { return null_texture_; }
+	bool           noTrim() const { return no_trim_; }
 	size_t         nPatches() const { return patches_.size(); }
 	CTPatch*       patch(size_t index) const;
 	uint8_t        state() const { return state_; }
@@ -164,6 +165,7 @@ public:
 	void setOptional(bool opt) { optional_ = opt; }
 	void setNoDecals(bool nd) { no_decals_ = nd; }
 	void setNullTexture(bool nt) { null_texture_ = nt; }
+	void setNoTrim(bool nt) { no_trim_ = nt; }
 	void setState(uint8_t state) { state_ = state; }
 	void setList(TextureXList* list) { in_list_ = list; }
 
@@ -221,6 +223,7 @@ private:
 	bool           optional_     = false;
 	bool           no_decals_    = false;
 	bool           null_texture_ = false;
+	bool           no_trim_      = false;
 	Vec2<int16_t>  offset_       = { 0, 0 };
 	Vec2<uint16_t> def_size_     = { 0, 0 };
 
