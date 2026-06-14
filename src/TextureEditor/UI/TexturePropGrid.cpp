@@ -126,8 +126,8 @@ wxPGProperty* createIntSpinProp(
 	const string& label,
 	const string& name,
 	int           step = 1,
-	int           min  = INT_MIN,
-	int           max  = INT_MAX)
+	int           min  = std::numeric_limits<int>::lowest(),
+	int           max  = std::numeric_limits<int>::max())
 {
 	auto prop = new wxIntProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0);
 	prop->SetEditor(new wxPGSpinCtrlEditor());
@@ -141,8 +141,8 @@ wxPGProperty* createDoubleSpinProp(
 	const string& label,
 	const string& name,
 	double        step = 0.1,
-	double        min  = DBL_MIN,
-	double        max  = DBL_MAX)
+	double        min  = std::numeric_limits<double>::lowest(),
+	double        max  = std::numeric_limits<double>::max())
 {
 	auto prop = new wxFloatProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0.0);
 	prop->SetEditor(new wxPGSpinCtrlEditor());
