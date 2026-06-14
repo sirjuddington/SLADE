@@ -187,7 +187,7 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 
 	// Texture/Patch properties grid
 	pg_properties_ = new TexturePropGrid(panel);
-	hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox           = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, lh.sfWithSmallBorder(1, wxLEFT).Expand());
 	hbox->Add(pg_properties_, lh.sfWithBorder(1, wxRIGHT).Expand());
 
@@ -199,8 +199,18 @@ void TextureEditorPanel::openTexture(CTexture& tex) const
 	tex_canvas_->openTexture(&tex, editor_->archive());
 
 	int patch_index = 0;
+#if wxCHECK_VERSION(3, 3, 0)
 	for (auto& p : tex.patches())
 		list_patches_->AppendItem({ WX_FMT("{}", patch_index++), wxString::FromUTF8(p->name()) });
+#else
+	for (auto& p : tex.patches())
+	{
+		wxVector<wxVariant> data;
+		data.push_back(WX_FMT("{}", patch_index++));
+		data.push_back(wxString::FromUTF8(p->name()));
+		list_patches_->AppendItem(data);
+	}
+#endif
 	list_patches_->GetColumn(0)->SetWidth(FromDIP(30));
 
 	pg_properties_->openTexture(&tex);
@@ -263,8 +273,8 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 	auto tex_current = tex_canvas_->texture();
 
 	// Get mouse position relative to texture
-	auto pos = tex_canvas_->view().canvasPos(
-		{ e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor() });
+	auto scale = tex_canvas_->window()->GetContentScaleFactor();
+	auto pos   = tex_canvas_->view().canvasPos({ e.GetX() * scale, e.GetY() * scale });
 
 	// Get patch that the mouse is over (if any)
 	int patch = tex_canvas_->patchAt(pos.x, pos.y);
