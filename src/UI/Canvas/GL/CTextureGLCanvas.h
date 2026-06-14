@@ -38,6 +38,7 @@ public:
 	void clearTexture() override;
 	void clearPatches() override;
 	void refreshPatch(unsigned index) override;
+	void refreshTexturePreview() override;
 	void draw() override;
 
 private:

@@ -57,7 +57,7 @@ public:
 	virtual void clearTexture();
 	virtual void clearPatches();
 	virtual void refreshPatch(unsigned index);
-	void         refreshTexturePreview();
+	virtual void         refreshTexturePreview();
 	bool         openTexture(CTexture* tex, Archive* parent);
 	void         resetViewOffsets();
 	void         redraw(bool update_tex = false);
