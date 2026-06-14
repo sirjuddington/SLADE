@@ -268,8 +268,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 					{
 						col.Set(wxString::FromUTF8(first));
 						colour_.set(col);
-						colour_.a  = static_cast<uint8_t>(second * 255.0);
-						blendtype_ = BlendType::Tint;
+						tint_amount_ = second;
+						blendtype_   = BlendType::Tint;
 					}
 					else
 					{
@@ -286,7 +286,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 							return false;
 						}
 						tz.adv(); // Skip ,
-						colour_.a  = static_cast<uint8_t>(tz.next().asFloat() * 255.0);
+						tint_amount_ = tz.next().asFloat();
 						blendtype_ = BlendType::Tint;
 					}
 				}
@@ -347,12 +347,12 @@ string CTPatchEx::asText()
 		text += fmt::format("\t\tBlend \"{}\"", col.GetAsString(wxC2S_HTML_SYNTAX).utf8_string());
 
 		if (blendtype_ == BlendType::Tint)
-			text += fmt::format(", {:1.1f}\n", static_cast<double>(colour_.a) / 255.0);
+			text += fmt::format(", {:1.3f}\n", tint_amount_);
 		else
 			text += "\n";
 	}
 	if (alpha_ < 1.0f)
-		text += fmt::format("\t\tAlpha {:1.2f}\n", alpha_);
+		text += fmt::format("\t\tAlpha {:1.3f}\n", alpha_);
 	if (!(strutil::equalCI(style_, "Copy")))
 		text += fmt::format("\t\tStyle {}\n", style_);
 
@@ -1033,7 +1033,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool 
 			if (patch->blendType() == CTPatchEx::BlendType::Blend)
 				p_img.colourise(patch->colour(), pal);
 			else if (patch->blendType() == CTPatchEx::BlendType::Tint)
-				p_img.tint(patch->colour(), patch->colour().fa(), pal);
+				p_img.tint(patch->colour(), patch->tintAmount(), pal);
 
 
 			// Add patch to texture image

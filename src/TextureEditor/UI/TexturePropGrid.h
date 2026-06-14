@@ -22,6 +22,8 @@ private:
 	vector<CTPatch*> patches_;
 	vector<unsigned> patch_indices_;
 
+	void updateColouringPropsVisibility();
+
 	void onPropertyChanged(wxPropertyGridEvent& e);
 };
 } // namespace slade::texeditor

@@ -66,6 +66,7 @@ public:
 	string       style() const { return style_; }
 	BlendType    blendType() const { return blendtype_; }
 	Translation* translation() const { return translation_.get(); }
+	float        tintAmount() const { return tint_amount_; }
 
 	void setFlipX(bool flip) { flip_x_ = flip; }
 	void setFlipY(bool flip) { flip_y_ = flip; }
@@ -77,6 +78,7 @@ public:
 	void setStyle(string_view style) { style_ = style; }
 	void setBlendType(BlendType type) { blendtype_ = type; }
 	void setTranslation(const Translation& translation);
+	void setTintAmount(float amount) { tint_amount_ = amount; }
 
 	bool hasTranslation() const;
 
@@ -96,6 +98,7 @@ private:
 	float                   alpha_     = 1.f;
 	string                  style_     = "Copy";
 	BlendType               blendtype_ = BlendType::None; // 0=none, 1=translation, 2=blend, 3=tint
+	float                   tint_amount_ = 0.f;
 };
 
 class CTexture

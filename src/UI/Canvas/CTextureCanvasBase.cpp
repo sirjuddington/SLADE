@@ -264,10 +264,10 @@ int CTextureCanvasBase::patchAt(int x, int y) const
 
 		// Check if x,y is within patch bounds
 		const auto patch = texture_->patch(a);
-		if (x >= (patch->xOffset()
-			-texture_->offsetX())/texture_->scaleX() && x < (patch->xOffset() + img->width()
-			- texture_->offsetX())/texture_->scaleX() && y >= (patch->yOffset() - texture_->offsetY())/texture_->scaleY()
-			&& (y < patch->yOffset() - texture_->offsetY() + img->height())/texture_->scaleY())
+		if (x >= (patch->xOffset() - texture_->offsetX()) / texture_->scaleX()
+			&& x < (patch->xOffset() + img->width() - texture_->offsetX()) / texture_->scaleX()
+			&& y >= (patch->yOffset() - texture_->offsetY()) / texture_->scaleY()
+			&& y < (patch->yOffset() + img->height() - texture_->offsetY()) / texture_->scaleY())
 		{
 			return a;
 		}

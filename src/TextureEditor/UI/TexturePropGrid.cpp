@@ -38,19 +38,33 @@ wxPGProperty* createUIntSpinProp(const string& label, const string& name, int st
 	return prop;
 }
 
-wxPGProperty* createIntSpinProp(const string& label, const string& name, int step = 1)
+wxPGProperty* createIntSpinProp(
+	const string& label,
+	const string& name,
+	int           step = 1,
+	int           min  = INT_MIN,
+	int           max  = INT_MAX)
 {
 	auto prop = new wxIntProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0);
 	prop->SetEditor(new wxPGSpinCtrlEditor());
 	prop->SetAttribute(wxPG_ATTR_SPINCTRL_STEP, step);
+	prop->SetAttribute(wxPG_ATTR_MIN, min);
+	prop->SetAttribute(wxPG_ATTR_MAX, max);
 	return prop;
 }
 
-wxPGProperty* createDoubleSpinProp(const string& label, const string& name, double step = 0.1)
+wxPGProperty* createDoubleSpinProp(
+	const string& label,
+	const string& name,
+	double        step = 0.1,
+	double        min  = DBL_MIN,
+	double        max  = DBL_MAX)
 {
 	auto prop = new wxFloatProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0.0);
 	prop->SetEditor(new wxPGSpinCtrlEditor());
 	prop->SetAttribute(wxPG_ATTR_SPINCTRL_STEP, step);
+	prop->SetAttribute(wxPG_ATTR_MIN, min);
+	prop->SetAttribute(wxPG_ATTR_MAX, max);
 	return prop;
 }
 } // namespace
@@ -74,17 +88,17 @@ TexturePropGrid::TexturePropGrid(wxWindow* parent) : wxPropertyGrid(parent)
 
 	// Patch properties
 	Append(new wxPropertyCategory(wxS("Patch Properties"), wxS("patch")));
-	Append(createIntSpinProp("X Position", "patch_x"));
-	Append(createIntSpinProp("Y Position", "patch_y"));
+	Append(createIntSpinProp("X Position", "patch_x", 1, -32768, 32767));
+	Append(createIntSpinProp("Y Position", "patch_y", 1, -32768, 32767));
 	Append(new wxBoolProperty(wxS("Use Source Offsets"), wxS("patch_use_offsets"), false));
 	Append(new wxBoolProperty(wxS("Flip X"), wxS("patch_flip_x"), false));
 	Append(new wxBoolProperty(wxS("Flip Y"), wxS("patch_flip_y"), false));
 	Append(new wxEnumProperty(wxS("Rotation"), wxS("patch_rotation"), rotation_names, rotation_values));
-	Append(createDoubleSpinProp("Alpha", "patch_alpha"));
+	Append(createDoubleSpinProp("Alpha", "patch_alpha", 0.1, 0.0, 1.0));
 	Append(new wxEnumProperty(wxS("Alpha Style"), wxS("patch_alpha_style"), alphastyle_names));
 	Append(new wxEnumProperty(wxS("Colouring"), wxS("patch_colouring"), colouring_names));
 	Append(new wxColourProperty(wxS("Colour"), wxS("patch_colour")));
-	Append(createDoubleSpinProp("Amount", "patch_tint_amount"));
+	Append(createDoubleSpinProp("Amount", "patch_tint_amount", 0.1, 0.0, 1.0));
 
 	// TODO: Custom wxPGProperty for translation
 	Append(new wxStringProperty(wxS("Translation"), wxS("patch_translation")));
@@ -101,7 +115,7 @@ TexturePropGrid::TexturePropGrid(wxWindow* parent) : wxPropertyGrid(parent)
 
 void TexturePropGrid::openTexture(CTexture* texture)
 {
-	tex_   = texture;
+	tex_ = texture;
 	patches_.clear();
 
 	Freeze();
@@ -199,7 +213,6 @@ void TexturePropGrid::openPatches(const vector<CTPatch*>& patches)
 
 void TexturePropGrid::refreshPatchProperties()
 {
-	
 	if (patches_.size() == 1)
 	{
 		auto patch = patches_[0];
@@ -209,18 +222,25 @@ void TexturePropGrid::refreshPatchProperties()
 		{
 			auto     ex_patch = dynamic_cast<CTPatchEx*>(patch);
 			wxColour wx_col   = ex_patch->colour();
+
+			// Ensure positive rotation value
+			int rotation = ex_patch->rotation() % 360;
+			if (rotation < 0)
+				rotation += 360;
+
 			SetPropertyValue(wxS("patch_use_offsets"), ex_patch->useOffsets());
 			SetPropertyValue(wxS("patch_flip_x"), ex_patch->flipX());
 			SetPropertyValue(wxS("patch_flip_y"), ex_patch->flipY());
-			SetPropertyValue(wxS("patch_rotation"), ex_patch->rotation());
+			SetPropertyValue(wxS("patch_rotation"), rotation);
 			SetPropertyValue(wxS("patch_alpha"), ex_patch->alpha());
 			SetPropertyValue(wxS("patch_alpha_style"), wxString::FromUTF8(ex_patch->style()));
 			SetPropertyValue(wxS("patch_colouring"), static_cast<int>(ex_patch->blendType()));
 			SetPropertyValue(wxS("patch_colour"), wx_col);
-			SetPropertyValue(wxS("patch_tint_amount"), wx_col.Alpha() / 255.0);
+			SetPropertyValue(wxS("patch_tint_amount"), ex_patch->tintAmount());
 			SetPropertyValue(
 				wxS("patch_translation"),
 				ex_patch->hasTranslation() ? wxString::FromUTF8(ex_patch->translation()->asText()) : wxString());
+			updateColouringPropsVisibility();
 		}
 	}
 	else
@@ -241,51 +261,65 @@ void TexturePropGrid::refreshPatchProperties()
 	}
 }
 
+void TexturePropGrid::updateColouringPropsVisibility()
+{
+	switch (GetPropertyValue(wxS("patch_colouring")).GetInteger())
+	{
+	case 1: // Translation
+		HideProperty(wxS("patch_colour"), true);
+		HideProperty(wxS("patch_tint_amount"), true);
+		HideProperty(wxS("patch_translation"), false);
+		break;
+	case 2: // Blend
+		HideProperty(wxS("patch_colour"), false);
+		HideProperty(wxS("patch_tint_amount"), true);
+		HideProperty(wxS("patch_translation"), true);
+		break;
+	case 3: // Tint
+		HideProperty(wxS("patch_colour"), false);
+		HideProperty(wxS("patch_tint_amount"), false);
+		HideProperty(wxS("patch_translation"), true);
+		break;
+	default: // None / other (invalid)
+		HideProperty(wxS("patch_colour"), true);
+		HideProperty(wxS("patch_tint_amount"), true);
+		HideProperty(wxS("patch_translation"), true);
+		break;
+	}
+}
+
 void TexturePropGrid::onPropertyChanged(wxPropertyGridEvent& e)
 {
 	if (!tex_)
 		return;
 
-	// Colouring type changed, update visibility of related properties
+	bool refresh_texture = false;
+	bool refresh_patches = false;
+
+	// Colouring type
 	if (e.GetPropertyName() == wxS("patch_colouring"))
 	{
-		switch (e.GetValue().GetInteger())
-		{
-		case 1: // Translation
-			HideProperty(wxS("patch_colour"), true);
-			HideProperty(wxS("patch_tint_amount"), true);
-			HideProperty(wxS("patch_translation"), false);
-			break;
-		case 2: // Blend
-			HideProperty(wxS("patch_colour"), false);
-			HideProperty(wxS("patch_tint_amount"), true);
-			HideProperty(wxS("patch_translation"), true);
-			break;
-		case 3: // Tint
-			HideProperty(wxS("patch_colour"), false);
-			HideProperty(wxS("patch_tint_amount"), false);
-			HideProperty(wxS("patch_translation"), true);
-			break;
-		default: // None / other (invalid)
-			HideProperty(wxS("patch_colour"), true);
-			HideProperty(wxS("patch_tint_amount"), true);
-			HideProperty(wxS("patch_translation"), true);
-			break;
-		}
+		updateColouringPropsVisibility();
+
+		for (auto& patch : patches_)
+			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
+				ex_patch->setBlendType(static_cast<CTPatchEx::BlendType>(e.GetValue().GetInteger()));
+
+		refresh_patches = true;
 	}
 
 	// Texture width
 	else if (e.GetPropertyName() == wxS("tex_width"))
 	{
 		tex_->setWidth(e.GetValue().GetInteger());
-		tex_->signals().texture_modified();
+		refresh_texture = true;
 	}
 
 	// Texture height
 	else if (e.GetPropertyName() == wxS("tex_height"))
 	{
 		tex_->setHeight(e.GetValue().GetInteger());
-		tex_->signals().texture_modified();
+		refresh_texture = true;
 	}
 
 	// World panning flag
@@ -341,7 +375,7 @@ void TexturePropGrid::onPropertyChanged(wxPropertyGridEvent& e)
 	{
 		for (auto& patch : patches_)
 			patch->setOffsetX(e.GetValue().GetInteger());
-		tex_->signals().patches_modified(patch_indices_);
+		refresh_patches = true;
 	}
 
 	// Patch Y position
@@ -349,6 +383,99 @@ void TexturePropGrid::onPropertyChanged(wxPropertyGridEvent& e)
 	{
 		for (auto& patch : patches_)
 			patch->setOffsetY(e.GetValue().GetInteger());
-		tex_->signals().patches_modified(patch_indices_);
+		refresh_patches = true;
 	}
+
+	// Use source offsets
+	else if (e.GetPropertyName() == wxS("patch_use_offsets"))
+	{
+		for (auto& patch : patches_)
+			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
+				ex_patch->setUseOffsets(e.GetValue().GetBool());
+		refresh_patches = true;
+	}
+
+	// Flip X
+	else if (e.GetPropertyName() == wxS("patch_flip_x"))
+	{
+		for (auto& patch : patches_)
+			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
+				ex_patch->setFlipX(e.GetValue().GetBool());
+		refresh_patches = true;
+	}
+
+	// Flip Y
+	else if (e.GetPropertyName() == wxS("patch_flip_y"))
+	{
+		for (auto& patch : patches_)
+			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
+				ex_patch->setFlipY(e.GetValue().GetBool());
+		refresh_patches = true;
+	}
+
+	// Rotation
+	else if (e.GetPropertyName() == wxS("patch_rotation"))
+	{
+		for (auto& patch : patches_)
+			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
+				ex_patch->setRotation(e.GetValue().GetInteger());
+		refresh_patches = true;
+	}
+
+	// Alpha
+	else if (e.GetPropertyName() == wxS("patch_alpha"))
+	{
+		for (auto& patch : patches_)
+			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
+				ex_patch->setAlpha(e.GetValue().GetDouble());
+		refresh_patches = true;
+	}
+
+	// Alpha style
+	else if (e.GetPropertyName() == wxS("patch_alpha_style"))
+	{
+		for (auto& patch : patches_)
+			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
+				ex_patch->setStyle(alphastyle_names[e.GetValue().GetInteger()].utf8_string());
+		refresh_patches = true;
+	}
+
+	// Colour
+	else if (e.GetPropertyName() == wxS("patch_colour"))
+	{
+		wxColour col;
+		col << e.GetPropertyValue();
+		for (auto& patch : patches_)
+			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
+				ex_patch->setColour(ColRGBA{ col });
+		refresh_patches = true;
+	}
+
+	// Tint amount
+	else if (e.GetPropertyName() == wxS("patch_tint_amount"))
+	{
+		for (auto& patch : patches_)
+			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
+				ex_patch->setTintAmount(e.GetValue().GetDouble());
+		refresh_patches = true;
+	}
+
+	// Translation
+	else if (e.GetPropertyName() == wxS("patch_translation"))
+	{
+		Translation t;
+		if (!e.GetValue().GetString().empty())
+			t.parse(e.GetValue().GetString().utf8_string());
+
+		for (auto& patch : patches_)
+			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
+				ex_patch->setTranslation(t);
+
+		refresh_patches = true;
+	}
+
+	if (refresh_texture)
+		tex_->signals().texture_modified();
+	if (refresh_patches)
+		tex_->signals().patches_modified(patch_indices_);
 }

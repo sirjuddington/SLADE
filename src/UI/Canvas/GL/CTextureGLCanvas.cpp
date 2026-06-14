@@ -246,6 +246,21 @@ void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
 			drawPatch(a);
 	}
+
+	// If we aren't currently dragging a patch, draw the fully generated texture
+	if (!dragging_)
+	{
+		// Generate if needed
+		if (!tex_preview_ || gl_tex_preview_ == 0)
+		{
+			loadTexturePreview();
+			gl_tex_preview_ = gl::Texture::createFromImage(*tex_preview_, palette_.get());
+		}
+
+		// Draw the texture
+		dc.texture = gl_tex_preview_;
+		dc.drawRect({ offset.x, offset.y, offset.x + width * scale.x, offset.y + height * scale.y, false });
+	}
 }
 
 // -----------------------------------------------------------------------------
