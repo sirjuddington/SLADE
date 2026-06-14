@@ -8,10 +8,11 @@ class CTPatch;
 
 namespace slade::texeditor
 {
+class TextureEditor;
 class TexturePropGrid : public wxPropertyGrid
 {
 public:
-	TexturePropGrid(wxWindow* parent);
+	TexturePropGrid(wxWindow* parent, const TextureEditor& editor);
 
 	void openTexture(CTexture* texture);
 	void openPatches(const vector<CTPatch*>& patches);

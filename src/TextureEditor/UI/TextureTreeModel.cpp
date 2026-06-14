@@ -16,7 +16,7 @@ void TextureTreeModel::open(const TextureEditor& editor)
 
 	// Build top-level items list (one per TextureXList)
 	list_items_.clear();
-	for (size_t i = 0; i < editor_->numTextureLists(); ++i)
+	for (size_t i = 0; i < editor_->nTextureLists(); ++i)
 		list_items_.emplace_back(Item{ .list = editor_->textureList(i), .index = -1 });
 
 	// Refresh (will load all items)
@@ -156,7 +156,7 @@ bool TextureTreeModel::IsContainer(const wxDataViewItem& item) const
 	if (auto i = static_cast<Item*>(item.GetID()))
 		return i->index < 0;
 
-	return editor_->numTextureLists() > 0;
+	return editor_->nTextureLists() > 0;
 }
 
 unsigned int TextureTreeModel::GetChildren(const wxDataViewItem& item, wxDataViewItemArray& children) const

@@ -2,6 +2,7 @@
 
 namespace slade
 {
+class CTexture;
 class PatchTable;
 class TextureXList;
 }
@@ -16,10 +17,13 @@ public:
 
 	Archive* archive() const { return archive_.get(); }
 
-	unsigned      numTextureLists() const { return texturex_entries_.size(); }
+	unsigned      nTextureLists() const { return texturex_entries_.size(); }
 	TextureXList* textureList(unsigned index) const;
 	ArchiveEntry* textureListEntry(unsigned index) const;
 	string        textureListName(const TextureXList& list) const;
+
+	CTexture* currentTexture() const { return tex_current_; }
+	void      setCurrentTexture(CTexture* tex) { tex_current_ = tex; }
 
 private:
 	unique_ptr<PatchTable> patch_table_;
@@ -31,5 +35,7 @@ private:
 		unique_ptr<TextureXList> texturex;
 	};
 	vector<TextureXEntry> texturex_entries_;
+
+	CTexture* tex_current_ = nullptr; // The texture currently open in the editor
 };
 } // namespace slade::texeditor

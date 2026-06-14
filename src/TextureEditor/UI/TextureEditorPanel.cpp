@@ -186,7 +186,7 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 	hbox->Add(toolbar_patches_, lh.sfWithSmallBorder(0, wxLEFT | wxRIGHT).Expand());
 
 	// Texture/Patch properties grid
-	pg_properties_ = new TexturePropGrid(panel);
+	pg_properties_ = new TexturePropGrid(panel, *editor_);
 	hbox           = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, lh.sfWithSmallBorder(1, wxLEFT).Expand());
 	hbox->Add(pg_properties_, lh.sfWithBorder(1, wxRIGHT).Expand());
@@ -196,6 +196,7 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 
 void TextureEditorPanel::openTexture(CTexture& tex) const
 {
+	editor_->setCurrentTexture(&tex);
 	tex_canvas_->openTexture(&tex, editor_->archive());
 
 	int patch_index = 0;
@@ -218,6 +219,7 @@ void TextureEditorPanel::openTexture(CTexture& tex) const
 
 void TextureEditorPanel::clearTexture() const
 {
+	editor_->setCurrentTexture(nullptr);
 	tex_canvas_->clearTexture();
 	list_patches_->DeleteAllItems();
 	pg_properties_->openTexture(nullptr);
@@ -253,7 +255,7 @@ void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
 		auto item = list_patches_->RowToItem(i);
 		if (item.IsOk() && list_patches_->IsSelected(item))
 		{
-			selected_patches.push_back(tex_canvas_->texture()->patch(i));
+			selected_patches.push_back(editor_->currentTexture()->patch(i));
 			tex_canvas_->selectPatch(i);
 		}
 		else
@@ -270,7 +272,7 @@ void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 {
-	auto tex_current = tex_canvas_->texture();
+	auto tex_current = editor_->currentTexture();
 
 	// Get mouse position relative to texture
 	auto scale = tex_canvas_->window()->GetContentScaleFactor();
@@ -448,7 +450,7 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		list_patches_->GetSelections(selected_patches);
 		for (auto item : selected_patches)
 		{
-			auto patch = tex_canvas_->texture()->patch(list_patches_->ItemToRow(item));
+			auto patch = editor_->currentTexture()->patch(list_patches_->ItemToRow(item));
 			if (!patch)
 				continue;
 			int16_t cx = patch->xOffset();

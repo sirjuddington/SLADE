@@ -3,6 +3,9 @@
 #include "TexturePropGrid.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Translation.h"
+#include "MainEditor/MainEditor.h"
+#include "TextureEditor/TextureEditor.h"
+#include "UI/Dialogs/TranslationEditorDialog.h"
 
 using namespace slade;
 using namespace texeditor;
@@ -25,6 +28,87 @@ const wxArrayString alphastyle_names = { wxS("Copy"),      wxS("Translucent"),  
 										 wxS("CopyAlpha"), wxS("CopyNewAlpha"),    wxS("Overlay") };
 
 const wxArrayString colouring_names = { wxS("None"), wxS("Translation"), wxS("Blend"), wxS("Tint") };
+} // namespace
+
+
+namespace
+{
+class TranslationProperty : public wxStringProperty
+{
+public:
+	TranslationProperty(
+		const TextureEditor& editor,
+		const wxString&      label = wxPG_LABEL,
+		const wxString&      name  = wxPG_LABEL,
+		const wxString&      value = wxString()) :
+		wxStringProperty(label, name, value),
+		editor_{ &editor }
+	{
+		// Set to text+button editor
+		SetEditor(wxPGEditor_TextCtrlAndButton);
+	}
+
+	void openPatch(CTexture* texture, int patch_index)
+	{
+		texture_     = texture;
+		patch_index_ = patch_index;
+
+		if (texture_ && patch_index_ >= 0)
+		{
+			auto patchx = dynamic_cast<CTPatchEx*>(texture_->patch(patch_index_));
+			if (patchx && patchx->hasTranslation())
+				SetValue(wxString::FromUTF8(patchx->translation()->asText()));
+			else
+				SetValue(wxEmptyString);
+		}
+		else
+			SetValue(wxEmptyString);
+	}
+
+	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* wnd_primary, wxEvent& e) override
+	{
+		// '...' button clicked
+		if (e.GetEventType() == wxEVT_BUTTON)
+		{
+			// Create patch image
+			SImage image(SImage::Type::PalMask);
+			texture_->loadPatchImage(patch_index_, image, editor_->archive(), maineditor::currentPalette());
+
+			// Build translation from current value
+			Translation trans;
+			if (!GetValueAsString().empty())
+				trans.parse(GetValueAsString().utf8_string());
+
+			// Add palette range if no translation ranges exist
+			if (trans.nRanges() == 0)
+				trans.addRange(TransRange::Type::Palette, 0);
+
+			// Open translation editor dialog
+			TranslationEditorDialog ted(
+				maineditor::windowWx(), *maineditor::currentPalette(), "Edit Translation", &image);
+			ted.openTranslation(trans);
+			if (ted.ShowModal() == wxID_OK)
+			{
+				SetValue(wxString::FromUTF8(ted.getTranslation().asText()));
+
+				// Send changed event (SetValue does not)
+				wxPropertyGridEvent evt(wxEVT_PG_CHANGED, GetGrid()->GetId());
+				evt.SetProperty(this);
+				evt.SetPropertyValue(GetValue());
+				GetGrid()->GetEventHandler()->ProcessEvent(evt);
+
+				return true;
+			}
+		}
+
+		return wxStringProperty::OnEvent(propgrid, wnd_primary, e);
+	}
+
+private:
+	const TextureEditor* editor_;
+	CTexture*            texture_     = nullptr;
+	int                  patch_index_ = -1;
+};
 } // namespace
 
 
@@ -70,7 +154,7 @@ wxPGProperty* createDoubleSpinProp(
 } // namespace
 
 
-TexturePropGrid::TexturePropGrid(wxWindow* parent) : wxPropertyGrid(parent)
+TexturePropGrid::TexturePropGrid(wxWindow* parent, const TextureEditor& editor) : wxPropertyGrid(parent)
 {
 	// Texture Properties
 	Append(new wxPropertyCategory(wxS("Texture Properties"), wxS("texture")));
@@ -100,9 +184,7 @@ TexturePropGrid::TexturePropGrid(wxWindow* parent) : wxPropertyGrid(parent)
 	Append(new wxEnumProperty(wxS("Colouring"), wxS("patch_colouring"), colouring_names));
 	Append(new wxColourProperty(wxS("Colour"), wxS("patch_colour")));
 	Append(createDoubleSpinProp("Amount", "patch_tint_amount", 0.1, 0.0, 1.0));
-
-	// TODO: Custom wxPGProperty for translation
-	Append(new wxStringProperty(wxS("Translation"), wxS("patch_translation")));
+	Append(new TranslationProperty(editor, wxS("Translation"), wxS("patch_translation")));
 
 	// Set all bool properties to use checkboxes
 	SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
@@ -240,9 +322,8 @@ void TexturePropGrid::refreshPatchProperties()
 			SetPropertyValue(wxS("patch_colouring"), static_cast<int>(ex_patch->blendType()));
 			SetPropertyValue(wxS("patch_colour"), wx_col);
 			SetPropertyValue(wxS("patch_tint_amount"), ex_patch->tintAmount());
-			SetPropertyValue(
-				wxS("patch_translation"),
-				ex_patch->hasTranslation() ? wxString::FromUTF8(ex_patch->translation()->asText()) : wxString());
+			auto trans_prop = dynamic_cast<TranslationProperty*>(GetProperty(wxS("patch_translation")));
+			trans_prop->openPatch(tex_, patch_indices_[0]);
 			updateColouringPropsVisibility();
 		}
 	}
