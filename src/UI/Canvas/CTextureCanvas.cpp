@@ -142,10 +142,10 @@ void CTextureCanvas::drawTexture(wxgfx::Context& ctx, Vec2d scale, Vec2i offset,
 void CTextureCanvas::drawTextureBorder(wxgfx::Context& ctx, Vec2d scale, Vec2i offset) const
 {
 	constexpr float ext = 0.0f;
-	const auto      x1  = -offset.x*scale.x;
-	const auto      x2  = (-offset.x + texture_->width())*scale.x-1;
-	const auto      y1  = -offset.y*scale.y;
-	const auto      y2  = (-offset.y + texture_->height())*scale.y-1;
+	const auto      x1  = -offset.x * scale.x;
+	const auto      x2  = (-offset.x + texture_->width()) * scale.x - 1;
+	const auto      y1  = -offset.y * scale.y;
+	const auto      y2  = (-offset.y + texture_->height()) * scale.y - 1;
 
 	// Border
 	ctx.setPen({ 0, 0, 0 }, 2.0);
@@ -203,8 +203,14 @@ void CTextureCanvas::drawPatch(const wxgfx::Context& ctx, int index)
 	}
 
 	// Draw patch
+	auto scale = texture_->scaleFactor();
 	ctx.drawBitmap(
-		patch_bitmaps_[index], (patch->xOffset() - texture_->offsetX())/texture_->scaleX(), (patch->yOffset() - texture_->offsetY())/texture_->scaleY(), 1.0, patch_image->width() / texture_->scaleX(), patch_image->height() / texture_->scaleY());
+		patch_bitmaps_[index],
+		(patch->xOffset() - texture_->offsetX()) * scale.x,
+		(patch->yOffset() - texture_->offsetY()) * scale.y,
+		1.0,
+		patch_image->width() / scale.x,
+		patch_image->height() / scale.y);
 }
 
 
@@ -287,7 +293,11 @@ void CTextureCanvas::onPaint(wxPaintEvent& e)
 		if (patches_[a].selected)
 		{
 			auto patch = texture_->patch(a);
-			ctx.drawRect((patch->xOffset()-texture_->offsetX())/texture_->scaleX(), (patch->yOffset()-texture_->offsetY())/texture_->scaleY(), patches_[a].image->width()/texture_->scaleX(), patches_[a].image->height()/texture_->scaleY());
+			ctx.drawRect(
+				(patch->xOffset() - texture_->offsetX()) * scale.x,
+				(patch->yOffset() - texture_->offsetY()) * scale.y,
+				patches_[a].image->width() * scale.x,
+				patches_[a].image->height() * scale.y);
 		}
 
 	// Draw hilighted patch outline
@@ -298,10 +308,10 @@ void CTextureCanvas::onPaint(wxPaintEvent& e)
 		ctx.setPen({ 255, 255, 255, 150 }, 2.0);
 		auto patch = texture_->patch(hilight_patch_);
 		ctx.drawRect(
-			(patch->xOffset()-texture_->offsetX())/texture_->scaleX(),
-			(patch->yOffset()-texture_->offsetY())/texture_->scaleY(),
-			patches_[hilight_patch_].image->width()/texture_->scaleX(),
-			patches_[hilight_patch_].image->height()/texture_->scaleY());
+			(patch->xOffset() - texture_->offsetX()) * scale.x,
+			(patch->yOffset() - texture_->offsetY()) * scale.y,
+			patches_[hilight_patch_].image->width() * scale.x,
+			patches_[hilight_patch_].image->height() * scale.y);
 		ctx.gc->SetCompositionMode(cm);
 	}
 }

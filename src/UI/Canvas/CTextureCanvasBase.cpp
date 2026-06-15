@@ -256,6 +256,7 @@ int CTextureCanvasBase::patchAt(int x, int y) const
 		return -1;
 
 	// Go through texture patches backwards (ie from frontmost to back)
+	auto scale = texture_->scaleFactor();
 	for (int a = static_cast<int>(texture_->nPatches()) - 1; a >= 0; a--)
 	{
 		auto img = patches_[a].image.get();
@@ -264,10 +265,10 @@ int CTextureCanvasBase::patchAt(int x, int y) const
 
 		// Check if x,y is within patch bounds
 		const auto patch = texture_->patch(a);
-		if (x >= (patch->xOffset() - texture_->offsetX()) / texture_->scaleX()
-			&& x < (patch->xOffset() + img->width() - texture_->offsetX()) / texture_->scaleX()
-			&& y >= (patch->yOffset() - texture_->offsetY()) / texture_->scaleY()
-			&& y < (patch->yOffset() + img->height() - texture_->offsetY()) / texture_->scaleY())
+		if (x >= (patch->xOffset() - texture_->offsetX()) * scale.x
+			&& x < (patch->xOffset() + img->width() - texture_->offsetX()) * scale.x
+			&& y >= (patch->yOffset() - texture_->offsetY()) * scale.y
+			&& y < (patch->yOffset() + img->height() - texture_->offsetY()) * scale.y)
 		{
 			return a;
 		}
