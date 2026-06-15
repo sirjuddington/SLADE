@@ -2,37 +2,6 @@
 // Thing related specials
 {
   "arg_presets": {
-    "means_of_death": {
-      "name": "Means of death",
-      "type": "choice",
-      "custom_values": [
-        { "name": "generic damage", "value": 0 },
-        { "name": "rocket", "value": 5 },
-        { "name": "rocket splash damage", "value": 6 },
-        { "name": "plasma", "value": 7 },
-        { "name": "BFG ball", "value": 8 },
-        { "name": "BFG tracer", "value": 9 },
-        { "name": "chainsaw", "value": 10 },
-        { "name": "shotgun", "value": 11 },
-        { "name": "drowning", "value": 12 },
-        { "name": "slime - Doom's damaging floors", "value": 13 },
-        { "name": "lava/fire", "value": 14 },
-        { "name": "crusher", "value": 15 },
-        { "name": "telefrag", "value": 16 },
-        { "name": "falling", "value": 17 },
-        { "name": "suicide", "value": 18 },
-        { "name": "barrel", "value": 19 },
-        { "name": "exit - used in deathmatch", "value": 20 },
-        { "name": "generic splash damage", "value": 21 },
-        { "name": "generic melee damage", "value": 22 },
-        { "name": "railgun", "value": 23 },
-        { "name": "ice", "value": 24 },
-        { "name": "disintegration", "value": 25 },
-        { "name": "poison", "value": 26 },
-        { "name": "electricity", "value": 27 },
-        { "name": "massacre - console cheat", "value": 1000 }
-      ]
-    },
     "projectile_speed": {
       "name": "Speed",
       "type": "speed",

@@ -1294,12 +1294,13 @@ void Renderer::draw(bool focused) const
 	// Draw info overlay
 	if (focused)
 	{
-	dc.font            = draw2d::Font::Condensed;
-	dc.text_size       = 16 * ui_scale_;
-	dc.text_style      = draw2d::TextStyle::Normal;
-	dc.text_dropshadow = false;
-	dc.blend           = Blend::Normal;
-	context_->drawInfoOverlay(dc, anim_info_fade_);
+		dc.texture         = 0;
+		dc.font            = draw2d::Font::Condensed;
+		dc.text_size       = 16 * ui_scale_;
+		dc.text_style      = draw2d::TextStyle::Normal;
+		dc.text_dropshadow = false;
+		dc.blend           = Blend::Normal;
+		context_->drawInfoOverlay(dc, anim_info_fade_);
 	}
 
 	// Draw current fullscreen overlay

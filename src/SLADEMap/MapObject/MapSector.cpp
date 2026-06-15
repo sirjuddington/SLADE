@@ -177,7 +177,7 @@ bool MapSector::hasId(int id) const
 		return true;
 
 	// Check moreids property (UDMF only)
-	if (parent_map_->currentFormat() == MapFormat::UDMF && hasProp("moreids"))
+	if (parent_map_ && parent_map_->currentFormat() == MapFormat::UDMF && hasProp("moreids"))
 	{
 		auto moreids = stringProperty("moreids");
 		auto ids_vec = strutil::split(moreids, ' ');
@@ -601,7 +601,7 @@ uint8_t MapSector::lightAt(SectorPart where) const
 	int light = light_;
 
 	// Check for UDMF + flat lighting
-	if (parent_map_->currentFormat() == MapFormat::UDMF)
+	if (parent_map_ && parent_map_->currentFormat() == MapFormat::UDMF)
 	{
 		// Apply flat lighting (if supported and specified)
 		if (game::configuration().featureSupported(game::UDMFFeature::FlatLighting))
@@ -646,7 +646,8 @@ void MapSector::changeLight(int amount, SectorPart where)
 		amount = -ll;
 
 	// Check for UDMF + flat lighting independent from the sector
-	bool separate = parent_map_->currentFormat() == MapFormat::UDMF
+	bool separate = parent_map_
+					&& parent_map_->currentFormat() == MapFormat::UDMF
 					&& game::configuration().featureSupported(game::UDMFFeature::FlatLighting);
 
 	// Change light level by amount
@@ -680,7 +681,8 @@ ColRGBA MapSector::fogColour() const
 	}*/
 
 	// UDMF
-	if (parent_map_->currentFormat() == MapFormat::UDMF
+	if (parent_map_
+		&& parent_map_->currentFormat() == MapFormat::UDMF
 		&& game::configuration().featureSupported(game::UDMFFeature::SectorFog))
 	{
 		int intcol = MapObject::intProperty("fadecolor");
@@ -871,7 +873,9 @@ void MapSector::writeUDMF(string& def)
 	// Do the same for the ceiling plane
 	double ceiling_a = 0, ceiling_b = 0, ceiling_c = 0, ceiling_d = 0;
 	bool   hasCeilingPlane =
-		(hasProp("ceilingplane_a") || hasProp("ceilingplane_b") || hasProp("ceilingplane_c")
+		(hasProp("ceilingplane_a")
+		 || hasProp("ceilingplane_b")
+		 || hasProp("ceilingplane_c")
 		 || hasProp("ceilingplane_d"));
 	if (hasCeilingPlane)
 	{

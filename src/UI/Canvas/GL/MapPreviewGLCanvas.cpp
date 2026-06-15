@@ -62,6 +62,8 @@ MapPreviewGLCanvas::MapPreviewGLCanvas(wxWindow* parent, MapPreviewData* data, b
 	GLCanvas(parent),
 	data_{ data }
 {
+	setBackground(BGStyle::Colour, colourconfig::colour("map_view_background"));
+
 	// Centered view
 	setView({ true, true, false });
 

@@ -453,6 +453,9 @@ void WallRenderer3D::addOutline(const Item& item, gl::LineBuffer& buffer, float 
 	auto v2     = front ? line->end() : line->start();
 	auto colour = glm::vec4{ 1.0f };
 
+	if (line_quads_.empty() || line->index() >= line_quads_.size())
+		return;
+
 	// Find quad(s)
 	for (const auto& q : line_quads_[line->index()].quads)
 	{
@@ -477,8 +480,11 @@ void WallRenderer3D::addItemIndices(const Item& item, vector<GLuint>& indices) c
 	if (!real_side)
 		return;
 
-	// Find the line quads for the item
 	auto line = real_side->parentLine();
+	if (line_quads_.empty() || line->index() >= line_quads_.size())
+		return;
+
+	// Find the line quads for the item
 	for (const auto& quad : line_quads_[line->index()].quads)
 	{
 		if (quad == item)
