@@ -305,6 +305,7 @@ void MainWindow::setupLayout()
 	// Register custom controls and dropdown menus for toolbar
 	toolbar_->registerCustomControl("base_resource_chooser", new BaseResourceChooser(toolbar_));
 	palette_chooser_ = new PaletteChooser(toolbar_, -1);
+	palette_chooser_->selectPalette(global_palette);
 	toolbar_->registerCustomControl("palette_chooser", palette_chooser_);
 	toolbar_->registerDropdownMenu("maintenance", ArchivePanel::createMaintenanceMenu());
 	toolbar_->registerDropdownMenu("bookmarks", panel_archivemanager_->bookmarksMenu());
