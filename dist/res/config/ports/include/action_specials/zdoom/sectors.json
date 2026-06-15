@@ -1,6 +1,40 @@
 // ZDoom action specials for hexen/udmf map formats
 // General sector related specials
 {
+  "arg_presets": {
+    "means_of_death": {
+      "name": "Means of death",
+      "type": "choice",
+      "custom_values": [
+        { "name": "generic damage", "value": 0 },
+        { "name": "rocket", "value": 5 },
+        { "name": "rocket splash damage", "value": 6 },
+        { "name": "plasma", "value": 7 },
+        { "name": "BFG ball", "value": 8 },
+        { "name": "BFG tracer", "value": 9 },
+        { "name": "chainsaw", "value": 10 },
+        { "name": "shotgun", "value": 11 },
+        { "name": "drowning", "value": 12 },
+        { "name": "slime - Doom's damaging floors", "value": 13 },
+        { "name": "lava/fire", "value": 14 },
+        { "name": "crusher", "value": 15 },
+        { "name": "telefrag", "value": 16 },
+        { "name": "falling", "value": 17 },
+        { "name": "suicide", "value": 18 },
+        { "name": "barrel", "value": 19 },
+        { "name": "exit - used in deathmatch", "value": 20 },
+        { "name": "generic splash damage", "value": 21 },
+        { "name": "generic melee damage", "value": 22 },
+        { "name": "railgun", "value": 23 },
+        { "name": "ice", "value": 24 },
+        { "name": "disintegration", "value": 25 },
+        { "name": "poison", "value": 26 },
+        { "name": "electricity", "value": 27 },
+        { "name": "massacre - console cheat", "value": 1000 }
+      ]
+    }
+  },
+
   "groups": [
     {
       "name": "Sector",
@@ -213,6 +247,58 @@
           "arg3": { "name": "U Frac", "description": "One hundredth of this value is added to U offset" },
           "arg4": "V Offset",
           "arg5": { "name": "V Frac", "description": "One hundredth of this value is added to V offset" }
+        },
+        {
+          "name": "Line_AlignFloor",
+          "id": 184,
+          "arg1": "Line ID",
+          "arg2": {
+            "name": "Align to",
+            "type": "choice",
+            "custom_values": [
+              { "name": "front sector", "value": 0 },
+              { "name": "back sector", "value": 1 }
+            ],
+            "tagged": "line"
+          }
+        },
+        {
+          "name": "Line_AlignCeiling",
+          "id": 183,
+          "arg1": "Line ID",
+          "arg2": {
+            "name": "Align to",
+            "type": "choice",
+            "custom_values": [
+              { "name": "front sector", "value": 0 },
+              { "name": "back sector", "value": 1 }
+            ],
+            "tagged": "line"
+          }
+        },
+        {
+          "name": "Sector_SetColor",
+          "id": 212,
+          "arg1": "Sector Tag",
+          "arg2": "Red",
+          "arg3": "Green",
+          "arg4": "Blue",
+          "arg5": "Desaturation"
+        },
+        {
+          "name": "Sector_SetFade",
+          "id": 213,
+          "arg1": "Sector Tag",
+          "arg2": "Red",
+          "arg3": "Green",
+          "arg4": "Blue"
+        },
+        {
+          "name": "Sector_SetDamage",
+          "id": 214,
+          "arg1": "Sector Tag",
+          "arg2": "Amount",
+          "arg3": "$means_of_death"
         },
         {
           "name": "Sector_SetGravity",
