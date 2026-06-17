@@ -26,7 +26,7 @@ class CTextureCanvasBase
 public:
 	using View = CTextureView;
 
-	CTextureCanvasBase() = default;
+	CTextureCanvasBase();
 	virtual ~CTextureCanvasBase();
 
 	virtual wxWindow* window() = 0;

@@ -284,7 +284,7 @@ void CTextureGLCanvas::drawPatch(int num)
 		patch_gl_textures_[num] = gl::Texture::createFromImage(*patches_[num].image, palette_.get());
 	}
 
-	auto scale  = texture_->scaleFactor();
+	auto scale  = tex_scale_ ? texture_->scaleFactor() : Vec2d(1.0);
 	auto xoff   = static_cast<float>((patch->xOffset() - texture_->offsetX()) * scale.x);
 	auto yoff   = static_cast<float>(patch->yOffset() - texture_->offsetY()) * scale.y;
 	auto width  = static_cast<float>(patches_[num].image->width() * scale.x);
@@ -312,7 +312,7 @@ void CTextureGLCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) 
 	if (!patch)
 		return;
 
-	auto scale = texture_->scaleFactor();
+	auto scale = tex_scale_ ? texture_->scaleFactor() : Vec2d(1.0);
 	auto x1    = static_cast<float>((patch->xOffset() - texture_->offsetX()) * scale.x);
 	auto y1    = static_cast<float>((patch->yOffset() - texture_->offsetY()) * scale.y);
 	auto x2    = x1 + static_cast<float>(patches_[num].image->width() * scale.x);

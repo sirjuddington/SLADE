@@ -12,16 +12,14 @@ class TextureEditor;
 class TexturePropGrid : public wxPropertyGrid
 {
 public:
-	TexturePropGrid(wxWindow* parent, const TextureEditor& editor);
+	TexturePropGrid(wxWindow* parent, TextureEditor& editor);
 
-	void openTexture(CTexture* texture);
-	void openPatches(const vector<CTPatch*>& patches);
+	void textureChanged();
+	void patchesChanged();
 	void refreshPatchProperties();
 
 private:
-	CTexture*        tex_ = nullptr;
-	vector<CTPatch*> patches_;
-	vector<unsigned> patch_indices_;
+	TextureEditor* editor_ = nullptr;
 
 	void updateColouringPropsVisibility();
 

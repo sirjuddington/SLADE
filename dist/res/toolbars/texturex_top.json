@@ -1,0 +1,20 @@
+{
+  "items": [
+    { "type": "action", "id": "txed_save", "show_text": true },
+    {
+      "type": "button",
+      "id": "revert",
+      "text": "Revert",
+      "icon": "revert",
+      "help_text": "Revert any changes made to the current texture",
+      "show_text": true
+    },
+
+    { "type": "stretch_spacer" },
+
+    { "type": "action", "id": "txed_toggle_truecolour" },
+    { "type": "action", "id": "txed_apply_scale" },
+    { "type": "action", "id": "txed_arc" },
+    { "type": "action", "id": "txed_show_outside" }
+  ]
+}

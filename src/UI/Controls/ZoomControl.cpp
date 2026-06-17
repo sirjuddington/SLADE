@@ -198,8 +198,8 @@ void ZoomControl::setup()
 
 	// Create controls
 	cb_zoom_ = new wxComboBox(this, -1, WX_FMT("{}%", zoom_), wxDefaultPosition, cbsize, values, wxTE_PROCESS_ENTER);
-	btn_zoom_out_ = new SIconButton(this, "zoom_out", "Zoom Out", 16);
-	btn_zoom_in_  = new SIconButton(this, "zoom_in", "Zoom In", 16);
+	btn_zoom_out_ = new SIconButton(this, "zoom_out", "Zoom Out", 16, cb_zoom_->GetSize().y);
+	btn_zoom_in_  = new SIconButton(this, "zoom_in", "Zoom In", 16, cb_zoom_->GetSize().y);
 
 #ifdef __WXGTK__
 	// wxWidgets doesn't leave space for the dropdown arrow in gtk3 for whatever reason

@@ -154,7 +154,7 @@ wxPGProperty* createDoubleSpinProp(
 } // namespace
 
 
-TexturePropGrid::TexturePropGrid(wxWindow* parent, const TextureEditor& editor) : wxPropertyGrid(parent)
+TexturePropGrid::TexturePropGrid(wxWindow* parent, TextureEditor& editor) : wxPropertyGrid(parent), editor_{ &editor }
 {
 	// Texture Properties
 	Append(new wxPropertyCategory(wxS("Texture Properties"), wxS("texture")));
@@ -196,55 +196,52 @@ TexturePropGrid::TexturePropGrid(wxWindow* parent, const TextureEditor& editor) 
 	Bind(wxEVT_PG_CHANGED, &TexturePropGrid::onPropertyChanged, this);
 }
 
-void TexturePropGrid::openTexture(CTexture* texture)
+void TexturePropGrid::textureChanged()
 {
-	tex_ = texture;
-	patches_.clear();
-
 	Freeze();
 
 	// Need to clear the selection otherwise any focused editor will remain
 	// visible even if the property itself is hidden
 	ClearSelection();
 
-	if (tex_)
+	if (auto tex = editor_->currentTexture())
 	{
 		// Show texture props group
 		HideProperty(wxS("texture"), false);
 		HideProperty(wxS("patch"), true);
 
 		// Set texture properties visibility
-		HideProperty(wxS("tex_type"), !tex_->isExtended());
-		HideProperty(wxS("optional"), !tex_->isExtended());
-		HideProperty(wxS("no_decals"), !tex_->isExtended());
-		HideProperty(wxS("null_texture"), !tex_->isExtended());
-		HideProperty(wxS("no_trim"), !tex_->isExtended());
-		HideProperty(wxS("tex_scale_x"), tex_->isExtended());
-		HideProperty(wxS("tex_scale_y"), tex_->isExtended());
-		HideProperty(wxS("tex_scale_xd"), !tex_->isExtended());
-		HideProperty(wxS("tex_scale_yd"), !tex_->isExtended());
+		HideProperty(wxS("tex_type"), !tex->isExtended());
+		HideProperty(wxS("optional"), !tex->isExtended());
+		HideProperty(wxS("no_decals"), !tex->isExtended());
+		HideProperty(wxS("null_texture"), !tex->isExtended());
+		HideProperty(wxS("no_trim"), !tex->isExtended());
+		HideProperty(wxS("tex_scale_x"), tex->isExtended());
+		HideProperty(wxS("tex_scale_y"), tex->isExtended());
+		HideProperty(wxS("tex_scale_xd"), !tex->isExtended());
+		HideProperty(wxS("tex_scale_yd"), !tex->isExtended());
 
 		// Set basic texture properties
-		SetPropertyValue(wxS("tex_width"), tex_->width());
-		SetPropertyValue(wxS("tex_height"), tex_->height());
-		SetPropertyValue(wxS("world_panning"), tex_->worldPanning());
+		SetPropertyValue(wxS("tex_width"), tex->width());
+		SetPropertyValue(wxS("tex_height"), tex->height());
+		SetPropertyValue(wxS("world_panning"), tex->worldPanning());
 
 		// Set extended texture properties
-		if (tex_->isExtended())
+		if (tex->isExtended())
 		{
-			SetPropertyValue(wxS("tex_scale_xd"), tex_->scaleX());
-			SetPropertyValue(wxS("tex_scale_yd"), tex_->scaleY());
-			SetPropertyValue(wxS("tex_type"), static_cast<int>(tex_->typeEnum()));
-			SetPropertyValue(wxS("optional"), tex_->isOptional());
-			SetPropertyValue(wxS("no_decals"), tex_->noDecals());
-			SetPropertyValue(wxS("null_texture"), tex_->nullTexture());
-			SetPropertyValue(wxS("no_trim"), tex_->noTrim());
+			SetPropertyValue(wxS("tex_scale_xd"), tex->scaleX());
+			SetPropertyValue(wxS("tex_scale_yd"), tex->scaleY());
+			SetPropertyValue(wxS("tex_type"), static_cast<int>(tex->typeEnum()));
+			SetPropertyValue(wxS("optional"), tex->isOptional());
+			SetPropertyValue(wxS("no_decals"), tex->noDecals());
+			SetPropertyValue(wxS("null_texture"), tex->nullTexture());
+			SetPropertyValue(wxS("no_trim"), tex->noTrim());
 		}
 		else
 		{
 			// Non-extended textures use a different scale property
-			SetPropertyValue(wxS("tex_scale_x"), static_cast<int>(tex_->scaleX() * 8));
-			SetPropertyValue(wxS("tex_scale_y"), static_cast<int>(tex_->scaleY() * 8));
+			SetPropertyValue(wxS("tex_scale_x"), static_cast<int>(tex->scaleX() * 8));
+			SetPropertyValue(wxS("tex_scale_y"), static_cast<int>(tex->scaleY() * 8));
 		}
 	}
 	else
@@ -257,15 +254,8 @@ void TexturePropGrid::openTexture(CTexture* texture)
 	Thaw();
 }
 
-void TexturePropGrid::openPatches(const vector<CTPatch*>& patches)
+void TexturePropGrid::patchesChanged()
 {
-	patches_ = patches;
-
-	// Get patch indices for all patches
-	patch_indices_.clear();
-	for (auto patch : patches)
-		patch_indices_.push_back(tex_->patchIndex(patch));
-
 	Freeze();
 
 	// Need to clear the selection otherwise any focused editor will remain
@@ -273,16 +263,17 @@ void TexturePropGrid::openPatches(const vector<CTPatch*>& patches)
 	ClearSelection();
 
 	// Setup property visibility
-	if (!patches_.empty())
+	if (!editor_->selectedPatches().empty())
 	{
+		auto tex = editor_->currentTexture();
 		HideProperty(wxS("patch"), false);
-		HideProperty(wxS("patch_use_offsets"), !tex_->isExtended());
-		HideProperty(wxS("patch_flip_x"), !tex_->isExtended());
-		HideProperty(wxS("patch_flip_y"), !tex_->isExtended());
-		HideProperty(wxS("patch_rotation"), !tex_->isExtended());
-		HideProperty(wxS("patch_alpha"), !tex_->isExtended());
-		HideProperty(wxS("patch_alpha_style"), !tex_->isExtended());
-		HideProperty(wxS("patch_colouring"), !tex_->isExtended());
+		HideProperty(wxS("patch_use_offsets"), !tex->isExtended());
+		HideProperty(wxS("patch_flip_x"), !tex->isExtended());
+		HideProperty(wxS("patch_flip_y"), !tex->isExtended());
+		HideProperty(wxS("patch_rotation"), !tex->isExtended());
+		HideProperty(wxS("patch_alpha"), !tex->isExtended());
+		HideProperty(wxS("patch_alpha_style"), !tex->isExtended());
+		HideProperty(wxS("patch_colouring"), !tex->isExtended());
 		HideProperty(wxS("patch_colour"), true);
 		HideProperty(wxS("patch_tint_amount"), true);
 		HideProperty(wxS("patch_translation"), true);
@@ -298,12 +289,13 @@ void TexturePropGrid::openPatches(const vector<CTPatch*>& patches)
 
 void TexturePropGrid::refreshPatchProperties()
 {
-	if (patches_.size() == 1)
+	if (editor_->selectedPatches().size() == 1)
 	{
-		auto patch = patches_[0];
+		auto index = editor_->selectedPatches()[0];
+		auto patch = editor_->currentTexture()->patch(index);
 		SetPropertyValue(wxS("patch_x"), patch->xOffset());
 		SetPropertyValue(wxS("patch_y"), patch->yOffset());
-		if (tex_->isExtended())
+		if (editor_->currentTexture()->isExtended())
 		{
 			auto     ex_patch = dynamic_cast<CTPatchEx*>(patch);
 			wxColour wx_col   = ex_patch->colour();
@@ -323,7 +315,7 @@ void TexturePropGrid::refreshPatchProperties()
 			SetPropertyValue(wxS("patch_colour"), wx_col);
 			SetPropertyValue(wxS("patch_tint_amount"), ex_patch->tintAmount());
 			auto trans_prop = dynamic_cast<TranslationProperty*>(GetProperty(wxS("patch_translation")));
-			trans_prop->openPatch(tex_, patch_indices_[0]);
+			trans_prop->openPatch(editor_->currentTexture(), index);
 			updateColouringPropsVisibility();
 		}
 	}
@@ -374,196 +366,121 @@ void TexturePropGrid::updateColouringPropsVisibility()
 
 void TexturePropGrid::onPropertyChanged(wxPropertyGridEvent& e)
 {
-	if (!tex_)
+	auto tex = editor_->currentTexture();
+	if (!tex)
 		return;
-
-	bool refresh_texture = false;
-	bool refresh_patches = false;
 
 	// Colouring type
 	if (e.GetPropertyName() == wxS("patch_colouring"))
 	{
 		updateColouringPropsVisibility();
-
-		for (auto& patch : patches_)
-			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
-				ex_patch->setBlendType(static_cast<CTPatchEx::BlendType>(e.GetValue().GetInteger()));
-
-		refresh_patches = true;
+		editor_->setPatchBlendType(static_cast<CTPatchEx::BlendType>(e.GetValue().GetInteger()));
 	}
 
 	// Texture width
 	else if (e.GetPropertyName() == wxS("tex_width"))
-	{
-		tex_->setWidth(e.GetValue().GetInteger());
-		refresh_texture = true;
-	}
+		editor_->setTextureSize(e.GetValue().GetInteger(), -1);
 
 	// Texture height
 	else if (e.GetPropertyName() == wxS("tex_height"))
-	{
-		tex_->setHeight(e.GetValue().GetInteger());
-		refresh_texture = true;
-	}
+		editor_->setTextureSize(-1, e.GetValue().GetInteger());
 
 	// World panning flag
 	else if (e.GetPropertyName() == wxS("world_panning"))
-		tex_->setWorldPanning(e.GetValue().GetBool());
+		editor_->setTextureFlag("worldpanning", e.GetValue().GetBool());
 
 	// X Scale (non-extended)
 	else if (e.GetPropertyName() == wxS("tex_scale_x"))
 	{
 		auto val = e.GetValue().GetInteger();
-		if (val == 0)
-			tex_->setScaleX(1.0);
-		else
-			tex_->setScaleX(val / 8.0);
+		editor_->setTextureScaleX(val == 0 ? 1.0 : val / 8.0);
 	}
 
 	// Y Scale (non-extended)
 	else if (e.GetPropertyName() == wxS("tex_scale_y"))
 	{
 		auto val = e.GetValue().GetInteger();
-		if (val == 0)
-			tex_->setScaleY(1.0);
-		else
-			tex_->setScaleY(val / 8.0);
+		editor_->setTextureScaleY(val == 0 ? 1.0 : val / 8.0);
 	}
 
 	// X Scale (extended)
 	else if (e.GetPropertyName() == wxS("tex_scale_xd"))
-		tex_->setScaleX(e.GetValue().GetDouble());
+		editor_->setTextureScaleX(e.GetValue().GetDouble());
 
 	// Y Scale (extended)
 	else if (e.GetPropertyName() == wxS("tex_scale_yd"))
-		tex_->setScaleY(e.GetValue().GetDouble());
+		editor_->setTextureScaleY(e.GetValue().GetDouble());
 
 	// Texture type
 	else if (e.GetPropertyName() == wxS("tex_type"))
-		tex_->setType(static_cast<CTexture::Type>(e.GetValue().GetInteger()));
+		editor_->setTextureType(static_cast<CTexture::Type>(e.GetValue().GetInteger()));
 
 	// Optional flag
 	else if (e.GetPropertyName() == wxS("optional"))
-		tex_->setOptional(e.GetValue().GetBool());
+		editor_->setTextureFlag("optional", e.GetValue().GetBool());
 
 	// No decals flag
 	else if (e.GetPropertyName() == wxS("no_decals"))
-		tex_->setNoDecals(e.GetValue().GetBool());
+		editor_->setTextureFlag("nodecals", e.GetValue().GetBool());
 
 	// Null texture flag
 	else if (e.GetPropertyName() == wxS("null_texture"))
-		tex_->setNullTexture(e.GetValue().GetBool());
+		editor_->setTextureFlag("nulltexture", e.GetValue().GetBool());
 
 	// NoTrim flag
 	else if (e.GetPropertyName() == wxS("no_trim"))
-		tex_->setNoTrim(e.GetValue().GetBool());
+		editor_->setTextureFlag("notrim", e.GetValue().GetBool());
 
 	// Patch X position
-	else if (e.GetPropertyName() == wxS("patch_x") && !patches_.empty())
-	{
-		for (auto& patch : patches_)
-			patch->setOffsetX(e.GetValue().GetInteger());
-		refresh_patches = true;
-	}
+	else if (e.GetPropertyName() == wxS("patch_x"))
+		editor_->setPatchOffsetX(e.GetValue().GetInteger());
 
 	// Patch Y position
-	else if (e.GetPropertyName() == wxS("patch_y") && !patches_.empty())
-	{
-		for (auto& patch : patches_)
-			patch->setOffsetY(e.GetValue().GetInteger());
-		refresh_patches = true;
-	}
+	else if (e.GetPropertyName() == wxS("patch_y"))
+		editor_->setPatchOffsetY(e.GetValue().GetInteger());
 
 	// Use source offsets
 	else if (e.GetPropertyName() == wxS("patch_use_offsets"))
-	{
-		for (auto& patch : patches_)
-			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
-				ex_patch->setUseOffsets(e.GetValue().GetBool());
-		refresh_patches = true;
-	}
+		editor_->setPatchFlag("UseOffsets", e.GetValue().GetBool());
 
 	// Flip X
 	else if (e.GetPropertyName() == wxS("patch_flip_x"))
-	{
-		for (auto& patch : patches_)
-			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
-				ex_patch->setFlipX(e.GetValue().GetBool());
-		refresh_patches = true;
-	}
+		editor_->setPatchFlag("FlipX", e.GetValue().GetBool());
 
 	// Flip Y
 	else if (e.GetPropertyName() == wxS("patch_flip_y"))
-	{
-		for (auto& patch : patches_)
-			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
-				ex_patch->setFlipY(e.GetValue().GetBool());
-		refresh_patches = true;
-	}
+		editor_->setPatchFlag("FlipY", e.GetValue().GetBool());
 
 	// Rotation
 	else if (e.GetPropertyName() == wxS("patch_rotation"))
-	{
-		for (auto& patch : patches_)
-			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
-				ex_patch->setRotation(e.GetValue().GetInteger());
-		refresh_patches = true;
-	}
+		editor_->setPatchRotation(e.GetValue().GetInteger());
 
 	// Alpha
 	else if (e.GetPropertyName() == wxS("patch_alpha"))
-	{
-		for (auto& patch : patches_)
-			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
-				ex_patch->setAlpha(e.GetValue().GetDouble());
-		refresh_patches = true;
-	}
+		editor_->setPatchAlpha(e.GetValue().GetDouble());
 
 	// Alpha style
 	else if (e.GetPropertyName() == wxS("patch_alpha_style"))
-	{
-		for (auto& patch : patches_)
-			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
-				ex_patch->setStyle(alphastyle_names[e.GetValue().GetInteger()].utf8_string());
-		refresh_patches = true;
-	}
+		editor_->setPatchAlphaStyle(alphastyle_names[e.GetValue().GetInteger()].utf8_string());
 
 	// Colour
 	else if (e.GetPropertyName() == wxS("patch_colour"))
 	{
 		wxColour col;
 		col << e.GetPropertyValue();
-		for (auto& patch : patches_)
-			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
-				ex_patch->setColour(ColRGBA{ col });
-		refresh_patches = true;
+		editor_->setPatchColour(ColRGBA{ col });
 	}
 
 	// Tint amount
 	else if (e.GetPropertyName() == wxS("patch_tint_amount"))
-	{
-		for (auto& patch : patches_)
-			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
-				ex_patch->setTintAmount(e.GetValue().GetDouble());
-		refresh_patches = true;
-	}
+		editor_->setPatchTintAmount(e.GetValue().GetDouble());
 
 	// Translation
 	else if (e.GetPropertyName() == wxS("patch_translation"))
-	{
-		Translation t;
-		if (!e.GetValue().GetString().empty())
-			t.parse(e.GetValue().GetString().utf8_string());
+		editor_->setPatchTranslation(e.GetValue().GetString().utf8_string());
 
-		for (auto& patch : patches_)
-			if (auto ex_patch = dynamic_cast<CTPatchEx*>(patch))
-				ex_patch->setTranslation(t);
+	else
+		return; // Unhandled property
 
-		refresh_patches = true;
-	}
-
-	if (refresh_texture)
-		tex_->signals().texture_modified();
-	if (refresh_patches)
-		tex_->signals().patches_modified(patch_indices_);
+	editor_->setTexModified();
 }

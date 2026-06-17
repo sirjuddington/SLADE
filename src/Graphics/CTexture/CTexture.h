@@ -79,6 +79,7 @@ public:
 	void setBlendType(BlendType type) { blendtype_ = type; }
 	void setTranslation(const Translation& translation);
 	void setTintAmount(float amount) { tint_amount_ = amount; }
+	void setFlag(string_view flag, bool on = true);
 
 	bool hasTranslation() const;
 

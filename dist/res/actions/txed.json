@@ -143,5 +143,38 @@
     "text": "Change Patch",
     "icon": "patch_replace",
     "help_text": "Change the patch to a different image entry"
+  },
+  "txed_save": {
+    "text": "Save",
+    "icon": "save",
+    "help_text": "Save any changes made to the current texture"
+  },
+  "txed_toggle_truecolour": {
+    "text": "Truecolour Preview",
+    "icon": "truecolour_preview",
+    "help_text": "Render the texture preview in truecolour instead of converting to the current palette",
+    "type": "check",
+    "linked_cvar": "tx_truecolour"
+  },
+  "txed_apply_scale": {
+    "text": "Apply Scale",
+    "icon": "scale",
+    "help_text": "Apply the current texture scale",
+    "type": "check",
+    "linked_cvar": "tx_apply_scale"
+  },
+  "txed_arc": {
+    "text": "Aspect Ratio Correction",
+    "icon": "aspectratio",
+    "help_text": "Toggle aspect ratio correction",
+    "type": "check",
+    "linked_cvar": "tx_arc"
+  },
+  "txed_show_outside": {
+    "text": "Show Outside",
+    "icon": "tex_show_outside",
+    "help_text": "Toggle visibility of patches that are outside the texture",
+    "type": "check",
+    "linked_cvar": "tx_show_outside"
   }
 }

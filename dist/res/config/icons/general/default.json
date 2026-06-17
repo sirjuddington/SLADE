@@ -457,6 +457,10 @@
     "saveas": {
       "svg": "icons/general/saveas.svg"
     },
+    "scale": {
+      "svg_light": "icons/general/scale.svg",
+      "svg_dark": "icons/general/dark/scale.svg"
+    },
     "script": {
       "svg_light": "icons/general/script.svg",
       "svg_dark": "icons/general/dark/script.svg"
@@ -522,6 +526,10 @@
     "tex_renameeach": {
       "svg": "icons/general/renameeach.svg"
     },
+    "tex_show_outside": {
+      "svg_light": "icons/general/tex_show_outside.svg",
+      "svg_dark": "icons/general/dark/tex_show_outside.svg"
+    },
     "texeditor": {
       "svg": "icons/general/texeditor.svg"
     },
@@ -564,6 +572,9 @@
     "tool_text": {
       "svg_light": "icons/general/tool_text.svg",
       "svg_dark": "icons/general/dark/tool_text.svg"
+    },
+    "truecolour_preview": {
+      "svg": "icons/general/truecolour_preview.svg"
     },
     "undo": {
       "svg_light": "icons/general/undo.svg",

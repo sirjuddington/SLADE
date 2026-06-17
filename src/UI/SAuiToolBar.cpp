@@ -433,11 +433,15 @@ void SAuiToolBar::showItem(string_view id, bool show, bool refresh)
 	if (!layout_)
 		return;
 
+	bool changed = false;
 	for (auto& j_item : *layout_)
-		if (j_item.value("id", "") == id)
+		if (j_item.value("id", "") == id && j_item.value("hidden", false) != !show)
+		{
 			j_item["hidden"] = !show;
+			changed          = true;
+		}
 
-	if (refresh)
+	if (refresh && changed)
 		createFromLayout();
 }
 
@@ -455,14 +459,18 @@ void SAuiToolBar::showGroup(string_view group, bool show, bool refresh)
 	if (!g)
 		return;
 
+	bool changed = false;
 	for (const auto& item_id : g->items)
 	{
 		for (auto& j_item : *layout_)
-			if (j_item.value("id", "") == item_id)
+			if (j_item.value("id", "") == item_id && j_item.value("hidden", false) != !show)
+			{
 				j_item["hidden"] = !show;
+				changed          = true;
+			}
 	}
 
-	if (refresh)
+	if (refresh && changed)
 		createFromLayout();
 }
 

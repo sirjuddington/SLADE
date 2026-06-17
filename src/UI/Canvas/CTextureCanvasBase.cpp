@@ -54,6 +54,18 @@ wxDEFINE_EVENT(EVT_DRAG_END, wxCommandEvent);
 //
 // -----------------------------------------------------------------------------
 
+
+// -----------------------------------------------------------------------------
+// CTextureCanvasBase class constructor
+// -----------------------------------------------------------------------------
+CTextureCanvasBase::CTextureCanvasBase()
+{
+	// Init settings from cvars
+	tex_scale_    = CVar::getBool("tx_apply_scale");
+	draw_outside_ = CVar::getBool("tx_show_outside");
+	blend_rgba_   = CVar::getBool("tx_truecolour");
+}
+
 // -----------------------------------------------------------------------------
 // CTextureCanvasBase class destructor
 // -----------------------------------------------------------------------------

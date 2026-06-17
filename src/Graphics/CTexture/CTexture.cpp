@@ -144,6 +144,19 @@ void CTPatchEx::setTranslation(const Translation& translation)
 }
 
 // -----------------------------------------------------------------------------
+// Sets [flag] [on] or off
+// -----------------------------------------------------------------------------
+void CTPatchEx::setFlag(string_view flag, bool on)
+{
+	if (strutil::equalCI(flag, "FlipX"))
+		flip_x_ = on;
+	else if (strutil::equalCI(flag, "FlipY"))
+		flip_y_ = on;
+	else if (strutil::equalCI(flag, "UseOffsets"))
+		use_offsets_ = on;
+}
+
+// -----------------------------------------------------------------------------
 // Returns true if the patch has a translation defined
 // -----------------------------------------------------------------------------
 bool CTPatchEx::hasTranslation() const

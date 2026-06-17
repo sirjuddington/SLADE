@@ -51,10 +51,14 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	tex_canvas_->window()->Bind(wxEVT_MOTION, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas_->window()->Bind(EVT_DRAG_END, &TextureEditorPanel::onTexCanvasDragEnd, this);
 	tex_canvas_->window()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
+	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
 
 	// Init UI (expandAll must be deferred until the native window exists)
 	CallAfter([this]() { tree_view_->expandAll(); });
 	toolbar_patches_->enableGroup("Patch", false);
+	toolbar_texture_->showItem("txed_toggle_truecolour", false);
+	toolbar_texture_->enableItem("txed_save", false);
+	toolbar_texture_->enableItem("revert", false);
 }
 
 TextureEditorPanel::~TextureEditorPanel() = default;
@@ -104,7 +108,10 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
-	// Top toolbar (nothing yet)
+	// Top toolbar
+	toolbar_texture_ = new SAuiToolBar(panel);
+	toolbar_texture_->loadLayoutFromResource("texturex_top");
+	sizer->Add(toolbar_texture_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
 
 	// Canvas
 	tex_canvas_ = ui::createCTextureCanvas(panel);
@@ -196,15 +203,20 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 
 void TextureEditorPanel::openTexture(CTexture& tex) const
 {
-	editor_->setCurrentTexture(&tex);
-	tex_canvas_->openTexture(&tex, editor_->archive());
+	// Open the texture for editing
+	editor_->openTexture(tex);
+	auto ctex = editor_->currentTexture();
 
+	// Open texture in canvas
+	tex_canvas_->openTexture(ctex, editor_->archive());
+
+	// Populate patches list
 	int patch_index = 0;
 #if wxCHECK_VERSION(3, 3, 0)
-	for (auto& p : tex.patches())
+	for (auto& p : ctex->patches())
 		list_patches_->AppendItem({ WX_FMT("{}", patch_index++), wxString::FromUTF8(p->name()) });
 #else
-	for (auto& p : tex.patches())
+	for (auto& p : ctex->patches())
 	{
 		wxVector<wxVariant> data;
 		data.push_back(WX_FMT("{}", patch_index++));
@@ -214,16 +226,51 @@ void TextureEditorPanel::openTexture(CTexture& tex) const
 #endif
 	list_patches_->GetColumn(0)->SetWidth(FromDIP(30));
 
-	pg_properties_->openTexture(&tex);
+	// Update UI
+	pg_properties_->textureChanged();
+	toolbar_texture_->showItem("txed_toggle_truecolour", ctex->isExtended());
+	toolbar_texture_->enableItem("txed_save", false);
+	toolbar_texture_->enableItem("revert", false);
 }
 
 void TextureEditorPanel::clearTexture() const
 {
-	editor_->setCurrentTexture(nullptr);
+	editor_->closeTexture();
 	tex_canvas_->clearTexture();
 	list_patches_->DeleteAllItems();
-	pg_properties_->openTexture(nullptr);
+	pg_properties_->textureChanged();
 	toolbar_patches_->enableGroup("Patch", false);
+	toolbar_texture_->showItem("txed_toggle_truecolour", false);
+	toolbar_texture_->enableItem("txed_save", false);
+	toolbar_texture_->enableItem("revert", false);
+}
+
+bool TextureEditorPanel::handleAction(string_view id)
+{
+	if (id == "txed_toggle_truecolour")
+	{
+		tex_canvas_->setBlendRGBA(CVar::getBool("tx_truecolour"));
+		tex_canvas_->redraw(true);
+	}
+
+	else if (id == "txed_apply_scale")
+	{
+		tex_canvas_->applyTexScale(CVar::getBool("tx_apply_scale"));
+		tex_canvas_->redraw(true);
+	}
+
+	else if (id == "txed_arc")
+	{
+		tex_canvas_->redraw();
+	}
+
+	else if (id == "txed_show_outside")
+	{
+		tex_canvas_->drawOutside(CVar::getBool("tx_show_outside"));
+		tex_canvas_->redraw();
+	}
+
+	return SActionHandler::handleAction(id);
 }
 
 void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
@@ -249,22 +296,19 @@ void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
 
 void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
 {
-	vector<CTPatch*> selected_patches;
+	// Update patch selection in editor
 	for (unsigned i = 0; std::cmp_less(i, list_patches_->GetItemCount()); ++i)
 	{
 		auto item = list_patches_->RowToItem(i);
 		if (item.IsOk() && list_patches_->IsSelected(item))
-		{
-			selected_patches.push_back(editor_->currentTexture()->patch(i));
-			tex_canvas_->selectPatch(i);
-		}
+			editor_->selectPatch(i);
 		else
-			tex_canvas_->deSelectPatch(i);
+			editor_->selectPatch(i, false);
 	}
 
-	pg_properties_->openPatches(selected_patches);
+	pg_properties_->patchesChanged();
 	tex_canvas_->window()->Refresh();
-	toolbar_patches_->enableGroup("Patch", !selected_patches.empty());
+	toolbar_patches_->enableGroup("Patch", !editor_->selectedPatches().empty());
 }
 
 // -----------------------------------------------------------------------------
@@ -471,4 +515,17 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 
 	if (!handled)
 		e.Skip();
+}
+
+void TextureEditorPanel::onToolbarButton(wxCommandEvent& e)
+{
+	string button;
+	if (e.GetEventObject() == toolbar_texture_)
+		button = toolbar_texture_->actionFromWxId(e.GetId());
+	else if (e.GetEventObject() == toolbar_patches_)
+		button = toolbar_patches_->actionFromWxId(e.GetId());
+	else if (e.GetEventObject() == toolbar_texlist_)
+		button = toolbar_texlist_->actionFromWxId(e.GetId());
+
+	
 }

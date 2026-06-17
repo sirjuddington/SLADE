@@ -1,5 +1,7 @@
 #pragma once
 
+#include "General/SActionHandler.h"
+
 // Forward declarations
 class wxSplitterWindow;
 namespace slade
@@ -22,7 +24,7 @@ class TextureTreeView;
 
 namespace slade::texeditor
 {
-class TextureEditorPanel : public wxPanel
+class TextureEditorPanel : public wxPanel, public SActionHandler
 {
 public:
 	TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive);
@@ -43,6 +45,7 @@ private:
 	wxSpinCtrl*               spin_offset_y_      = nullptr;
 	wxChoice*                 choice_offset_type_ = nullptr;
 	SIconButton*              btn_auto_offset_    = nullptr;
+	SAuiToolBar*              toolbar_texture_    = nullptr;
 
 	wxPanel* createTextureListPanel(wxWindow* parent);
 	wxPanel* createMainPanel(wxWindow* parent);
@@ -53,11 +56,14 @@ private:
 	void openTexture(CTexture& tex) const;
 	void clearTexture() const;
 
+	bool handleAction(string_view id) override;
+
 	// Events
 	void onTextureSelectionChanged(wxDataViewEvent& e);
 	void onPatchSelectionChanged(wxDataViewEvent& e);
 	void onTexCanvasMouseEvent(wxMouseEvent& e);
 	void onTexCanvasDragEnd(wxCommandEvent& e);
 	void onTexCanvasKeyDown(wxKeyEvent& e);
+	void onToolbarButton(wxCommandEvent& e);
 };
 } // namespace slade::texeditor
