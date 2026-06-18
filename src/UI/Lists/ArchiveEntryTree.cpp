@@ -56,13 +56,6 @@ using namespace ui;
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace slade::ui
-{
-wxColour col_text_modified(0, 0, 0, 0);
-wxColour col_text_new(0, 0, 0, 0);
-wxColour col_text_locked(0, 0, 0, 0);
-} // namespace slade::ui
-
 #ifdef __WXGTK__
 // Disable by default in GTK because double-click seems to trigger it, which interferes
 // with double-click to expand folders or open entries
@@ -475,6 +468,9 @@ bool ArchiveViewModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 	}
 
 	// Status colour
+	static wxColour col_text_modified(0, 0, 0, 0);
+	static wxColour col_text_new(0, 0, 0, 0);
+	static wxColour col_text_locked(0, 0, 0, 0);
 	if (entry->isLocked() || entry->state() != EntryState::Unmodified)
 	{
 		// Init precalculated status text colours if necessary

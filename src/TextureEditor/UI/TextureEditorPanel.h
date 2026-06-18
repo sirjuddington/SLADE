@@ -32,6 +32,7 @@ public:
 
 private:
 	unique_ptr<TextureEditor> editor_;
+
 	TextureTreeView*          tree_view_          = nullptr;
 	wxSplitterWindow*         splitter_left_      = nullptr;
 	wxSplitterWindow*         splitter_right_     = nullptr;
@@ -47,14 +48,15 @@ private:
 	SIconButton*              btn_auto_offset_    = nullptr;
 	SAuiToolBar*              toolbar_texture_    = nullptr;
 
+	sigslot::scoped_connection sc_tex_state_changed_;
+
 	wxPanel* createTextureListPanel(wxWindow* parent);
 	wxPanel* createMainPanel(wxWindow* parent);
 	wxPanel* createTextureViewPanel(wxWindow* parent);
 	wxPanel* createPatchPropertiesPanel(wxWindow* parent);
-	void     setupPropertyGrid() const;
 
-	void openTexture(CTexture& tex) const;
-	void clearTexture() const;
+	void updateUI(bool texture_changed = false);
+	void populatePatchesList() const;
 
 	bool handleAction(string_view id) override;
 

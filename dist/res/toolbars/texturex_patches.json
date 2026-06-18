@@ -12,7 +12,10 @@
     {
       "name": "Patch",
       "item_ids": [
-        "txed_patch_add", "txed_patch_remove", "txed_patch_back", "txed_patch_forward", "txed_patch_replace",
+        "txed_patch_remove",
+        "txed_patch_back",
+        "txed_patch_forward",
+        "txed_patch_replace",
         "txed_patch_duplicate"
       ]
     }

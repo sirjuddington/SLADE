@@ -96,9 +96,9 @@ private:
 	int16_t                 rotation_    = 0;
 	unique_ptr<Translation> translation_;
 	ColRGBA                 colour_;
-	float                   alpha_     = 1.f;
-	string                  style_     = "Copy";
-	BlendType               blendtype_ = BlendType::None; // 0=none, 1=translation, 2=blend, 3=tint
+	float                   alpha_       = 1.f;
+	string                  style_       = "Copy";
+	BlendType               blendtype_   = BlendType::None; // 0=none, 1=translation, 2=blend, 3=tint
 	float                   tint_amount_ = 0.f;
 };
 
@@ -115,6 +115,13 @@ public:
 		WallTexture,
 		Flat,
 		HiRes
+	};
+
+	enum class State
+	{
+		Unmodified = 0,
+		Modified   = 1,
+		New        = 2
 	};
 
 	CTexture(bool extended = false) : extended_{ extended } {}
@@ -145,7 +152,7 @@ public:
 	bool           noTrim() const { return no_trim_; }
 	size_t         nPatches() const { return patches_.size(); }
 	CTPatch*       patch(size_t index) const;
-	uint8_t        state() const { return state_; }
+	State          state() const { return state_; }
 	int            index() const;
 	int            patchIndex(const CTPatch* patch) const;
 
@@ -167,7 +174,7 @@ public:
 	void setNoDecals(bool nd) { no_decals_ = nd; }
 	void setNullTexture(bool nt) { null_texture_ = nt; }
 	void setNoTrim(bool nt) { no_trim_ = nt; }
-	void setState(uint8_t state) { state_ = state; }
+	void setState(State state);
 	void setList(TextureXList* list) { in_list_ = list; }
 
 	void clear();
@@ -205,6 +212,7 @@ public:
 		sigslot::signal<>                        patch_list_changed;
 		sigslot::signal<unsigned>                patch_modified;
 		sigslot::signal<const vector<unsigned>&> patches_modified;
+		sigslot::signal<>                        state_changed;
 	};
 	Signals& signals() { return signals_; }
 
@@ -229,7 +237,7 @@ private:
 	Vec2<uint16_t> def_size_     = { 0, 0 };
 
 	// Editor info
-	uint8_t       state_   = 0;
+	State         state_   = State::Unmodified;
 	TextureXList* in_list_ = nullptr;
 
 	// Signals

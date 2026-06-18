@@ -469,19 +469,19 @@ protected:
 		// Get associated texture
 		auto tex = texturex_->texture(index);
 
-		// Init attributes
-		item_attr_->SetTextColour(colourconfig::colour("error"));
-
 		// If texture doesn't exist, return error colour
 		if (!tex)
+		{
+			item_attr_->SetTextColour(colourconfig::colour("error"));
 			return;
+		}
 
 		// Set colour depending on entry state
 		switch (tex->state())
 		{
-		case 1:  item_attr_->SetTextColour(colourconfig::colour("modified")); break;
-		case 2:  item_attr_->SetTextColour(colourconfig::colour("new")); break;
-		default: item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
+		case CTexture::State::Modified: item_attr_->SetTextColour(colourconfig::colour("modified")); break;
+		case CTexture::State::New:      item_attr_->SetTextColour(colourconfig::colour("new")); break;
+		default:                        break;
 		}
 	}
 
@@ -780,7 +780,7 @@ bool TextureXPanel::saveTEXTUREX()
 
 	// Set all textures to unmodified
 	for (unsigned a = 0; a < texturex_->size(); a++)
-		texturex_->texture(a)->setState(0);
+		texturex_->texture(a)->setState(CTexture::State::Unmodified);
 	list_textures_->updateList();
 
 	// Update variables
@@ -816,7 +816,7 @@ void TextureXPanel::applyChanges()
 
 		if (texture_editor_->texture())
 			tex_current_->copyTexture(*texture_editor_->texture());
-		tex_current_->setState(1);
+		tex_current_->setState(CTexture::State::Modified);
 		tx_editor_->patchTable().updatePatchUsage(tex_current_);
 		list_textures_->updateList();
 		modified_ = true;
@@ -841,7 +841,7 @@ unique_ptr<CTexture> TextureXPanel::newTextureFromPatch(string_view name, string
 	// Create new texture
 	auto tex = std::make_unique<CTexture>();
 	tex->setName(name);
-	tex->setState(2);
+	tex->setState(CTexture::State::New);
 
 	// Setup texture scale
 	if (txListIsTextures(*texturex_))
@@ -895,7 +895,7 @@ void TextureXPanel::newTexture()
 		// Blank texture
 		tex = std::make_unique<CTexture>();
 		tex->setName(name);
-		tex->setState(2);
+		tex->setState(CTexture::State::New);
 
 		// Size
 		tex->setWidth(dialog->texWidth());
@@ -1327,7 +1327,7 @@ void TextureXPanel::paste()
 		auto ntex     = std::make_unique<CTexture>(txListIsTextures(*texturex_));
 		auto ntex_ptr = ntex.get();
 		ntex->copyTexture(item->texture(), true);
-		ntex->setState(2);
+		ntex->setState(CTexture::State::New);
 		texturex_->addTexture(std::move(ntex), ++selected);
 
 		// Record undo step
@@ -1418,7 +1418,7 @@ void TextureXPanel::renameTexture(bool each)
 			if (!new_name.empty() && texture->name() != new_name)
 			{
 				texture->setName(new_name);
-				texture->setState(1);
+				texture->setState(CTexture::State::Modified);
 				if (texture == tex_current_)
 					texture_editor_->updateTextureName(new_name);
 
@@ -1469,7 +1469,7 @@ void TextureXPanel::renameTexture(bool each)
 					strutil::replaceIP(filename, "&", fmt::format("{}", a + 1));
 
 					selection[a]->setName(filename);
-					selection[a]->setState(1);
+					selection[a]->setState(CTexture::State::Modified);
 					if (selection[a] == tex_current_)
 						texture_editor_->updateTextureName(filename);
 					modified_ = true;
@@ -1695,7 +1695,7 @@ bool TextureXPanel::modifyOffsets()
 		ctex->setOffsetX(offsets.x);
 		ctex->setOffsetY(offsets.y);
 
-		ctex->setState(1);
+		ctex->setState(CTexture::State::Modified);
 		modified_ = true;
 
 		// If it was the current texture, update controls

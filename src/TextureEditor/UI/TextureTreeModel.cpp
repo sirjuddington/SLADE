@@ -127,7 +127,53 @@ void TextureTreeModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 
 bool TextureTreeModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr) const
 {
-	return wxDataViewModel::GetAttr(item, col, attr);
+	auto i = static_cast<Item*>(item.GetID());
+	if (!i)
+		return false;
+
+	bool has_attr = false;
+
+	// Status colour
+	static wxColour col_text_modified(0, 0, 0, 0);
+	static wxColour col_text_new(0, 0, 0, 0);
+	if (i->index >= 0)
+	{
+		auto tex = i->list->texture(i->index);
+
+		// Init precalculated status text colours if necessary
+		if (col_text_modified.Alpha() == 0)
+		{
+			const auto     col_modified = ColRGBA(0, 85, 255);
+			const auto     col_new      = ColRGBA(0, 255, 0);
+			const auto     col_text     = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
+			constexpr auto intensity    = 0.65;
+
+			col_text_modified.Set(
+				static_cast<uint8_t>(col_modified.r * intensity + col_text.Red() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_modified.g * intensity + col_text.Green() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_modified.b * intensity + col_text.Blue() * (1.0 - intensity)),
+				255);
+
+			col_text_new.Set(
+				static_cast<uint8_t>(col_new.r * intensity + col_text.Red() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_new.g * intensity + col_text.Green() * (1.0 - intensity)),
+				static_cast<uint8_t>(col_new.b * intensity + col_text.Blue() * (1.0 - intensity)),
+				255);
+		}
+
+		if (tex->state() == CTexture::State::Modified)
+		{
+			attr.SetColour(col_text_modified);
+			has_attr = true;
+		}
+		else if (tex->state() == CTexture::State::New)
+		{
+			attr.SetColour(col_text_new);
+			has_attr = true;
+		}
+	}
+
+	return has_attr;
 }
 
 bool TextureTreeModel::SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col)

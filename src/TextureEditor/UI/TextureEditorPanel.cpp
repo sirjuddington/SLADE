@@ -55,10 +55,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 
 	// Init UI (expandAll must be deferred until the native window exists)
 	CallAfter([this]() { tree_view_->expandAll(); });
-	toolbar_patches_->enableGroup("Patch", false);
-	toolbar_texture_->showItem("txed_toggle_truecolour", false);
-	toolbar_texture_->enableItem("txed_save", false);
-	toolbar_texture_->enableItem("revert", false);
+	updateUI(true);
 }
 
 TextureEditorPanel::~TextureEditorPanel() = default;
@@ -201,16 +198,64 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 	return panel;
 }
 
-void TextureEditorPanel::openTexture(CTexture& tex) const
+void TextureEditorPanel::updateUI(bool texture_changed)
 {
-	// Open the texture for editing
-	editor_->openTexture(tex);
 	auto ctex = editor_->currentTexture();
 
-	// Open texture in canvas
-	tex_canvas_->openTexture(ctex, editor_->archive());
+	// No texture open
+	if (!ctex)
+	{
+		if (texture_changed)
+		{
+			tex_canvas_->clearTexture();
+			list_patches_->DeleteAllItems();
+			pg_properties_->textureChanged();
+		}
 
-	// Populate patches list
+		toolbar_patches_->enableGroup("Patch", false);
+		toolbar_texture_->showItem("txed_toggle_truecolour", false);
+		toolbar_texture_->enableItem("txed_save", false);
+		toolbar_texture_->enableItem("revert", false);
+		toolbar_patches_->enableItem("txed_patch_add", false);
+	}
+	else
+	{
+		if (texture_changed)
+		{
+			tex_canvas_->openTexture(ctex, editor_->archive());
+			pg_properties_->textureChanged();
+			populatePatchesList();
+
+			// Update toolbar buttons when texture state changes
+			sc_tex_state_changed_ = ctex->signals().state_changed.connect_scoped(
+				[this]()
+				{
+					toolbar_texture_->enableItem(
+						"txed_save", editor_->currentTexture()->state() == CTexture::State::Modified);
+					toolbar_texture_->enableItem(
+						"revert", editor_->currentTexture()->state() == CTexture::State::Modified);
+				});
+		}
+
+		toolbar_texture_->showItem("txed_toggle_truecolour", ctex->isExtended());
+		toolbar_texture_->enableItem("txed_save", ctex->state() == CTexture::State::Modified);
+		toolbar_texture_->enableItem("revert", ctex->state() == CTexture::State::Modified);
+		toolbar_patches_->enableItem("txed_patch_add", true);
+		toolbar_patches_->enableGroup("Patch", !editor_->selectedPatches().empty());
+	}
+
+	tex_canvas_->window()->Refresh();
+}
+
+void TextureEditorPanel::populatePatchesList() const
+{
+	list_patches_->DeleteAllItems();
+
+	auto ctex = editor_->currentTexture();
+	if (!ctex)
+		return;
+
+	// Add patches to list
 	int patch_index = 0;
 #if wxCHECK_VERSION(3, 3, 0)
 	for (auto& p : ctex->patches())
@@ -224,30 +269,26 @@ void TextureEditorPanel::openTexture(CTexture& tex) const
 		list_patches_->AppendItem(data);
 	}
 #endif
+
+	// Just set # column to a fixed width
 	list_patches_->GetColumn(0)->SetWidth(FromDIP(30));
 
-	// Update UI
-	pg_properties_->textureChanged();
-	toolbar_texture_->showItem("txed_toggle_truecolour", ctex->isExtended());
-	toolbar_texture_->enableItem("txed_save", false);
-	toolbar_texture_->enableItem("revert", false);
-}
-
-void TextureEditorPanel::clearTexture() const
-{
-	editor_->closeTexture();
-	tex_canvas_->clearTexture();
-	list_patches_->DeleteAllItems();
-	pg_properties_->textureChanged();
-	toolbar_patches_->enableGroup("Patch", false);
-	toolbar_texture_->showItem("txed_toggle_truecolour", false);
-	toolbar_texture_->enableItem("txed_save", false);
-	toolbar_texture_->enableItem("revert", false);
+	// Update patch selection
+	list_patches_->SetSelections(wxDataViewItemArray());
+	for (auto i : editor_->selectedPatches())
+		list_patches_->SelectRow(i);
 }
 
 bool TextureEditorPanel::handleAction(string_view id)
 {
-	if (id == "txed_toggle_truecolour")
+	if (id == "txed_save")
+	{
+		editor_->saveTexture();
+		toolbar_texture_->enableItem("txed_save", false);
+		toolbar_texture_->enableItem("revert", false);
+	}
+
+	else if (id == "txed_toggle_truecolour")
 	{
 		tex_canvas_->setBlendRGBA(CVar::getBool("tx_truecolour"));
 		tex_canvas_->redraw(true);
@@ -260,9 +301,7 @@ bool TextureEditorPanel::handleAction(string_view id)
 	}
 
 	else if (id == "txed_arc")
-	{
 		tex_canvas_->redraw();
-	}
 
 	else if (id == "txed_show_outside")
 	{
@@ -270,28 +309,28 @@ bool TextureEditorPanel::handleAction(string_view id)
 		tex_canvas_->redraw();
 	}
 
-	return SActionHandler::handleAction(id);
+	else
+		return false; // Not handled
+
+	return true;
 }
 
 void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
 {
-	list_patches_->DeleteAllItems();
-
 	wxDataViewItemArray selection;
 	tree_view_->GetSelections(selection);
-
 	if (selection.Count() == 1)
 	{
 		// Single selection, open texture if one is selected
 		if (auto ctex = tree_view_->textureForItem(e.GetItem()))
-			openTexture(*ctex);
+			editor_->openTexture(*ctex);
 		else
-			clearTexture();
+			editor_->closeTexture();
 	}
 	else
-		clearTexture();
+		editor_->closeTexture();
 
-	toolbar_patches_->enableGroup("Patch", false);
+	updateUI(true);
 }
 
 void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
@@ -301,14 +340,19 @@ void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
 	{
 		auto item = list_patches_->RowToItem(i);
 		if (item.IsOk() && list_patches_->IsSelected(item))
+		{
 			editor_->selectPatch(i);
+			tex_canvas_->selectPatch(i);
+		}
 		else
+		{
 			editor_->selectPatch(i, false);
+			tex_canvas_->deSelectPatch(i);
+		}
 	}
 
+	updateUI(false);
 	pg_properties_->patchesChanged();
-	tex_canvas_->window()->Refresh();
-	toolbar_patches_->enableGroup("Patch", !editor_->selectedPatches().empty());
 }
 
 // -----------------------------------------------------------------------------
@@ -489,7 +533,6 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		// 	alt_press_ = false;
 		// }
 
-		// auto selected_patches = list_patches_->selectedItems();
 		wxDataViewItemArray selected_patches;
 		list_patches_->GetSelections(selected_patches);
 		for (auto item : selected_patches)
@@ -501,7 +544,7 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 			int16_t cy = patch->yOffset();
 			patch->setOffsetX(cx + x_movement);
 			patch->setOffsetY(cy + y_movement);
-			// TODO: tex_modified_ = true;
+			editor_->currentTexture()->setState(CTexture::State::Modified);
 		}
 
 		pg_properties_->refreshPatchProperties();
@@ -527,5 +570,9 @@ void TextureEditorPanel::onToolbarButton(wxCommandEvent& e)
 	else if (e.GetEventObject() == toolbar_texlist_)
 		button = toolbar_texlist_->actionFromWxId(e.GetId());
 
-	
+	if (button == "revert")
+	{
+		editor_->revertTexture();
+		tex_canvas_->openTexture(editor_->currentTexture(), editor_->archive());
+	}
 }

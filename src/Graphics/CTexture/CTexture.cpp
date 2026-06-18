@@ -539,6 +539,19 @@ void CTexture::setType(Type type)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the texture edit state
+// -----------------------------------------------------------------------------
+void CTexture::setState(State state)
+{
+	// New stays new until saved (set to unmodified)
+	if (state == State::Modified && state_ == State::New)
+		return;
+
+	state_ = state;
+	signals_.state_changed();
+}
+
+// -----------------------------------------------------------------------------
 // Clears all texture data
 // -----------------------------------------------------------------------------
 void CTexture::clear()

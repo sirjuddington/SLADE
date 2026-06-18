@@ -478,9 +478,4 @@ void TexturePropGrid::onPropertyChanged(wxPropertyGridEvent& e)
 	// Translation
 	else if (e.GetPropertyName() == wxS("patch_translation"))
 		editor_->setPatchTranslation(e.GetValue().GetString().utf8_string());
-
-	else
-		return; // Unhandled property
-
-	editor_->setTexModified();
 }
