@@ -1,4 +1,4 @@
-﻿
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -126,8 +126,8 @@ public:
 	~FluidSynthMIDIPlayer() override
 	{
 		FluidSynthMIDIPlayer::stop();
-		delete_fluid_audio_driver(fs_adriver_);
 		delete_fluid_player(fs_player_);
+		delete_fluid_audio_driver(fs_adriver_);
 		delete_fluid_synth(fs_synth_);
 		delete_fluid_settings(fs_settings_);
 	}
@@ -282,9 +282,13 @@ public:
 	// -------------------------------------------------------------------------
 	bool stop() override
 	{
-		fluid_player_stop(fs_player_);
-		fluid_synth_all_notes_off(fs_synth_, -1);
-		fluid_player_seek(fs_player_, 0);
+		if (fs_player_)
+		{
+			fluid_player_stop(fs_player_);
+			fluid_player_seek(fs_player_, 0);
+		}
+		if (fs_synth_)
+			fluid_synth_all_notes_off(fs_synth_, -1);
 
 		return true;
 	}
@@ -416,6 +420,8 @@ private:
 			}
 
 			// Driver creation unsuccessful
+			delete_fluid_player(fs_player_);
+			fs_player_ = nullptr;
 			delete_fluid_synth(fs_synth_);
 			fs_synth_ = nullptr;
 			return false;
@@ -971,8 +977,7 @@ int midiLength(const MemChunk& data)
 			}
 			// Is this the longest track yet?
 			// [TODO] MIDI Format 2 has different songs on different tracks
-			if (tracklength > microseconds)
-				microseconds = tracklength;
+			microseconds = std::max(tracklength, microseconds);
 		}
 		pos = chunk_end;
 	}
