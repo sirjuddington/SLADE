@@ -126,26 +126,39 @@ void CTextureCanvas::refreshPatch(unsigned index)
 // -----------------------------------------------------------------------------
 // Draws the currently opened composite texture
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawTexture(wxgfx::Context& ctx, Vec2d scale, Vec2i offset, bool draw_patches)
+void CTextureCanvas::drawTexture(const wxgfx::Context& ctx, const Rectd& tex_rect, bool draw_patches)
 {
 	// Draw all individual patches if needed (eg. while dragging or 'draw outside' is enabled)
 	if (draw_patches)
 	{
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
-			drawPatch(ctx, a);
+			drawPatch(ctx, tex_rect, a);
+	}
+
+	// If we aren't currently dragging a patch, draw the fully generated texture
+	if (!dragging_)
+	{
+		// Generate if needed
+		if (!tex_preview_ || !tex_bitmap_.IsOk())
+		{
+			loadTexturePreview();
+			sImageToBitmap(*tex_preview_, palette_.get(), tex_bitmap_, view_.scale());
+		}
+
+		ctx.drawBitmap(tex_bitmap_, tex_rect.x1(), tex_rect.y1());
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws a black border around the texture w/ticks, and a grid if dragging
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawTextureBorder(wxgfx::Context& ctx, Vec2d scale, Vec2i offset) const
+void CTextureCanvas::drawTextureBorder(const wxgfx::Context& ctx, const Rectd& tex_rect) const
 {
 	constexpr float ext = 0.0f;
-	const auto      x1  = -offset.x * scale.x;
-	const auto      x2  = (-offset.x + texture_->width()) * scale.x - 1;
-	const auto      y1  = -offset.y * scale.y;
-	const auto      y2  = (-offset.y + texture_->height()) * scale.y - 1;
+	const auto      x1  = tex_rect.x1();
+	const auto      x2  = tex_rect.x2();
+	const auto      y1  = tex_rect.y1();
+	const auto      y2  = tex_rect.y2();
 
 	// Border
 	ctx.setPen({ 0, 0, 0 }, 2.0);
@@ -186,14 +199,14 @@ void CTextureCanvas::drawTextureBorder(wxgfx::Context& ctx, Vec2d scale, Vec2i o
 // -----------------------------------------------------------------------------
 // Draws the patch at index [num] in the composite texture
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawPatch(const wxgfx::Context& ctx, int index)
+void CTextureCanvas::drawPatch(const wxgfx::Context& ctx, const Rectd& tex_rect, int index)
 {
 	// Get patch to draw
 	const auto patch = texture_->patch(index);
 	if (!patch)
 		return;
 
-	// Load the patch as an opengl texture if it isn't already
+	// Load the patch as a bitmap if it isn't already
 	auto patch_image = patches_[index].image.get();
 	if (!patch_image || !patch_bitmaps_[index].IsOk())
 	{
@@ -203,14 +216,9 @@ void CTextureCanvas::drawPatch(const wxgfx::Context& ctx, int index)
 	}
 
 	// Draw patch
-	auto scale = texture_->scaleFactor();
+	auto rect = patchRect(index, tex_scale_);
 	ctx.drawBitmap(
-		patch_bitmaps_[index],
-		(patch->xOffset() - texture_->offsetX()) * scale.x,
-		(patch->yOffset() - texture_->offsetY()) * scale.y,
-		1.0,
-		patch_image->width() / scale.x,
-		patch_image->height() / scale.y);
+		patch_bitmaps_[index], tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y1(), 1.0, rect.width(), rect.height());
 }
 
 
@@ -251,25 +259,7 @@ void CTextureCanvas::onPaint(wxPaintEvent& e)
 	if (!texture_)
 		return;
 
-	// Determine offset/scale
-	Vec2d offset{ 0.0 }, scale{ 1.0 };
-	if (tex_scale_)
-	{
-		// Apply texture scale
-		auto tscalex = texture_->scaleX();
-		if (tscalex == 0.0f)
-			tscalex = 1.0f;
-		auto tscaley = texture_->scaleY();
-		if (tscaley == 0.0f)
-			tscaley = 1.0f;
-		scale = { 1.0f / tscalex, 1.0f / tscaley };
-	}
-	if (view_type_ != View::Normal)
-	{
-		// Apply texture offsets
-		offset.x = texture_->offsetX();
-		offset.y = texture_->offsetY();
-	}
+	auto tex_rect = textureRect(tex_scale_, view_type_ != View::Normal);
 
 	// Init/update patch bitmap list if needed
 	if (patch_bitmaps_.size() != texture_->nPatches())
@@ -284,34 +274,26 @@ void CTextureCanvas::onPaint(wxPaintEvent& e)
 		}
 
 	// Draw the texture
-	drawTexture(ctx, scale, offset, draw_outside_ || dragging_);
-	drawTextureBorder(ctx, scale, offset);
+	drawTexture(ctx, tex_rect, draw_outside_ || dragging_);
+	drawTextureBorder(ctx, tex_rect);
 
 	// Draw selected patch outlines
 	ctx.setPen({ 70, 210, 220 }, 2.0);
 	for (unsigned a = 0; a < patches_.size(); a++)
 		if (patches_[a].selected)
 		{
-			auto patch = texture_->patch(a);
-			ctx.drawRect(
-				(patch->xOffset() - texture_->offsetX()) * scale.x,
-				(patch->yOffset() - texture_->offsetY()) * scale.y,
-				patches_[a].image->width() * scale.x,
-				patches_[a].image->height() * scale.y);
+			auto rect = patchRect(a, tex_scale_);
+			ctx.drawRect(tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y1(), rect.width(), rect.height());
 		}
 
 	// Draw hilighted patch outline
-	if (hilight_patch_ >= 0 && hilight_patch_ < static_cast<int>(texture_->nPatches()))
+	if (hilight_patch_ >= 0 && std::cmp_less(hilight_patch_, texture_->nPatches()))
 	{
 		auto cm = ctx.gc->GetCompositionMode();
 		ctx.gc->SetCompositionMode(wxCOMPOSITION_ADD);
 		ctx.setPen({ 255, 255, 255, 150 }, 2.0);
-		auto patch = texture_->patch(hilight_patch_);
-		ctx.drawRect(
-			(patch->xOffset() - texture_->offsetX()) * scale.x,
-			(patch->yOffset() - texture_->offsetY()) * scale.y,
-			patches_[hilight_patch_].image->width() * scale.x,
-			patches_[hilight_patch_].image->height() * scale.y);
+		auto rect = patchRect(hilight_patch_, tex_scale_);
+		ctx.drawRect(tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y1(), rect.width(), rect.height());
 		ctx.gc->SetCompositionMode(cm);
 	}
 }

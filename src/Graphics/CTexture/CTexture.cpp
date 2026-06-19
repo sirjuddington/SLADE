@@ -118,7 +118,8 @@ CTPatchEx::CTPatchEx(const CTPatchEx& copy) :
 	colour_{ copy.colour_ },
 	alpha_{ copy.alpha_ },
 	style_{ copy.style_ },
-	blendtype_{ copy.blendtype_ }
+	blendtype_{ copy.blendtype_ },
+	tint_amount_{ copy.tint_amount_ }
 {
 	if (copy.translation_)
 	{

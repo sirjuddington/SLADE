@@ -1,5 +1,7 @@
 #pragma once
+
 #include "General/Sigslot.h"
+#include "Geometry/Rect.h"
 
 namespace slade
 {
@@ -65,6 +67,8 @@ public:
 
 	int          patchAt(int x, int y) const;
 	virtual bool swapPatches(size_t p1, size_t p2);
+	Rectd        textureRect(bool scale = false, bool offset = false) const;
+	Rectd        patchRect(int index, bool scale = false) const;
 
 	void linkZoomControl(ui::ZoomControl* zoom_control) { linked_zoom_control_ = zoom_control; }
 

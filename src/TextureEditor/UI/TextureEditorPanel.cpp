@@ -51,6 +51,11 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	tex_canvas_->window()->Bind(wxEVT_MOTION, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas_->window()->Bind(EVT_DRAG_END, &TextureEditorPanel::onTexCanvasDragEnd, this);
 	tex_canvas_->window()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
+	spin_offset_x_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexOffsetXChanged, this);
+	spin_offset_y_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexOffsetYChanged, this);
+	spin_offset_x_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexOffsetXChanged, this);
+	spin_offset_y_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexOffsetYChanged, this);
+	choice_offset_type_->Bind(wxEVT_CHOICE, &TextureEditorPanel::onChoiceOffsetTypeSelected, this);
 	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
 
 	// Init UI (expandAll must be deferred until the native window exists)
@@ -121,42 +126,8 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	hbox->AddSpacer(lh.padSmall());
 
 	// Offsets
-	spin_offset_x_ = new wxSpinCtrl(
-		panel,
-		-1,
-		wxEmptyString,
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
-		SHRT_MIN,
-		SHRT_MAX,
-		0);
-	spin_offset_y_ = new wxSpinCtrl(
-		panel,
-		-1,
-		wxEmptyString,
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
-		SHRT_MIN,
-		SHRT_MAX,
-		0);
-	spin_offset_x_->SetMinSize(lh.spinSize());
-	spin_offset_y_->SetMinSize(lh.spinSize());
-	hbox->Add(new wxStaticText(panel, -1, wxS("Offsets:")), wxSizerFlags().CenterVertical());
-	hbox->Add(spin_offset_x_, lh.sfWithBorder(0, wxLEFT | wxRIGHT).CenterVertical());
-	hbox->Add(spin_offset_y_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
-
-	// Offset view type
-	vector<string> offset_types = { "Auto", "Graphic", "Sprite", "HUD" };
-	choice_offset_type_         = new wxChoice(
-        panel, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(offset_types));
-	choice_offset_type_->SetSelection(0);
-	hbox->Add(choice_offset_type_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
-
-	// Auto offset
-	btn_auto_offset_ = new SIconButton(panel, "offset", "Modify Offsets...");
-	hbox->Add(btn_auto_offset_, wxSizerFlags().CenterVertical());
+	panel_offsets_ = createOffsetsPanel(panel);
+	hbox->Add(panel_offsets_, wxSizerFlags().Expand());
 
 	hbox->AddStretchSpacer();
 
@@ -198,6 +169,54 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 	return panel;
 }
 
+wxPanel* TextureEditorPanel::createOffsetsPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = ui::LayoutHelper(panel);
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
+	panel->SetSizer(sizer);
+
+	// Offsets
+	spin_offset_x_ = new wxSpinCtrl(
+		panel,
+		-1,
+		wxEmptyString,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
+		SHRT_MIN,
+		SHRT_MAX,
+		0);
+	spin_offset_y_ = new wxSpinCtrl(
+		panel,
+		-1,
+		wxEmptyString,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
+		SHRT_MIN,
+		SHRT_MAX,
+		0);
+	spin_offset_x_->SetMinSize(lh.spinSize());
+	spin_offset_y_->SetMinSize(lh.spinSize());
+	sizer->Add(new wxStaticText(panel, -1, wxS("Offsets:")), wxSizerFlags().CenterVertical());
+	sizer->Add(spin_offset_x_, lh.sfWithBorder(0, wxLEFT | wxRIGHT).CenterVertical());
+	sizer->Add(spin_offset_y_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+
+	// Offset view type
+	vector<string> offset_types = { "Auto", "Texture", "Sprite", "HUD" };
+	choice_offset_type_         = new wxChoice(
+        panel, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(offset_types));
+	choice_offset_type_->SetSelection(0);
+	sizer->Add(choice_offset_type_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+
+	// Auto offset
+	btn_auto_offset_ = new SIconButton(panel, "offset", "Modify Offsets...");
+	sizer->Add(btn_auto_offset_, wxSizerFlags().CenterVertical());
+
+	return panel;
+}
+
 void TextureEditorPanel::updateUI(bool texture_changed)
 {
 	auto ctex = editor_->currentTexture();
@@ -217,6 +236,7 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		toolbar_texture_->enableItem("txed_save", false);
 		toolbar_texture_->enableItem("revert", false);
 		toolbar_patches_->enableItem("txed_patch_add", false);
+		panel_offsets_->Show(false);
 	}
 	else
 	{
@@ -242,8 +262,10 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		toolbar_texture_->enableItem("revert", ctex->state() == CTexture::State::Modified);
 		toolbar_patches_->enableItem("txed_patch_add", true);
 		toolbar_patches_->enableGroup("Patch", !editor_->selectedPatches().empty());
+		panel_offsets_->Show(ctex->isExtended());
 	}
 
+	Refresh();
 	tex_canvas_->window()->Refresh();
 }
 
@@ -297,7 +319,7 @@ bool TextureEditorPanel::handleAction(string_view id)
 	else if (id == "txed_apply_scale")
 	{
 		tex_canvas_->applyTexScale(CVar::getBool("tx_apply_scale"));
-		tex_canvas_->redraw(true);
+		tex_canvas_->redraw();
 	}
 
 	else if (id == "txed_arc")
@@ -575,4 +597,37 @@ void TextureEditorPanel::onToolbarButton(wxCommandEvent& e)
 		editor_->revertTexture();
 		tex_canvas_->openTexture(editor_->currentTexture(), editor_->archive());
 	}
+}
+
+void TextureEditorPanel::onTexOffsetXChanged(wxCommandEvent& e)
+{
+	editor_->setTextureOffsetX(spin_offset_x_->GetValue());
+	tex_canvas_->redraw();
+}
+
+void TextureEditorPanel::onTexOffsetYChanged(wxCommandEvent& e)
+{
+	editor_->setTextureOffsetY(spin_offset_y_->GetValue());
+	tex_canvas_->redraw();
+}
+
+void TextureEditorPanel::onChoiceOffsetTypeSelected(wxCommandEvent& e)
+{
+	switch (choice_offset_type_->GetSelection())
+	{
+	case 0: // Auto (TODO)
+		tex_canvas_->setViewType(CTextureView::Normal);
+		break;
+	case 1: // Texture
+		tex_canvas_->setViewType(CTextureView::Normal);
+		break;
+	case 2: // Sprite
+		tex_canvas_->setViewType(CTextureView::Sprite);
+		break;
+	case 3: // HUD
+		tex_canvas_->setViewType(CTextureView::HUD);
+		break;
+	}
+
+	tex_canvas_->redraw();
 }

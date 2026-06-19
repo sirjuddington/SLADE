@@ -35,9 +35,9 @@ private:
 	wxBitmap         background_bitmap_;
 	wxBitmap         tex_bitmap_;
 
-	void drawTexture(wxgfx::Context& ctx, Vec2d scale, Vec2i offset, bool draw_patches);
-	void drawTextureBorder(wxgfx::Context& ctx, Vec2d scale, Vec2i offset) const;
-	void drawPatch(const wxgfx::Context& ctx, int index);
+	void drawTexture(const wxgfx::Context& ctx, const Rectd& tex_rect, bool draw_patches);
+	void drawTextureBorder(const wxgfx::Context& ctx, const Rectd& tex_rect) const;
+	void drawPatch(const wxgfx::Context& ctx, const Rectd& tex_rect, int index);
 
 	// Events
 	void onPaint(wxPaintEvent& e);

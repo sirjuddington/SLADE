@@ -38,24 +38,21 @@ public:
 	void clearTexture() override;
 	void clearPatches() override;
 	void refreshPatch(unsigned index) override;
-	void refreshTexturePreview() override;
-	void draw() override;
 
 private:
 	unsigned                      gl_tex_preview_ = 0;
 	vector<unsigned>              patch_gl_textures_;
 	unique_ptr<gl::LineBuffer>    lb_sprite_;
-	unique_ptr<gl::LineBuffer>    lb_border_;
-	unique_ptr<gl::LineBuffer>    lb_grid_;
 	unique_ptr<gl::LineBuffer>    lb_square_;
 	static unique_ptr<gl::Shader> shader_;
 
 	// Private functions
+	void draw() override;
 	void drawOffsetLines(const gl::draw2d::Context& dc);
-	void drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm::vec2 offset, bool draw_patches);
-	void drawPatch(int num);
-	void drawPatchOutline(const gl::draw2d::Context& dc, int num) const;
-	void drawTextureBorder(glm::vec2 scale, glm::vec2 offset);
+	void drawTexture(gl::draw2d::Context& dc, const Rectd& tex_rect, bool draw_patches);
+	void drawPatch(int num, const Rectd& tex_rect);
+	void drawPatchOutline(const gl::draw2d::Context& dc, int num, const Rectd& tex_rect) const;
+	void drawTextureBorder(const Rectd& tex_rect) const;
 	void initShader() const;
 };
 } // namespace slade

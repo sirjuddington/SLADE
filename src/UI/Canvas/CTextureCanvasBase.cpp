@@ -198,7 +198,7 @@ bool CTextureCanvasBase::openTexture(CTexture* tex, Archive* parent)
 		patches_.emplace_back();
 
 	// Update when texture is modified
-	connections_ += tex->signals().texture_modified.connect([this] { redraw(true); });
+	connections_ += tex->signals().texture_modified.connect([this] { redraw(); });
 
 	// Update when texture patches are modified
 	connections_ += tex->signals().patch_list_changed.connect(
@@ -268,7 +268,7 @@ int CTextureCanvasBase::patchAt(int x, int y) const
 		return -1;
 
 	// Go through texture patches backwards (ie from frontmost to back)
-	auto scale = texture_->scaleFactor();
+	auto tex_rect = textureRect(tex_scale_, view_type_ != View::Normal);
 	for (int a = static_cast<int>(texture_->nPatches()) - 1; a >= 0; a--)
 	{
 		auto img = patches_[a].image.get();
@@ -276,14 +276,12 @@ int CTextureCanvasBase::patchAt(int x, int y) const
 			continue;
 
 		// Check if x,y is within patch bounds
-		const auto patch = texture_->patch(a);
-		if (x >= (patch->xOffset() - texture_->offsetX()) * scale.x
-			&& x < (patch->xOffset() + img->width() - texture_->offsetX()) * scale.x
-			&& y >= (patch->yOffset() - texture_->offsetY()) * scale.y
-			&& y < (patch->yOffset() + img->height() - texture_->offsetY()) * scale.y)
-		{
+		auto rect = patchRect(a, tex_scale_);
+		if (x >= rect.x1() + tex_rect.x1()
+			&& x < rect.x2() + tex_rect.x1()
+			&& y >= rect.y1() + tex_rect.y1()
+			&& y < rect.y2() + tex_rect.y1())
 			return a;
-		}
 	}
 
 	// No patch at x,y
@@ -309,6 +307,45 @@ bool CTextureCanvasBase::swapPatches(size_t p1, size_t p2)
 
 	// Swap patches in the texture itself
 	return texture_->swapPatches(p1, p2);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the rectangle of the texture relative to the origin of the canvas,
+// taking scaling and offset into account
+// -----------------------------------------------------------------------------
+Rectd CTextureCanvasBase::textureRect(bool scale, bool offset) const
+{
+	if (!texture_)
+		return {};
+
+	auto sf   = scale ? texture_->scaleFactor() : Vec2d{ 1.0, 1.0 };
+	auto offs = offset ? texture_->offset() : Vec2<i16>{ 0, 0 };
+	return {
+		-offs.x * sf.x, -offs.y * sf.y, (texture_->width() - offs.x) * sf.x, (texture_->height() - offs.y) * sf.y
+	};
+}
+
+// -----------------------------------------------------------------------------
+// Returns the rectangle of the patch at [index] relative to the top-left of the
+// texture, taking scaling into account
+// -----------------------------------------------------------------------------
+Rectd CTextureCanvasBase::patchRect(int index, bool scale) const
+{
+	if (!texture_)
+		return {};
+
+	const auto patch = texture_->patch(index);
+	if (!patch)
+		return {};
+
+	if (!patches_[index].image)
+		return {};
+
+	auto sf = scale ? texture_->scaleFactor() : Vec2d{ 1.0, 1.0 };
+	return { (patch->xOffset() * sf.x),
+			 (patch->yOffset() * sf.y),
+			 ((patch->xOffset() + patches_[index].image->width()) * sf.x),
+			 ((patch->yOffset() + patches_[index].image->height()) * sf.y) };
 }
 
 // -----------------------------------------------------------------------------

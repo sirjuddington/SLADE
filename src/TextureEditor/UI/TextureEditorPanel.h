@@ -33,20 +33,29 @@ public:
 private:
 	unique_ptr<TextureEditor> editor_;
 
-	TextureTreeView*          tree_view_          = nullptr;
-	wxSplitterWindow*         splitter_left_      = nullptr;
-	wxSplitterWindow*         splitter_right_     = nullptr;
-	CTextureCanvasBase*       tex_canvas_         = nullptr;
-	SAuiToolBar*              toolbar_texlist_    = nullptr;
-	TexturePropGrid*          pg_properties_      = nullptr;
-	ui::ZoomControl*          zc_zoom_            = nullptr;
-	wxDataViewListCtrl*       list_patches_       = nullptr;
-	SAuiToolBar*              toolbar_patches_    = nullptr;
-	wxSpinCtrl*               spin_offset_x_      = nullptr;
-	wxSpinCtrl*               spin_offset_y_      = nullptr;
-	wxChoice*                 choice_offset_type_ = nullptr;
-	SIconButton*              btn_auto_offset_    = nullptr;
-	SAuiToolBar*              toolbar_texture_    = nullptr;
+	wxSplitterWindow* splitter_left_  = nullptr;
+	wxSplitterWindow* splitter_right_ = nullptr;
+
+	// Texture list
+	TextureTreeView* tree_view_       = nullptr;
+	SAuiToolBar*     toolbar_texlist_ = nullptr;
+
+	// Texture view
+	SAuiToolBar*        toolbar_texture_ = nullptr;
+	CTextureCanvasBase* tex_canvas_      = nullptr;
+	ui::ZoomControl*    zc_zoom_         = nullptr;
+
+	// Offsets panel
+	wxPanel*     panel_offsets_      = nullptr;
+	wxSpinCtrl*  spin_offset_x_      = nullptr;
+	wxSpinCtrl*  spin_offset_y_      = nullptr;
+	wxChoice*    choice_offset_type_ = nullptr;
+	SIconButton* btn_auto_offset_    = nullptr;
+
+	// Texture/Patch properties
+	wxDataViewListCtrl* list_patches_    = nullptr;
+	SAuiToolBar*        toolbar_patches_ = nullptr;
+	TexturePropGrid*    pg_properties_   = nullptr;
 
 	sigslot::scoped_connection sc_tex_state_changed_;
 
@@ -54,6 +63,7 @@ private:
 	wxPanel* createMainPanel(wxWindow* parent);
 	wxPanel* createTextureViewPanel(wxWindow* parent);
 	wxPanel* createPatchPropertiesPanel(wxWindow* parent);
+	wxPanel* createOffsetsPanel(wxWindow* parent);
 
 	void updateUI(bool texture_changed = false);
 	void populatePatchesList() const;
@@ -67,5 +77,8 @@ private:
 	void onTexCanvasDragEnd(wxCommandEvent& e);
 	void onTexCanvasKeyDown(wxKeyEvent& e);
 	void onToolbarButton(wxCommandEvent& e);
+	void onTexOffsetXChanged(wxCommandEvent& e);
+	void onTexOffsetYChanged(wxCommandEvent& e);
+	void onChoiceOffsetTypeSelected(wxCommandEvent& e);
 };
 } // namespace slade::texeditor

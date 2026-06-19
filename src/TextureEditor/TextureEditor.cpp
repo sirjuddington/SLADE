@@ -200,6 +200,22 @@ void TextureEditor::setTextureType(CTexture::Type type) const
 	tex_current_->setState(CTexture::State::Modified);
 }
 
+void TextureEditor::setTextureOffsetX(int offset) const
+{
+	if (!tex_current_)
+		return;
+	tex_current_->setOffsetX(offset);
+	tex_current_->setState(CTexture::State::Modified);
+}
+
+void TextureEditor::setTextureOffsetY(int offset) const
+{
+	if (!tex_current_)
+		return;
+	tex_current_->setOffsetY(offset);
+	tex_current_->setState(CTexture::State::Modified);
+}
+
 void TextureEditor::setPatchOffsetX(int offset) const
 {
 	if (!tex_current_ || selected_patches_.empty())

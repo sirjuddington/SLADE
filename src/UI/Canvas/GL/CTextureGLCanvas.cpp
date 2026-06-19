@@ -101,12 +101,6 @@ void CTextureGLCanvas::clearTexture()
 {
 	CTextureCanvasBase::clearTexture();
 
-	// Clear buffers
-	if (lb_border_)
-		lb_border_->buffer().clear();
-	if (lb_grid_)
-		lb_grid_->buffer().clear();
-
 	// Clear full preview
 	gl::Texture::clear(gl_tex_preview_);
 	gl_tex_preview_ = 0;
@@ -146,23 +140,10 @@ void CTextureGLCanvas::refreshPatch(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
-// Unloads the full preview image, so it is recreated on next draw.
-// We also need to reset the border buffer in case the texture size changed
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::refreshTexturePreview()
-{
-	CTextureCanvasBase::refreshTexturePreview();
-	lb_border_.reset();
-}
-
-// -----------------------------------------------------------------------------
 // Draws the canvas contents
 // -----------------------------------------------------------------------------
 void CTextureGLCanvas::draw()
 {
-	if (!texture_)
-		return;
-
 	// Aspect Ratio Correction
 	if (tx_arc)
 		view_.setScale({ view_.scale().x, view_.scale().x * 1.2 });
@@ -173,35 +154,16 @@ void CTextureGLCanvas::draw()
 	gl::draw2d::Context dc(&view_);
 	drawOffsetLines(dc);
 
-	// Determine offset/scale
-	glm::vec2 offset{ 0.0f }, scale{ 1.0f };
-	if (tex_scale_)
-	{
-		// Apply texture scale
-		auto tscalex = static_cast<float>(texture_->scaleX());
-		if (tscalex == 0.0f)
-			tscalex = 1.0f;
-		auto tscaley = static_cast<float>(texture_->scaleY());
-		if (tscaley == 0.0f)
-			tscaley = 1.0f;
-		scale = { 1.0f / tscalex, 1.0f / tscaley };
-	}
-	if (view_type_ != View::Normal)
-	{
-		// Apply texture offsets
-		offset.x = static_cast<float>(texture_->offsetX());
-		offset.y = static_cast<float>(texture_->offsetY());
-	}
+	if (!texture_)
+		return;
+
+	auto tex_rect = textureRect(tex_scale_, view_type_ != View::Normal);
 
 	// Setup shader
 	initShader();
 	shader_->bind();
-	shader_->setUniform("view_tl", glm::vec2(view_.screenX(-offset.x * scale.x), view_.screenY(-offset.y * scale.x)));
-	shader_->setUniform(
-		"view_br",
-		glm::vec2(
-			view_.screenX((texture_->width() - offset.x) * scale.x),
-			view_.screenY((texture_->height() - offset.y) * scale.y)));
+	shader_->setUniform("view_tl", glm::vec2(view_.screenX(tex_rect.tl.x), view_.screenY(tex_rect.tl.y)));
+	shader_->setUniform("view_br", glm::vec2(view_.screenX(tex_rect.br.x), view_.screenY(tex_rect.br.y)));
 	shader_->setUniform("outside_colour", draw_outside_ ? glm::vec4{ 0.8f, 0.2f, 0.2f, 0.3f } : glm::vec4{ 0.0f });
 	shader_->setUniform("colour", glm::vec4{ 1.0f });
 	view_.setupShader(*shader_);
@@ -212,8 +174,8 @@ void CTextureGLCanvas::draw()
 			loadPatchImage(i);
 
 	// Draw the texture
-	drawTexture(dc, scale, offset, draw_outside_ || dragging_);
-	drawTextureBorder(scale, offset);
+	drawTexture(dc, tex_rect, draw_outside_ || dragging_);
+	drawTextureBorder(tex_rect);
 
 	// Draw selected patch outlines
 	dc.colour         = { 70, 210, 220, 255 };
@@ -221,30 +183,27 @@ void CTextureGLCanvas::draw()
 	dc.line_aa_radius = 0.0f;
 	for (unsigned a = 0; a < patches_.size(); a++)
 		if (patches_[a].selected)
-			drawPatchOutline(dc, a);
+			drawPatchOutline(dc, a, tex_rect);
 
 	// Draw hilighted patch outline
 	if (hilight_patch_ >= 0 && std::cmp_less(hilight_patch_, texture_->nPatches()))
 	{
 		dc.colour = { 255, 255, 255, 150 };
 		dc.blend  = gl::Blend::Additive;
-		drawPatchOutline(dc, hilight_patch_);
+		drawPatchOutline(dc, hilight_patch_, tex_rect);
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws the currently opened composite texture
 // -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm::vec2 offset, bool draw_patches)
+void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, const Rectd& tex_rect, bool draw_patches)
 {
-	auto width  = texture_->width();
-	auto height = texture_->height();
-
 	// Draw all individual patches if needed (eg. while dragging or 'draw outside' is enabled)
 	if (draw_patches)
 	{
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
-			drawPatch(a);
+			drawPatch(a, tex_rect);
 	}
 
 	// If we aren't currently dragging a patch, draw the fully generated texture
@@ -259,14 +218,14 @@ void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, glm::vec2 scale, glm
 
 		// Draw the texture
 		dc.texture = gl_tex_preview_;
-		dc.drawRect({ offset.x, offset.y, offset.x + width * scale.x, offset.y + height * scale.y, false });
+		dc.drawRect({ tex_rect.x1(), tex_rect.y1(), tex_rect.x2(), tex_rect.y2() });
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws the patch at index [num] in the composite texture
 // -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawPatch(int num)
+void CTextureGLCanvas::drawPatch(int num, const Rectd& tex_rect)
 {
 	// Get patch to draw
 	const auto patch = texture_->patch(num);
@@ -284,18 +243,14 @@ void CTextureGLCanvas::drawPatch(int num)
 		patch_gl_textures_[num] = gl::Texture::createFromImage(*patches_[num].image, palette_.get());
 	}
 
-	auto scale  = tex_scale_ ? texture_->scaleFactor() : Vec2d(1.0);
-	auto xoff   = static_cast<float>((patch->xOffset() - texture_->offsetX()) * scale.x);
-	auto yoff   = static_cast<float>(patch->yOffset() - texture_->offsetY()) * scale.y;
-	auto width  = static_cast<float>(patches_[num].image->width() * scale.x);
-	auto height = static_cast<float>(patches_[num].image->height() * scale.y);
+	auto rect   = patchRect(num, tex_scale_);
 	auto colour = glm::vec4{ 1.0f };
 
 	gl::VertexBuffer2D vb_patch;
-	vb_patch.add({ xoff, yoff }, colour, { 0.0f, 0.0f });
-	vb_patch.add({ xoff, yoff + height }, colour, { 0.0f, 1.0f });
-	vb_patch.add({ xoff + width, yoff + height }, colour, { 1.0f, 1.0f });
-	vb_patch.add({ xoff + width, yoff }, colour, { 1.0f, 0.0f });
+	vb_patch.add({ tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y1() }, colour, { 0.0f, 0.0f });
+	vb_patch.add({ tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y2() }, colour, { 0.0f, 1.0f });
+	vb_patch.add({ tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y2() }, colour, { 1.0f, 1.0f });
+	vb_patch.add({ tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y1() }, colour, { 1.0f, 0.0f });
 
 	gl::Texture::bind(patch_gl_textures_[num]);
 	vb_patch.push();
@@ -305,24 +260,24 @@ void CTextureGLCanvas::drawPatch(int num)
 // -----------------------------------------------------------------------------
 // Draws the outline of the patch at index [num] in the composite texture
 // -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) const
+void CTextureGLCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num, const Rectd& tex_rect) const
 {
 	// Get patch
 	const auto patch = texture_->patch(num);
 	if (!patch)
 		return;
 
-	auto scale = tex_scale_ ? texture_->scaleFactor() : Vec2d(1.0);
-	auto x1    = static_cast<float>((patch->xOffset() - texture_->offsetX()) * scale.x);
-	auto y1    = static_cast<float>((patch->yOffset() - texture_->offsetY()) * scale.y);
-	auto x2    = x1 + static_cast<float>(patches_[num].image->width() * scale.x);
-	auto y2    = y1 + static_cast<float>(patches_[num].image->height() * scale.y);
+	auto rect = patchRect(num, tex_scale_);
 
 	vector<Rectf> lines;
-	lines.emplace_back(x1, y1, x1, y2);
-	lines.emplace_back(x1, y2, x2, y2);
-	lines.emplace_back(x2, y2, x2, y1);
-	lines.emplace_back(x2, y1, x1, y1);
+	lines.emplace_back(
+		tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y1(), tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y2());
+	lines.emplace_back(
+		tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y2(), tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y2());
+	lines.emplace_back(
+		tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y2(), tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y1());
+	lines.emplace_back(
+		tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y1(), tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y1());
 
 	dc.drawLines(lines);
 }
@@ -330,82 +285,68 @@ void CTextureGLCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num) 
 // -----------------------------------------------------------------------------
 // Draws a black border around the texture w/ticks, and a grid if dragging
 // -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawTextureBorder(glm::vec2 scale, glm::vec2 offset)
+void CTextureGLCanvas::drawTextureBorder(const Rectd& tex_rect) const
 {
 	constexpr float ext = 0.0f;
-	const auto      x1  = -offset.x * scale.x;
-	const auto      x2  = (-offset.x + texture_->width()) * scale.x;
-	const auto      y1  = -offset.y * scale.y;
-	const auto      y2  = (-offset.y + texture_->height()) * scale.y;
+	const auto      x1  = tex_rect.x1();
+	const auto      x2  = tex_rect.x2();
+	const auto      y1  = tex_rect.y1();
+	const auto      y2  = tex_rect.y2();
 
-	// Setup border buffer if needed
-	if (!lb_border_)
+	auto line_buffer = std::make_unique<gl::LineBuffer>();
+	line_buffer->setAaRadius(0.0f, 0.0f);
+
+	// Populate line buffer for border
+	glm::vec4 colour = ColRGBA::BLACK;
+
+	// Border
+	line_buffer->add2d(x1 - ext, y1 - ext, x1 - ext, y2 + ext, colour, 2.0f);
+	line_buffer->add2d(x1 - ext, y2 + ext, x2 + ext, y2 + ext, colour, 2.0f);
+	line_buffer->add2d(x2 + ext, y2 + ext, x2 + ext, y1 - ext, colour, 2.0f);
+	line_buffer->add2d(x2 + ext, y1 - ext, x1 - ext, y1 - ext, colour, 2.0f);
+
+	// Vertical ticks
+	colour.a = 0.6f;
+	for (float y = y1; y <= y2; y += 8.0f)
 	{
-		lb_border_ = std::make_unique<gl::LineBuffer>();
-		lb_border_->setAaRadius(0.0f, 0.0f);
+		line_buffer->add2d(x1 - 4, y, x1, y, colour);
+		line_buffer->add2d(x2, y, x2 + 4, y, colour);
 	}
-	if (lb_border_->buffer().empty())
+
+	// Horizontal ticks
+	for (float x = x1; x <= x2; x += 8.0f)
 	{
-		glm::vec4 colour = ColRGBA::BLACK;
-
-		// Border
-		lb_border_->add2d(x1 - ext, y1 - ext, x1 - ext, y2 + ext, colour, 2.0f);
-		lb_border_->add2d(x1 - ext, y2 + ext, x2 + ext, y2 + ext, colour, 2.0f);
-		lb_border_->add2d(x2 + ext, y2 + ext, x2 + ext, y1 - ext, colour, 2.0f);
-		lb_border_->add2d(x2 + ext, y1 - ext, x1 - ext, y1 - ext, colour, 2.0f);
-
-		// Vertical ticks
-		colour.a = 0.6f;
-		for (float y = y1; y <= y2; y += 8.0f)
-		{
-			lb_border_->add2d(x1 - 4, y, x1, y, colour);
-			lb_border_->add2d(x2, y, x2 + 4, y, colour);
-		}
-
-		// Horizontal ticks
-		for (float x = x1; x <= x2; x += 8.0f)
-		{
-			lb_border_->add2d(x, y1 - 4, x, y1, colour);
-			lb_border_->add2d(x, y2, x, y2 + 4, colour);
-		}
-
-		lb_border_->push();
+		line_buffer->add2d(x, y1 - 4, x, y1, colour);
+		line_buffer->add2d(x, y2, x, y2 + 4, colour);
 	}
 
 	// Draw border lines
-	lb_border_->draw(&view_);
+	line_buffer->push();
+	line_buffer->draw(&view_);
 
 	// Draw grid if shown
 	if (show_grid_)
 	{
-		// Setup grid buffer if needed
-		if (!lb_grid_)
-		{
-			lb_grid_ = std::make_unique<gl::LineBuffer>();
-			lb_grid_->setAaRadius(0.0f, 0.0f);
-		}
-		if (lb_grid_->buffer().empty())
-		{
-			auto colour = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f };
+		// Populate line buffer for grid
+		auto col_grid = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f };
 
-			// Vertical
-			for (float y = y1 + 8.0f; y <= y2 - 8.0f; y += 8.0f)
-				lb_grid_->add2d(x1, y, x2, y, colour);
+		// Vertical
+		for (float y = y1 + 8.0f; y <= y2 - 8.0f; y += 8.0f)
+			line_buffer->add2d(x1, y, x2, y, col_grid);
 
-			// Horizontal
-			for (float x = x1 + 8.0f; x <= x2 - 8.0f; x += 8.0f)
-				lb_grid_->add2d(x, y1, x, y2, colour);
+		// Horizontal
+		for (float x = x1 + 8.0f; x <= x2 - 8.0f; x += 8.0f)
+			line_buffer->add2d(x, y1, x, y2, col_grid);
 
-			lb_grid_->push();
-		}
+		line_buffer->push();
 
 		// Draw with inverted blending
 		gl::setBlend(gl::Blend::Invert);
-		lb_grid_->draw(&view_);
+		line_buffer->draw(&view_);
 
 		// Draw again with regular blending to darken
 		gl::setBlend(gl::Blend::Normal);
-		lb_grid_->draw(&view_, { 0.0f, 0.0f, 0.0f, 0.5f });
+		line_buffer->draw(&view_, { 0.0f, 0.0f, 0.0f, 0.5f });
 	}
 }
 

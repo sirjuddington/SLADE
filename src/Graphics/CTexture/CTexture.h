@@ -132,29 +132,30 @@ public:
 
 	const vector<unique_ptr<CTPatch>>& patches() const { return patches_; }
 
-	const string&  name() const { return name_; }
-	Vec2<uint16_t> size() const { return size_; }
-	uint16_t       width() const { return size_.x; }
-	uint16_t       height() const { return size_.y; }
-	double         scaleX() const { return scale_.x; }
-	double         scaleY() const { return scale_.y; }
-	Vec2d          scale() const { return scale_; }
-	Vec2d          scaleFactor() const;
-	int16_t        offsetX() const { return offset_.x; }
-	int16_t        offsetY() const { return offset_.y; }
-	bool           worldPanning() const { return world_panning_; }
-	const string&  type() const { return type_; }
-	Type           typeEnum() const;
-	bool           isExtended() const { return extended_; }
-	bool           isOptional() const { return optional_; }
-	bool           noDecals() const { return no_decals_; }
-	bool           nullTexture() const { return null_texture_; }
-	bool           noTrim() const { return no_trim_; }
-	size_t         nPatches() const { return patches_.size(); }
-	CTPatch*       patch(size_t index) const;
-	State          state() const { return state_; }
-	int            index() const;
-	int            patchIndex(const CTPatch* patch) const;
+	const string&    name() const { return name_; }
+	Vec2<uint16_t>   size() const { return size_; }
+	uint16_t         width() const { return size_.x; }
+	uint16_t         height() const { return size_.y; }
+	double           scaleX() const { return scale_.x; }
+	double           scaleY() const { return scale_.y; }
+	Vec2d            scale() const { return scale_; }
+	Vec2d            scaleFactor() const;
+	int16_t          offsetX() const { return offset_.x; }
+	int16_t          offsetY() const { return offset_.y; }
+	const Vec2<i16>& offset() const { return offset_; }
+	bool             worldPanning() const { return world_panning_; }
+	const string&    type() const { return type_; }
+	Type             typeEnum() const;
+	bool             isExtended() const { return extended_; }
+	bool             isOptional() const { return optional_; }
+	bool             noDecals() const { return no_decals_; }
+	bool             nullTexture() const { return null_texture_; }
+	bool             noTrim() const { return no_trim_; }
+	size_t           nPatches() const { return patches_.size(); }
+	CTPatch*         patch(size_t index) const;
+	State            state() const { return state_; }
+	int              index() const;
+	int              patchIndex(const CTPatch* patch) const;
 
 	void setName(string_view name) { name_ = name; }
 	void setSize(const Vec2<uint16_t>& size) { size_ = size; }

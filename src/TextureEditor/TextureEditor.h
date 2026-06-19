@@ -40,6 +40,8 @@ public:
 	void setTextureScaleY(double scale) const;
 	void setTextureFlag(string_view flag, bool on = true) const;
 	void setTextureType(CTexture::Type type) const;
+	void setTextureOffsetX(int offset) const;
+	void setTextureOffsetY(int offset) const;
 
 	void setPatchOffsetX(int offset) const;
 	void setPatchOffsetY(int offset) const;
