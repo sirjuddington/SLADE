@@ -182,9 +182,12 @@ public:
 
 	bool addPatch(string_view patch, int16_t offset_x = 0, int16_t offset_y = 0, int index = -1);
 	bool removePatch(size_t index);
+	bool removePatches(const vector<unsigned>& indices);
 	bool removePatch(string_view patch);
 	bool replacePatch(size_t index, string_view newpatch);
+	bool replacePatches(const vector<unsigned>& indices, string_view newpatch);
 	bool duplicatePatch(size_t index, int16_t offset_x = 8, int16_t offset_y = 8);
+	bool duplicatePatches(const vector<unsigned>& indices, int16_t offset_x = 8, int16_t offset_y = 8);
 	bool swapPatches(size_t p1, size_t p2);
 
 	bool   parse(Tokenizer& tz, string_view type);

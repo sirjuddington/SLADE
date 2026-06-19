@@ -494,7 +494,7 @@ void PatchBrowser::selectPatch(int pt_index)
 // -----------------------------------------------------------------------------
 // Selects the patch matching [name]
 // -----------------------------------------------------------------------------
-void PatchBrowser::selectPatch(const string& name)
+void PatchBrowser::selectPatch(string_view name)
 {
 	selectItem(name);
 }

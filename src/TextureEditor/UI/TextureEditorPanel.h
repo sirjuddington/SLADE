@@ -6,6 +6,7 @@
 class wxSplitterWindow;
 namespace slade
 {
+class PatchBrowser;
 class SIconButton;
 class CTexture;
 class SAuiToolBar;
@@ -32,6 +33,8 @@ public:
 
 private:
 	unique_ptr<TextureEditor> editor_;
+
+	PatchBrowser* patch_browser_ = nullptr;
 
 	wxSplitterWindow* splitter_left_  = nullptr;
 	wxSplitterWindow* splitter_right_ = nullptr;
@@ -68,6 +71,14 @@ private:
 	void updateUI(bool texture_changed = false);
 	void populatePatchesList() const;
 
+	string browsePatch(string_view initial = {});
+	void   addPatch();
+	void   removePatch();
+	void   replacePatch();
+	void   duplicatePatch();
+	void   pushPatch(bool forward);
+
+	// SActionHandler
 	bool handleAction(string_view id) override;
 
 	// Events

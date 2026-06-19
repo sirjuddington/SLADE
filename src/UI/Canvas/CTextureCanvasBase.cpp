@@ -109,7 +109,7 @@ void CTextureCanvasBase::selectPatch(int index)
 // -----------------------------------------------------------------------------
 // De-Selects the patch at [index]
 // -----------------------------------------------------------------------------
-void CTextureCanvasBase::deSelectPatch(int index)
+void CTextureCanvasBase::deselectPatch(int index)
 {
 	// Check patch index is ok
 	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
@@ -117,6 +117,15 @@ void CTextureCanvasBase::deSelectPatch(int index)
 
 	// De-Select the patch
 	patches_[index].selected = false;
+}
+
+// -----------------------------------------------------------------------------
+// Deselects all patches
+// -----------------------------------------------------------------------------
+void CTextureCanvasBase::deselectAll()
+{
+	for (auto& patch : patches_)
+		patch.selected = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -198,7 +207,7 @@ bool CTextureCanvasBase::openTexture(CTexture* tex, Archive* parent)
 		patches_.emplace_back();
 
 	// Update when texture is modified
-	connections_ += tex->signals().texture_modified.connect([this] { redraw(); });
+	connections_ += tex->signals().texture_modified.connect([this] { redraw(true); });
 
 	// Update when texture patches are modified
 	connections_ += tex->signals().patch_list_changed.connect(

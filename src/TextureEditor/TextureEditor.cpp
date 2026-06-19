@@ -4,7 +4,6 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
-#include "General/SAction.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
@@ -96,6 +95,7 @@ void TextureEditor::openTexture(CTexture& texture)
 void TextureEditor::closeTexture()
 {
 	tex_current_.reset();
+	selected_patches_.clear();
 }
 
 void TextureEditor::saveTexture() const
@@ -108,13 +108,14 @@ void TextureEditor::saveTexture() const
 	tex_current_->setState(CTexture::State::Unmodified);
 }
 
-void TextureEditor::revertTexture() const
+void TextureEditor::revertTexture()
 {
 	if (!tex_current_ || !tex_current_source_)
 		return;
 
 	tex_current_->copyTexture(*tex_current_source_);
 	tex_current_->setState(CTexture::State::Unmodified);
+	selected_patches_.clear();
 }
 
 void TextureEditor::selectPatch(unsigned index, bool selected)
@@ -347,8 +348,8 @@ void TextureEditor::setPatchTranslation(string_view translation) const
 
 	Translation t;
 	if (!translation.empty())
-
 		t.parse(translation);
+
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
@@ -356,4 +357,117 @@ void TextureEditor::setPatchTranslation(string_view translation) const
 
 	tex_current_->signals().patches_modified(selected_patches_);
 	tex_current_->setState(CTexture::State::Modified);
+}
+
+void TextureEditor::addPatch(string_view patch) const
+{
+	if (!tex_current_)
+		return;
+
+	tex_current_->addPatch(patch);
+	tex_current_->setState(CTexture::State::Modified);
+}
+
+void TextureEditor::removePatch()
+{
+	if (!tex_current_ || selected_patches_.empty())
+		return;
+
+	// Clear selection
+	auto to_remove = selected_patches_;
+	selected_patches_.clear();
+
+	// Remove patches
+	tex_current_->removePatches(to_remove);
+	tex_current_->setState(CTexture::State::Modified);
+}
+
+void TextureEditor::replacePatch(string_view patch) const
+{
+	if (!tex_current_ || selected_patches_.empty())
+		return;
+
+	if (selected_patches_.size() == 1)
+		tex_current_->replacePatch(selected_patches_[0], patch);
+	else
+		tex_current_->replacePatches(selected_patches_, patch);
+
+	tex_current_->setState(CTexture::State::Modified);
+}
+
+void TextureEditor::duplicatePatch(int xoff, int yoff)
+{
+	if (!tex_current_ || selected_patches_.empty())
+		return;
+
+	if (selected_patches_.size() == 1)
+		tex_current_->duplicatePatch(selected_patches_[0], xoff, yoff);
+	else
+		tex_current_->duplicatePatches(selected_patches_, xoff, yoff);
+
+	// Adjust selection to select the new duplicated patches
+	for (unsigned& index : selected_patches_)
+		index++;
+
+	tex_current_->setState(CTexture::State::Modified);
+}
+
+void TextureEditor::patchForward()
+{
+	if (!tex_current_ || selected_patches_.empty())
+		return;
+
+	if (vectorContains(selected_patches_, static_cast<unsigned>(tex_current_->nPatches() - 1)))
+		return; // Can't move if last patch is selected
+
+	if (selected_patches_.size() == 1)
+		tex_current_->swapPatches(selected_patches_[0], selected_patches_[0] + 1);
+	else
+	{
+		// Sort selection in descending order so we can safely swap patches in order
+		auto sorted_selection = selected_patches_;
+		std::ranges::sort(sorted_selection, std::greater());
+
+		// Swap selected patches forward,
+		// blocking patch_list_changed signal until all swaps are done
+		tex_current_->signals().patch_list_changed.block();
+		for (unsigned& index : sorted_selection)
+			tex_current_->swapPatches(index, index + 1);
+		tex_current_->signals().patch_list_changed.unblock();
+		tex_current_->signals().patch_list_changed();
+	}
+
+	// Update selection to match new patch positions
+	for (unsigned& index : selected_patches_)
+		index++;
+}
+
+void TextureEditor::patchBack()
+{
+	if (!tex_current_ || selected_patches_.empty())
+		return;
+
+	if (vectorContains(selected_patches_, 0u))
+		return; // Can't move if first patch is selected
+
+	if (selected_patches_.size() == 1)
+		tex_current_->swapPatches(selected_patches_[0], selected_patches_[0] - 1);
+	else
+	{
+		// Sort selection in ascending order so we can safely swap patches in order
+		auto sorted_selection = selected_patches_;
+		std::ranges::sort(sorted_selection);
+
+		// Swap selected patches backward,
+		// blocking patch_list_changed signal until all swaps are done
+		tex_current_->signals().patch_list_changed.block();
+		for (unsigned index : sorted_selection)
+			tex_current_->swapPatches(index, index - 1);
+		tex_current_->signals().patch_list_changed.unblock();
+		tex_current_->signals().patch_list_changed();
+	}
+
+	// Update selection to match new patch positions
+	for (unsigned& index : selected_patches_)
+		index--;
 }

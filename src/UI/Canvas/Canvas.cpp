@@ -62,7 +62,8 @@ CVAR(Float, canvas_scale_factor, 0.0f, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // Canvas class constructor
 // -----------------------------------------------------------------------------
-Canvas::Canvas(wxWindow* parent) : wxPanel(parent)
+Canvas::Canvas(wxWindow* parent) :
+	wxControl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS)
 {
 	wxWindow::SetDoubleBuffered(true);
 }
@@ -85,7 +86,7 @@ double Canvas::GetContentScaleFactor() const
 	if (canvas_scale_factor > 0)
 		return canvas_scale_factor;
 
-	return wxPanel::GetContentScaleFactor();
+	return wxControl::GetContentScaleFactor();
 }
 
 

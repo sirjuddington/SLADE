@@ -1150,7 +1150,7 @@ void TextureEditorPanel::onPatchListDeSelect(wxListEvent& e)
 	}
 
 	// Deselect the patch on the texture canvas
-	tex_canvas_->deSelectPatch(e.GetIndex());
+	tex_canvas_->deselectPatch(e.GetIndex());
 
 	// Update UI
 	tex_canvas_->redraw(false);

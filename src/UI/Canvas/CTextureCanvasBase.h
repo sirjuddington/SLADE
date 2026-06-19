@@ -54,7 +54,8 @@ public:
 	void      applyTexScale(bool apply) { tex_scale_ = apply; }
 
 	void selectPatch(int index);
-	void deSelectPatch(int index);
+	void deselectPatch(int index);
+	void deselectAll();
 	bool patchSelected(int index) const;
 
 	virtual void clearTexture();

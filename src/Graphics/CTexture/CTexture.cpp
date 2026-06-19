@@ -621,6 +621,39 @@ bool CTexture::removePatch(size_t index)
 }
 
 // -----------------------------------------------------------------------------
+// Removes the patches at [indices].
+// Returns true if any were removed, false otherwise
+// -----------------------------------------------------------------------------
+bool CTexture::removePatches(const vector<unsigned>& indices)
+{
+	// Sort indices in descending order
+	auto sorted_indices = indices;
+	std::ranges::sort(sorted_indices, std::greater());
+
+	// Go through indices to remove
+	bool removed = false;
+	for (auto index : sorted_indices)
+	{
+		if (index >= patches_.size())
+			continue;
+
+		patches_.erase(patches_.begin() + index);
+		removed = true;
+	}
+
+	if (removed)
+	{
+		// Cannot be a simple define anymore
+		defined_ = false;
+
+		// Announce
+		signals_.patch_list_changed();
+	}
+
+	return removed;
+}
+
+// -----------------------------------------------------------------------------
 // Removes all instances of [patch] from the texture.
 // Returns true if any were removed, false otherwise
 // -----------------------------------------------------------------------------
@@ -648,8 +681,7 @@ bool CTexture::removePatch(string_view patch)
 }
 
 // -----------------------------------------------------------------------------
-// Replaces the patch at [index] with [newpatch], and updates its associated
-// ArchiveEntry with [newentry].
+// Replaces the patch at [index] with [newpatch].
 // Returns false if [index] is out of bounds, true otherwise
 // -----------------------------------------------------------------------------
 bool CTexture::replacePatch(size_t index, string_view newpatch)
@@ -665,6 +697,30 @@ bool CTexture::replacePatch(size_t index, string_view newpatch)
 	signals_.patch_list_changed();
 
 	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Replaces the patches at [indices] with [newpatch].
+// Returns true if any were replaced, false otherwise
+// -----------------------------------------------------------------------------
+bool CTexture::replacePatches(const vector<unsigned>& indices, string_view newpatch)
+{
+	// Replace patches at [indices] with new
+	bool replaced = false;
+	for (auto index : indices)
+	{
+		if (index >= patches_.size())
+			continue;
+
+		patches_[index]->setName(newpatch);
+		replaced = true;
+	}
+
+	// Announce
+	if (replaced)
+		signals_.patch_list_changed();
+
+	return replaced;
 }
 
 // -----------------------------------------------------------------------------
@@ -696,6 +752,29 @@ bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y)
 
 	// Cannot be a simple define anymore
 	defined_ = false;
+
+	// Announce
+	signals_.patch_list_changed();
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Duplicates the patches at [indices], placing the duplicated patches at
+// [offset_x],[offset_y] from the originals.
+// Returns true if any were duplicated, false otherwise
+// -----------------------------------------------------------------------------
+bool CTexture::duplicatePatches(const vector<unsigned>& indices, int16_t offset_x, int16_t offset_y)
+{
+	// Sort indices in descending order
+	auto sorted_indices = indices;
+	std::ranges::sort(sorted_indices, std::greater());
+
+	// Duplicate patches
+	signals_.patch_list_changed.block();
+	for (auto index : sorted_indices)
+		duplicatePatch(index, offset_x, offset_y);
+	signals_.patch_list_changed.unblock();
 
 	// Announce
 	signals_.patch_list_changed();

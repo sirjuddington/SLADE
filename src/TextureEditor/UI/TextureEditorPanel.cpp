@@ -6,10 +6,12 @@
 #include "General/SAction.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/TextureXEditor/PatchBrowser.h"
 #include "OpenGL/View.h"
 #include "TextureEditor/TextureEditor.h"
 #include "TexturePropGrid.h"
 #include "TextureTreeView.h"
+#include "UI/Browser/BrowserItem.h"
 #include "UI/Canvas/CTextureCanvasBase.h"
 #include "UI/Canvas/Canvas.h"
 #include "UI/Controls/SIconButton.h"
@@ -263,6 +265,7 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		toolbar_patches_->enableItem("txed_patch_add", true);
 		toolbar_patches_->enableGroup("Patch", !editor_->selectedPatches().empty());
 		panel_offsets_->Show(ctex->isExtended());
+		panel_offsets_->GetParent()->Layout();
 	}
 
 	Refresh();
@@ -297,8 +300,100 @@ void TextureEditorPanel::populatePatchesList() const
 
 	// Update patch selection
 	list_patches_->SetSelections(wxDataViewItemArray());
+	tex_canvas_->deselectAll();
 	for (auto i : editor_->selectedPatches())
+	{
 		list_patches_->SelectRow(i);
+		tex_canvas_->selectPatch(i);
+	}
+}
+
+string TextureEditorPanel::browsePatch(string_view initial)
+{
+	// Create patch browser if needed
+	if (!patch_browser_)
+	{
+		patch_browser_ = new PatchBrowser(this);
+		patch_browser_->setPalette(maineditor::currentPalette());
+
+		if (editor_->currentTexture()->isExtended())
+		{
+			// TEXTURES, load patches from the archive and resources, and any
+			// texture lists in the archive
+			patch_browser_->openArchive(editor_->archive());
+			for (auto i = 0; i < editor_->nTextureLists(); ++i)
+			{
+				if (auto tl = editor_->textureList(i))
+					patch_browser_->openTextureXList(tl, editor_->archive());
+			}
+			patch_browser_->setFullPath(true);
+		}
+		else
+		{
+			// TEXTUREx, load patches from the patch table
+			patch_browser_->openPatchTable(editor_->patchTable());
+			patch_browser_->setFullPath(false);
+		}
+	}
+
+	// Select initial patch if specified
+	if (!initial.empty())
+		patch_browser_->selectPatch(initial);
+
+	// Open browser and return selected patch name (empty if cancelled)
+	if (patch_browser_->ShowModal() == wxID_OK && patch_browser_->selectedItem())
+		return patch_browser_->selectedItem()->name();
+	else
+		return "";
+}
+
+void TextureEditorPanel::addPatch()
+{
+	if (auto patch = browsePatch(); !patch.empty())
+	{
+		editor_->addPatch(patch);
+		updateUI(true);
+	}
+}
+
+void TextureEditorPanel::removePatch()
+{
+	editor_->removePatch();
+	updateUI(true);
+}
+
+void TextureEditorPanel::replacePatch()
+{
+	// Get first selected patch to use as initial selection in browser
+	string initial_patch;
+	for (unsigned i : editor_->selectedPatches())
+		if (auto p = editor_->currentTexture()->patch(i))
+		{
+			initial_patch = p->name();
+			break;
+		}
+
+	if (auto patch = browsePatch(initial_patch); !patch.empty())
+	{
+		editor_->replacePatch(patch);
+		updateUI(true);
+	}
+}
+
+void TextureEditorPanel::duplicatePatch()
+{
+	editor_->duplicatePatch(8, 8); // TODO: use grid size
+	updateUI(true);
+}
+
+void TextureEditorPanel::pushPatch(bool forward)
+{
+	if (forward)
+		editor_->patchForward();
+	else
+		editor_->patchBack();
+
+	updateUI(true);
 }
 
 bool TextureEditorPanel::handleAction(string_view id)
@@ -330,6 +425,24 @@ bool TextureEditorPanel::handleAction(string_view id)
 		tex_canvas_->drawOutside(CVar::getBool("tx_show_outside"));
 		tex_canvas_->redraw();
 	}
+
+	else if (id == "txed_patch_add")
+		addPatch();
+
+	else if (id == "txed_patch_remove")
+		removePatch();
+
+	else if (id == "txed_patch_replace")
+		replacePatch();
+
+	else if (id == "txed_patch_duplicate")
+		duplicatePatch();
+
+	else if (id == "txed_patch_forward")
+		pushPatch(true);
+
+	else if (id == "txed_patch_back")
+		pushPatch(false);
 
 	else
 		return false; // Not handled
@@ -369,7 +482,7 @@ void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
 		else
 		{
 			editor_->selectPatch(i, false);
-			tex_canvas_->deSelectPatch(i);
+			tex_canvas_->deselectPatch(i);
 		}
 	}
 
@@ -460,10 +573,6 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 	// Check if keypress matches any keybinds
 	auto binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
 
-	// TODO: Check for alt key
-	// if (e.GetKeyCode() == WXK_ALT)
-	//	alt_press_ = true;
-
 	// Go through matching binds
 	int  x_movement = 0;
 	int  y_movement = 0;
@@ -497,50 +606,42 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		// Add patch
 		else if (name == "txed_patch_add")
 		{
-			// TODO:
-			// ignore_drag_ = true;
-			// addPatch();
+			addPatch();
 			handled = true;
 		}
 
 		// Delete patch
 		else if (name == "txed_patch_delete")
 		{
-			// TODO:
-			// removePatch();
+			removePatch();
 			handled = true;
 		}
 
 		// Replace patch
 		else if (name == "txed_patch_replace")
 		{
-			// TODO:
-			// ignore_drag_ = true;
-			// replacePatch();
+			replacePatch();
 			handled = true;
 		}
 
 		// Duplicate patch
 		else if (name == "txed_patch_duplicate")
 		{
-			// TODO:
-			// duplicatePatch();
+			duplicatePatch();
 			handled = true;
 		}
 
 		// Bring patch forward
 		else if (name == "txed_patch_forward")
 		{
-			// TODO:
-			// patchForward();
+			pushPatch(true);
 			handled = true;
 		}
 
 		// Send patch back
 		else if (name == "txed_patch_back")
 		{
-			// TODO:
-			// patchBack();
+			pushPatch(false);
 			handled = true;
 		}
 	}
@@ -548,13 +649,6 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 	// Move patches if needed
 	if (x_movement != 0 || y_movement != 0)
 	{
-		// TODO: Do patch duplicate if alt is pressed
-		// if (e.GetModifiers() == wxMOD_ALT && alt_press_)
-		// {
-		// 	duplicatePatch(0, 0);
-		// 	alt_press_ = false;
-		// }
-
 		wxDataViewItemArray selected_patches;
 		list_patches_->GetSelections(selected_patches);
 		for (auto item : selected_patches)
@@ -574,10 +668,6 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 		handled = true;
 	}
 
-	// TODO:
-	// if (!e.AltDown())
-	//	alt_press_ = false;
-
 	if (!handled)
 		e.Skip();
 }
@@ -595,8 +685,11 @@ void TextureEditorPanel::onToolbarButton(wxCommandEvent& e)
 	if (button == "revert")
 	{
 		editor_->revertTexture();
-		tex_canvas_->openTexture(editor_->currentTexture(), editor_->archive());
+		updateUI(true);
 	}
+
+	else
+		e.Skip();
 }
 
 void TextureEditorPanel::onTexOffsetXChanged(wxCommandEvent& e)

@@ -17,7 +17,8 @@ public:
 	TextureEditor(shared_ptr<Archive> archive);
 	~TextureEditor();
 
-	Archive* archive() const { return archive_.get(); }
+	Archive*    archive() const { return archive_.get(); }
+	PatchTable* patchTable() const { return patch_table_.get(); }
 
 	unsigned      nTextureLists() const { return texturex_entries_.size(); }
 	TextureXList* textureList(unsigned index) const;
@@ -28,7 +29,7 @@ public:
 	void      openTexture(CTexture& texture);
 	void      closeTexture();
 	void      saveTexture() const;
-	void      revertTexture() const;
+	void      revertTexture();
 
 	const vector<unsigned>& selectedPatches() const { return selected_patches_; }
 	void                    selectPatch(unsigned index, bool selected = true);
@@ -53,6 +54,13 @@ public:
 	void setPatchColour(const ColRGBA& colour) const;
 	void setPatchTintAmount(double amount) const;
 	void setPatchTranslation(string_view translation) const;
+
+	void addPatch(string_view patch) const;
+	void removePatch();
+	void replacePatch(string_view patch) const;
+	void duplicatePatch(int xoff, int yoff);
+	void patchForward();
+	void patchBack();
 
 private:
 	unique_ptr<PatchTable> patch_table_;

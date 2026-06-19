@@ -7,6 +7,7 @@
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer2D.h"
 #include "UI/Canvas/Canvas.h"
+#include "UI/WxUtils.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 using namespace slade;
@@ -46,6 +47,16 @@ void GLCanvas::setPalette(const Palette* pal)
 		palette_ = std::make_unique<Palette>(*pal);
 	else
 		palette_->copyPalette(pal);
+}
+
+void GLCanvas::setBackground(BGStyle style, const ColRGBA& colour)
+{
+	bg_style_  = style;
+
+	if (bg_style_ == BGStyle::Colour)
+		bg_colour_ = colour;
+	else if (bg_style_ == BGStyle::System)
+		bg_colour_ = ColRGBA(wxutil::systemPanelBGColour());
 }
 
 void GLCanvas::setupMousewheelZoom()

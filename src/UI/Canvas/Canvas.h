@@ -8,7 +8,7 @@ struct MapPreviewData;
 
 namespace ui
 {
-	class Canvas : public wxPanel
+	class Canvas : public wxControl
 	{
 	public:
 		Canvas(wxWindow* parent);
