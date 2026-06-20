@@ -637,47 +637,8 @@ GfxView GfxEntryPanel::detectOffsetType(ArchiveEntry* entry) const
 	if (is_png && img->offset().x == 0 && img->offset().y == 0)
 		return GfxView::Default;
 
-	const int width        = img->width();
-	const int height       = img->height();
-	const int left         = -img->offset().x;
-	const int right        = left + width;
-	const int top          = -img->offset().y;
-	const int bottom       = top + height;
-	const int horiz_center = (left + right) / 2;
-
-	// Determine sprite vs. HUD with a rough heuristic: give each one a
-	// penalty, measuring how far (in pixels) the offsets are from the "ideal"
-	// offsets for that type.  Lowest penalty wins.
-	int sprite_penalty = 0;
-	int hud_penalty    = 0;
-	// The HUD is drawn with the origin in the top left, so HUD offsets
-	// generally put the center of the screen (160, 100) above or inside the
-	// top center of the sprite.
-	hud_penalty += abs(horiz_center - 160);
-	hud_penalty += abs(top - 100);
-	// It's extremely unusual for the bottom of the sprite to be above 168,
-	// which is where the weapon is cut off in fullscreen.  Extra penalty.
-	if (bottom < 168)
-		hud_penalty += (168 - bottom);
-	// Sprites are drawn relative to the center of an object at floor height,
-	// so the offsets generally put the origin (0, 0) near the vertical center
-	// line and the bottom edge.  Some sprites are vertically centered whereas
-	// some use a small bottom margin for feet, so split the difference and use
-	// 1/4 up from the bottom.
-	const int bottom_quartile = (bottom * 3 + top) / 4;
-	sprite_penalty += abs(bottom_quartile - 0);
-	sprite_penalty += abs(horiz_center - 0);
-	// It's extremely unusual for the sprite to not contain the origin, which
-	// would draw it not touching its actual position.  Extra panalty for that,
-	// though allow for a sprite that floats up to its own height above the
-	// floor.
-	if (top > 0)
-		sprite_penalty += (top - 0);
-	else if (bottom < 0 - height)
-		sprite_penalty += (0 - height - bottom);
-
-	// Sprites are more common than HUD, so in case of a tie, sprite wins
-	if (sprite_penalty > hud_penalty)
+	// Determine if the offsets are more likely to be HUD or sprite offsets
+	if (gfx::isHudOffsets(img->width(), img->height(), img->offset().x, img->offset().y))
 		return GfxView::HUD;
 	else
 		return GfxView::Sprite;
@@ -1368,11 +1329,15 @@ CONSOLE_COMMAND(mirror, 1, true)
 {
 	bool       vertical;
 	const auto bluh = args[0];
-	if (strutil::equalCI(bluh, "y") || strutil::equalCI(bluh, "v") || strutil::equalCI(bluh, "vert")
+	if (strutil::equalCI(bluh, "y")
+		|| strutil::equalCI(bluh, "v")
+		|| strutil::equalCI(bluh, "vert")
 		|| strutil::equalCI(bluh, "vertical"))
 		vertical = true;
 	else if (
-		strutil::equalCI(bluh, "x") || strutil::equalCI(bluh, "h") || strutil::equalCI(bluh, "horz")
+		strutil::equalCI(bluh, "x")
+		|| strutil::equalCI(bluh, "h")
+		|| strutil::equalCI(bluh, "horz")
 		|| strutil::equalCI(bluh, "horizontal"))
 		vertical = false;
 	else
@@ -1411,7 +1376,9 @@ CONSOLE_COMMAND(mirror, 1, true)
 CONSOLE_COMMAND(crop, 4, true)
 {
 	int x1, y1, x2, y2;
-	if (strutil::toInt(args[0], x1) && strutil::toInt(args[1], y1) && strutil::toInt(args[2], x2)
+	if (strutil::toInt(args[0], x1)
+		&& strutil::toInt(args[1], y1)
+		&& strutil::toInt(args[2], x2)
 		&& strutil::toInt(args[3], y2))
 	{
 		auto* foo = maineditor::currentArchivePanel();

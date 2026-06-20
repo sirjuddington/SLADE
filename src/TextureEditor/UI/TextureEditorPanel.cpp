@@ -708,8 +708,8 @@ void TextureEditorPanel::onChoiceOffsetTypeSelected(wxCommandEvent& e)
 {
 	switch (choice_offset_type_->GetSelection())
 	{
-	case 0: // Auto (TODO)
-		tex_canvas_->setViewType(CTextureView::Normal);
+	case 0: // Auto
+		tex_canvas_->setViewType(tex_canvas_->autoDetectViewType());
 		break;
 	case 1: // Texture
 		tex_canvas_->setViewType(CTextureView::Normal);

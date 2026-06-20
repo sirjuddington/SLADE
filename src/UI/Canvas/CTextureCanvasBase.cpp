@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "CTextureCanvasBase.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/Graphics.h"
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/View.h"
 #include "UI/Controls/ZoomControl.h"
@@ -91,6 +92,30 @@ void CTextureCanvasBase::setViewType(View type)
 	view_type_   = type;
 	if (changed)
 		resetViewOffsets();
+}
+
+// -----------------------------------------------------------------------------
+// Auto-detects the view type based on the texture's properties
+// -----------------------------------------------------------------------------
+CTextureView CTextureCanvasBase::autoDetectViewType() const
+{
+	if (!texture_)
+		return view_type_;
+
+	// TEXTUREx textures don't have offsets
+	if (!texture_->isExtended())
+		return View::Normal;
+
+	// If it's a Sprite or Graphic type, determine if it's a HUD or Sprite view based on its offsets
+	if (texture_->typeEnum() == CTexture::Type::Sprite || texture_->typeEnum() == CTexture::Type::Graphic)
+	{
+		if (gfx::isHudOffsets(texture_->width(), texture_->height(), texture_->offsetX(), texture_->offsetY()))
+			return View::HUD;
+		else
+			return View::Sprite;
+	}
+
+	return View::Normal;
 }
 
 // -----------------------------------------------------------------------------

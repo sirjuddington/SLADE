@@ -43,6 +43,7 @@ public:
 	View      viewType() const { return view_type_; }
 	void      setScale(double scale);
 	void      setViewType(View type);
+	View      autoDetectViewType() const;
 	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
 	Vec2i     mousePrevPos() const { return mouse_prev_; }
 	bool      isDragging() const { return dragging_; }

@@ -595,3 +595,54 @@ bool gfx::supportsOffsets(const ArchiveEntry& entry)
 	return entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
 		   || entryformat == "img_doom_beta" || entryformat == "img_png";
 }
+
+// -----------------------------------------------------------------------------
+// Returns true if the given offsets [xoff, yoff] are more likely to be HUD
+// offsets thansprite offsets, based on the [width] and [height] of the image
+// and the offset values.
+// -----------------------------------------------------------------------------
+bool gfx::isHudOffsets(int width, int height, int xoff, int yoff)
+{
+	const int left         = -xoff;
+	const int right        = left + width;
+	const int top          = -yoff;
+	const int bottom       = top + height;
+	const int horiz_center = (left + right) / 2;
+
+	// Determine sprite vs. HUD with a rough heuristic: give each one a
+	// penalty, measuring how far (in pixels) the offsets are from the "ideal"
+	// offsets for that type.  Lowest penalty wins.
+	int sprite_penalty = 0;
+	int hud_penalty    = 0;
+	// The HUD is drawn with the origin in the top left, so HUD offsets
+	// generally put the center of the screen (160, 100) above or inside the
+	// top center of the sprite.
+	hud_penalty += abs(horiz_center - 160);
+	hud_penalty += abs(top - 100);
+	// It's extremely unusual for the bottom of the sprite to be above 168,
+	// which is where the weapon is cut off in fullscreen.  Extra penalty.
+	if (bottom < 168)
+		hud_penalty += (168 - bottom);
+	// Sprites are drawn relative to the center of an object at floor height,
+	// so the offsets generally put the origin (0, 0) near the vertical center
+	// line and the bottom edge.  Some sprites are vertically centered whereas
+	// some use a small bottom margin for feet, so split the difference and use
+	// 1/4 up from the bottom.
+	const int bottom_quartile = (bottom * 3 + top) / 4;
+	sprite_penalty += abs(bottom_quartile - 0);
+	sprite_penalty += abs(horiz_center - 0);
+	// It's extremely unusual for the sprite to not contain the origin, which
+	// would draw it not touching its actual position.  Extra panalty for that,
+	// though allow for a sprite that floats up to its own height above the
+	// floor.
+	if (top > 0)
+		sprite_penalty += (top - 0);
+	else if (bottom < 0 - height)
+		sprite_penalty += (0 - height - bottom);
+
+	// Sprites are more common than HUD, so in case of a tie, sprite wins
+	if (sprite_penalty > hud_penalty)
+		return true;
+	else
+		return false;
+}
