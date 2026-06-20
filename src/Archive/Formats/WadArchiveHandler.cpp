@@ -140,8 +140,24 @@ bool WadArchiveHandler::isWritable()
 // -----------------------------------------------------------------------------
 // Updates the namespace list
 // -----------------------------------------------------------------------------
-void WadArchiveHandler::updateNamespaces(Archive& archive)
+void WadArchiveHandler::updateNamespaces(Archive& archive, bool full_refresh)
 {
+	if (!full_refresh)
+	{
+		// No full refresh, just update indices of existing namespaces
+		// (in case entries have been added/removed)
+		for (auto& ns : namespaces_)
+		{
+			if (!ns.start || !ns.end)
+				continue;
+
+			ns.start_index = archive.entryIndex(ns.start);
+			ns.end_index   = archive.entryIndex(ns.end);
+		}
+
+		return;
+	}
+
 	// Clear current namespace info
 	while (!namespaces_.empty())
 		namespaces_.pop_back();
@@ -160,7 +176,6 @@ void WadArchiveHandler::updateNamespaces(Archive& archive)
 			NSPair      ns(entry, nullptr);
 			string_view name = entry->name();
 			ns.name          = name.substr(0, name.size() - 6);
-			ns.start_index   = archive.entryIndex(ns.start);
 			strutil::lowerIP(ns.name);
 
 			// Convert some special cases (because technically PP_START->P_END is a valid namespace)
@@ -643,9 +658,8 @@ shared_ptr<ArchiveEntry> WadArchiveHandler::addEntry(
 	// Do default entry addition (to root directory)
 	ArchiveFormatHandler::addEntry(archive, entry, position);
 
-	// Update namespaces if necessary
-	if (isNamespaceEntry(entry.get()))
-		updateNamespaces(archive);
+	// Update namespaces
+	updateNamespaces(archive, isNamespaceEntry(entry.get()));
 
 	return entry;
 }
@@ -696,9 +710,8 @@ bool WadArchiveHandler::removeEntry(Archive& archive, ArchiveEntry* entry, bool 
 	// Do default remove
 	if (ArchiveFormatHandler::removeEntry(archive, entry, set_deleted))
 	{
-		// Update namespaces if necessary
-		if (ns_entry)
-			updateNamespaces(archive);
+		// Update namespaces
+		updateNamespaces(archive, ns_entry);
 
 		return true;
 	}
@@ -755,8 +768,7 @@ bool WadArchiveHandler::moveEntry(Archive& archive, ArchiveEntry* entry, unsigne
 	if (ArchiveFormatHandler::moveEntry(archive, entry, position, nullptr))
 	{
 		// Update namespaces if necessary
-		if (isNamespaceEntry(entry))
-			updateNamespaces(archive);
+		updateNamespaces(archive, isNamespaceEntry(entry));
 
 		return true;
 	}
@@ -1094,8 +1106,8 @@ string WadArchiveHandler::detectNamespace(const Archive& archive, unsigned index
 	for (auto& ns : namespaces_)
 	{
 		// Get namespace start and end indices
-		size_t start = ns.start_index;
-		size_t end   = ns.end_index;
+		size_t start = ns.start ? ns.start->index() : ns.start_index;
+		size_t end   = ns.end ? ns.end->index() : ns.end_index;
 
 		// Check if the entry is within this namespace
 		if (start <= index && index <= end)

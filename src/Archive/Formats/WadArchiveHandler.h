@@ -13,7 +13,7 @@ public:
 	// Wad specific
 	bool isIWAD() const { return iwad_; }
 	bool isWritable() override;
-	void updateNamespaces(Archive& archive);
+	void updateNamespaces(Archive& archive, bool full_refresh = true);
 
 	// Opening
 	bool open(Archive& archive, const MemChunk& mc) override;

@@ -1,0 +1,24 @@
+{
+  "dependencies": [
+    "cpptrace",
+    "fluidsynth",
+    "freetype",
+    "glm",
+    {
+      "name": "libarchive",
+      "$comment": "We don't need en/decryption support so skip libarchive[crypto] to avoid pulling in OpenSSL",
+      "default-features": false,
+      "features": [
+        { "name": "bzip2" },
+        { "name": "lz4" },
+        { "name": "lzma" },
+        { "name": "xar" },
+        { "name": "zstd" }
+      ]
+    },
+    "libxmp",
+    "lua",
+    "mpg123",
+    "sfml"
+  ]
+}
