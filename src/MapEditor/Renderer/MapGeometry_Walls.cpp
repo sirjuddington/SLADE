@@ -288,6 +288,22 @@ void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, b
 {
 	// TODO: 'Use upper/lower texture' flags
 
+	// Check for invalid ExtraFloor pointers
+	// (had a few crash reports of this happening, just not sure how)
+	const auto invalid_ef_data = !context.line || !ef.control_line || !ef.control_sector || !ef.control_line->s1();
+	wxASSERT_MSG(!invalid_ef_data, "Invalid ExtraFloor pointers in buildWallExtraFloorQuads");
+	if (invalid_ef_data)
+	{
+		log::warning(
+			"Skipping invalid ExtraFloor wall quad: line={}, control_line={}, control_sector={}, "
+			"control_has_front_side={}",
+			context.line ? static_cast<int>(context.line->index()) : -1,
+			ef.control_line ? static_cast<int>(ef.control_line->index()) : -1,
+			ef.control_sector ? static_cast<int>(ef.control_sector->index()) : -1,
+			ef.control_line && ef.control_line->s1());
+		return;
+	}
+
 	// Setup base quad info
 	auto&    texture = textureManager().texture(ef.control_line->s1()->texMiddle(), context.mix_tex_flats);
 	auto&    gl_tex  = gl::Texture::info(texture.gl_id);

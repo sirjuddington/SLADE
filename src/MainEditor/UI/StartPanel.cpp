@@ -311,17 +311,16 @@ void StartPanel::setupLayout()
 	top_panel->SetBackgroundColour(wxColour(116, 135, 175));
 	main_sizer->Add(top_panel, wxSizerFlags().Expand());
 
-	// Left side (logo + actions)
-	auto left_sizer = new wxBoxSizer(wxVERTICAL);
-	left_sizer->Add(createActionsSizer(this), wxSizerFlags(1).Right());
-
 	auto content_sizer = new wxBoxSizer(wxHORIZONTAL);
-	content_sizer->Add(left_sizer, lh.sfWithLargeBorder(1, wxRIGHT).CenterVertical());
-	content_sizer->Add(recent_files_panel_, lh.sfWithLargeBorder(1, wxLEFT).CenterVertical());
+	content_sizer->AddStretchSpacer();
+	content_sizer->Add(createActionsSizer(this), lh.sfWithLargeBorder(0, wxRIGHT).CenterVertical());
+	content_sizer->Add(recent_files_panel_, lh.sfWithLargeBorder(0, wxLEFT).CenterVertical());
+	content_sizer->AddStretchSpacer();
 
 	main_sizer->AddStretchSpacer();
-	main_sizer->Add(createLogoSizer(this), lh.sfWithLargeBorder(0, wxBOTTOM).Center());
-	main_sizer->Add(content_sizer, lh.sfWithBorder(1, wxLEFT | wxRIGHT).Center());
+	main_sizer->Add(createLogoSizer(this), wxSizerFlags().Center());
+	main_sizer->AddSpacer(FromDIP(40));
+	main_sizer->Add(content_sizer, lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
 	main_sizer->AddStretchSpacer();
 }
 
