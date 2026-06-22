@@ -177,20 +177,65 @@ void CTextureGLCanvas::draw()
 	drawTexture(dc, tex_rect, draw_outside_ || dragging_);
 	drawTextureBorder(tex_rect);
 
-	// Draw selected patch outlines
-	dc.colour         = { 70, 210, 220, 255 };
-	dc.line_thickness = 2.0f;
-	dc.line_aa_radius = 0.0f;
-	for (unsigned a = 0; a < patches_.size(); a++)
-		if (patches_[a].selected)
-			drawPatchOutline(dc, a, tex_rect);
-
-	// Draw hilighted patch outline
-	if (hilight_patch_ >= 0 && std::cmp_less(hilight_patch_, texture_->nPatches()))
+	// Draw selected patch outlines (if not dragging)
+	if (!dragging_)
 	{
-		dc.colour = { 255, 255, 255, 150 };
-		dc.blend  = gl::Blend::Additive;
+		dc.colour         = { 70, 210, 220, 255 };
+		dc.line_thickness = 2.0f;
+		dc.line_aa_radius = 0.0f;
+		for (unsigned a = 0; a < patches_.size(); a++)
+			if (patches_[a].selected)
+				drawPatchOutline(dc, a, tex_rect);
+	}
+
+	// Draw hilighted patch (if not dragging)
+	if (hilight_patch_ >= 0 && std::cmp_less(hilight_patch_, texture_->nPatches()) && !dragging_)
+	{
+		// Highlight
+		shader_->bind();
+		gl::setBlend(gl::Blend::Additive);
+		drawPatch(hilight_patch_, tex_rect, { .alpha = 0.15f });
+
+		// Outline
+		dc.colour         = { 255, 255, 255, 150 };
+		dc.blend          = gl::Blend::Additive;
+		dc.line_thickness = 1.5f;
 		drawPatchOutline(dc, hilight_patch_, tex_rect);
+
+		// Patch info
+		auto patch      = texture_->patch(hilight_patch_);
+		auto image      = patches_[hilight_patch_].image.get();
+		auto patch_rect = patchRect(hilight_patch_, tex_scale_);
+		auto mid_x      = tex_rect.x1() + patch_rect.tl.x + (patch_rect.width() * 0.5);
+		auto mid_y      = tex_rect.y1() + patch_rect.tl.y + (patch_rect.height() * 0.5);
+		texts_.push_back(
+			{ .text      = patch->name(),
+			  .position  = { mid_x, mid_y - 16 / view_.scale().x },
+			  .alignment = gl::draw2d::Align::Center });
+		texts_.push_back(
+			{ .text      = fmt::format("{} x {}", image->width(), image->height()),
+			  .position  = { mid_x, mid_y },
+			  .alignment = gl::draw2d::Align::Center });
+	}
+
+	// Draw any info texts
+	if (!texts_.empty())
+	{
+		gl::View screen_view(false, false);
+		screen_view.setSize(view_.size().x, view_.size().y);
+		dc.view = &screen_view;
+
+		dc.colour         = ColRGBA::WHITE;
+		dc.outline_colour = ColRGBA::BLACK;
+		dc.text_size      = 16;
+		dc.text_style     = gl::draw2d::TextStyle::Outline;
+		for (const auto& text : texts_)
+		{
+			dc.text_alignment = text.alignment;
+			dc.drawText(text.text, view_.screenPos(text.position.x, text.position.y));
+		}
+
+		texts_.clear();
 	}
 }
 
@@ -201,10 +246,8 @@ void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, const Rectd& tex_rec
 {
 	// Draw all individual patches if needed (eg. while dragging or 'draw outside' is enabled)
 	if (draw_patches)
-	{
 		for (uint32_t a = 0; a < texture_->nPatches(); a++)
-			drawPatch(a, tex_rect);
-	}
+			drawPatch(a, tex_rect, { .alpha = dragging_ ? (patchSelected(a) ? 0.5f : 1.0f) : 1.0f });
 
 	// If we aren't currently dragging a patch, draw the fully generated texture
 	if (!dragging_)
@@ -220,12 +263,20 @@ void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, const Rectd& tex_rec
 		dc.texture = gl_tex_preview_;
 		dc.drawRect({ tex_rect.x1(), tex_rect.y1(), tex_rect.x2(), tex_rect.y2() });
 	}
+
+	// If we are dragging, draw selected patches at drag offset
+	else if (drag_origin_.x >= 0 || drag_origin_.y >= 0)
+	{
+		for (uint32_t a = 0; a < texture_->nPatches(); a++)
+			if (patchSelected(a))
+				drawPatch(a, tex_rect, { .offset = dragOffset(false), .show_offset = true });
+	}
 }
 
 // -----------------------------------------------------------------------------
 // Draws the patch at index [num] in the composite texture
 // -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawPatch(int num, const Rectd& tex_rect)
+void CTextureGLCanvas::drawPatch(int num, const Rectd& tex_rect, const PatchOptions& options)
 {
 	// Get patch to draw
 	const auto patch = texture_->patch(num);
@@ -243,18 +294,27 @@ void CTextureGLCanvas::drawPatch(int num, const Rectd& tex_rect)
 		patch_gl_textures_[num] = gl::Texture::createFromImage(*patches_[num].image, palette_.get());
 	}
 
-	auto rect   = patchRect(num, tex_scale_);
-	auto colour = glm::vec4{ 1.0f };
+	auto rect = patchRect(num, tex_scale_);
+	rect.move(tex_rect.x1(), tex_rect.y1());
+	rect.move(options.offset.x, options.offset.y);
+	auto colour = glm::vec4{ 1.0f, 1.0f, 1.0f, options.alpha };
 
 	gl::VertexBuffer2D vb_patch;
-	vb_patch.add({ tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y1() }, colour, { 0.0f, 0.0f });
-	vb_patch.add({ tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y2() }, colour, { 0.0f, 1.0f });
-	vb_patch.add({ tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y2() }, colour, { 1.0f, 1.0f });
-	vb_patch.add({ tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y1() }, colour, { 1.0f, 0.0f });
+	vb_patch.add({ rect.x1(), rect.y1() }, colour, { 0.0f, 0.0f });
+	vb_patch.add({ rect.x1(), rect.y2() }, colour, { 0.0f, 1.0f });
+	vb_patch.add({ rect.x2(), rect.y2() }, colour, { 1.0f, 1.0f });
+	vb_patch.add({ rect.x2(), rect.y1() }, colour, { 1.0f, 0.0f });
 
 	gl::Texture::bind(patch_gl_textures_[num]);
 	vb_patch.push();
 	vb_patch.draw(gl::Primitive::TriangleFan);
+
+	if (options.show_offset)
+	{
+		texts_.push_back(
+			{ .text = fmt::format("{},{}", patch->xOffset() + options.offset.x, patch->yOffset() + options.offset.y),
+			  .position = { rect.tl.x + 1, rect.tl.y + 1 } });
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -325,7 +385,7 @@ void CTextureGLCanvas::drawTextureBorder(const Rectd& tex_rect) const
 	line_buffer->draw(&view_);
 
 	// Draw grid if shown
-	if (show_grid_)
+	if (show_grid_ || dragging_)
 	{
 		// Populate line buffer for grid
 		auto col_grid = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f };
@@ -346,7 +406,7 @@ void CTextureGLCanvas::drawTextureBorder(const Rectd& tex_rect) const
 
 		// Draw again with regular blending to darken
 		gl::setBlend(gl::Blend::Normal);
-		line_buffer->draw(&view_, { 0.0f, 0.0f, 0.0f, 0.5f });
+		line_buffer->draw(&view_, { 0.0f, 0.0f, 0.0f, 0.25f });
 	}
 }
 

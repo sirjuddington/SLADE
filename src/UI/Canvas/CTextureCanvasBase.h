@@ -45,7 +45,6 @@ public:
 	void      setViewType(View type);
 	View      autoDetectViewType() const;
 	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
-	Vec2i     mousePrevPos() const { return mouse_prev_; }
 	bool      isDragging() const { return dragging_; }
 	bool      showGrid() const { return show_grid_; }
 	void      showGrid(bool show = true) { show_grid_ = show; }
@@ -53,6 +52,8 @@ public:
 	bool      blendRGBA() const { return blend_rgba_; }
 	bool      applyTexScale() const { return tex_scale_; }
 	void      applyTexScale(bool apply) { tex_scale_ = apply; }
+	Vec2i     dragOrigin() const { return { drag_origin_.x, drag_origin_.y }; }
+	Vec2i     dragOffset(bool grid_snap = true) const;
 
 	void selectPatch(int index);
 	void deselectPatch(int index);
@@ -74,6 +75,9 @@ public:
 
 	void linkZoomControl(ui::ZoomControl* zoom_control) { linked_zoom_control_ = zoom_control; }
 
+	// Wx Events (public because we need to call them from outside)
+	void onMouseEvent(wxMouseEvent& e);
+
 protected:
 	struct Patch
 	{
@@ -91,10 +95,14 @@ protected:
 	ui::ZoomControl* linked_zoom_control_ = nullptr;
 	Vec2i            zoom_point_          = { -1, -1 };
 
-	Vec2i mouse_prev_;
-	bool  draw_outside_ = true;
+	Vec2i drag_origin_  = { -1, -1 };
+	Vec2i mouse_pos_    = { -1, -1 };
 	bool  dragging_     = false;
-	bool  show_grid_    = false;
+
+	bool  show_grid_ = false;
+	Vec2i grid_size_ = { 8, 8 };
+
+	bool  draw_outside_ = true;
 	bool  blend_rgba_   = false;
 	bool  tex_scale_    = false;
 	View  view_type_    = View::Normal;
@@ -104,9 +112,6 @@ protected:
 
 	void loadPatchImage(unsigned index);
 	void loadTexturePreview();
-
-	// Wx Events
-	void onMouseEvent(wxMouseEvent& e);
 };
 } // namespace slade
 

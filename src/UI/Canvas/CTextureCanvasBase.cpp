@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "CTextureCanvasBase.h"
+#include "Geometry/Geometry.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Graphics.h"
 #include "Graphics/SImage/SImage.h"
@@ -116,6 +117,13 @@ CTextureView CTextureCanvasBase::autoDetectViewType() const
 	}
 
 	return View::Normal;
+}
+
+Vec2i CTextureCanvasBase::dragOffset(bool grid_snap) const
+{
+	auto origin = view().canvasPos(drag_origin_);
+	auto offset = view().canvasPos(mouse_pos_) - origin;
+	return geometry::snapToGrid(offset, grid_snap ? grid_size_ : Vec2i{ 1, 1 });
 }
 
 // -----------------------------------------------------------------------------
@@ -449,23 +457,49 @@ void CTextureCanvasBase::loadTexturePreview()
 void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 {
 	bool refresh = false;
-	auto p_x     = e.GetX() * window()->GetContentScaleFactor();
-	auto p_y     = e.GetY() * window()->GetContentScaleFactor();
+	auto p_x     = window()->ToPhys(e.GetX());
+	auto p_y     = window()->ToPhys(e.GetY());
+
+	// Update mouse position
+	mouse_pos_ = { p_x, p_y };
 
 	// MOUSE MOVEMENT
-	if (e.Moving() || e.Dragging())
+	if (e.Moving())
 	{
-		dragging_ = e.LeftIsDown();
-
 		// Check if patch hilight changes
-		const auto pos   = view().canvasPos({ p_x, p_y });
-		const int  patch = patchAt(pos.x, pos.y);
-		if (hilight_patch_ != patch)
+		if (!e.LeftIsDown())
 		{
-			hilight_patch_ = patch;
-			refresh        = true;
+			const auto pos   = view().canvasPos({ p_x, p_y });
+			const int  patch = patchAt(pos.x, pos.y);
+			if (hilight_patch_ != patch)
+			{
+				hilight_patch_ = patch;
+				refresh        = true;
+			}
 		}
 
+		e.Skip();
+	}
+
+	// MOUSE DRAGGING
+	else if (e.Dragging())
+	{
+		// Check if we are starting a drag
+		if (e.LeftIsDown()
+			&& !dragging_
+			&& (std::abs(p_x - drag_origin_.x) >= 4 || std::abs(p_y - drag_origin_.y) >= 4))
+			dragging_ = true;
+
+		if (dragging_)
+			refresh = true;
+
+		e.Skip();
+	}
+
+	// LEFT BUTTON DOWN
+	else if (e.LeftDown())
+	{
+		drag_origin_ = { p_x, p_y };
 		e.Skip();
 	}
 
@@ -528,7 +562,4 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 	// Refresh is needed
 	if (refresh)
 		window()->Refresh();
-
-	// Update 'previous' mouse coordinates
-	mouse_prev_ = { p_x, p_y };
 }

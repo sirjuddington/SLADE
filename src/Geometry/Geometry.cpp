@@ -629,6 +629,14 @@ vector<Rectf> geometry::arrowLines(
 	return lines;
 }
 
+// -----------------------------------------------------------------------------
+// Snaps the given [point] to the nearest point on a grid of [grid_size]
+// -----------------------------------------------------------------------------
+Vec2d geometry::snapToGrid(const Vec2d& point, const Vec2d& grid_size)
+{
+	return { std::round(point.x / grid_size.x) * grid_size.x, std::round(point.y / grid_size.y) * grid_size.y };
+}
+
 
 
 CONSOLE_COMMAND(angle2d, 6, false)

@@ -498,11 +498,11 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 	auto tex_current = editor_->currentTexture();
 
 	// Get mouse position relative to texture
-	auto scale = tex_canvas_->window()->GetContentScaleFactor();
-	auto pos   = tex_canvas_->view().canvasPos({ e.GetX() * scale, e.GetY() * scale });
+	Vec2i pos        = { tex_canvas_->window()->ToPhys(e.GetX()), tex_canvas_->window()->ToPhys(e.GetY()) };
+	auto  canvas_pos = tex_canvas_->view().canvasPos({ pos.x, pos.y });
 
 	// Get patch that the mouse is over (if any)
-	int patch = tex_canvas_->patchAt(pos.x, pos.y);
+	int patch = tex_canvas_->patchAt(canvas_pos.x, canvas_pos.y);
 
 	// Left click
 	if (e.LeftDown() && tex_current)
@@ -530,6 +530,8 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
 			list_patches_->ProcessWindowEvent(de);
 		}
+
+		tex_canvas_->onMouseEvent(e);
 	}
 
 	// Right click
@@ -560,8 +562,14 @@ void TextureEditorPanel::onTexCanvasDragEnd(wxCommandEvent& e)
 	// If patch dragging ended (left button)
 	if (e.GetInt() == wxMOUSE_BTN_LEFT)
 	{
-		// Update patch controls
-		// updatePatchControls();
+		// Move selected patches by the drag amount
+		auto drag_offset = tex_canvas_->dragOffset(false);
+		if (drag_offset.x != 0 || drag_offset.y != 0)
+		{
+			editor_->movePatch(drag_offset);
+			pg_properties_->refreshPatchProperties();
+			tex_canvas_->redraw(true);
+		}
 	}
 }
 

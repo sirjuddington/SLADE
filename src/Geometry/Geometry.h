@@ -36,4 +36,5 @@ vector<Rectf> arrowLines(
 	float        arrowhead_length = 0.1f,
 	float        arrowhead_angle  = 45.0f,
 	bool         arrowhead_both   = false);
+Vec2d snapToGrid(const Vec2d& point, const Vec2d& grid_size);
 } // namespace slade::geometry

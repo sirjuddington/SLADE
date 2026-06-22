@@ -16,8 +16,9 @@ namespace gl
 	class Shader;
 	namespace draw2d
 	{
+		enum class Align;
 		struct Context;
-	}
+	} // namespace draw2d
 } // namespace gl
 
 class CTextureGLCanvas : public GLCanvas, public CTextureCanvasBase
@@ -46,11 +47,26 @@ private:
 	unique_ptr<gl::LineBuffer>    lb_square_;
 	static unique_ptr<gl::Shader> shader_;
 
+	struct Text
+	{
+		string            text;
+		Vec2d             position;
+		gl::draw2d::Align alignment;
+	};
+	vector<Text> texts_;
+
+	struct PatchOptions
+	{
+		Vec2i offset      = {};
+		float alpha       = 1.0f;
+		bool  show_offset = false;
+	};
+
 	// Private functions
 	void draw() override;
 	void drawOffsetLines(const gl::draw2d::Context& dc);
 	void drawTexture(gl::draw2d::Context& dc, const Rectd& tex_rect, bool draw_patches);
-	void drawPatch(int num, const Rectd& tex_rect);
+	void drawPatch(int num, const Rectd& tex_rect, const PatchOptions& options = {});
 	void drawPatchOutline(const gl::draw2d::Context& dc, int num, const Rectd& tex_rect) const;
 	void drawTextureBorder(const Rectd& tex_rect) const;
 	void initShader() const;

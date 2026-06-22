@@ -46,6 +46,7 @@ public:
 
 	void setPatchOffsetX(int offset) const;
 	void setPatchOffsetY(int offset) const;
+	void movePatch(const Vec2i& offset) const;
 	void setPatchBlendType(CTPatchEx::BlendType type) const;
 	void setPatchFlag(string_view flag, bool on = true) const;
 	void setPatchRotation(int rotation) const;

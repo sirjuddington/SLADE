@@ -87,6 +87,7 @@ void TextureEditor::openTexture(CTexture& texture)
 	if (!tex_current_)
 		tex_current_ = std::make_unique<CTexture>();
 
+	selected_patches_.clear();
 	tex_current_source_ = &texture;
 	tex_current_->copyTexture(texture);
 	tex_current_->setState(CTexture::State::Unmodified);
@@ -238,6 +239,22 @@ void TextureEditor::setPatchOffsetY(int offset) const
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
 			patch->setOffsetY(offset);
+
+	tex_current_->signals().patches_modified(selected_patches_);
+	tex_current_->setState(CTexture::State::Modified);
+}
+
+void TextureEditor::movePatch(const Vec2i& offset) const
+{
+	if (!tex_current_ || selected_patches_.empty())
+		return;
+
+	for (unsigned index : selected_patches_)
+		if (auto patch = tex_current_->patch(index))
+		{
+			patch->setOffsetX(patch->offset().x + offset.x);
+			patch->setOffsetY(patch->offset().y + offset.y);
+		}
 
 	tex_current_->signals().patches_modified(selected_patches_);
 	tex_current_->setState(CTexture::State::Modified);
