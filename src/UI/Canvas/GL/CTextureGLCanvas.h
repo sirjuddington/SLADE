@@ -66,7 +66,7 @@ private:
 	void draw() override;
 	void drawOffsetLines(const gl::draw2d::Context& dc);
 	void drawTexture(gl::draw2d::Context& dc, const Rectd& tex_rect, bool draw_patches);
-	void drawPatch(int num, const Rectd& tex_rect, const PatchOptions& options = {});
+	void drawPatch(int num, const Rectd& tex_rect, const PatchOptions& options);
 	void drawPatchOutline(const gl::draw2d::Context& dc, int num, const Rectd& tex_rect) const;
 	void drawTextureBorder(const Rectd& tex_rect) const;
 	void initShader() const;
