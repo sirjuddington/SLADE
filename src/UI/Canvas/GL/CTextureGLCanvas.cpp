@@ -53,8 +53,6 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 unique_ptr<gl::Shader> CTextureGLCanvas::shader_;
-CVAR(Bool, tx_arc, false, CVar::Flag::Save)
-EXTERN_CVAR(Bool, gfx_show_border)
 
 
 // -----------------------------------------------------------------------------
@@ -144,288 +142,32 @@ void CTextureGLCanvas::refreshPatch(unsigned index)
 // -----------------------------------------------------------------------------
 void CTextureGLCanvas::draw()
 {
-	// Aspect Ratio Correction
-	if (tx_arc)
-		view_.setScale({ view_.scale().x, view_.scale().x * 1.2 });
-	else
-		view_.setScale(view_.scale().x);
+	dc_.view = &view_;
+	drawContent();
+}
 
-	// Draw offset guides if needed
-	gl::draw2d::Context dc(&view_);
-	drawOffsetLines(dc);
-
-	if (!texture_)
-		return;
-
-	auto tex_rect = textureRect(tex_scale_, view_type_ != View::Normal);
-
+// -----------------------------------------------------------------------------
+// Initializes the shader and context used for drawing
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::initDrawing(const Rectd& tex_rect)
+{
 	// Setup shader
 	initShader();
-	shader_->bind();
 	shader_->setUniform("view_tl", glm::vec2(view_.screenX(tex_rect.tl.x), view_.screenY(tex_rect.tl.y)));
 	shader_->setUniform("view_br", glm::vec2(view_.screenX(tex_rect.br.x), view_.screenY(tex_rect.br.y)));
 	shader_->setUniform("outside_colour", draw_outside_ ? glm::vec4{ 0.8f, 0.2f, 0.2f, 0.3f } : glm::vec4{ 0.0f });
 	shader_->setUniform("colour", glm::vec4{ 1.0f });
 	view_.setupShader(*shader_);
 
-	// Load patch images
-	for (unsigned i = 0; i < patches_.size(); ++i)
-		if (!patches_[i].image)
-			loadPatchImage(i);
-
-	// Draw the texture
-	drawTexture(dc, tex_rect, draw_outside_ || dragging_);
-	drawTextureBorder(tex_rect);
-
-	// Draw selected patch outlines (if not dragging)
-	if (!dragging_)
-	{
-		dc.colour         = { 70, 210, 220, 255 };
-		dc.line_thickness = 2.0f;
-		dc.line_aa_radius = 0.0f;
-		for (unsigned a = 0; a < patches_.size(); a++)
-			if (patches_[a].selected)
-				drawPatchOutline(dc, a, tex_rect);
-	}
-
-	// Draw hilighted patch (if not dragging)
-	if (hilight_patch_ >= 0 && std::cmp_less(hilight_patch_, texture_->nPatches()) && !dragging_)
-	{
-		// Highlight
-		shader_->bind();
-		gl::setBlend(gl::Blend::Additive);
-		drawPatch(hilight_patch_, tex_rect, { .alpha = 0.15f });
-
-		// Outline
-		dc.colour         = { 255, 255, 255, 150 };
-		dc.blend          = gl::Blend::Additive;
-		dc.line_thickness = 1.5f;
-		drawPatchOutline(dc, hilight_patch_, tex_rect);
-
-		// Patch info
-		auto patch      = texture_->patch(hilight_patch_);
-		auto image      = patches_[hilight_patch_].image.get();
-		auto patch_rect = patchRect(hilight_patch_, tex_scale_);
-		auto mid_x      = tex_rect.x1() + patch_rect.tl.x + (patch_rect.width() * 0.5);
-		auto mid_y      = tex_rect.y1() + patch_rect.tl.y + (patch_rect.height() * 0.5);
-		texts_.push_back(
-			{ .text      = patch->name(),
-			  .position  = { mid_x, mid_y - 16 / view_.scale().x },
-			  .alignment = gl::draw2d::Align::Center });
-		texts_.push_back(
-			{ .text      = fmt::format("{} x {}", image->width(), image->height()),
-			  .position  = { mid_x, mid_y },
-			  .alignment = gl::draw2d::Align::Center });
-	}
-
-	// Draw any info texts
-	if (!texts_.empty())
-	{
-		gl::View screen_view(false, false);
-		screen_view.setSize(view_.size().x, view_.size().y);
-		dc.view = &screen_view;
-
-		dc.colour         = ColRGBA::WHITE;
-		dc.outline_colour = ColRGBA::BLACK;
-		dc.text_size      = 16;
-		dc.text_style     = gl::draw2d::TextStyle::Outline;
-		for (const auto& text : texts_)
-		{
-			dc.text_alignment = text.alignment;
-			dc.drawText(text.text, view_.screenPos(text.position.x, text.position.y));
-		}
-
-		texts_.clear();
-	}
+	// Setup draw context
+	dc_.colour         = ColRGBA::WHITE;
+	dc_.outline_colour = ColRGBA::BLACK;
 }
 
 // -----------------------------------------------------------------------------
-// Draws the currently opened composite texture
+// Draws the offset center lines for the current view type
 // -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawTexture(gl::draw2d::Context& dc, const Rectd& tex_rect, bool draw_patches)
-{
-	// Draw all individual patches if needed (eg. while dragging or 'draw outside' is enabled)
-	if (draw_patches)
-		for (uint32_t a = 0; a < texture_->nPatches(); a++)
-			drawPatch(a, tex_rect, { .alpha = dragging_ ? (patchSelected(a) ? 0.5f : 1.0f) : 1.0f });
-
-	// If we aren't currently dragging a patch, draw the fully generated texture
-	if (!dragging_)
-	{
-		// Generate if needed
-		if (!tex_preview_ || gl_tex_preview_ == 0)
-		{
-			loadTexturePreview();
-			gl_tex_preview_ = gl::Texture::createFromImage(*tex_preview_, palette_.get());
-		}
-
-		// Draw the texture
-		dc.texture = gl_tex_preview_;
-		dc.drawRect({ tex_rect.x1(), tex_rect.y1(), tex_rect.x2(), tex_rect.y2() });
-	}
-
-	// If we are dragging, draw selected patches at drag offset
-	else if (drag_origin_.x >= 0 || drag_origin_.y >= 0)
-	{
-		for (uint32_t a = 0; a < texture_->nPatches(); a++)
-			if (patchSelected(a))
-				drawPatch(a, tex_rect, { .offset = dragOffset(false), .show_offset = true });
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Draws the patch at index [num] in the composite texture
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawPatch(int num, const Rectd& tex_rect, const PatchOptions& options)
-{
-	// Get patch to draw
-	const auto patch = texture_->patch(num);
-	if (!patch)
-		return;
-
-	// Init Patch GLTexture list if needed
-	if (patch_gl_textures_.empty())
-		patch_gl_textures_.resize(texture_->nPatches());
-
-	// Load the patch as an opengl texture if it isn't already
-	if (!patches_[num].image || !gl::Texture::isLoaded(patch_gl_textures_[num]))
-	{
-		loadPatchImage(num);
-		patch_gl_textures_[num] = gl::Texture::createFromImage(*patches_[num].image, palette_.get());
-	}
-
-	auto rect = patchRect(num, tex_scale_);
-	rect.move(tex_rect.x1(), tex_rect.y1());
-	rect.move(options.offset.x, options.offset.y);
-	auto colour = glm::vec4{ 1.0f, 1.0f, 1.0f, options.alpha };
-
-	gl::VertexBuffer2D vb_patch;
-	vb_patch.add({ rect.x1(), rect.y1() }, colour, { 0.0f, 0.0f });
-	vb_patch.add({ rect.x1(), rect.y2() }, colour, { 0.0f, 1.0f });
-	vb_patch.add({ rect.x2(), rect.y2() }, colour, { 1.0f, 1.0f });
-	vb_patch.add({ rect.x2(), rect.y1() }, colour, { 1.0f, 0.0f });
-
-	gl::Texture::bind(patch_gl_textures_[num]);
-	vb_patch.push();
-	vb_patch.draw(gl::Primitive::TriangleFan);
-
-	if (options.show_offset)
-	{
-		texts_.push_back(
-			{ .text = fmt::format("{},{}", patch->xOffset() + options.offset.x, patch->yOffset() + options.offset.y),
-			  .position = { rect.tl.x + 1, rect.tl.y + 1 } });
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Draws the outline of the patch at index [num] in the composite texture
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawPatchOutline(const gl::draw2d::Context& dc, int num, const Rectd& tex_rect) const
-{
-	// Get patch
-	const auto patch = texture_->patch(num);
-	if (!patch)
-		return;
-
-	auto rect = patchRect(num, tex_scale_);
-
-	vector<Rectf> lines;
-	lines.emplace_back(
-		tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y1(), tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y2());
-	lines.emplace_back(
-		tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y2(), tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y2());
-	lines.emplace_back(
-		tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y2(), tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y1());
-	lines.emplace_back(
-		tex_rect.x1() + rect.x2(), tex_rect.y1() + rect.y1(), tex_rect.x1() + rect.x1(), tex_rect.y1() + rect.y1());
-
-	dc.drawLines(lines);
-}
-
-// -----------------------------------------------------------------------------
-// Draws a black border around the texture w/ticks, and a grid if dragging
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawTextureBorder(const Rectd& tex_rect) const
-{
-	constexpr float ext = 0.0f;
-	const auto      x1  = tex_rect.x1();
-	const auto      x2  = tex_rect.x2();
-	const auto      y1  = tex_rect.y1();
-	const auto      y2  = tex_rect.y2();
-
-	auto line_buffer = std::make_unique<gl::LineBuffer>();
-	line_buffer->setAaRadius(0.0f, 0.0f);
-
-	// Populate line buffer for border
-	glm::vec4 colour = ColRGBA::BLACK;
-
-	// Border
-	line_buffer->add2d(x1 - ext, y1 - ext, x1 - ext, y2 + ext, colour, 2.0f);
-	line_buffer->add2d(x1 - ext, y2 + ext, x2 + ext, y2 + ext, colour, 2.0f);
-	line_buffer->add2d(x2 + ext, y2 + ext, x2 + ext, y1 - ext, colour, 2.0f);
-	line_buffer->add2d(x2 + ext, y1 - ext, x1 - ext, y1 - ext, colour, 2.0f);
-
-	// Vertical ticks
-	colour.a = 0.6f;
-	for (float y = y1; y <= y2; y += 8.0f)
-	{
-		line_buffer->add2d(x1 - 4, y, x1, y, colour);
-		line_buffer->add2d(x2, y, x2 + 4, y, colour);
-	}
-
-	// Horizontal ticks
-	for (float x = x1; x <= x2; x += 8.0f)
-	{
-		line_buffer->add2d(x, y1 - 4, x, y1, colour);
-		line_buffer->add2d(x, y2, x, y2 + 4, colour);
-	}
-
-	// Draw border lines
-	line_buffer->push();
-	line_buffer->draw(&view_);
-
-	// Draw grid if shown
-	if (show_grid_ || dragging_)
-	{
-		// Populate line buffer for grid
-		auto col_grid = glm::vec4{ 1.0f, 1.0f, 1.0f, 1.0f };
-
-		// Vertical
-		for (float y = y1 + 8.0f; y <= y2 - 8.0f; y += 8.0f)
-			line_buffer->add2d(x1, y, x2, y, col_grid);
-
-		// Horizontal
-		for (float x = x1 + 8.0f; x <= x2 - 8.0f; x += 8.0f)
-			line_buffer->add2d(x, y1, x, y2, col_grid);
-
-		line_buffer->push();
-
-		// Draw with inverted blending
-		gl::setBlend(gl::Blend::Invert);
-		line_buffer->draw(&view_);
-
-		// Draw again with regular blending to darken
-		gl::setBlend(gl::Blend::Normal);
-		line_buffer->draw(&view_, { 0.0f, 0.0f, 0.0f, 0.25f });
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Initialises the composite texture shader
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::initShader() const
-{
-	if (!shader_)
-	{
-		shader_ = std::make_unique<gl::Shader>("composite_texture");
-		shader_->loadResourceEntries("default2d.vert", "ctex.frag");
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Draws the offset center lines
-// -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
+void CTextureGLCanvas::drawOffsetLines()
 {
 	if (view_type_ == View::Sprite)
 	{
@@ -444,5 +186,193 @@ void CTextureGLCanvas::drawOffsetLines(const gl::draw2d::Context& dc)
 		lb_sprite_->draw();
 	}
 	else if (view_type_ == View::HUD)
-		dc.drawHud();
+		dc_.drawHud();
+}
+
+// -----------------------------------------------------------------------------
+// Draws the full generated texture
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::drawTexture(const Rectd& tex_rect)
+{
+	// Generate if needed
+	if (gl_tex_preview_ == 0)
+		gl_tex_preview_ = gl::Texture::createFromImage(*tex_preview_, palette_.get());
+
+	// Draw the texture
+	dc_.texture = gl_tex_preview_;
+	dc_.colour  = ColRGBA::WHITE;
+	dc_.drawRect({ tex_rect.x1(), tex_rect.y1(), tex_rect.x2(), tex_rect.y2() });
+}
+
+// -----------------------------------------------------------------------------
+// Draws a border around the texture and grid ticks at the grid size intervals
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::drawTextureBorder(const Rectd& tex_rect)
+{
+	const auto x1 = tex_rect.x1();
+	const auto x2 = tex_rect.x2();
+	const auto y1 = tex_rect.y1();
+	const auto y2 = tex_rect.y2();
+
+	// Border
+	dc_.texture = 0;
+	dc_.colour  = ColRGBA::BLACK;
+	float ext   = 2 / view_.scale().x;
+	dc_.drawRect({ x1 - ext, y1 - ext, x2 + ext, y1 + ext }); // Top
+	dc_.drawRect({ x1 - ext, y2 - ext, x2 + ext, y2 + ext }); // Bottom
+	dc_.drawRect({ x1 - ext, y1 - ext, x1 + ext, y2 + ext }); // Left
+	dc_.drawRect({ x2 - ext, y1 - ext, x2 + ext, y2 + ext }); // Right
+
+	// Grid ticks
+	vector<Rectf> ticks;
+	for (float y = y1; y <= y2; y += grid_size_.y) // Vertical
+	{
+		ticks.emplace_back(x1 - 4, y, x1, y);
+		ticks.emplace_back(x2, y, x2 + 4, y);
+	}
+	for (float x = x1; x <= x2; x += grid_size_.x) // Horizontal
+	{
+		ticks.emplace_back(x, y1 - 4, x, y1);
+		ticks.emplace_back(x, y2, x, y2 + 4);
+	}
+
+	dc_.line_thickness = 1.0f;
+	dc_.line_aa_radius = 0.0f;
+	dc_.drawLines(ticks);
+}
+
+// -----------------------------------------------------------------------------
+// Draws grid lines across the texture
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::drawTextureGrid(const Rectd& tex_rect)
+{
+	const auto x1 = tex_rect.x1();
+	const auto x2 = tex_rect.x2();
+	const auto y1 = tex_rect.y1();
+	const auto y2 = tex_rect.y2();
+
+	// Grid lines
+	vector<Rectf> lines;
+	for (float y = y1 + grid_size_.y; y <= y2 - grid_size_.y; y += grid_size_.y) // Vertical
+		lines.emplace_back(x1, y, x2, y);
+	for (float x = x1 + grid_size_.x; x <= x2 - grid_size_.x; x += grid_size_.x) // Horizontal
+		lines.emplace_back(x, y1, x, y2);
+
+	// Draw with inverted blending
+	dc_.line_thickness = 1.0f;
+	dc_.blend          = gl::Blend::Invert;
+	dc_.colour         = ColRGBA::WHITE;
+	dc_.drawLines(lines);
+
+	// Draw again with regular blending to darken
+	dc_.blend  = gl::Blend::Normal;
+	dc_.colour = ColRGBA(0, 0, 0, 64);
+	dc_.drawLines(lines);
+}
+
+// -----------------------------------------------------------------------------
+// Draws patch [index] within [patch_rect] with the given [alpha].
+// If [highlight] is true, we are drawing the patch highlight overlay
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::drawPatch(const Rectd& patch_rect, int index, float alpha, bool highlight)
+{
+	// Get patch to draw
+	const auto patch = texture_->patch(index);
+	if (!patch)
+		return;
+
+	// Init Patch GLTexture list if needed
+	if (patch_gl_textures_.empty())
+		patch_gl_textures_.resize(texture_->nPatches());
+
+	// Load the patch as an opengl texture if it isn't already
+	if (!patches_[index].image || !gl::Texture::isLoaded(patch_gl_textures_[index]))
+	{
+		loadPatchImage(index);
+		patch_gl_textures_[index] = gl::Texture::createFromImage(*patches_[index].image, palette_.get());
+	}
+
+	auto colour = glm::vec4{ 1.0f, 1.0f, 1.0f, alpha };
+
+	// If we're drawing the highlight overlay, use additive blending
+	if (highlight)
+		gl::setBlend(gl::Blend::Additive);
+
+	gl::VertexBuffer2D vb_patch;
+	vb_patch.add({ patch_rect.x1(), patch_rect.y1() }, colour, { 0.0f, 0.0f });
+	vb_patch.add({ patch_rect.x1(), patch_rect.y2() }, colour, { 0.0f, 1.0f });
+	vb_patch.add({ patch_rect.x2(), patch_rect.y2() }, colour, { 1.0f, 1.0f });
+	vb_patch.add({ patch_rect.x2(), patch_rect.y1() }, colour, { 1.0f, 0.0f });
+
+	shader_->bind();
+	gl::Texture::bind(patch_gl_textures_[index]);
+	vb_patch.push();
+	vb_patch.draw(gl::Primitive::TriangleFan);
+
+	gl::setBlend(gl::Blend::Normal);
+}
+
+// -----------------------------------------------------------------------------
+// Draws an outline around [patch_rect] with the given [colour] and [line_width]
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::drawPatchOutline(const Rectd& patch_rect, const ColRGBA& colour, double line_width)
+{
+	vector<Rectf> lines;
+	lines.emplace_back(patch_rect.x1(), patch_rect.y1(), patch_rect.x1(), patch_rect.y2());
+	lines.emplace_back(patch_rect.x1(), patch_rect.y2(), patch_rect.x2(), patch_rect.y2());
+	lines.emplace_back(patch_rect.x2(), patch_rect.y2(), patch_rect.x2(), patch_rect.y1());
+	lines.emplace_back(patch_rect.x2(), patch_rect.y1(), patch_rect.x1(), patch_rect.y1());
+
+	dc_.colour         = colour;
+	dc_.line_thickness = line_width;
+	dc_.drawLines(lines);
+}
+
+// -----------------------------------------------------------------------------
+// Draws all current text overlays
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::drawTextOverlays()
+{
+	gl::View screen_view(false, false);
+	screen_view.setSize(view_.size().x, view_.size().y);
+	dc_.view = &screen_view;
+
+	dc_.colour         = ColRGBA::WHITE;
+	dc_.outline_colour = ColRGBA::BLACK;
+	dc_.text_size      = 16;
+	dc_.text_style     = gl::draw2d::TextStyle::Outline;
+	for (const auto& text : texts_)
+	{
+		dc_.text_alignment = text.alignment;
+		auto pos           = view_.screenPos(text.position.x, text.position.y);
+		if (text.above)
+			pos.y -= dc_.text_size;
+
+		dc_.drawText(text.text, pos);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Override of CTextureCanvasBase::loadTexturePreview that also resets the GL
+// texture
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::loadTexturePreview()
+{
+	CTextureCanvasBase::loadTexturePreview();
+
+	// Reset GL texture
+	gl::Texture::clear(gl_tex_preview_);
+	gl_tex_preview_ = 0;
+}
+
+// -----------------------------------------------------------------------------
+// Initialises the composite texture shader
+// -----------------------------------------------------------------------------
+void CTextureGLCanvas::initShader() const
+{
+	if (!shader_)
+	{
+		shader_ = std::make_unique<gl::Shader>("composite_texture");
+		shader_->loadResourceEntries("default2d.vert", "ctex.frag");
+	}
 }

@@ -36,6 +36,7 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Graphics.h"
 #include "Graphics/SImage/SImage.h"
+#include "OpenGL/Draw2D.h"
 #include "OpenGL/View.h"
 #include "UI/Controls/ZoomControl.h"
 
@@ -48,6 +49,7 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 wxDEFINE_EVENT(EVT_DRAG_END, wxCommandEvent);
+CVAR(Bool, tx_arc, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -446,6 +448,133 @@ void CTextureCanvasBase::loadTexturePreview()
 	}
 
 	texture_->toImage(*tex_preview_, parent_, palette(), blend_rgba_);
+}
+
+// -----------------------------------------------------------------------------
+// Draws the texture canvas content
+// -----------------------------------------------------------------------------
+void CTextureCanvasBase::drawContent()
+{
+	// Aspect Ratio Correction
+	auto& view = this->view();
+	if (tx_arc)
+		view.setScale({ view.scale().x, view.scale().x * 1.2 });
+	else
+		view.setScale(view.scale().x);
+
+	// Draw offset guides if needed
+	drawOffsetLines();
+
+	if (!texture_)
+		return;
+
+	// Load patch images
+	for (unsigned i = 0; i < patches_.size(); ++i)
+		if (!patches_[i].image)
+			loadPatchImage(i);
+
+	// Calcluate texture and patch rectangles
+	auto          tex_rect = textureRect(tex_scale_, view_type_ != View::Normal);
+	vector<Rectd> patch_rects;
+	patch_rects.reserve(patches_.size());
+	for (unsigned i = 0; i < patches_.size(); ++i)
+	{
+		patch_rects.push_back(patchRect(i, tex_scale_));
+		patch_rects.back().move(tex_rect.x1(), tex_rect.y1());
+	}
+
+	// Do any required initialization for drawing
+	initDrawing(tex_rect);
+
+	// Draw the texture border
+	drawTextureBorder(tex_rect);
+
+	// Draw individual patches if we are dragging or 'show outside' is enabled
+	if (draw_outside_ || dragging_)
+	{
+		for (unsigned i = 0; i < patches_.size(); ++i)
+		{
+			// If we're dragging, draw selected patches with 50% opacity
+			if (dragging_ && patches_[i].selected)
+				drawPatch(patch_rects[i], i, 0.5f, false);
+			else
+				drawPatch(patch_rects[i], i, 1.0f, false);
+		}
+	}
+
+	// Draw full texture preview if we aren't dragging
+	if (!dragging_)
+	{
+		// Generate full texture preview if needed
+		if (!tex_preview_)
+			loadTexturePreview();
+
+		drawTexture(tex_rect);
+	}
+
+	// Draw dragged patches if currently dragging
+	if (dragging_ && (drag_origin_.x >= 0 || drag_origin_.y >= 0))
+	{
+		auto offset = dragOffset(false);
+		for (unsigned i = 0; i < patches_.size(); ++i)
+			if (patches_[i].selected)
+			{
+				// Draw patch offset by drag amount
+				auto rect = patch_rects[i];
+				rect.move(offset.x, offset.y);
+				drawPatch(rect, i, 1.0f, false);
+				drawPatchOutline(rect, { 70, 210, 220, 255 }, 1.0);
+
+				// Add offset info text
+				auto patch = texture_->patch(i);
+				texts_.push_back(
+					{ .text     = fmt::format("{},{}", patch->xOffset() + offset.x, patch->yOffset() + offset.y),
+					  .position  = { rect.tl.x + 1, rect.tl.y + 1 },
+					  .alignment = gl::draw2d::Align::Left });
+			}
+	}
+
+	// Draw grid if needed
+	if (show_grid_ || dragging_)
+		drawTextureGrid(tex_rect);
+
+	// Draw selected patch outlines (if not dragging)
+	if (!dragging_)
+		for (unsigned i = 0; i < patches_.size(); i++)
+			if (patches_[i].selected)
+				drawPatchOutline(patch_rects[i], { 70, 210, 220, 255 }, 2.0);
+
+	// Draw hilighted patch (if not dragging)
+	if (hilight_patch_ >= 0 && std::cmp_less(hilight_patch_, texture_->nPatches()) && !dragging_)
+	{
+		// Highlight
+		drawPatch(patch_rects[hilight_patch_], hilight_patch_, 0.15f, true);
+
+		// Outline
+		drawPatchOutline(patch_rects[hilight_patch_], { 255, 255, 255, 150 }, 1.5);
+
+		// Add info text
+		auto patch = texture_->patch(hilight_patch_);
+		auto image = patches_[hilight_patch_].image.get();
+		auto mid_x = tex_rect.x1() + patch_rects[hilight_patch_].tl.x + (patch_rects[hilight_patch_].width() * 0.5);
+		auto mid_y = tex_rect.y1() + patch_rects[hilight_patch_].tl.y + (patch_rects[hilight_patch_].height() * 0.5);
+		texts_.push_back(
+			{ .text      = patch->name(),
+			  .position  = { mid_x, mid_y },
+			  .alignment = gl::draw2d::Align::Center,
+			  .above     = true });
+		texts_.push_back(
+			{ .text      = fmt::format("{} x {}", image->width(), image->height()),
+			  .position  = { mid_x, mid_y },
+			  .alignment = gl::draw2d::Align::Center });
+	}
+
+	// Draw any info texts
+	if (!texts_.empty())
+	{
+		drawTextOverlays();
+		texts_.clear();
+	}
 }
 
 

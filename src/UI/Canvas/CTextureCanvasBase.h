@@ -9,6 +9,10 @@ namespace gl
 {
 	class View;
 }
+namespace gl::draw2d
+{
+	enum class Align;
+}
 namespace ui
 {
 	class ZoomControl;
@@ -95,23 +99,42 @@ protected:
 	ui::ZoomControl* linked_zoom_control_ = nullptr;
 	Vec2i            zoom_point_          = { -1, -1 };
 
-	Vec2i drag_origin_  = { -1, -1 };
-	Vec2i mouse_pos_    = { -1, -1 };
-	bool  dragging_     = false;
+	Vec2i drag_origin_ = { -1, -1 };
+	Vec2i mouse_pos_   = { -1, -1 };
+	bool  dragging_    = false;
 
 	bool  show_grid_ = false;
 	Vec2i grid_size_ = { 8, 8 };
 
-	bool  draw_outside_ = true;
-	bool  blend_rgba_   = false;
-	bool  tex_scale_    = false;
-	View  view_type_    = View::Normal;
+	bool draw_outside_ = true;
+	bool blend_rgba_   = false;
+	bool tex_scale_    = false;
+	View view_type_    = View::Normal;
+
+	struct Text
+	{
+		string            text;
+		Vec2d             position;
+		gl::draw2d::Align alignment;
+		bool              above = false;
+	};
+	vector<Text> texts_;
 
 	// Signal connections
 	ScopedConnectionList connections_;
 
-	void loadPatchImage(unsigned index);
-	void loadTexturePreview();
+	void         drawContent();
+	virtual void initDrawing(const Rectd& tex_rect) {}
+	virtual void drawOffsetLines() {}
+	virtual void drawTexture(const Rectd& tex_rect) {}
+	virtual void drawTextureBorder(const Rectd& tex_rect) {}
+	virtual void drawTextureGrid(const Rectd& tex_rect) {}
+	virtual void drawPatch(const Rectd& patch_rect, int index, float alpha, bool highlight) {}
+	virtual void drawPatchOutline(const Rectd& patch_rect, const ColRGBA& colour, double line_width) {}
+	virtual void drawTextOverlays() {}
+
+	void         loadPatchImage(unsigned index);
+	virtual void loadTexturePreview();
 };
 } // namespace slade
 

@@ -514,6 +514,7 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 			if (!e.ShiftDown())
 				list_patches_->UnselectAll();
 			list_patches_->SelectRow(patch);
+			list_patches_->EnsureVisible(list_patches_->RowToItem(patch));
 
 			// Send selection changed event (SelectRow does not)
 			wxDataViewEvent de;
