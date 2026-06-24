@@ -156,6 +156,7 @@ public:
 	State            state() const { return state_; }
 	int              index() const;
 	int              patchIndex(const CTPatch* patch) const;
+	TextureXList*    list() const { return in_list_; }
 
 	void setName(string_view name) { name_ = name; }
 	void setSize(const Vec2<uint16_t>& size) { size_ = size; }

@@ -10,14 +10,18 @@
 using namespace slade;
 using namespace texeditor;
 
+
 void TextureTreeModel::open(const TextureEditor& editor)
 {
 	editor_ = &editor;
 
-	// Build top-level items list (one per TextureXList)
-	list_items_.clear();
+	root_items_.clear();
 	for (size_t i = 0; i < editor_->nTextureLists(); ++i)
-		list_items_.emplace_back(Item{ .list = editor_->textureList(i), .index = -1 });
+	{
+		auto tex_id = std::make_unique<CTexture>();
+		tex_id->setList(editor_->textureList(i));
+		root_items_.emplace_back(RootItem{ .list = editor_->textureList(i), .id = std::move(tex_id) });
+	}
 
 	// Refresh (will load all items)
 	Cleared();
@@ -25,46 +29,46 @@ void TextureTreeModel::open(const TextureEditor& editor)
 
 CTexture* TextureTreeModel::textureForItem(const wxDataViewItem& item)
 {
-	if (auto i = static_cast<Item*>(item.GetID()))
-	{
-		if (i->index >= 0)
-			return i->list->texture(i->index);
-	}
+	if (auto ctex = static_cast<CTexture*>(item.GetID()); ctex && ctex->index() >= 0)
+		return ctex;
 
 	return nullptr;
 }
 
-wxDataViewItem TextureTreeModel::itemForTexList(TextureXList* list)
+wxDataViewItem TextureTreeModel::itemForTexList(const TextureXList* list) const
 {
-	return wxDataViewItem(new Item{ .list = list, .index = -1 });
+	for (auto& item : root_items_)
+		if (item.list == list)
+			return wxDataViewItem(item.id.get());
+
+	return {};
 }
 
-vector<wxDataViewItem> TextureTreeModel::texListItems()
+vector<wxDataViewItem> TextureTreeModel::texListItems() const
 {
 	vector<wxDataViewItem> items;
-	for (auto& item : list_items_)
-		items.emplace_back(&item);
+	for (auto& item : root_items_)
+		items.emplace_back(item.id.get());
 	return items;
 }
 
 void TextureTreeModel::GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const
 {
-	auto i = static_cast<Item*>(item.GetID());
-	if (!i)
+	auto tex = static_cast<CTexture*>(item.GetID());
+	if (!tex)
 		return;
 
 	switch (static_cast<Column>(col))
 	{
-	case Column::Index: variant = wxString::FromUTF8(i->index < 0 ? " " : fmt::format("{}", i->index)); break;
+	case Column::Index: variant = wxString::FromUTF8(tex->index() < 0 ? " " : fmt::format("{}", tex->index())); break;
 
 	case Column::Name:
 	{
 		// Determine icon
 		string icon;
-		if (i->index >= 0)
+		if (tex->index() >= 0)
 		{
-			icon     = "tlist_texture";
-			auto tex = i->list->texture(i->index);
+			icon = "tlist_texture";
 			if (strutil::equalCI(tex->type(), "sprite"))
 				icon = "tlist_sprite";
 			else if (strutil::equalCI(tex->type(), "graphic"))
@@ -89,10 +93,10 @@ void TextureTreeModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 
 		// Name
 		wxString name;
-		if (i->index < 0)
-			name = wxString::FromUTF8(editor_->textureListName(*i->list));
+		if (tex->index() < 0)
+			name = wxString::FromUTF8(editor_->textureListName(*tex->list()));
 		else
-			name = wxString::FromUTF8(i->list->texture(i->index)->name());
+			name = wxString::FromUTF8(tex->name());
 
 		variant << wxDataViewIconText(name, icon_cache[icon]);
 
@@ -100,25 +104,25 @@ void TextureTreeModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	}
 
 	case Column::Size:
-		if (i->index < 0)
-			variant = WX_FMT("{} texture{}", i->list->textures().size(), i->list->textures().size() == 1 ? "" : "s");
+		if (tex->index() < 0)
+			variant = WX_FMT(
+				"{} texture{}", tex->list()->textures().size(), tex->list()->textures().size() == 1 ? "" : "s");
 		else
 		{
-			auto tex = i->list->texture(i->index);
-			variant  = WX_FMT("{} x {}", tex->width(), tex->height());
+			variant = WX_FMT("{} x {}", tex->width(), tex->height());
 		}
 		break;
 
 	case Column::Type:
-		if (i->index < 0)
-			variant = wxString::FromUTF8(i->list->textureXFormatString());
+		if (tex->index() < 0)
+			variant = wxString::FromUTF8(tex->list()->textureXFormatString());
 		else
-			variant = wxString::FromUTF8(i->list->texture(i->index)->type());
+			variant = wxString::FromUTF8(tex->type());
 		break;
 
 	case Column::Patches:
-		if (i->index >= 0)
-			variant = WX_FMT("{}", i->list->texture(i->index)->nPatches());
+		if (tex->index() >= 0)
+			variant = WX_FMT("{}", tex->list()->texture(tex->index())->nPatches());
 		break;
 
 	default: break;
@@ -127,8 +131,8 @@ void TextureTreeModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 
 bool TextureTreeModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr) const
 {
-	auto i = static_cast<Item*>(item.GetID());
-	if (!i)
+	auto tex = static_cast<CTexture*>(item.GetID());
+	if (!tex)
 		return false;
 
 	bool has_attr = false;
@@ -136,10 +140,8 @@ bool TextureTreeModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 	// Status colour
 	static wxColour col_text_modified(0, 0, 0, 0);
 	static wxColour col_text_new(0, 0, 0, 0);
-	if (i->index >= 0)
+	if (tex->index() >= 0)
 	{
-		auto tex = i->list->texture(i->index);
-
 		// Init precalculated status text colours if necessary
 		if (col_text_modified.Alpha() == 0)
 		{
@@ -183,15 +185,15 @@ bool TextureTreeModel::SetValue(const wxVariant& variant, const wxDataViewItem& 
 
 wxDataViewItem TextureTreeModel::GetParent(const wxDataViewItem& item) const
 {
-	if (auto i = static_cast<Item*>(item.GetID()))
+	if (auto tex = static_cast<CTexture*>(item.GetID()))
 	{
-		if (i->index < 0)
+		if (tex->index() < 0)
 			return {}; // Top-level item has no parent
 
-		// Find the stable item for this item's parent list
-		for (auto& list_item : list_items_)
-			if (list_item.list == i->list)
-				return wxDataViewItem(const_cast<Item*>(&list_item));
+		// Find the root item for this item's parent list
+		for (auto& root : root_items_)
+			if (root.list == tex->list())
+				return wxDataViewItem(root.id.get());
 	}
 
 	return {};
@@ -199,36 +201,33 @@ wxDataViewItem TextureTreeModel::GetParent(const wxDataViewItem& item) const
 
 bool TextureTreeModel::IsContainer(const wxDataViewItem& item) const
 {
-	if (auto i = static_cast<Item*>(item.GetID()))
-		return i->index < 0;
+	if (auto tex = static_cast<CTexture*>(item.GetID()))
+		return tex->index() < 0;
 
 	return editor_->nTextureLists() > 0;
 }
 
 unsigned int TextureTreeModel::GetChildren(const wxDataViewItem& item, wxDataViewItemArray& children) const
 {
-	if (auto i = static_cast<Item*>(item.GetID()))
+	if (auto tex = static_cast<CTexture*>(item.GetID()))
 	{
-		if (i->index == -1)
+		if (tex->index() < 0)
 		{
 			// Index of -1 means this item is a TextureXList, add all textures in the list as children
-			for (int idx = 0; idx < i->list->textures().size(); ++idx)
-			{
-				auto child = new Item{ .list = i->list, .index = idx };
-				children.Add(wxDataViewItem(child));
-			}
+			for (const auto& t : tex->list()->textures())
+				children.Add(wxDataViewItem(t.get()));
 
-			return i->list->textures().size();
+			return tex->list()->textures().size();
 		}
 	}
 
 	if (!item.IsOk())
 	{
-		// Top-level: return the stable list items
-		for (auto& child : list_items_)
-			children.Add(wxDataViewItem(const_cast<Item*>(&child)));
+		// Top-level: return the root items
+		for (auto& root : root_items_)
+			children.Add(wxDataViewItem(root.id.get()));
 
-		return static_cast<unsigned int>(list_items_.size());
+		return static_cast<unsigned int>(root_items_.size());
 	}
 
 	// No children

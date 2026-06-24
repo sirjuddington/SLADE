@@ -30,19 +30,19 @@ public:
 	void open(const TextureEditor& editor);
 
 	CTexture*      textureForItem(const wxDataViewItem& item);
-	wxDataViewItem itemForTexList(TextureXList* list);
+	wxDataViewItem itemForTexList(const TextureXList* list) const;
 
-	vector<wxDataViewItem> texListItems();
+	vector<wxDataViewItem> texListItems() const;
 
 private:
 	const TextureEditor* editor_ = nullptr;
 
-	struct Item
+	struct RootItem
 	{
-		TextureXList* list  = nullptr;
-		int           index = -1;
+		TextureXList*        list = nullptr;
+		unique_ptr<CTexture> id; // Dummy texture used for the wxDataViewItem ID
 	};
-	vector<Item> list_items_; // Top-level items (one per TextureXList)
+	vector<RootItem> root_items_;
 
 	// wxDataViewModel
 	unsigned int   GetColumnCount() const override { return static_cast<unsigned int>(Column::Count); }
