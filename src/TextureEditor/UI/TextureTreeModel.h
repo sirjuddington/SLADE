@@ -1,5 +1,7 @@
 #pragma once
 
+#include "General/Sigslot.h"
+
 namespace slade
 {
 class CTexture;
@@ -36,6 +38,7 @@ public:
 
 private:
 	const TextureEditor* editor_ = nullptr;
+	ScopedConnectionList connections_;
 
 	struct RootItem
 	{

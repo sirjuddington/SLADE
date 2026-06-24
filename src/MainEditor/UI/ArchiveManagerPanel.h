@@ -7,6 +7,10 @@
 
 namespace slade
 {
+namespace texeditor
+{
+	class TextureEditorPanel;
+}
 namespace ui
 {
 	class ArchiveListView;
@@ -17,7 +21,6 @@ class ArchiveManagerPanel;
 class ArchivePanel;
 class EntryPanel;
 class ListView;
-class TextureXEditor;
 class WMFileBrowser;
 struct DirEntryChange;
 
@@ -59,23 +62,23 @@ public:
 	ArchiveEntry*         currentEntry() const;
 	vector<ArchiveEntry*> currentEntrySelection() const;
 
-	void            openTab(int archive_index) const;
-	ArchivePanel*   tabForArchive(const Archive* archive) const;
-	void            openTab(const Archive* archive) const;
-	void            closeTab(int archive_index) const;
-	void            openTextureTab(int archive_index, ArchiveEntry* entry = nullptr) const;
-	TextureXEditor* textureTabForArchive(int archive_index) const;
-	void            closeTextureTab(int archive_index) const;
-	void            openEntryTab(ArchiveEntry* entry) const;
-	void            closeEntryTab(const ArchiveEntry* entry) const;
-	void            closeEntryTabs(const Archive* parent) const;
-	void            openFile(const string& filename) const;
-	void            openFiles(const wxArrayString& files) const;
-	void            openDirAsArchive(string_view dir) const;
-	bool            redirectToTab(const ArchiveEntry* entry) const;
-	bool            entryIsOpenInTab(const ArchiveEntry* entry) const;
-	void            closeCurrentTab();
-	bool            saveCurrentTab() const;
+	void                           openTab(int archive_index) const;
+	ArchivePanel*                  tabForArchive(const Archive* archive) const;
+	void                           openTab(const Archive* archive) const;
+	void                           closeTab(int archive_index) const;
+	void                           openTextureTab(int archive_index, ArchiveEntry* entry = nullptr) const;
+	texeditor::TextureEditorPanel* textureTabForArchive(int archive_index) const;
+	void                           closeTextureTab(int archive_index) const;
+	void                           openEntryTab(ArchiveEntry* entry) const;
+	void                           closeEntryTab(const ArchiveEntry* entry) const;
+	void                           closeEntryTabs(const Archive* parent) const;
+	void                           openFile(const string& filename) const;
+	void                           openFiles(const wxArrayString& files) const;
+	void                           openDirAsArchive(string_view dir) const;
+	bool                           redirectToTab(const ArchiveEntry* entry) const;
+	bool                           entryIsOpenInTab(const ArchiveEntry* entry) const;
+	void                           closeCurrentTab();
+	bool                           saveCurrentTab() const;
 
 	// General actions
 	bool undo() const;

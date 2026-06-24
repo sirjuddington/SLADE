@@ -160,20 +160,36 @@ void Splitter::DrawSash(wxDC& dc)
 	auto size  = GetClientSize();
 	dc.SetBrush(wxBrush(bgcol));
 	dc.SetPen(*wxTRANSPARENT_PEN);
-	dc.DrawRectangle(m_sashPosition, 0, getSashSize(), size.y);
+	if (m_splitMode == wxSPLIT_VERTICAL)
+		dc.DrawRectangle(m_sashPosition, 0, getSashSize(), size.y);
+	else
+		dc.DrawRectangle(0, m_sashPosition, size.x, getSashSize());
 
 	// Indicator
 	auto colour = (bgcol.GetLuminance() > 0.5) ? bgcol.ChangeLightness(m_isHot ? 50 : 80)
 											   : bgcol.ChangeLightness(m_isHot ? 150 : 120);
 	dc.SetBrush(wxBrush(colour));
-	auto line_x   = m_sashPosition + getSashSize() / 2;
-	auto line_top = size.y / 2 - FromDIP(24);
-	if (line_top < 0)
-		line_top = 0;
-	auto line_height = FromDIP(48);
-	if (line_top + line_height > size.y)
-		line_height = size.y - line_top;
-	dc.DrawRoundedRectangle(line_x - FromDIP(1), line_top, FromDIP(2), line_height, FromDIP(1));
+
+	if (m_splitMode == wxSPLIT_VERTICAL)
+	{
+		auto line_x      = m_sashPosition + getSashSize() / 2;
+		auto line_top    = size.y / 2 - FromDIP(24);
+		line_top         = std::max(line_top, 0);
+		auto line_height = FromDIP(48);
+		if (line_top + line_height > size.y)
+			line_height = size.y - line_top;
+		dc.DrawRoundedRectangle(line_x - FromDIP(1), line_top, FromDIP(2), line_height, FromDIP(1));
+	}
+	else
+	{
+		auto line_y     = m_sashPosition + getSashSize() / 2;
+		auto line_left  = size.x / 2 - FromDIP(24);
+		line_left       = std::max(line_left, 0);
+		auto line_width = FromDIP(48);
+		if (line_left + line_width > size.x)
+			line_width = size.x - line_left;
+		dc.DrawRoundedRectangle(line_left, line_y - FromDIP(1), line_width, FromDIP(2), FromDIP(1));
+	}
 #endif
 }
 

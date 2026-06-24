@@ -51,7 +51,6 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "TextureEditor/UI/TextureEditorPanel.h"
-#include "TextureXEditor/TextureXEditor.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Dialogs/DirArchiveUpdateDialog.h"
 #include "UI/Dialogs/NewArchiveDiaog.h"
@@ -754,10 +753,10 @@ Archive* ArchiveManagerPanel::currentArchive() const
 		return ep->entry() ? ep->entry()->parent() : nullptr;
 	}
 
-	// TextureXEditor
+	// Texture Editor
 	else if (page->GetName() == wxS("texture"))
 	{
-		auto tx = dynamic_cast<TextureXEditor*>(page);
+		auto tx = dynamic_cast<texeditor::TextureEditorPanel*>(page);
 		return tx->archive();
 	}
 
@@ -936,54 +935,25 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 	if (archive)
 	{
 		// Go through all tabs
-		for (size_t a = 0; a < stc_archives_->GetPageCount(); a++)
+		for (auto i = 0; i < stc_archives_->GetPageCount(); ++i)
 		{
-			// Check page type is "texture"
-			if (stc_archives_->GetPage(a)->GetName().CmpNoCase(wxS("texture")))
+			// Ignore non-texture tabs
+			if (stc_archives_->GetPage(i)->GetName().CmpNoCase(wxS("texture")))
 				continue;
 
-			// Check for archive match
-			auto txed = dynamic_cast<TextureXEditor*>(stc_archives_->GetPage(a));
-			if (txed->archive() == archive.get())
+			if (auto txed = dynamic_cast<texeditor::TextureEditorPanel*>(stc_archives_->GetPage(i));
+				txed->archive() == archive.get())
 			{
-				// Selected archive already has its texture editor open, so show that tab
-				stc_archives_->SetSelection(a);
-				if (entry && !txed->setSelection(entry))
-				{
-					// Texture entry isn't open in the editor, open it
-					txed->openEntry(entry);
-					txed->setSelection(entry);
-				}
+				// Switch to tab
+				stc_archives_->SetSelection(i);
 				return;
 			}
 		}
 
 		// If tab isn't already open, open a new one
 		maineditor::window()->Freeze();
-		auto txed = new TextureXEditor(stc_archives_);
-		txed->Show(false);
-		bool ok = false;
-		if (entry)
-			ok = txed->openEntry(entry);
-		else
-			ok = txed->openArchive(archive.get());
-		if (!ok)
-		{
-			delete txed;
-			maineditor::window()->Thaw();
-			return;
-		}
-
-		stc_archives_->AddPage(txed, WX_FMT("TEXTUREx Editor ({})", archive->filename(false)), true);
-		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::Entry, "texturex"));
-		txed->setSelection(entry);
-		txed->Show(true);
-
-		// TEST new texture editor
-		stc_archives_->AddPage(
-			new texeditor::TextureEditorPanel(stc_archives_, archive),
-			WX_FMT("NEW Texture Editor ({})", archive->filename(false)),
-			true);
+		auto* txed = new texeditor::TextureEditorPanel(stc_archives_, archive);
+		stc_archives_->AddPage(txed, WX_FMT("Texture Editor ({})", archive->filename(false)), true);
 		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::General, "texeditor"));
 
 		// Select the new tab
@@ -996,8 +966,6 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 				return;
 			}
 		}
-
-		maineditor::window()->Thaw(); // Shouldn't get to this line but putting this here just in case
 	}
 }
 
@@ -1005,7 +973,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 // Returns the TextureXEditor for the archive at [archive_index], or null if
 // none is open for that archive
 // -----------------------------------------------------------------------------
-TextureXEditor* ArchiveManagerPanel::textureTabForArchive(int archive_index) const
+texeditor::TextureEditorPanel* ArchiveManagerPanel::textureTabForArchive(int archive_index) const
 {
 	auto archive = app::archiveManager().getArchive(archive_index);
 
@@ -1019,7 +987,7 @@ TextureXEditor* ArchiveManagerPanel::textureTabForArchive(int archive_index) con
 				continue;
 
 			// Check for archive match
-			auto txed = dynamic_cast<TextureXEditor*>(stc_archives_->GetPage(a));
+			auto txed = dynamic_cast<texeditor::TextureEditorPanel*>(stc_archives_->GetPage(a));
 			if (txed->archive() == archive.get())
 				return txed;
 		}
@@ -1126,8 +1094,9 @@ bool ArchiveManagerPanel::saveCurrentTab() const
 	// Texture Editor Tab
 	if (isTextureEditorTab(index))
 	{
-		auto* texture_editor = dynamic_cast<TextureXEditor*>(tab);
-		texture_editor->saveChanges();
+		auto* texture_editor = dynamic_cast<texeditor::TextureEditorPanel*>(tab);
+		// TODO:
+		// texture_editor->saveChanges();
 		return true;
 	}
 
@@ -1331,7 +1300,8 @@ bool ArchiveManagerPanel::undo() const
 	// TEXTUREx panel
 	else if (S_CMPNOCASE(page_current->GetName(), wxS("texture")))
 	{
-		dynamic_cast<TextureXEditor*>(page_current)->undo();
+		// TODO:
+		// dynamic_cast<texeditor::TextureEditorPanel*>(page_current)->undo();
 		return true;
 	}
 
@@ -1364,7 +1334,8 @@ bool ArchiveManagerPanel::redo() const
 	// TEXTUREx panel
 	else if (S_CMPNOCASE(page_current->GetName(), wxS("texture")))
 	{
-		dynamic_cast<TextureXEditor*>(page_current)->redo();
+		// TODO:
+		// dynamic_cast<texeditor::TextureEditorPanel*>(page_current)->redo();
 		return true;
 	}
 
@@ -1617,8 +1588,9 @@ bool ArchiveManagerPanel::beforeCloseArchive(Archive* archive)
 	if (txed)
 	{
 		openTextureTab(archive_index);
-		if (!txed->close())
-			return false; // User cancelled saving texturex changes, don't close
+		// TODO:
+		// if (!txed->close())
+		//	return false; // User cancelled saving texturex changes, don't close
 	}
 
 	// If the archive has unsaved changes, prompt to save
@@ -2239,8 +2211,8 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	// TextureXEditor
 	if (isTextureEditorTab(selection))
 	{
-		auto te = dynamic_cast<TextureXEditor*>(stc_archives_->GetPage(selection));
-		te->updateMenuStatus();
+		auto te = dynamic_cast<texeditor::TextureEditorPanel*>(stc_archives_->GetPage(selection));
+		theMainWindow->addCustomMenu(te->textureMenu(), "&Texture");
 	}
 
 	theMainWindow->Thaw();
@@ -2429,9 +2401,10 @@ bool ArchiveManagerPanel::prepareCloseTab(int index)
 	// Check for texture editor
 	else if (page->GetName() == wxS("texture"))
 	{
-		auto txed = dynamic_cast<TextureXEditor*>(page);
-		if (!txed->close())
-			return false;
+		auto txed = dynamic_cast<texeditor::TextureEditorPanel*>(page);
+		// TODO:
+		// if (!txed->close())
+		//	return false;
 	}
 
 	return true;

@@ -218,10 +218,10 @@ void CTextureGLCanvas::drawTextureBorder(const Rectd& tex_rect)
 	dc_.texture = 0;
 	dc_.colour  = ColRGBA::BLACK;
 	float ext   = 2 / view_.scale().x;
-	dc_.drawRect({ x1 - ext, y1 - ext, x2 + ext, y1 + ext }); // Top
-	dc_.drawRect({ x1 - ext, y2 - ext, x2 + ext, y2 + ext }); // Bottom
-	dc_.drawRect({ x1 - ext, y1 - ext, x1 + ext, y2 + ext }); // Left
-	dc_.drawRect({ x2 - ext, y1 - ext, x2 + ext, y2 + ext }); // Right
+	dc_.drawRect({ x1 - ext, y1 - ext, x2 + ext, y1 }); // Top
+	dc_.drawRect({ x1, y2, x2 + ext, y2 + ext });       // Bottom
+	dc_.drawRect({ x1 - ext, y1 - ext, x1, y2 + ext }); // Left
+	dc_.drawRect({ x2, y1, x2 + ext, y2 + ext });       // Right
 
 	// Grid ticks
 	vector<Rectf> ticks;

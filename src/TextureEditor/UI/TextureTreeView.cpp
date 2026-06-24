@@ -32,6 +32,23 @@ CTexture* TextureTreeView::textureForItem(const wxDataViewItem& item)
 	return nullptr;
 }
 
+TextureXList* TextureTreeView::textureListForItem(const wxDataViewItem& item)
+{
+	if (auto ctex = static_cast<CTexture*>(item.GetID()))
+		return ctex->list();
+
+	return nullptr;
+}
+
+wxDataViewItem TextureTreeView::lastSelectedItem() const
+{
+	wxDataViewItemArray selection;
+	GetSelections(selection);
+	if (!selection.IsEmpty())
+		return selection.Last();
+	return wxDataViewItem();
+}
+
 void TextureTreeView::expandAll()
 {
 	if (auto model = dynamic_cast<TextureTreeModel*>(GetModel()))

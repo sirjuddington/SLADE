@@ -2,11 +2,15 @@
 #include "Main.h"
 #include "TextureEditorPanel.h"
 #include "Archive/Archive.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/KeyBind.h"
 #include "General/SAction.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/TextureXEditor/PatchBrowser.h"
+#include "NewTextureDialog.h"
 #include "OpenGL/View.h"
 #include "TextureEditor/TextureEditor.h"
 #include "TexturePropGrid.h"
@@ -21,6 +25,7 @@
 #include "UI/SAuiToolBar.h"
 #include "UI/State.h"
 #include "UI/WxUtils.h"
+#include "Utility/SFileDialog.h"
 #include <utility>
 
 using namespace slade;
@@ -29,8 +34,39 @@ using namespace texeditor;
 
 TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive) : wxPanel(parent, wxID_ANY)
 {
+	wxWindowBase::SetName(wxS("texture"));
+
 	editor_        = std::make_unique<TextureEditor>(archive);
 	splitter_left_ = new ui::Splitter(this, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
+
+	// Create texture menu
+	menu_texture_ = new wxMenu();
+	SAction::fromId("txed_new")->addToMenu(menu_texture_);
+	SAction::fromId("txed_new_file")->addToMenu(menu_texture_);
+	SAction::fromId("txed_delete")->addToMenu(menu_texture_);
+	menu_texture_->AppendSeparator();
+	SAction::fromId("txed_rename")->addToMenu(menu_texture_);
+	SAction::fromId("txed_rename_each")->addToMenu(menu_texture_);
+	auto menu_export = new wxMenu();
+	SAction::fromId("txed_export")->addToMenu(menu_export, true, "Archive (as image)");
+	SAction::fromId("txed_extract")->addToMenu(menu_export, true, "File");
+	menu_texture_->AppendSubMenu(menu_export, wxS("&Export To"));
+	menu_texture_->AppendSeparator();
+	SAction::fromId("txed_copy")->addToMenu(menu_texture_);
+	SAction::fromId("txed_cut")->addToMenu(menu_texture_);
+	SAction::fromId("txed_paste")->addToMenu(menu_texture_);
+	menu_texture_->AppendSeparator();
+	SAction::fromId("txed_up")->addToMenu(menu_texture_);
+	SAction::fromId("txed_down")->addToMenu(menu_texture_);
+	SAction::fromId("txed_sort")->addToMenu(menu_texture_);
+	auto menu_patch = new wxMenu();
+	SAction::fromId("txed_patch_add")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_remove")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_replace")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_back")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_forward")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_duplicate")->addToMenu(menu_patch);
+	menu_texture_->AppendSubMenu(menu_patch, wxS("&Patch"));
 
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
@@ -65,7 +101,15 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	updateUI(true);
 }
 
-TextureEditorPanel::~TextureEditorPanel() = default;
+TextureEditorPanel::~TextureEditorPanel()
+{
+	delete menu_texture_;
+}
+
+Archive* TextureEditorPanel::archive() const
+{
+	return editor_->archive();
+}
 
 wxPanel* TextureEditorPanel::createTextureListPanel(wxWindow* parent)
 {
@@ -98,8 +142,9 @@ wxPanel* TextureEditorPanel::createMainPanel(wxWindow* parent)
 	// Split (texture view | properties)
 	splitter_right_ = new ui::Splitter(panel, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
 	splitter_right_->SetSashGravity(1.0);
+	splitter_right_->SetMinimumPaneSize(FromDIP(200));
 	splitter_right_->SplitVertically(
-		createTextureViewPanel(splitter_right_), createPatchPropertiesPanel(splitter_right_), FromDIP(-250));
+		createTextureViewPanel(splitter_right_), createRightPanel(splitter_right_), FromDIP(-250));
 	sizer->Add(splitter_right_, wxSizerFlags(1).Expand());
 
 	return panel;
@@ -140,7 +185,35 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	return panel;
 }
 
-wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
+wxPanel* TextureEditorPanel::createRightPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = ui::LayoutHelper(panel);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sizer);
+
+	// Setup splitter
+	splitter_props_ = new ui::Splitter(panel, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
+	sizer->Add(splitter_props_, lh.sfWithSmallBorder(1, wxLEFT).Expand());
+
+	// Patch list
+	auto patch_list_panel = createPatchListPanel(splitter_props_);
+
+	// We need odd borders around the property grid so create a temp panel
+	auto props_panel = new wxPanel(splitter_props_);
+	props_panel->SetSizer(new wxBoxSizer(wxVERTICAL));
+	pg_properties_ = new TexturePropGrid(props_panel, *editor_);
+	props_panel->GetSizer()->AddSpacer(lh.padSmall());
+	props_panel->GetSizer()->Add(pg_properties_, lh.sfWithBorder(1, wxRIGHT).Expand());
+
+	// Split
+	splitter_props_->SplitHorizontally(patch_list_panel, props_panel, patch_list_panel->GetBestSize().y);
+	splitter_props_->SetMinimumPaneSize(FromDIP(150));
+
+	return panel;
+}
+
+wxPanel* TextureEditorPanel::createPatchListPanel(wxWindow* parent)
 {
 	auto panel = new wxPanel(parent);
 	auto lh    = ui::LayoutHelper(panel);
@@ -149,9 +222,8 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 
 	// Patch list
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(new wxStaticText(panel, wxID_ANY, wxS("Patches")), lh.sfWithSmallBorder(0, wxBOTTOM | wxLEFT).Expand());
-	sizer->Add(hbox, lh.sfWithSmallBorder(0, wxLEFT).Expand());
-	sizer->AddSpacer(lh.pad());
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxS("Patches")), lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
+	sizer->Add(hbox, wxSizerFlags(1).Expand());
 	list_patches_ = new wxDataViewListCtrl(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE);
 	list_patches_->AppendTextColumn(wxS("#"));
 	list_patches_->AppendTextColumn(wxS("Name"));
@@ -162,11 +234,7 @@ wxPanel* TextureEditorPanel::createPatchPropertiesPanel(wxWindow* parent)
 	toolbar_patches_->loadLayoutFromResource("texturex_patches");
 	hbox->Add(toolbar_patches_, lh.sfWithSmallBorder(0, wxLEFT | wxRIGHT).Expand());
 
-	// Texture/Patch properties grid
-	pg_properties_ = new TexturePropGrid(panel, *editor_);
-	hbox           = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, lh.sfWithSmallBorder(1, wxLEFT).Expand());
-	hbox->Add(pg_properties_, lh.sfWithBorder(1, wxRIGHT).Expand());
+	sizer->AddSpacer(lh.padSmall());
 
 	return panel;
 }
@@ -308,33 +376,36 @@ void TextureEditorPanel::populatePatchesList() const
 	}
 }
 
+void TextureEditorPanel::initPatchBrowser()
+{
+	patch_browser_ = new PatchBrowser(this);
+	patch_browser_->setPalette(maineditor::currentPalette());
+
+	if (editor_->currentTexture()->isExtended())
+	{
+		// TEXTURES, load patches from the archive and resources, and any
+		// texture lists in the archive
+		patch_browser_->openArchive(editor_->archive());
+		for (auto i = 0; i < editor_->nTextureLists(); ++i)
+		{
+			if (auto tl = editor_->textureList(i))
+				patch_browser_->openTextureXList(tl, editor_->archive());
+		}
+		patch_browser_->setFullPath(true);
+	}
+	else
+	{
+		// TEXTUREx, load patches from the patch table
+		patch_browser_->openPatchTable(editor_->patchTable());
+		patch_browser_->setFullPath(false);
+	}
+}
+
 string TextureEditorPanel::browsePatch(string_view initial)
 {
 	// Create patch browser if needed
 	if (!patch_browser_)
-	{
-		patch_browser_ = new PatchBrowser(this);
-		patch_browser_->setPalette(maineditor::currentPalette());
-
-		if (editor_->currentTexture()->isExtended())
-		{
-			// TEXTURES, load patches from the archive and resources, and any
-			// texture lists in the archive
-			patch_browser_->openArchive(editor_->archive());
-			for (auto i = 0; i < editor_->nTextureLists(); ++i)
-			{
-				if (auto tl = editor_->textureList(i))
-					patch_browser_->openTextureXList(tl, editor_->archive());
-			}
-			patch_browser_->setFullPath(true);
-		}
-		else
-		{
-			// TEXTUREx, load patches from the patch table
-			patch_browser_->openPatchTable(editor_->patchTable());
-			patch_browser_->setFullPath(false);
-		}
-	}
+		initPatchBrowser();
 
 	// Select initial patch if specified
 	if (!initial.empty())
@@ -396,9 +467,94 @@ void TextureEditorPanel::pushPatch(bool forward)
 	updateUI(true);
 }
 
+void TextureEditorPanel::newTexture()
+{
+	// Determine index to insert new texture at
+	int  index         = -1;
+	auto last_selected = tree_view_->lastSelectedItem();
+	auto ctex          = tree_view_->textureForItem(last_selected);
+	auto list          = tree_view_->textureListForItem(last_selected);
+
+	// Do nothing if no texture or texture list is selected
+	if (!list)
+		return;
+
+	// Insert after selected texture (if any)
+	if (ctex)
+		index = ctex->index() + 1;
+
+	// Init patch browser if needed
+	if (!patch_browser_)
+		initPatchBrowser();
+
+	auto dlg = new NewTextureDialog(this, patch_browser_);
+	if (dlg->ShowModal() == wxID_OK)
+	{
+		if (dlg->blankSelected())
+			editor_->newTexture(list, dlg->texName(), index, dlg->texWidth(), dlg->texHeight());
+		else
+			editor_->newTexture(list, dlg->texName(), index, 0, 0, dlg->patch());
+	}
+}
+
+void TextureEditorPanel::newTextureFromFile()
+{
+	// Determine index to insert new texture at
+	int  index         = -1;
+	auto last_selected = tree_view_->lastSelectedItem();
+	auto ctex          = tree_view_->textureForItem(last_selected);
+	auto list          = tree_view_->textureListForItem(last_selected);
+
+	// Do nothing if no texture or texture list is selected
+	if (!list)
+		return;
+
+	// Insert after selected texture (if any)
+	if (ctex)
+		index = ctex->index() + 1;
+
+	// Get all entry types
+	auto etypes = EntryType::allTypes();
+
+	// Go through types
+	string ext_filter = "All files (*.*)|*|";
+	for (auto& etype : etypes)
+	{
+		// If the type is a valid image type, add its extension filter
+		if (etype->extraProps().contains("image"))
+		{
+			ext_filter += etype->fileFilterString();
+			ext_filter += "|";
+		}
+	}
+	if (ext_filter.ends_with('|'))
+		ext_filter.pop_back();
+
+	// Popup a file dialog to choose patch file(s)
+	auto fd_info = filedialog::openFiles("Choose file(s) to open", ext_filter, this);
+
+	// Run the dialog & check that the user didn't cancel
+	if (!fd_info.filenames.empty())
+	{
+		// Go through file selection
+		for (const auto& file : fd_info.filenames)
+		{
+			if (auto name = editor_->importPatchFile(file, list->format() != TextureXList::Format::Textures);
+				!name.empty())
+				editor_->newTexture(list, name, index, 0, 0, name);
+		}
+	}
+}
+
 bool TextureEditorPanel::handleAction(string_view id)
 {
-	if (id == "txed_save")
+	if (id == "txed_new")
+		newTexture();
+
+	else if (id == "txed_new_file")
+		newTextureFromFile();
+
+	else if (id == "txed_save")
 	{
 		editor_->saveTexture();
 		toolbar_texture_->enableItem("txed_save", false);

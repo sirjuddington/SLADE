@@ -169,7 +169,7 @@ TextureXEditor::TextureXEditor(wxWindow* parent) : wxPanel(parent, -1), patch_ta
 {
 	// Init variables
 	undo_manager_ = std::make_unique<UndoManager>();
-	wxWindowBase::SetName(wxS("texture"));
+	wxWindowBase::SetName(wxS("texture_old"));
 
 	// Create texture menu
 	menu_texture_ = new wxMenu();

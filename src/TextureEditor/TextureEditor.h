@@ -34,8 +34,19 @@ public:
 	const vector<unsigned>& selectedPatches() const { return selected_patches_; }
 	void                    selectPatch(unsigned index, bool selected = true);
 
-	void setTextureModified(bool update_texture, bool update_patches) const;
+	string importPatchFile(string_view filename, bool add_to_patch_table = true) const;
 
+	// Texture List Editing
+	void newTexture(
+		TextureXList* list,
+		string_view   name,
+		int           index  = -1,
+		int           width  = 0,
+		int           height = 0,
+		string_view   patch  = {}) const;
+
+	// Texture Editing
+	void setTextureModified(bool update_texture, bool update_patches) const;
 	void setTextureSize(int width = -1, int height = -1) const;
 	void setTextureScaleX(double scale) const;
 	void setTextureScaleY(double scale) const;
@@ -44,6 +55,7 @@ public:
 	void setTextureOffsetX(int offset) const;
 	void setTextureOffsetY(int offset) const;
 
+	// Patch Editing
 	void setPatchOffsetX(int offset) const;
 	void setPatchOffsetY(int offset) const;
 	void movePatch(const Vec2i& offset) const;
@@ -56,6 +68,7 @@ public:
 	void setPatchTintAmount(double amount) const;
 	void setPatchTranslation(string_view translation) const;
 
+	// Patch List Editng
 	void addPatch(string_view patch) const;
 	void removePatch();
 	void replacePatch(string_view patch) const;
@@ -63,9 +76,16 @@ public:
 	void patchForward();
 	void patchBack();
 
+	struct Signals
+	{
+		sigslot::signal<CTexture*> texture_added;
+	};
+	Signals& signals() const { return signals_; }
+
 private:
 	unique_ptr<PatchTable> patch_table_;
 	shared_ptr<Archive>    archive_;
+	mutable Signals        signals_;
 
 	struct TextureXEntry
 	{

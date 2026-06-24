@@ -7,6 +7,7 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
+#include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Vector.h"
@@ -125,6 +126,95 @@ void TextureEditor::selectPatch(unsigned index, bool selected)
 		vectorAddUnique(selected_patches_, index);
 	else
 		vectorRemoveVal(selected_patches_, index);
+}
+
+string TextureEditor::importPatchFile(string_view filename, bool add_to_patch_table) const
+{
+	// Load the file into a temporary ArchiveEntry
+	auto entry = std::make_shared<ArchiveEntry>();
+	entry->importFile(filename);
+
+	// Determine type
+	EntryType::detectEntryType(*entry);
+
+	// If it's not a valid image type, don't add it
+	if (!entry->type()->extraProps().contains("image"))
+	{
+		log::warning("{} is not a valid image file", filename);
+		return {};
+	}
+
+	// Ask for name for texture
+	auto file_name = strutil::Path::fileNameOf(filename);
+	auto tex_name  = strutil::upper(strutil::truncate(file_name, 8));
+	auto name      = wxGetTextFromUser(
+                    WX_FMT("Enter a texture name for {}:", file_name), wxS("New Texture"), wxString::FromUTF8(tex_name))
+					.Truncate(8)
+					.utf8_string();
+
+	// Add patch to archive
+	entry->setName(name);
+	entry->setExtensionByType();
+	archive_->addEntry(entry, "patches");
+
+	// Add patch to patch table if needed
+	// TODO: Abort if patch already exists in table
+	if (add_to_patch_table)
+		patch_table_->addPatch(name);
+
+	return name;
+}
+
+void TextureEditor::newTexture(
+	TextureXList* list,
+	string_view   name,
+	int           index,
+	int           width,
+	int           height,
+	string_view   patch) const
+{
+	// Process name
+	string tex_name{ name };
+	if (list->format() != TextureXList::Format::Textures)
+	{
+		strutil::upperIP(tex_name);
+		strutil::truncateIP(tex_name, 8);
+	}
+
+	// Create new texture
+	auto tex = std::make_unique<CTexture>(tex_name);
+	tex->setState(CTexture::State::New);
+
+	// Setup texture scale
+	if (list->format() == TextureXList::Format::Textures)
+	{
+		tex->setScale({ 1., 1. });
+		tex->setExtended(true);
+	}
+	else
+		tex->setScale({ 0., 0. });
+
+	// Add patch if specified
+	if (!patch.empty())
+	{
+		tex->addPatch(patch);
+		patch_table_->updatePatchUsage(tex.get());
+
+		// Load patch image (to determine dimensions)
+		SImage image;
+		tex->loadPatchImage(0, image);
+		width  = image.width();
+		height = image.height();
+	}
+
+	// Set texture size
+	tex->setWidth(width);
+	tex->setHeight(height);
+
+	// Add it to the list
+	auto added_tex = tex.get();
+	list->addTexture(std::move(tex), index);
+	signals_.texture_added(added_tex);
 }
 
 void TextureEditor::setTextureModified(bool update_texture, bool update_patches) const

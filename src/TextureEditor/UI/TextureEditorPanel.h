@@ -31,11 +31,14 @@ public:
 	TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive);
 	~TextureEditorPanel() override;
 
+	Archive* archive() const;
+	wxMenu*  textureMenu() const { return menu_texture_; }
+
 private:
 	unique_ptr<TextureEditor> editor_;
 
-	PatchBrowser* patch_browser_ = nullptr;
-
+	wxMenu*           menu_texture_   = nullptr;
+	PatchBrowser*     patch_browser_  = nullptr;
 	wxSplitterWindow* splitter_left_  = nullptr;
 	wxSplitterWindow* splitter_right_ = nullptr;
 
@@ -56,6 +59,7 @@ private:
 	SIconButton* btn_auto_offset_    = nullptr;
 
 	// Texture/Patch properties
+	wxSplitterWindow*   splitter_props_  = nullptr;
 	wxDataViewListCtrl* list_patches_    = nullptr;
 	SAuiToolBar*        toolbar_patches_ = nullptr;
 	TexturePropGrid*    pg_properties_   = nullptr;
@@ -65,18 +69,23 @@ private:
 	wxPanel* createTextureListPanel(wxWindow* parent);
 	wxPanel* createMainPanel(wxWindow* parent);
 	wxPanel* createTextureViewPanel(wxWindow* parent);
-	wxPanel* createPatchPropertiesPanel(wxWindow* parent);
+	wxPanel* createRightPanel(wxWindow* parent);
+	wxPanel* createPatchListPanel(wxWindow* parent);
 	wxPanel* createOffsetsPanel(wxWindow* parent);
 
 	void updateUI(bool texture_changed = false);
 	void populatePatchesList() const;
 
+	void   initPatchBrowser();
 	string browsePatch(string_view initial = {});
 	void   addPatch();
 	void   removePatch();
 	void   replacePatch();
 	void   duplicatePatch();
 	void   pushPatch(bool forward);
+
+	void newTexture();
+	void newTextureFromFile();
 
 	// SActionHandler
 	bool handleAction(string_view id) override;

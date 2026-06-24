@@ -25,6 +25,19 @@ void TextureTreeModel::open(const TextureEditor& editor)
 
 	// Refresh (will load all items)
 	Cleared();
+
+
+	// --- Connect to TextureEditor signals ---
+
+	// Texture added
+	connections_ += editor.signals().texture_added.connect(
+		[this](CTexture* tex)
+		{
+			if (auto parent = itemForTexList(tex->list()); parent.IsOk())
+				ItemAdded(wxDataViewItem(parent), wxDataViewItem(tex));
+			else
+				log::warning("Texture \"{}\" added to unknown list", tex->name());
+		});
 }
 
 CTexture* TextureTreeModel::textureForItem(const wxDataViewItem& item)
