@@ -938,6 +938,7 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), t
 	if (edata_font_monospace)
 		grid_data_->SetDefaultCellFont(wxutil::monospaceFont(grid_data_->GetDefaultCellFont()));
 	grid_data_->SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_CENTER);
+	grid_data_->SetDefaultRowSize(grid_data_->GetDefaultRowSize() + FromDIP(edata_row_padding * 2));
 	vbox->Add(grid_data_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Setup toolbar
@@ -968,17 +969,10 @@ bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 		grid_data_->AutoSizeColLabelSize(a);
 	grid_data_->ForceRefresh();
 
-	// Apply column/row padding
+	// Apply column padding
 	if (edata_col_padding > 0)
-	{
 		for (int a = 0; a < table_data_->GetNumberCols(); a++)
 			grid_data_->SetColSize(a, grid_data_->GetColSize(a) + FromDIP(edata_col_padding * 2));
-	}
-	if (edata_row_padding > 0)
-	{
-		for (int a = 0; a < table_data_->GetNumberRows(); a++)
-			grid_data_->SetRowSize(a, grid_data_->GetRowSize(a) + FromDIP(edata_row_padding * 2));
-	}
 
 	Layout();
 
