@@ -164,8 +164,21 @@ vector<unique_ptr<ArchiveEntry>> DoomMapFormat::writeMap(
 	// Check if we need to compress sides
 	if (map_compress_sides == 2 || map_compress_sides == 1 && sidedefs.size() > 65535)
 	{
+		// Build table of sides not to compress (if their parent line has a special or id)
+		vector<u8> no_compress(sidedefs.size(), 0);
+		for (const auto& line : map_data.lines())
+		{
+			if (line->special() != 0 || line->id() != 0)
+			{
+				if (line->s1Index() >= 0)
+					no_compress[line->s1Index()] = 1;
+				if (line->s2Index() >= 0)
+					no_compress[line->s2Index()] = 1;
+			}
+		}
+
 		// Compress sides & update linedefs with compressed side indices
-		auto side_index_map = compressSides(sidedefs);
+		auto side_index_map = compressSides(sidedefs, no_compress);
 		remapLineSides(linedefs, map_data.lines(), side_index_map);
 	}
 
@@ -541,7 +554,8 @@ vector<DoomMapFormat::Thing> DoomMapFormat::buildThings(const ThingList& things)
 // Compresses the given [sides] by removing duplicates, returning a map of old
 // side indices to new compressed indices
 // -----------------------------------------------------------------------------
-std::unordered_map<unsigned, u16> DoomMapFormat::compressSides(vector<SideDef>& sides) const
+std::unordered_map<unsigned, u16> DoomMapFormat::compressSides(vector<SideDef>& sides, const vector<u8>& no_compress)
+	const
 {
 	// Hash and equality functors for SideDef struct
 	struct SideHash
@@ -574,6 +588,14 @@ std::unordered_map<unsigned, u16> DoomMapFormat::compressSides(vector<SideDef>& 
 	// compressed indices
 	for (unsigned i = 0; i < sides.size(); ++i)
 	{
+		// If side should not be compressed, map to its original index
+		if (no_compress[i])
+		{
+			compressed.push_back(sides[i]);
+			index_map[i] = static_cast<u16>(compressed.size() - 1);
+			continue;
+		}
+
 		// Insert side into lookup, get compressed index
 		auto [it, inserted] = lookup.emplace(sides[i], static_cast<u16>(compressed.size()));
 
