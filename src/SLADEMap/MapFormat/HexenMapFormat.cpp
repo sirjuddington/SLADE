@@ -76,8 +76,21 @@ vector<unique_ptr<ArchiveEntry>> HexenMapFormat::writeMap(
 	auto map_compress_sides = CVar::getInt("map_compress_sides");
 	if (map_compress_sides == 2 || map_compress_sides == 1 && sidedefs.size() > 65535)
 	{
+		// Build table of sides not to compress (if their parent line has a special or id)
+		vector<u8> no_compress(sidedefs.size(), 0);
+		for (const auto& line : map_data.lines())
+		{
+			if (line->special() != 0 || line->id() != 0)
+			{
+				if (line->s1Index() >= 0)
+					no_compress[line->s1Index()] = 1;
+				if (line->s2Index() >= 0)
+					no_compress[line->s2Index()] = 1;
+			}
+		}
+
 		// Compress sides & update linedefs with compressed side indices
-		auto side_index_map = compressSides(sidedefs);
+		auto side_index_map = compressSides(sidedefs, no_compress);
 		remapLineSides(linedefs, map_data.lines(), side_index_map);
 	}
 

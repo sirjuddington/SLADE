@@ -309,6 +309,9 @@ void SAuiToolBarArt::DrawButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem&
 // -----------------------------------------------------------------------------
 void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiToolBarItem& item, const wxRect& rect)
 {
+	if (rect.width <= 0 || rect.height <= 0)
+		return;
+
 	auto s_item         = toolbar_ ? toolbar_->itemByWxId(item.GetId()) : nullptr;
 	auto item_show_text = s_item && s_item->show_text;
 	auto split_button   = s_item && s_item->split_button;

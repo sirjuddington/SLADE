@@ -78,7 +78,7 @@ protected:
 	vector<Sector>  buildSectors(const SectorList& sectors) const;
 	vector<Thing>   buildThings(const ThingList& things) const;
 
-	std::unordered_map<unsigned, u16> compressSides(vector<SideDef>& sides) const;
+	std::unordered_map<unsigned, u16> compressSides(vector<SideDef>& sides, const vector<u8>& no_compress) const;
 
 	// Remaps side1/side2 on each linedef using the compressed-side index map,
 	// reading original indices from the MapLine objects to avoid u16 truncation
