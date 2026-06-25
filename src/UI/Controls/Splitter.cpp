@@ -7,8 +7,7 @@
 // Web:         http://slade.mancubus.net
 // Filename:    Splitter.cpp
 // Description: A wxSplitterWindow specialisation that increases the splitter
-//              sash size and draws an indicator (Windows only, unchanged
-//              elsewhere)
+//              sash size (on Windows) and draws an indicator
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -44,14 +43,29 @@ using namespace ui;
 //
 // -----------------------------------------------------------------------------
 
+
+// -----------------------------------------------------------------------------
+// Returns the sash size (platform dependant)
+// -----------------------------------------------------------------------------
+int Splitter::getSashSize() const
+{
+#ifndef __WXMSW__
+	auto size = GetSashSize();
+	// Ensure size is even so the indicator is properly centered
+	if (size % 2 != 0)
+		size++;
+	return size;
+#else
+	// Double width on windows
+	return GetSashSize() * 2;
+#endif
+}
+
 // -----------------------------------------------------------------------------
 // wxSplitterWindow::SashHitTest override
 // -----------------------------------------------------------------------------
 bool Splitter::SashHitTest(int x, int y)
 {
-#ifndef __WXMSW__
-	return wxSplitterWindow::SashHitTest(x, y);
-#else
 	if (m_windowTwo == nullptr || m_sashPosition == 0)
 		return false; // No sash
 
@@ -59,7 +73,6 @@ bool Splitter::SashHitTest(int x, int y)
 	int hitMax = m_sashPosition + getSashSize() - 1;
 
 	return z >= m_sashPosition && z <= hitMax;
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -67,9 +80,6 @@ bool Splitter::SashHitTest(int x, int y)
 // -----------------------------------------------------------------------------
 void Splitter::SizeWindows()
 {
-#ifndef __WXMSW__
-	wxSplitterWindow::SizeWindows();
-#else
 	// check if we have delayed setting the real sash position
 	if (m_requestedSashPosition != INT_MAX)
 	{
@@ -133,7 +143,6 @@ void Splitter::SizeWindows()
 
 	wxClientDC dc(this);
 	DrawSash(dc);
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -141,9 +150,6 @@ void Splitter::SizeWindows()
 // -----------------------------------------------------------------------------
 void Splitter::DrawSash(wxDC& dc)
 {
-#ifndef __WXMSW__
-	wxSplitterWindow::DrawSash(dc);
-#else
 	if (HasFlag(wxSP_3DBORDER))
 		wxRendererNative::Get().DrawSplitterBorder(this, dc, GetClientRect());
 
@@ -172,25 +178,24 @@ void Splitter::DrawSash(wxDC& dc)
 
 	if (m_splitMode == wxSPLIT_VERTICAL)
 	{
-		auto line_x      = m_sashPosition + getSashSize() / 2;
-		auto line_top    = size.y / 2 - FromDIP(24);
+		auto line_x      = m_sashPosition + std::ceil(getSashSize() / 2.0);
+		auto line_top    = size.y / 2 - FromDIP(28);
 		line_top         = std::max(line_top, 0);
-		auto line_height = FromDIP(48);
+		auto line_height = FromDIP(56);
 		if (line_top + line_height > size.y)
 			line_height = size.y - line_top;
 		dc.DrawRoundedRectangle(line_x - FromDIP(1), line_top, FromDIP(2), line_height, FromDIP(1));
 	}
 	else
 	{
-		auto line_y     = m_sashPosition + getSashSize() / 2;
-		auto line_left  = size.x / 2 - FromDIP(24);
+		auto line_y     = m_sashPosition + std::ceil(getSashSize() / 2.0);
+		auto line_left  = size.x / 2 - FromDIP(28);
 		line_left       = std::max(line_left, 0);
-		auto line_width = FromDIP(48);
+		auto line_width = FromDIP(56);
 		if (line_left + line_width > size.x)
 			line_width = size.x - line_left;
 		dc.DrawRoundedRectangle(line_left, line_y - FromDIP(1), line_width, FromDIP(2), FromDIP(1));
 	}
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -198,9 +203,6 @@ void Splitter::DrawSash(wxDC& dc)
 // -----------------------------------------------------------------------------
 wxSize Splitter::DoGetBestSize() const
 {
-#ifndef __WXMSW__
-	return wxSplitterWindow::DoGetBestSize();
-#else
 	// get best sizes of subwindows
 	wxSize size1, size2;
 	if (m_windowOne)
@@ -238,5 +240,4 @@ wxSize Splitter::DoGetBestSize() const
 	sizeBest.y += border;
 
 	return sizeBest;
-#endif
 }

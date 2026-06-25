@@ -189,6 +189,8 @@ TexturePropGrid::TexturePropGrid(wxWindow* parent, TextureEditor& editor) : wxPr
 	// Set all bool properties to use checkboxes
 	SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 
+	FitColumns();
+
 	// Hide all properties initially
 	HideProperty(wxS("texture"), true);
 	HideProperty(wxS("patch"), true);
@@ -251,6 +253,8 @@ void TexturePropGrid::textureChanged()
 		HideProperty(wxS("patch"), true);
 	}
 
+	FitColumns();
+
 	Thaw();
 }
 
@@ -283,6 +287,8 @@ void TexturePropGrid::patchesChanged()
 
 	// Load patch properties
 	refreshPatchProperties();
+
+	FitColumns();
 
 	Thaw();
 }

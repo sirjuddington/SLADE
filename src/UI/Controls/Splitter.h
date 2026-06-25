@@ -12,7 +12,7 @@ public:
 	{
 	}
 
-	int getSashSize() const { return GetSashSize() * 2; }
+	int getSashSize() const;
 
 	// wxSplitterWindow Overrides
 	bool   SashHitTest(int x, int y) override;
