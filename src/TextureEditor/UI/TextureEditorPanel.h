@@ -89,6 +89,9 @@ private:
 	void deleteTexture() const;
 	void moveTexture(Direction direction) const;
 	void sortTextures() const;
+	void renameTexture(bool each) const;
+	void exportTexturesToEntries() const;
+	void exportTexturesAsPNG() const;
 
 	// SActionHandler
 	bool handleAction(string_view id) override;

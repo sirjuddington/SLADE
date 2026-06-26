@@ -208,7 +208,7 @@ public:
 		Archive*       parent     = nullptr,
 		const Palette* pal        = nullptr,
 		bool           force_rgba = false,
-		bool           offsets    = true);
+		bool           offsets    = true) const;
 
 	// Signals
 	struct Signals

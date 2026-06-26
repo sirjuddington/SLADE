@@ -1033,7 +1033,7 @@ bool CTexture::convertRegular()
 // Generates a SImage representation of this texture, using patches from
 // [parent] primarily, and the palette [pal]
 // -----------------------------------------------------------------------------
-bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool force_rgba, bool offsets)
+bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool force_rgba, bool offsets) const
 {
 	// Limit recursion to fix circular references causing a crash
 	static int recursion_depth = 0;
@@ -1063,11 +1063,11 @@ bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool 
 	{
 		if (!loadPatchImage(0, p_img, parent, pal, force_rgba))
 			return false;
-		size_.x = p_img.width();
-		size_.y = p_img.height();
-		image.resize(size_.x, size_.y);
-		scale_.x = static_cast<double>(size_.x) / static_cast<double>(def_size_.x);
-		scale_.y = static_cast<double>(size_.y) / static_cast<double>(def_size_.y);
+		// size_.x = p_img.width();
+		// size_.y = p_img.height();
+		image.resize(p_img.width(), p_img.height());
+		// scale_.x = static_cast<double>(size_.x) / static_cast<double>(def_size_.x);
+		// scale_.y = static_cast<double>(size_.y) / static_cast<double>(def_size_.y);
 		image.drawImage(p_img, 0, 0, dp, pal, pal);
 	}
 	else if (extended_)

@@ -2,8 +2,10 @@
 #include "Main.h"
 #include "TextureEditorPanel.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
 #include "General/KeyBind.h"
+#include "General/Misc.h"
 #include "General/SAction.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/TextureXList.h"
@@ -21,11 +23,14 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/Splitter.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/Dialogs/GfxConvDialog.h"
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
 #include "UI/State.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
+#include "Utility/StringUtils.h"
 #include <utility>
 
 using namespace slade;
@@ -337,6 +342,39 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		panel_offsets_->GetParent()->Layout();
 	}
 
+	// Update texture list toolbar
+	if (texture_changed)
+	{
+		// Determine what we have selected in the tree view
+		wxDataViewItemArray selection;
+		tree_view_->GetSelections(selection);
+		bool has_list = false;
+		bool has_tex  = false;
+		bool multi_tex = false;
+		for (auto& item : selection)
+		{
+			if (!has_list && tree_view_->textureListForItem(item))
+				has_list = true;
+			if (tree_view_->textureForItem(item))
+			{
+				if (has_tex)
+					multi_tex = true;
+				else
+					has_tex = true;
+			}
+		}
+
+		// Update toolbar buttons
+		toolbar_texlist_->enableItem("txed_new", has_list);
+		toolbar_texlist_->enableItem("txed_new_file", has_list);
+		toolbar_texlist_->enableItem("txed_rename", has_tex);
+		toolbar_texlist_->enableItem("txed_rename_each", multi_tex);
+		toolbar_texlist_->enableItem("txed_delete", has_tex);
+		toolbar_texlist_->enableItem("txed_up", has_tex);
+		toolbar_texlist_->enableItem("txed_down", has_tex);
+		toolbar_texlist_->enableItem("txed_sort", has_tex);
+	}
+
 	Refresh();
 	tex_canvas_->window()->Refresh();
 }
@@ -609,6 +647,145 @@ void TextureEditorPanel::sortTextures() const
 	tree_view_->GetModel()->Resort();
 }
 
+void TextureEditorPanel::renameTexture(bool each) const
+{
+	auto selection = tree_view_->selectedTextures();
+	if (selection.empty())
+		return;
+
+	editor_->renameTextures(selection, each);
+
+	wxDataViewItemArray items;
+	for (auto ctex : selection)
+		items.Add(wxDataViewItem(ctex));
+	tree_view_->GetModel()->ItemsChanged(items);
+}
+
+void TextureEditorPanel::exportTexturesToEntries() const
+{
+	auto selection = tree_view_->selectedTextures();
+	if (selection.empty())
+		return;
+
+	// Create gfx conversion dialog
+	GfxConvDialog gcd(maineditor::windowWx());
+
+	// Send selection to the gcd
+	bool force_rgba = tex_canvas_->blendRGBA();
+	gcd.openTextures(selection, tex_canvas_->palette(), editor_->archive(), force_rgba);
+
+	// Run the gcd
+	gcd.ShowModal();
+
+	// Show splash window
+	ui::showSplash("Writing converted image data...", true, maineditor::windowWx());
+
+	// Write any changes
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
+		// Update splash window
+		ui::setSplashProgressMessage(selection[a]->name());
+		ui::setSplashProgress(a, selection.size());
+
+		// Skip if the image wasn't converted
+		if (!gcd.itemModified(a))
+			continue;
+
+		// Get image and conversion info
+		auto image  = gcd.itemImage(a);
+		auto format = gcd.itemFormat(a);
+
+		// Apply offsets if texture has them
+		if (selection[a]->isExtended())
+			image->setOffsets({ selection[a]->offsetX(), selection[a]->offsetY() });
+
+		// Write converted image back to entry
+		MemChunk mc;
+		format->saveImage(*image, mc, force_rgba ? nullptr : gcd.itemPalette(a));
+		auto lump = std::make_shared<ArchiveEntry>();
+		lump->importMemChunk(mc);
+		lump->rename(selection[a]->name());
+		editor_->archive()->addEntry(lump, "textures");
+		EntryType::detectEntryType(*lump);
+		lump->setExtensionByType();
+	}
+
+	// Hide splash window
+	ui::hideSplash();
+}
+
+void TextureEditorPanel::exportTexturesAsPNG() const
+{
+	// Get selected textures
+	auto selection = tree_view_->selectedTextures();
+	if (selection.empty())
+		return;
+
+	bool force_rgba = tex_canvas_->blendRGBA();
+
+	// If we're just exporting one texture
+	if (selection.size() == 1)
+	{
+		auto          name = misc::lumpNameToFileName(selection[0]->name());
+		strutil::Path fn(name);
+
+		// Set extension
+		fn.setExtension("png");
+
+		// Run save file dialog
+		filedialog::FDInfo info;
+		if (filedialog::saveFile(
+				info,
+				"Export Texture \"" + selection[0]->name() + "\" as PNG",
+				"PNG Files (*.png)|*.png",
+				maineditor::windowWx(),
+				fn.fileName()))
+		{
+			// If a filename was selected, export it
+			if (!editor_->exportAsPNG(*selection[0], info.filenames[0], tex_canvas_->palette(), force_rgba))
+			{
+				wxMessageBox(WX_FMT("Error: {}", global::error), wxS("Error"), wxOK | wxICON_ERROR);
+				return;
+			}
+		}
+
+		return;
+	}
+	else
+	{
+		// Run save files dialog
+		filedialog::FDInfo info;
+		if (filedialog::saveFiles(
+				info,
+				"Export Textures as PNG (Filename will be ignored)",
+				"PNG Files (*.png)|*.png",
+				maineditor::windowWx()))
+		{
+			// Show splash window
+			ui::showSplash("Saving converted image data...", true, maineditor::windowWx());
+
+			// Go through the selection
+			for (size_t a = 0; a < selection.size(); a++)
+			{
+				// Update splash window
+				ui::setSplashProgressMessage(selection[a]->name());
+				ui::setSplashProgress(a, selection.size());
+
+				// Setup entry filename
+				strutil::Path fn(selection[a]->name());
+				fn.setPath(info.path);
+				fn.setExtension("png");
+
+				// Do export
+				editor_->exportAsPNG(*selection[a], fn.fullPath(), tex_canvas_->palette(), force_rgba);
+			}
+
+			// Hide splash window
+			ui::hideSplash();
+		}
+	}
+}
+
 bool TextureEditorPanel::handleAction(string_view id)
 {
 	if (id == "txed_new")
@@ -620,6 +797,11 @@ bool TextureEditorPanel::handleAction(string_view id)
 	else if (id == "txed_delete")
 		deleteTexture();
 
+	else if (id == "txed_rename")
+		renameTexture(false);
+	else if (id == "txed_rename_each")
+		renameTexture(true);
+
 	else if (id == "txed_up")
 		moveTexture(Direction::Up);
 	else if (id == "txed_down")
@@ -627,6 +809,11 @@ bool TextureEditorPanel::handleAction(string_view id)
 
 	else if (id == "txed_sort")
 		sortTextures();
+
+	else if (id == "txed_export")
+		exportTexturesToEntries();
+	else if (id == "txed_extract")
+		exportTexturesAsPNG();
 
 	else if (id == "txed_save")
 	{

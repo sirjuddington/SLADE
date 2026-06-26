@@ -4,9 +4,11 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
+#include "General/Misc.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
+#include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
 #include "Utility/StringUtils.h"
@@ -268,6 +270,110 @@ void TextureEditor::sortTextures(const vector<CTexture*>& textures) const
 	}
 
 	list->sortTextures(first, last);
+}
+
+void TextureEditor::renameTextures(const vector<CTexture*>& textures, bool each) const
+{
+	auto wad_force_uppercase = CVar::getBool("wad_force_uppercase");
+
+	// Define alphabet
+	static constexpr string_view alphabet       = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	static constexpr string_view alphabet_lower = "abcdefghijklmnopqrstuvwxyz";
+
+	// Check any are selected
+	if (each || textures.size() == 1)
+	{
+		// If only one entry is selected, or "rename each" mode is desired, just do basic rename
+		for (auto texture : textures)
+		{
+			// Prompt for a new name
+			auto new_name = wxGetTextFromUser(
+								wxS("Enter new texture name: (* = unchanged)"),
+								wxS("Rename"),
+								wxString::FromUTF8(texture->name()))
+								.utf8_string();
+			if (wad_force_uppercase)
+				strutil::upperIP(new_name);
+
+			// Rename entry (if needed)
+			if (!new_name.empty() && texture->name() != new_name)
+			{
+				texture->setName(new_name);
+				texture->setState(CTexture::State::Modified);
+			}
+		}
+	}
+	else if (textures.size() > 1)
+	{
+		// Get a list of entry names
+		vector<string> names;
+		names.reserve(textures.size());
+		for (auto& texture : textures)
+			names.push_back(texture->name());
+
+		// Get filter string
+		auto filter = misc::massRenameFilter(names);
+
+		// Prompt for a new name
+		auto new_name = wxGetTextFromUser(
+							wxS("Enter new texture name: (* = unchanged, ^ = alphabet letter, ^^ = lower case\n")
+							"% = alphabet repeat number, & = texture number, %% or && = n-1)",
+							wxS("Rename"),
+							wxString::FromUTF8(filter))
+							.utf8_string();
+		if (wad_force_uppercase)
+			strutil::upperIP(new_name);
+
+		// Apply mass rename to list of names
+		if (!new_name.empty())
+		{
+			misc::doMassRename(names, new_name);
+
+			// Go through the list
+			for (size_t a = 0; a < textures.size(); a++)
+			{
+				// Rename the entry (if needed)
+				if (textures[a]->name() != names[a])
+				{
+					auto filename = names[a];
+					int  num      = a / alphabet.size();
+					int  cn       = a - (num * alphabet.size());
+					strutil::replaceIP(filename, "^^", { alphabet_lower.data() + cn, 1 });
+					strutil::replaceIP(filename, "^", { alphabet.data() + cn, 1 });
+					strutil::replaceIP(filename, "%%", fmt::format("{}", num));
+					strutil::replaceIP(filename, "%", fmt::format("{}", num + 1));
+					strutil::replaceIP(filename, "&&", fmt::format("{}", a));
+					strutil::replaceIP(filename, "&", fmt::format("{}", a + 1));
+
+					textures[a]->setName(filename);
+					textures[a]->setState(CTexture::State::Modified);
+				}
+			}
+		}
+	}
+}
+
+bool TextureEditor::exportAsPNG(const CTexture& texture, string_view filename, const Palette* palette, bool force_rgba)
+{
+	// Create image from entry
+	SImage image;
+	if (!texture.toImage(image, nullptr, palette, force_rgba))
+	{
+		log::error("Error converting {}: {}", texture.name(), global::error);
+		return false;
+	}
+
+	// Write png data
+	MemChunk png;
+	auto     fmt_png = SIFormat::getFormat("png");
+	if (!fmt_png->saveImage(image, png, palette))
+	{
+		log::error("Error converting {}", texture.name());
+		return false;
+	}
+
+	// Export file
+	return png.exportFile(filename);
 }
 
 void TextureEditor::setTextureModified(bool update_texture, bool update_patches) const
