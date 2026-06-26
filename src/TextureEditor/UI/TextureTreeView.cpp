@@ -24,15 +24,15 @@ TextureTreeView::TextureTreeView(wxWindow* parent, const TextureEditor& editor) 
 	setupColumns();
 }
 
-CTexture* TextureTreeView::textureForItem(const wxDataViewItem& item)
+CTexture* TextureTreeView::textureForItem(const wxDataViewItem& item) const
 {
-	if (auto model = dynamic_cast<TextureTreeModel*>(GetModel()))
+	if (auto model = dynamic_cast<const TextureTreeModel*>(GetModel()))
 		return model->textureForItem(item);
 
 	return nullptr;
 }
 
-TextureXList* TextureTreeView::textureListForItem(const wxDataViewItem& item)
+TextureXList* TextureTreeView::textureListForItem(const wxDataViewItem& item) const
 {
 	if (auto ctex = static_cast<CTexture*>(item.GetID()))
 		return ctex->list();
@@ -46,7 +46,18 @@ wxDataViewItem TextureTreeView::lastSelectedItem() const
 	GetSelections(selection);
 	if (!selection.IsEmpty())
 		return selection.Last();
-	return wxDataViewItem();
+	return {};
+}
+
+vector<CTexture*> TextureTreeView::selectedTextures() const
+{
+	vector<CTexture*>   textures;
+	wxDataViewItemArray selection;
+	GetSelections(selection);
+	for (const auto& item : selection)
+		if (auto tex = textureForItem(item))
+			textures.push_back(tex);
+	return textures;
 }
 
 void TextureTreeView::expandAll()

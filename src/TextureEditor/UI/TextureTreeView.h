@@ -6,7 +6,7 @@ namespace slade
 {
 class TextureXList;
 class CTexture;
-}
+} // namespace slade
 namespace slade::texeditor
 {
 class TextureEditor;
@@ -16,9 +16,11 @@ class TextureTreeView : public ui::SDataViewCtrl
 public:
 	TextureTreeView(wxWindow* parent, const TextureEditor& editor);
 
-	CTexture*      textureForItem(const wxDataViewItem& item);
-	TextureXList*  textureListForItem(const wxDataViewItem& item);
-	wxDataViewItem lastSelectedItem() const;
+	CTexture*     textureForItem(const wxDataViewItem& item) const;
+	TextureXList* textureListForItem(const wxDataViewItem& item) const;
+
+	wxDataViewItem    lastSelectedItem() const;
+	vector<CTexture*> selectedTextures() const;
 
 	void expandAll();
 

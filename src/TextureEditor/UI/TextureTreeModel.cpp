@@ -38,9 +38,37 @@ void TextureTreeModel::open(const TextureEditor& editor)
 			else
 				log::warning("Texture \"{}\" added to unknown list", tex->name());
 		});
+
+	// Texture deleted
+	connections_ += editor.signals().texture_deleted.connect(
+		[this](TextureXList* list, CTexture* tex)
+		{
+			if (auto parent = itemForTexList(list); parent.IsOk())
+				ItemDeleted(parent, wxDataViewItem(tex));
+			else
+				log::warning("Texture \"{}\" deleted from unknown list", tex->name());
+		});
+
+	// Textures swapped
+	connections_ += editor.signals().textures_swapped.connect(
+		[this](TextureXList* list, unsigned index1, unsigned index2)
+		{
+			if (auto parent = itemForTexList(list); parent.IsOk())
+			{
+				auto tex1 = list->texture(index1);
+				auto tex2 = list->texture(index2);
+				if (tex1 && tex2)
+				{
+					ItemChanged(wxDataViewItem(tex1));
+					ItemChanged(wxDataViewItem(tex2));
+				}
+			}
+			else
+				log::warning("Textures swapped in unknown list");
+		});
 }
 
-CTexture* TextureTreeModel::textureForItem(const wxDataViewItem& item)
+CTexture* TextureTreeModel::textureForItem(const wxDataViewItem& item) const
 {
 	if (auto ctex = static_cast<CTexture*>(item.GetID()); ctex && ctex->index() >= 0)
 		return ctex;
@@ -95,7 +123,7 @@ void TextureTreeModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 			icon = "tlist_folder";
 
 		// Find icon in cache
-		auto&  icon_cache = iconCache();
+		auto& icon_cache = iconCache();
 		if (!icon_cache.contains(icon))
 		{
 			// Not found, add to cache
@@ -245,6 +273,30 @@ unsigned int TextureTreeModel::GetChildren(const wxDataViewItem& item, wxDataVie
 
 	// No children
 	return 0;
+}
+
+int TextureTreeModel::Compare(
+	const wxDataViewItem& item1,
+	const wxDataViewItem& item2,
+	unsigned int          column,
+	bool                  ascending) const
+{
+	auto tex1 = static_cast<CTexture*>(item1.GetID());
+	auto tex2 = static_cast<CTexture*>(item2.GetID());
+	if (tex1 && tex1->index() >= 0 && tex2 && tex2->index() >= 0)
+	{
+		switch (static_cast<Column>(column))
+		{
+		case Column::Name: return tex1->name() < tex2->name() ? -1 : (tex1->name() > tex2->name() ? 1 : 0);
+		case Column::Size: return (tex1->width() * tex1->height()) - (tex2->width() * tex2->height());
+		case Column::Type:
+			return tex1->typeEnum() < tex2->typeEnum() ? -1 : (tex1->typeEnum() > tex2->typeEnum() ? 1 : 0);
+		case Column::Patches: return static_cast<int>(tex1->nPatches()) - static_cast<int>(tex2->nPatches());
+		default:              return tex1->index() - tex2->index();
+		}
+	}
+
+	return wxDataViewModel::Compare(item1, item2, column, ascending);
 }
 
 std::unordered_map<string, wxBitmapBundle>& TextureTreeModel::iconCache()

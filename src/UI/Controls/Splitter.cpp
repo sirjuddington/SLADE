@@ -51,14 +51,16 @@ int Splitter::getSashSize() const
 {
 #ifndef __WXMSW__
 	auto size = GetSashSize();
+#else
+	// Double width on windows
+	auto size = GetSashSize() * 2;
+#endif
+
 	// Ensure size is even so the indicator is properly centered
 	if (size % 2 != 0)
 		size++;
+
 	return size;
-#else
-	// Double width on windows
-	return GetSashSize() * 2;
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -173,7 +175,7 @@ void Splitter::DrawSash(wxDC& dc)
 
 	// Indicator
 	auto colour = (bgcol.GetLuminance() > 0.5) ? bgcol.ChangeLightness(m_isHot ? 50 : 80)
-											   : bgcol.ChangeLightness(m_isHot ? 150 : 120);
+											   : bgcol.ChangeLightness(m_isHot ? 140 : 120);
 	dc.SetBrush(wxBrush(colour));
 
 	if (m_splitMode == wxSPLIT_VERTICAL)

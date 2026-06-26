@@ -74,6 +74,7 @@ using u64 = uint64_t;
 
 // Global internal includes
 // clang-format off
+#include "General/Enums.h"
 #include "General/CVar.h"
 #include "Geometry/Vectors.h"
 #include "General/Log.h"

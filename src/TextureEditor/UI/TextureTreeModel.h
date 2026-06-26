@@ -31,7 +31,7 @@ public:
 
 	void open(const TextureEditor& editor);
 
-	CTexture*      textureForItem(const wxDataViewItem& item);
+	CTexture*      textureForItem(const wxDataViewItem& item) const;
 	wxDataViewItem itemForTexList(const TextureXList* list) const;
 
 	vector<wxDataViewItem> texListItems() const;
@@ -56,10 +56,10 @@ private:
 	wxDataViewItem GetParent(const wxDataViewItem& item) const override;
 	bool           IsContainer(const wxDataViewItem& item) const override;
 	unsigned int   GetChildren(const wxDataViewItem& item, wxDataViewItemArray& children) const override;
-	// bool           IsListModel() const override;
-	// bool           HasDefaultCompare() const override { return sort_enabled_; }
-	// int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending)
-	//	const override;
+	bool           IsListModel() const override { return false; }
+	bool           HasDefaultCompare() const override { return true; }
+	int Compare(const wxDataViewItem& item1, const wxDataViewItem& item2, unsigned int column, bool ascending)
+		const override;
 
 	static std::unordered_map<string, wxBitmapBundle>& iconCache();
 };

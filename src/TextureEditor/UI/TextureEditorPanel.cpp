@@ -81,6 +81,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 
 	// Bind Events
 	tree_view_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onTextureSelectionChanged, this);
+	tree_view_->GetMainWindow()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTreeViewKeyDown, this);
 	list_patches_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onPatchSelectionChanged, this);
 	tex_canvas_->window()->Bind(wxEVT_LEFT_DOWN, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas_->window()->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexCanvasMouseEvent, this);
@@ -546,6 +547,68 @@ void TextureEditorPanel::newTextureFromFile()
 	}
 }
 
+void TextureEditorPanel::deleteTexture() const
+{
+	for (auto ctex : tree_view_->selectedTextures())
+		editor_->deleteTexture(*ctex);
+}
+
+void TextureEditorPanel::moveTexture(Direction direction) const
+{
+	wxDataViewItemArray sel_items;
+	tree_view_->GetSelections(sel_items);
+	auto selection = tree_view_->selectedTextures();
+
+	// Sort in ascending/descending index order depending on direction
+	if (direction == Direction::Up)
+		std::ranges::sort(selection, [](const CTexture* a, const CTexture* b) { return a->index() < b->index(); });
+	else
+		std::ranges::sort(selection, [](const CTexture* a, const CTexture* b) { return a->index() > b->index(); });
+
+	tree_view_->Freeze();
+
+	for (auto ctex : selection)
+		editor_->moveTexture(*ctex, direction);
+
+	// Restore selection
+	tree_view_->SetSelections(sel_items);
+	tree_view_->GetModel()->Resort();
+
+	tree_view_->Thaw();
+}
+
+void TextureEditorPanel::sortTextures() const
+{
+	// Get selected textures
+	auto selection = tree_view_->selectedTextures();
+	if (selection.empty())
+		return;
+
+	auto list = tree_view_->textureListForItem(tree_view_->lastSelectedItem());
+
+	// Without selection of multiple textures, sort everything instead
+	if (selection.size() < 2)
+	{
+		selection.clear();
+		selection.resize(list->size());
+		for (unsigned i = 0; i < list->size(); ++i)
+			selection[i] = list->texture(i);
+	}
+
+	// No sorting needed even after adding everything
+	if (selection.size() < 2)
+		return;
+
+	editor_->sortTextures(selection);
+
+	wxDataViewItemArray items;
+	for (auto ctex : selection)
+		items.Add(wxDataViewItem(ctex));
+	tree_view_->GetModel()->ItemsChanged(items);
+
+	tree_view_->GetModel()->Resort();
+}
+
 bool TextureEditorPanel::handleAction(string_view id)
 {
 	if (id == "txed_new")
@@ -553,6 +616,17 @@ bool TextureEditorPanel::handleAction(string_view id)
 
 	else if (id == "txed_new_file")
 		newTextureFromFile();
+
+	else if (id == "txed_delete")
+		deleteTexture();
+
+	else if (id == "txed_up")
+		moveTexture(Direction::Up);
+	else if (id == "txed_down")
+		moveTexture(Direction::Down);
+
+	else if (id == "txed_sort")
+		sortTextures();
 
 	else if (id == "txed_save")
 	{
@@ -622,6 +696,8 @@ void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
 		editor_->closeTexture();
 
 	updateUI(true);
+
+	e.Skip();
 }
 
 void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
@@ -644,6 +720,58 @@ void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
 
 	updateUI(false);
 	pg_properties_->patchesChanged();
+}
+
+void TextureEditorPanel::onTreeViewKeyDown(wxKeyEvent& e)
+{
+	auto binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+
+	for (const auto& name : binds)
+	{
+		if (name == "select_all")
+		{
+			tree_view_->SelectAll();
+
+			// Trigger selection change event (since SelectAll doesn't trigger it)
+			wxDataViewEvent de;
+			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+			tree_view_->ProcessWindowEvent(de);
+
+			return;
+		}
+
+		if (name == "txed_tex_new")
+		{
+			newTexture();
+			return;
+		}
+
+		if (name == "txed_tex_new_file")
+		{
+			newTextureFromFile();
+			return;
+		}
+
+		if (name == "txed_tex_delete")
+		{
+			deleteTexture();
+			return;
+		}
+
+		if (name == "txed_tex_up")
+		{
+			moveTexture(Direction::Up);
+			return;
+		}
+
+		if (name == "txed_tex_down")
+		{
+			moveTexture(Direction::Down);
+			return;
+		}
+	}
+
+	e.Skip();
 }
 
 // -----------------------------------------------------------------------------

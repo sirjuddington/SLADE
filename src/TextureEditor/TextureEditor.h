@@ -44,6 +44,9 @@ public:
 		int           width  = 0,
 		int           height = 0,
 		string_view   patch  = {}) const;
+	void deleteTexture(const CTexture& texture) const;
+	void moveTexture(const CTexture& texture, Direction direction) const;
+	void sortTextures(const vector<CTexture*>& textures) const;
 
 	// Texture Editing
 	void setTextureModified(bool update_texture, bool update_patches) const;
@@ -78,7 +81,9 @@ public:
 
 	struct Signals
 	{
-		sigslot::signal<CTexture*> texture_added;
+		sigslot::signal<CTexture*>                         texture_added;
+		sigslot::signal<TextureXList*, CTexture*>          texture_deleted;
+		sigslot::signal<TextureXList*, unsigned, unsigned> textures_swapped;
 	};
 	Signals& signals() const { return signals_; }
 

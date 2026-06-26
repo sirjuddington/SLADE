@@ -217,6 +217,59 @@ void TextureEditor::newTexture(
 	signals_.texture_added(added_tex);
 }
 
+void TextureEditor::deleteTexture(const CTexture& texture) const
+{
+	auto list = texture.list();
+	if (!list || texture.index() < 0)
+		return;
+
+	auto removed = list->removeTexture(texture.index());
+
+	signals_.texture_deleted(list, removed.get());
+}
+
+void TextureEditor::moveTexture(const CTexture& texture, Direction direction) const
+{
+	auto list  = texture.list();
+	auto index = texture.index();
+	if (!list || index < 0)
+		return;
+
+	int new_index = direction == Direction::Up ? index - 1 : index + 1;
+	if (new_index < 0 || std::cmp_greater_equal(new_index, list->size()))
+		return;
+
+	list->swapTextures(index, new_index);
+
+	signals_.textures_swapped(list, index, new_index);
+}
+
+void TextureEditor::sortTextures(const vector<CTexture*>& textures) const
+{
+	if (textures.empty())
+		return;
+
+	auto list = textures[0]->list();
+
+	// Find first and last indices of the textures to sort
+	int first = 0;
+	int last  = 0;
+	for (auto tex : textures)
+	{
+		if (tex->list() != list)
+			return; // All textures must be from the same list
+
+		auto index = tex->index();
+		if (index < 0)
+			return; // Invalid texture index
+
+		first = std::cmp_less(first, index) ? first : index;
+		last  = std::cmp_greater(last, index) ? last : index;
+	}
+
+	list->sortTextures(first, last);
+}
+
 void TextureEditor::setTextureModified(bool update_texture, bool update_patches) const
 {
 	tex_current_->setState(CTexture::State::Modified);

@@ -86,6 +86,9 @@ private:
 
 	void newTexture();
 	void newTextureFromFile();
+	void deleteTexture() const;
+	void moveTexture(Direction direction) const;
+	void sortTextures() const;
 
 	// SActionHandler
 	bool handleAction(string_view id) override;
@@ -93,6 +96,7 @@ private:
 	// Events
 	void onTextureSelectionChanged(wxDataViewEvent& e);
 	void onPatchSelectionChanged(wxDataViewEvent& e);
+	void onTreeViewKeyDown(wxKeyEvent& e);
 	void onTexCanvasMouseEvent(wxMouseEvent& e);
 	void onTexCanvasDragEnd(wxCommandEvent& e);
 	void onTexCanvasKeyDown(wxKeyEvent& e);
