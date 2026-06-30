@@ -32,10 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "CTextureGLCanvas.h"
-#include "GLCanvas.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Palette/Palette.h"
-#include "Graphics/SImage/SImage.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/LineBuffer.h"

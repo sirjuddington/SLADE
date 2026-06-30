@@ -34,7 +34,7 @@
 #include "Main.h"
 #include "ZoomControl.h"
 #include "SIconButton.h"
-#include "UI/Canvas/CTextureCanvasBase.h"
+#include "TextureEditor/UI/Canvas/CTextureCanvasBase.h"
 #include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Layout.h"
 #include "UI/State.h"

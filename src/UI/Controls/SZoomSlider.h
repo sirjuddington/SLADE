@@ -2,6 +2,7 @@
 
 namespace slade
 {
+class CTextureCanvasBase;
 class GfxCanvasBase;
 class CTextureGLCanvas;
 
@@ -9,7 +10,7 @@ class SZoomSlider : public wxPanel
 {
 public:
 	SZoomSlider(wxWindow* parent, GfxCanvasBase* linked_canvas = nullptr);
-	SZoomSlider(wxWindow* parent, CTextureGLCanvas* linked_canvas);
+	SZoomSlider(wxWindow* parent, CTextureCanvasBase* linked_canvas);
 	~SZoomSlider() override = default;
 
 	int    zoomPercent() const;
@@ -19,13 +20,13 @@ public:
 	void setZoom(double factor) const;
 
 	void linkGfxCanvas(GfxCanvasBase* canvas) { linked_gfx_canvas_ = canvas; }
-	void linkTextureCanvas(CTextureGLCanvas* canvas) { linked_texture_canvas_ = canvas; }
+	void linkTextureCanvas(CTextureCanvasBase* canvas) { linked_texture_canvas_ = canvas; }
 
 private:
-	wxSlider*         slider_zoom_           = nullptr;
-	wxStaticText*     label_zoom_amount_     = nullptr;
-	GfxCanvasBase*    linked_gfx_canvas_     = nullptr;
-	CTextureGLCanvas* linked_texture_canvas_ = nullptr;
+	wxSlider*           slider_zoom_           = nullptr;
+	wxStaticText*       label_zoom_amount_     = nullptr;
+	GfxCanvasBase*      linked_gfx_canvas_     = nullptr;
+	CTextureCanvasBase* linked_texture_canvas_ = nullptr;
 
 	void setup();
 };

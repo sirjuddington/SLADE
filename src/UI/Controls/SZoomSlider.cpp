@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SZoomSlider.h"
-#include "UI/Canvas/GL/CTextureGLCanvas.h"
+#include "TextureEditor/UI/Canvas/CTextureCanvasBase.h"
 #include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Layout.h"
 #include "UI/WxUtils.h"
@@ -60,7 +60,7 @@ SZoomSlider::SZoomSlider(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 // -----------------------------------------------------------------------------
 // SZoomSlider class constructor (linking CTextureGLCanvas)
 // -----------------------------------------------------------------------------
-SZoomSlider::SZoomSlider(wxWindow* parent, CTextureGLCanvas* linked_canvas) :
+SZoomSlider::SZoomSlider(wxWindow* parent, CTextureCanvasBase* linked_canvas) :
 	wxPanel{ parent },
 	linked_texture_canvas_{ linked_canvas }
 {

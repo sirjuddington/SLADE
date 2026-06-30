@@ -36,9 +36,8 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "OpenGL/View.h"
+#include "TextureEditor/UI/Canvas/CTextureCanvasBase.h"
 #include "TextureXEditor.h"
-#include "UI/Canvas/CTextureCanvasBase.h"
-#include "UI/Canvas/Canvas.h"
 #include "UI/Controls/ZoomControl.h"
 #include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
@@ -80,7 +79,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 	tx_editor_{ tx_editor }
 {
 	// Create controls
-	tex_canvas_      = ui::createCTextureCanvas(this);
+	tex_canvas_      = CTextureCanvasBase::createCanvas(this);
 	zc_zoom_         = new ui::ZoomControl(this, tex_canvas_);
 	cb_tex_scale_    = new wxCheckBox(this, -1, wxS("Apply Scale"));
 	cb_tex_arc_      = new wxCheckBox(this, -1, wxS("Aspect Ratio Correction"));
@@ -644,7 +643,7 @@ void TextureEditorPanel::replacePatch()
 	// Browse for patch
 	tx_editor_->setFullPath(false);
 	ignore_drag_ = true;
-	int patch   = tx_editor_->browsePatchTable(pname);
+	int patch    = tx_editor_->browsePatchTable(pname);
 	if (patch >= 0)
 	{
 		// Go through selection and replace each patch

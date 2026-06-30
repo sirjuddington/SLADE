@@ -27,7 +27,5 @@ namespace ui
 		bool            allow_pan  = false);
 
 	GfxCanvasBase* createGfxCanvas(wxWindow* parent);
-
-	CTextureCanvasBase* createCTextureCanvas(wxWindow* parent);
 } // namespace ui
 } // namespace slade

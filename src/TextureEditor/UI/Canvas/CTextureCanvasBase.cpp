@@ -31,7 +31,10 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+
+#include "CTextureCanvas.h"
 #include "CTextureCanvasBase.h"
+#include "CTextureGLCanvas.h"
 #include "Geometry/Geometry.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Graphics.h"
@@ -691,4 +694,16 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 	// Refresh is needed
 	if (refresh)
 		window()->Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Creates a new CTextureGLCanvas if OpenGL is available, otherwise will fall
+// back to a software-rendered CTextureCanvas
+// -----------------------------------------------------------------------------
+CTextureCanvasBase* CTextureCanvasBase::createCanvas(wxWindow* parent)
+{
+	if (gl::contextCreationFailed() || !CVar::getBool("canvas_use_opengl"))
+		return new CTextureCanvas(parent);
+	else
+		return new CTextureGLCanvas(parent);
 }

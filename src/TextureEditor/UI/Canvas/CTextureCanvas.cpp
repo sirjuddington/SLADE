@@ -32,12 +32,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "CTextureCanvas.h"
-#include "GfxCanvasBase.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/WxGfx.h"
 #include "OpenGL/Draw2D.h"
+#include "UI/Canvas/GfxCanvasBase.h"
 
 using namespace slade;
 

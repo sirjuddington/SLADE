@@ -82,6 +82,8 @@ public:
 	// Wx Events (public because we need to call them from outside)
 	void onMouseEvent(wxMouseEvent& e);
 
+	static CTextureCanvasBase* createCanvas(wxWindow* parent);
+
 protected:
 	struct Patch
 	{

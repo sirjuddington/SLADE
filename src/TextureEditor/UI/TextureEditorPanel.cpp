@@ -4,6 +4,7 @@
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
+#include "Canvas/CTextureCanvasBase.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
@@ -17,8 +18,6 @@
 #include "TexturePropGrid.h"
 #include "TextureTreeView.h"
 #include "UI/Browser/BrowserItem.h"
-#include "UI/Canvas/CTextureCanvasBase.h"
-#include "UI/Canvas/Canvas.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/Splitter.h"
 #include "UI/Controls/ZoomControl.h"
@@ -171,7 +170,7 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	sizer->Add(toolbar_texture_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
 
 	// Canvas
-	tex_canvas_ = ui::createCTextureCanvas(panel);
+	tex_canvas_ = CTextureCanvasBase::createCanvas(panel);
 	tex_canvas_->setPalette(maineditor::currentPalette()); // TODO: Update when main palette is changed
 	sizer->Add(tex_canvas_->window(), lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
 
