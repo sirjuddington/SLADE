@@ -41,6 +41,8 @@ private:
 	PatchBrowser*     patch_browser_  = nullptr;
 	wxSplitterWindow* splitter_left_  = nullptr;
 	wxSplitterWindow* splitter_right_ = nullptr;
+	wxPanel*          panel_main_     = nullptr;
+	wxPanel*          panel_blank_    = nullptr;
 
 	// Texture list
 	TextureTreeView* tree_view_       = nullptr;

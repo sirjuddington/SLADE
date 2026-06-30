@@ -10,7 +10,6 @@
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
-#include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/TextureXEditor/PatchBrowser.h"
 #include "NewTextureDialog.h"
 #include "OpenGL/View.h"
@@ -82,7 +81,10 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	sizer->Add(splitter_left_, lh.sfWithBorder(1, wxTOP | wxBOTTOM).Expand());
 	auto split_pos = ui::getStateInt(ui::TEXEDITOR_SPLIT_POS, archive.get());
 	splitter_left_->SplitVertically(
-		createTextureListPanel(splitter_left_), createMainPanel(splitter_left_), FromDIP(split_pos));
+		createTextureListPanel(splitter_left_), panel_main_ = createMainPanel(splitter_left_), FromDIP(split_pos));
+
+	// Blank panel to show when no texture is open
+	panel_blank_ = new wxPanel(splitter_left_);
 
 	// Bind Events
 	tree_view_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onTextureSelectionChanged, this);
@@ -313,6 +315,13 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		toolbar_texture_->enableItem("revert", false);
 		toolbar_patches_->enableItem("txed_patch_add", false);
 		panel_offsets_->Show(false);
+
+		if (splitter_left_->GetWindow2() == panel_main_)
+		{
+			panel_main_->Hide();
+			splitter_left_->ReplaceWindow(panel_main_, panel_blank_);
+			panel_blank_->Show();
+		}
 	}
 	else
 	{
@@ -340,6 +349,13 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		toolbar_patches_->enableGroup("Patch", !editor_->selectedPatches().empty());
 		panel_offsets_->Show(ctex->isExtended());
 		panel_offsets_->GetParent()->Layout();
+
+		if (splitter_left_->GetWindow2() == panel_blank_)
+		{
+			panel_blank_->Hide();
+			splitter_left_->ReplaceWindow(panel_blank_, panel_main_);
+			panel_main_->Show();
+		}
 	}
 
 	// Update texture list toolbar
@@ -348,8 +364,8 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		// Determine what we have selected in the tree view
 		wxDataViewItemArray selection;
 		tree_view_->GetSelections(selection);
-		bool has_list = false;
-		bool has_tex  = false;
+		bool has_list  = false;
+		bool has_tex   = false;
 		bool multi_tex = false;
 		for (auto& item : selection)
 		{
