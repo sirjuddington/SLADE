@@ -43,6 +43,7 @@
 #include <wx/unichar.h>
 
 using namespace slade;
+using namespace texeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -63,7 +64,9 @@ unique_ptr<gl::Shader> CTextureGLCanvas::shader_;
 // -----------------------------------------------------------------------------
 // CTextureGLCanvas class constructor
 // -----------------------------------------------------------------------------
-CTextureGLCanvas::CTextureGLCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
+CTextureGLCanvas::CTextureGLCanvas(wxWindow* parent, TextureEditor& editor) :
+	GLCanvas(parent, BGStyle::Checkered),
+	CTextureCanvasBase(editor)
 {
 	palette_ = std::make_unique<Palette>();
 	view_.setCentered(true);
@@ -284,10 +287,10 @@ void CTextureGLCanvas::drawPatch(const Rectd& patch_rect, int index, float alpha
 		patch_gl_textures_.resize(texture_->nPatches());
 
 	// Load the patch as an opengl texture if it isn't already
-	if (!patches_[index].image || !gl::Texture::isLoaded(patch_gl_textures_[index]))
+	if (!patch_images_[index] || !gl::Texture::isLoaded(patch_gl_textures_[index]))
 	{
 		loadPatchImage(index);
-		patch_gl_textures_[index] = gl::Texture::createFromImage(*patches_[index].image, palette_.get());
+		patch_gl_textures_[index] = gl::Texture::createFromImage(*patch_images_[index], palette_.get());
 	}
 
 	auto colour = glm::vec4{ 1.0f, 1.0f, 1.0f, alpha };

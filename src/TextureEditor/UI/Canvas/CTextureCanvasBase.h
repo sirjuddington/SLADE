@@ -5,21 +5,29 @@
 
 namespace slade
 {
-namespace gl
-{
-	class View;
-}
-namespace gl::draw2d
-{
-	enum class Align;
-}
-namespace ui
-{
-	class ZoomControl;
-}
 class CTexture;
 class SImage;
+} // namespace slade
+namespace slade::texeditor
+{
+class TextureEditor;
+}
+namespace slade::gl
+{
+class View;
+}
+namespace slade::gl::draw2d
+{
+enum class Align;
+}
+namespace slade::ui
+{
+class ZoomControl;
+}
 
+
+namespace slade::texeditor
+{
 enum class CTextureView
 {
 	Normal,
@@ -32,7 +40,7 @@ class CTextureCanvasBase
 public:
 	using View = CTextureView;
 
-	CTextureCanvasBase();
+	CTextureCanvasBase(TextureEditor& editor);
 	virtual ~CTextureCanvasBase();
 
 	virtual wxWindow* window() = 0;
@@ -59,16 +67,11 @@ public:
 	Vec2i     dragOrigin() const { return { drag_origin_.x, drag_origin_.y }; }
 	Vec2i     dragOffset(bool grid_snap = true) const;
 
-	void selectPatch(int index);
-	void deselectPatch(int index);
-	void deselectAll();
-	bool patchSelected(int index) const;
-
 	virtual void clearTexture();
 	virtual void clearPatches();
 	virtual void refreshPatch(unsigned index);
 	virtual void refreshTexturePreview();
-	bool         openTexture(CTexture* tex, Archive* parent);
+	bool         openTexture(CTexture* tex);
 	void         resetViewOffsets();
 	void         redraw(bool update_tex = false);
 
@@ -82,21 +85,15 @@ public:
 	// Wx Events (public because we need to call them from outside)
 	void onMouseEvent(wxMouseEvent& e);
 
-	static CTextureCanvasBase* createCanvas(wxWindow* parent);
+	static CTextureCanvasBase* createCanvas(wxWindow* parent, TextureEditor& editor);
 
 protected:
-	struct Patch
-	{
-		unique_ptr<SImage> image;
-		bool               selected;
-	};
-
 	CTexture*          texture_ = nullptr;
-	Archive*           parent_  = nullptr;
 	unique_ptr<SImage> tex_preview_;
+	TextureEditor*     editor_ = nullptr;
 
-	vector<Patch> patches_;
-	int           hilight_patch_ = -1;
+	vector<unique_ptr<SImage>> patch_images_;
+	int                        hilight_patch_ = -1;
 
 	ui::ZoomControl* linked_zoom_control_ = nullptr;
 	Vec2i            zoom_point_          = { -1, -1 };
@@ -138,6 +135,6 @@ protected:
 	void         loadPatchImage(unsigned index);
 	virtual void loadTexturePreview();
 };
-} // namespace slade
+} // namespace slade::texeditor
 
 wxDECLARE_EVENT(EVT_DRAG_END, wxCommandEvent);

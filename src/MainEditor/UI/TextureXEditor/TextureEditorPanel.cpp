@@ -79,7 +79,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, TextureXEditor* tx_edit
 	tx_editor_{ tx_editor }
 {
 	// Create controls
-	tex_canvas_      = CTextureCanvasBase::createCanvas(this);
+	// tex_canvas_      = texeditor::CTextureCanvasBase::createCanvas(this);
 	zc_zoom_         = new ui::ZoomControl(this, tex_canvas_);
 	cb_tex_scale_    = new wxCheckBox(this, -1, wxS("Apply Scale"));
 	cb_tex_arc_      = new wxCheckBox(this, -1, wxS("Aspect Ratio Correction"));
@@ -102,7 +102,7 @@ void TextureEditorPanel::setupLayout()
 	cb_tex_arc_->SetValue(tx_arc);
 	cb_draw_outside_->SetValue(tx_show_outside);
 	choice_viewtype_->SetSelection(0);
-	tex_canvas_->setViewType(CTextureView::Normal);
+	tex_canvas_->setViewType(texeditor::CTextureView::Normal);
 	cb_blend_rgba_->SetValue(false);
 	choice_viewtype_->Set(wxutil::arrayStringStd({ "None", "Sprite", "HUD" }));
 
@@ -435,7 +435,7 @@ bool TextureEditorPanel::openTexture(const CTexture* tex, TextureXList* list)
 	tex_current_->setList(list);
 
 	// Open texture in canvas
-	tex_canvas_->openTexture(tex_current_.get(), tx_editor_->archive());
+	tex_canvas_->openTexture(tex_current_.get());
 
 	// Set control values
 	updateTextureControls();
@@ -580,8 +580,8 @@ void TextureEditorPanel::patchBack()
 
 	// Restore selection in texture canvas
 	selection = list_patches_->selectedItems();
-	for (int index : selection)
-		tex_canvas_->selectPatch(index);
+	// for (int index : selection)
+	//	tex_canvas_->selectPatch(index);
 
 	tex_modified_ = true;
 }
@@ -618,8 +618,8 @@ void TextureEditorPanel::patchForward()
 
 	// Restore selection in texture canvas
 	selection = list_patches_->selectedItems();
-	for (int index : selection)
-		tex_canvas_->selectPatch(index);
+	// for (int index : selection)
+	//	tex_canvas_->selectPatch(index);
 
 	tex_modified_ = true;
 }
@@ -799,8 +799,8 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 		else
 		{
 			// Clear selection only if patch clicked was not already selected
-			if (!tex_canvas_->patchSelected(patch))
-				list_patches_->clearSelection();
+			// if (!tex_canvas_->patchSelected(patch))
+			//	list_patches_->clearSelection();
 
 			// Select patch
 			if (patch >= 0)
@@ -816,11 +816,11 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 
 		// If mouse up over an already-selected patch, and shift/ctrl aren't down,
 		// select only that patch (this mimics 'normal' drag-and-drop/selection behaviour)
-		if (!e.ShiftDown() && !e.ControlDown() && tex_canvas_->patchSelected(patch) && !tex_canvas_->isDragging())
-		{
-			list_patches_->clearSelection();
-			list_patches_->selectItem(patch);
-		}
+		// if (!e.ShiftDown() && !e.ControlDown() && tex_canvas_->patchSelected(patch) && !tex_canvas_->isDragging())
+		// {
+		// 	list_patches_->clearSelection();
+		// 	list_patches_->selectItem(patch);
+		//}
 
 		// Redraw texture canvas
 		tex_canvas_->redraw(false);
@@ -879,24 +879,24 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 				tex_canvas_->showGrid(true);
 				tex_canvas_->redraw(false);
 			}
-			else if (tex_current_ && tex_current_->isExtended() && tex_canvas_->viewType() != CTextureView::Normal)
-			{
-				// Get drag amount according to texture
-				Vec2i tex_cur = tex_canvas_->view().canvasPos(
-					{ e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor() });
-				auto tex_prev = tex_cur;
-				// Vec2i tex_prev = tex_canvas_->view().canvasPos(
-				//	{ tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y });
-				Vec2i diff = tex_cur - tex_prev;
-
-				// Modify offsets
-				tex_current_->setOffsetX(tex_current_->offsetX() - diff.x * tex_current_->scaleX());
-				tex_current_->setOffsetY(tex_current_->offsetY() - diff.y * tex_current_->scaleY());
-				tex_modified_ = true;
-
-				// Refresh texture canvas
-				tex_canvas_->redraw(false);
-			}
+			// else if (tex_current_ && tex_current_->isExtended() && tex_canvas_->viewType() != CTextureView::Normal)
+			// {
+			// 	// Get drag amount according to texture
+			// 	Vec2i tex_cur = tex_canvas_->view().canvasPos(
+			// 		{ e.GetX() * GetContentScaleFactor(), e.GetY() * GetContentScaleFactor() });
+			// 	auto tex_prev = tex_cur;
+			// 	// Vec2i tex_prev = tex_canvas_->view().canvasPos(
+			// 	//	{ tex_canvas_->mousePrevPos().x, tex_canvas_->mousePrevPos().y });
+			// 	Vec2i diff = tex_cur - tex_prev;
+			//
+			// 	// Modify offsets
+			// 	tex_current_->setOffsetX(tex_current_->offsetX() - diff.x * tex_current_->scaleX());
+			// 	tex_current_->setOffsetY(tex_current_->offsetY() - diff.y * tex_current_->scaleY());
+			// 	tex_modified_ = true;
+			//
+			// 	// Refresh texture canvas
+			// 	tex_canvas_->redraw(false);
+			// }
 		}
 	}
 
@@ -1132,7 +1132,7 @@ void TextureEditorPanel::onPatchListSelect(wxListEvent& e)
 		tb_patches_->enableGroup("Patch", true);
 
 	// Select the patch on the texture canvas
-	tex_canvas_->selectPatch(e.GetIndex());
+	// tex_canvas_->selectPatch(e.GetIndex());
 
 	// Update UI
 	tex_canvas_->redraw(false);
@@ -1151,7 +1151,7 @@ void TextureEditorPanel::onPatchListDeSelect(wxListEvent& e)
 	}
 
 	// Deselect the patch on the texture canvas
-	tex_canvas_->deselectPatch(e.GetIndex());
+	// tex_canvas_->deselectPatch(e.GetIndex());
 
 	// Update UI
 	tex_canvas_->redraw(false);

@@ -170,7 +170,7 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	sizer->Add(toolbar_texture_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
 
 	// Canvas
-	tex_canvas_ = CTextureCanvasBase::createCanvas(panel);
+	tex_canvas_ = CTextureCanvasBase::createCanvas(panel, *editor_);
 	tex_canvas_->setPalette(maineditor::currentPalette()); // TODO: Update when main palette is changed
 	sizer->Add(tex_canvas_->window(), lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
 
@@ -326,7 +326,7 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 	{
 		if (texture_changed)
 		{
-			tex_canvas_->openTexture(ctex, editor_->archive());
+			tex_canvas_->openTexture(ctex);
 			pg_properties_->textureChanged();
 			populatePatchesList();
 
@@ -422,12 +422,8 @@ void TextureEditorPanel::populatePatchesList() const
 
 	// Update patch selection
 	list_patches_->SetSelections(wxDataViewItemArray());
-	tex_canvas_->deselectAll();
 	for (auto i : editor_->selectedPatches())
-	{
 		list_patches_->SelectRow(i);
-		tex_canvas_->selectPatch(i);
-	}
 }
 
 void TextureEditorPanel::initPatchBrowser()
@@ -909,15 +905,9 @@ void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
 	{
 		auto item = list_patches_->RowToItem(i);
 		if (item.IsOk() && list_patches_->IsSelected(item))
-		{
 			editor_->selectPatch(i);
-			tex_canvas_->selectPatch(i);
-		}
 		else
-		{
 			editor_->selectPatch(i, false);
-			tex_canvas_->deselectPatch(i);
-		}
 	}
 
 	updateUI(false);

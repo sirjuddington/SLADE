@@ -4,16 +4,17 @@
 #include "OpenGL/View.h"
 #include "UI/Canvas/Canvas.h"
 
-namespace slade
+namespace slade::wxgfx
 {
-namespace wxgfx
-{
-	struct Context;
+struct Context;
 }
+
+namespace slade::texeditor
+{
 class CTextureCanvas : public ui::Canvas, public CTextureCanvasBase
 {
 public:
-	CTextureCanvas(wxWindow* parent);
+	CTextureCanvas(wxWindow* parent, TextureEditor& editor);
 	~CTextureCanvas() override;
 
 	wxWindow* window() override { return this; }

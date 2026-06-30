@@ -4,23 +4,23 @@
 #include "OpenGL/Draw2D.h"
 #include "UI/Canvas/GL/GLCanvas.h"
 
-namespace slade
-{
 // Forward declarations
-namespace ui
+namespace slade::ui
 {
-	class ZoomControl;
+class ZoomControl;
 }
-namespace gl
+namespace slade::gl
 {
-	class LineBuffer;
-	class Shader;
-} // namespace gl
+class LineBuffer;
+class Shader;
+} // namespace slade::gl
 
+namespace slade::texeditor
+{
 class CTextureGLCanvas : public GLCanvas, public CTextureCanvasBase
 {
 public:
-	CTextureGLCanvas(wxWindow* parent);
+	CTextureGLCanvas(wxWindow* parent, TextureEditor& editor);
 	~CTextureGLCanvas() override;
 
 	wxWindow* window() override { return this; }

@@ -60,7 +60,7 @@ SZoomSlider::SZoomSlider(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 // -----------------------------------------------------------------------------
 // SZoomSlider class constructor (linking CTextureGLCanvas)
 // -----------------------------------------------------------------------------
-SZoomSlider::SZoomSlider(wxWindow* parent, CTextureCanvasBase* linked_canvas) :
+SZoomSlider::SZoomSlider(wxWindow* parent, texeditor::CTextureCanvasBase* linked_canvas) :
 	wxPanel{ parent },
 	linked_texture_canvas_{ linked_canvas }
 {

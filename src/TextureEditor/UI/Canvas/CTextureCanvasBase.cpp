@@ -31,9 +31,8 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-
-#include "CTextureCanvas.h"
 #include "CTextureCanvasBase.h"
+#include "CTextureCanvas.h"
 #include "CTextureGLCanvas.h"
 #include "Geometry/Geometry.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -41,9 +40,12 @@
 #include "Graphics/SImage/SImage.h"
 #include "OpenGL/Draw2D.h"
 #include "OpenGL/View.h"
+#include "TextureEditor/TextureEditor.h"
 #include "UI/Controls/ZoomControl.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
+using namespace texeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -65,7 +67,7 @@ CVAR(Bool, tx_arc, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // CTextureCanvasBase class constructor
 // -----------------------------------------------------------------------------
-CTextureCanvasBase::CTextureCanvasBase()
+CTextureCanvasBase::CTextureCanvasBase(TextureEditor& editor) : editor_{ &editor }
 {
 	// Init settings from cvars
 	tex_scale_    = CVar::getBool("tx_apply_scale");
@@ -132,54 +134,6 @@ Vec2i CTextureCanvasBase::dragOffset(bool grid_snap) const
 }
 
 // -----------------------------------------------------------------------------
-// Selects the patch at [index]
-// -----------------------------------------------------------------------------
-void CTextureCanvasBase::selectPatch(int index)
-{
-	// Check patch index is ok
-	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
-		return;
-
-	// Select the patch
-	patches_[index].selected = true;
-}
-
-// -----------------------------------------------------------------------------
-// De-Selects the patch at [index]
-// -----------------------------------------------------------------------------
-void CTextureCanvasBase::deselectPatch(int index)
-{
-	// Check patch index is ok
-	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
-		return;
-
-	// De-Select the patch
-	patches_[index].selected = false;
-}
-
-// -----------------------------------------------------------------------------
-// Deselects all patches
-// -----------------------------------------------------------------------------
-void CTextureCanvasBase::deselectAll()
-{
-	for (auto& patch : patches_)
-		patch.selected = false;
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the patch at [index] is selected, false otherwise
-// -----------------------------------------------------------------------------
-bool CTextureCanvasBase::patchSelected(int index) const
-{
-	// Check index is ok
-	if (index < 0 || static_cast<unsigned>(index) >= texture_->nPatches())
-		return false;
-
-	// Return if patch index is selected
-	return patches_[index].selected;
-}
-
-// -----------------------------------------------------------------------------
 // Clears the current texture and the patch textures list
 // -----------------------------------------------------------------------------
 void CTextureCanvasBase::clearTexture()
@@ -204,7 +158,7 @@ void CTextureCanvasBase::clearTexture()
 // -----------------------------------------------------------------------------
 void CTextureCanvasBase::clearPatches()
 {
-	patches_.clear();
+	patch_images_.clear();
 }
 
 // -----------------------------------------------------------------------------
@@ -212,10 +166,10 @@ void CTextureCanvasBase::clearPatches()
 // -----------------------------------------------------------------------------
 void CTextureCanvasBase::refreshPatch(unsigned index)
 {
-	if (index >= patches_.size())
+	if (index >= patch_images_.size())
 		return;
 
-	patches_[index].image.reset();
+	patch_images_[index].reset();
 }
 
 // -----------------------------------------------------------------------------
@@ -230,19 +184,18 @@ void CTextureCanvasBase::refreshTexturePreview()
 // -----------------------------------------------------------------------------
 // Loads a composite texture to be displayed
 // -----------------------------------------------------------------------------
-bool CTextureCanvasBase::openTexture(CTexture* tex, Archive* parent)
+bool CTextureCanvasBase::openTexture(CTexture* tex)
 {
 	// Clear the current texture
 	clearTexture();
 
 	// Set texture
 	texture_ = tex;
-	parent_  = parent;
 
 	// Init patches
 	clearPatches();
 	for (uint32_t a = 0; a < tex->nPatches(); a++)
-		patches_.emplace_back();
+		patch_images_.emplace_back();
 
 	// Update when texture is modified
 	connections_ += tex->signals().texture_modified.connect([this] { redraw(true); });
@@ -255,7 +208,7 @@ bool CTextureCanvasBase::openTexture(CTexture* tex, Archive* parent)
 			clearPatches();
 			hilight_patch_ = -1;
 			for (uint32_t a = 0; a < texture_->nPatches(); a++)
-				patches_.emplace_back();
+				patch_images_.emplace_back();
 
 			redraw(true);
 		});
@@ -318,8 +271,7 @@ int CTextureCanvasBase::patchAt(int x, int y) const
 	auto tex_rect = textureRect(tex_scale_, view_type_ != View::Normal);
 	for (int a = static_cast<int>(texture_->nPatches()) - 1; a >= 0; a--)
 	{
-		auto img = patches_[a].image.get();
-		if (!img)
+		if (!patch_images_[a])
 			continue;
 
 		// Check if x,y is within patch bounds
@@ -350,7 +302,7 @@ bool CTextureCanvasBase::swapPatches(size_t p1, size_t p2)
 		return false;
 
 	// Swap patch images
-	patches_[p1].image.swap(patches_[p2].image);
+	patch_images_[p1].swap(patch_images_[p2]);
 
 	// Swap patches in the texture itself
 	return texture_->swapPatches(p1, p2);
@@ -385,14 +337,14 @@ Rectd CTextureCanvasBase::patchRect(int index, bool scale) const
 	if (!patch)
 		return {};
 
-	if (!patches_[index].image)
+	if (!patch_images_[index])
 		return {};
 
 	auto sf = scale ? texture_->scaleFactor() : Vec2d{ 1.0, 1.0 };
 	return { (patch->xOffset() * sf.x),
 			 (patch->yOffset() * sf.y),
-			 ((patch->xOffset() + patches_[index].image->width()) * sf.x),
-			 ((patch->yOffset() + patches_[index].image->height()) * sf.y) };
+			 ((patch->xOffset() + patch_images_[index]->width()) * sf.x),
+			 ((patch->yOffset() + patch_images_[index]->height()) * sf.y) };
 }
 
 // -----------------------------------------------------------------------------
@@ -403,14 +355,14 @@ void CTextureCanvasBase::loadPatchImage(unsigned index)
 	if (!texture_ || index >= texture_->nPatches())
 		return;
 
-	if (!patches_[index].image)
-		patches_[index].image = std::make_unique<SImage>(SImage::Type::PalMask);
+	if (!patch_images_[index])
+		patch_images_[index] = std::make_unique<SImage>(SImage::Type::PalMask);
 
-	if (!texture_->loadPatchImage(index, *patches_[index].image, parent_, palette(), blend_rgba_))
+	if (!texture_->loadPatchImage(index, *patch_images_[index], editor_->archive(), palette(), blend_rgba_))
 	{
 		// Failed to load patch image, set to 32x32 red+black checker pattern
-		patches_[index].image->create(32, 32, SImage::Type::RGBA);
-		patches_[index].image->generateCheckeredPattern(8, ColRGBA::RED, ColRGBA::BLACK);
+		patch_images_[index]->create(32, 32, SImage::Type::RGBA);
+		patch_images_[index]->generateCheckeredPattern(8, ColRGBA::RED, ColRGBA::BLACK);
 	}
 
 	// Flip/rotate if extended
@@ -422,13 +374,13 @@ void CTextureCanvasBase::loadPatchImage(unsigned index)
 
 		// Flip
 		if (patch->flipX())
-			patches_[index].image->mirror(false);
+			patch_images_[index]->mirror(false);
 		if (patch->flipY())
-			patches_[index].image->mirror(true);
+			patch_images_[index]->mirror(true);
 
 		// Rotate
 		if (patch->rotation() != 0)
-			patches_[index].image->rotate(patch->rotation());
+			patch_images_[index]->rotate(patch->rotation());
 	}
 }
 
@@ -450,7 +402,7 @@ void CTextureCanvasBase::loadTexturePreview()
 		tex_preview_ = std::make_unique<SImage>(type);
 	}
 
-	texture_->toImage(*tex_preview_, parent_, palette(), blend_rgba_);
+	texture_->toImage(*tex_preview_, editor_->archive(), palette(), blend_rgba_);
 }
 
 // -----------------------------------------------------------------------------
@@ -472,15 +424,15 @@ void CTextureCanvasBase::drawContent()
 		return;
 
 	// Load patch images
-	for (unsigned i = 0; i < patches_.size(); ++i)
-		if (!patches_[i].image)
+	for (unsigned i = 0; i < patch_images_.size(); ++i)
+		if (!patch_images_[i])
 			loadPatchImage(i);
 
 	// Calcluate texture and patch rectangles
 	auto          tex_rect = textureRect(tex_scale_, view_type_ != View::Normal);
 	vector<Rectd> patch_rects;
-	patch_rects.reserve(patches_.size());
-	for (unsigned i = 0; i < patches_.size(); ++i)
+	patch_rects.reserve(patch_images_.size());
+	for (unsigned i = 0; i < patch_images_.size(); ++i)
 	{
 		patch_rects.push_back(patchRect(i, tex_scale_));
 		patch_rects.back().move(tex_rect.x1(), tex_rect.y1());
@@ -493,12 +445,13 @@ void CTextureCanvasBase::drawContent()
 	drawTextureBorder(tex_rect);
 
 	// Draw individual patches if we are dragging or 'show outside' is enabled
+	const auto& selection = editor_->selectedPatches();
 	if (draw_outside_ || dragging_)
 	{
-		for (unsigned i = 0; i < patches_.size(); ++i)
+		for (unsigned i = 0; i < patch_images_.size(); ++i)
 		{
 			// If we're dragging, draw selected patches with 50% opacity
-			if (dragging_ && patches_[i].selected)
+			if (dragging_ && vectorContains(selection, i))
 				drawPatch(patch_rects[i], i, 0.5f, false);
 			else
 				drawPatch(patch_rects[i], i, 1.0f, false);
@@ -519,22 +472,21 @@ void CTextureCanvasBase::drawContent()
 	if (dragging_ && (drag_origin_.x >= 0 || drag_origin_.y >= 0))
 	{
 		auto offset = dragOffset(false);
-		for (unsigned i = 0; i < patches_.size(); ++i)
-			if (patches_[i].selected)
-			{
-				// Draw patch offset by drag amount
-				auto rect = patch_rects[i];
-				rect.move(offset.x, offset.y);
-				drawPatch(rect, i, 1.0f, false);
-				drawPatchOutline(rect, { 70, 210, 220, 255 }, 1.0);
+		for (auto i : selection)
+		{
+			// Draw patch offset by drag amount
+			auto rect = patch_rects[i];
+			rect.move(offset.x, offset.y);
+			drawPatch(rect, i, 1.0f, false);
+			drawPatchOutline(rect, { 70, 210, 220, 255 }, 1.0);
 
-				// Add offset info text
-				auto patch = texture_->patch(i);
-				texts_.push_back(
-					{ .text     = fmt::format("{},{}", patch->xOffset() + offset.x, patch->yOffset() + offset.y),
-					  .position  = { rect.tl.x + 1, rect.tl.y + 1 },
-					  .alignment = gl::draw2d::Align::Left });
-			}
+			// Add offset info text
+			auto patch = texture_->patch(i);
+			texts_.push_back(
+				{ .text      = fmt::format("{},{}", patch->xOffset() + offset.x, patch->yOffset() + offset.y),
+				  .position  = { rect.tl.x + 1, rect.tl.y + 1 },
+				  .alignment = gl::draw2d::Align::Left });
+		}
 	}
 
 	// Draw grid if needed
@@ -543,9 +495,8 @@ void CTextureCanvasBase::drawContent()
 
 	// Draw selected patch outlines (if not dragging)
 	if (!dragging_)
-		for (unsigned i = 0; i < patches_.size(); i++)
-			if (patches_[i].selected)
-				drawPatchOutline(patch_rects[i], { 70, 210, 220, 255 }, 2.0);
+		for (auto i : selection)
+			drawPatchOutline(patch_rects[i], { 70, 210, 220, 255 }, 2.0);
 
 	// Draw hilighted patch (if not dragging)
 	if (hilight_patch_ >= 0 && std::cmp_less(hilight_patch_, texture_->nPatches()) && !dragging_)
@@ -558,7 +509,7 @@ void CTextureCanvasBase::drawContent()
 
 		// Add info text
 		auto patch = texture_->patch(hilight_patch_);
-		auto image = patches_[hilight_patch_].image.get();
+		auto image = patch_images_[hilight_patch_].get();
 		auto mid_x = tex_rect.x1() + patch_rects[hilight_patch_].tl.x + (patch_rects[hilight_patch_].width() * 0.5);
 		auto mid_y = tex_rect.y1() + patch_rects[hilight_patch_].tl.y + (patch_rects[hilight_patch_].height() * 0.5);
 		texts_.push_back(
@@ -700,10 +651,10 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 // Creates a new CTextureGLCanvas if OpenGL is available, otherwise will fall
 // back to a software-rendered CTextureCanvas
 // -----------------------------------------------------------------------------
-CTextureCanvasBase* CTextureCanvasBase::createCanvas(wxWindow* parent)
+CTextureCanvasBase* CTextureCanvasBase::createCanvas(wxWindow* parent, TextureEditor& editor)
 {
 	if (gl::contextCreationFailed() || !CVar::getBool("canvas_use_opengl"))
-		return new CTextureCanvas(parent);
+		return new CTextureCanvas(parent, editor);
 	else
-		return new CTextureGLCanvas(parent);
+		return new CTextureGLCanvas(parent, editor);
 }

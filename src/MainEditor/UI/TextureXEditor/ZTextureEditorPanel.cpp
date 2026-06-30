@@ -57,9 +57,9 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace
 {
-CTextureGLCanvas::View view_types[] = { CTextureGLCanvas::View::Normal,
-										CTextureGLCanvas::View::Sprite,
-										CTextureGLCanvas::View::HUD };
+texeditor::CTextureGLCanvas::View view_types[] = { texeditor::CTextureGLCanvas::View::Normal,
+												   texeditor::CTextureGLCanvas::View::Sprite,
+												   texeditor::CTextureGLCanvas::View::HUD };
 }
 CVAR(Bool, tx_truecolour, true, CVar::Flag::Save)
 CVAR(Int, tx_offset_type, 0, CVar::Flag::Save)
@@ -531,7 +531,7 @@ void ZTextureEditorPanel::replacePatch()
 	// Browse for patch
 	tx_editor_->setFullPath(true);
 	ignore_drag_ = true;
-	auto patch = tx_editor_->browsePatchEntry();
+	auto patch   = tx_editor_->browsePatchEntry();
 	if (!patch.empty())
 	{
 		// Go through selection and replace each patch

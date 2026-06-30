@@ -10,7 +10,6 @@ class PatchBrowser;
 class SIconButton;
 class CTexture;
 class SAuiToolBar;
-class CTextureCanvasBase;
 } // namespace slade
 namespace slade::ui
 {
@@ -18,6 +17,7 @@ class ZoomControl;
 }
 namespace slade::texeditor
 {
+class CTextureCanvasBase;
 class TexturePropGrid;
 class TextureEditor;
 class TextureTreeView;

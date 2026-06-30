@@ -40,6 +40,7 @@
 #include "UI/Canvas/GfxCanvasBase.h"
 
 using namespace slade;
+using namespace texeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -71,7 +72,10 @@ void sImageToBitmap(const SImage& image, const Palette* palette, wxBitmap& bitma
 // -----------------------------------------------------------------------------
 // CTextureCanvas class constructor
 // -----------------------------------------------------------------------------
-CTextureCanvas::CTextureCanvas(wxWindow* parent) : Canvas(parent), palette_{ new Palette }
+CTextureCanvas::CTextureCanvas(wxWindow* parent, TextureEditor& editor) :
+	Canvas(parent),
+	CTextureCanvasBase(editor),
+	palette_{ new Palette }
 {
 	view_.setCentered(true);
 
@@ -242,11 +246,11 @@ void CTextureCanvas::drawPatch(const Rectd& patch_rect, int index, float alpha, 
 	}
 
 	// Load the patch as a bitmap if it isn't already
-	auto patch_image = patches_[index].image.get();
+	auto patch_image = patch_images_[index].get();
 	if (!patch_image || !patch_bitmaps_[index].IsOk())
 	{
 		loadPatchImage(index);
-		patch_image = patches_[index].image.get();
+		patch_image = patch_images_[index].get();
 		sImageToBitmap(*patch_image, palette_.get(), patch_bitmaps_[index], view_.scale());
 	}
 

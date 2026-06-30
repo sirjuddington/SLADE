@@ -87,7 +87,7 @@ ZoomControl::ZoomControl(wxWindow* parent, GfxCanvasBase* linked_canvas) :
 // -----------------------------------------------------------------------------
 // ZoomControl class constructor (linking CTextureCanvas)
 // -----------------------------------------------------------------------------
-ZoomControl::ZoomControl(wxWindow* parent, CTextureCanvasBase* linked_canvas) :
+ZoomControl::ZoomControl(wxWindow* parent, texeditor::CTextureCanvasBase* linked_canvas) :
 	wxPanel(parent, -1),
 	linked_texture_canvas_{ linked_canvas }
 {
