@@ -176,7 +176,15 @@ bool MapEntryPanel::loadEntry(ArchiveEntry* entry)
 // -----------------------------------------------------------------------------
 bool MapEntryPanel::createImage()
 {
-	auto name = fmt::format("{}_{}", entry()->parent()->filename(false), entry()->name());
+	auto* map_entry = entry();
+	if (!map_entry)
+		return false;
+
+	auto* archive = map_entry->parent();
+	if (!archive)
+		return false;
+
+	auto name = fmt::format("{}_{}", archive->filename(false), map_entry->name());
 
 	// Popup file save dialog
 	filedialog::FDInfo inf;
