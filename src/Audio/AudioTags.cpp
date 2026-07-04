@@ -391,7 +391,10 @@ string parseID3v1Tag(const MemChunk& mc, size_t start)
 		version = "ID3v1.0";
 
 	// Check for extended tag
-	if (start > 256 && mc[start - 227] == 'T' && mc[start - 226] == 'A' && mc[start - 225] == 'G'
+	if (start > 256
+		&& mc[start - 227] == 'T'
+		&& mc[start - 226] == 'A'
+		&& mc[start - 225] == 'G'
 		&& mc[start - 224] == '+')
 	{
 		ID3v1e etag;
@@ -445,69 +448,74 @@ string parseID3v2Tag(const MemChunk& mc, size_t start)
 	{
 		size_t fsize = v22 ? mc.readB24(s + 3) : mc.readB32(s + 4);
 
-		// One byte for encoding
-		size_t tsize = fsize - 1;
-
-		// Process only text frames that aren't empty
+		// Process only text frames that aren't empty. fsize must be greater
+		// than 1 (1 byte for encoding + at least 1 byte of data), since
+		// computing tsize = fsize - 1 below would otherwise underflow (both are
+		// unsigned).
 		// Also skip flags, not gonna bother with encryption or compression
-		if ((mc[s] == 'T' || (mc[s] == 'C' && mc[s + 1] == 'O' && mc[s + 2] == 'M')) && tsize > 0
+		if ((mc[s] == 'T' || (mc[s] == 'C' && mc[s + 1] == 'O' && mc[s + 2] == 'M'))
+			&& fsize > 1
 			&& (v22 || (mc[s + 8] == 0 && mc[s + 9] == 0)))
 		{
+			size_t tsize = fsize - 1; // One byte for encoding
 			string content;
 
 			// First step: retrieve the text (UTF-16 massively sucks)
-			auto buffer = new char[fsize];
-			mc.read(buffer, tsize, s + step + 1);
-			size_t frame = v22 ? mc.readB24(s) : mc.readB32(s);
+			auto   buffer = new char[fsize];
+			size_t frame  = v22 ? mc.readB24(s) : mc.readB32(s);
 
-			bool   bomle = true;
-			size_t bom   = 0;
-			switch (mc[s + step])
+			// Only parse the frame content if it's actually within the chunk's bounds
+			if (mc.read(buffer, static_cast<u32>(tsize), static_cast<u32>(s + step + 1)))
 			{
-			case 0: // Plain old ASCII
-				content = strutil::viewFromChars(buffer, tsize);
-				break;
-			case 1: // UTF-16 with byte order mark
-			{
-				size_t i = 1;
-				while (i < tsize - 3)
+				bool   bomle = true;
+				size_t bom   = 0;
+				switch (mc[s + step])
 				{
-					bom = i + 1;
-					// Looks like stuffing garbage before the actual content is popular
-					if (mc[s + step + i] == 0xFF && mc[s + step + i + 1] == 0xFE && mc[s + step + i + 2] != 0)
-					{
-						bomle = true;
-						break;
-					}
-					if (mc[s + step + i] == 0xFE && mc[s + step + i + 1] == 0xFF && mc[s + step + i + 3] != 0)
-					{
-						bomle = false;
-						break;
-					}
-					++i;
-				}
-			}
-				// Fall through
-			case 2: // UTF-16 without byte order mark
-			{
-				// You're right, wxWidgets. Code like this is so much
-				// better than having something like wxString::FromUTF16()
-				size_t u16c   = (tsize - bom) / 2;
-				auto   wchars = new wchar_t[u16c];
-				for (size_t i = 0; i < u16c; ++i)
+				case 0: // Plain old ASCII
+					content = strutil::viewFromChars(buffer, tsize);
+					break;
+				case 1: // UTF-16 with byte order mark
 				{
-					if (bomle)
-						wchars[i] = (wchar_t)memory::readL16((const uint8_t*)buffer, bom + 2 * i);
-					else
-						wchars[i] = (wchar_t)memory::readB16((const uint8_t*)buffer, bom + 2 * i);
+					size_t i = 1;
+					while (tsize > 3 && i < tsize - 3)
+					{
+						bom = i + 1;
+						// Looks like stuffing garbage before the actual content is popular
+						if (mc[s + step + i] == 0xFF && mc[s + step + i + 1] == 0xFE && mc[s + step + i + 2] != 0)
+						{
+							bomle = true;
+							break;
+						}
+						if (mc[s + step + i] == 0xFE && mc[s + step + i + 1] == 0xFF && mc[s + step + i + 3] != 0)
+						{
+							bomle = false;
+							break;
+						}
+						++i;
+					}
 				}
-				content = wxString(wchars, u16c).utf8_string();
-				delete[] wchars;
-			}
-			break;
-			case 3: // UTF-8
-				content = strutil::viewFromChars(buffer, tsize);
+					// Fall through
+				case 2: // UTF-16 without byte order mark
+				{
+					// You're right, wxWidgets. Code like this is so much
+					// better than having something like wxString::FromUTF16()
+					size_t u16c   = tsize > bom ? (tsize - bom) / 2 : 0;
+					auto   wchars = new wchar_t[u16c];
+					for (size_t i = 0; i < u16c; ++i)
+					{
+						if (bomle)
+							wchars[i] = (wchar_t)memory::readL16((const uint8_t*)buffer, bom + 2 * i);
+						else
+							wchars[i] = (wchar_t)memory::readB16((const uint8_t*)buffer, bom + 2 * i);
+					}
+					content = wxString(wchars, u16c).utf8_string();
+					delete[] wchars;
+				}
 				break;
+				case 3: // UTF-8
+					content = strutil::viewFromChars(buffer, tsize);
+					break;
+				}
 			}
 			delete[] buffer;
 
@@ -881,7 +889,9 @@ string parseIFFChunks(const MemChunk& mc, size_t s, size_t samplerate, const Wav
 				}
 				// Only accept CR, LF, tabs, and printable characters
 				else if (
-					(udata[offset + i] < 0x20 && udata[offset + i] != 9 && udata[offset + i] != 10
+					(udata[offset + i] < 0x20
+					 && udata[offset + i] != 9
+					 && udata[offset + i] != 10
 					 && udata[offset + i] != 13)
 					|| udata[offset + i] > 0x7E)
 				{
@@ -924,8 +934,15 @@ string audio::getID3Tag(const MemChunk& mc)
 	// the MP3 codec, but that means the metadata format is different, so
 	// call the RIFF-WAVE metadata function instead. We might end up finding
 	// an ID3 tag anyway, provided it's nicely embedded in an "id3 " chunk.
-	if (mc.size() > 64 && mc[0] == 'R' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == 'F' && mc[8] == 'W' && mc[9] == 'A'
-		&& mc[10] == 'V' && mc[11] == 'E')
+	if (mc.size() > 64
+		&& mc[0] == 'R'
+		&& mc[1] == 'I'
+		&& mc[2] == 'F'
+		&& mc[3] == 'F'
+		&& mc[8] == 'W'
+		&& mc[9] == 'A'
+		&& mc[10] == 'V'
+		&& mc[11] == 'E')
 		return getWavInfo(mc);
 
 	string ret;
@@ -944,9 +961,17 @@ string audio::getID3Tag(const MemChunk& mc)
 	{
 		// Check for ID3 header (ID3v2). Version and revision numbers cannot be FF.
 		// Only the four upper flags are valid.
-		while (mc.size() > s + 14 && mc[s + 0] == 'I' && mc[s + 1] == 'D' && mc[s + 2] == '3' && mc[s + 3] != 0xFF
-			   && mc[s + 4] != 0xFF && ((mc[s + 5] & 0x0F) == 0) && mc[s + 6] < 0x80 && mc[s + 7] < 0x80
-			   && mc[s + 8] < 0x80 && mc[s + 9] < 0x80)
+		while (mc.size() > s + 14
+			   && mc[s + 0] == 'I'
+			   && mc[s + 1] == 'D'
+			   && mc[s + 2] == '3'
+			   && mc[s + 3] != 0xFF
+			   && mc[s + 4] != 0xFF
+			   && ((mc[s + 5] & 0x0F) == 0)
+			   && mc[s + 6] < 0x80
+			   && mc[s + 7] < 0x80
+			   && mc[s + 8] < 0x80
+			   && mc[s + 9] < 0x80)
 		{
 			ret += parseID3v2Tag(mc, s);
 
@@ -1011,8 +1036,13 @@ string audio::getOggComments(const MemChunk& mc)
 
 				// Look if we have a vorbis comment header in that segment
 				mc.read(&vorb, 7, datastart);
-				if (vorb.packettype == 3 && vorb.tag[0] == 'v' && vorb.tag[1] == 'o' && vorb.tag[2] == 'r'
-					&& vorb.tag[3] == 'b' && vorb.tag[4] == 'i' && vorb.tag[5] == 's')
+				if (vorb.packettype == 3
+					&& vorb.tag[0] == 'v'
+					&& vorb.tag[1] == 'o'
+					&& vorb.tag[2] == 'r'
+					&& vorb.tag[3] == 'b'
+					&& vorb.tag[4] == 'i'
+					&& vorb.tag[5] == 's')
 				{
 					ret += parseVorbisComment(mc, datastart + 7);
 
@@ -1084,7 +1114,11 @@ string audio::getITComments(const MemChunk& mc)
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->insnum); ++i)
 	{
 		size_t ofs = memory::readL32((const uint8_t*)data, (offset + (i << 2)));
-		if (ofs > offset && ofs + 60 < mc.size() && data[ofs] == 'I' && data[ofs + 1] == 'M' && data[ofs + 2] == 'P'
+		if (ofs > offset
+			&& ofs + 60 < mc.size()
+			&& data[ofs] == 'I'
+			&& data[ofs + 1] == 'M'
+			&& data[ofs + 2] == 'P'
 			&& data[ofs + 3] == 'I')
 		{
 			string instrument = strutil::trim(strutil::viewFromChars(data + ofs + 4, 12));
@@ -1108,7 +1142,11 @@ string audio::getITComments(const MemChunk& mc)
 	{
 		size_t pos = offset + (i << 2);
 		size_t ofs = mc.readL32(pos);
-		if (ofs > offset && ofs + 60 < mc.size() && data[ofs] == 'I' && data[ofs + 1] == 'M' && data[ofs + 2] == 'P'
+		if (ofs > offset
+			&& ofs + 60 < mc.size()
+			&& data[ofs] == 'I'
+			&& data[ofs + 1] == 'M'
+			&& data[ofs + 2] == 'P'
 			&& data[ofs + 3] == 'S')
 		{
 			string sample  = strutil::trim(strutil::viewFromChars(data + ofs + 4, 12));
@@ -1661,9 +1699,17 @@ size_t audio::checkForTags(const MemChunk& mc)
 	{
 		// Check for ID3 header (ID3v2). Version and revision numbers cannot be FF.
 		// Only the four upper flags are valid.
-		if (mc.size() > s + 14 && mc[s + 0] == 'I' && mc[s + 1] == 'D' && mc[s + 2] == '3' && mc[s + 3] != 0xFF
-			&& mc[s + 4] != 0xFF && ((mc[s + 5] & 0x0F) == 0) && mc[s + 6] < 0x80 && mc[s + 7] < 0x80
-			&& mc[s + 8] < 0x80 && mc[s + 9] < 0x80)
+		if (mc.size() > s + 14
+			&& mc[s + 0] == 'I'
+			&& mc[s + 1] == 'D'
+			&& mc[s + 2] == '3'
+			&& mc[s + 3] != 0xFF
+			&& mc[s + 4] != 0xFF
+			&& ((mc[s + 5] & 0x0F) == 0)
+			&& mc[s + 6] < 0x80
+			&& mc[s + 7] < 0x80
+			&& mc[s + 8] < 0x80
+			&& mc[s + 9] < 0x80)
 		{
 			// Compute size. It is stored as a "synchsafe integer", that is to say,
 			// a big-endian value where the highest bit of each byte is not used.

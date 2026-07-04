@@ -830,6 +830,9 @@ shared_ptr<ArchiveDir> ArchiveDir::getShared(const ArchiveDir* dir)
 // -----------------------------------------------------------------------------
 shared_ptr<ArchiveDir> ArchiveDir::findDirByDirEntry(shared_ptr<ArchiveDir> dir_root, const ArchiveEntry& entry)
 {
+	if (!dir_root)
+		return nullptr;
+
 	if (dir_root->dir_entry_.get() == &entry)
 		return dir_root;
 
