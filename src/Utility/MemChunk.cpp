@@ -363,11 +363,12 @@ bool MemChunk::write(unsigned offset, const void* data, unsigned size, bool expa
 
 	// If we're trying to write past the end of the memory chunk,
 	// resize it so we can write at this point
-	// (or return false if expanding is disallowed)
-	if (offset + size > data_.size())
+	// (or return false if expanding is disallowed).
+	auto required = static_cast<size_t>(offset) + size;
+	if (required > data_.size())
 	{
 		if (expand)
-			reSize(offset + size, true);
+			reSize(static_cast<u32>(required), true);
 		else
 			return false;
 	}
@@ -389,9 +390,7 @@ bool MemChunk::read(unsigned offset, void* buf, unsigned size) const
 	if (data_.empty() || !buf)
 		return false;
 
-	// If we're trying to read past the end
-	// of the memory chunk, return failure
-	if (offset + size > data_.size())
+	if (offset > data_.size() || size > data_.size() - offset)
 		return false;
 
 	// Read the data
@@ -411,9 +410,10 @@ bool MemChunk::write(const void* buffer, u32 count)
 		return false;
 
 	// If we're trying to write past the end of the memory chunk,
-	// resize it so we can write at this point
-	if (cur_ptr_ + count > data_.size())
-		reSize(cur_ptr_ + count, true);
+	// resize it so we can write at this point.
+	auto required = static_cast<size_t>(cur_ptr_) + count;
+	if (required > data_.size())
+		reSize(static_cast<u32>(required), true);
 
 	// Write the data and move to the byte after what was written
 	memcpy(data_.data() + cur_ptr_, buffer, count);
@@ -443,9 +443,7 @@ bool MemChunk::read(void* buffer, unsigned count) const
 	if (data_.empty() || !buffer)
 		return false;
 
-	// If we're trying to read past the end
-	// of the memory chunk, return failure
-	if (cur_ptr_ + count > data_.size())
+	if (cur_ptr_ > data_.size() || count > data_.size() - cur_ptr_)
 		return false;
 
 	// Read the data and move to the byte after what was read
@@ -461,8 +459,7 @@ bool MemChunk::read(void* buffer, unsigned count) const
 // -----------------------------------------------------------------------------
 bool MemChunk::read(void* buf, u32 size, u32 start) const
 {
-	// Check options
-	if (start + size > data_.size())
+	if (start > data_.size() || size > data_.size() - start)
 		return false;
 
 	// Do read
@@ -508,7 +505,7 @@ bool MemChunk::seek(u32 offset, u32 start) const
 // -----------------------------------------------------------------------------
 bool MemChunk::readMC(MemChunk& mc, u32 size) const
 {
-	if (cur_ptr_ + size > data_.size())
+	if (cur_ptr_ > data_.size() || size > data_.size() - cur_ptr_)
 		return false;
 
 	if (mc.write(data_.data() + cur_ptr_, size))
