@@ -390,6 +390,12 @@
     "text_language": "edf",
     "detectable": false
   },
+  // Nugget Doom lumps
+  "nughud": {
+    "inherits": "text",
+    "name": "Nugget Doom HUD",
+    "match_name": [ "nughud" ]
+  },
   // PrBoom+ lumps
   "prbhud": {
     "inherits": "text",
