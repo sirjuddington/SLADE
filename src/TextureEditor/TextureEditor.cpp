@@ -87,40 +87,35 @@ string TextureEditor::textureListName(const TextureXList& list) const
 
 void TextureEditor::openTexture(CTexture& texture)
 {
-	if (!tex_current_)
-		tex_current_ = std::make_unique<CTexture>();
+	tex_current_ = &texture;
+
+	if (!tex_backup_)
+		tex_backup_ = std::make_unique<CTexture>();
+	tex_backup_->copyTexture(texture);
+	tex_backup_->setState(texture.state());
 
 	selected_patches_.clear();
-	tex_current_source_ = &texture;
-	tex_current_->copyTexture(texture);
-	tex_current_->setState(CTexture::State::Unmodified);
+	tex_modified_ = false;
 }
 
 void TextureEditor::closeTexture()
 {
-	tex_current_.reset();
+	tex_current_  = nullptr;
+	tex_modified_ = false;
 	selected_patches_.clear();
-}
-
-void TextureEditor::saveTexture() const
-{
-	if (!tex_current_ || !tex_current_source_)
-		return;
-
-	tex_current_source_->copyTexture(*tex_current_);
-	tex_current_source_->setState(CTexture::State::Modified);
-	tex_current_->setState(CTexture::State::Unmodified);
 }
 
 void TextureEditor::revertTexture()
 {
-	if (!tex_current_ || !tex_current_source_)
+	if (!tex_current_ || !tex_backup_)
 		return;
 
-	tex_current_->copyTexture(*tex_current_source_);
-	tex_current_->setState(CTexture::State::Unmodified);
+	tex_current_->copyTexture(*tex_backup_);
+	tex_current_->setState(tex_backup_->state());
 	selected_patches_.clear();
-	signals_.texture_modified(false, false);
+	tex_modified_ = false;
+
+	signals_.current_texture_modified(true, true);
 }
 
 void TextureEditor::selectPatch(unsigned index, bool selected)
@@ -271,6 +266,8 @@ void TextureEditor::sortTextures(const vector<CTexture*>& textures) const
 	}
 
 	list->sortTextures(first, last);
+
+	signals_.textures_modified(textures);
 }
 
 void TextureEditor::renameTextures(const vector<CTexture*>& textures, bool each) const
@@ -352,6 +349,9 @@ void TextureEditor::renameTextures(const vector<CTexture*>& textures, bool each)
 			}
 		}
 	}
+
+	if (!textures.empty())
+		signals_.textures_modified(textures);
 }
 
 bool TextureEditor::exportAsPNG(const CTexture& texture, string_view filename, const Palette* palette, bool force_rgba)
@@ -377,16 +377,6 @@ bool TextureEditor::exportAsPNG(const CTexture& texture, string_view filename, c
 	return png.exportFile(filename);
 }
 
-void TextureEditor::setTextureModified(bool texture, bool patch_list, bool patches) const
-{
-	tex_current_->setState(CTexture::State::Modified);
-
-	if (patches)
-		signals_.patches_modified(selected_patches_);
-
-	signals_.texture_modified(texture, patch_list);
-}
-
 void TextureEditor::setTextureSize(int width, int height) const
 {
 	if (!tex_current_)
@@ -397,7 +387,7 @@ void TextureEditor::setTextureSize(int width, int height) const
 	if (height > 0)
 		tex_current_->setHeight(height);
 
-	setTextureModified(true, false, false);
+	signalCurrentTextureModified(true, false, false);
 }
 
 void TextureEditor::setTextureScaleX(double scale) const
@@ -407,7 +397,7 @@ void TextureEditor::setTextureScaleX(double scale) const
 
 	tex_current_->setScaleX(scale);
 
-	setTextureModified(true, false, false);
+	signalCurrentTextureModified(true, false, false);
 }
 
 void TextureEditor::setTextureScaleY(double scale) const
@@ -417,7 +407,7 @@ void TextureEditor::setTextureScaleY(double scale) const
 
 	tex_current_->setScaleY(scale);
 
-	setTextureModified(true, false, false);
+	signalCurrentTextureModified(true, false, false);
 }
 
 void TextureEditor::setTextureFlag(string_view flag, bool on) const
@@ -438,7 +428,7 @@ void TextureEditor::setTextureFlag(string_view flag, bool on) const
 	else
 		return; // Unknown flag
 
-	setTextureModified(false, false, false);
+	signalCurrentTextureModified(false, false, false);
 }
 
 void TextureEditor::setTextureType(CTexture::Type type) const
@@ -446,7 +436,7 @@ void TextureEditor::setTextureType(CTexture::Type type) const
 	if (!tex_current_)
 		return;
 	tex_current_->setType(type);
-	setTextureModified(false, false, false);
+	signalCurrentTextureModified(false, false, false);
 }
 
 void TextureEditor::setTextureOffsetX(int offset) const
@@ -454,7 +444,7 @@ void TextureEditor::setTextureOffsetX(int offset) const
 	if (!tex_current_)
 		return;
 	tex_current_->setOffsetX(offset);
-	setTextureModified(false, false, false);
+	signalCurrentTextureModified(false, false, false);
 }
 
 void TextureEditor::setTextureOffsetY(int offset) const
@@ -462,7 +452,7 @@ void TextureEditor::setTextureOffsetY(int offset) const
 	if (!tex_current_)
 		return;
 	tex_current_->setOffsetY(offset);
-	setTextureModified(false, false, false);
+	signalCurrentTextureModified(false, false, false);
 }
 
 void TextureEditor::setPatchOffsetX(int offset) const
@@ -474,7 +464,7 @@ void TextureEditor::setPatchOffsetX(int offset) const
 		if (auto patch = tex_current_->patch(index))
 			patch->setOffsetX(offset);
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchOffsetY(int offset) const
@@ -486,7 +476,7 @@ void TextureEditor::setPatchOffsetY(int offset) const
 		if (auto patch = tex_current_->patch(index))
 			patch->setOffsetY(offset);
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::movePatch(const Vec2i& offset) const
@@ -501,7 +491,7 @@ void TextureEditor::movePatch(const Vec2i& offset) const
 			patch->setOffsetY(patch->offset().y + offset.y);
 		}
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchBlendType(CTPatchEx::BlendType type) const
@@ -514,7 +504,7 @@ void TextureEditor::setPatchBlendType(CTPatchEx::BlendType type) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setBlendType(type);
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchFlag(string_view flag, bool on) const
@@ -527,7 +517,7 @@ void TextureEditor::setPatchFlag(string_view flag, bool on) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setFlag(flag, on);
 
-	setTextureModified(false, false, true);
+	signalCurrentTextureModified(false, false, true);
 }
 
 void TextureEditor::setPatchRotation(int rotation) const
@@ -540,7 +530,7 @@ void TextureEditor::setPatchRotation(int rotation) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setRotation(rotation);
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchAlpha(double alpha) const
@@ -553,7 +543,7 @@ void TextureEditor::setPatchAlpha(double alpha) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setAlpha(alpha);
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchAlphaStyle(string_view style) const
@@ -566,7 +556,7 @@ void TextureEditor::setPatchAlphaStyle(string_view style) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setStyle(style);
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchColour(const ColRGBA& colour) const
@@ -579,7 +569,7 @@ void TextureEditor::setPatchColour(const ColRGBA& colour) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setColour(colour);
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchTintAmount(double amount) const
@@ -592,7 +582,7 @@ void TextureEditor::setPatchTintAmount(double amount) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setTintAmount(amount);
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchTranslation(string_view translation) const
@@ -609,7 +599,7 @@ void TextureEditor::setPatchTranslation(string_view translation) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setTranslation(t);
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::addPatch(string_view patch) const
@@ -618,7 +608,7 @@ void TextureEditor::addPatch(string_view patch) const
 		return;
 
 	tex_current_->addPatch(patch);
-	setTextureModified(true, true, false);
+	signalCurrentTextureModified(true, true, false);
 }
 
 void TextureEditor::removePatch()
@@ -632,7 +622,7 @@ void TextureEditor::removePatch()
 
 	// Remove patches
 	tex_current_->removePatches(to_remove);
-	setTextureModified(true, true, false);
+	signalCurrentTextureModified(true, true, false);
 }
 
 void TextureEditor::replacePatch(string_view patch) const
@@ -645,7 +635,7 @@ void TextureEditor::replacePatch(string_view patch) const
 	else
 		tex_current_->replacePatches(selected_patches_, patch);
 
-	setTextureModified(true, false, true);
+	signalCurrentTextureModified(true, false, true);
 }
 
 void TextureEditor::duplicatePatch(int xoff, int yoff)
@@ -662,7 +652,7 @@ void TextureEditor::duplicatePatch(int xoff, int yoff)
 	for (unsigned& index : selected_patches_)
 		index++;
 
-	setTextureModified(true, true, false);
+	signalCurrentTextureModified(true, true, false);
 }
 
 void TextureEditor::patchForward()
@@ -690,7 +680,7 @@ void TextureEditor::patchForward()
 	for (unsigned& index : selected_patches_)
 		index++;
 
-	setTextureModified(true, true, false);
+	signalCurrentTextureModified(true, true, false);
 }
 
 void TextureEditor::patchBack()
@@ -718,5 +708,16 @@ void TextureEditor::patchBack()
 	for (unsigned& index : selected_patches_)
 		index--;
 
-	setTextureModified(true, true, false);
+	signalCurrentTextureModified(true, true, false);
+}
+
+void TextureEditor::signalCurrentTextureModified(bool texture, bool patch_list, bool patches) const
+{
+	tex_modified_ = true;
+	tex_current_->setState(CTexture::State::Modified);
+
+	if (patches)
+		signals_.patches_modified(selected_patches_);
+
+	signals_.current_texture_modified(texture, patch_list);
 }

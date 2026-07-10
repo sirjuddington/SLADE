@@ -25,11 +25,13 @@ public:
 	ArchiveEntry* textureListEntry(unsigned index) const;
 	string        textureListName(const TextureXList& list) const;
 
-	CTexture* currentTexture() const { return tex_current_.get(); }
+	CTexture* currentTexture() const { return tex_current_; }
 	void      openTexture(CTexture& texture);
 	void      closeTexture();
-	void      saveTexture() const;
 	void      revertTexture();
+
+	bool currentModified() const { return tex_modified_; }
+	void setCurrentModified(bool modified = true) const { tex_modified_ = modified; }
 
 	const vector<unsigned>& selectedPatches() const { return selected_patches_; }
 	void                    selectPatch(unsigned index, bool selected = true);
@@ -51,7 +53,6 @@ public:
 	bool exportAsPNG(const CTexture& texture, string_view filename, const Palette* palette, bool force_rgba);
 
 	// Texture Editing
-	void setTextureModified(bool texture, bool patch_list, bool patches) const;
 	void setTextureSize(int width = -1, int height = -1) const;
 	void setTextureScaleX(double scale) const;
 	void setTextureScaleY(double scale) const;
@@ -83,6 +84,12 @@ public:
 
 	struct Signals
 	{
+		// Texture modified (not the current texture)
+		sigslot::signal<CTexture*> texture_modified;
+
+		// Multiple textures modified
+		sigslot::signal<const vector<CTexture*>&> textures_modified;
+
 		// Texture added to a TextureXList (list, texture)
 		sigslot::signal<TextureXList*, CTexture*> texture_added;
 
@@ -95,7 +102,7 @@ public:
 		// Current texture modified (texture, patch_list)
 		// texture: the texture needs to be rebuilt (ie. visual changes)
 		// patch_list: the patch list was modified (patches added/removed/reordered)
-		sigslot::signal<bool, bool> texture_modified;
+		sigslot::signal<bool, bool> current_texture_modified;
 
 		// Current texture patch(es) modified (patch_indices)
 		sigslot::signal<const vector<unsigned>&> patches_modified;
@@ -114,8 +121,11 @@ private:
 	};
 	vector<TextureXEntry> texturex_entries_;
 
-	unique_ptr<CTexture> tex_current_;                  // The texture currently open in the editor
-	CTexture*            tex_current_source_ = nullptr; // The source texture that tex_current_ was opened from
+	CTexture*            tex_current_  = nullptr;
+	mutable bool         tex_modified_ = false; // If any modifications have been made since the texture was opened
+	unique_ptr<CTexture> tex_backup_;           // For revert
 	vector<unsigned>     selected_patches_;
+
+	void signalCurrentTextureModified(bool texture, bool patch_list, bool patches) const;
 };
 } // namespace slade::texeditor

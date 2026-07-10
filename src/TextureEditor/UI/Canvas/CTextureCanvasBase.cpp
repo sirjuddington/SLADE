@@ -75,7 +75,7 @@ CTextureCanvasBase::CTextureCanvasBase(TextureEditor& editor) : editor_{ &editor
 	blend_rgba_   = CVar::getBool("tx_truecolour");
 
 	// Update when current editor texture is modified
-	connections_ += editor.signals().texture_modified.connect(
+	connections_ += editor.signals().current_texture_modified.connect(
 		[this](bool texture, bool patch_list)
 		{
 			if (texture_ != editor_->currentTexture())

@@ -104,11 +104,11 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
 
 	// Update toolbar buttons when texture is modified
-	sc_tex_state_changed_ = editor_->signals().texture_modified.connect_scoped(
+	sc_tex_state_changed_ = editor_->signals().current_texture_modified.connect_scoped(
 		[this](bool texture, bool patch_list)
 		{
-			toolbar_texture_->enableItem("txed_save", editor_->currentTexture()->state() == CTexture::State::Modified);
-			toolbar_texture_->enableItem("revert", editor_->currentTexture()->state() == CTexture::State::Modified);
+			toolbar_texture_->enableItem("txed_save", editor_->currentModified());
+			toolbar_texture_->enableItem("revert", editor_->currentModified());
 		});
 
 	// Init UI (expandAll must be deferred until the native window exists)
@@ -340,8 +340,8 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		}
 
 		toolbar_texture_->showItem("txed_toggle_truecolour", ctex->isExtended());
-		toolbar_texture_->enableItem("txed_save", ctex->state() == CTexture::State::Modified);
-		toolbar_texture_->enableItem("revert", ctex->state() == CTexture::State::Modified);
+		toolbar_texture_->enableItem("txed_save", editor_->currentModified());
+		toolbar_texture_->enableItem("revert", editor_->currentModified());
 		toolbar_patches_->enableItem("txed_patch_add", true);
 		toolbar_patches_->enableGroup("Patch", !editor_->selectedPatches().empty());
 		panel_offsets_->Show(ctex->isExtended());
@@ -826,7 +826,7 @@ bool TextureEditorPanel::handleAction(string_view id)
 
 	else if (id == "txed_save")
 	{
-		editor_->saveTexture();
+		editor_->setCurrentModified(false);
 		toolbar_texture_->enableItem("txed_save", false);
 		toolbar_texture_->enableItem("revert", false);
 	}

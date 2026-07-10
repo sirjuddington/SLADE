@@ -29,12 +29,18 @@ void TextureTreeModel::open(const TextureEditor& editor)
 
 	// --- Connect to TextureEditor signals ---
 
+	// Texture modified
+	connections_ += editor.signals().current_texture_modified.connect(
+		[this](bool texture, bool patch_list) { ItemChanged(wxDataViewItem(editor_->currentTexture())); });
+	connections_ += editor.signals().texture_modified.connect([this](CTexture* tex)
+															  { ItemChanged(wxDataViewItem(tex)); });
+
 	// Texture added
 	connections_ += editor.signals().texture_added.connect(
 		[this](TextureXList* list, CTexture* tex)
 		{
 			if (auto parent = itemForTexList(list); parent.IsOk())
-				ItemAdded(wxDataViewItem(parent), wxDataViewItem(tex));
+				ItemAdded(parent, wxDataViewItem(tex));
 			else
 				log::warning("Texture \"{}\" added to unknown list", tex->name());
 		});
