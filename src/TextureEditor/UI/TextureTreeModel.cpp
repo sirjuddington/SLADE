@@ -31,9 +31,9 @@ void TextureTreeModel::open(const TextureEditor& editor)
 
 	// Texture added
 	connections_ += editor.signals().texture_added.connect(
-		[this](CTexture* tex)
+		[this](TextureXList* list, CTexture* tex)
 		{
-			if (auto parent = itemForTexList(tex->list()); parent.IsOk())
+			if (auto parent = itemForTexList(list); parent.IsOk())
 				ItemAdded(wxDataViewItem(parent), wxDataViewItem(tex));
 			else
 				log::warning("Texture \"{}\" added to unknown list", tex->name());

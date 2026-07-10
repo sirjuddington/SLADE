@@ -73,6 +73,38 @@ CTextureCanvasBase::CTextureCanvasBase(TextureEditor& editor) : editor_{ &editor
 	tex_scale_    = CVar::getBool("tx_apply_scale");
 	draw_outside_ = CVar::getBool("tx_show_outside");
 	blend_rgba_   = CVar::getBool("tx_truecolour");
+
+	// Update when current editor texture is modified
+	connections_ += editor.signals().texture_modified.connect(
+		[this](bool texture, bool patch_list)
+		{
+			if (texture_ != editor_->currentTexture())
+				return;
+
+			if (patch_list)
+			{
+				// Reload patches
+				clearPatches();
+				hilight_patch_ = -1;
+				for (uint32_t a = 0; a < texture_->nPatches(); a++)
+					patch_images_.emplace_back();
+			}
+
+			redraw(texture || patch_list);
+		});
+
+	// Update when current editor texture patches are modified
+	connections_ += editor.signals().patches_modified.connect(
+		[this](const vector<unsigned>& indices)
+		{
+			if (texture_ != editor_->currentTexture())
+				return;
+
+			for (unsigned index : indices)
+				refreshPatch(index);
+
+			redraw(true);
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -139,7 +171,6 @@ Vec2i CTextureCanvasBase::dragOffset(bool grid_snap) const
 void CTextureCanvasBase::clearTexture()
 {
 	// Clear texture
-	connections_.disconnect();
 	texture_ = nullptr;
 
 	// Clear patch info
@@ -196,35 +227,6 @@ bool CTextureCanvasBase::openTexture(CTexture* tex)
 	clearPatches();
 	for (uint32_t a = 0; a < tex->nPatches(); a++)
 		patch_images_.emplace_back();
-
-	// Update when texture is modified
-	connections_ += tex->signals().texture_modified.connect([this] { redraw(true); });
-
-	// Update when texture patches are modified
-	connections_ += tex->signals().patch_list_changed.connect(
-		[this]
-		{
-			// Reload patches
-			clearPatches();
-			hilight_patch_ = -1;
-			for (uint32_t a = 0; a < texture_->nPatches(); a++)
-				patch_images_.emplace_back();
-
-			redraw(true);
-		});
-	connections_ += tex->signals().patch_modified.connect(
-		[this](unsigned index)
-		{
-			refreshPatch(index);
-			redraw(true);
-		});
-	connections_ += tex->signals().patches_modified.connect(
-		[this](const vector<unsigned>& indices)
-		{
-			for (unsigned index : indices)
-				refreshPatch(index);
-			redraw(true);
-		});
 
 	// Redraw
 	resetViewOffsets();

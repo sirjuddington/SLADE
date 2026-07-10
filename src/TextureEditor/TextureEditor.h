@@ -51,7 +51,7 @@ public:
 	bool exportAsPNG(const CTexture& texture, string_view filename, const Palette* palette, bool force_rgba);
 
 	// Texture Editing
-	void setTextureModified(bool update_texture, bool update_patches) const;
+	void setTextureModified(bool texture, bool patch_list, bool patches) const;
 	void setTextureSize(int width = -1, int height = -1) const;
 	void setTextureScaleX(double scale) const;
 	void setTextureScaleY(double scale) const;
@@ -83,9 +83,22 @@ public:
 
 	struct Signals
 	{
-		sigslot::signal<CTexture*>                         texture_added;
-		sigslot::signal<TextureXList*, CTexture*>          texture_deleted;
+		// Texture added to a TextureXList (list, texture)
+		sigslot::signal<TextureXList*, CTexture*> texture_added;
+
+		// Texture removed from a TextureXList (list, texture)
+		sigslot::signal<TextureXList*, CTexture*> texture_deleted;
+
+		// Textures swapped in a TextureXList (list, index1, index2)
 		sigslot::signal<TextureXList*, unsigned, unsigned> textures_swapped;
+
+		// Current texture modified (texture, patch_list)
+		// texture: the texture needs to be rebuilt (ie. visual changes)
+		// patch_list: the patch list was modified (patches added/removed/reordered)
+		sigslot::signal<bool, bool> texture_modified;
+
+		// Current texture patch(es) modified (patch_indices)
+		sigslot::signal<const vector<unsigned>&> patches_modified;
 	};
 	Signals& signals() const { return signals_; }
 

@@ -120,6 +120,7 @@ void TextureEditor::revertTexture()
 	tex_current_->copyTexture(*tex_current_source_);
 	tex_current_->setState(CTexture::State::Unmodified);
 	selected_patches_.clear();
+	signals_.texture_modified(false, false);
 }
 
 void TextureEditor::selectPatch(unsigned index, bool selected)
@@ -216,7 +217,7 @@ void TextureEditor::newTexture(
 	// Add it to the list
 	auto added_tex = tex.get();
 	list->addTexture(std::move(tex), index);
-	signals_.texture_added(added_tex);
+	signals_.texture_added(list, added_tex);
 }
 
 void TextureEditor::deleteTexture(const CTexture& texture) const
@@ -376,14 +377,14 @@ bool TextureEditor::exportAsPNG(const CTexture& texture, string_view filename, c
 	return png.exportFile(filename);
 }
 
-void TextureEditor::setTextureModified(bool update_texture, bool update_patches) const
+void TextureEditor::setTextureModified(bool texture, bool patch_list, bool patches) const
 {
 	tex_current_->setState(CTexture::State::Modified);
 
-	if (update_texture)
-		tex_current_->signals().texture_modified();
-	if (update_patches)
-		tex_current_->signals().patches_modified(selected_patches_);
+	if (patches)
+		signals_.patches_modified(selected_patches_);
+
+	signals_.texture_modified(texture, patch_list);
 }
 
 void TextureEditor::setTextureSize(int width, int height) const
@@ -396,8 +397,7 @@ void TextureEditor::setTextureSize(int width, int height) const
 	if (height > 0)
 		tex_current_->setHeight(height);
 
-	tex_current_->signals().texture_modified();
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, false);
 }
 
 void TextureEditor::setTextureScaleX(double scale) const
@@ -407,8 +407,7 @@ void TextureEditor::setTextureScaleX(double scale) const
 
 	tex_current_->setScaleX(scale);
 
-	tex_current_->signals().texture_modified();
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, false);
 }
 
 void TextureEditor::setTextureScaleY(double scale) const
@@ -418,8 +417,7 @@ void TextureEditor::setTextureScaleY(double scale) const
 
 	tex_current_->setScaleY(scale);
 
-	tex_current_->signals().texture_modified();
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, false);
 }
 
 void TextureEditor::setTextureFlag(string_view flag, bool on) const
@@ -440,7 +438,7 @@ void TextureEditor::setTextureFlag(string_view flag, bool on) const
 	else
 		return; // Unknown flag
 
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(false, false, false);
 }
 
 void TextureEditor::setTextureType(CTexture::Type type) const
@@ -448,7 +446,7 @@ void TextureEditor::setTextureType(CTexture::Type type) const
 	if (!tex_current_)
 		return;
 	tex_current_->setType(type);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(false, false, false);
 }
 
 void TextureEditor::setTextureOffsetX(int offset) const
@@ -456,7 +454,7 @@ void TextureEditor::setTextureOffsetX(int offset) const
 	if (!tex_current_)
 		return;
 	tex_current_->setOffsetX(offset);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(false, false, false);
 }
 
 void TextureEditor::setTextureOffsetY(int offset) const
@@ -464,7 +462,7 @@ void TextureEditor::setTextureOffsetY(int offset) const
 	if (!tex_current_)
 		return;
 	tex_current_->setOffsetY(offset);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(false, false, false);
 }
 
 void TextureEditor::setPatchOffsetX(int offset) const
@@ -476,8 +474,7 @@ void TextureEditor::setPatchOffsetX(int offset) const
 		if (auto patch = tex_current_->patch(index))
 			patch->setOffsetX(offset);
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchOffsetY(int offset) const
@@ -489,8 +486,7 @@ void TextureEditor::setPatchOffsetY(int offset) const
 		if (auto patch = tex_current_->patch(index))
 			patch->setOffsetY(offset);
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::movePatch(const Vec2i& offset) const
@@ -505,8 +501,7 @@ void TextureEditor::movePatch(const Vec2i& offset) const
 			patch->setOffsetY(patch->offset().y + offset.y);
 		}
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchBlendType(CTPatchEx::BlendType type) const
@@ -519,8 +514,7 @@ void TextureEditor::setPatchBlendType(CTPatchEx::BlendType type) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setBlendType(type);
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchFlag(string_view flag, bool on) const
@@ -533,8 +527,7 @@ void TextureEditor::setPatchFlag(string_view flag, bool on) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setFlag(flag, on);
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(false, false, true);
 }
 
 void TextureEditor::setPatchRotation(int rotation) const
@@ -547,8 +540,7 @@ void TextureEditor::setPatchRotation(int rotation) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setRotation(rotation);
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchAlpha(double alpha) const
@@ -561,8 +553,7 @@ void TextureEditor::setPatchAlpha(double alpha) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setAlpha(alpha);
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchAlphaStyle(string_view style) const
@@ -575,8 +566,7 @@ void TextureEditor::setPatchAlphaStyle(string_view style) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setStyle(style);
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchColour(const ColRGBA& colour) const
@@ -589,8 +579,7 @@ void TextureEditor::setPatchColour(const ColRGBA& colour) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setColour(colour);
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchTintAmount(double amount) const
@@ -603,8 +592,7 @@ void TextureEditor::setPatchTintAmount(double amount) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setTintAmount(amount);
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::setPatchTranslation(string_view translation) const
@@ -621,8 +609,7 @@ void TextureEditor::setPatchTranslation(string_view translation) const
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
 				patch_ex->setTranslation(t);
 
-	tex_current_->signals().patches_modified(selected_patches_);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::addPatch(string_view patch) const
@@ -631,7 +618,7 @@ void TextureEditor::addPatch(string_view patch) const
 		return;
 
 	tex_current_->addPatch(patch);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, true, false);
 }
 
 void TextureEditor::removePatch()
@@ -645,7 +632,7 @@ void TextureEditor::removePatch()
 
 	// Remove patches
 	tex_current_->removePatches(to_remove);
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, true, false);
 }
 
 void TextureEditor::replacePatch(string_view patch) const
@@ -658,7 +645,7 @@ void TextureEditor::replacePatch(string_view patch) const
 	else
 		tex_current_->replacePatches(selected_patches_, patch);
 
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, false, true);
 }
 
 void TextureEditor::duplicatePatch(int xoff, int yoff)
@@ -675,7 +662,7 @@ void TextureEditor::duplicatePatch(int xoff, int yoff)
 	for (unsigned& index : selected_patches_)
 		index++;
 
-	tex_current_->setState(CTexture::State::Modified);
+	setTextureModified(true, true, false);
 }
 
 void TextureEditor::patchForward()
@@ -694,18 +681,16 @@ void TextureEditor::patchForward()
 		auto sorted_selection = selected_patches_;
 		std::ranges::sort(sorted_selection, std::greater());
 
-		// Swap selected patches forward,
-		// blocking patch_list_changed signal until all swaps are done
-		tex_current_->signals().patch_list_changed.block();
+		// Swap selected patches forward
 		for (unsigned& index : sorted_selection)
 			tex_current_->swapPatches(index, index + 1);
-		tex_current_->signals().patch_list_changed.unblock();
-		tex_current_->signals().patch_list_changed();
 	}
 
 	// Update selection to match new patch positions
 	for (unsigned& index : selected_patches_)
 		index++;
+
+	setTextureModified(true, true, false);
 }
 
 void TextureEditor::patchBack()
@@ -724,16 +709,14 @@ void TextureEditor::patchBack()
 		auto sorted_selection = selected_patches_;
 		std::ranges::sort(sorted_selection);
 
-		// Swap selected patches backward,
-		// blocking patch_list_changed signal until all swaps are done
-		tex_current_->signals().patch_list_changed.block();
+		// Swap selected patches backward
 		for (unsigned index : sorted_selection)
 			tex_current_->swapPatches(index, index - 1);
-		tex_current_->signals().patch_list_changed.unblock();
-		tex_current_->signals().patch_list_changed();
 	}
 
 	// Update selection to match new patch positions
 	for (unsigned& index : selected_patches_)
 		index--;
+
+	setTextureModified(true, true, false);
 }

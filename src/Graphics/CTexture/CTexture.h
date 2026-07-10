@@ -185,8 +185,8 @@ public:
 	bool removePatch(size_t index);
 	bool removePatches(const vector<unsigned>& indices);
 	bool removePatch(string_view patch);
-	bool replacePatch(size_t index, string_view newpatch);
-	bool replacePatches(const vector<unsigned>& indices, string_view newpatch);
+	bool replacePatch(size_t index, string_view newpatch) const;
+	bool replacePatches(const vector<unsigned>& indices, string_view newpatch) const;
 	bool duplicatePatch(size_t index, int16_t offset_x = 8, int16_t offset_y = 8);
 	bool duplicatePatches(const vector<unsigned>& indices, int16_t offset_x = 8, int16_t offset_y = 8);
 	bool swapPatches(size_t p1, size_t p2);
@@ -209,17 +209,6 @@ public:
 		const Palette* pal        = nullptr,
 		bool           force_rgba = false,
 		bool           offsets    = true) const;
-
-	// Signals
-	struct Signals
-	{
-		sigslot::signal<>                        texture_modified;
-		sigslot::signal<>                        patch_list_changed;
-		sigslot::signal<unsigned>                patch_modified;
-		sigslot::signal<const vector<unsigned>&> patches_modified;
-		sigslot::signal<>                        state_changed;
-	};
-	Signals& signals() { return signals_; }
 
 private:
 	// Basic info
@@ -244,8 +233,5 @@ private:
 	// Editor info
 	State         state_   = State::Unmodified;
 	TextureXList* in_list_ = nullptr;
-
-	// Signals
-	Signals signals_;
 };
 } // namespace slade

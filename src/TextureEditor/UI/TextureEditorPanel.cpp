@@ -103,6 +103,14 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	choice_offset_type_->Bind(wxEVT_CHOICE, &TextureEditorPanel::onChoiceOffsetTypeSelected, this);
 	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
 
+	// Update toolbar buttons when texture is modified
+	sc_tex_state_changed_ = editor_->signals().texture_modified.connect_scoped(
+		[this](bool texture, bool patch_list)
+		{
+			toolbar_texture_->enableItem("txed_save", editor_->currentTexture()->state() == CTexture::State::Modified);
+			toolbar_texture_->enableItem("revert", editor_->currentTexture()->state() == CTexture::State::Modified);
+		});
+
 	// Init UI (expandAll must be deferred until the native window exists)
 	CallAfter([this]() { tree_view_->expandAll(); });
 	updateUI(true);
@@ -329,16 +337,6 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 			tex_canvas_->openTexture(ctex);
 			pg_properties_->textureChanged();
 			populatePatchesList();
-
-			// Update toolbar buttons when texture state changes
-			sc_tex_state_changed_ = ctex->signals().state_changed.connect_scoped(
-				[this]()
-				{
-					toolbar_texture_->enableItem(
-						"txed_save", editor_->currentTexture()->state() == CTexture::State::Modified);
-					toolbar_texture_->enableItem(
-						"revert", editor_->currentTexture()->state() == CTexture::State::Modified);
-				});
 		}
 
 		toolbar_texture_->showItem("txed_toggle_truecolour", ctex->isExtended());
@@ -1134,22 +1132,7 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 	// Move patches if needed
 	if (x_movement != 0 || y_movement != 0)
 	{
-		wxDataViewItemArray selected_patches;
-		list_patches_->GetSelections(selected_patches);
-		for (auto item : selected_patches)
-		{
-			auto patch = editor_->currentTexture()->patch(list_patches_->ItemToRow(item));
-			if (!patch)
-				continue;
-			int16_t cx = patch->xOffset();
-			int16_t cy = patch->yOffset();
-			patch->setOffsetX(cx + x_movement);
-			patch->setOffsetY(cy + y_movement);
-			editor_->currentTexture()->setState(CTexture::State::Modified);
-		}
-
-		pg_properties_->refreshPatchProperties();
-		tex_canvas_->redraw(true);
+		editor_->movePatch({ x_movement, y_movement });
 		handled = true;
 	}
 

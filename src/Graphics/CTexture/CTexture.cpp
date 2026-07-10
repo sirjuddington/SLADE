@@ -301,7 +301,7 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 						}
 						tz.adv(); // Skip ,
 						tint_amount_ = tz.next().asFloat();
-						blendtype_ = BlendType::Tint;
+						blendtype_   = BlendType::Tint;
 					}
 				}
 			}
@@ -334,7 +334,12 @@ string CTPatchEx::asText()
 	auto text = fmt::format("\t{} \"{}\", {}, {}\n", typestring, name_, offset_.x, offset_.y);
 
 	// Check if we need to write any extra properties
-	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == BlendType::None && alpha_ == 1.0f
+	if (!flip_x_
+		&& !flip_y_
+		&& !use_offsets_
+		&& rotation_ == 0
+		&& blendtype_ == BlendType::None
+		&& alpha_ == 1.0f
 		&& strutil::equalCI(style_, "Copy"))
 		return text;
 	else
@@ -549,7 +554,6 @@ void CTexture::setState(State state)
 		return;
 
 	state_ = state;
-	signals_.state_changed();
 }
 
 // -----------------------------------------------------------------------------
@@ -592,9 +596,6 @@ bool CTexture::addPatch(string_view patch, int16_t offset_x, int16_t offset_y, i
 	// Cannot be a simple define anymore
 	defined_ = false;
 
-	// Announce
-	signals_.patch_list_changed();
-
 	return true;
 }
 
@@ -613,9 +614,6 @@ bool CTexture::removePatch(size_t index)
 
 	// Cannot be a simple define anymore
 	defined_ = false;
-
-	// Announce
-	signals_.patch_list_changed();
 
 	return true;
 }
@@ -642,13 +640,7 @@ bool CTexture::removePatches(const vector<unsigned>& indices)
 	}
 
 	if (removed)
-	{
-		// Cannot be a simple define anymore
-		defined_ = false;
-
-		// Announce
-		signals_.patch_list_changed();
-	}
+		defined_ = false; // Cannot be a simple define anymore
 
 	return removed;
 }
@@ -674,9 +666,6 @@ bool CTexture::removePatch(string_view patch)
 	// Cannot be a simple define anymore
 	defined_ = false;
 
-	if (removed)
-		signals_.patch_list_changed();
-
 	return removed;
 }
 
@@ -684,7 +673,7 @@ bool CTexture::removePatch(string_view patch)
 // Replaces the patch at [index] with [newpatch].
 // Returns false if [index] is out of bounds, true otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::replacePatch(size_t index, string_view newpatch)
+bool CTexture::replacePatch(size_t index, string_view newpatch) const
 {
 	// Check index
 	if (index >= patches_.size())
@@ -693,9 +682,6 @@ bool CTexture::replacePatch(size_t index, string_view newpatch)
 	// Replace patch at [index] with new
 	patches_[index]->setName(newpatch);
 
-	// Announce
-	signals_.patch_list_changed();
-
 	return true;
 }
 
@@ -703,7 +689,7 @@ bool CTexture::replacePatch(size_t index, string_view newpatch)
 // Replaces the patches at [indices] with [newpatch].
 // Returns true if any were replaced, false otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::replacePatches(const vector<unsigned>& indices, string_view newpatch)
+bool CTexture::replacePatches(const vector<unsigned>& indices, string_view newpatch) const
 {
 	// Replace patches at [indices] with new
 	bool replaced = false;
@@ -715,10 +701,6 @@ bool CTexture::replacePatches(const vector<unsigned>& indices, string_view newpa
 		patches_[index]->setName(newpatch);
 		replaced = true;
 	}
-
-	// Announce
-	if (replaced)
-		signals_.patch_list_changed();
 
 	return replaced;
 }
@@ -753,9 +735,6 @@ bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y)
 	// Cannot be a simple define anymore
 	defined_ = false;
 
-	// Announce
-	signals_.patch_list_changed();
-
 	return true;
 }
 
@@ -771,13 +750,8 @@ bool CTexture::duplicatePatches(const vector<unsigned>& indices, int16_t offset_
 	std::ranges::sort(sorted_indices, std::greater());
 
 	// Duplicate patches
-	signals_.patch_list_changed.block();
 	for (auto index : sorted_indices)
 		duplicatePatch(index, offset_x, offset_y);
-	signals_.patch_list_changed.unblock();
-
-	// Announce
-	signals_.patch_list_changed();
 
 	return true;
 }
@@ -794,9 +768,6 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 
 	// Swap the patches
 	patches_[p1].swap(patches_[p2]);
-
-	// Announce
-	signals_.patch_list_changed();
 
 	return true;
 }
