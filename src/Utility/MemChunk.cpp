@@ -169,16 +169,27 @@ bool MemChunk::importFile(string_view filename, u32 offset, u32 len)
 			return false;
 		}
 
-		// Read the file
+		// Read the file in chunks to support large (>2gb) files
 		file.Seek(offset, wxFromStart);
-		size_t count = file.Read(data_.data(), len);
-		if (count != len)
+		constexpr u32 CHUNK_SIZE = 256 * 1024 * 1024; // 256mb chunks
+		u32           total_read = 0;
+		while (total_read < len)
 		{
-			log::error("MemChunk::importFile: Unable to read full file {}, read {} out of {}", filename, count, len);
-			global::error = fmt::format("Unable to read file {}", filename);
-			clear();
-			file.Close();
-			return false;
+			u32 to_read = std::min<u32>(CHUNK_SIZE, len - total_read);
+			u32 count   = file.Read(data_.data() + total_read, to_read);
+			if (count != to_read)
+			{
+				log::error(
+					"MemChunk::importFile: Unable to read full file {}, read {} out of {}",
+					filename,
+					total_read + count,
+					len);
+				global::error = fmt::format("Unable to read file {}", filename);
+				clear();
+				file.Close();
+				return false;
+			}
+			total_read += count;
 		}
 
 		file.Close();
