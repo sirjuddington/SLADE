@@ -63,7 +63,7 @@ public:
 
 	bool convertToTEXTURES();
 	bool findErrors() const;
-	bool removeDupesFoundIn(TextureXList& texture_list);
+	bool removeDupesFoundIn(const TextureXList& texture_list);
 	bool cleanTEXTURESsinglePatch(Archive* current_archive);
 
 private:

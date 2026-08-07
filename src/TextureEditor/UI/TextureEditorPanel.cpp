@@ -8,6 +8,7 @@
 #include "General/KeyBind.h"
 #include "General/Misc.h"
 #include "General/SAction.h"
+#include "General/UndoRedo.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
@@ -104,11 +105,23 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
 
 	// Update toolbar buttons when texture is modified
-	sc_tex_state_changed_ = editor_->signals().current_texture_modified.connect_scoped(
+	sc_tex_modified_ = editor_->signals().current_texture_modified.connect_scoped(
 		[this](bool texture, bool patch_list)
 		{
-			toolbar_texture_->enableItem("txed_save", editor_->currentModified());
-			toolbar_texture_->enableItem("revert", editor_->currentModified());
+			toolbar_texture_->enableItem("revert", editor_->currentTextureModified());
+			pg_properties_->refreshTextureProperties();
+			pg_properties_->refreshPatchProperties();
+		});
+
+	// Close texture if it's deleted (eg. via undo)
+	sc_tex_deleted_ = editor_->signals().texture_deleted.connect_scoped(
+		[this](TextureXList* list, CTexture* texture)
+		{
+			if (texture == editor_->currentTexture())
+			{
+				editor_->closeTexture();
+				updateUI(true);
+			}
 		});
 
 	// Init UI (expandAll must be deferred until the native window exists)
@@ -124,6 +137,23 @@ TextureEditorPanel::~TextureEditorPanel()
 Archive* TextureEditorPanel::archive() const
 {
 	return editor_->archive();
+}
+
+UndoManager* TextureEditorPanel::undoManager() const
+{
+	return editor_->undoManager();
+}
+
+void TextureEditorPanel::undo()
+{
+	if (editor_->undo())
+		updateUI();
+}
+
+void TextureEditorPanel::redo()
+{
+	if (editor_->redo())
+		updateUI();
 }
 
 wxPanel* TextureEditorPanel::createTextureListPanel(wxWindow* parent)
@@ -340,8 +370,8 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		}
 
 		toolbar_texture_->showItem("txed_toggle_truecolour", ctex->isExtended());
-		toolbar_texture_->enableItem("txed_save", editor_->currentModified());
-		toolbar_texture_->enableItem("revert", editor_->currentModified());
+		toolbar_texture_->enableItem("txed_save", editor_->currentTextureModified());
+		toolbar_texture_->enableItem("revert", editor_->currentTextureModified());
 		toolbar_patches_->enableItem("txed_patch_add", true);
 		toolbar_patches_->enableGroup("Patch", !editor_->selectedPatches().empty());
 		panel_offsets_->Show(ctex->isExtended());
@@ -429,7 +459,9 @@ void TextureEditorPanel::initPatchBrowser()
 	patch_browser_ = new PatchBrowser(this);
 	patch_browser_->setPalette(maineditor::currentPalette());
 
-	if (editor_->currentTexture()->isExtended())
+	auto list = tree_view_->textureListForItem(tree_view_->lastSelectedItem());
+
+	if (list->format() == TextureXList::Format::Textures)
 	{
 		// TEXTURES, load patches from the archive and resources, and any
 		// texture lists in the archive
@@ -581,41 +613,37 @@ void TextureEditorPanel::newTextureFromFile()
 	// Popup a file dialog to choose patch file(s)
 	auto fd_info = filedialog::openFiles("Choose file(s) to open", ext_filter, this);
 
-	// Run the dialog & check that the user didn't cancel
-	if (!fd_info.filenames.empty())
-	{
-		// Go through file selection
-		for (const auto& file : fd_info.filenames)
-		{
-			if (auto name = editor_->importPatchFile(file, list->format() != TextureXList::Format::Textures);
-				!name.empty())
-				editor_->newTexture(list, name, index, 0, 0, name);
-		}
-	}
+	// Abort if no files were selected
+	if (fd_info.filenames.empty())
+		return;
+
+	// Begin undo level
+	if (fd_info.filenames.size() > 1)
+		editor_->undoManager()->beginRecord(fmt::format("{} New Textures from Files", fd_info.filenames.size()));
+	else
+		editor_->undoManager()->beginRecord("New Texture from File");
+
+	// Go through file selection, import patches and create textures from each
+	for (const auto& file : fd_info.filenames)
+		if (auto name = editor_->importPatchFile(file, list->format() != TextureXList::Format::Textures); !name.empty())
+			editor_->newTexture(list, name, index < 0 ? index : index++, 0, 0, name);
+	
+	editor_->undoManager()->endRecord(true);
 }
 
 void TextureEditorPanel::deleteTexture() const
 {
-	for (auto ctex : tree_view_->selectedTextures())
-		editor_->deleteTexture(*ctex);
+	editor_->deleteTextures(tree_view_->selectedTextures());
 }
 
 void TextureEditorPanel::moveTexture(Direction direction) const
 {
 	wxDataViewItemArray sel_items;
 	tree_view_->GetSelections(sel_items);
-	auto selection = tree_view_->selectedTextures();
-
-	// Sort in ascending/descending index order depending on direction
-	if (direction == Direction::Up)
-		std::ranges::sort(selection, [](const CTexture* a, const CTexture* b) { return a->index() < b->index(); });
-	else
-		std::ranges::sort(selection, [](const CTexture* a, const CTexture* b) { return a->index() > b->index(); });
 
 	tree_view_->Freeze();
 
-	for (auto ctex : selection)
-		editor_->moveTexture(*ctex, direction);
+	editor_->moveTextures(tree_view_->selectedTextures(), direction);
 
 	// Restore selection
 	tree_view_->SetSelections(sel_items);
@@ -823,13 +851,6 @@ bool TextureEditorPanel::handleAction(string_view id)
 		exportTexturesToEntries();
 	else if (id == "txed_extract")
 		exportTexturesAsPNG();
-
-	else if (id == "txed_save")
-	{
-		editor_->setCurrentModified(false);
-		toolbar_texture_->enableItem("txed_save", false);
-		toolbar_texture_->enableItem("revert", false);
-	}
 
 	else if (id == "txed_toggle_truecolour")
 	{
@@ -1162,13 +1183,13 @@ void TextureEditorPanel::onToolbarButton(wxCommandEvent& e)
 
 void TextureEditorPanel::onTexOffsetXChanged(wxCommandEvent& e)
 {
-	editor_->setTextureOffsetX(spin_offset_x_->GetValue());
+	editor_->setTextureOffset(spin_offset_x_->GetValue(), {});
 	tex_canvas_->redraw();
 }
 
 void TextureEditorPanel::onTexOffsetYChanged(wxCommandEvent& e)
 {
-	editor_->setTextureOffsetY(spin_offset_y_->GetValue());
+	editor_->setTextureOffset({}, spin_offset_y_->GetValue());
 	tex_canvas_->redraw();
 }
 

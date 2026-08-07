@@ -55,8 +55,16 @@ public:
 	bool   recordUndoStep(unique_ptr<UndoStep> step) const;
 	string undo();
 	string redo();
-	void   setResetPoint() { reset_point_ = current_level_index_; }
-	void   clearToResetPoint();
+
+	int  resetPoint() const { return reset_point_; }
+	void setResetPoint() { reset_point_ = current_level_index_; }
+	void clearToResetPoint();
+
+	template<typename T, typename... Args> bool recordUndoStep(Args&&... args) const
+	{
+		static_assert(std::is_base_of_v<UndoStep, T>, "T must derive from UndoStep");
+		return recordUndoStep(std::make_unique<T>(std::forward<Args>(args)...));
+	}
 
 	void clear();
 	bool createMergedLevel(UndoManager* manager, string_view name);

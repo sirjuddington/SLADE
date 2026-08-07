@@ -6,6 +6,7 @@
 class wxSplitterWindow;
 namespace slade
 {
+class UndoManager;
 class PatchBrowser;
 class SIconButton;
 class CTexture;
@@ -31,8 +32,12 @@ public:
 	TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive);
 	~TextureEditorPanel() override;
 
-	Archive* archive() const;
-	wxMenu*  textureMenu() const { return menu_texture_; }
+	Archive*     archive() const;
+	wxMenu*      textureMenu() const { return menu_texture_; }
+	UndoManager* undoManager() const;
+
+	void undo();
+	void redo();
 
 private:
 	unique_ptr<TextureEditor> editor_;
@@ -66,7 +71,8 @@ private:
 	SAuiToolBar*        toolbar_patches_ = nullptr;
 	TexturePropGrid*    pg_properties_   = nullptr;
 
-	sigslot::scoped_connection sc_tex_state_changed_;
+	sigslot::scoped_connection sc_tex_modified_;
+	sigslot::scoped_connection sc_tex_deleted_;
 
 	wxPanel* createTextureListPanel(wxWindow* parent);
 	wxPanel* createMainPanel(wxWindow* parent);

@@ -15,6 +15,7 @@ public:
 	TexturePropGrid(wxWindow* parent, TextureEditor& editor);
 
 	void textureChanged();
+	void refreshTextureProperties();
 	void patchesChanged();
 	void refreshPatchProperties();
 

@@ -111,7 +111,10 @@ void registerCTexturePatchTypes(lua_State* lua)
 	lua_ctpatch_ex.addProperty("alpha", &CTPatchEx::alpha, &CTPatchEx::setAlpha);
 	lua_ctpatch_ex.addProperty("style", &CTPatchEx::style, &CTPatchEx::setStyle);
 	lua_ctpatch_ex.addProperty("blendType", &CTPatchEx::blendType, &CTPatchEx::setBlendType);
-	lua_ctpatch_ex.addProperty("translation", &CTPatchEx::translation, &CTPatchEx::setTranslation);
+	lua_ctpatch_ex.addProperty(
+		"translation",
+		&CTPatchEx::translation,
+		[](CTPatchEx& self, const Translation& trans) { self.setTranslation(trans); });
 
 	// Functions
 	// -------------------------------------------------------------------------

@@ -5,14 +5,18 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
+#include "General/UndoRedo.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
+#include "UndoSteps.h"
+#include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Vector.h"
+
 
 using namespace slade;
 using namespace texeditor;
@@ -22,7 +26,8 @@ TextureEditor::TextureEditor(shared_ptr<Archive> archive) : archive_{ archive }
 	if (!archive_)
 		return;
 
-	patch_table_ = std::make_unique<PatchTable>(archive_.get());
+	patch_table_  = std::make_unique<PatchTable>(archive_.get());
+	undo_manager_ = std::make_unique<UndoManager>();
 
 	// Find patch table (if any)
 	if (auto pnames = archive_->findLast({ .match_type = EntryType::fromId("pnames") }))
@@ -89,33 +94,32 @@ void TextureEditor::openTexture(CTexture& texture)
 {
 	tex_current_ = &texture;
 
-	if (!tex_backup_)
-		tex_backup_ = std::make_unique<CTexture>();
-	tex_backup_->copyTexture(texture);
-	tex_backup_->setState(texture.state());
+	setupTextureBackup(texture);
 
 	selected_patches_.clear();
-	tex_modified_ = false;
+	undo_manager_->setResetPoint();
 }
 
 void TextureEditor::closeTexture()
 {
-	tex_current_  = nullptr;
-	tex_modified_ = false;
+	tex_current_ = nullptr;
 	selected_patches_.clear();
 }
 
 void TextureEditor::revertTexture()
 {
-	if (!tex_current_ || !tex_backup_)
+	if (!tex_current_)
 		return;
 
-	tex_current_->copyTexture(*tex_backup_);
-	tex_current_->setState(tex_backup_->state());
-	selected_patches_.clear();
-	tex_modified_ = false;
-
-	signals_.current_texture_modified(true, true);
+	if (auto backup = getTextureBackup(*tex_current_))
+	{
+		tex_current_->copyTexture(*backup);
+		tex_current_->setState(backup->state());
+		selected_patches_.clear();
+		signals_.current_texture_modified(true, true);
+	}
+	else
+		log::warning("No backup found for texture {}, unable to revert", tex_current_->name());
 }
 
 void TextureEditor::selectPatch(unsigned index, bool selected)
@@ -124,6 +128,16 @@ void TextureEditor::selectPatch(unsigned index, bool selected)
 		vectorAddUnique(selected_patches_, index);
 	else
 		vectorRemoveVal(selected_patches_, index);
+}
+
+bool TextureEditor::undo() const
+{
+	return !undo_manager_->undo().empty();
+}
+
+bool TextureEditor::redo() const
+{
+	return !undo_manager_->redo().empty();
 }
 
 string TextureEditor::importPatchFile(string_view filename, bool add_to_patch_table) const
@@ -209,37 +223,86 @@ void TextureEditor::newTexture(
 	tex->setWidth(width);
 	tex->setHeight(height);
 
+	auto undo_recording = undo_manager_->currentlyRecording();
+	if (!undo_recording)
+		undo_manager_->beginRecord(fmt::format("New Texture: {}", tex_name));
+
 	// Add it to the list
 	auto added_tex = tex.get();
 	list->addTexture(std::move(tex), index);
 	signals_.texture_added(list, added_tex);
+
+	undo_manager_->recordUndoStep<TextureCreateDeleteUS>(*this, list, added_tex->index());
+
+	if (!undo_recording)
+		undo_manager_->endRecord(true);
 }
 
-void TextureEditor::deleteTexture(const CTexture& texture) const
+void TextureEditor::deleteTextures(const vector<CTexture*>& textures) const
 {
-	auto list = texture.list();
-	if (!list || texture.index() < 0)
+	if (textures.empty())
 		return;
 
-	auto removed = list->removeTexture(texture.index());
+	auto undo_recording = undo_manager_->currentlyRecording();
+	if (!undo_recording)
+	{
+		if (textures.size() == 1)
+			undo_manager_->beginRecord(fmt::format("Delete Texture: {}", textures[0]->name()));
+		else
+			undo_manager_->beginRecord(fmt::format("Delete {} Textures", textures.size()));
+	}
 
-	signals_.texture_deleted(list, removed.get());
+	bool any_deleted = false;
+	for (auto texture : textures)
+	{
+		auto list  = texture->list();
+		auto index = texture->index();
+		if (index < 0 || !list)
+			continue;
+
+		auto removed = list->removeTexture(index);
+		signals_.texture_deleted(list, removed.get());
+		undo_manager_->recordUndoStep<TextureCreateDeleteUS>(*this, list, std::move(removed), index);
+		any_deleted = true;
+	}
+
+	if (!undo_recording)
+		undo_manager_->endRecord(any_deleted);
 }
 
-void TextureEditor::moveTexture(const CTexture& texture, Direction direction) const
+void TextureEditor::moveTextures(const vector<CTexture*>& textures, Direction direction) const
 {
-	auto list  = texture.list();
-	auto index = texture.index();
-	if (!list || index < 0)
-		return;
+	// Sort in ascending/descending index order depending on direction
+	auto sorted = textures;
+	if (direction == Direction::Up)
+		std::ranges::sort(sorted, [](const CTexture* a, const CTexture* b) { return a->index() < b->index(); });
+	else
+		std::ranges::sort(sorted, [](const CTexture* a, const CTexture* b) { return a->index() > b->index(); });
 
-	int new_index = direction == Direction::Up ? index - 1 : index + 1;
-	if (new_index < 0 || std::cmp_greater_equal(new_index, list->size()))
-		return;
+	auto undo_recording = undo_manager_->currentlyRecording();
+	if (!undo_recording)
+		undo_manager_->beginRecord(fmt::format("Move Texture {}", direction == Direction::Up ? "Up" : "Down"));
 
-	list->swapTextures(index, new_index);
+	for (auto texture : sorted)
+	{
+		auto list  = texture->list();
+		auto index = texture->index();
+		if (!list || index < 0)
+			return;
 
-	signals_.textures_swapped(list, index, new_index);
+		int new_index = direction == Direction::Up ? index - 1 : index + 1;
+		if (new_index < 0 || std::cmp_greater_equal(new_index, list->size()))
+			return;
+
+		list->swapTextures(index, new_index);
+
+		signals_.textures_swapped(list, index, new_index);
+
+		undo_manager_->recordUndoStep<TextureSwapUS>(*this, *list, index, new_index);
+	}
+
+	if (!undo_recording)
+		undo_manager_->endRecord(true);
 }
 
 void TextureEditor::sortTextures(const vector<CTexture*>& textures) const
@@ -248,10 +311,12 @@ void TextureEditor::sortTextures(const vector<CTexture*>& textures) const
 		return;
 
 	auto list = textures[0]->list();
+	if (!list)
+		return;
 
 	// Find first and last indices of the textures to sort
-	int first = 0;
-	int last  = 0;
+	unsigned first = textures[0]->index();
+	unsigned last  = first;
 	for (auto tex : textures)
 	{
 		if (tex->list() != list)
@@ -265,7 +330,41 @@ void TextureEditor::sortTextures(const vector<CTexture*>& textures) const
 		last  = std::cmp_greater(last, index) ? last : index;
 	}
 
+	// Backup pre-sorted texture order to determine index swaps for undo step
+	vector<CTexture*> before_order;
+	before_order.reserve(last - first + 1);
+	for (unsigned i = first; i <= last; ++i)
+		before_order.push_back(list->texture(i));
+
+	auto undo_recording = undo_manager_->currentlyRecording();
+	if (!undo_recording)
+		undo_manager_->beginRecord("Sort Textures");
+
 	list->sortTextures(first, last);
+
+	// Build map of swapped texture indices for undo step
+	std::map<unsigned, unsigned> index_swaps;
+	for (unsigned new_index = first; new_index <= last; ++new_index)
+	{
+		auto tex = list->texture(new_index);
+		auto it  = std::ranges::find(before_order, tex);
+		if (it == before_order.end())
+			return;
+
+		auto old_index = first + static_cast<unsigned>(std::distance(before_order.begin(), it));
+		if (old_index != new_index)
+			index_swaps[old_index] = new_index;
+	}
+
+	bool any_swaps = false;
+	if (!index_swaps.empty())
+	{
+		undo_manager_->recordUndoStep<TextureListReorderUS>(*this, *list, first, last, std::move(index_swaps));
+		any_swaps = true;
+	}
+
+	if (!undo_recording)
+		undo_manager_->endRecord(any_swaps);
 
 	signals_.textures_modified(textures);
 }
@@ -281,6 +380,12 @@ void TextureEditor::renameTextures(const vector<CTexture*>& textures, bool each)
 	// Check any are selected
 	if (each || textures.size() == 1)
 	{
+		bool renamed = false;
+
+		// Begin undo level here if multiple textures are being renamed
+		if (textures.size() > 1)
+			undo_manager_->beginRecord("Rename Textures");
+
 		// If only one entry is selected, or "rename each" mode is desired, just do basic rename
 		for (auto texture : textures)
 		{
@@ -296,10 +401,24 @@ void TextureEditor::renameTextures(const vector<CTexture*>& textures, bool each)
 			// Rename entry (if needed)
 			if (!new_name.empty() && texture->name() != new_name)
 			{
+				// Begin undo level if single texture rename
+				if (textures.size() == 1)
+					undo_manager_->beginRecord(fmt::format("Rename Texture: {} -> {}", texture->name(), new_name));
+
+				// Record undo steps for name and state
+				undo_manager_->recordUndoStep<TexturePropertyChangeUS>(*this, *texture, "name", texture->name());
+				if (texture->state() == CTexture::State::Unmodified)
+					undo_manager_->recordUndoStep<TexturePropertyChangeUS>(
+						*this, *texture, "state", static_cast<int>(texture->state()));
+
 				texture->setName(new_name);
 				texture->setState(CTexture::State::Modified);
+
+				renamed = true;
 			}
 		}
+
+		undo_manager_->endRecord(renamed);
 	}
 	else if (textures.size() > 1)
 	{
@@ -325,9 +444,12 @@ void TextureEditor::renameTextures(const vector<CTexture*>& textures, bool each)
 		// Apply mass rename to list of names
 		if (!new_name.empty())
 		{
+			undo_manager_->beginRecord("Rename Textures");
+
 			misc::doMassRename(names, new_name);
 
 			// Go through the list
+			bool renamed = false;
 			for (size_t a = 0; a < textures.size(); a++)
 			{
 				// Rename the entry (if needed)
@@ -343,10 +465,21 @@ void TextureEditor::renameTextures(const vector<CTexture*>& textures, bool each)
 					strutil::replaceIP(filename, "&&", fmt::format("{}", a));
 					strutil::replaceIP(filename, "&", fmt::format("{}", a + 1));
 
+					// Record undo steps for name and state
+					undo_manager_->recordUndoStep<TexturePropertyChangeUS>(
+						*this, *textures[a], "name", textures[a]->name());
+					if (textures[a]->state() == CTexture::State::Unmodified)
+						undo_manager_->recordUndoStep<TexturePropertyChangeUS>(
+							*this, *textures[a], "state", static_cast<int>(textures[a]->state()));
+
 					textures[a]->setName(filename);
 					textures[a]->setState(CTexture::State::Modified);
+
+					renamed = true;
 				}
 			}
+
+			undo_manager_->endRecord(renamed);
 		}
 	}
 
@@ -382,107 +515,149 @@ void TextureEditor::setTextureSize(int width, int height) const
 	if (!tex_current_)
 		return;
 
+	undo_manager_->beginRecord(fmt::format("{}: Resize Texture", tex_current_->name()));
+
 	if (width > 0)
+	{
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(
+			*this, *tex_current_, "width", static_cast<unsigned>(tex_current_->width()));
 		tex_current_->setWidth(width);
+	}
 	if (height > 0)
+	{
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(
+			*this, *tex_current_, "height", static_cast<unsigned>(tex_current_->height()));
 		tex_current_->setHeight(height);
+	}
 
 	signalCurrentTextureModified(true, false, false);
+
+	undo_manager_->endRecord(true);
 }
 
-void TextureEditor::setTextureScaleX(double scale) const
+void TextureEditor::setTextureScale(optional<double> x, optional<double> y) const
 {
 	if (!tex_current_)
 		return;
 
-	tex_current_->setScaleX(scale);
+	undo_manager_->beginRecord(fmt::format("{}: Change Scale", tex_current_->name()));
+
+	if (x.has_value())
+	{
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(*this, *tex_current_, "scale_x", tex_current_->scaleX());
+		tex_current_->setScaleX(x.value());
+	}
+	if (y.has_value())
+	{
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(*this, *tex_current_, "scale_y", tex_current_->scaleY());
+		tex_current_->setScaleY(y.value());
+	}
 
 	signalCurrentTextureModified(true, false, false);
+
+	undo_manager_->endRecord(true);
 }
 
-void TextureEditor::setTextureScaleY(double scale) const
+void TextureEditor::setTextureFlag(CTexture::Flag flag, bool on) const
 {
 	if (!tex_current_)
 		return;
 
-	tex_current_->setScaleY(scale);
+	auto prev = tex_current_->setFlag(flag, on);
 
-	signalCurrentTextureModified(true, false, false);
-}
+	if (prev != on)
+	{
+		string flag_name;
+		switch (flag)
+		{
+		case CTexture::Flag::WorldPanning: flag_name = "worldpanning"; break;
+		case CTexture::Flag::Optional:     flag_name = "optional"; break;
+		case CTexture::Flag::NoDecals:     flag_name = "nodecals"; break;
+		case CTexture::Flag::NullTexture:  flag_name = "nulltexture"; break;
+		case CTexture::Flag::NoTrim:       flag_name = "notrim"; break;
+		default:                           return;
+		}
 
-void TextureEditor::setTextureFlag(string_view flag, bool on) const
-{
-	if (!tex_current_)
-		return;
-
-	if (strutil::equalCI(flag, "worldpanning"))
-		tex_current_->setWorldPanning(on);
-	else if (strutil::equalCI(flag, "optional"))
-		tex_current_->setOptional(on);
-	else if (strutil::equalCI(flag, "nodecals"))
-		tex_current_->setNoDecals(on);
-	else if (strutil::equalCI(flag, "nulltexture"))
-		tex_current_->setNullTexture(on);
-	else if (strutil::equalCI(flag, "notrim"))
-		tex_current_->setNoTrim(on);
-	else
-		return; // Unknown flag
-
-	signalCurrentTextureModified(false, false, false);
+		undo_manager_->beginRecord(fmt::format("{}: \"{}\" {}", tex_current_->name(), flag_name, on ? "ON" : "OFF"));
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(*this, *tex_current_, flag_name, prev);
+		signalCurrentTextureModified(false, false, false);
+		undo_manager_->endRecord(true);
+	}
 }
 
 void TextureEditor::setTextureType(CTexture::Type type) const
 {
 	if (!tex_current_)
 		return;
+
+	undo_manager_->beginRecord(fmt::format("{}: Change Type", tex_current_->name()));
+	undo_manager_->recordUndoStep<TexturePropertyChangeUS>(*this, *tex_current_, "type", tex_current_->type());
 	tex_current_->setType(type);
 	signalCurrentTextureModified(false, false, false);
+	undo_manager_->endRecord(true);
 }
 
-void TextureEditor::setTextureOffsetX(int offset) const
+void TextureEditor::setTextureOffset(optional<int> x, optional<int> y) const
 {
 	if (!tex_current_)
 		return;
-	tex_current_->setOffsetX(offset);
+
+	undo_manager_->beginRecord(fmt::format("{}: Change Offsets", tex_current_->name()));
+
+	if (x.has_value())
+	{
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(
+			*this, *tex_current_, "offset_x", tex_current_->offsetX());
+		tex_current_->setOffsetX(x.value());
+	}
+	if (y.has_value())
+	{
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(
+			*this, *tex_current_, "offset_y", tex_current_->offsetY());
+		tex_current_->setOffsetY(y.value());
+	}
+
 	signalCurrentTextureModified(false, false, false);
+
+	undo_manager_->endRecord(true);
 }
 
-void TextureEditor::setTextureOffsetY(int offset) const
-{
-	if (!tex_current_)
-		return;
-	tex_current_->setOffsetY(offset);
-	signalCurrentTextureModified(false, false, false);
-}
-
-void TextureEditor::setPatchOffsetX(int offset) const
+void TextureEditor::setPatchOffset(optional<int> x, optional<int> y) const
 {
 	if (!tex_current_ || selected_patches_.empty())
 		return;
 
-	for (unsigned index : selected_patches_)
-		if (auto patch = tex_current_->patch(index))
-			patch->setOffsetX(offset);
-
-	signalCurrentTextureModified(true, false, true);
-}
-
-void TextureEditor::setPatchOffsetY(int offset) const
-{
-	if (!tex_current_ || selected_patches_.empty())
-		return;
+	undo_manager_->beginRecord(fmt::format("{}: Change Patch Offsets", tex_current_->name()));
 
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
-			patch->setOffsetY(offset);
+		{
+			if (x.has_value())
+			{
+				undo_manager_->recordUndoStep<PatchPropertyChangeUS>(
+					*this, *tex_current_, index, "offset_x", patch->offset().x);
+				patch->setOffsetX(x.value());
+			}
+			if (y.has_value())
+			{
+				undo_manager_->recordUndoStep<PatchPropertyChangeUS>(
+					*this, *tex_current_, index, "offset_y", patch->offset().y);
+				patch->setOffsetY(y.value());
+			}
+		}
 
-	signalCurrentTextureModified(true, false, true);
+	signalCurrentTextureModified(false, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::movePatch(const Vec2i& offset) const
 {
 	if (!tex_current_ || selected_patches_.empty())
 		return;
+
+	undo_manager_->beginRecord(fmt::format("{}: Move Patch(es)", tex_current_->name()));
+	undo_manager_->recordUndoStep<PatchMoveUS>(*this, *tex_current_, selected_patches_, offset);
 
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
@@ -492,6 +667,8 @@ void TextureEditor::movePatch(const Vec2i& offset) const
 		}
 
 	signalCurrentTextureModified(true, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::setPatchBlendType(CTPatchEx::BlendType type) const
@@ -499,12 +676,20 @@ void TextureEditor::setPatchBlendType(CTPatchEx::BlendType type) const
 	if (!tex_current_ || selected_patches_.empty())
 		return;
 
+	undo_manager_->beginRecord(fmt::format("{}: Change Patch Blend Type", tex_current_->name()));
+
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
+			{
+				undo_manager_->recordUndoStep<PatchPropertyChangeUS>(
+					*this, *tex_current_, index, "blend_type", static_cast<int>(patch_ex->blendType()));
 				patch_ex->setBlendType(type);
+			}
 
 	signalCurrentTextureModified(true, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::setPatchFlag(string_view flag, bool on) const
@@ -512,12 +697,20 @@ void TextureEditor::setPatchFlag(string_view flag, bool on) const
 	if (!tex_current_ || selected_patches_.empty())
 		return;
 
+	undo_manager_->beginRecord(fmt::format("{}: Patch \"{}\" {}", tex_current_->name(), flag, on ? "ON" : "OFF"));
+
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
+			{
+				undo_manager_->recordUndoStep<PatchPropertyChangeUS>(
+					*this, *tex_current_, index, flag, patch_ex->hasFlag(flag));
 				patch_ex->setFlag(flag, on);
+			}
 
 	signalCurrentTextureModified(false, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::setPatchRotation(int rotation) const
@@ -525,12 +718,20 @@ void TextureEditor::setPatchRotation(int rotation) const
 	if (!tex_current_ || selected_patches_.empty())
 		return;
 
+	undo_manager_->beginRecord(fmt::format("{}: Change Patch Rotation", tex_current_->name()));
+
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
+			{
+				undo_manager_->recordUndoStep<PatchPropertyChangeUS>(
+					*this, *tex_current_, index, "rotation", static_cast<int>(patch_ex->rotation()));
 				patch_ex->setRotation(rotation);
+			}
 
 	signalCurrentTextureModified(true, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::setPatchAlpha(double alpha) const
@@ -538,12 +739,20 @@ void TextureEditor::setPatchAlpha(double alpha) const
 	if (!tex_current_ || selected_patches_.empty())
 		return;
 
+	undo_manager_->beginRecord(fmt::format("{}: Change Patch Alpha", tex_current_->name()));
+
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
+			{
+				undo_manager_->recordUndoStep<PatchPropertyChangeUS>(
+					*this, *tex_current_, index, "alpha", static_cast<double>(patch_ex->alpha()));
 				patch_ex->setAlpha(alpha);
+			}
 
 	signalCurrentTextureModified(true, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::setPatchAlphaStyle(string_view style) const
@@ -551,12 +760,20 @@ void TextureEditor::setPatchAlphaStyle(string_view style) const
 	if (!tex_current_ || selected_patches_.empty())
 		return;
 
+	undo_manager_->beginRecord(fmt::format("{}: Change Patch Alpha Style", tex_current_->name()));
+
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
+			{
+				undo_manager_->recordUndoStep<PatchPropertyChangeUS>(
+					*this, *tex_current_, index, "style", patch_ex->style());
 				patch_ex->setStyle(style);
+			}
 
 	signalCurrentTextureModified(true, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::setPatchColour(const ColRGBA& colour) const
@@ -564,12 +781,20 @@ void TextureEditor::setPatchColour(const ColRGBA& colour) const
 	if (!tex_current_ || selected_patches_.empty())
 		return;
 
+	undo_manager_->beginRecord(fmt::format("{}: Change Patch Colour", tex_current_->name()));
+
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
+			{
+				undo_manager_->recordUndoStep<PatchPropertyChangeUS>(
+					*this, *tex_current_, index, "colour", colour::toInt(patch_ex->colour()));
 				patch_ex->setColour(colour);
+			}
 
 	signalCurrentTextureModified(true, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::setPatchTintAmount(double amount) const
@@ -577,12 +802,20 @@ void TextureEditor::setPatchTintAmount(double amount) const
 	if (!tex_current_ || selected_patches_.empty())
 		return;
 
+	undo_manager_->beginRecord(fmt::format("{}: Change Patch Tint Amount", tex_current_->name()));
+
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
+			{
+				undo_manager_->recordUndoStep<PatchPropertyChangeUS>(
+					*this, *tex_current_, index, "tint_amount", patch_ex->tintAmount());
 				patch_ex->setTintAmount(amount);
+			}
 
 	signalCurrentTextureModified(true, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::setPatchTranslation(string_view translation) const
@@ -594,12 +827,24 @@ void TextureEditor::setPatchTranslation(string_view translation) const
 	if (!translation.empty())
 		t.parse(translation);
 
+	undo_manager_->beginRecord(fmt::format("{}: Change Patch Translation", tex_current_->name()));
+
 	for (unsigned index : selected_patches_)
 		if (auto patch = tex_current_->patch(index))
 			if (auto patch_ex = dynamic_cast<CTPatchEx*>(patch))
+			{
+				undo_manager_->recordUndoStep<PatchPropertyChangeUS>(
+					*this,
+					*tex_current_,
+					index,
+					"translation",
+					patch_ex->translation() ? patch_ex->translation()->asText() : "");
 				patch_ex->setTranslation(t);
+			}
 
 	signalCurrentTextureModified(true, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::addPatch(string_view patch) const
@@ -607,8 +852,11 @@ void TextureEditor::addPatch(string_view patch) const
 	if (!tex_current_)
 		return;
 
+	undo_manager_->beginRecord(fmt::format("{}: Add Patch", tex_current_->name()));
+	undo_manager_->recordUndoStep<TexturePatchListChangeUS>(*this, *tex_current_);
 	tex_current_->addPatch(patch);
 	signalCurrentTextureModified(true, true, false);
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::removePatch()
@@ -621,8 +869,11 @@ void TextureEditor::removePatch()
 	selected_patches_.clear();
 
 	// Remove patches
+	undo_manager_->beginRecord(fmt::format("{}: Remove Patch", tex_current_->name()));
+	undo_manager_->recordUndoStep<TexturePatchListChangeUS>(*this, *tex_current_);
 	tex_current_->removePatches(to_remove);
 	signalCurrentTextureModified(true, true, false);
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::replacePatch(string_view patch) const
@@ -630,18 +881,26 @@ void TextureEditor::replacePatch(string_view patch) const
 	if (!tex_current_ || selected_patches_.empty())
 		return;
 
+	undo_manager_->beginRecord(fmt::format("{}: Replace Patch", tex_current_->name()));
+	undo_manager_->recordUndoStep<TexturePatchListChangeUS>(*this, *tex_current_);
+
 	if (selected_patches_.size() == 1)
 		tex_current_->replacePatch(selected_patches_[0], patch);
 	else
 		tex_current_->replacePatches(selected_patches_, patch);
 
 	signalCurrentTextureModified(true, false, true);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::duplicatePatch(int xoff, int yoff)
 {
 	if (!tex_current_ || selected_patches_.empty())
 		return;
+
+	undo_manager_->beginRecord(fmt::format("{}: Duplicate Patch", tex_current_->name()));
+	undo_manager_->recordUndoStep<TexturePatchListChangeUS>(*this, *tex_current_);
 
 	if (selected_patches_.size() == 1)
 		tex_current_->duplicatePatch(selected_patches_[0], xoff, yoff);
@@ -653,6 +912,8 @@ void TextureEditor::duplicatePatch(int xoff, int yoff)
 		index++;
 
 	signalCurrentTextureModified(true, true, false);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::patchForward()
@@ -662,6 +923,9 @@ void TextureEditor::patchForward()
 
 	if (vectorContains(selected_patches_, static_cast<unsigned>(tex_current_->nPatches() - 1)))
 		return; // Can't move if last patch is selected
+
+	undo_manager_->beginRecord(fmt::format("{}: Move Patch Forward", tex_current_->name()));
+	undo_manager_->recordUndoStep<TexturePatchListChangeUS>(*this, *tex_current_);
 
 	if (selected_patches_.size() == 1)
 		tex_current_->swapPatches(selected_patches_[0], selected_patches_[0] + 1);
@@ -681,6 +945,8 @@ void TextureEditor::patchForward()
 		index++;
 
 	signalCurrentTextureModified(true, true, false);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::patchBack()
@@ -690,6 +956,9 @@ void TextureEditor::patchBack()
 
 	if (vectorContains(selected_patches_, 0u))
 		return; // Can't move if first patch is selected
+
+	undo_manager_->beginRecord(fmt::format("{}: Move Patch Back", tex_current_->name()));
+	undo_manager_->recordUndoStep<TexturePatchListChangeUS>(*this, *tex_current_);
 
 	if (selected_patches_.size() == 1)
 		tex_current_->swapPatches(selected_patches_[0], selected_patches_[0] - 1);
@@ -709,15 +978,54 @@ void TextureEditor::patchBack()
 		index--;
 
 	signalCurrentTextureModified(true, true, false);
+
+	undo_manager_->endRecord(true);
 }
 
 void TextureEditor::signalCurrentTextureModified(bool texture, bool patch_list, bool patches) const
 {
-	tex_modified_ = true;
+	// Record undo step for texture state change if needed
+	if (undo_manager_->currentlyRecording() && tex_current_->state() != CTexture::State::Modified)
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(
+			*this, *tex_current_, "state", static_cast<int>(tex_current_->state()));
+
+	// Mark texture as modified
 	tex_current_->setState(CTexture::State::Modified);
 
+	// Signal modification
 	if (patches)
 		signals_.patches_modified(selected_patches_);
-
 	signals_.current_texture_modified(texture, patch_list);
+}
+
+void TextureEditor::setupTextureBackup(const CTexture& texture)
+{
+	for (auto& tx : texturex_entries_)
+	{
+		if (tx.texturex.get() == texture.list())
+		{
+			// Check if we already have a backup for this texture
+			if (tx.backup_textures.contains(&texture))
+				return;
+
+			// Create a backup of the texture
+			tx.backup_textures[&texture] = std::make_unique<CTexture>();
+			tx.backup_textures[&texture]->copyTexture(texture);
+		}
+	}
+}
+
+CTexture* TextureEditor::getTextureBackup(const CTexture& texture) const
+{
+	for (const auto& tx : texturex_entries_)
+	{
+		if (tx.texturex.get() == texture.list())
+		{
+			auto it = tx.backup_textures.find(&texture);
+			if (it != tx.backup_textures.end())
+				return it->second.get();
+		}
+	}
+
+	return nullptr;
 }

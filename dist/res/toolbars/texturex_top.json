@@ -1,6 +1,5 @@
 {
   "items": [
-    { "type": "action", "id": "txed_save", "show_text": true },
     {
       "type": "button",
       "id": "revert",

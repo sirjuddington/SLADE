@@ -134,6 +134,21 @@ CTPatchEx::CTPatchEx(const CTPatchEx& copy) :
 CTPatchEx::~CTPatchEx() = default;
 
 // -----------------------------------------------------------------------------
+// Returns true if the patch has [flag] set
+// -----------------------------------------------------------------------------
+bool CTPatchEx::hasFlag(string_view flag) const
+{
+	if (strutil::equalCI(flag, "FlipX"))
+		return flip_x_;
+	else if (strutil::equalCI(flag, "FlipY"))
+		return flip_y_;
+	else if (strutil::equalCI(flag, "UseOffsets"))
+		return use_offsets_;
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Sets the patch's [translation] (but not blend type)
 // -----------------------------------------------------------------------------
 void CTPatchEx::setTranslation(const Translation& translation)
@@ -142,6 +157,23 @@ void CTPatchEx::setTranslation(const Translation& translation)
 		translation_ = std::make_unique<Translation>();
 
 	translation_->copy(translation);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the patch's translation from a string definition (but not blend type)
+// -----------------------------------------------------------------------------
+void CTPatchEx::setTranslation(string_view trans_str)
+{
+	if (trans_str.empty())
+	{
+		translation_.reset();
+		return;
+	}
+
+	if (!translation_)
+		translation_ = std::make_unique<Translation>();
+
+	translation_->parse(trans_str);
 }
 
 // -----------------------------------------------------------------------------
@@ -398,27 +430,24 @@ CTexture::~CTexture() = default;
 // If [keep_type] is true, the current texture type (extended/regular) will be
 // kept, otherwise it will be converted to the type of [tex]
 // -----------------------------------------------------------------------------
-void CTexture::copyTexture(const CTexture& tex, bool keep_type)
+void CTexture::copyTexture(const CTexture& tex, bool keep_type, bool patches)
 {
 	// Clear current texture
 	clear();
 
 	// Copy texture info
-	name_          = tex.name_;
-	size_          = tex.size_;
-	def_size_      = tex.def_size_;
-	scale_         = tex.scale_;
-	world_panning_ = tex.world_panning_;
+	name_     = tex.name_;
+	size_     = tex.size_;
+	def_size_ = tex.def_size_;
+	scale_    = tex.scale_;
+	flags_    = tex.flags_;
 	if (!keep_type)
 	{
 		extended_ = tex.extended_;
 		defined_  = tex.defined_;
 	}
-	optional_     = tex.optional_;
-	no_decals_    = tex.no_decals_;
-	null_texture_ = tex.null_texture_;
-	offset_       = tex.offset_;
-	type_         = tex.type_;
+	offset_ = tex.offset_;
+	type_   = tex.type_;
 
 	// Update scaling
 	if (extended_)
@@ -435,6 +464,10 @@ void CTexture::copyTexture(const CTexture& tex, bool keep_type)
 		if (scale_.y == 1)
 			scale_.y = 0;
 	}
+
+	// Done if we aren't copying patches
+	if (!patches)
+		return;
 
 	// Copy patches
 	for (unsigned a = 0; a < tex.nPatches(); a++)
@@ -528,6 +561,11 @@ int CTexture::patchIndex(const CTPatch* patch) const
 	return -1;
 }
 
+void CTexture::setWorldPanning(bool wp)
+{
+	flags_ = (flags_ & ~static_cast<u8>(Flag::WorldPanning)) | (wp ? static_cast<u8>(Flag::WorldPanning) : 0);
+}
+
 // -----------------------------------------------------------------------------
 // Sets the texture type based on the given CTexture::Type enum value
 // -----------------------------------------------------------------------------
@@ -544,11 +582,32 @@ void CTexture::setType(Type type)
 	}
 }
 
+void CTexture::setOptional(bool opt)
+{
+	flags_ = (flags_ & ~static_cast<u8>(Flag::Optional)) | (opt ? static_cast<u8>(Flag::Optional) : 0);
+}
+void CTexture::setNoDecals(bool nd)
+{
+	flags_ = (flags_ & ~static_cast<u8>(Flag::NoDecals)) | (nd ? static_cast<u8>(Flag::NoDecals) : 0);
+}
+void CTexture::setNullTexture(bool nt)
+{
+	flags_ = (flags_ & ~static_cast<u8>(Flag::NullTexture)) | (nt ? static_cast<u8>(Flag::NullTexture) : 0);
+}
+void CTexture::setNoTrim(bool nt)
+{
+	flags_ = (flags_ & ~static_cast<u8>(Flag::NoTrim)) | (nt ? static_cast<u8>(Flag::NoTrim) : 0);
+}
+
 // -----------------------------------------------------------------------------
 // Sets the texture edit state
 // -----------------------------------------------------------------------------
 void CTexture::setState(State state)
 {
+	// Ignore if no change
+	if (state == state_)
+		return;
+
 	// New stays new until saved (set to unmodified)
 	if (state == State::Modified && state_ == State::New)
 		return;
@@ -557,20 +616,30 @@ void CTexture::setState(State state)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the given [flag] [on] or off, returning the previous state of the flag
+// -----------------------------------------------------------------------------
+bool CTexture::setFlag(Flag flag, bool on)
+{
+	auto flag_val = static_cast<u8>(flag);
+	auto prev_on  = (flags_ & flag_val) != 0;
+
+	flags_ = (flags_ & ~flag_val) | (on ? flag_val : 0);
+
+	return prev_on;
+}
+
+// -----------------------------------------------------------------------------
 // Clears all texture data
 // -----------------------------------------------------------------------------
 void CTexture::clear()
 {
-	name_          = "";
-	size_          = { 0, 0 };
-	def_size_      = { 0, 0 };
-	scale_         = { 1., 1. };
-	defined_       = false;
-	world_panning_ = false;
-	optional_      = false;
-	no_decals_     = false;
-	null_texture_  = false;
-	offset_        = { 0, 0 };
+	name_     = "";
+	size_     = { 0, 0 };
+	def_size_ = { 0, 0 };
+	scale_    = { 1., 1. };
+	defined_  = false;
+	flags_    = 0;
+	offset_   = { 0, 0 };
 	patches_.clear();
 }
 
@@ -773,13 +842,31 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 }
 
 // -----------------------------------------------------------------------------
+// Replaces the current patch list with [new_patches].
+// Returns false if the patch types don't match, true otherwise.
+//
+// NOTE: This will swap the lists, so [new_patches] will contain the old patches
+// after calling this
+// -----------------------------------------------------------------------------
+bool CTexture::replacePatches(vector<unique_ptr<CTPatch>>& new_patches)
+{
+	// Check patch type mismatch
+	if (!new_patches.empty() && new_patches[0]->isExtended() != patches_[0]->isExtended())
+		return false;
+
+	std::swap(patches_, new_patches);
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
 // Parses a TEXTURES format texture definition
 // -----------------------------------------------------------------------------
 bool CTexture::parse(Tokenizer& tz, string_view type)
 {
 	// Check if optional
 	if (tz.advIfNextNC("optional"))
-		optional_ = true;
+		setOptional(true);
 
 	// Read basic info
 	type_     = type;
@@ -822,19 +909,19 @@ bool CTexture::parse(Tokenizer& tz, string_view type)
 
 			// WorldPanning
 			else if (tz.checkNC("WorldPanning"))
-				world_panning_ = true;
+				setWorldPanning(true);
 
 			// NoDecals
 			else if (tz.checkNC("NoDecals"))
-				no_decals_ = true;
+				setNoDecals(true);
 
 			// NullTexture
 			else if (tz.checkNC("NullTexture"))
-				null_texture_ = true;
+				setNullTexture(true);
 
 			// NoTrim
 			else if (tz.checkNC("NoTrim"))
-				no_trim_ = true;
+				setNoTrim(true);
 
 			// Patch
 			else if (tz.checkNC("Patch"))
@@ -903,7 +990,7 @@ string CTexture::asText()
 
 	// Init text string
 	string text;
-	if (optional_)
+	if (isOptional())
 		text = fmt::format("{} Optional \"{}\", {}, {}\n{{\n", type_, name_, size_.x, size_.y);
 	else
 		text = fmt::format("{} \"{}\", {}, {}\n{{\n", type_, name_, size_.x, size_.y);
@@ -915,13 +1002,13 @@ string CTexture::asText()
 		text += fmt::format("\tYScale {:1.3f}\n", scale_.y);
 	if (offset_.x != 0 || offset_.y != 0)
 		text += fmt::format("\tOffset {}, {}\n", offset_.x, offset_.y);
-	if (world_panning_)
+	if (worldPanning())
 		text += "\tWorldPanning\n";
-	if (no_decals_)
+	if (noDecals())
 		text += "\tNoDecals\n";
-	if (null_texture_)
+	if (nullTexture())
 		text += "\tNullTexture\n";
-	if (no_trim_)
+	if (noTrim())
 		text += "\tNoTrim\n";
 
 	// Write patches

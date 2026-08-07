@@ -52,6 +52,7 @@
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "TextureEditor/UI/TextureEditorPanel.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/Dialogs/DirArchiveUpdateDialog.h"
 #include "UI/Dialogs/NewArchiveDiaog.h"
 #include "UI/Layout.h"
@@ -1300,8 +1301,7 @@ bool ArchiveManagerPanel::undo() const
 	// TEXTUREx panel
 	else if (S_CMPNOCASE(page_current->GetName(), wxS("texture")))
 	{
-		// TODO:
-		// dynamic_cast<texeditor::TextureEditorPanel*>(page_current)->undo();
+		dynamic_cast<texeditor::TextureEditorPanel*>(page_current)->undo();
 		return true;
 	}
 
@@ -1334,8 +1334,7 @@ bool ArchiveManagerPanel::redo() const
 	// TEXTUREx panel
 	else if (S_CMPNOCASE(page_current->GetName(), wxS("texture")))
 	{
-		// TODO:
-		// dynamic_cast<texeditor::TextureEditorPanel*>(page_current)->redo();
+		dynamic_cast<texeditor::TextureEditorPanel*>(page_current)->redo();
 		return true;
 	}
 
@@ -2213,6 +2212,7 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	{
 		auto te = dynamic_cast<texeditor::TextureEditorPanel*>(stc_archives_->GetPage(selection));
 		theMainWindow->addCustomMenu(te->textureMenu(), "&Texture");
+		theMainWindow->undoHistoryPanel()->setManager(te->undoManager());
 	}
 
 	theMainWindow->Thaw();

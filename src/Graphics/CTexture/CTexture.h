@@ -28,6 +28,8 @@ public:
 
 	virtual ArchiveEntry* patchEntry(Archive* parent = nullptr);
 
+	virtual bool isExtended() const { return false; }
+
 protected:
 	string        name_;
 	Vec2<int16_t> offset_ = { 0, 0 };
@@ -57,6 +59,8 @@ public:
 	CTPatchEx(const CTPatchEx& copy);
 	~CTPatchEx() override;
 
+	bool isExtended() const override { return true; }
+
 	bool         flipX() const { return flip_x_; }
 	bool         flipY() const { return flip_y_; }
 	bool         useOffsets() const { return use_offsets_; }
@@ -67,6 +71,7 @@ public:
 	BlendType    blendType() const { return blendtype_; }
 	Translation* translation() const { return translation_.get(); }
 	float        tintAmount() const { return tint_amount_; }
+	bool         hasFlag(string_view flag) const;
 
 	void setFlipX(bool flip) { flip_x_ = flip; }
 	void setFlipY(bool flip) { flip_y_ = flip; }
@@ -78,6 +83,7 @@ public:
 	void setStyle(string_view style) { style_ = style; }
 	void setBlendType(BlendType type) { blendtype_ = type; }
 	void setTranslation(const Translation& translation);
+	void setTranslation(string_view trans_str);
 	void setTintAmount(float amount) { tint_amount_ = amount; }
 	void setFlag(string_view flag, bool on = true);
 
@@ -107,7 +113,7 @@ class CTexture
 	friend class TextureXList;
 
 public:
-	enum class Type
+	enum class Type : u8
 	{
 		Texture = 0,
 		Sprite,
@@ -117,18 +123,27 @@ public:
 		HiRes
 	};
 
-	enum class State
+	enum class State : u8
 	{
 		Unmodified = 0,
 		Modified   = 1,
 		New        = 2
 	};
 
+	enum class Flag : u8
+	{
+		WorldPanning = 1,
+		Optional     = 2,
+		NoDecals     = 4,
+		NullTexture  = 8,
+		NoTrim       = 16
+	};
+
 	CTexture(bool extended = false) : extended_{ extended } {}
 	CTexture(string_view name, bool extended = false) : name_{ name }, extended_{ extended } {}
 	~CTexture();
 
-	void copyTexture(const CTexture& tex, bool keep_type = false);
+	void copyTexture(const CTexture& tex, bool keep_type = false, bool patches = true);
 
 	const vector<unique_ptr<CTPatch>>& patches() const { return patches_; }
 
@@ -143,14 +158,14 @@ public:
 	int16_t          offsetX() const { return offset_.x; }
 	int16_t          offsetY() const { return offset_.y; }
 	const Vec2<i16>& offset() const { return offset_; }
-	bool             worldPanning() const { return world_panning_; }
+	bool             worldPanning() const { return flags_ & static_cast<u8>(Flag::WorldPanning); }
 	const string&    type() const { return type_; }
 	Type             typeEnum() const;
 	bool             isExtended() const { return extended_; }
-	bool             isOptional() const { return optional_; }
-	bool             noDecals() const { return no_decals_; }
-	bool             nullTexture() const { return null_texture_; }
-	bool             noTrim() const { return no_trim_; }
+	bool             isOptional() const { return flags_ & static_cast<u8>(Flag::Optional); }
+	bool             noDecals() const { return flags_ & static_cast<u8>(Flag::NoDecals); }
+	bool             nullTexture() const { return flags_ & static_cast<u8>(Flag::NullTexture); }
+	bool             noTrim() const { return flags_ & static_cast<u8>(Flag::NoTrim); }
 	size_t           nPatches() const { return patches_.size(); }
 	CTPatch*         patch(size_t index) const;
 	State            state() const { return state_; }
@@ -168,16 +183,17 @@ public:
 	void setOffset(const Vec2<int16_t>& offset) { offset_ = offset; }
 	void setOffsetX(int16_t offset) { offset_.x = offset; }
 	void setOffsetY(int16_t offset) { offset_.y = offset; }
-	void setWorldPanning(bool wp) { world_panning_ = wp; }
+	void setWorldPanning(bool wp);
 	void setType(string_view type) { type_ = type; }
 	void setType(Type type);
 	void setExtended(bool ext) { extended_ = ext; }
-	void setOptional(bool opt) { optional_ = opt; }
-	void setNoDecals(bool nd) { no_decals_ = nd; }
-	void setNullTexture(bool nt) { null_texture_ = nt; }
-	void setNoTrim(bool nt) { no_trim_ = nt; }
+	void setOptional(bool opt);
+	void setNoDecals(bool nd);
+	void setNullTexture(bool nt);
+	void setNoTrim(bool nt);
 	void setState(State state);
 	void setList(TextureXList* list) { in_list_ = list; }
+	bool setFlag(Flag flag, bool on = true);
 
 	void clear();
 
@@ -190,6 +206,7 @@ public:
 	bool duplicatePatch(size_t index, int16_t offset_x = 8, int16_t offset_y = 8);
 	bool duplicatePatches(const vector<unsigned>& indices, int16_t offset_x = 8, int16_t offset_y = 8);
 	bool swapPatches(size_t p1, size_t p2);
+	bool replacePatches(vector<unique_ptr<CTPatch>>& new_patches);
 
 	bool   parse(Tokenizer& tz, string_view type);
 	bool   parseDefine(Tokenizer& tz);
@@ -213,22 +230,18 @@ public:
 private:
 	// Basic info
 	string                      name_;
-	Vec2<uint16_t>              size_          = { 0, 0 };
-	Vec2d                       scale_         = { 1., 1. };
-	bool                        world_panning_ = false;
+	Vec2<uint16_t>              size_  = { 0, 0 };
+	Vec2d                       scale_ = { 1., 1. };
+	u8                          flags_ = 0;
 	vector<unique_ptr<CTPatch>> patches_;
 	int                         index_ = -1;
 
 	// Extended (TEXTURES) info
-	string         type_         = "Texture";
-	bool           extended_     = false;
-	bool           defined_      = false;
-	bool           optional_     = false;
-	bool           no_decals_    = false;
-	bool           null_texture_ = false;
-	bool           no_trim_      = false;
-	Vec2<int16_t>  offset_       = { 0, 0 };
-	Vec2<uint16_t> def_size_     = { 0, 0 };
+	string         type_     = "Texture";
+	bool           extended_ = false;
+	bool           defined_  = false;
+	Vec2<int16_t>  offset_   = { 0, 0 };
+	Vec2<uint16_t> def_size_ = { 0, 0 };
 
 	// Editor info
 	State         state_   = State::Unmodified;

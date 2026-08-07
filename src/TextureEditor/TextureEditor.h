@@ -4,6 +4,7 @@
 
 namespace slade
 {
+class UndoManager;
 class CTexture;
 class PatchTable;
 class TextureXList;
@@ -17,8 +18,9 @@ public:
 	TextureEditor(shared_ptr<Archive> archive);
 	~TextureEditor();
 
-	Archive*    archive() const { return archive_.get(); }
-	PatchTable* patchTable() const { return patch_table_.get(); }
+	Archive*     archive() const { return archive_.get(); }
+	PatchTable*  patchTable() const { return patch_table_.get(); }
+	UndoManager* undoManager() const { return undo_manager_.get(); }
 
 	unsigned      nTextureLists() const { return texturex_entries_.size(); }
 	TextureXList* textureList(unsigned index) const;
@@ -26,15 +28,16 @@ public:
 	string        textureListName(const TextureXList& list) const;
 
 	CTexture* currentTexture() const { return tex_current_; }
-	void      openTexture(CTexture& texture);
-	void      closeTexture();
-	void      revertTexture();
-
-	bool currentModified() const { return tex_modified_; }
-	void setCurrentModified(bool modified = true) const { tex_modified_ = modified; }
+	bool currentTextureModified() const { return tex_current_ && tex_current_->state() == CTexture::State::Modified; }
+	void openTexture(CTexture& texture);
+	void closeTexture();
+	void revertTexture();
 
 	const vector<unsigned>& selectedPatches() const { return selected_patches_; }
 	void                    selectPatch(unsigned index, bool selected = true);
+
+	bool undo() const;
+	bool redo() const;
 
 	string importPatchFile(string_view filename, bool add_to_patch_table = true) const;
 
@@ -46,24 +49,21 @@ public:
 		int           width  = 0,
 		int           height = 0,
 		string_view   patch  = {}) const;
-	void deleteTexture(const CTexture& texture) const;
-	void moveTexture(const CTexture& texture, Direction direction) const;
+	void deleteTextures(const vector<CTexture*>& textures) const;
+	void moveTextures(const vector<CTexture*>& textures, Direction direction) const;
 	void sortTextures(const vector<CTexture*>& textures) const;
 	void renameTextures(const vector<CTexture*>& textures, bool each) const;
 	bool exportAsPNG(const CTexture& texture, string_view filename, const Palette* palette, bool force_rgba);
 
 	// Texture Editing
 	void setTextureSize(int width = -1, int height = -1) const;
-	void setTextureScaleX(double scale) const;
-	void setTextureScaleY(double scale) const;
-	void setTextureFlag(string_view flag, bool on = true) const;
+	void setTextureScale(optional<double> x, optional<double> y) const;
+	void setTextureFlag(CTexture::Flag flag, bool on = true) const;
 	void setTextureType(CTexture::Type type) const;
-	void setTextureOffsetX(int offset) const;
-	void setTextureOffsetY(int offset) const;
+	void setTextureOffset(optional<int> x, optional<int> y) const;
 
 	// Patch Editing
-	void setPatchOffsetX(int offset) const;
-	void setPatchOffsetY(int offset) const;
+	void setPatchOffset(optional<int> x, optional<int> y) const;
 	void movePatch(const Vec2i& offset) const;
 	void setPatchBlendType(CTPatchEx::BlendType type) const;
 	void setPatchFlag(string_view flag, bool on = true) const;
@@ -110,22 +110,25 @@ public:
 	Signals& signals() const { return signals_; }
 
 private:
-	unique_ptr<PatchTable> patch_table_;
-	shared_ptr<Archive>    archive_;
-	mutable Signals        signals_;
+	unique_ptr<PatchTable>  patch_table_;
+	shared_ptr<Archive>     archive_;
+	mutable Signals         signals_;
+	unique_ptr<UndoManager> undo_manager_;
 
 	struct TextureXEntry
 	{
 		weak_ptr<ArchiveEntry>   entry;
 		unique_ptr<TextureXList> texturex;
+
+		std::unordered_map<const CTexture*, unique_ptr<CTexture>> backup_textures; // For revert
 	};
 	vector<TextureXEntry> texturex_entries_;
 
-	CTexture*            tex_current_  = nullptr;
-	mutable bool         tex_modified_ = false; // If any modifications have been made since the texture was opened
-	unique_ptr<CTexture> tex_backup_;           // For revert
-	vector<unsigned>     selected_patches_;
+	CTexture*        tex_current_ = nullptr;
+	vector<unsigned> selected_patches_;
 
-	void signalCurrentTextureModified(bool texture, bool patch_list, bool patches) const;
+	void      signalCurrentTextureModified(bool texture, bool patch_list, bool patches) const;
+	void      setupTextureBackup(const CTexture& texture);
+	CTexture* getTextureBackup(const CTexture& texture) const;
 };
 } // namespace slade::texeditor

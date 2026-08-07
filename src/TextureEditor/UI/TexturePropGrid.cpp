@@ -223,28 +223,7 @@ void TexturePropGrid::textureChanged()
 		HideProperty(wxS("tex_scale_xd"), !tex->isExtended());
 		HideProperty(wxS("tex_scale_yd"), !tex->isExtended());
 
-		// Set basic texture properties
-		SetPropertyValue(wxS("tex_width"), tex->width());
-		SetPropertyValue(wxS("tex_height"), tex->height());
-		SetPropertyValue(wxS("world_panning"), tex->worldPanning());
-
-		// Set extended texture properties
-		if (tex->isExtended())
-		{
-			SetPropertyValue(wxS("tex_scale_xd"), tex->scaleX());
-			SetPropertyValue(wxS("tex_scale_yd"), tex->scaleY());
-			SetPropertyValue(wxS("tex_type"), static_cast<int>(tex->typeEnum()));
-			SetPropertyValue(wxS("optional"), tex->isOptional());
-			SetPropertyValue(wxS("no_decals"), tex->noDecals());
-			SetPropertyValue(wxS("null_texture"), tex->nullTexture());
-			SetPropertyValue(wxS("no_trim"), tex->noTrim());
-		}
-		else
-		{
-			// Non-extended textures use a different scale property
-			SetPropertyValue(wxS("tex_scale_x"), static_cast<int>(tex->scaleX() * 8));
-			SetPropertyValue(wxS("tex_scale_y"), static_cast<int>(tex->scaleY() * 8));
-		}
+		refreshTextureProperties();
 	}
 	else
 	{
@@ -256,6 +235,36 @@ void TexturePropGrid::textureChanged()
 	FitColumns();
 
 	Thaw();
+}
+
+void TexturePropGrid::refreshTextureProperties()
+{
+	auto tex = editor_->currentTexture();
+	if (!tex)
+		return;
+
+	// Set basic texture properties
+	SetPropertyValue(wxS("tex_width"), tex->width());
+	SetPropertyValue(wxS("tex_height"), tex->height());
+	SetPropertyValue(wxS("world_panning"), tex->worldPanning());
+
+	// Set extended texture properties
+	if (tex->isExtended())
+	{
+		SetPropertyValue(wxS("tex_scale_xd"), tex->scaleX());
+		SetPropertyValue(wxS("tex_scale_yd"), tex->scaleY());
+		SetPropertyValue(wxS("tex_type"), static_cast<int>(tex->typeEnum()));
+		SetPropertyValue(wxS("optional"), tex->isOptional());
+		SetPropertyValue(wxS("no_decals"), tex->noDecals());
+		SetPropertyValue(wxS("null_texture"), tex->nullTexture());
+		SetPropertyValue(wxS("no_trim"), tex->noTrim());
+	}
+	else
+	{
+		// Non-extended textures use a different scale property
+		SetPropertyValue(wxS("tex_scale_x"), static_cast<int>(tex->scaleX() * 8));
+		SetPropertyValue(wxS("tex_scale_y"), static_cast<int>(tex->scaleY() * 8));
+	}
 }
 
 void TexturePropGrid::patchesChanged()
@@ -393,29 +402,29 @@ void TexturePropGrid::onPropertyChanged(wxPropertyGridEvent& e)
 
 	// World panning flag
 	else if (e.GetPropertyName() == wxS("world_panning"))
-		editor_->setTextureFlag("worldpanning", e.GetValue().GetBool());
+		editor_->setTextureFlag(CTexture::Flag::WorldPanning, e.GetValue().GetBool());
 
 	// X Scale (non-extended)
 	else if (e.GetPropertyName() == wxS("tex_scale_x"))
 	{
 		auto val = e.GetValue().GetInteger();
-		editor_->setTextureScaleX(val == 0 ? 1.0 : val / 8.0);
+		editor_->setTextureScale(val == 0 ? 1.0 : val / 8.0, {});
 	}
 
 	// Y Scale (non-extended)
 	else if (e.GetPropertyName() == wxS("tex_scale_y"))
 	{
 		auto val = e.GetValue().GetInteger();
-		editor_->setTextureScaleY(val == 0 ? 1.0 : val / 8.0);
+		editor_->setTextureScale({}, val == 0 ? 1.0 : val / 8.0);
 	}
 
 	// X Scale (extended)
 	else if (e.GetPropertyName() == wxS("tex_scale_xd"))
-		editor_->setTextureScaleX(e.GetValue().GetDouble());
+		editor_->setTextureScale(e.GetValue().GetDouble(), {});
 
 	// Y Scale (extended)
 	else if (e.GetPropertyName() == wxS("tex_scale_yd"))
-		editor_->setTextureScaleY(e.GetValue().GetDouble());
+		editor_->setTextureScale({}, e.GetValue().GetDouble());
 
 	// Texture type
 	else if (e.GetPropertyName() == wxS("tex_type"))
@@ -423,27 +432,27 @@ void TexturePropGrid::onPropertyChanged(wxPropertyGridEvent& e)
 
 	// Optional flag
 	else if (e.GetPropertyName() == wxS("optional"))
-		editor_->setTextureFlag("optional", e.GetValue().GetBool());
+		editor_->setTextureFlag(CTexture::Flag::Optional, e.GetValue().GetBool());
 
 	// No decals flag
 	else if (e.GetPropertyName() == wxS("no_decals"))
-		editor_->setTextureFlag("nodecals", e.GetValue().GetBool());
+		editor_->setTextureFlag(CTexture::Flag::NoDecals, e.GetValue().GetBool());
 
 	// Null texture flag
 	else if (e.GetPropertyName() == wxS("null_texture"))
-		editor_->setTextureFlag("nulltexture", e.GetValue().GetBool());
+		editor_->setTextureFlag(CTexture::Flag::NullTexture, e.GetValue().GetBool());
 
 	// NoTrim flag
 	else if (e.GetPropertyName() == wxS("no_trim"))
-		editor_->setTextureFlag("notrim", e.GetValue().GetBool());
+		editor_->setTextureFlag(CTexture::Flag::NoTrim, e.GetValue().GetBool());
 
 	// Patch X position
 	else if (e.GetPropertyName() == wxS("patch_x"))
-		editor_->setPatchOffsetX(e.GetValue().GetInteger());
+		editor_->setPatchOffset(e.GetValue().GetInteger(), {});
 
 	// Patch Y position
 	else if (e.GetPropertyName() == wxS("patch_y"))
-		editor_->setPatchOffsetY(e.GetValue().GetInteger());
+		editor_->setPatchOffset({}, e.GetValue().GetInteger());
 
 	// Use source offsets
 	else if (e.GetPropertyName() == wxS("patch_use_offsets"))

@@ -37,8 +37,8 @@ if (BUILD_WX)
 	FetchContent_Declare(
 		wxWidgets
 		GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
-		#GIT_TAG 97050e18e2b68ddeccaef3d6a56f0ddf6701ded1 # master as of 2026-03-01
-		GIT_TAG v3.3.2
+		#GIT_TAG 68cef639a55be406e764015787c90169ac888135 # master as of 2026-07-07
+		GIT_TAG v3.3.3
 	)
 	FetchContent_GetProperties(wxwidgets)
 	FetchContent_MakeAvailable(wxwidgets)

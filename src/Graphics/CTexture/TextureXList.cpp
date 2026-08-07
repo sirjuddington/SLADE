@@ -457,7 +457,7 @@ bool TextureXList::readTEXTUREXData(const ArchiveEntry* texturex, const PatchTab
 
 		// Set flags
 		if (tdef.flags & Flags::WorldPanning)
-			tex->world_panning_ = true;
+			tex->setFlag(CTexture::Flag::WorldPanning, true);
 
 		// Read patches
 		int16_t n_patches = 0;
@@ -609,7 +609,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 			txdef.patchcount   = tex->nPatches();
 
 			// Check for WorldPanning flag
-			if (tex->world_panning_)
+			if (tex->worldPanning())
 				txdef.flags |= Flags::WorldPanning;
 
 			// Write texture definition
@@ -651,7 +651,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 			txdef.patchcount = tex->nPatches();
 
 			// Check for WorldPanning flag
-			if (tex->world_panning_)
+			if (tex->worldPanning())
 				txdef.flags |= Flags::WorldPanning;
 
 			// Write texture definition
@@ -849,7 +849,7 @@ bool TextureXList::convertToTEXTURES()
 		texture->convertExtended();
 
 	// First texture is null texture
-	textures_[0]->null_texture_ = true;
+	textures_[0]->setFlag(CTexture::Flag::NullTexture, true);
 
 	// Set new format
 	txformat_ = Format::Textures;
@@ -921,7 +921,7 @@ bool TextureXList::findErrors() const
 // -----------------------------------------------------------------------------
 // Find and remove duplicates that exist in another texture list
 // -----------------------------------------------------------------------------
-bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
+bool TextureXList::removeDupesFoundIn(const TextureXList& texture_list)
 {
 	vector<unsigned int> indices_to_remove;
 
