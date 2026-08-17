@@ -734,30 +734,53 @@ protected:
 	{
 		// Get image info
 		auto info = this->info(data, index);
+		if (info.width <= 0 || info.width > 65 || info.height != 64)
+			return false;
 
 		// Create image
 		image.create(info);
 		auto img_data = imageData(image);
 		auto img_mask = imageMask(image);
 
+		const uint8_t* data_end = data.data() + data.size();
+
 		// Read data
-		auto     cmdptr = reinterpret_cast<const uint16_t*>(data.data() + 4);
+		auto cmdptr = reinterpret_cast<const uint16_t*>(data.data() + 4);
 		uint32_t i, x, y;
 		for (x = 0; x < static_cast<unsigned>(info.width); ++x)
 		{
-			auto linecmds = reinterpret_cast<const int16_t*>(data.data() + wxINT16_SWAP_ON_BE(*cmdptr));
-			cmdptr++;
-			for (; wxINT16_SWAP_ON_BE(*linecmds); linecmds += 3)
+			if (reinterpret_cast<const uint8_t*>(cmdptr) + 2 > data_end)
+				return false;
+
+			auto line_offset = static_cast<uint32_t>(wxINT16_SWAP_ON_BE(*cmdptr));
+			if (line_offset >= data.size())
+				return false;
+
+			auto linecmds = reinterpret_cast<const int16_t*>(data.data() + line_offset);
+			for (;; linecmds += 3)
 			{
+				if (reinterpret_cast<const uint8_t*>(linecmds) + 2 > data_end)
+					return false;
+				if (wxINT16_SWAP_ON_BE(*linecmds) == 0)
+					break;
+				if (reinterpret_cast<const uint8_t*>(linecmds + 3) > data_end)
+					return false;
+
 				i = (wxINT16_SWAP_ON_BE(linecmds[2]) >> 1) + wxINT16_SWAP_ON_BE(linecmds[1]);
-				for (y = static_cast<uint32_t>((wxINT16_SWAP_ON_BE(linecmds[2]) >> 1));
-					 y < static_cast<uint32_t>((wxINT16_SWAP_ON_BE(linecmds[0]) / 2));
+				for (y = static_cast<uint32_t>(wxINT16_SWAP_ON_BE(linecmds[2]) >> 1);
+					 y < static_cast<uint32_t>(wxINT16_SWAP_ON_BE(linecmds[0]) / 2);
 					 ++y, ++i)
 				{
-					img_data[y * info.width + x] = data[i];
-					img_mask[y * info.width + x] = 255;
+					if (i >= data.size())
+						return false;
+					auto dst = y * static_cast<uint32_t>(info.width) + x;
+					if (dst >= static_cast<uint32_t>(info.width * info.height))
+						return false;
+					img_data[dst] = data[i];
+					img_mask[dst] = 255;
 				}
 			}
+			cmdptr++;
 		}
 
 		return true;

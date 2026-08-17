@@ -828,7 +828,8 @@ bool TextureXList::convertToTEXTURES()
 		texture->convertExtended();
 
 	// First texture is null texture
-	textures_[0]->null_texture_ = true;
+	if (!textures_.empty())
+		textures_[0]->null_texture_ = true;
 
 	// Set new format
 	txformat_ = Format::Textures;

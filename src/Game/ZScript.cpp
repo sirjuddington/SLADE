@@ -111,6 +111,9 @@ string parseType(const vector<string>& tokens, unsigned& index)
 {
 	string type;
 
+	if (index >= tokens.size())
+		return type;
+
 	// Qualifiers
 	while (index < tokens.size())
 	{
@@ -119,6 +122,9 @@ string parseType(const vector<string>& tokens, unsigned& index)
 		else
 			break;
 	}
+
+	if (index >= tokens.size())
+		return type;
 
 	type += tokens[index];
 
@@ -130,16 +136,18 @@ string parseType(const vector<string>& tokens, unsigned& index)
 	}
 
 	// Check for <>
-	if (tokens[index + 1] == '<')
+	if (index + 1 < tokens.size() && tokens[index + 1] == '<')
 	{
 		type += '<';
 		index += 2;
 		while (index < tokens.size() && tokens[index] != '>')
 			type += tokens[index++];
-		type += '>';
+		if (index < tokens.size() && tokens[index] == '>')
+			type += '>';
 	}
 
-	++index;
+	if (index < tokens.size())
+		++index;
 
 	return type;
 }
@@ -150,14 +158,14 @@ string parseType(const vector<string>& tokens, unsigned& index)
 string parseValue(const vector<string>& tokens, unsigned& index)
 {
 	string value;
-	while (true)
+	while (index < tokens.size())
 	{
 		// Read between ()
 		if (tokens[index] == '(')
 		{
 			int level = 1;
 			value += tokens[index++];
-			while (level > 0)
+			while (level > 0 && index < tokens.size())
 			{
 				if (tokens[index] == '(')
 					++level;
@@ -167,6 +175,9 @@ string parseValue(const vector<string>& tokens, unsigned& index)
 				value += tokens[index++];
 			}
 
+			if (level > 0)
+				break;
+
 			continue;
 		}
 
@@ -174,9 +185,6 @@ string parseValue(const vector<string>& tokens, unsigned& index)
 			break;
 
 		value += tokens[index++];
-
-		if (index >= tokens.size())
-			break;
 	}
 
 	return value;

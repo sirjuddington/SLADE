@@ -1390,7 +1390,7 @@ public:
 		size_t size = mc.size();
 		if (size < 8 || size > 4228)
 			return MATCH_FALSE;
-		if (mc[0] > 63 || mc[1] || mc[2] > 64 || mc[1] >= mc[2] || mc[3])
+		if (mc[0] > 64 || mc[2] > 64 || mc[0] > mc[2] || mc[1] || mc[3])
 			return MATCH_FALSE;
 
 		return MATCH_TRUE;

@@ -154,10 +154,10 @@ DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, Archive* archive) :
 	}
 
 	// Get Directory archive specific info
-	auto format_handler = dynamic_cast<DirArchiveHandler&>(archive->formatHandler());
-	removed_files_      = format_handler.removedFiles();
-	ignore_hidden_      = format_handler.hiddenFilesIgnored();
-	valid_              = true;
+	auto& format_handler = dynamic_cast<DirArchiveHandler&>(archive->formatHandler());
+	removed_files_       = format_handler.removedFiles();
+	ignore_hidden_       = format_handler.hiddenFilesIgnored();
+	valid_               = true;
 
 	// Get flat entry list
 	vector<ArchiveEntry*> entries;
@@ -2283,7 +2283,7 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 		{
 			checked_dir_archive_changes_ = true;
 
-			auto format_handler = dynamic_cast<DirArchiveHandler&>(change_list.archive->formatHandler());
+			auto& format_handler = dynamic_cast<DirArchiveHandler&>(change_list.archive->formatHandler());
 
 			// Auto apply if option set
 			if (dir_archive_change_action == 1)

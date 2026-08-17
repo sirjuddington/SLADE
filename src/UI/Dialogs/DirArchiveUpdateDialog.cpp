@@ -142,7 +142,7 @@ void DirArchiveUpdateDialog::onBtnOKClicked(wxCommandEvent& e)
 		else
 			ignore_changes.push_back(changes_[a]);
 
-	auto format_handler = dynamic_cast<DirArchiveHandler&>(archive_->formatHandler());
+	auto& format_handler = dynamic_cast<DirArchiveHandler&>(archive_->formatHandler());
 
 	format_handler.ignoreChangedEntries(ignore_changes);
 	format_handler.updateChangedEntries(*archive_, apply_changes);
