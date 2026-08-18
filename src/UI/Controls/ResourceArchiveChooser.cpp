@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ResourceArchiveChooser.h"
+
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
@@ -41,6 +42,7 @@
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
+#include <utility>
 
 using namespace slade;
 
@@ -169,7 +171,11 @@ void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 	wxSingleChoiceDialog dlg(this, wxS("Select a recent Archive to open"), wxS("Open Recent"), recent_wx);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		auto na = app::archiveManager().openArchive(recent_files[dlg.GetSelection()], true, true);
+		auto index = dlg.GetSelection();
+		if (index < 0 || std::cmp_greater_equal(index, recent_files.size()))
+			return;
+
+		auto na = app::archiveManager().openArchive(recent_files[index], true, true);
 		if (na)
 		{
 			list_resources_->Append(wxString::FromUTF8(na->filename(false)));

@@ -34,8 +34,7 @@
 
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
-#include "Utility/StringUtils.h"
-#include <algorithm>
+#include <utility>
 
 using namespace slade;
 
@@ -294,7 +293,7 @@ wxRect SCallTip::drawArgs(
 
 	bool long_params = (args_left + params_length) > MAX_WIDTH;
 
-	for (int a = 0; a < static_cast<int>(context.params.size()); a++)
+	for (int a = 0; std::cmp_less(a, context.params.size()); a++)
 	{
 		auto& arg = context.params[a];
 

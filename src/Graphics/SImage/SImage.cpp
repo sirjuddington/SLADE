@@ -483,11 +483,19 @@ void SImage::create(int width, int height, Type type, const Palette* pal, int in
 	// Create blank image
 	if (width > 0 && height > 0)
 	{
-		data_.reSize(width * height * bpp(), false);
+		const i64     data_size = static_cast<i64>(width) * height * bpp();
+		const i64     mask_size = static_cast<i64>(width) * height;
+		constexpr i64 max_u32   = std::numeric_limits<u32>::max();
+		if (data_size > max_u32 || mask_size > max_u32)
+		{
+			log::error("SImage::create: image dimensions too large ({}x{} bpp={})", width, height, bpp());
+			return;
+		}
+		data_.reSize(static_cast<u32>(data_size), false);
 		data_.fillData(0);
 		if (type == Type::PalMask)
 		{
-			mask_.reSize(width * height, false);
+			mask_.reSize(static_cast<u32>(mask_size), false);
 			mask_.fillData(0);
 		}
 	}

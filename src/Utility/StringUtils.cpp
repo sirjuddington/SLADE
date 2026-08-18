@@ -1120,7 +1120,7 @@ string_view strutil::Path::fileNameOf(string_view full_path, bool include_extens
 	if (!include_extension)
 	{
 		const auto ext_pos = full_path.find_last_of('.');
-		if (ext_pos != string_view::npos)
+		if (ext_pos != string_view::npos && ext_pos >= static_cast<size_t>(pos))
 			full_path.remove_suffix(full_path.size() - ext_pos);
 	}
 
