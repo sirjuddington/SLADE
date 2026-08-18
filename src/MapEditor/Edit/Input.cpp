@@ -1146,7 +1146,10 @@ void Input::handleKeyBind3d(string_view name)
 
 	// Toggle info overlay
 	else if (name == "me3d_toggle_info")
+	{
 		map3d_info_overlay = !map3d_info_overlay;
+		context_->updateInfoOverlay3d();
+	}
 
 	// Quick texture
 	else if (name == "me3d_quick_texture")

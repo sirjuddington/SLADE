@@ -548,13 +548,7 @@ void MapEditContext::update(double frametime)
 				if (selection_->setHilight(hl))
 				{
 					// Update 3d info overlay
-					if (map3d_info_overlay && hl.index >= 0)
-					{
-						info_3d_->update({ hl.index, hl.type }, map_.get());
-						info_showing_ = true;
-					}
-					else
-						info_showing_ = false;
+					updateInfoOverlay3d();
 
 					// Update properties panel if no selection
 					if (selection_->empty())
@@ -2055,7 +2049,7 @@ void MapEditContext::closeCurrentOverlay(bool cancel) const
 }
 
 // -----------------------------------------------------------------------------
-// Updates the current info overlay, depending on edit mode
+// Updates the current (2d mode) info overlay, depending on edit mode
 // -----------------------------------------------------------------------------
 void MapEditContext::updateInfoOverlay() const
 {
@@ -2068,6 +2062,22 @@ void MapEditContext::updateInfoOverlay() const
 	case Mode::Things:   info_thing_->update(selection_->hilightedThing()); break;
 	default:             break;
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Updates the current 3d mode info overlay
+// -----------------------------------------------------------------------------
+void MapEditContext::updateInfoOverlay3d()
+{
+	// Update 3d info overlay
+	auto hl = selection_->hilight();
+	if (map3d_info_overlay && hl.index >= 0)
+	{
+		info_3d_->update({ hl.index, hl.type }, map_.get());
+		info_showing_ = true;
+	}
+	else
+		info_showing_ = false;
 }
 
 // -----------------------------------------------------------------------------
