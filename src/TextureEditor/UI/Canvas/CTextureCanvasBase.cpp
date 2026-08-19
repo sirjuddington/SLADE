@@ -514,8 +514,8 @@ void CTextureCanvasBase::drawContent()
 		// Add info text
 		auto patch = texture_->patch(hilight_patch_);
 		auto image = patch_images_[hilight_patch_].get();
-		auto mid_x = tex_rect.x1() + patch_rects[hilight_patch_].tl.x + (patch_rects[hilight_patch_].width() * 0.5);
-		auto mid_y = tex_rect.y1() + patch_rects[hilight_patch_].tl.y + (patch_rects[hilight_patch_].height() * 0.5);
+		auto mid_x = patch_rects[hilight_patch_].tl.x + (patch_rects[hilight_patch_].width() * 0.5);
+		auto mid_y = patch_rects[hilight_patch_].tl.y + (patch_rects[hilight_patch_].height() * 0.5);
 		texts_.push_back(
 			{ .text      = patch->name(),
 			  .position  = { mid_x, mid_y },
