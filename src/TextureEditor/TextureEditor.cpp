@@ -113,10 +113,15 @@ void TextureEditor::revertTexture()
 
 	if (auto backup = getTextureBackup(*tex_current_))
 	{
+		undo_manager_->beginRecord(fmt::format("{}: Revert", tex_current_->name()));
+		undo_manager_->recordUndoStep<TextureModificationUS>(*this, *tex_current_);
+
 		tex_current_->copyTexture(*backup);
 		tex_current_->setState(backup->state());
 		selected_patches_.clear();
 		signals_.current_texture_modified(true, true);
+
+		undo_manager_->endRecord(true);
 	}
 	else
 		log::warning("No backup found for texture {}, unable to revert", tex_current_->name());
@@ -617,7 +622,7 @@ void TextureEditor::setTextureOffset(optional<int> x, optional<int> y) const
 		tex_current_->setOffsetY(y.value());
 	}
 
-	signalCurrentTextureModified(false, false, false);
+	signalCurrentTextureModified(true, false, false);
 
 	undo_manager_->endRecord(true);
 }
