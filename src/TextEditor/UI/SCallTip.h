@@ -24,15 +24,14 @@ public:
 	void enableArgSwitch(bool enable) { switch_contexts_ = enable; }
 	void setFont(string_view face, int size);
 
-	void openFunction(TLFunction* function, int arg = -1);
+	void openFunction(const TLFunction* function, int arg = -1);
 	void nextArgSet();
 	void prevArgSet();
 
 	static constexpr int MAX_WIDTH = 800;
 
 private:
-	TLFunction*         function_ = nullptr;
-	TLFunction::Context context_;
+	TLFunction function_;
 
 	ColRGBA       col_bg_ = { 240, 240, 240 };
 	ColRGBA       col_fg_ = { 240, 240, 240 };

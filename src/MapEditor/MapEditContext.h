@@ -151,6 +151,7 @@ public:
 	void       openLineTextureOverlay();
 	bool       infoOverlayActive() const { return info_showing_; }
 	void       updateInfoOverlay() const;
+	void       updateInfoOverlay3d();
 	void       drawInfoOverlay(gl::draw2d::Context& dc, float alpha) const;
 
 	// Loading overlay

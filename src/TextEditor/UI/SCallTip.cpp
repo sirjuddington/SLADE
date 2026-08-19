@@ -31,9 +31,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SCallTip.h"
+
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
-#include "Utility/StringUtils.h"
+#include <utility>
 
 using namespace slade;
 
@@ -105,8 +106,6 @@ void SCallTip::setFont(string_view face, int size)
 // -----------------------------------------------------------------------------
 void SCallTip::loadContext(unsigned long index)
 {
-	context_ = function_->context(index);
-
 	updateSize();
 
 	Update();
@@ -116,12 +115,13 @@ void SCallTip::loadContext(unsigned long index)
 // -----------------------------------------------------------------------------
 // Opens [function] in the call tip, with [arg] highlighted
 // -----------------------------------------------------------------------------
-void SCallTip::openFunction(TLFunction* function, int arg)
+void SCallTip::openFunction(const TLFunction* function, int arg)
 {
 	// Set current function
-	function_ = function;
-	if (!function)
-		return;
+	if (function)
+		function_ = *function;
+	else
+		function_.clear();
 
 	// Init with first arg set
 	context_current_ = 0;
@@ -134,7 +134,7 @@ void SCallTip::openFunction(TLFunction* function, int arg)
 // -----------------------------------------------------------------------------
 void SCallTip::nextArgSet()
 {
-	if (++context_current_ >= function_->contexts().size())
+	if (++context_current_ >= function_.contexts().size())
 		context_current_ = 0;
 	loadContext(context_current_);
 }
@@ -145,7 +145,7 @@ void SCallTip::nextArgSet()
 void SCallTip::prevArgSet()
 {
 	if (context_current_ == 0)
-		context_current_ = function_->contexts().size() - 1;
+		context_current_ = function_.contexts().size() - 1;
 	else
 		--context_current_;
 	loadContext(context_current_);
@@ -236,7 +236,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	}
 
 	// Draw function name
-	auto fname = function_->name();
+	auto fname = function_.name();
 	dc.SetTextForeground(col_func_);
 	left = drawText(dc, fname, left, top, &rect);
 
@@ -293,7 +293,7 @@ wxRect SCallTip::drawArgs(
 
 	bool long_params = (args_left + params_length) > MAX_WIDTH;
 
-	for (int a = 0; a < static_cast<int>(context.params.size()); a++)
+	for (int a = 0; std::cmp_less(a, context.params.size()); a++)
 	{
 		auto& arg = context.params[a];
 
@@ -424,15 +424,13 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, const string& desc, int left,
 		{
 			drawText(dc, desc_line, 0, bottom, &rect);
 			bottom = rect.GetBottom();
-			if (rect.GetRight() > max_right)
-				max_right = rect.GetRight();
+			max_right = std::max(rect.GetRight(), max_right);
 		}
 	}
 	else
 	{
 		drawText(dc, desc, 0, rect.GetBottom() + FromDIP(font_.GetPixelSize().GetHeight()), &rect);
-		if (rect.GetRight() > max_right)
-			max_right = rect.GetRight();
+		max_right = std::max(rect.GetRight(), max_right);
 	}
 
 	return { left, top, max_right - left, rect.GetBottom() - top };
@@ -468,7 +466,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 	wxcol_type       = col_type_;
 	auto wxcol_faded = faded;
 
-	if (function_)
+	if (!function_.name().empty())
 	{
 		dc.SetFont(font_);
 		dc.SetTextForeground(wxcol_fg);
@@ -477,6 +475,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		int    left      = xoff;
 		int    max_right = 0;
 		int    bottom    = yoff;
+		auto   context   = function_.context(context_current_);
 
 		// Context switching calltip
 		if (switch_contexts_)
@@ -495,7 +494,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			int width = dc.GetTextExtent(wxS("X/X")).x;
 			dc.SetTextForeground(wxcol_fg);
 			dc.DrawLabel(
-				WX_FMT("{}/{}", context_current_ + 1, function_->contexts().size()),
+				WX_FMT("{}/{}", context_current_ + 1, function_.contexts().size()),
 				wxNullBitmap,
 				wxRect(rect_btn_up_.GetRight() + FromDIP(4), yoff, width, 900),
 				wxALIGN_CENTER_HORIZONTAL);
@@ -515,7 +514,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			rect_btn_down_.Offset(FromDIP(wxPoint(12, 8)));
 
 			// Draw function (current context)
-			rect      = drawFunctionContext(dc, context_, left, yoff, wxcol_faded, bold);
+			rect      = drawFunctionContext(dc, context, left, yoff, wxcol_faded, bold);
 			max_right = rect.GetRight();
 			bottom    = rect.GetBottom();
 		}
@@ -531,10 +530,10 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 				col_sep = col_bg_.amp(-30, -30, -30, 0);
 
 			bool first = true;
-			auto num   = std::min<unsigned long>(function_->contexts().size(), 12u);
+			auto num   = std::min<unsigned long>(function_.contexts().size(), 12u);
 			for (auto a = 0u; a < num; a++)
 			{
-				auto& context = function_->contexts()[a];
+				auto& ctx = function_.contexts()[a];
 
 				if (!first)
 				{
@@ -542,19 +541,19 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 					dc.DrawLine(xoff, bottom + 5, 2000, bottom + 5);
 				}
 
-				rect   = drawFunctionContext(dc, context, xoff, bottom + (first ? 0 : FromDIP(11)), wxcol_faded, bold);
-				bottom = static_cast<int>(round(rect.GetBottom()));
+				rect      = drawFunctionContext(dc, ctx, xoff, bottom + (first ? 0 : FromDIP(11)), wxcol_faded, bold);
+				bottom    = static_cast<int>(round(rect.GetBottom()));
 				max_right = std::max(max_right, rect.GetRight());
 				first     = false;
 			}
 
 			// Show '... # more' if there are too many contexts
-			if (function_->contexts().size() > num)
+			if (function_.contexts().size() > num)
 			{
 				dc.SetTextForeground(wxcol_faded);
 				drawText(
 					dc,
-					fmt::format("... {} more", function_->contexts().size() - num),
+					fmt::format("... {} more", function_.contexts().size() - num),
 					xoff,
 					bottom + FromDIP(11),
 					&rect);
@@ -565,15 +564,15 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 				bottom--;
 		}
 
-		if (!rect.IsEmpty() && !context_.description.empty())
+		if (!rect.IsEmpty() && !context.description.empty())
 		{
-			auto rect_desc = drawFunctionDescription(dc, context_.description, left, rect.GetBottom());
+			auto rect_desc = drawFunctionDescription(dc, context.description, left, rect.GetBottom());
 			max_right      = std::max(max_right, rect_desc.GetRight());
 			bottom         = rect_desc.GetBottom();
 		}
 
 		// Size buffer bitmap to fit
-		ct_size.SetWidth(static_cast<int>(round(max_right)));
+		ct_size.SetWidth(static_cast<int>(round(max_right)) + FromDIP(1));
 		ct_size.SetHeight(static_cast<int>(round(bottom)));
 	}
 	else

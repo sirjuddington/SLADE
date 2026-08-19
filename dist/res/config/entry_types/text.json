@@ -390,6 +390,12 @@
     "text_language": "edf",
     "detectable": false
   },
+  // Nugget Doom lumps
+  "nughud": {
+    "inherits": "text",
+    "name": "Nugget Doom HUD",
+    "match_name": [ "nughud" ]
+  },
   // PrBoom+ lumps
   "prbhud": {
     "inherits": "text",
@@ -417,6 +423,17 @@
     "name": "Patchinfo",
     "match_name": [ "patchinf" ],
     "text_language": "zd_patchinf"
+  },
+  // Odamex text lumps
+  "hordedef": {
+    "inherits": "text",
+    "name": "Odamex Horde Definitions",
+    "match_name": [ "hordedef" ]
+  },
+  "spreedef": {
+    "inherits": "text",
+    "name": "Odamex Spree/Multi-kill Definitions",
+    "match_name": [ "spreedef" ]
   },
   // Catchall for various misc text lumps
   "misctext": {

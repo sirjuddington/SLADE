@@ -1438,12 +1438,16 @@ bool ArchivePanel::importEntry()
 		{
 			// Preserve gfx offset if needed
 			Vec2i offset;
+			bool  offset_valid = false;
 			if (entry->type()->editor() == "gfx")
 			{
 				// We have an image
 				SImage si;
-				si.open(entry->data());
-				offset = si.offset();
+				if (si.open(entry->data()))
+				{
+					offset       = si.offset();
+					offset_valid = true;
+				}
 			}
 
 			// Get current entry type
@@ -1467,7 +1471,11 @@ bool ArchivePanel::importEntry()
 			if (entry->type()->editor() == "gfx")
 			{
 				SImage si;
-				si.open(entry->data());
+				if (!si.open(entry->data()))
+					continue;
+
+				if (!offset_valid)
+					continue;
 
 				Vec2i noffset = si.offset();
 				bool  ok      = true;

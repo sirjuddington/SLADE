@@ -849,7 +849,8 @@ bool TextureXList::convertToTEXTURES()
 		texture->convertExtended();
 
 	// First texture is null texture
-	textures_[0]->setFlag(CTexture::Flag::NullTexture, true);
+	if (!textures_.empty())
+		textures_[0]->setFlag(CTexture::Flag::NullTexture, true);
 
 	// Set new format
 	txformat_ = Format::Textures;
@@ -1047,6 +1048,12 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		// Check things about the single patch
 		CTPatchEx* patch = dynamic_cast<CTPatchEx*>(texture->patch(0));
 
+		if (!patch)
+		{
+			log::info("KEEP Texture: {}. Its single patch is not a CTPatchEx.", texture->name());
+			continue;
+		}
+
 		// Check if the single patch is actually a patch in another archive
 		ArchiveEntry* patch_entry = patch->patchEntry(nullptr);
 
@@ -1068,17 +1075,17 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 
 			if (patch_parent_dir)
 			{
-				while (patch_parent_dir->parent()->parent())
+				while (patch_parent_dir->parent() && patch_parent_dir->parent()->parent())
 				{
 					patch_parent_dir = patch_parent_dir->parent().get();
 				}
 
-				if (patch_parent_dir->dirEntry()->upperName() != "PATCHES")
+				if (!patch_parent_dir->dirEntry() || patch_parent_dir->dirEntry()->upperName() != "PATCHES")
 				{
 					log::info(
 						"KEEP Texture: {}. Its single patch is not from the patches directory. Found in: \"{}\".",
 						texture->name(),
-						patch_parent_dir->dirEntry()->name());
+						patch_parent_dir->dirEntry() ? patch_parent_dir->dirEntry()->name() : "<unknown>");
 					continue;
 				}
 			}

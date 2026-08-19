@@ -350,9 +350,12 @@ void SectorTextureOverlay::browseFloorTexture()
 	if (browser.ShowModal() == wxID_OK)
 	{
 		// Set texture
-		tex_floor_.clear();
-		tex_floor_.push_back(browser.selectedItem()->name());
-		close(false);
+		if (auto* item = browser.selectedItem())
+		{
+			tex_floor_.clear();
+			tex_floor_.push_back(item->name());
+			close(false);
+		}
 	}
 }
 
@@ -375,8 +378,11 @@ void SectorTextureOverlay::browseCeilingTexture()
 	if (browser.ShowModal() == wxID_OK)
 	{
 		// Set texture
-		tex_ceil_.clear();
-		tex_ceil_.push_back(browser.selectedItem()->name());
-		close(false);
+		if (auto* item = browser.selectedItem())
+		{
+			tex_ceil_.clear();
+			tex_ceil_.push_back(item->name());
+			close(false);
+		}
 	}
 }

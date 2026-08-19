@@ -245,8 +245,9 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		}
 
 		// Get side indices
-		int s1_index = data.side1;
-		int s2_index = data.side2;
+		int  s1_index = data.side1;
+		int  s2_index = data.side2;
+		bool no_s2    = false;
 		if (map_data.sides().size() > 32767)
 		{
 			// Support for > 32768 sides
@@ -254,11 +255,20 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 				s1_index = static_cast<unsigned short>(data.side1);
 			if (data.side2 != 65535)
 				s2_index = static_cast<unsigned short>(data.side2);
+			else
+				no_s2 = true; // No second side if data.side2 == 65535
 		}
 
+		// Copy side(s) if they already have parent lines (compressed sidedefs)
+		auto s1 = map_data.sides().at(s1_index);
+		auto s2 = no_s2 ? nullptr : map_data.sides().at(s2_index);
+		if (s1 && s1->parentLine())
+			s1 = map_data.addSide(std::make_unique<MapSide>(s1->sector(), s1));
+		if (s2 && s2->parentLine())
+			s2 = map_data.addSide(std::make_unique<MapSide>(s2->sector(), s2));
+
 		// Create line
-		auto line = map_data.addLine(
-			std::make_unique<MapLine>(v1, v2, map_data.sides().at(s1_index), map_data.sides().at(s2_index)));
+		auto line = map_data.addLine(std::make_unique<MapLine>(v1, v2, s1, s2));
 
 		// Set properties
 		line->setArg(0, data.sector_tag);

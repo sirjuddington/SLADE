@@ -1164,6 +1164,14 @@ ArchiveFormat archive::detectArchiveFormat(const MemChunk& mc)
 // -----------------------------------------------------------------------------
 ArchiveFormat archive::detectArchiveFormat(const string& filename)
 {
+	// First, check formats with matching extension
+	auto ext = strutil::Path::extensionOf(filename);
+	for (const auto& handler : allFormatHandlers())
+		for (const auto& key : formatInfo(handler->format()).extensions | std::views::keys)
+			if (strutil::equalCI(ext, key) && handler->isThisFormat(filename))
+				return handler->format();
+
+	// Try all formats
 	for (const auto& handler : allFormatHandlers())
 		if (handler->isThisFormat(filename))
 			return handler->format();
