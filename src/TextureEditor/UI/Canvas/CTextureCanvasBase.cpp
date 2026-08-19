@@ -246,6 +246,8 @@ void CTextureCanvasBase::resetViewOffsets()
 		view().setOffset(texture_->width() / 2., texture_->height() / 2.);
 	else
 		view().setOffset(0, 0);
+
+	signals_.view_reset();
 }
 
 // -----------------------------------------------------------------------------
@@ -541,9 +543,10 @@ void CTextureCanvasBase::drawContent()
 // -----------------------------------------------------------------------------
 void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 {
-	bool refresh = false;
-	auto p_x     = window()->ToPhys(e.GetX());
-	auto p_y     = window()->ToPhys(e.GetY());
+	bool refresh        = false;
+	auto p_x            = window()->ToPhys(e.GetX());
+	auto p_y            = window()->ToPhys(e.GetY());
+	auto mouse_pos_prev = mouse_pos_;
 
 	// Update mouse position
 	mouse_pos_ = { p_x, p_y };
@@ -569,14 +572,25 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 	// MOUSE DRAGGING
 	else if (e.Dragging())
 	{
-		// Check if we are starting a drag
-		if (e.LeftIsDown()
-			&& !dragging_
-			&& (std::abs(p_x - drag_origin_.x) >= 4 || std::abs(p_y - drag_origin_.y) >= 4))
-			dragging_ = true;
-
-		if (dragging_)
+		if (e.MiddleIsDown() && mouse_pos_prev.x >= 0 && mouse_pos_prev.y >= 0)
+		{
+			auto cpos_current = view().canvasPos({ p_x, p_y });
+			auto cpos_prev    = view().canvasPos(mouse_pos_prev);
+			view().pan(cpos_prev.x - cpos_current.x, cpos_prev.y - cpos_current.y);
+			signals_.view_changed();
 			refresh = true;
+		}
+		else
+		{
+			// Check if we are starting a drag
+			if (e.LeftIsDown()
+				&& !dragging_
+				&& (std::abs(p_x - drag_origin_.x) >= 4 || std::abs(p_y - drag_origin_.y) >= 4))
+				dragging_ = true;
+
+			if (dragging_)
+				refresh = true;
+		}
 
 		e.Skip();
 	}
@@ -622,6 +636,8 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 					view().pan(8 * view().scale().x, 0);
 				else
 					view().pan(-8 * view().scale().x, 0);
+
+				signals_.view_changed();
 			}
 			else if (e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 			{
@@ -629,6 +645,8 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 					view().pan(0, 8 * view().scale().y);
 				else
 					view().pan(0, -8 * view().scale().y);
+
+				signals_.view_changed();
 			}
 		}
 		if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
@@ -641,6 +659,7 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 				linked_zoom_control_->zoomOut(true);
 
 			zoom_point_ = { -1, -1 };
+			signals_.view_changed();
 		}
 	}
 

@@ -82,6 +82,14 @@ public:
 
 	void linkZoomControl(ui::ZoomControl* zoom_control) { linked_zoom_control_ = zoom_control; }
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<> view_changed;
+		sigslot::signal<> view_reset;
+	};
+	Signals& signals() { return signals_; }
+
 	// Wx Events (public because we need to call them from outside)
 	void onMouseEvent(wxMouseEvent& e);
 
@@ -120,6 +128,7 @@ protected:
 	vector<Text> texts_;
 
 	// Signal connections
+	Signals              signals_;
 	ScopedConnectionList connections_;
 
 	void         drawContent();

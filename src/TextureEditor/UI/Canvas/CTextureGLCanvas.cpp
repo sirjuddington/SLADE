@@ -72,7 +72,6 @@ CTextureGLCanvas::CTextureGLCanvas(wxWindow* parent, TextureEditor& editor) :
 	view_.setCentered(true);
 
 	// Bind events
-	setupMousePanning();
 	Bind(wxEVT_MOTION, &CTextureGLCanvas::onMouseEvent, this);
 	Bind(wxEVT_LEFT_UP, &CTextureGLCanvas::onMouseEvent, this);
 	Bind(wxEVT_LEAVE_WINDOW, &CTextureGLCanvas::onMouseEvent, this);

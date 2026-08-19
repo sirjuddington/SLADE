@@ -104,6 +104,10 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	choice_offset_type_->Bind(wxEVT_CHOICE, &TextureEditorPanel::onChoiceOffsetTypeSelected, this);
 	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
 
+	// Enable/disable reset view button when view changes/resets
+	tex_canvas_->signals().view_changed.connect([this] { toolbar_texture_->enableItem("reset_view", true); });
+	tex_canvas_->signals().view_reset.connect([this] { toolbar_texture_->enableItem("reset_view", false); });
+
 	// Update toolbar buttons when texture is modified
 	sc_tex_modified_ = editor_->signals().current_texture_modified.connect_scoped(
 		[this](bool texture, bool patch_list)
@@ -205,6 +209,7 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	// Top toolbar
 	toolbar_texture_ = new SAuiToolBar(panel);
 	toolbar_texture_->loadLayoutFromResource("texturex_top");
+	toolbar_texture_->enableItem("reset_view", false);
 	sizer->Add(toolbar_texture_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
 
 	// Canvas
@@ -1175,6 +1180,11 @@ void TextureEditorPanel::onToolbarButton(wxCommandEvent& e)
 	{
 		editor_->revertTexture();
 		updateUI(true);
+	}
+	else if (button == "reset_view")
+	{
+		tex_canvas_->resetViewOffsets();
+		tex_canvas_->window()->Refresh();
 	}
 
 	else
