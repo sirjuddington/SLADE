@@ -114,6 +114,7 @@ private:
 	void onToolbarButton(wxCommandEvent& e);
 	void onTexOffsetXChanged(wxCommandEvent& e);
 	void onTexOffsetYChanged(wxCommandEvent& e);
+	void onBtnAutoOffset(wxCommandEvent& e);
 	void onChoiceOffsetTypeSelected(wxCommandEvent& e);
 };
 } // namespace slade::texeditor

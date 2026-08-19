@@ -23,6 +23,7 @@
 #include "UI/Controls/Splitter.h"
 #include "UI/Controls/ZoomControl.h"
 #include "UI/Dialogs/GfxConvDialog.h"
+#include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
 #include "UI/State.h"
@@ -101,6 +102,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	spin_offset_y_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexOffsetYChanged, this);
 	spin_offset_x_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexOffsetXChanged, this);
 	spin_offset_y_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexOffsetYChanged, this);
+	btn_auto_offset_->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnAutoOffset, this);
 	choice_offset_type_->Bind(wxEVT_CHOICE, &TextureEditorPanel::onChoiceOffsetTypeSelected, this);
 	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
 
@@ -1201,6 +1203,27 @@ void TextureEditorPanel::onTexOffsetYChanged(wxCommandEvent& e)
 {
 	editor_->setTextureOffset({}, spin_offset_y_->GetValue());
 	tex_canvas_->redraw();
+}
+
+void TextureEditorPanel::onBtnAutoOffset(wxCommandEvent& e)
+{
+	auto ctex = editor_->currentTexture();
+	if (!ctex)
+		return;
+
+	ModifyOffsetsDialog dlg;
+	dlg.SetParent(maineditor::windowWx());
+	dlg.CenterOnParent();
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		const Vec2i offsets = dlg.calculateOffsets(
+			spin_offset_x_->GetValue(), spin_offset_y_->GetValue(), ctex->width(), ctex->height());
+
+		spin_offset_x_->SetValue(offsets.x);
+		spin_offset_y_->SetValue(offsets.y);
+		editor_->setTextureOffset(offsets.x, offsets.y);
+		tex_canvas_->redraw();
+	}
 }
 
 void TextureEditorPanel::onChoiceOffsetTypeSelected(wxCommandEvent& e)
