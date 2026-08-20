@@ -52,9 +52,55 @@ TextureEditor::TextureEditor(shared_ptr<Archive> archive) : archive_{ archive }
 			texturex_entries_.emplace_back(
 				TextureXEntry{ .entry = entry->getShared(), .texturex = std::move(tx_list) });
 	}
+
+	// Lock all opened entries
+	for (auto& entry : texturex_entries_)
+		if (auto e = entry.entry.lock(); e)
+			e->lock();
 }
 
-TextureEditor::~TextureEditor() = default;
+TextureEditor::~TextureEditor()
+{
+	// Unlock entries
+	for (auto& entry : texturex_entries_)
+		if (auto e = entry.entry.lock(); e)
+			e->unlock();
+}
+
+void TextureEditor::saveAll() const
+{
+	for (unsigned i = 0; i < texturex_entries_.size(); ++i)
+		saveTextureList(i);
+}
+
+bool TextureEditor::saveTextureList(unsigned index) const
+{
+	if (!textureListModified(index))
+		return false;
+
+	auto entry = textureListEntry(index);
+	auto list  = textureList(index);
+	if (!entry || !list)
+		return false;
+
+	// Write list to entry, in the correct format
+	entry->unlock(); // Have to unlock the entry first
+	bool ok = false;
+	if (list->format() == TextureXList::Format::Textures)
+		ok = list->writeTEXTURESData(entry);
+	else
+		ok = list->writeTEXTUREXData(entry, *patch_table_);
+
+	// Redetect type and lock it up
+	EntryType::detectEntryType(*entry);
+	entry->lock();
+
+	// Set all textures to unmodified
+	for (unsigned a = 0; a < list->size(); a++)
+		list->texture(a)->setState(CTexture::State::Unmodified);
+
+	return ok;
+}
 
 TextureXList* TextureEditor::textureList(unsigned index) const
 {
@@ -70,24 +116,46 @@ ArchiveEntry* TextureEditor::textureListEntry(unsigned index) const
 	return texturex_entries_[index].entry.lock().get();
 }
 
-string TextureEditor::textureListName(const TextureXList& list) const
+string TextureEditor::textureListName(unsigned index) const
 {
-	for (const auto& tx : texturex_entries_)
+	if (index >= texturex_entries_.size())
+		return {};
+
+	if (auto entry = texturex_entries_[index].entry.lock(); entry)
 	{
-		if (auto entry = tx.entry.lock(); entry && tx.texturex.get() == &list)
-		{
-			string name = entry->name();
+		string name = entry->name();
 
-			// Remove common extensions
-			// (we want to keep other extensions, eg. TEXTURES.floors)
-			if (strutil::endsWithCI(name, ".txt") || strutil::endsWithCI(name, ".lmp"))
-				name = name.substr(0, name.size() - 4);
+		// Remove common extensions
+		// (we want to keep other extensions, eg. TEXTURES.floors)
+		if (strutil::endsWithCI(name, ".txt") || strutil::endsWithCI(name, ".lmp"))
+			name = name.substr(0, name.size() - 4);
 
-			return name;
-		}
+		return name;
 	}
 
 	return {};
+}
+
+string TextureEditor::textureListName(const TextureXList& list) const
+{
+	for (unsigned i = 0; i < texturex_entries_.size(); ++i)
+		if (texturex_entries_[i].texturex.get() == &list)
+			return textureListName(i);
+
+	return {};
+}
+
+bool TextureEditor::textureListModified(unsigned index) const
+{
+	auto list = textureList(index);
+	if (!list)
+		return false;
+
+	for (unsigned i = 0; i < list->size(); ++i)
+		if (list->texture(i)->state() == CTexture::State::Modified)
+			return true;
+
+	return false;
 }
 
 void TextureEditor::openTexture(CTexture& texture)

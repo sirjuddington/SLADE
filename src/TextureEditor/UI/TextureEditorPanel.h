@@ -39,6 +39,9 @@ public:
 	void undo();
 	void redo();
 
+	void saveAll() const;
+	bool close();
+
 private:
 	unique_ptr<TextureEditor> editor_;
 

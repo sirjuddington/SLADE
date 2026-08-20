@@ -22,10 +22,15 @@ public:
 	PatchTable*  patchTable() const { return patch_table_.get(); }
 	UndoManager* undoManager() const { return undo_manager_.get(); }
 
+	void saveAll() const;
+	bool saveTextureList(unsigned index) const;
+
 	unsigned      nTextureLists() const { return texturex_entries_.size(); }
 	TextureXList* textureList(unsigned index) const;
 	ArchiveEntry* textureListEntry(unsigned index) const;
+	string        textureListName(unsigned index) const;
 	string        textureListName(const TextureXList& list) const;
+	bool          textureListModified(unsigned index) const;
 
 	CTexture* currentTexture() const { return tex_current_; }
 	bool currentTextureModified() const { return tex_current_ && tex_current_->state() == CTexture::State::Modified; }

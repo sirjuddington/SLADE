@@ -32,6 +32,7 @@
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 #include <utility>
+#include <wx/richmsgdlg.h>
 
 using namespace slade;
 using namespace texeditor;
@@ -160,6 +161,50 @@ void TextureEditorPanel::redo()
 {
 	if (editor_->redo())
 		updateUI();
+}
+
+void TextureEditorPanel::saveAll() const
+{
+	editor_->saveAll();
+	tree_view_->Refresh();
+}
+
+bool TextureEditorPanel::close()
+{
+	// Check for any modified texture lists
+	bool apply_all = false;
+	for (unsigned i = 0; i < editor_->nTextureLists(); ++i)
+	{
+		if (editor_->textureListModified(i))
+		{
+			// If user has already selected "Yes to All", save without asking
+			if (apply_all)
+			{
+				editor_->saveTextureList(i);
+				continue;
+			}
+
+			// Ask user if they want to save changes
+			wxRichMessageDialog md(
+				this,
+				WX_FMT("Save changes to {}?", editor_->textureListName(i)),
+				wxS("Unsaved Changes"),
+				wxYES_NO | wxCANCEL | wxICON_QUESTION);
+
+			md.ShowCheckBox(wxS("Apply to All"), apply_all);
+
+			int result = md.ShowModal();
+			apply_all  = md.IsCheckBoxChecked();
+			if (result == wxID_YES)
+				editor_->saveTextureList(i); // User selected to save
+			else if (result == wxID_CANCEL)
+				return false; // User selected cancel, don't close the editor
+			else if (result == wxID_NO && apply_all)
+				return true; // User selected "No to All", don't save any more changes
+		}
+	}
+
+	return true;
 }
 
 wxPanel* TextureEditorPanel::createTextureListPanel(wxWindow* parent)
@@ -634,7 +679,7 @@ void TextureEditorPanel::newTextureFromFile()
 	for (const auto& file : fd_info.filenames)
 		if (auto name = editor_->importPatchFile(file, list->format() != TextureXList::Format::Textures); !name.empty())
 			editor_->newTexture(list, name, index < 0 ? index : index++, 0, 0, name);
-	
+
 	editor_->undoManager()->endRecord(true);
 }
 
@@ -832,7 +877,10 @@ void TextureEditorPanel::exportTexturesAsPNG() const
 
 bool TextureEditorPanel::handleAction(string_view id)
 {
-	if (id == "txed_new")
+	if (id == "txed_savelist")
+		saveAll();
+
+	else if (id == "txed_new")
 		newTexture();
 
 	else if (id == "txed_new_file")

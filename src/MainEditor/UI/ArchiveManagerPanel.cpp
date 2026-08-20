@@ -1096,8 +1096,7 @@ bool ArchiveManagerPanel::saveCurrentTab() const
 	if (isTextureEditorTab(index))
 	{
 		auto* texture_editor = dynamic_cast<texeditor::TextureEditorPanel*>(tab);
-		// TODO:
-		// texture_editor->saveChanges();
+		texture_editor->saveAll();
 		return true;
 	}
 
@@ -1587,9 +1586,8 @@ bool ArchiveManagerPanel::beforeCloseArchive(Archive* archive)
 	if (txed)
 	{
 		openTextureTab(archive_index);
-		// TODO:
-		// if (!txed->close())
-		//	return false; // User cancelled saving texturex changes, don't close
+		if (!txed->close())
+			return false; // User cancelled saving texturex changes, don't close
 	}
 
 	// If the archive has unsaved changes, prompt to save
@@ -2402,9 +2400,8 @@ bool ArchiveManagerPanel::prepareCloseTab(int index)
 	else if (page->GetName() == wxS("texture"))
 	{
 		auto txed = dynamic_cast<texeditor::TextureEditorPanel*>(page);
-		// TODO:
-		// if (!txed->close())
-		//	return false;
+		if (!txed->close())
+			return false;
 	}
 
 	return true;
