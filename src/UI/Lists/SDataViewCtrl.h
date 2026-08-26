@@ -11,6 +11,7 @@ class SDataViewCtrl : public wxDataViewCtrl
 {
 public:
 	SDataViewCtrl(wxWindow* parent, long style);
+	~SDataViewCtrl() override;
 
 	wxDataViewColumn* lastVisibleColumn() const;
 
@@ -18,16 +19,39 @@ public:
 
 	void resetSorting();
 	void appendColumnToggleItem(wxMenu& menu, int col_model) const;
-	void toggleColumnVisibility(int col_model, string_view state_prop) const;
+	void toggleColumnVisibility(int col_model) const;
 	void setColumnWidth(wxDataViewColumn* column, int width) const;
 	void setColumnWidth(int col_model, int width) const;
 	int  modelColumnIndex(int model_column) const;
 
+	// Column state persistence
+	void registerColumn(wxDataViewColumn* column, string_view id, bool always_visible = false);
+	void loadColumnState(const Archive* archive = nullptr);
+	void restoreColumnWidths(const Archive* archive = nullptr);
+	void loadSortState(
+		string_view    prop_sort_column,
+		string_view    prop_sort_descending,
+		const Archive* archive = nullptr);
+	void saveSortState(string_view prop_sort_column, string_view prop_sort_descending, const Archive* archive = nullptr)
+		const;
+
 protected:
-	mutable std::array<int, 50> column_widths_; // Doubt we'll ever need more than 50 columns
+	mutable std::array<int, 50> column_widths_; // For detecting column width changes on Linux/Mac
+
+	// Column state persistence
+	struct ColumnDef
+	{
+		wxDataViewColumn* column = nullptr;
+		string            id;                     // Unique ID for this column (used to persist state)
+		bool              always_visible = false; // Don't save visibility state for this column, always show it
+	};
+	vector<ColumnDef> columns_state_;
+
+	// The associated Archive to use for column state persistence
+	virtual const Archive* stateArchive() const { return nullptr; }
 
 	virtual void onColumnResized(wxDataViewColumn* column) {}
-	virtual void onAnyColumnResized() {}
+	virtual void onAnyColumnResized();
 
 private:
 	int     multi_select_base_index_ = -1;

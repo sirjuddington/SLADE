@@ -63,9 +63,6 @@ CVAR(Bool, elist_rename_inplace, false, CVar::Save)
 #else
 CVAR(Bool, elist_rename_inplace, true, CVar::Save)
 #endif
-CVAR(Bool, elist_colsize_show, true, CVar::Flag::Save)
-CVAR(Bool, elist_coltype_show, true, CVar::Flag::Save)
-CVAR(Bool, elist_colindex_show, false, CVar::Flag::Save)
 CVAR(Bool, elist_filter_dirs, false, CVar::Flag::Save)
 CVAR(Bool, elist_type_bgcol, false, CVar::Flag::Save)
 CVAR(Float, elist_type_bgcol_intensity, 0.18, CVar::Flag::Save)
@@ -82,33 +79,6 @@ EXTERN_CVAR(Int, elist_icon_size)
 EXTERN_CVAR(Int, elist_icon_padding)
 EXTERN_CVAR(Bool, elist_filter_dirs)
 EXTERN_CVAR(Bool, list_font_monospace)
-
-
-// -----------------------------------------------------------------------------
-//
-// Functions
-//
-// -----------------------------------------------------------------------------
-namespace
-{
-// -----------------------------------------------------------------------------
-// Get the width of the name column from saved UI state.
-// If it is saved for [archive] use that, otherwise use the relevant global
-// width (based on if the archive supports directories)
-// -----------------------------------------------------------------------------
-int nameColumnWidth(const Archive* archive)
-{
-	if (hasSavedState(ENTRYLIST_NAME_WIDTH, archive))
-		return getStateInt(ENTRYLIST_NAME_WIDTH, archive);
-	else
-	{
-		if (archive->formatInfo().supports_dirs)
-			return getStateInt(ENTRYLIST_NAME_WIDTH_TREE);
-		else
-			return getStateInt(ENTRYLIST_NAME_WIDTH_LIST);
-	}
-}
-} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -1018,7 +988,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 		wxEVT_DATAVIEW_COLUMN_HEADER_CLICK,
 		[this](wxDataViewEvent& e)
 		{
-			CallAfter(&ArchiveEntryTree::saveColumnConfig);
+			CallAfter([this] { saveSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING); });
 			e.Skip();
 		});
 
@@ -1059,7 +1029,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 					col_index_->UnsetAsSortKey();
 #endif
 				model_->Resort();
-				saveColumnConfig();
+				saveSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING);
 
 				wxDataViewEvent de;
 				de.SetEventType(wxEVT_DATAVIEW_COLUMN_SORTED);
@@ -1068,26 +1038,23 @@ ArchiveEntryTree::ArchiveEntryTree(
 			else if (e.GetId() == 1)
 			{
 				// Toggle index column
-				col_index_->SetHidden(!col_index_->IsHidden());
-				saveStateBool(ENTRYLIST_INDEX_VISIBLE, !col_index_->IsHidden());
-				updateColumnWidths();
-				saveColumnConfig();
+				toggleColumnVisibility(3);
+				restoreColumnWidths();
+				saveSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING);
 			}
 			else if (e.GetId() == 2)
 			{
 				// Toggle size column
-				col_size_->SetHidden(!col_size_->IsHidden());
-				saveStateBool(ENTRYLIST_SIZE_VISIBLE, !col_size_->IsHidden());
-				updateColumnWidths();
-				saveColumnConfig();
+				toggleColumnVisibility(1);
+				restoreColumnWidths();
+				saveSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING);
 			}
 			else if (e.GetId() == 3)
 			{
 				// Toggle type column
-				col_type_->SetHidden(!col_type_->IsHidden());
-				saveStateBool(ENTRYLIST_TYPE_VISIBLE, !col_type_->IsHidden());
-				updateColumnWidths();
-				saveColumnConfig();
+				toggleColumnVisibility(2);
+				restoreColumnWidths();
+				saveSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING);
 			}
 			else
 				e.Skip();
@@ -1501,159 +1468,32 @@ void ArchiveEntryTree::setupColumns()
 	auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
 
 	// Add Columns
-	col_index_ = AppendTextColumn(
-		wxS("#"),
-		3,
-		wxDATAVIEW_CELL_INERT,
-		FromDIP(getStateInt(ENTRYLIST_INDEX_WIDTH, archive)),
-		wxALIGN_NOT,
-		getStateBool(ENTRYLIST_INDEX_VISIBLE, archive) ? colstyle_visible : colstyle_hidden);
-	col_name_ = AppendIconTextColumn(
-		wxS("Name"),
-		0,
-		elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
-		FromDIP(nameColumnWidth(archive)),
-		wxALIGN_NOT,
-		colstyle_visible);
-	col_size_ = AppendTextColumn(
-		wxS("Size"),
-		1,
-		wxDATAVIEW_CELL_INERT,
-		FromDIP(getStateInt(ENTRYLIST_SIZE_WIDTH, archive)),
-		wxALIGN_NOT,
-		getStateBool(ENTRYLIST_SIZE_VISIBLE, archive) ? colstyle_visible : colstyle_hidden);
-	col_type_ = AppendTextColumn(
-		wxS("Type"),
-		2,
-		wxDATAVIEW_CELL_INERT,
-		FromDIP(getStateInt(ENTRYLIST_TYPE_WIDTH, archive)),
-		wxALIGN_NOT,
-		getStateBool(ENTRYLIST_TYPE_VISIBLE, archive) ? colstyle_visible : colstyle_hidden);
+	col_index_ = AppendTextColumn(wxS("#"), 3, wxDATAVIEW_CELL_INERT, FromDIP(50), wxALIGN_NOT, colstyle_hidden);
+	col_name_  = AppendIconTextColumn(
+        wxS("Name"),
+        0,
+        elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
+        archive->formatInfo().supports_dirs ? FromDIP(190) : FromDIP(110),
+        wxALIGN_NOT,
+        colstyle_visible);
+	col_size_ = AppendTextColumn(wxS("Size"), 1, wxDATAVIEW_CELL_INERT, FromDIP(70), wxALIGN_NOT, colstyle_visible);
+	col_type_ = AppendTextColumn(wxS("Type"), 2, wxDATAVIEW_CELL_INERT, FromDIP(180), wxALIGN_NOT, colstyle_visible);
 	SetExpanderColumn(col_name_);
+
+	// Register columns for UI state persistence
+	registerColumn(col_index_, "EntryListIndex");
+	registerColumn(col_name_, archive->formatInfo().supports_dirs ? "EntryListNameT" : "EntryListNameL", true);
+	registerColumn(col_size_, "EntryListSize");
+	registerColumn(col_type_, "EntryListType");
+
+	// Load width/visibility state
+	loadColumnState(archive);
 
 	// Last column will expand anyway, this ensures we don't get unnecessary horizontal scrollbars
 	GetColumn(GetColumnCount() - 1)->SetWidth(0);
 
 	// Load sorting config
-	if (hasSavedState(ENTRYLIST_SORT_COLUMN, archive))
-	{
-		auto sort_column     = getStateString(ENTRYLIST_SORT_COLUMN, archive);
-		auto sort_descending = getStateBool(ENTRYLIST_SORT_DESCENDING, archive);
-		if (sort_column == "index")
-			col_index_->SetSortOrder(!sort_descending);
-		else if (sort_column == "name")
-			col_name_->SetSortOrder(!sort_descending);
-		else if (sort_column == "size")
-			col_size_->SetSortOrder(!sort_descending);
-		else if (sort_column == "type")
-			col_type_->SetSortOrder(!sort_descending);
-
-		model_->Resort();
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Updates the currently visible columns' widths from saved UI state
-// -----------------------------------------------------------------------------
-void ArchiveEntryTree::updateColumnWidths()
-{
-	const auto archive = archive_.lock().get();
-	if (!archive)
-		return;
-
-	// Get the last visible column (we don't want to save the width of this column since it stretches)
-	wxDataViewColumn* last_col = nullptr;
-	for (int i = static_cast<int>(GetColumnCount()) - 1; i >= 0; --i)
-		if (!GetColumn(i)->IsHidden())
-		{
-			last_col = GetColumn(i);
-			break;
-		}
-
-	Freeze();
-	col_index_->SetWidth(getStateInt(ENTRYLIST_INDEX_WIDTH, archive));
-	col_name_->SetWidth(nameColumnWidth(archive));
-	col_size_->SetWidth(col_size_ == last_col ? 0 : getStateInt(ENTRYLIST_SIZE_WIDTH, archive));
-	col_type_->SetWidth(col_type_ == last_col ? 0 : getStateInt(ENTRYLIST_TYPE_WIDTH, archive));
-	Thaw();
-}
-
-void ArchiveEntryTree::saveColumnConfig()
-{
-	const auto archive = archive_.lock().get();
-	if (!archive)
-		return;
-
-	// Visible columns
-	saveStateBool(ENTRYLIST_INDEX_VISIBLE, col_index_->IsShown(), archive);
-	saveStateBool(ENTRYLIST_SIZE_VISIBLE, col_size_->IsShown(), archive);
-	saveStateBool(ENTRYLIST_TYPE_VISIBLE, col_type_->IsShown(), archive);
-
-	// Sorting
-	auto   sort_descending = false;
-	string sort_column;
-	if (col_index_->IsSortKey())
-	{
-		sort_column     = "index";
-		sort_descending = !col_index_->IsSortOrderAscending();
-	}
-	else if (col_name_->IsSortKey())
-	{
-		sort_column     = "name";
-		sort_descending = !col_name_->IsSortOrderAscending();
-	}
-	else if (col_size_->IsSortKey())
-	{
-		sort_column     = "size";
-		sort_descending = !col_size_->IsSortOrderAscending();
-	}
-	else if (col_type_->IsSortKey())
-	{
-		sort_column     = "type";
-		sort_descending = !col_type_->IsSortOrderAscending();
-	}
-	saveStateString(ENTRYLIST_SORT_COLUMN, sort_column, archive);
-	saveStateBool(ENTRYLIST_SORT_DESCENDING, sort_descending, archive);
-}
-
-void ArchiveEntryTree::onAnyColumnResized()
-{
-	const auto archive = archive_.lock().get();
-	if (!archive)
-		return;
-
-	// Get the last visible column (we don't want to save the width of this column since it stretches)
-	auto last_col = lastVisibleColumn();
-
-	// Index
-	if (col_index_->IsShown())
-	{
-		auto width = ToDIP(col_index_->GetWidth());
-		saveStateInt(ENTRYLIST_INDEX_WIDTH, width, archive, true);
-	}
-
-	// Name
-	if (col_name_ != last_col)
-	{
-		auto width = ToDIP(col_name_->GetWidth());
-		saveStateInt(
-			archive->formatInfo().supports_dirs ? ENTRYLIST_NAME_WIDTH_TREE : ENTRYLIST_NAME_WIDTH_LIST, width);
-		saveStateInt(ENTRYLIST_NAME_WIDTH, width, archive);
-	}
-
-	// Size
-	if (col_size_ != last_col && col_size_->IsShown())
-	{
-		auto width = ToDIP(col_size_->GetWidth());
-		saveStateInt(ENTRYLIST_SIZE_WIDTH, width, archive, true);
-	}
-
-	// Type
-	if (col_type_ != last_col && col_type_->IsShown())
-	{
-		auto width = ToDIP(col_type_->GetWidth());
-		saveStateInt(ENTRYLIST_TYPE_WIDTH, width, archive, true);
-	}
+	loadSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING, archive);
 }
 
 // -----------------------------------------------------------------------------

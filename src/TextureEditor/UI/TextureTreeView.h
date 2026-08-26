@@ -6,6 +6,7 @@ namespace slade
 {
 class TextureXList;
 class CTexture;
+class Archive;
 } // namespace slade
 namespace slade::texeditor
 {
@@ -32,6 +33,8 @@ private:
 	wxDataViewColumn* col_size_    = nullptr;
 	wxDataViewColumn* col_type_    = nullptr;
 	wxDataViewColumn* col_patches_ = nullptr;
+
+	const Archive* stateArchive() const override;
 
 	void setupColumns();
 };

@@ -9,9 +9,8 @@ inline constexpr string_view ENTRYLIST_SIZE_VISIBLE        = "EntryListSizeVisib
 inline constexpr string_view ENTRYLIST_SIZE_WIDTH          = "EntryListSizeWidth";
 inline constexpr string_view ENTRYLIST_TYPE_VISIBLE        = "EntryListTypeVisible";
 inline constexpr string_view ENTRYLIST_TYPE_WIDTH          = "EntryListTypeWidth";
-inline constexpr string_view ENTRYLIST_NAME_WIDTH          = "EntryListNameWidth";
-inline constexpr string_view ENTRYLIST_NAME_WIDTH_LIST     = "EntryListNameWidthList";
-inline constexpr string_view ENTRYLIST_NAME_WIDTH_TREE     = "EntryListNameWidthTree";
+inline constexpr string_view ENTRYLIST_NAME_WIDTH_LIST     = "EntryListNameLWidth";
+inline constexpr string_view ENTRYLIST_NAME_WIDTH_TREE     = "EntryListNameTWidth";
 inline constexpr string_view ENTRYLIST_VIEW_TYPE           = "EntryListViewType";
 inline constexpr string_view ENTRYLIST_SORT_COLUMN         = "EntryListSortColumn";
 inline constexpr string_view ENTRYLIST_SORT_DESCENDING     = "EntryListSortDescending";
@@ -45,6 +44,8 @@ inline constexpr string_view TEXTURELIST_TYPE_WIDTH        = "TextureListTypeWid
 inline constexpr string_view TEXTURELIST_NAME_WIDTH        = "TextureListNameWidth";
 inline constexpr string_view TEXTURELIST_PATCHES_VISIBLE   = "TextureListPatchesVisible";
 inline constexpr string_view TEXTURELIST_PATCHES_WIDTH     = "TextureListPatchesWidth";
+inline constexpr string_view TEXTURELIST_SORT_COLUMN       = "TextureListSortColumn";
+inline constexpr string_view TEXTURELIST_SORT_DESCENDING   = "TextureListSortDescending";
 inline constexpr string_view TEXEDITOR_SPLIT_POS           = "TexEditorSplitPos";
 
 void initStateProps();

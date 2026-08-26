@@ -22,6 +22,15 @@ TextureTreeView::TextureTreeView(wxWindow* parent, const TextureEditor& editor) 
 	AssociateModel(model.get());
 
 	setupColumns();
+
+	// Save sort state when the sorting changes
+	Bind(
+		wxEVT_DATAVIEW_COLUMN_SORTED,
+		[this](wxDataViewEvent& e)
+		{
+			saveSortState(ui::TEXTURELIST_SORT_COLUMN, ui::TEXTURELIST_SORT_DESCENDING);
+			e.Skip();
+		});
 }
 
 CTexture* TextureTreeView::textureForItem(const wxDataViewItem& item) const
@@ -75,43 +84,38 @@ void TextureTreeView::setupColumns()
 	auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
 
 	// Add Columns
-	col_index_ = AppendTextColumn(
-		wxS("#"),
-		0,
-		wxDATAVIEW_CELL_INERT,
-		FromDIP(ui::getStateInt(ui::TEXTURELIST_INDEX_WIDTH, archive)),
-		wxALIGN_NOT,
-		ui::getStateBool(ui::TEXTURELIST_INDEX_VISIBLE, archive) ? colstyle_visible : colstyle_hidden);
-	col_name_ = AppendIconTextColumn(
-		wxS("Name"),
-		1,
-		/*elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : */ wxDATAVIEW_CELL_INERT,
-		FromDIP(ui::getStateInt(ui::TEXTURELIST_NAME_WIDTH, archive)),
-		wxALIGN_NOT,
-		colstyle_visible);
-	col_size_ = AppendTextColumn(
-		wxS("Size"),
-		2,
-		wxDATAVIEW_CELL_INERT,
-		FromDIP(ui::getStateInt(ui::TEXTURELIST_SIZE_WIDTH, archive)),
-		wxALIGN_NOT,
-		ui::getStateBool(ui::TEXTURELIST_SIZE_VISIBLE, archive) ? colstyle_visible : colstyle_hidden);
+	col_index_ = AppendTextColumn(wxS("#"), 0, wxDATAVIEW_CELL_INERT, FromDIP(50), wxALIGN_NOT, colstyle_hidden);
+	col_name_  = AppendIconTextColumn(
+        wxS("Name"),
+        1,
+        /*elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : */ wxDATAVIEW_CELL_INERT,
+        FromDIP(130),
+        wxALIGN_NOT,
+        colstyle_visible);
+	col_size_    = AppendTextColumn(wxS("Size"), 2, wxDATAVIEW_CELL_INERT, FromDIP(70), wxALIGN_NOT, colstyle_visible);
 	col_patches_ = AppendTextColumn(
-		wxS("Patches"),
-		4,
-		wxDATAVIEW_CELL_INERT,
-		FromDIP(ui::getStateInt(ui::TEXTURELIST_PATCHES_WIDTH, archive)),
-		wxALIGN_NOT,
-		ui::getStateBool(ui::TEXTURELIST_PATCHES_VISIBLE, archive) ? colstyle_visible : colstyle_hidden);
-	col_type_ = AppendTextColumn(
-		wxS("Type"),
-		3,
-		wxDATAVIEW_CELL_INERT,
-		FromDIP(ui::getStateInt(ui::TEXTURELIST_TYPE_WIDTH, archive)),
-		wxALIGN_NOT,
-		ui::getStateBool(ui::TEXTURELIST_TYPE_VISIBLE, archive) ? colstyle_visible : colstyle_hidden);
+		wxS("Patches"), 4, wxDATAVIEW_CELL_INERT, FromDIP(70), wxALIGN_NOT, colstyle_hidden);
+	col_type_ = AppendTextColumn(wxS("Type"), 3, wxDATAVIEW_CELL_INERT, FromDIP(180), wxALIGN_NOT, colstyle_hidden);
 	SetExpanderColumn(col_name_);
+
+	// Register columns for generic UI state persistence
+	registerColumn(col_index_, "TextureListIndex");
+	registerColumn(col_name_, "TextureListName", true);
+	registerColumn(col_size_, "TextureListSize");
+	registerColumn(col_patches_, "TextureListPatches");
+	registerColumn(col_type_, "TextureListType");
+
+	// Load width/visibility state
+	loadColumnState(archive);
 
 	// Last column will expand anyway, this ensures we don't get unnecessary horizontal scrollbars
 	GetColumn(GetColumnCount() - 1)->SetWidth(0);
+
+	// Load sorting config
+	loadSortState(ui::TEXTURELIST_SORT_COLUMN, ui::TEXTURELIST_SORT_DESCENDING, archive);
+}
+
+const Archive* TextureTreeView::stateArchive() const
+{
+	return editor_ ? editor_->archive() : nullptr;
 }
