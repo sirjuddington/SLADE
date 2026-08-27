@@ -224,6 +224,52 @@ wxDataViewColumn* SDataViewCtrl::lastVisibleColumn() const
 }
 
 // -----------------------------------------------------------------------------
+// Enables and sets up the header right-click context menu, which allows
+// toggling visibility of registered columns (except where always_visible =
+// true) and resetting sorting
+// -----------------------------------------------------------------------------
+void SDataViewCtrl::enableHeaderContextMenu()
+{
+	// Right-click on header: show column visibility + reset sorting menu
+	Bind(
+		wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK,
+		[this](wxDataViewEvent& e)
+		{
+			wxMenu menu;
+			menu.Append(id_reset_sorting_, wxS("Reset Sorting"));
+			menu.AppendSeparator();
+
+			for (auto& cs : columns_state_)
+				if (cs.column && !cs.always_visible)
+					appendColumnToggleItem(menu, cs.column->GetModelColumn());
+
+			PopupMenu(&menu);
+			e.Skip();
+		});
+
+	// Handle menu item selections
+	Bind(
+		wxEVT_MENU,
+		[this](wxCommandEvent& e)
+		{
+			if (e.GetId() == id_reset_sorting_)
+				resetSorting();
+			else if (modelColumnIndex(e.GetId()) != wxNOT_FOUND)
+			{
+				toggleColumnVisibility(e.GetId());
+				restoreColumnWidths();
+			}
+			else
+			{
+				e.Skip();
+				return;
+			}
+
+			saveSortState();
+		});
+}
+
+// -----------------------------------------------------------------------------
 // Resets sorting to the default state (ie. no columns selected for sorting)
 // -----------------------------------------------------------------------------
 void SDataViewCtrl::resetSorting()
@@ -348,7 +394,7 @@ void SDataViewCtrl::loadColumnState(const Archive* archive)
 			continue;
 
 		// Visibility (unless always visible)
-		if (!cs.always_visible && hasSavedState(fmt::format("{}Visible", cs.id), archive))
+		if (!cs.always_visible && hasSavedState(fmt::format("{}Visible", cs.id), archive, true))
 			cs.column->SetHidden(!getStateBool(fmt::format("{}Visible", cs.id), archive));
 
 		// Width
@@ -391,19 +437,19 @@ void SDataViewCtrl::restoreColumnWidths(const Archive* archive)
 // [prop_sort_descending], associated with [archive] if given (or
 // stateArchive() otherwise)
 // -----------------------------------------------------------------------------
-void SDataViewCtrl::loadSortState(
-	string_view    prop_sort_column,
-	string_view    prop_sort_descending,
-	const Archive* archive)
+void SDataViewCtrl::loadSortState(const Archive* archive)
 {
+	if (prop_sort_column_.empty() || prop_sort_descending_.empty())
+		return;
+
 	if (!archive)
 		archive = stateArchive();
 
-	if (!hasSavedState(prop_sort_column, archive))
+	if (!hasSavedState(prop_sort_column_, archive))
 		return;
 
-	auto sort_column     = getStateInt(prop_sort_column, archive);
-	auto sort_descending = getStateBool(prop_sort_descending, archive);
+	auto sort_column     = getStateInt(prop_sort_column_, archive);
+	auto sort_descending = getStateBool(prop_sort_descending_, archive);
 
 	for (auto& cs : columns_state_)
 		if (cs.column && cs.column->GetModelColumn() == sort_column)
@@ -421,11 +467,11 @@ void SDataViewCtrl::loadSortState(
 // [prop_sort_column] and [prop_sort_descending], associated with [archive] if
 // given (or stateArchive() otherwise).
 // -----------------------------------------------------------------------------
-void SDataViewCtrl::saveSortState(
-	string_view    prop_sort_column,
-	string_view    prop_sort_descending,
-	const Archive* archive) const
+void SDataViewCtrl::saveSortState(const Archive* archive) const
 {
+	if (prop_sort_column_.empty() || prop_sort_descending_.empty())
+		return;
+
 	if (!archive)
 		archive = stateArchive();
 
@@ -439,8 +485,8 @@ void SDataViewCtrl::saveSortState(
 			break;
 		}
 
-	saveStateInt(prop_sort_column, sort_column, archive);
-	saveStateBool(prop_sort_descending, sort_descending, archive);
+	saveStateInt(prop_sort_column_, sort_column, archive);
+	saveStateBool(prop_sort_descending_, sort_descending, archive);
 }
 
 // -----------------------------------------------------------------------------

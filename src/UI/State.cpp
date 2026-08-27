@@ -175,11 +175,19 @@ void ui::initStateProps()
 
 // -----------------------------------------------------------------------------
 // Returns true if saved state [name] exists in the database for [archive].
-// If no archive is given the global saved state is checked
+// If [archive] is nullptr the global saved state is checked.
+// If [archive] is *not* nullptr and [check_global] is true, the global saved
+// state will be checked if no archive-specific value exists
 // -----------------------------------------------------------------------------
-bool ui::hasSavedState(string_view name, const Archive* archive)
+bool ui::hasSavedState(string_view name, const Archive* archive, bool check_global)
 {
-	return hasSavedState(name, archiveDbId(archive));
+	if (hasSavedState(name, archiveDbId(archive)))
+		return true;
+
+	if (check_global)
+		return hasSavedState(name, std::nullopt);
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

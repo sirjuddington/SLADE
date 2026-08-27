@@ -18,6 +18,7 @@ public:
 	void setSearchColumn(int col_model) { search_model_column_ = col_model; }
 
 	void resetSorting();
+	void enableHeaderContextMenu();
 	void appendColumnToggleItem(wxMenu& menu, int col_model) const;
 	void toggleColumnVisibility(int col_model) const;
 	void setColumnWidth(wxDataViewColumn* column, int width) const;
@@ -28,12 +29,8 @@ public:
 	void registerColumn(wxDataViewColumn* column, string_view id, bool always_visible = false);
 	void loadColumnState(const Archive* archive = nullptr);
 	void restoreColumnWidths(const Archive* archive = nullptr);
-	void loadSortState(
-		string_view    prop_sort_column,
-		string_view    prop_sort_descending,
-		const Archive* archive = nullptr);
-	void saveSortState(string_view prop_sort_column, string_view prop_sort_descending, const Archive* archive = nullptr)
-		const;
+	void loadSortState(const Archive* archive = nullptr);
+	void saveSortState(const Archive* archive = nullptr) const;
 
 protected:
 	mutable std::array<int, 50> column_widths_; // For detecting column width changes on Linux/Mac
@@ -46,6 +43,8 @@ protected:
 		bool              always_visible = false; // Don't save visibility state for this column, always show it
 	};
 	vector<ColumnDef> columns_state_;
+	string            prop_sort_column_;
+	string            prop_sort_descending_;
 
 	// The associated Archive to use for column state persistence
 	virtual const Archive* stateArchive() const { return nullptr; }
@@ -58,6 +57,9 @@ private:
 	string  search_;
 	int     search_model_column_ = -1;
 	wxTimer column_resize_check_timer_;
+
+	// Menu id for the header context menu's 'Reset Sorting' item (won't clash with a column model index)
+	static constexpr int id_reset_sorting_ = wxID_HIGHEST + 1;
 
 #ifdef __WXMSW__
 	bool lookForSearchItemFrom(int index_start);

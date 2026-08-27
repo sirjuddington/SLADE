@@ -913,6 +913,9 @@ ArchiveEntryTree::ArchiveEntryTree(
 	SDataViewCtrl{ parent, wxDV_MULTIPLE },
 	archive_{ archive }
 {
+	prop_sort_column_     = ENTRYLIST_SORT_COLUMN;
+	prop_sort_descending_ = ENTRYLIST_SORT_DESCENDING;
+
 	// Init settings
 	SetRowHeight(FromDIP(elist_icon_size + (elist_icon_padding * 2) + 2));
 	if (list_font_monospace)
@@ -988,78 +991,14 @@ ArchiveEntryTree::ArchiveEntryTree(
 		wxEVT_DATAVIEW_COLUMN_HEADER_CLICK,
 		[this](wxDataViewEvent& e)
 		{
-			CallAfter([this] { saveSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING); });
+			CallAfter([this] { saveSortState(); });
 			e.Skip();
 		});
 
-	// Header right click
-	Bind(
-		wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK,
-		[this](wxDataViewEvent& e)
-		{
-			// Popup context menu
-			wxMenu context;
-			context.Append(0, wxS("Reset Sorting"));
-			context.AppendSeparator();
-			appendColumnToggleItem(context, 3); // Index
-			appendColumnToggleItem(context, 1); // Size
-			appendColumnToggleItem(context, 2); // Type
-			PopupMenu(&context);
-			e.Skip();
-		});
-
-	// Header context menu
-	Bind(
-		wxEVT_MENU,
-		[this](wxCommandEvent& e)
-		{
-			if (e.GetId() == 0)
-			{
-				// Reset Sorting
-				if (col_name_->IsSortKey())
-					col_name_->UnsetAsSortKey();
-				if (col_size_->IsSortKey())
-					col_size_->UnsetAsSortKey();
-				if (col_type_->IsSortKey())
-					col_type_->UnsetAsSortKey();
-#ifdef __WXGTK__
-				col_index_->SetSortOrder(true);
-#else
-				if (col_index_->IsSortKey())
-					col_index_->UnsetAsSortKey();
-#endif
-				model_->Resort();
-				saveSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING);
-
-				wxDataViewEvent de;
-				de.SetEventType(wxEVT_DATAVIEW_COLUMN_SORTED);
-				ProcessWindowEvent(de);
-			}
-			else if (e.GetId() == 1)
-			{
-				// Toggle index column
-				toggleColumnVisibility(3);
-				restoreColumnWidths();
-				saveSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING);
-			}
-			else if (e.GetId() == 2)
-			{
-				// Toggle size column
-				toggleColumnVisibility(1);
-				restoreColumnWidths();
-				saveSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING);
-			}
-			else if (e.GetId() == 3)
-			{
-				// Toggle type column
-				toggleColumnVisibility(2);
-				restoreColumnWidths();
-				saveSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING);
-			}
-			else
-				e.Skip();
-		});
+	// Header right click: column visibility + reset sorting menu
+	enableHeaderContextMenu();
 }
+
 
 // -----------------------------------------------------------------------------
 // Returns true if the list currently has 'default' sorting (by entry index,
@@ -1493,7 +1432,7 @@ void ArchiveEntryTree::setupColumns()
 	GetColumn(GetColumnCount() - 1)->SetWidth(0);
 
 	// Load sorting config
-	loadSortState(ENTRYLIST_SORT_COLUMN, ENTRYLIST_SORT_DESCENDING, archive);
+	loadSortState(archive);
 }
 
 // -----------------------------------------------------------------------------

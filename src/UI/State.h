@@ -49,7 +49,7 @@ inline constexpr string_view TEXTURELIST_SORT_DESCENDING   = "TextureListSortDes
 inline constexpr string_view TEXEDITOR_SPLIT_POS           = "TexEditorSplitPos";
 
 void initStateProps();
-bool hasSavedState(string_view name, const Archive* archive = nullptr);
+bool hasSavedState(string_view name, const Archive* archive = nullptr, bool check_global = false);
 
 bool   getStateBool(string_view name, const Archive* archive = nullptr);
 int    getStateInt(string_view name, const Archive* archive = nullptr);

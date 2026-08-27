@@ -13,6 +13,9 @@ TextureTreeView::TextureTreeView(wxWindow* parent, const TextureEditor& editor) 
 	SDataViewCtrl(parent, wxDV_MULTIPLE),
 	editor_(&editor)
 {
+	prop_sort_column_     = ui::TEXTURELIST_SORT_COLUMN;
+	prop_sort_descending_ = ui::TEXTURELIST_SORT_DESCENDING;
+
 	if (CVar::getBool("list_font_monospace"))
 		SetFont(wxutil::monospaceFont(GetFont()));
 
@@ -28,9 +31,11 @@ TextureTreeView::TextureTreeView(wxWindow* parent, const TextureEditor& editor) 
 		wxEVT_DATAVIEW_COLUMN_SORTED,
 		[this](wxDataViewEvent& e)
 		{
-			saveSortState(ui::TEXTURELIST_SORT_COLUMN, ui::TEXTURELIST_SORT_DESCENDING);
+			saveSortState();
 			e.Skip();
 		});
+
+	enableHeaderContextMenu();
 }
 
 CTexture* TextureTreeView::textureForItem(const wxDataViewItem& item) const
@@ -112,7 +117,7 @@ void TextureTreeView::setupColumns()
 	GetColumn(GetColumnCount() - 1)->SetWidth(0);
 
 	// Load sorting config
-	loadSortState(ui::TEXTURELIST_SORT_COLUMN, ui::TEXTURELIST_SORT_DESCENDING, archive);
+	loadSortState(archive);
 }
 
 const Archive* TextureTreeView::stateArchive() const
