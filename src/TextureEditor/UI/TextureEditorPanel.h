@@ -15,7 +15,8 @@ class SAuiToolBar;
 namespace slade::ui
 {
 class ZoomControl;
-}
+class Splitter;
+} // namespace slade::ui
 namespace slade::texeditor
 {
 class CTextureCanvasBase;
@@ -45,12 +46,12 @@ public:
 private:
 	unique_ptr<TextureEditor> editor_;
 
-	wxMenu*           menu_texture_   = nullptr;
-	PatchBrowser*     patch_browser_  = nullptr;
-	wxSplitterWindow* splitter_left_  = nullptr;
-	wxSplitterWindow* splitter_right_ = nullptr;
-	wxPanel*          panel_main_     = nullptr;
-	wxPanel*          panel_blank_    = nullptr;
+	wxMenu*       menu_texture_   = nullptr;
+	PatchBrowser* patch_browser_  = nullptr;
+	ui::Splitter* splitter_left_  = nullptr;
+	ui::Splitter* splitter_right_ = nullptr;
+	wxPanel*      panel_main_     = nullptr;
+	wxPanel*      panel_blank_    = nullptr;
 
 	// Texture list
 	TextureTreeView* tree_view_       = nullptr;
@@ -69,7 +70,7 @@ private:
 	SIconButton* btn_auto_offset_    = nullptr;
 
 	// Texture/Patch properties
-	wxSplitterWindow*   splitter_props_  = nullptr;
+	ui::Splitter*       splitter_props_  = nullptr;
 	wxDataViewListCtrl* list_patches_    = nullptr;
 	SAuiToolBar*        toolbar_patches_ = nullptr;
 	TexturePropGrid*    pg_properties_   = nullptr;

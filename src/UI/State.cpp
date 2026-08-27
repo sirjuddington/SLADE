@@ -146,8 +146,7 @@ void ui::initStateProps()
 									  { TEXTURELIST_TYPE_WIDTH, 180 },
 									  { TEXTURELIST_NAME_WIDTH, 130 },
 									  { TEXTURELIST_PATCHES_VISIBLE, false },
-									  { TEXTURELIST_PATCHES_WIDTH, 70 },
-									  { TEXEDITOR_SPLIT_POS, 280 } };
+									  { TEXTURELIST_PATCHES_WIDTH, 70 } };
 
 	auto ps = database::context().preparedStatement("init_ui_state", "INSERT INTO ui_state VALUES (?,?,?)", true);
 

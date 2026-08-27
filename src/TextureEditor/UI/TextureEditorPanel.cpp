@@ -81,9 +81,12 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	auto lh = ui::LayoutHelper(this);
 	splitter_left_->SetMinimumPaneSize(FromDIP(200));
 	sizer->Add(splitter_left_, lh.sfWithBorder(1, wxTOP | wxBOTTOM).Expand());
-	auto split_pos = ui::getStateInt(ui::TEXEDITOR_SPLIT_POS, archive.get());
-	splitter_left_->SplitVertically(
-		createTextureListPanel(splitter_left_), panel_main_ = createMainPanel(splitter_left_), FromDIP(split_pos));
+	splitter_left_->splitVertically(
+		createTextureListPanel(splitter_left_),
+		panel_main_ = createMainPanel(splitter_left_),
+		ui::TEXEDITOR_SPLIT_POS_LEFT,
+		280,
+		archive.get());
 
 	// Blank panel to show when no texture is open
 	panel_blank_ = new wxPanel(splitter_left_);
@@ -239,8 +242,12 @@ wxPanel* TextureEditorPanel::createMainPanel(wxWindow* parent)
 	splitter_right_ = new ui::Splitter(panel, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
 	splitter_right_->SetSashGravity(1.0);
 	splitter_right_->SetMinimumPaneSize(FromDIP(200));
-	splitter_right_->SplitVertically(
-		createTextureViewPanel(splitter_right_), createRightPanel(splitter_right_), FromDIP(-250));
+	splitter_right_->splitVertically(
+		createTextureViewPanel(splitter_right_),
+		createRightPanel(splitter_right_),
+		ui::TEXEDITOR_SPLIT_POS_RIGHT,
+		-250,
+		editor_->archive());
 	sizer->Add(splitter_right_, wxSizerFlags(1).Expand());
 
 	return panel;
@@ -304,7 +311,12 @@ wxPanel* TextureEditorPanel::createRightPanel(wxWindow* parent)
 	props_panel->GetSizer()->Add(pg_properties_, lh.sfWithBorder(1, wxRIGHT).Expand());
 
 	// Split
-	splitter_props_->SplitHorizontally(patch_list_panel, props_panel, patch_list_panel->GetBestSize().y);
+	splitter_props_->splitHorizontally(
+		patch_list_panel,
+		props_panel,
+		ui::TEXEDITOR_SPLIT_POS_PROPS,
+		ToDIP(patch_list_panel->GetBestSize().y),
+		editor_->archive());
 	splitter_props_->SetMinimumPaneSize(FromDIP(150));
 
 	return panel;

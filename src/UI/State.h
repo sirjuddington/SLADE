@@ -46,7 +46,9 @@ inline constexpr string_view TEXTURELIST_PATCHES_VISIBLE   = "TextureListPatches
 inline constexpr string_view TEXTURELIST_PATCHES_WIDTH     = "TextureListPatchesWidth";
 inline constexpr string_view TEXTURELIST_SORT_COLUMN       = "TextureListSortColumn";
 inline constexpr string_view TEXTURELIST_SORT_DESCENDING   = "TextureListSortDescending";
-inline constexpr string_view TEXEDITOR_SPLIT_POS           = "TexEditorSplitPos";
+inline constexpr string_view TEXEDITOR_SPLIT_POS_LEFT      = "TexEditorSplitPosLeft";
+inline constexpr string_view TEXEDITOR_SPLIT_POS_RIGHT     = "TexEditorSplitPosRight";
+inline constexpr string_view TEXEDITOR_SPLIT_POS_PROPS     = "TexEditorSplitPosProps";
 
 void initStateProps();
 bool hasSavedState(string_view name, const Archive* archive = nullptr, bool check_global = false);

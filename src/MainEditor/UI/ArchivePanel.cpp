@@ -365,13 +365,9 @@ void ArchivePanel::setup(const Archive* archive)
 	splitter_->SetMinimumPaneSize(FromDIP(300));
 	m_hbox->AddSpacer(lh.padSmall());
 	m_hbox->Add(splitter_, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
-	int split_pos;
-	if (ui::hasSavedState(ui::ARCHIVEPANEL_SPLIT_POS, archive))
-		split_pos = ui::getStateInt(ui::ARCHIVEPANEL_SPLIT_POS, archive);
-	else
-		split_pos = ui::getStateInt(
-			archive->formatInfo().supports_dirs ? ui::ARCHIVEPANEL_SPLIT_POS_TREE : ui::ARCHIVEPANEL_SPLIT_POS_LIST);
-	splitter_->SplitVertically(elist_panel, cur_area_, FromDIP(split_pos));
+	auto default_split_pos = ui::getStateInt(
+		archive->formatInfo().supports_dirs ? ui::ARCHIVEPANEL_SPLIT_POS_TREE : ui::ARCHIVEPANEL_SPLIT_POS_LIST);
+	splitter_->splitVertically(elist_panel, cur_area_, ui::ARCHIVEPANEL_SPLIT_POS, default_split_pos, archive);
 
 	// Update size+layout
 	Layout();
@@ -407,7 +403,7 @@ void ArchivePanel::bindEvents(Archive* archive)
 				e.Skip();
 		});
 
-	// Update splitter position cvar when moved
+	// Update the default splitter position (list/tree) cvar when moved
 	splitter_->Bind(
 		wxEVT_SPLITTER_SASH_POS_CHANGED,
 		[this](wxSplitterEvent& e)
@@ -423,8 +419,6 @@ void ArchivePanel::bindEvents(Archive* archive)
 					ui::saveStateInt(ui::ARCHIVEPANEL_SPLIT_POS_TREE, pos);
 				else
 					ui::saveStateInt(ui::ARCHIVEPANEL_SPLIT_POS_LIST, pos);
-
-				ui::saveStateInt(ui::ARCHIVEPANEL_SPLIT_POS, pos, archive);
 			}
 		});
 

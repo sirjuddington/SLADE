@@ -95,6 +95,28 @@ SDataViewCtrl::SDataViewCtrl(wxWindow* parent, long style) :
 					ProcessWindowEvent(de);
 					onAnyColumnResized();
 				});
+
+			// Double-clicking a column separator to autosize doesn't send
+			// wxEVT_HEADER_END_RESIZE, so it needs to be handled separately
+			header->Bind(
+				wxEVT_HEADER_SEPARATOR_DCLICK,
+				[this](wxHeaderCtrlEvent& e)
+				{
+					e.Skip();
+
+					auto col = GetColumn(e.GetColumn());
+					if (col == lastVisibleColumn())
+						return; // Ignore last column - is stretched
+
+					CallAfter(
+						[this, col]
+						{
+							onColumnResized(col);
+							wxDataViewEvent de{ EVT_SDVC_COLUMN_RESIZED, this, col };
+							ProcessWindowEvent(de);
+							onAnyColumnResized();
+						});
+				});
 		});
 #else
 	// On Linux/Mac we don't have any way to know if a column is resized so check for column size changes on a timer

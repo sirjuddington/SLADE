@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Splitter.h"
+#include "UI/State.h"
 
 using namespace slade;
 using namespace ui;
@@ -61,6 +62,54 @@ int Splitter::getSashSize() const
 		size++;
 
 	return size;
+}
+
+// -----------------------------------------------------------------------------
+// Splits the window with a vertical sash, restoring the sash position
+// previously saved to ui state under [state_id]/[archive] (or [default_pos] if
+// none saved), and saves it to the same key whenever it's changed
+// -----------------------------------------------------------------------------
+bool Splitter::splitVertically(
+	wxWindow*      window1,
+	wxWindow*      window2,
+	string_view    state_id,
+	int            default_pos,
+	const Archive* archive)
+{
+	state_id_      = state_id;
+	state_archive_ = archive;
+
+	if (ui::hasSavedState(state_id_, state_archive_, true))
+		default_pos = ui::getStateInt(state_id_, state_archive_);
+
+	Bind(wxEVT_SPLITTER_SASH_POS_CHANGING, &Splitter::onSashPosChanging, this);
+	Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, &Splitter::onSashPosChanged, this);
+
+	return wxSplitterWindow::SplitVertically(window1, window2, FromDIP(default_pos));
+}
+
+// -----------------------------------------------------------------------------
+// Splits the window with a horizontal sash, restoring the sash position
+// previously saved to ui state under [state_id]/[archive] (or [default_pos] if
+// none saved), and saves it to the same key whenever it's changed
+// -----------------------------------------------------------------------------
+bool Splitter::splitHorizontally(
+	wxWindow*      window1,
+	wxWindow*      window2,
+	string_view    state_id,
+	int            default_pos,
+	const Archive* archive)
+{
+	state_id_      = state_id;
+	state_archive_ = archive;
+
+	if (ui::hasSavedState(state_id_, state_archive_, true))
+		default_pos = ui::getStateInt(state_id_, state_archive_);
+
+	Bind(wxEVT_SPLITTER_SASH_POS_CHANGING, &Splitter::onSashPosChanging, this);
+	Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, &Splitter::onSashPosChanged, this);
+
+	return wxSplitterWindow::SplitHorizontally(window1, window2, FromDIP(default_pos));
 }
 
 // -----------------------------------------------------------------------------
@@ -242,4 +291,46 @@ wxSize Splitter::DoGetBestSize() const
 	sizeBest.y += border;
 
 	return sizeBest;
+}
+
+// -----------------------------------------------------------------------------
+// Called when the sash position is about to change
+// -----------------------------------------------------------------------------
+void Splitter::onSashPosChanging(wxSplitterEvent& e)
+{
+	// Wx only sends SASH_POS_CHANGING while the user is actively dragging the
+	// sash, so we can use this to determine whether the change was
+	// user-initiated or programmatic
+	if (e.GetEventObject() == this)
+		user_dragging_sash_ = true;
+}
+
+// -----------------------------------------------------------------------------
+// Called when the sash position has changed
+// -----------------------------------------------------------------------------
+void Splitter::onSashPosChanged(wxSplitterEvent& e)
+{
+	// For some reason *any* child splitter will trigger this event
+	if (e.GetEventObject() != this)
+		return;
+
+	// Save the new sash position to ui state only if it was changed via drag
+	if (user_dragging_sash_)
+	{
+		ui::saveStateInt(state_id_, ToDIP(gravityAdjustedSashPos(e.GetSashPosition())), state_archive_);
+		user_dragging_sash_ = false;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns [sash_pos] taking into account the sash gravity - if it's 1.0, the
+// position is converted to the negative offset from the right/bottom edge
+// -----------------------------------------------------------------------------
+int Splitter::gravityAdjustedSashPos(int sash_pos) const
+{
+	if (GetSashGravity() < 1.0)
+		return sash_pos;
+
+	auto dim = GetSplitMode() == wxSPLIT_VERTICAL ? GetClientSize().x : GetClientSize().y;
+	return sash_pos - dim;
 }
