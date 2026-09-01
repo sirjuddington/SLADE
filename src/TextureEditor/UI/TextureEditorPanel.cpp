@@ -10,16 +10,20 @@
 #include "General/SAction.h"
 #include "General/UndoRedo.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
+#include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/TextureXEditor/PatchBrowser.h"
 #include "NewTextureDialog.h"
 #include "OpenGL/View.h"
+#include "PatchTablePanel.h"
 #include "TextureEditor/TextureEditor.h"
 #include "TexturePropGrid.h"
 #include "TextureTreeView.h"
 #include "UI/Browser/BrowserItem.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Controls/STabCtrl.h"
 #include "UI/Controls/Splitter.h"
 #include "UI/Controls/ZoomControl.h"
 #include "UI/Dialogs/GfxConvDialog.h"
@@ -31,11 +35,162 @@
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
-#include <utility>
+#include <wx/overlay.h>
 #include <wx/richmsgdlg.h>
 
 using namespace slade;
 using namespace texeditor;
+
+
+// -----------------------------------------------------------------------------
+//
+// Structs
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// Computed placement of a patch being dropped onto the texture canvas
+struct PatchDropPlacement
+{
+	bool   valid = false;
+	Vec2i  tex_offset;  // Offset for the patch (in canvas coords)
+	wxRect client_rect; // Rect for drawing the drop position overlay (in client coords)
+};
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Determines where [patch] would be placed (centered at position [x],[y]) if
+// dropped on the texture [canvas], in both canvas and client coordinates
+// -----------------------------------------------------------------------------
+PatchDropPlacement determinePatchDropPlacement(
+	TextureEditor&      editor,
+	CTextureCanvasBase& canvas,
+	string_view         patch,
+	int                 x,
+	int                 y)
+{
+	PatchDropPlacement placement;
+
+	auto ctex = editor.currentTexture();
+	if (!ctex || patch.empty())
+		return placement;
+
+	// Get the patch image size (if possible) so it can be centered on the drop position
+	int width = 0, height = 0;
+	if (auto entry = editor.patchTable()->patchEntry(patch))
+	{
+		SImage image;
+		if (misc::loadImageFromEntry(&image, entry))
+		{
+			width  = image.width();
+			height = image.height();
+		}
+	}
+
+	// Convert drop position to canvas coordinates
+	auto* window   = canvas.window();
+	Vec2i phys_pos = { window->ToPhys(x), window->ToPhys(y) };
+	auto  cpos     = canvas.view().canvasPos({ phys_pos.x, phys_pos.y });
+	auto  tex_rect = canvas.textureRect(canvas.applyTexScale(), canvas.viewType() != CTextureView::Normal);
+	auto  sf       = canvas.applyTexScale() ? ctex->scaleFactor() : Vec2d{ 1.0, 1.0 };
+	Vec2d tex_pos  = { (cpos.x - tex_rect.x1()) / sf.x, (cpos.y - tex_rect.y1()) / sf.y };
+
+	placement.tex_offset = { static_cast<int>(std::lround(tex_pos.x - width / 2.0)),
+							 static_cast<int>(std::lround(tex_pos.y - height / 2.0)) };
+	placement.valid      = true;
+
+	// Convert the patch bounds back to canvas client coordinates, for the drop position overlay
+	auto p1 = canvas.view().screenPos(
+		placement.tex_offset.x * sf.x + tex_rect.x1(), placement.tex_offset.y * sf.y + tex_rect.y1());
+	auto p2 = canvas.view().screenPos(
+		(placement.tex_offset.x + width) * sf.x + tex_rect.x1(),
+		(placement.tex_offset.y + height) * sf.y + tex_rect.y1());
+	wxPoint c1{ window->FromPhys(p1.x), window->FromPhys(p1.y) };
+	wxPoint c2{ window->FromPhys(p2.x), window->FromPhys(p2.y) };
+	placement.client_rect = wxRect(
+		wxPoint(std::min(c1.x, c2.x), std::min(c1.y, c2.y)), wxSize(std::abs(c2.x - c1.x), std::abs(c2.y - c1.y)));
+
+	return placement;
+}
+
+
+// -----------------------------------------------------------------------------
+// PatchDropTarget Class
+//
+// wxDropTarget used to allow dragging patches from the patch table on to the
+// texture canvas.
+// Draws an overlay on the canvas showing where the patch will be placed while
+// dragging over it.
+// -----------------------------------------------------------------------------
+class PatchDropTarget : public wxTextDropTarget
+{
+public:
+	PatchDropTarget(
+		wxWindow*                                      window,
+		std::function<wxRect(int, int)>                rect_for_pos,
+		std::function<void(const wxString&, int, int)> on_drop) :
+		window_{ window },
+		rect_for_pos_{ std::move(rect_for_pos) },
+		on_drop_{ std::move(on_drop) }
+	{
+	}
+
+	wxDragResult OnEnter(wxCoord x, wxCoord y, wxDragResult def) override { return OnDragOver(x, y, def); }
+
+	wxDragResult OnDragOver(wxCoord x, wxCoord y, wxDragResult def) override
+	{
+		updateOverlay(rect_for_pos_(x, y));
+		return def;
+	}
+
+	void OnLeave() override { clearOverlay(); }
+
+	bool OnDropText(wxCoord x, wxCoord y, const wxString& text) override
+	{
+		clearOverlay();
+		on_drop_(text, x, y);
+		return true;
+	}
+
+private:
+	wxWindow*                                      window_ = nullptr;
+	wxOverlay                                      overlay_;
+	std::function<wxRect(int, int)>                rect_for_pos_;
+	std::function<void(const wxString&, int, int)> on_drop_;
+
+	void updateOverlay(const wxRect& rect)
+	{
+		wxClientDC  dc(window_);
+		wxDCOverlay dcoverlay(overlay_, &dc);
+		dcoverlay.Clear();
+
+		if (rect.IsEmpty())
+			return;
+
+		dc.SetPen(wxPen(*wxWHITE, 2, wxPENSTYLE_SHORT_DASH));
+		dc.SetBrush(*wxTRANSPARENT_BRUSH);
+		dc.DrawRectangle(rect);
+	}
+
+	void clearOverlay()
+	{
+		{
+			wxClientDC  dc(window_);
+			wxDCOverlay dcoverlay(overlay_, &dc);
+			dcoverlay.Clear();
+		}
+		overlay_.Reset();
+	}
+};
+} // namespace
 
 
 TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive) : wxPanel(parent, wxID_ANY)
@@ -82,7 +237,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	splitter_left_->SetMinimumPaneSize(FromDIP(200));
 	sizer->Add(splitter_left_, lh.sfWithBorder(1, wxTOP | wxBOTTOM).Expand());
 	splitter_left_->splitVertically(
-		createTextureListPanel(splitter_left_),
+		createLeftPanel(splitter_left_),
 		panel_main_ = createMainPanel(splitter_left_),
 		ui::TEXEDITOR_SPLIT_POS_LEFT,
 		280,
@@ -92,8 +247,8 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	panel_blank_ = new wxPanel(splitter_left_);
 
 	// Bind Events
-	tree_view_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onTextureSelectionChanged, this);
-	tree_view_->GetMainWindow()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTreeViewKeyDown, this);
+	textures_tree_view_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onTextureSelectionChanged, this);
+	textures_tree_view_->GetMainWindow()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTreeViewKeyDown, this);
 	list_patches_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onPatchSelectionChanged, this);
 	tex_canvas_->window()->Bind(wxEVT_LEFT_DOWN, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas_->window()->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexCanvasMouseEvent, this);
@@ -102,6 +257,10 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	tex_canvas_->window()->Bind(wxEVT_MOTION, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas_->window()->Bind(EVT_DRAG_END, &TextureEditorPanel::onTexCanvasDragEnd, this);
 	tex_canvas_->window()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
+	tex_canvas_->window()->SetDropTarget(new PatchDropTarget(
+		tex_canvas_->window(),
+		[this](int x, int y) { return patchDropRect(x, y); },
+		[this](const wxString& patch, int x, int y) { dropPatchOnCanvas(patch.utf8_string(), x, y); }));
 	spin_offset_x_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexOffsetXChanged, this);
 	spin_offset_y_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexOffsetYChanged, this);
 	spin_offset_x_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexOffsetXChanged, this);
@@ -135,7 +294,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 		});
 
 	// Init UI (expandAll must be deferred until the native window exists)
-	CallAfter([this]() { tree_view_->expandAll(); });
+	CallAfter([this]() { textures_tree_view_->expandAll(); });
 	updateUI(true);
 }
 
@@ -169,7 +328,7 @@ void TextureEditorPanel::redo()
 void TextureEditorPanel::saveAll() const
 {
 	editor_->saveAll();
-	tree_view_->Refresh();
+	textures_tree_view_->Refresh();
 }
 
 bool TextureEditorPanel::close()
@@ -210,24 +369,59 @@ bool TextureEditorPanel::close()
 	return true;
 }
 
+wxPanel* TextureEditorPanel::createLeftPanel(wxWindow* parent)
+{
+	// If the archive has a patch table, setup tabbed layout
+	if (editor_->hasPatchTable())
+	{
+		auto panel = new wxPanel(parent);
+		auto lh    = ui::LayoutHelper(panel);
+		auto sizer = new wxBoxSizer(wxHORIZONTAL);
+		panel->SetSizer(sizer);
+
+		auto tabs = STabCtrl::createControl(panel);
+		sizer->Add(tabs, lh.sfWithBorder(1, wxLEFT).Expand());
+
+		tabs->AddPage(createTextureListPanel(tabs), wxS("Textures"));
+		tabs->AddPage(createPatchTablePanel(tabs), wxS("Patches"));
+
+		sizer->AddSpacer(lh.padSmall());
+
+		return panel;
+	}
+
+	// No patch table, just show the texture list
+	return createTextureListPanel(parent);
+}
+
 wxPanel* TextureEditorPanel::createTextureListPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = ui::LayoutHelper(panel);
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
+	panel->SetSizer(sizer);
+
+	// Toolbar
+	toolbar_texlist_ = new SAuiToolBar(panel, true);
+	toolbar_texlist_->loadLayoutFromResource("texturex_list");
+	sizer->Add(toolbar_texlist_, lh.sfWithSmallBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
+
+	// Texture tree
+	textures_tree_view_ = new TextureTreeView(panel, *editor_);
+	sizer->Add(textures_tree_view_, lh.sfWithSmallBorder(1, wxRIGHT | wxTOP | wxBOTTOM).Expand());
+
+	return panel;
+}
+
+wxPanel* TextureEditorPanel::createPatchTablePanel(wxWindow* parent)
 {
 	auto panel = new wxPanel(parent);
 	auto lh    = ui::LayoutHelper(panel);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
-	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, wxSizerFlags(1).Expand());
-
-	// Toolbar
-	toolbar_texlist_ = new SAuiToolBar(panel, true);
-	toolbar_texlist_->loadLayoutFromResource("texturex_list");
-	hbox->Add(toolbar_texlist_, lh.sfWithSmallBorder(0, wxLEFT | wxRIGHT).Expand());
-
-	// Texture tree
-	tree_view_ = new TextureTreeView(panel, *editor_);
-	hbox->Add(tree_view_, lh.sfWithSmallBorder(1, wxRIGHT).Expand());
+	patch_table_panel_ = new PatchTablePanel(panel, *editor_);
+	sizer->Add(patch_table_panel_, lh.sfWithSmallBorder(1, wxALL).Expand());
 
 	return panel;
 }
@@ -454,15 +648,15 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 	{
 		// Determine what we have selected in the tree view
 		wxDataViewItemArray selection;
-		tree_view_->GetSelections(selection);
+		textures_tree_view_->GetSelections(selection);
 		bool has_list  = false;
 		bool has_tex   = false;
 		bool multi_tex = false;
 		for (auto& item : selection)
 		{
-			if (!has_list && tree_view_->textureListForItem(item))
+			if (!has_list && textures_tree_view_->textureListForItem(item))
 				has_list = true;
-			if (tree_view_->textureForItem(item))
+			if (textures_tree_view_->textureForItem(item))
 			{
 				if (has_tex)
 					multi_tex = true;
@@ -523,7 +717,7 @@ void TextureEditorPanel::initPatchBrowser()
 	patch_browser_ = new PatchBrowser(this);
 	patch_browser_->setPalette(maineditor::currentPalette());
 
-	auto list = tree_view_->textureListForItem(tree_view_->lastSelectedItem());
+	auto list = textures_tree_view_->textureListForItem(textures_tree_view_->lastSelectedItem());
 
 	if (list->format() == TextureXList::Format::Textures)
 	{
@@ -571,6 +765,32 @@ void TextureEditorPanel::addPatch()
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Adds [patch], dropped at client position [x],[y] on the texture canvas,
+// centering it on the drop position
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::dropPatchOnCanvas(string_view patch, int x, int y)
+{
+	auto placement = determinePatchDropPlacement(*editor_, *tex_canvas_, patch, x, y);
+	if (!placement.valid)
+		return;
+
+	editor_->addPatch(patch, placement.tex_offset);
+	updateUI(true);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the canvas client-space rect for the drop overlay, showing where the
+// patch currently being dragged (if any) would be placed at position [x],[y]
+// -----------------------------------------------------------------------------
+wxRect TextureEditorPanel::patchDropRect(int x, int y) const
+{
+	if (patch_table_panel_->draggingPatch().empty())
+		return {};
+
+	return determinePatchDropPlacement(*editor_, *tex_canvas_, patch_table_panel_->draggingPatch(), x, y).client_rect;
+}
+
 void TextureEditorPanel::removePatch()
 {
 	editor_->removePatch();
@@ -615,9 +835,9 @@ void TextureEditorPanel::newTexture()
 {
 	// Determine index to insert new texture at
 	int  index         = -1;
-	auto last_selected = tree_view_->lastSelectedItem();
-	auto ctex          = tree_view_->textureForItem(last_selected);
-	auto list          = tree_view_->textureListForItem(last_selected);
+	auto last_selected = textures_tree_view_->lastSelectedItem();
+	auto ctex          = textures_tree_view_->textureForItem(last_selected);
+	auto list          = textures_tree_view_->textureListForItem(last_selected);
 
 	// Do nothing if no texture or texture list is selected
 	if (!list)
@@ -645,9 +865,9 @@ void TextureEditorPanel::newTextureFromFile()
 {
 	// Determine index to insert new texture at
 	int  index         = -1;
-	auto last_selected = tree_view_->lastSelectedItem();
-	auto ctex          = tree_view_->textureForItem(last_selected);
-	auto list          = tree_view_->textureListForItem(last_selected);
+	auto last_selected = textures_tree_view_->lastSelectedItem();
+	auto ctex          = textures_tree_view_->textureForItem(last_selected);
+	auto list          = textures_tree_view_->textureListForItem(last_selected);
 
 	// Do nothing if no texture or texture list is selected
 	if (!list)
@@ -697,33 +917,33 @@ void TextureEditorPanel::newTextureFromFile()
 
 void TextureEditorPanel::deleteTexture() const
 {
-	editor_->deleteTextures(tree_view_->selectedTextures());
+	editor_->deleteTextures(textures_tree_view_->selectedTextures());
 }
 
 void TextureEditorPanel::moveTexture(Direction direction) const
 {
 	wxDataViewItemArray sel_items;
-	tree_view_->GetSelections(sel_items);
+	textures_tree_view_->GetSelections(sel_items);
 
-	tree_view_->Freeze();
+	textures_tree_view_->Freeze();
 
-	editor_->moveTextures(tree_view_->selectedTextures(), direction);
+	editor_->moveTextures(textures_tree_view_->selectedTextures(), direction);
 
 	// Restore selection
-	tree_view_->SetSelections(sel_items);
-	tree_view_->GetModel()->Resort();
+	textures_tree_view_->SetSelections(sel_items);
+	textures_tree_view_->GetModel()->Resort();
 
-	tree_view_->Thaw();
+	textures_tree_view_->Thaw();
 }
 
 void TextureEditorPanel::sortTextures() const
 {
 	// Get selected textures
-	auto selection = tree_view_->selectedTextures();
+	auto selection = textures_tree_view_->selectedTextures();
 	if (selection.empty())
 		return;
 
-	auto list = tree_view_->textureListForItem(tree_view_->lastSelectedItem());
+	auto list = textures_tree_view_->textureListForItem(textures_tree_view_->lastSelectedItem());
 
 	// Without selection of multiple textures, sort everything instead
 	if (selection.size() < 2)
@@ -743,14 +963,14 @@ void TextureEditorPanel::sortTextures() const
 	wxDataViewItemArray items;
 	for (auto ctex : selection)
 		items.Add(wxDataViewItem(ctex));
-	tree_view_->GetModel()->ItemsChanged(items);
+	textures_tree_view_->GetModel()->ItemsChanged(items);
 
-	tree_view_->GetModel()->Resort();
+	textures_tree_view_->GetModel()->Resort();
 }
 
 void TextureEditorPanel::renameTexture(bool each) const
 {
-	auto selection = tree_view_->selectedTextures();
+	auto selection = textures_tree_view_->selectedTextures();
 	if (selection.empty())
 		return;
 
@@ -759,12 +979,12 @@ void TextureEditorPanel::renameTexture(bool each) const
 	wxDataViewItemArray items;
 	for (auto ctex : selection)
 		items.Add(wxDataViewItem(ctex));
-	tree_view_->GetModel()->ItemsChanged(items);
+	textures_tree_view_->GetModel()->ItemsChanged(items);
 }
 
 void TextureEditorPanel::exportTexturesToEntries() const
 {
-	auto selection = tree_view_->selectedTextures();
+	auto selection = textures_tree_view_->selectedTextures();
 	if (selection.empty())
 		return;
 
@@ -818,7 +1038,7 @@ void TextureEditorPanel::exportTexturesToEntries() const
 void TextureEditorPanel::exportTexturesAsPNG() const
 {
 	// Get selected textures
-	auto selection = tree_view_->selectedTextures();
+	auto selection = textures_tree_view_->selectedTextures();
 	if (selection.empty())
 		return;
 
@@ -967,11 +1187,11 @@ bool TextureEditorPanel::handleAction(string_view id)
 void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
 {
 	wxDataViewItemArray selection;
-	tree_view_->GetSelections(selection);
+	textures_tree_view_->GetSelections(selection);
 	if (selection.Count() == 1)
 	{
 		// Single selection, open texture if one is selected
-		if (auto ctex = tree_view_->textureForItem(e.GetItem()))
+		if (auto ctex = textures_tree_view_->textureForItem(e.GetItem()))
 			editor_->openTexture(*ctex);
 		else
 			editor_->closeTexture();
@@ -1008,12 +1228,12 @@ void TextureEditorPanel::onTreeViewKeyDown(wxKeyEvent& e)
 	{
 		if (name == "select_all")
 		{
-			tree_view_->SelectAll();
+			textures_tree_view_->SelectAll();
 
 			// Trigger selection change event (since SelectAll doesn't trigger it)
 			wxDataViewEvent de;
 			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
-			tree_view_->ProcessWindowEvent(de);
+			textures_tree_view_->ProcessWindowEvent(de);
 
 			return;
 		}

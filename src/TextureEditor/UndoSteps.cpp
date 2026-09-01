@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "UndoSteps.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Graphics/Translation.h"
 #include "TextureEditor.h"
@@ -178,7 +179,15 @@ bool TexturePatchListChangeUS::swapLists()
 	if (!tex)
 		return false;
 
-	return tex->replacePatches(patches_);
+	if (tex->replacePatches(patches_))
+	{
+		if (editor_->hasPatchTable())
+			editor_->patchTable()->updatePatchUsage(tex);
+
+		return true;
+	}
+
+	return false;
 }
 
 

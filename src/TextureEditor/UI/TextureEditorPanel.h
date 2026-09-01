@@ -23,6 +23,7 @@ class CTextureCanvasBase;
 class TexturePropGrid;
 class TextureEditor;
 class TextureTreeView;
+class PatchTablePanel;
 } // namespace slade::texeditor
 
 namespace slade::texeditor
@@ -53,9 +54,10 @@ private:
 	wxPanel*      panel_main_     = nullptr;
 	wxPanel*      panel_blank_    = nullptr;
 
-	// Texture list
-	TextureTreeView* tree_view_       = nullptr;
-	SAuiToolBar*     toolbar_texlist_ = nullptr;
+	// Left panel (texture list / patch table)
+	TextureTreeView* textures_tree_view_ = nullptr;
+	SAuiToolBar*     toolbar_texlist_    = nullptr;
+	PatchTablePanel* patch_table_panel_  = nullptr;
 
 	// Texture view
 	SAuiToolBar*        toolbar_texture_ = nullptr;
@@ -78,7 +80,9 @@ private:
 	sigslot::scoped_connection sc_tex_modified_;
 	sigslot::scoped_connection sc_tex_deleted_;
 
+	wxPanel* createLeftPanel(wxWindow* parent);
 	wxPanel* createTextureListPanel(wxWindow* parent);
+	wxPanel* createPatchTablePanel(wxWindow* parent);
 	wxPanel* createMainPanel(wxWindow* parent);
 	wxPanel* createTextureViewPanel(wxWindow* parent);
 	wxPanel* createRightPanel(wxWindow* parent);
@@ -95,6 +99,8 @@ private:
 	void   replacePatch();
 	void   duplicatePatch();
 	void   pushPatch(bool forward);
+	void   dropPatchOnCanvas(string_view patch, int x, int y);
+	wxRect patchDropRect(int x, int y) const;
 
 	void newTexture();
 	void newTextureFromFile();

@@ -57,6 +57,9 @@ TextureEditor::TextureEditor(shared_ptr<Archive> archive) : archive_{ archive }
 	for (auto& entry : texturex_entries_)
 		if (auto e = entry.entry.lock(); e)
 			e->lock();
+
+	if (hasPatchTable())
+		updateAllPatchUsage();
 }
 
 TextureEditor::~TextureEditor()
@@ -188,6 +191,9 @@ void TextureEditor::revertTexture()
 		tex_current_->setState(backup->state());
 		selected_patches_.clear();
 		signals_.current_texture_modified(true, true);
+
+		if (patch_table_)
+			patch_table_->updatePatchUsage(tex_current_);
 
 		undo_manager_->endRecord(true);
 	}
@@ -920,14 +926,17 @@ void TextureEditor::setPatchTranslation(string_view translation) const
 	undo_manager_->endRecord(true);
 }
 
-void TextureEditor::addPatch(string_view patch) const
+void TextureEditor::addPatch(string_view patch, optional<Vec2i> position) const
 {
 	if (!tex_current_)
 		return;
 
 	undo_manager_->beginRecord(fmt::format("{}: Add Patch", tex_current_->name()));
 	undo_manager_->recordUndoStep<TexturePatchListChangeUS>(*this, *tex_current_);
-	tex_current_->addPatch(patch);
+	if (position)
+		tex_current_->addPatch(patch, position->x, position->y);
+	else
+		tex_current_->addPatch(patch);
 	signalCurrentTextureModified(true, true, false);
 	undo_manager_->endRecord(true);
 }
@@ -1055,6 +1064,11 @@ void TextureEditor::patchBack()
 	undo_manager_->endRecord(true);
 }
 
+bool TextureEditor::hasPatchTable() const
+{
+	return patch_table_ && patch_table_->nPatches() > 0;
+}
+
 void TextureEditor::signalCurrentTextureModified(bool texture, bool patch_list, bool patches) const
 {
 	// Record undo step for texture state change if needed
@@ -1069,6 +1083,9 @@ void TextureEditor::signalCurrentTextureModified(bool texture, bool patch_list, 
 	if (patches)
 		signals_.patches_modified(selected_patches_);
 	signals_.current_texture_modified(texture, patch_list);
+
+	if (patch_list)
+		patch_table_->updatePatchUsage(tex_current_);
 }
 
 void TextureEditor::setupTextureBackup(const CTexture& texture)
@@ -1101,4 +1118,11 @@ CTexture* TextureEditor::getTextureBackup(const CTexture& texture) const
 	}
 
 	return nullptr;
+}
+
+void TextureEditor::updateAllPatchUsage()
+{
+	for (auto& tx : texturex_entries_)
+		for (unsigned i = 0; i < tx.texturex->size(); ++i)
+			patch_table_->updatePatchUsage(tx.texturex->texture(i));
 }

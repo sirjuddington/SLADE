@@ -80,12 +80,15 @@ public:
 	void setPatchTranslation(string_view translation) const;
 
 	// Patch List Editng
-	void addPatch(string_view patch) const;
+	void addPatch(string_view patch, optional<Vec2i> position = {}) const;
 	void removePatch();
 	void replacePatch(string_view patch) const;
 	void duplicatePatch(int xoff, int yoff);
 	void patchForward();
 	void patchBack();
+
+	// Patch Table
+	bool hasPatchTable() const;
 
 	struct Signals
 	{
@@ -135,5 +138,6 @@ private:
 	void      signalCurrentTextureModified(bool texture, bool patch_list, bool patches) const;
 	void      setupTextureBackup(const CTexture& texture);
 	CTexture* getTextureBackup(const CTexture& texture) const;
+	void      updateAllPatchUsage();
 };
 } // namespace slade::texeditor
