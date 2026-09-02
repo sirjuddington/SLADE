@@ -135,6 +135,29 @@ void CTextureCanvasBase::setViewType(View type)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the outline of the patch being dragged (externally via drag-and-drop, not
+// internally via the editor), and shows it
+// -----------------------------------------------------------------------------
+void CTextureCanvasBase::setDropPatchOutline(const Rectd& rect)
+{
+	drop_patch_outline_      = rect;
+	show_drop_patch_outline_ = true;
+	redraw();
+}
+
+// -----------------------------------------------------------------------------
+// Clears the outline of the patch being dragged
+// -----------------------------------------------------------------------------
+void CTextureCanvasBase::clearDropPatchOutline()
+{
+	if (!show_drop_patch_outline_)
+		return;
+
+	show_drop_patch_outline_ = false;
+	redraw();
+}
+
+// -----------------------------------------------------------------------------
 // Auto-detects the view type based on the texture's properties
 // -----------------------------------------------------------------------------
 CTextureView CTextureCanvasBase::autoDetectViewType() const
@@ -496,6 +519,9 @@ void CTextureCanvasBase::drawContent()
 	// Draw grid if needed
 	if (show_grid_ || dragging_)
 		drawTextureGrid(tex_rect);
+
+	if (show_drop_patch_outline_)
+		drawPatchOutline(drop_patch_outline_, { 255, 255, 255, 255 }, 2.0);
 
 	// Draw selected patch outlines (if not dragging)
 	if (!dragging_)

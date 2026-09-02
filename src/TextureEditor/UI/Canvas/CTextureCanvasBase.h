@@ -74,6 +74,8 @@ public:
 	bool         openTexture(CTexture* tex);
 	void         resetViewOffsets();
 	void         redraw(bool update_tex = false);
+	void         setDropPatchOutline(const Rectd& rect);
+	void         clearDropPatchOutline();
 
 	int          patchAt(int x, int y) const;
 	virtual bool swapPatches(size_t p1, size_t p2);
@@ -113,10 +115,12 @@ protected:
 	bool  show_grid_ = false;
 	Vec2i grid_size_ = { 8, 8 };
 
-	bool draw_outside_ = true;
-	bool blend_rgba_   = false;
-	bool tex_scale_    = false;
-	View view_type_    = View::Normal;
+	bool  draw_outside_ = true;
+	bool  blend_rgba_   = false;
+	bool  tex_scale_    = false;
+	View  view_type_    = View::Normal;
+	Rectd drop_patch_outline_;
+	bool  show_drop_patch_outline_ = false;
 
 	struct Text
 	{

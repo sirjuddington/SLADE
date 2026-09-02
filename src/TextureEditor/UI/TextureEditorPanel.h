@@ -100,7 +100,8 @@ private:
 	void   duplicatePatch();
 	void   pushPatch(bool forward);
 	void   dropPatchOnCanvas(string_view patch, int x, int y);
-	wxRect patchDropRect(int x, int y) const;
+	void   updatePatchDropPreview(int x, int y);
+	void   clearPatchDropPreview() const;
 
 	void newTexture();
 	void newTextureFromFile();

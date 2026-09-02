@@ -35,7 +35,6 @@
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
-#include <wx/overlay.h>
 #include <wx/richmsgdlg.h>
 
 using namespace slade;
@@ -52,9 +51,9 @@ namespace
 // Computed placement of a patch being dropped onto the texture canvas
 struct PatchDropPlacement
 {
-	bool   valid = false;
-	Vec2i  tex_offset;  // Offset for the patch (in canvas coords)
-	wxRect client_rect; // Rect for drawing the drop position overlay (in client coords)
+	bool  valid = false;
+	Vec2i tex_offset;
+	Rectd canvas_rect;
 };
 } // namespace
 
@@ -107,16 +106,10 @@ PatchDropPlacement determinePatchDropPlacement(
 							 static_cast<int>(std::lround(tex_pos.y - height / 2.0)) };
 	placement.valid      = true;
 
-	// Convert the patch bounds back to canvas client coordinates, for the drop position overlay
-	auto p1 = canvas.view().screenPos(
-		placement.tex_offset.x * sf.x + tex_rect.x1(), placement.tex_offset.y * sf.y + tex_rect.y1());
-	auto p2 = canvas.view().screenPos(
-		(placement.tex_offset.x + width) * sf.x + tex_rect.x1(),
-		(placement.tex_offset.y + height) * sf.y + tex_rect.y1());
-	wxPoint c1{ window->FromPhys(p1.x), window->FromPhys(p1.y) };
-	wxPoint c2{ window->FromPhys(p2.x), window->FromPhys(p2.y) };
-	placement.client_rect = wxRect(
-		wxPoint(std::min(c1.x, c2.x), std::min(c1.y, c2.y)), wxSize(std::abs(c2.x - c1.x), std::abs(c2.y - c1.y)));
+	placement.canvas_rect = { placement.tex_offset.x * sf.x + tex_rect.x1(),
+							  placement.tex_offset.y * sf.y + tex_rect.y1(),
+							  (placement.tex_offset.x + width) * sf.x + tex_rect.x1(),
+							  (placement.tex_offset.y + height) * sf.y + tex_rect.y1() };
 
 	return placement;
 }
@@ -134,61 +127,37 @@ class PatchDropTarget : public wxTextDropTarget
 {
 public:
 	PatchDropTarget(
-		wxWindow*                                      window,
-		std::function<wxRect(int, int)>                rect_for_pos,
+		std::function<void(int, int)>                  update_preview,
+		std::function<void()>                          clear_preview,
 		std::function<void(const wxString&, int, int)> on_drop) :
-		window_{ window },
-		rect_for_pos_{ std::move(rect_for_pos) },
+		update_preview_{ std::move(update_preview) },
+		clear_preview_{ std::move(clear_preview) },
 		on_drop_{ std::move(on_drop) }
 	{
+		SetDefaultAction(wxDragCopy);
 	}
 
 	wxDragResult OnEnter(wxCoord x, wxCoord y, wxDragResult def) override { return OnDragOver(x, y, def); }
 
 	wxDragResult OnDragOver(wxCoord x, wxCoord y, wxDragResult def) override
 	{
-		updateOverlay(rect_for_pos_(x, y));
-		return def;
+		update_preview_(x, y);
+		return wxDragCopy;
 	}
 
-	void OnLeave() override { clearOverlay(); }
+	void OnLeave() override { clear_preview_(); }
 
 	bool OnDropText(wxCoord x, wxCoord y, const wxString& text) override
 	{
-		clearOverlay();
+		clear_preview_();
 		on_drop_(text, x, y);
 		return true;
 	}
 
 private:
-	wxWindow*                                      window_ = nullptr;
-	wxOverlay                                      overlay_;
-	std::function<wxRect(int, int)>                rect_for_pos_;
+	std::function<void(int, int)>                  update_preview_;
+	std::function<void()>                          clear_preview_;
 	std::function<void(const wxString&, int, int)> on_drop_;
-
-	void updateOverlay(const wxRect& rect)
-	{
-		wxClientDC  dc(window_);
-		wxDCOverlay dcoverlay(overlay_, &dc);
-		dcoverlay.Clear();
-
-		if (rect.IsEmpty())
-			return;
-
-		dc.SetPen(wxPen(*wxWHITE, 2, wxPENSTYLE_SHORT_DASH));
-		dc.SetBrush(*wxTRANSPARENT_BRUSH);
-		dc.DrawRectangle(rect);
-	}
-
-	void clearOverlay()
-	{
-		{
-			wxClientDC  dc(window_);
-			wxDCOverlay dcoverlay(overlay_, &dc);
-			dcoverlay.Clear();
-		}
-		overlay_.Reset();
-	}
 };
 } // namespace
 
@@ -258,8 +227,8 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	tex_canvas_->window()->Bind(EVT_DRAG_END, &TextureEditorPanel::onTexCanvasDragEnd, this);
 	tex_canvas_->window()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
 	tex_canvas_->window()->SetDropTarget(new PatchDropTarget(
-		tex_canvas_->window(),
-		[this](int x, int y) { return patchDropRect(x, y); },
+		[this](int x, int y) { updatePatchDropPreview(x, y); },
+		[this] { clearPatchDropPreview(); },
 		[this](const wxString& patch, int x, int y) { dropPatchOnCanvas(patch.utf8_string(), x, y); }));
 	spin_offset_x_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexOffsetXChanged, this);
 	spin_offset_y_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexOffsetYChanged, this);
@@ -780,15 +749,27 @@ void TextureEditorPanel::dropPatchOnCanvas(string_view patch, int x, int y)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the canvas client-space rect for the drop overlay, showing where the
-// patch currently being dragged (if any) would be placed at position [x],[y]
+// Updates the canvas drop outline to show where the currently dragged patch
+// would be placed at position [x],[y]
 // -----------------------------------------------------------------------------
-wxRect TextureEditorPanel::patchDropRect(int x, int y) const
+void TextureEditorPanel::updatePatchDropPreview(int x, int y)
 {
 	if (patch_table_panel_->draggingPatch().empty())
-		return {};
+	{
+		clearPatchDropPreview();
+		return;
+	}
 
-	return determinePatchDropPlacement(*editor_, *tex_canvas_, patch_table_panel_->draggingPatch(), x, y).client_rect;
+	auto placement = determinePatchDropPlacement(*editor_, *tex_canvas_, patch_table_panel_->draggingPatch(), x, y);
+	if (placement.valid)
+		tex_canvas_->setDropPatchOutline(placement.canvas_rect);
+	else
+		clearPatchDropPreview();
+}
+
+void TextureEditorPanel::clearPatchDropPreview() const
+{
+	tex_canvas_->clearDropPatchOutline();
 }
 
 void TextureEditorPanel::removePatch()

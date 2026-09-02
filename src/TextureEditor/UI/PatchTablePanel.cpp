@@ -62,7 +62,11 @@ class PatchDragSource : public wxDropSource
 {
 public:
 	explicit PatchDragSource(wxWindow* win) :
+#ifdef __WXGTK__
+		wxDropSource(win)
+#else
 		wxDropSource(win, wxCursor(wxCURSOR_SIZING), wxCursor(wxCURSOR_SIZING), wxCursor(wxCURSOR_NO_ENTRY))
+#endif
 	{
 	}
 };
@@ -206,16 +210,24 @@ void PatchTablePanel::onPatchTableSelectionChanged(wxDataViewEvent& e)
 // -----------------------------------------------------------------------------
 void PatchTablePanel::onPatchTableBeginDrag(wxDataViewEvent& e)
 {
-	e.Veto();
-
 	auto index = patch_list_->selectedPatchIndex();
 	if (index < 0)
+	{
+		e.Veto();
 		return;
+	}
 
 	dragging_patch_ = editor_->patchTable()->patchName(index);
+
+#ifdef __WXGTK__
+	e.SetDataObject(new wxTextDataObject(wxString::FromUTF8(dragging_patch_)));
+	e.Allow();
+#else
+	e.Veto();
 
 	wxTextDataObject data(wxString::FromUTF8(dragging_patch_));
 	PatchDragSource  drag_source(patch_list_);
 	drag_source.SetData(data);
 	drag_source.DoDragDrop(wxDrag_CopyOnly);
+#endif
 }
