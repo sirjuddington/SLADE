@@ -1403,6 +1403,7 @@ void ArchiveEntryTree::setupColumns()
 	if (!archive)
 		return;
 
+	// Add columns
 	col_index_ = addColumn(ColumnType::Text, 3, "#", 50, "EntryListIndex", ColumnVisibility::Hidden);
 	col_name_  = addColumn(
         ColumnType::IconAndText,
@@ -1414,6 +1415,7 @@ void ArchiveEntryTree::setupColumns()
         elist_rename_inplace);
 	col_size_ = addColumn(ColumnType::Text, 1, "Size", 70, "EntryListSize", ColumnVisibility::AlwaysVisible);
 	col_type_ = addColumn(ColumnType::Text, 2, "Type", 180, "EntryListType", ColumnVisibility::AlwaysVisible);
+	SetExpanderColumn(col_name_);
 
 	// Load width/visibility state
 	loadColumnState(archive);

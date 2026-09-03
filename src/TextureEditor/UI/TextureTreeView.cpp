@@ -85,11 +85,13 @@ void TextureTreeView::setupColumns()
 {
 	auto archive = editor_->archive();
 
+	// Add columns
 	col_index_ = addColumn(ColumnType::Text, 0, "#", 50, "TextureListIndex", ColumnVisibility::Hidden);
 	col_name_  = addColumn(ColumnType::IconAndText, 1, "Name", 130, "TextureListName", ColumnVisibility::AlwaysVisible);
 	col_size_  = addColumn(ColumnType::Text, 2, "Size", 70, "TextureListSize", ColumnVisibility::Visible);
 	col_patches_ = addColumn(ColumnType::Text, 4, "Patches", 70, "TextureListPatches", ColumnVisibility::Hidden);
 	col_type_    = addColumn(ColumnType::Text, 3, "Type", 180, "TextureListType", ColumnVisibility::Hidden);
+	SetExpanderColumn(col_name_);
 
 	// Load width/visibility state
 	loadColumnState(archive);
