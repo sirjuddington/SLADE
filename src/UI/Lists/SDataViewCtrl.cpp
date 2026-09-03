@@ -292,6 +292,61 @@ void SDataViewCtrl::enableHeaderContextMenu()
 }
 
 // -----------------------------------------------------------------------------
+// Adds a column of [type] to the view, linked to [model_column] in the model,
+// with given [title] and initial [width].
+// Optionally, a [state_id] can be provided to automatically save/restore the
+// column's width and visibility state to the program database.
+// [state_id] is used as a prefix for the state property names (eg. state_id
+// "Col1" will use "Col1Width" and "Col1Visible")
+// -----------------------------------------------------------------------------
+wxDataViewColumn* SDataViewCtrl::addColumn(
+	ColumnType       type,
+	int              model_column,
+	string_view      title,
+	int              width,
+	string_view      state_id,
+	ColumnVisibility visibility,
+	bool             editable)
+{
+	wxDataViewColumn* column = nullptr;
+
+	auto colstyle = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
+	if (visibility == ColumnVisibility::Hidden)
+		colstyle |= wxDATAVIEW_COL_HIDDEN;
+
+	auto cellmode = editable ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT;
+
+	switch (type)
+	{
+	case ColumnType::Text:
+		column = AppendTextColumn(
+			wxString::FromUTF8(title), model_column, cellmode, FromDIP(width), wxALIGN_NOT, colstyle);
+		break;
+	case ColumnType::IconAndText:
+		column = AppendIconTextColumn(
+			wxString::FromUTF8(title), model_column, cellmode, FromDIP(width), wxALIGN_NOT, colstyle);
+		break;
+	default: return nullptr;
+	}
+
+	if (!state_id.empty())
+	{
+		columns_state_.push_back(
+			ColumnDef{ .column         = column,
+					   .id             = string{ state_id },
+					   .always_visible = visibility == ColumnVisibility::AlwaysVisible });
+
+		if (!hasSavedState(fmt::format("{}Width", state_id)))
+			saveStateInt(fmt::format("{}Width", state_id), width);
+
+		if (visibility != ColumnVisibility::AlwaysVisible && !hasSavedState(fmt::format("{}Visible", state_id)))
+			saveStateBool(fmt::format("{}Visible", state_id), visibility == ColumnVisibility::Visible);
+	}
+
+	return column;
+}
+
+// -----------------------------------------------------------------------------
 // Resets sorting to the default state (ie. no columns selected for sorting)
 // -----------------------------------------------------------------------------
 void SDataViewCtrl::resetSorting()
@@ -381,24 +436,6 @@ int SDataViewCtrl::modelColumnIndex(int model_column) const
 			return index;
 	}
 	return wxNOT_FOUND;
-}
-
-// -----------------------------------------------------------------------------
-// Registers [column] for state (width/visibility/sorting) persistence.
-// [id] is used as a prefix for the state property names (eg. id "Col1" will use
-// "Col1Width" and "Col1Visible").
-// If [always_visible] is true, the column's visibility will not be saved and it
-// will always be shown
-// -----------------------------------------------------------------------------
-void SDataViewCtrl::registerColumn(wxDataViewColumn* column, string_view id, bool always_visible)
-{
-	columns_state_.push_back(ColumnDef{ .column = column, .id = string{ id }, .always_visible = always_visible });
-
-	if (!hasSavedState(fmt::format("{}Width", id)))
-		saveStateInt(fmt::format("{}Width", id), ToDIP(column->GetWidth()));
-
-	if (!always_visible && !hasSavedState(fmt::format("{}Visible", id)))
-		saveStateBool(fmt::format("{}Visible", id), !column->IsHidden());
 }
 
 // -----------------------------------------------------------------------------

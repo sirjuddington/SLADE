@@ -1403,27 +1403,17 @@ void ArchiveEntryTree::setupColumns()
 	if (!archive)
 		return;
 
-	auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
-	auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
-
-	// Add Columns
-	col_index_ = AppendTextColumn(wxS("#"), 3, wxDATAVIEW_CELL_INERT, FromDIP(50), wxALIGN_NOT, colstyle_hidden);
-	col_name_  = AppendIconTextColumn(
-        wxS("Name"),
+	col_index_ = addColumn(ColumnType::Text, 3, "#", 50, "EntryListIndex", ColumnVisibility::Hidden);
+	col_name_  = addColumn(
+        ColumnType::IconAndText,
         0,
-        elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT,
-        archive->formatInfo().supports_dirs ? FromDIP(190) : FromDIP(110),
-        wxALIGN_NOT,
-        colstyle_visible);
-	col_size_ = AppendTextColumn(wxS("Size"), 1, wxDATAVIEW_CELL_INERT, FromDIP(70), wxALIGN_NOT, colstyle_visible);
-	col_type_ = AppendTextColumn(wxS("Type"), 2, wxDATAVIEW_CELL_INERT, FromDIP(180), wxALIGN_NOT, colstyle_visible);
-	SetExpanderColumn(col_name_);
-
-	// Register columns for UI state persistence
-	registerColumn(col_index_, "EntryListIndex");
-	registerColumn(col_name_, archive->formatInfo().supports_dirs ? "EntryListNameT" : "EntryListNameL", true);
-	registerColumn(col_size_, "EntryListSize");
-	registerColumn(col_type_, "EntryListType");
+        "Name",
+        archive->formatInfo().supports_dirs ? 190 : 110,
+        archive->formatInfo().supports_dirs ? "EntryListNameT" : "EntryListNameL",
+        ColumnVisibility::AlwaysVisible,
+        elist_rename_inplace);
+	col_size_ = addColumn(ColumnType::Text, 1, "Size", 70, "EntryListSize", ColumnVisibility::AlwaysVisible);
+	col_type_ = addColumn(ColumnType::Text, 2, "Type", 180, "EntryListType", ColumnVisibility::AlwaysVisible);
 
 	// Load width/visibility state
 	loadColumnState(archive);

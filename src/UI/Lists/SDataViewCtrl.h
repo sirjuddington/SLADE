@@ -10,12 +10,34 @@ namespace slade::ui
 class SDataViewCtrl : public wxDataViewCtrl
 {
 public:
+	enum class ColumnVisibility
+	{
+		AlwaysVisible, // Column is always visible, don't save visibility state
+		Visible,
+		Hidden,
+	};
+
+	enum class ColumnType
+	{
+		Text,
+		IconAndText
+	};
+
 	SDataViewCtrl(wxWindow* parent, long style);
 	~SDataViewCtrl() override;
 
 	wxDataViewColumn* lastVisibleColumn() const;
 
 	void setSearchColumn(int col_model) { search_model_column_ = col_model; }
+
+	wxDataViewColumn* addColumn(
+		ColumnType       type,
+		int              model_column,
+		string_view      title,
+		int              width,
+		string_view      state_id   = {},
+		ColumnVisibility visibility = ColumnVisibility::Visible,
+		bool             editable   = false);
 
 	void resetSorting();
 	void enableHeaderContextMenu();
@@ -26,7 +48,6 @@ public:
 	int  modelColumnIndex(int model_column) const;
 
 	// Column state persistence
-	void registerColumn(wxDataViewColumn* column, string_view id, bool always_visible = false);
 	void loadColumnState(const Archive* archive = nullptr);
 	void restoreColumnWidths(const Archive* archive = nullptr);
 	void loadSortState(const Archive* archive = nullptr);

@@ -85,30 +85,11 @@ void TextureTreeView::setupColumns()
 {
 	auto archive = editor_->archive();
 
-	auto colstyle_visible = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
-	auto colstyle_hidden  = colstyle_visible | wxDATAVIEW_COL_HIDDEN;
-
-	// Add Columns
-	col_index_ = AppendTextColumn(wxS("#"), 0, wxDATAVIEW_CELL_INERT, FromDIP(50), wxALIGN_NOT, colstyle_hidden);
-	col_name_  = AppendIconTextColumn(
-        wxS("Name"),
-        1,
-        /*elist_rename_inplace ? wxDATAVIEW_CELL_EDITABLE : */ wxDATAVIEW_CELL_INERT,
-        FromDIP(130),
-        wxALIGN_NOT,
-        colstyle_visible);
-	col_size_    = AppendTextColumn(wxS("Size"), 2, wxDATAVIEW_CELL_INERT, FromDIP(70), wxALIGN_NOT, colstyle_visible);
-	col_patches_ = AppendTextColumn(
-		wxS("Patches"), 4, wxDATAVIEW_CELL_INERT, FromDIP(70), wxALIGN_NOT, colstyle_hidden);
-	col_type_ = AppendTextColumn(wxS("Type"), 3, wxDATAVIEW_CELL_INERT, FromDIP(180), wxALIGN_NOT, colstyle_hidden);
-	SetExpanderColumn(col_name_);
-
-	// Register columns for generic UI state persistence
-	registerColumn(col_index_, "TextureListIndex");
-	registerColumn(col_name_, "TextureListName", true);
-	registerColumn(col_size_, "TextureListSize");
-	registerColumn(col_patches_, "TextureListPatches");
-	registerColumn(col_type_, "TextureListType");
+	col_index_ = addColumn(ColumnType::Text, 0, "#", 50, "TextureListIndex", ColumnVisibility::Hidden);
+	col_name_  = addColumn(ColumnType::IconAndText, 1, "Name", 130, "TextureListName", ColumnVisibility::AlwaysVisible);
+	col_size_  = addColumn(ColumnType::Text, 2, "Size", 70, "TextureListSize", ColumnVisibility::Visible);
+	col_patches_ = addColumn(ColumnType::Text, 4, "Patches", 70, "TextureListPatches", ColumnVisibility::Hidden);
+	col_type_    = addColumn(ColumnType::Text, 3, "Type", 180, "TextureListType", ColumnVisibility::Hidden);
 
 	// Load width/visibility state
 	loadColumnState(archive);

@@ -83,19 +83,11 @@ const Archive* PatchTableList::stateArchive() const
 
 void PatchTableList::setupColumns()
 {
-	auto colstyle = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
-
 	// Add columns
-	col_index_   = AppendTextColumn(wxS("#"), 0, wxDATAVIEW_CELL_INERT, FromDIP(50), wxALIGN_NOT, colstyle);
-	col_name_    = AppendTextColumn(wxS("Name"), 1, wxDATAVIEW_CELL_INERT, FromDIP(130), wxALIGN_NOT, colstyle);
-	col_used_in_ = AppendTextColumn(wxS("No. Uses"), 2, wxDATAVIEW_CELL_INERT, FromDIP(80), wxALIGN_NOT, colstyle);
-	col_archive_ = AppendTextColumn(wxS("In Archive"), 3, wxDATAVIEW_CELL_INERT, FromDIP(130), wxALIGN_NOT, colstyle);
-
-	// Register columns for UI state persistence
-	registerColumn(col_index_, "PatchTableIndex");
-	registerColumn(col_name_, "PatchTableName", true);
-	registerColumn(col_used_in_, "PatchTableUsedIn");
-	registerColumn(col_archive_, "PatchTableArchive");
+	col_index_   = addColumn(ColumnType::Text, 0, "#", 50, "PatchTableIndex");
+	col_name_    = addColumn(ColumnType::Text, 1, "Name", 100, "PatchTableName", ColumnVisibility::AlwaysVisible);
+	col_used_in_ = addColumn(ColumnType::Text, 2, "# Uses", 80, "PatchTableUsedIn");
+	col_archive_ = addColumn(ColumnType::Text, 3, "In Archive", 130, "PatchTableArchive");
 
 	// Load width/visibility state
 	loadColumnState();
