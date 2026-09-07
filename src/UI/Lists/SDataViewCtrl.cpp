@@ -320,11 +320,11 @@ wxDataViewColumn* SDataViewCtrl::addColumn(
 	{
 	case ColumnType::Text:
 		column = AppendTextColumn(
-			wxString::FromUTF8(title), model_column, cellmode, FromDIP(width), wxALIGN_NOT, colstyle);
+			wxString::FromUTF8(title.data(), title.size()), model_column, cellmode, FromDIP(width), wxALIGN_NOT, colstyle);
 		break;
 	case ColumnType::IconAndText:
 		column = AppendIconTextColumn(
-			wxString::FromUTF8(title), model_column, cellmode, FromDIP(width), wxALIGN_NOT, colstyle);
+			wxString::FromUTF8(title.data(), title.size()), model_column, cellmode, FromDIP(width), wxALIGN_NOT, colstyle);
 		break;
 	default: return nullptr;
 	}
