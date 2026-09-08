@@ -50,6 +50,14 @@ using namespace slade;
 
 
 // -----------------------------------------------------------------------------
+// Copies [other] to this patch table
+// -----------------------------------------------------------------------------
+void PatchTable::copy(const PatchTable& other)
+{
+	parent_  = other.parent_;
+	patches_ = other.patches_;
+}
+// -----------------------------------------------------------------------------
 // Returns the patch at [index], or an 'invalid' patch if [index] is invalid
 // -----------------------------------------------------------------------------
 PatchTable::Patch& PatchTable::patch(size_t index)

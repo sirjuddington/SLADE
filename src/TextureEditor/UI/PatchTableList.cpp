@@ -58,7 +58,7 @@ vector<int> PatchTableList::selectedPatchIndices() const
 // -----------------------------------------------------------------------------
 // Selects (or deselects) the item for patch table index [index]
 // -----------------------------------------------------------------------------
-void PatchTableList::selectPatch(int index, bool select)
+void PatchTableList::selectPatch(int index, bool select, bool scroll_to)
 {
 	if (index < 0)
 		return;
@@ -73,6 +73,8 @@ void PatchTableList::selectPatch(int index, bool select)
 			Select(item);
 		else
 			Unselect(item);
+		if (scroll_to)
+			EnsureVisible(item);
 	}
 }
 

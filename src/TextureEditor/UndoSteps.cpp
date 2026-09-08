@@ -630,3 +630,23 @@ bool TextureListReorderUS::swapOrder()
 
 	return true;
 }
+
+PatchTableChangeUS::PatchTableChangeUS(const TextureEditor& editor, const PatchTable& patch_table) : editor_{ &editor }
+{
+	patch_table_copy_ = std::make_unique<PatchTable>(patch_table);
+}
+
+PatchTableChangeUS::~PatchTableChangeUS() {}
+
+bool PatchTableChangeUS::swapPatchTable()
+{
+	if (!editor_->hasPatchTable())
+		return false;
+
+	// Swap patch tables
+	auto current_patch_table = std::make_unique<PatchTable>(*editor_->patchTable());
+	editor_->patchTable()->copy(*patch_table_copy_);
+	patch_table_copy_ = std::move(current_patch_table);
+
+	return true;
+}

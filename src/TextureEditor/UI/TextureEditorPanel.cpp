@@ -335,6 +335,31 @@ bool TextureEditorPanel::close()
 		}
 	}
 
+	// Check for modified patch table
+	if (editor_->hasPatchTable() && editor_->patchTableModified())
+	{
+		if (!apply_all)
+		{
+			// Ask user if they want to save changes
+			wxMessageDialog md(
+				this,
+				wxS("Save changes to the patch table (PNAMES)?"),
+				wxS("Unsaved Changes"),
+				wxYES_NO | wxCANCEL | wxICON_QUESTION);
+
+			int result = md.ShowModal();
+			if (result == wxID_YES)
+				editor_->savePatchTable(); // User selected to save
+			else if (result == wxID_CANCEL)
+				return false; // User selected cancel, don't close the editor
+		}
+		else
+		{
+			// User previously selected "Yes to All", save without asking
+			editor_->savePatchTable();
+		}
+	}
+
 	return true;
 }
 

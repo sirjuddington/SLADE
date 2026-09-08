@@ -16,7 +16,7 @@ public:
 
 	int         selectedPatchIndex() const;
 	vector<int> selectedPatchIndices() const;
-	void        selectPatch(int index, bool select = true);
+	void        selectPatch(int index, bool select = true, bool scroll_to = false);
 
 private:
 	PatchTable* patch_table_ = nullptr;

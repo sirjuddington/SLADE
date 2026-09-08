@@ -1,5 +1,7 @@
 #pragma once
 
+#include "General/SActionHandler.h"
+
 // Forward declarations
 namespace slade
 {
@@ -14,7 +16,7 @@ class TextureEditor;
 
 namespace slade::texeditor
 {
-class PatchTablePanel : public wxPanel
+class PatchTablePanel : public wxPanel, SActionHandler
 {
 public:
 	PatchTablePanel(wxWindow* parent, TextureEditor& editor);
@@ -31,6 +33,13 @@ private:
 	string          dragging_patch_;
 
 	void updatePatchTablePreview() const;
+
+	bool handleAction(string_view id) override;
+
+	void addPatch();
+	void addPatchFromFile();
+	void removePatch();
+	void changePatch();
 
 	// Events
 	void onPatchTableSelectionChanged(wxDataViewEvent& e);

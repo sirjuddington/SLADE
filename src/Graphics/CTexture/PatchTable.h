@@ -28,7 +28,10 @@ public:
 	};
 
 	PatchTable(Archive* parent = nullptr) : parent_{ parent } {}
+	PatchTable(const PatchTable& other) : parent_{ other.parent_ }, patches_{ other.patches_ } {}
 	~PatchTable() = default;
+
+	void copy(const PatchTable& other);
 
 	size_t               nPatches() const { return patches_.size(); }
 	Archive*             parent() const { return parent_; }

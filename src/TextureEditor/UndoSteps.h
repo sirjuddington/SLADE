@@ -7,6 +7,7 @@
 // Forward declarations
 namespace slade
 {
+class PatchTable;
 class CTPatch;
 class TextureXList;
 class CTexture;
@@ -158,10 +159,10 @@ class TextureListReorderUS : public UndoStep
 {
 public:
 	TextureListReorderUS(
-		const TextureEditor&      editor,
-		TextureXList&             texturex,
-		unsigned                  first,
-		unsigned                  last,
+		const TextureEditor&         editor,
+		TextureXList&                texturex,
+		unsigned                     first,
+		unsigned                     last,
 		std::map<unsigned, unsigned> index_swaps);
 	~TextureListReorderUS() override;
 
@@ -171,10 +172,26 @@ public:
 	bool doRedo() override { return swapOrder(); }
 
 private:
-	const TextureEditor*          editor_      = nullptr;
-	TextureXList*                 texturex_    = nullptr;
-	unsigned                      first_       = 0;
-	unsigned                      last_        = 0;
+	const TextureEditor*         editor_   = nullptr;
+	TextureXList*                texturex_ = nullptr;
+	unsigned                     first_    = 0;
+	unsigned                     last_     = 0;
 	std::map<unsigned, unsigned> index_swaps_;
+};
+
+class PatchTableChangeUS : public UndoStep
+{
+public:
+	PatchTableChangeUS(const TextureEditor& editor, const PatchTable& patch_table);
+	~PatchTableChangeUS() override;
+
+	bool swapPatchTable();
+
+	bool doUndo() override { return swapPatchTable(); }
+	bool doRedo() override { return swapPatchTable(); }
+
+private:
+	const TextureEditor*   editor_ = nullptr;
+	unique_ptr<PatchTable> patch_table_copy_;
 };
 } // namespace slade::texeditor

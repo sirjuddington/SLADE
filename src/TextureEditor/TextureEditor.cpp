@@ -31,7 +31,11 @@ TextureEditor::TextureEditor(shared_ptr<Archive> archive) : archive_{ archive }
 
 	// Find patch table (if any)
 	if (auto pnames = archive_->findLast({ .match_type = EntryType::fromId("pnames") }))
+	{
 		patch_table_->loadPNAMES(pnames);
+		pnames_ = pnames->getShared();
+		pnames->lock();
+	}
 
 	// Find all TEXTUREx entries in the archive
 	auto texturex = archive_->findAll({ .match_type = EntryType::fromId("texturex") });
@@ -64,16 +68,22 @@ TextureEditor::TextureEditor(shared_ptr<Archive> archive) : archive_{ archive }
 
 TextureEditor::~TextureEditor()
 {
-	// Unlock entries
+	// Unlock TEXTUREx entries
 	for (auto& entry : texturex_entries_)
 		if (auto e = entry.entry.lock(); e)
 			e->unlock();
+
+	// Unlock PNAMES entry
+	if (auto pnames = pnames_.lock(); pnames)
+		pnames->unlock();
 }
 
 void TextureEditor::saveAll() const
 {
 	for (unsigned i = 0; i < texturex_entries_.size(); ++i)
 		saveTextureList(i);
+
+	savePatchTable();
 }
 
 bool TextureEditor::saveTextureList(unsigned index) const
@@ -103,6 +113,20 @@ bool TextureEditor::saveTextureList(unsigned index) const
 		list->texture(a)->setState(CTexture::State::Unmodified);
 
 	return ok;
+}
+
+bool TextureEditor::savePatchTable() const
+{
+	if (!patch_table_ || !patch_table_modified_ || !pnames_.lock())
+		return true;
+
+	if (patch_table_->writePNAMES(pnames_.lock().get()))
+	{
+		patch_table_modified_ = false;
+		return true;
+	}
+
+	return false;
 }
 
 TextureXList* TextureEditor::textureList(unsigned index) const
@@ -1069,6 +1093,48 @@ bool TextureEditor::hasPatchTable() const
 	return patch_table_ && patch_table_->nPatches() > 0;
 }
 
+int TextureEditor::addPatchToTable(string_view patch) const
+{
+	if (!patch_table_)
+		return -1;
+
+	undo_manager_->beginRecord(fmt::format("Patch Table: Add patch {}", patch));
+	undo_manager_->recordUndoStep<PatchTableChangeUS>(*this, *patch_table_);
+	patch_table_->addPatch(patch);
+	undo_manager_->endRecord(true);
+
+	patch_table_modified_ = true;
+
+	return patch_table_->nPatches() - 1;
+}
+
+void TextureEditor::removePatchFromTable(unsigned index) const
+{
+	if (!patch_table_)
+		return;
+
+	undo_manager_->beginRecord(fmt::format("Patch Table: Remove patch {}", patch_table_->patch(index).name));
+	undo_manager_->recordUndoStep<PatchTableChangeUS>(*this, *patch_table_);
+	patch_table_->removePatch(index);
+	undo_manager_->endRecord(true);
+
+	patch_table_modified_ = true;
+}
+
+void TextureEditor::replacePatchInTable(unsigned index, string_view newname) const
+{
+	if (!patch_table_)
+		return;
+
+	undo_manager_->beginRecord(
+		fmt::format("Patch Table: Replace patch {} with {}", patch_table_->patch(index).name, newname));
+	undo_manager_->recordUndoStep<PatchTableChangeUS>(*this, *patch_table_);
+	patch_table_->replacePatch(index, newname);
+	undo_manager_->endRecord(true);
+
+	patch_table_modified_ = true;
+}
+
 void TextureEditor::signalCurrentTextureModified(bool texture, bool patch_list, bool patches) const
 {
 	// Record undo step for texture state change if needed
@@ -1120,7 +1186,7 @@ CTexture* TextureEditor::getTextureBackup(const CTexture& texture) const
 	return nullptr;
 }
 
-void TextureEditor::updateAllPatchUsage()
+void TextureEditor::updateAllPatchUsage() const
 {
 	for (auto& tx : texturex_entries_)
 		for (unsigned i = 0; i < tx.texturex->size(); ++i)

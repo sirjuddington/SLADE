@@ -24,6 +24,7 @@ public:
 
 	void saveAll() const;
 	bool saveTextureList(unsigned index) const;
+	bool savePatchTable() const;
 
 	unsigned      nTextureLists() const { return texturex_entries_.size(); }
 	TextureXList* textureList(unsigned index) const;
@@ -89,6 +90,13 @@ public:
 
 	// Patch Table
 	bool hasPatchTable() const;
+	bool patchTableModified() const { return patch_table_modified_; }
+	void setPatchTableModified(bool modified = true) { patch_table_modified_ = modified; }
+
+	// Patch Table Editing
+	int  addPatchToTable(string_view patch) const;
+	void removePatchFromTable(unsigned index) const;
+	void replacePatchInTable(unsigned index, string_view newname) const;
 
 	struct Signals
 	{
@@ -118,10 +126,13 @@ public:
 	Signals& signals() const { return signals_; }
 
 private:
-	unique_ptr<PatchTable>  patch_table_;
 	shared_ptr<Archive>     archive_;
 	mutable Signals         signals_;
 	unique_ptr<UndoManager> undo_manager_;
+
+	unique_ptr<PatchTable> patch_table_;
+	weak_ptr<ArchiveEntry> pnames_;
+	mutable bool           patch_table_modified_ = false;
 
 	struct TextureXEntry
 	{
@@ -138,6 +149,6 @@ private:
 	void      signalCurrentTextureModified(bool texture, bool patch_list, bool patches) const;
 	void      setupTextureBackup(const CTexture& texture);
 	CTexture* getTextureBackup(const CTexture& texture) const;
-	void      updateAllPatchUsage();
+	void      updateAllPatchUsage() const;
 };
 } // namespace slade::texeditor
