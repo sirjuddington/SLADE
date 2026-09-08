@@ -582,6 +582,39 @@ void TextureEditor::sortTextures(const vector<CTexture*>& textures) const
 }
 
 // -----------------------------------------------------------------------------
+// Renames [texture] to [new_name], recording an undo step and signalling the
+// change
+// -----------------------------------------------------------------------------
+void TextureEditor::renameTexture(CTexture& texture, string_view new_name) const
+{
+	// Process name
+	auto wad_force_uppercase = CVar::getBool("wad_force_uppercase");
+	auto new_name_str        = string(new_name);
+	if (wad_force_uppercase)
+		strutil::upperIP(new_name_str);
+
+	// Check if the name is actually changing
+	if (texture.name() == new_name_str)
+		return;
+
+	// Record undo steps for name and state
+	undo_manager_->beginRecord(fmt::format("Rename Texture: {} -> {}", texture.name(), new_name_str));
+	undo_manager_->recordUndoStep<TexturePropertyChangeUS>(*this, texture, "name", texture.name());
+	if (texture.state() == CTexture::State::Unmodified)
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(
+			*this, texture, "state", static_cast<int>(texture.state()));
+
+	// Rename the texture
+	texture.setName(new_name_str);
+	texture.setState(CTexture::State::Modified);
+
+	undo_manager_->endRecord(true);
+
+	// Signal the change
+	signals_.texture_modified(&texture);
+}
+
+// -----------------------------------------------------------------------------
 // Renames all textures in [textures], prompting the user for a new name (or
 // mass rename filter if [each] is false and multiple textures are given)
 // -----------------------------------------------------------------------------

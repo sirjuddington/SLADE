@@ -58,6 +58,7 @@ public:
 	void deleteTextures(const vector<CTexture*>& textures) const;
 	void moveTextures(const vector<CTexture*>& textures, Direction direction) const;
 	void sortTextures(const vector<CTexture*>& textures) const;
+	void renameTexture(CTexture& texture, string_view new_name) const;
 	void renameTextures(const vector<CTexture*>& textures, bool each) const;
 	bool exportAsPNG(const CTexture& texture, string_view filename, const Palette* palette, bool force_rgba);
 

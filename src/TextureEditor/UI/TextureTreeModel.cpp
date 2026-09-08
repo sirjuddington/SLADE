@@ -285,10 +285,28 @@ bool TextureTreeModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 
 // -----------------------------------------------------------------------------
 // Sets the value at [item],[col] to the value in [variant]
-// (currently always returns false as the model is read-only for now)
 // -----------------------------------------------------------------------------
 bool TextureTreeModel::SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col)
 {
+	auto tex = textureForItem(item);
+	if (!tex)
+		return false;
+
+	// Name column
+	if (col == static_cast<unsigned int>(Column::Name))
+	{
+		wxDataViewIconText value;
+		value << variant;
+		auto new_name = value.GetText();
+		if (new_name.EndsWith(wxS(" *")))
+			new_name.RemoveLast(2);
+
+		if (new_name.utf8_string() != tex->name())
+			editor_->renameTexture(*tex, new_name.utf8_string());
+
+		return true;
+	}
+
 	return false;
 }
 
