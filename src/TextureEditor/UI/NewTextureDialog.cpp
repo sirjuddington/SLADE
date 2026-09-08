@@ -1,4 +1,35 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    NewTextureDialog.cpp
+// Description: A dialog for creating a new texture, either blank or from an
+//              existing patch
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NewTextureDialog.h"
 #include "MainEditor/UI/TextureXEditor/PatchBrowser.h"
@@ -9,6 +40,17 @@
 using namespace slade;
 using namespace texeditor;
 
+
+// -----------------------------------------------------------------------------
+//
+// NewTextureDialog Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// NewTextureDialog class constructor
+// -----------------------------------------------------------------------------
 NewTextureDialog::NewTextureDialog(wxWindow* parent, PatchBrowser* patch_browser) :
 	SDialog(parent, "New Texture", "new_texture"),
 	patch_browser_(patch_browser)
@@ -99,6 +141,10 @@ NewTextureDialog::NewTextureDialog(wxWindow* parent, PatchBrowser* patch_browser
 	CenterOnParent();
 }
 
+// -----------------------------------------------------------------------------
+// Checks that the entered values are valid, showing an error message if not.
+// Returns true if the values are valid
+// -----------------------------------------------------------------------------
 bool NewTextureDialog::checkValues() const
 {
 	// Name
@@ -118,6 +164,9 @@ bool NewTextureDialog::checkValues() const
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Opens the patch browser and sets the selected patch as the source patch
+// -----------------------------------------------------------------------------
 void NewTextureDialog::browsePatch() const
 {
 	// Select initial patch if one already entered

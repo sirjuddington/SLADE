@@ -197,6 +197,9 @@ void PatchTablePanel::updatePatchTablePreview() const
 	info_text_->SetValue(wxString::FromUTF8(info));
 }
 
+// -----------------------------------------------------------------------------
+// Handles the SAction [id]. Returns true if handled
+// -----------------------------------------------------------------------------
 bool PatchTablePanel::handleAction(string_view id)
 {
 	// Don't handle actions if hidden

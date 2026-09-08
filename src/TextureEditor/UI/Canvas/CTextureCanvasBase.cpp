@@ -181,6 +181,10 @@ CTextureView CTextureCanvasBase::autoDetectViewType() const
 	return View::Normal;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the current drag offset in canvas coordinates, snapped to the grid
+// if [grid_snap] is true
+// -----------------------------------------------------------------------------
 Vec2i CTextureCanvasBase::dragOffset(bool grid_snap) const
 {
 	auto origin = view().canvasPos(drag_origin_);

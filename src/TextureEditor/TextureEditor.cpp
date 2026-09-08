@@ -1,4 +1,35 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    TextureEditor.cpp
+// Description: TextureEditor, the 'controller' class for the texture editor,
+//              manages TEXTUREx/PNAMES entries and edit/undo operations
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextureEditor.h"
 #include "Archive/Archive.h"
@@ -17,10 +48,21 @@
 #include "Utility/StringUtils.h"
 #include "Utility/Vector.h"
 
-
 using namespace slade;
 using namespace texeditor;
 
+
+// -----------------------------------------------------------------------------
+//
+// TextureEditor Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// TextureEditor class constructor.
+// Loads the patch table and all TEXTUREx entries from [archive]
+// -----------------------------------------------------------------------------
 TextureEditor::TextureEditor(shared_ptr<Archive> archive) : archive_{ archive }
 {
 	if (!archive_)
@@ -66,6 +108,9 @@ TextureEditor::TextureEditor(shared_ptr<Archive> archive) : archive_{ archive }
 		updateAllPatchUsage();
 }
 
+// -----------------------------------------------------------------------------
+// TextureEditor class destructor
+// -----------------------------------------------------------------------------
 TextureEditor::~TextureEditor()
 {
 	// Unlock TEXTUREx entries
@@ -78,6 +123,10 @@ TextureEditor::~TextureEditor()
 		pnames->unlock();
 }
 
+// -----------------------------------------------------------------------------
+// Saves all texture lists and the patch table (if modified) back to their
+// respective entries
+// -----------------------------------------------------------------------------
 void TextureEditor::saveAll() const
 {
 	for (unsigned i = 0; i < texturex_entries_.size(); ++i)
@@ -86,6 +135,9 @@ void TextureEditor::saveAll() const
 	savePatchTable();
 }
 
+// -----------------------------------------------------------------------------
+// Saves the texture list at [index] back to its entry, if modified
+// -----------------------------------------------------------------------------
 bool TextureEditor::saveTextureList(unsigned index) const
 {
 	if (!textureListModified(index))
@@ -115,6 +167,9 @@ bool TextureEditor::saveTextureList(unsigned index) const
 	return ok;
 }
 
+// -----------------------------------------------------------------------------
+// Saves the patch table back to the PNAMES entry, if modified
+// -----------------------------------------------------------------------------
 bool TextureEditor::savePatchTable() const
 {
 	if (!patch_table_ || !patch_table_modified_ || !pnames_.lock())
@@ -129,6 +184,9 @@ bool TextureEditor::savePatchTable() const
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the texture list at [index]
+// -----------------------------------------------------------------------------
 TextureXList* TextureEditor::textureList(unsigned index) const
 {
 	if (index >= texturex_entries_.size())
@@ -136,6 +194,9 @@ TextureXList* TextureEditor::textureList(unsigned index) const
 	return texturex_entries_[index].texturex.get();
 }
 
+// -----------------------------------------------------------------------------
+// Returns the entry for the texture list at [index]
+// -----------------------------------------------------------------------------
 ArchiveEntry* TextureEditor::textureListEntry(unsigned index) const
 {
 	if (index >= texturex_entries_.size())
@@ -143,6 +204,9 @@ ArchiveEntry* TextureEditor::textureListEntry(unsigned index) const
 	return texturex_entries_[index].entry.lock().get();
 }
 
+// -----------------------------------------------------------------------------
+// Returns the name of the texture list entry at [index]
+// -----------------------------------------------------------------------------
 string TextureEditor::textureListName(unsigned index) const
 {
 	if (index >= texturex_entries_.size())
@@ -163,6 +227,9 @@ string TextureEditor::textureListName(unsigned index) const
 	return {};
 }
 
+// -----------------------------------------------------------------------------
+// Returns the name of the texture list entry for [list]
+// -----------------------------------------------------------------------------
 string TextureEditor::textureListName(const TextureXList& list) const
 {
 	for (unsigned i = 0; i < texturex_entries_.size(); ++i)
@@ -172,6 +239,9 @@ string TextureEditor::textureListName(const TextureXList& list) const
 	return {};
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if the texture list at [index] contains any modified textures
+// -----------------------------------------------------------------------------
 bool TextureEditor::textureListModified(unsigned index) const
 {
 	auto list = textureList(index);
@@ -185,6 +255,10 @@ bool TextureEditor::textureListModified(unsigned index) const
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Sets [texture] as the currently open texture, backing it up for reverting
+// and clearing the current patch selection
+// -----------------------------------------------------------------------------
 void TextureEditor::openTexture(CTexture& texture)
 {
 	tex_current_ = &texture;
@@ -195,12 +269,18 @@ void TextureEditor::openTexture(CTexture& texture)
 	undo_manager_->setResetPoint();
 }
 
+// -----------------------------------------------------------------------------
+// Clears the currently open texture and patch selection
+// -----------------------------------------------------------------------------
 void TextureEditor::closeTexture()
 {
 	tex_current_ = nullptr;
 	selected_patches_.clear();
 }
 
+// -----------------------------------------------------------------------------
+// Reverts the current texture back to its backed up state
+// -----------------------------------------------------------------------------
 void TextureEditor::revertTexture()
 {
 	if (!tex_current_)
@@ -225,6 +305,9 @@ void TextureEditor::revertTexture()
 		log::warning("No backup found for texture {}, unable to revert", tex_current_->name());
 }
 
+// -----------------------------------------------------------------------------
+// Selects/deselects the patch at [index] based on [selected]
+// -----------------------------------------------------------------------------
 void TextureEditor::selectPatch(unsigned index, bool selected)
 {
 	if (selected)
@@ -233,16 +316,27 @@ void TextureEditor::selectPatch(unsigned index, bool selected)
 		vectorRemoveVal(selected_patches_, index);
 }
 
+// -----------------------------------------------------------------------------
+// Performs an undo operation, returns false if there was nothing to undo
+// -----------------------------------------------------------------------------
 bool TextureEditor::undo() const
 {
 	return !undo_manager_->undo().empty();
 }
 
+// -----------------------------------------------------------------------------
+// Performs a redo operation, returns false if there was nothing to redo
+// -----------------------------------------------------------------------------
 bool TextureEditor::redo() const
 {
 	return !undo_manager_->redo().empty();
 }
 
+// -----------------------------------------------------------------------------
+// Imports the image file at [filename] as a new patch entry in the archive,
+// optionally adding it to the patch table.
+// Returns the name of the new patch
+// -----------------------------------------------------------------------------
 string TextureEditor::importPatchFile(string_view filename, bool add_to_patch_table) const
 {
 	// Load the file into a temporary ArchiveEntry
@@ -280,6 +374,10 @@ string TextureEditor::importPatchFile(string_view filename, bool add_to_patch_ta
 	return name;
 }
 
+// -----------------------------------------------------------------------------
+// Creates a new texture named [name] and adds it to [list] at [index],
+// optionally adding [patch] to it and using its dimensions
+// -----------------------------------------------------------------------------
 void TextureEditor::newTexture(
 	TextureXList* list,
 	string_view   name,
@@ -341,6 +439,9 @@ void TextureEditor::newTexture(
 		undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Deletes all textures in [textures] from their respective lists
+// -----------------------------------------------------------------------------
 void TextureEditor::deleteTextures(const vector<CTexture*>& textures) const
 {
 	if (textures.empty())
@@ -373,6 +474,10 @@ void TextureEditor::deleteTextures(const vector<CTexture*>& textures) const
 		undo_manager_->endRecord(any_deleted);
 }
 
+// -----------------------------------------------------------------------------
+// Moves all textures in [textures] one position up or down (depending on
+// [direction]) in their list
+// -----------------------------------------------------------------------------
 void TextureEditor::moveTextures(const vector<CTexture*>& textures, Direction direction) const
 {
 	// Sort in ascending/descending index order depending on direction
@@ -408,6 +513,10 @@ void TextureEditor::moveTextures(const vector<CTexture*>& textures, Direction di
 		undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sorts all textures in [textures] alphabetically  within the range of indices
+// they currently occupy
+// -----------------------------------------------------------------------------
 void TextureEditor::sortTextures(const vector<CTexture*>& textures) const
 {
 	if (textures.empty())
@@ -472,6 +581,10 @@ void TextureEditor::sortTextures(const vector<CTexture*>& textures) const
 	signals_.textures_modified(textures);
 }
 
+// -----------------------------------------------------------------------------
+// Renames all textures in [textures], prompting the user for a new name (or
+// mass rename filter if [each] is false and multiple textures are given)
+// -----------------------------------------------------------------------------
 void TextureEditor::renameTextures(const vector<CTexture*>& textures, bool each) const
 {
 	auto wad_force_uppercase = CVar::getBool("wad_force_uppercase");
@@ -590,6 +703,9 @@ void TextureEditor::renameTextures(const vector<CTexture*>& textures, bool each)
 		signals_.textures_modified(textures);
 }
 
+// -----------------------------------------------------------------------------
+// Exports [texture] as a PNG image to [filename], using [palette] if needed
+// -----------------------------------------------------------------------------
 bool TextureEditor::exportAsPNG(const CTexture& texture, string_view filename, const Palette* palette, bool force_rgba)
 {
 	// Create image from entry
@@ -613,6 +729,10 @@ bool TextureEditor::exportAsPNG(const CTexture& texture, string_view filename, c
 	return png.exportFile(filename);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the current texture's size to [width],[height] (a value <= 0 leaves
+// that dimension unchanged)
+// -----------------------------------------------------------------------------
 void TextureEditor::setTextureSize(int width, int height) const
 {
 	if (!tex_current_)
@@ -638,6 +758,9 @@ void TextureEditor::setTextureSize(int width, int height) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the current texture's scale to [x],[y]
+// -----------------------------------------------------------------------------
 void TextureEditor::setTextureScale(optional<double> x, optional<double> y) const
 {
 	if (!tex_current_)
@@ -661,6 +784,9 @@ void TextureEditor::setTextureScale(optional<double> x, optional<double> y) cons
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets [flag] on the current texture to [on]
+// -----------------------------------------------------------------------------
 void TextureEditor::setTextureFlag(CTexture::Flag flag, bool on) const
 {
 	if (!tex_current_)
@@ -688,6 +814,9 @@ void TextureEditor::setTextureFlag(CTexture::Flag flag, bool on) const
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Sets the current texture's [type]
+// -----------------------------------------------------------------------------
 void TextureEditor::setTextureType(CTexture::Type type) const
 {
 	if (!tex_current_)
@@ -700,6 +829,9 @@ void TextureEditor::setTextureType(CTexture::Type type) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the current texture's offsets to [x],[y]
+// -----------------------------------------------------------------------------
 void TextureEditor::setTextureOffset(optional<int> x, optional<int> y) const
 {
 	if (!tex_current_)
@@ -725,6 +857,9 @@ void TextureEditor::setTextureOffset(optional<int> x, optional<int> y) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the offsets of all selected patches to [x],[y]
+// -----------------------------------------------------------------------------
 void TextureEditor::setPatchOffset(optional<int> x, optional<int> y) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -754,6 +889,9 @@ void TextureEditor::setPatchOffset(optional<int> x, optional<int> y) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Moves all selected patches by [offset]
+// -----------------------------------------------------------------------------
 void TextureEditor::movePatch(const Vec2i& offset) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -774,6 +912,9 @@ void TextureEditor::movePatch(const Vec2i& offset) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the blend type of all selected (extended) patches to [type]
+// -----------------------------------------------------------------------------
 void TextureEditor::setPatchBlendType(CTPatchEx::BlendType type) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -795,6 +936,9 @@ void TextureEditor::setPatchBlendType(CTPatchEx::BlendType type) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets [flag] on all selected (extended) patches to [on]
+// -----------------------------------------------------------------------------
 void TextureEditor::setPatchFlag(string_view flag, bool on) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -816,6 +960,9 @@ void TextureEditor::setPatchFlag(string_view flag, bool on) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the [rotation] of all selected (extended) patches
+// -----------------------------------------------------------------------------
 void TextureEditor::setPatchRotation(int rotation) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -837,6 +984,9 @@ void TextureEditor::setPatchRotation(int rotation) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the [alpha] of all selected (extended) patches
+// -----------------------------------------------------------------------------
 void TextureEditor::setPatchAlpha(double alpha) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -858,6 +1008,9 @@ void TextureEditor::setPatchAlpha(double alpha) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the alpha [style] of all selected (extended) patches
+// -----------------------------------------------------------------------------
 void TextureEditor::setPatchAlphaStyle(string_view style) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -879,6 +1032,9 @@ void TextureEditor::setPatchAlphaStyle(string_view style) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the [colour] of all selected (extended) patches
+// -----------------------------------------------------------------------------
 void TextureEditor::setPatchColour(const ColRGBA& colour) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -900,6 +1056,9 @@ void TextureEditor::setPatchColour(const ColRGBA& colour) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the tint [amount] of all selected (extended) patches
+// -----------------------------------------------------------------------------
 void TextureEditor::setPatchTintAmount(double amount) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -921,6 +1080,9 @@ void TextureEditor::setPatchTintAmount(double amount) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the [translation] of all selected (extended) patches
+// -----------------------------------------------------------------------------
 void TextureEditor::setPatchTranslation(string_view translation) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -950,6 +1112,10 @@ void TextureEditor::setPatchTranslation(string_view translation) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Adds [patch] to the current texture.
+// If [position] is not given, the patch will be added at (0,0)
+// -----------------------------------------------------------------------------
 void TextureEditor::addPatch(string_view patch, optional<Vec2i> position) const
 {
 	if (!tex_current_)
@@ -965,6 +1131,9 @@ void TextureEditor::addPatch(string_view patch, optional<Vec2i> position) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Removes all selected patches from the current texture
+// -----------------------------------------------------------------------------
 void TextureEditor::removePatch()
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -982,6 +1151,9 @@ void TextureEditor::removePatch()
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Replaces all selected patches in the current texture with [patch]
+// -----------------------------------------------------------------------------
 void TextureEditor::replacePatch(string_view patch) const
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -1000,6 +1172,10 @@ void TextureEditor::replacePatch(string_view patch) const
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Duplicates all selected patches in the current texture, offsetting the
+// duplicates by [xoff],[yoff]
+// -----------------------------------------------------------------------------
 void TextureEditor::duplicatePatch(int xoff, int yoff)
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -1022,6 +1198,9 @@ void TextureEditor::duplicatePatch(int xoff, int yoff)
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Moves all selected patches forward (up) in the current texture's patch list
+// -----------------------------------------------------------------------------
 void TextureEditor::patchForward()
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -1055,6 +1234,9 @@ void TextureEditor::patchForward()
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Moves all selected patches back (down) in the current texture's patch list
+// -----------------------------------------------------------------------------
 void TextureEditor::patchBack()
 {
 	if (!tex_current_ || selected_patches_.empty())
@@ -1088,11 +1270,17 @@ void TextureEditor::patchBack()
 	undo_manager_->endRecord(true);
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if a patch table exists and has any patches
+// -----------------------------------------------------------------------------
 bool TextureEditor::hasPatchTable() const
 {
 	return patch_table_ && patch_table_->nPatches() > 0;
 }
 
+// -----------------------------------------------------------------------------
+// Adds [patch] to the patch table, returning its new index
+// -----------------------------------------------------------------------------
 int TextureEditor::addPatchToTable(string_view patch) const
 {
 	if (!patch_table_)
@@ -1108,6 +1296,9 @@ int TextureEditor::addPatchToTable(string_view patch) const
 	return patch_table_->nPatches() - 1;
 }
 
+// -----------------------------------------------------------------------------
+// Removes the patch at [index] from the patch table
+// -----------------------------------------------------------------------------
 void TextureEditor::removePatchFromTable(unsigned index) const
 {
 	if (!patch_table_)
@@ -1121,6 +1312,9 @@ void TextureEditor::removePatchFromTable(unsigned index) const
 	patch_table_modified_ = true;
 }
 
+// -----------------------------------------------------------------------------
+// Replaces the patch at [index] in the patch table with [newname]
+// -----------------------------------------------------------------------------
 void TextureEditor::replacePatchInTable(unsigned index, string_view newname) const
 {
 	if (!patch_table_)
@@ -1135,6 +1329,10 @@ void TextureEditor::replacePatchInTable(unsigned index, string_view newname) con
 	patch_table_modified_ = true;
 }
 
+// -----------------------------------------------------------------------------
+// Marks the current texture as modified and signals listeners, recording an
+// undo step for the state change if needed
+// -----------------------------------------------------------------------------
 void TextureEditor::signalCurrentTextureModified(bool texture, bool patch_list, bool patches) const
 {
 	// Record undo step for texture state change if needed
@@ -1154,6 +1352,10 @@ void TextureEditor::signalCurrentTextureModified(bool texture, bool patch_list, 
 		patch_table_->updatePatchUsage(tex_current_);
 }
 
+// -----------------------------------------------------------------------------
+// Creates a backup copy of [texture] (for reverting) if one doesn't already
+// exist
+// -----------------------------------------------------------------------------
 void TextureEditor::setupTextureBackup(const CTexture& texture)
 {
 	for (auto& tx : texturex_entries_)
@@ -1171,6 +1373,9 @@ void TextureEditor::setupTextureBackup(const CTexture& texture)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Returns the backup copy of [texture], or null if none exists
+// -----------------------------------------------------------------------------
 CTexture* TextureEditor::getTextureBackup(const CTexture& texture) const
 {
 	for (const auto& tx : texturex_entries_)
@@ -1186,6 +1391,9 @@ CTexture* TextureEditor::getTextureBackup(const CTexture& texture) const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Updates patch usage counts in the patch table for all textures in all lists
+// -----------------------------------------------------------------------------
 void TextureEditor::updateAllPatchUsage() const
 {
 	for (auto& tx : texturex_entries_)

@@ -631,13 +631,30 @@ bool TextureListReorderUS::swapOrder()
 	return true;
 }
 
+
+// -----------------------------------------------------------------------------
+//
+// PatchTableChangeUS Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// PatchTableChangeUS class constructor
+// -----------------------------------------------------------------------------
 PatchTableChangeUS::PatchTableChangeUS(const TextureEditor& editor, const PatchTable& patch_table) : editor_{ &editor }
 {
 	patch_table_copy_ = std::make_unique<PatchTable>(patch_table);
 }
 
+// -----------------------------------------------------------------------------
+// PatchTableChangeUS class destructor
+// -----------------------------------------------------------------------------
 PatchTableChangeUS::~PatchTableChangeUS() {}
 
+// -----------------------------------------------------------------------------
+// Swaps the patch table data with the previous data
+// -----------------------------------------------------------------------------
 bool PatchTableChangeUS::swapPatchTable()
 {
 	if (!editor_->hasPatchTable())

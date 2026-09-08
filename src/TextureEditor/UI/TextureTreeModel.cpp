@@ -1,4 +1,35 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    TextureTreeModel.cpp
+// Description: TextureTreeModel class, a wxDataViewModel for displaying the
+//              texture lists and their textures in a TextureTreeView
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextureTreeModel.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -11,6 +42,16 @@ using namespace slade;
 using namespace texeditor;
 
 
+// -----------------------------------------------------------------------------
+//
+// TextureTreeModel Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Associates the model with [editor]
+// -----------------------------------------------------------------------------
 void TextureTreeModel::open(const TextureEditor& editor)
 {
 	editor_ = &editor;
@@ -74,6 +115,10 @@ void TextureTreeModel::open(const TextureEditor& editor)
 		});
 }
 
+// -----------------------------------------------------------------------------
+// Returns the texture associated with [item], or null if [item] is a texture
+// list (root) item
+// -----------------------------------------------------------------------------
 CTexture* TextureTreeModel::textureForItem(const wxDataViewItem& item) const
 {
 	if (auto ctex = static_cast<CTexture*>(item.GetID()); ctex && ctex->index() >= 0)
@@ -82,6 +127,9 @@ CTexture* TextureTreeModel::textureForItem(const wxDataViewItem& item) const
 	return nullptr;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the wxDataViewItem for the given [list]
+// -----------------------------------------------------------------------------
 wxDataViewItem TextureTreeModel::itemForTexList(const TextureXList* list) const
 {
 	for (auto& item : root_items_)
@@ -91,6 +139,9 @@ wxDataViewItem TextureTreeModel::itemForTexList(const TextureXList* list) const
 	return {};
 }
 
+// -----------------------------------------------------------------------------
+// Returns the wxDataViewItems for all texture lists
+// -----------------------------------------------------------------------------
 vector<wxDataViewItem> TextureTreeModel::texListItems() const
 {
 	vector<wxDataViewItem> items;
@@ -99,6 +150,9 @@ vector<wxDataViewItem> TextureTreeModel::texListItems() const
 	return items;
 }
 
+// -----------------------------------------------------------------------------
+// Sets [variant] to the value at [item],[col]
+// -----------------------------------------------------------------------------
 void TextureTreeModel::GetValue(wxVariant& variant, const wxDataViewItem& item, unsigned int col) const
 {
 	auto tex = static_cast<CTexture*>(item.GetID());
@@ -176,6 +230,10 @@ void TextureTreeModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Sets [attr] for [item],[col] to indicate the texture's modified/new state
+// via text colour
+// -----------------------------------------------------------------------------
 bool TextureTreeModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxDataViewItemAttr& attr) const
 {
 	auto tex = static_cast<CTexture*>(item.GetID());
@@ -225,11 +283,19 @@ bool TextureTreeModel::GetAttr(const wxDataViewItem& item, unsigned int col, wxD
 	return has_attr;
 }
 
+// -----------------------------------------------------------------------------
+// Sets the value at [item],[col] to the value in [variant]
+// (currently always returns false as the model is read-only for now)
+// -----------------------------------------------------------------------------
 bool TextureTreeModel::SetValue(const wxVariant& variant, const wxDataViewItem& item, unsigned int col)
 {
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the parent item of [item] (the texture list root item, or an invalid
+// item if [item] is itself a root item)
+// -----------------------------------------------------------------------------
 wxDataViewItem TextureTreeModel::GetParent(const wxDataViewItem& item) const
 {
 	if (auto tex = static_cast<CTexture*>(item.GetID()))
@@ -246,6 +312,9 @@ wxDataViewItem TextureTreeModel::GetParent(const wxDataViewItem& item) const
 	return {};
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [item] is a texture list (root) item, ie. can have children
+// -----------------------------------------------------------------------------
 bool TextureTreeModel::IsContainer(const wxDataViewItem& item) const
 {
 	if (auto tex = static_cast<CTexture*>(item.GetID()))
@@ -254,6 +323,9 @@ bool TextureTreeModel::IsContainer(const wxDataViewItem& item) const
 	return editor_->nTextureLists() > 0;
 }
 
+// -----------------------------------------------------------------------------
+// Adds the children of [item] to [children], returning the number added
+// -----------------------------------------------------------------------------
 unsigned int TextureTreeModel::GetChildren(const wxDataViewItem& item, wxDataViewItemArray& children) const
 {
 	if (auto tex = static_cast<CTexture*>(item.GetID()))
@@ -281,6 +353,9 @@ unsigned int TextureTreeModel::GetChildren(const wxDataViewItem& item, wxDataVie
 	return 0;
 }
 
+// -----------------------------------------------------------------------------
+// Compares [item1] and [item2] for sorting by [column]
+// -----------------------------------------------------------------------------
 int TextureTreeModel::Compare(
 	const wxDataViewItem& item1,
 	const wxDataViewItem& item2,
@@ -305,6 +380,9 @@ int TextureTreeModel::Compare(
 	return wxDataViewModel::Compare(item1, item2, column, ascending);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the shared icon bitmap cache for tree items
+// -----------------------------------------------------------------------------
 std::unordered_map<string, wxBitmapBundle>& TextureTreeModel::iconCache()
 {
 	static std::unordered_map<string, wxBitmapBundle> cache;

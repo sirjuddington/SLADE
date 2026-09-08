@@ -1,4 +1,35 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    PatchTableModel.cpp
+// Description: PatchTableModel class, a wxDataViewIndexListModel for
+//              displaying the contents of a patch table in a PatchTableList
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PatchTableModel.h"
 #include "App.h"
@@ -10,6 +41,13 @@
 
 using namespace slade;
 using namespace texeditor;
+
+
+// -----------------------------------------------------------------------------
+//
+// PatchTableModel Class Functions
+//
+// -----------------------------------------------------------------------------
 
 
 // -----------------------------------------------------------------------------
@@ -39,6 +77,9 @@ void PatchTableModel::refresh()
 	Reset(patch_table_ ? static_cast<unsigned int>(patch_table_->nPatches()) : 0);
 }
 
+// -----------------------------------------------------------------------------
+// Sets [variant] to the value at [row],[col]
+// -----------------------------------------------------------------------------
 void PatchTableModel::GetValueByRow(wxVariant& variant, unsigned int row, unsigned int col) const
 {
 	if (!patch_table_ || row >= patch_table_->nPatches())
@@ -61,11 +102,18 @@ void PatchTableModel::GetValueByRow(wxVariant& variant, unsigned int row, unsign
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Sets the value at [row],[col] to the value in [variant]
+// (currently always returns false as the model is read-only for now)
+// -----------------------------------------------------------------------------
 bool PatchTableModel::SetValueByRow(const wxVariant& variant, unsigned int row, unsigned int col)
 {
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Compares [item1] and [item2] for sorting by [column]
+// -----------------------------------------------------------------------------
 int PatchTableModel::Compare(
 	const wxDataViewItem& item1,
 	const wxDataViewItem& item2,

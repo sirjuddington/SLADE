@@ -1,4 +1,35 @@
 
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    TexturePropGrid.cpp
+// Description: TexturePropGrid class, a wxPropertyGrid for viewing and
+//              editing the properties of a texture and selected patch(es)
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TexturePropGrid.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -11,6 +42,11 @@ using namespace slade;
 using namespace texeditor;
 
 
+// -----------------------------------------------------------------------------
+//
+// Constants
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 const wxArrayString type_names  = { wxS("Texture"), wxS("WallTexture"), wxS("Flat"), wxS("Sprite"), wxS("Graphic") };
@@ -31,6 +67,12 @@ const wxArrayString colouring_names = { wxS("None"), wxS("Translation"), wxS("Bl
 } // namespace
 
 
+// -----------------------------------------------------------------------------
+// TranslationProperty Class
+//
+// A wxStringProperty with a text+button editor, opening the translation editor
+// dialog to edit a patch's translation string
+// -----------------------------------------------------------------------------
 namespace
 {
 class TranslationProperty : public wxStringProperty
@@ -48,6 +90,7 @@ public:
 		SetEditor(wxPGEditor_TextCtrlAndButton);
 	}
 
+	// Sets the property to show the translation of [patch_index] in [texture]
 	void openPatch(CTexture* texture, int patch_index)
 	{
 		texture_     = texture;
@@ -65,6 +108,7 @@ public:
 			SetValue(wxEmptyString);
 	}
 
+	// Opens the translation editor dialog when the '...' button is clicked
 	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* wnd_primary, wxEvent& e) override
 	{
 		// '...' button clicked
@@ -112,8 +156,16 @@ private:
 } // namespace
 
 
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace
 {
+// -----------------------------------------------------------------------------
+// Creates an unsigned integer spin control property
+// -----------------------------------------------------------------------------
 wxPGProperty* createUIntSpinProp(const string& label, const string& name, int step = 1)
 {
 	auto prop = new wxUIntProperty(wxString::FromUTF8(label), wxString::FromUTF8(name), 0);
@@ -122,6 +174,9 @@ wxPGProperty* createUIntSpinProp(const string& label, const string& name, int st
 	return prop;
 }
 
+// -----------------------------------------------------------------------------
+// Creates a signed integer spin control property
+// -----------------------------------------------------------------------------
 wxPGProperty* createIntSpinProp(
 	const string& label,
 	const string& name,
@@ -137,6 +192,9 @@ wxPGProperty* createIntSpinProp(
 	return prop;
 }
 
+// -----------------------------------------------------------------------------
+// Creates a floating point spin control property
+// -----------------------------------------------------------------------------
 wxPGProperty* createDoubleSpinProp(
 	const string& label,
 	const string& name,
@@ -154,6 +212,16 @@ wxPGProperty* createDoubleSpinProp(
 } // namespace
 
 
+// -----------------------------------------------------------------------------
+//
+// TexturePropGrid Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// TexturePropGrid class constructor
+// -----------------------------------------------------------------------------
 TexturePropGrid::TexturePropGrid(wxWindow* parent, TextureEditor& editor) : wxPropertyGrid(parent), editor_{ &editor }
 {
 	// Texture Properties
@@ -198,6 +266,10 @@ TexturePropGrid::TexturePropGrid(wxWindow* parent, TextureEditor& editor) : wxPr
 	Bind(wxEVT_PG_CHANGED, &TexturePropGrid::onPropertyChanged, this);
 }
 
+// -----------------------------------------------------------------------------
+// Updates the property grid to show the properties of the current texture
+// (or hides them if there is no current texture)
+// -----------------------------------------------------------------------------
 void TexturePropGrid::textureChanged()
 {
 	Freeze();
@@ -237,6 +309,9 @@ void TexturePropGrid::textureChanged()
 	Thaw();
 }
 
+// -----------------------------------------------------------------------------
+// Refreshes the values of the texture property fields from the current texture
+// -----------------------------------------------------------------------------
 void TexturePropGrid::refreshTextureProperties()
 {
 	auto tex = editor_->currentTexture();
@@ -267,6 +342,10 @@ void TexturePropGrid::refreshTextureProperties()
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Updates the property grid to show the properties of the currently selected
+// patch(es) (or hides them if none are selected)
+// -----------------------------------------------------------------------------
 void TexturePropGrid::patchesChanged()
 {
 	Freeze();
@@ -302,6 +381,10 @@ void TexturePropGrid::patchesChanged()
 	Thaw();
 }
 
+// -----------------------------------------------------------------------------
+// Refreshes the values of the patch property fields from the currently
+// selected patch(es)
+// -----------------------------------------------------------------------------
 void TexturePropGrid::refreshPatchProperties()
 {
 	if (editor_->selectedPatches().size() == 1)
@@ -352,6 +435,10 @@ void TexturePropGrid::refreshPatchProperties()
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Shows/hides the patch colouring properties depending on the current
+// 'Colouring' property value
+// -----------------------------------------------------------------------------
 void TexturePropGrid::updateColouringPropsVisibility()
 {
 	switch (GetPropertyValue(wxS("patch_colouring")).GetInteger())
@@ -379,6 +466,10 @@ void TexturePropGrid::updateColouringPropsVisibility()
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Called when a property value is changed, updates the current texture or
+// selected patch(es) via the texture editor
+// -----------------------------------------------------------------------------
 void TexturePropGrid::onPropertyChanged(wxPropertyGridEvent& e)
 {
 	auto tex = editor_->currentTexture();
