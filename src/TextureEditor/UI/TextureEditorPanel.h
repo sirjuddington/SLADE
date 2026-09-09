@@ -1,9 +1,11 @@
 #pragma once
 
 #include "General/SActionHandler.h"
+#include "General/Sigslot.h"
 
 // Forward declarations
 class wxSplitterWindow;
+class wxScrollBar;
 namespace slade
 {
 class UndoManager;
@@ -11,6 +13,8 @@ class PatchBrowser;
 class SIconButton;
 class CTexture;
 class SAuiToolBar;
+class TextureXList;
+class BrowserCanvas;
 } // namespace slade
 namespace slade::ui
 {
@@ -60,9 +64,12 @@ private:
 	PatchTablePanel* patch_table_panel_  = nullptr;
 
 	// Texture view
-	SAuiToolBar*        toolbar_texture_ = nullptr;
-	CTextureCanvasBase* tex_canvas_      = nullptr;
-	ui::ZoomControl*    zc_zoom_         = nullptr;
+	SAuiToolBar*        toolbar_texture_    = nullptr;
+	CTextureCanvasBase* tex_canvas_         = nullptr;
+	BrowserCanvas*      tex_browser_canvas_ = nullptr; // Shown instead of tex_canvas_ when a texture list is selected
+	wxScrollBar*        tex_browser_scrollbar_ = nullptr;
+	ui::ZoomControl*    zc_zoom_               = nullptr;
+	TextureXList*       tex_list_browsing_     = nullptr;
 
 	// Offsets panel
 	wxPanel*     panel_offsets_      = nullptr;
@@ -77,8 +84,7 @@ private:
 	SAuiToolBar*        toolbar_patches_ = nullptr;
 	TexturePropGrid*    pg_properties_   = nullptr;
 
-	sigslot::scoped_connection sc_tex_modified_;
-	sigslot::scoped_connection sc_tex_deleted_;
+	ScopedConnectionList connections_;
 
 	wxPanel* createLeftPanel(wxWindow* parent);
 	wxPanel* createTextureListPanel(wxWindow* parent);
@@ -102,6 +108,9 @@ private:
 	void   dropPatchOnCanvas(string_view patch, int x, int y);
 	void   updatePatchDropPreview(int x, int y);
 	void   clearPatchDropPreview() const;
+
+	void showTextureBrowser(bool show) const;
+	void populateTextureBrowser(const TextureXList& list) const;
 
 	void newTexture();
 	void newTextureFromFile();
@@ -127,5 +136,6 @@ private:
 	void onTexOffsetYChanged(wxCommandEvent& e);
 	void onBtnAutoOffset(wxCommandEvent& e);
 	void onChoiceOffsetTypeSelected(wxCommandEvent& e);
+	void onTexBrowserDClick(wxMouseEvent& e);
 };
 } // namespace slade::texeditor

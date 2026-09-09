@@ -46,11 +46,13 @@
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/TextureXEditor/PatchBrowser.h"
 #include "NewTextureDialog.h"
+#include "OpenGL/GLTexture.h"
 #include "OpenGL/View.h"
 #include "PatchTablePanel.h"
 #include "TextureEditor/TextureEditor.h"
 #include "TexturePropGrid.h"
 #include "TextureTreeView.h"
+#include "UI/Browser/BrowserCanvas.h"
 #include "UI/Browser/BrowserItem.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/STabCtrl.h"
@@ -132,10 +134,9 @@ PatchDropPlacement determinePatchDropPlacement(
 	auto  sf       = canvas.applyTexScale() ? ctex->scaleFactor() : Vec2d{ 1.0, 1.0 };
 	Vec2d tex_pos  = { (cpos.x - tex_rect.x1()) / sf.x, (cpos.y - tex_rect.y1()) / sf.y };
 
-	placement.tex_offset = { static_cast<int>(std::lround(tex_pos.x - width / 2.0)),
-							 static_cast<int>(std::lround(tex_pos.y - height / 2.0)) };
-	placement.valid      = true;
-
+	placement.tex_offset  = { static_cast<int>(std::lround(tex_pos.x - width / 2.0)),
+							  static_cast<int>(std::lround(tex_pos.y - height / 2.0)) };
+	placement.valid       = true;
 	placement.canvas_rect = { placement.tex_offset.x * sf.x + tex_rect.x1(),
 							  placement.tex_offset.y * sf.y + tex_rect.y1(),
 							  (placement.tex_offset.x + width) * sf.x + tex_rect.x1(),
@@ -188,6 +189,57 @@ private:
 	std::function<void(int, int)>                  update_preview_;
 	std::function<void()>                          clear_preview_;
 	std::function<void(const wxString&, int, int)> on_drop_;
+};
+
+
+// -----------------------------------------------------------------------------
+// CTextureBrowserItem Class
+//
+// BrowserItem for displaying a composite texture
+// -----------------------------------------------------------------------------
+class CTextureBrowserItem : public BrowserItem
+{
+public:
+	CTextureBrowserItem(CTexture* texture, Archive* archive, const Palette* palette) :
+		BrowserItem(texture->name(), static_cast<unsigned>(std::max(texture->index(), 0))),
+		texture_{ texture },
+		archive_{ archive },
+		palette_{ palette }
+	{
+	}
+
+	CTexture* texture() const { return texture_; }
+
+	bool loadImage() override
+	{
+		SImage image;
+		if (!texture_->toImage(image, archive_, palette_))
+			return false;
+
+		gl::Texture::clear(image_tex_);
+		image_tex_ = gl::Texture::createFromImage(image, palette_);
+		return image_tex_ > 0;
+	}
+
+	void clearImage() override
+	{
+		gl::Texture::clear(image_tex_);
+		image_tex_ = 0;
+	}
+
+	string itemInfo() override
+	{
+		if (!image_tex_ && !loadImage())
+			return "Unknown size";
+
+		auto& tex_info = gl::Texture::info(image_tex_);
+		return fmt::format("{}x{}", tex_info.size.x, tex_info.size.y);
+	}
+
+private:
+	CTexture*      texture_ = nullptr;
+	Archive*       archive_ = nullptr;
+	const Palette* palette_ = nullptr;
 };
 } // namespace
 
@@ -276,14 +328,17 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	spin_offset_y_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexOffsetYChanged, this);
 	btn_auto_offset_->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnAutoOffset, this);
 	choice_offset_type_->Bind(wxEVT_CHOICE, &TextureEditorPanel::onChoiceOffsetTypeSelected, this);
+	tex_browser_canvas_->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexBrowserDClick, this);
 	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
 
 	// Enable/disable reset view button when view changes/resets
-	tex_canvas_->signals().view_changed.connect([this] { toolbar_texture_->enableItem("reset_view", true); });
-	tex_canvas_->signals().view_reset.connect([this] { toolbar_texture_->enableItem("reset_view", false); });
+	connections_ += tex_canvas_->signals().view_changed.connect([this]
+																{ toolbar_texture_->enableItem("reset_view", true); });
+	connections_ += tex_canvas_->signals().view_reset.connect([this]
+															  { toolbar_texture_->enableItem("reset_view", false); });
 
 	// Update toolbar buttons when texture is modified
-	sc_tex_modified_ = editor_->signals().current_texture_modified.connect_scoped(
+	connections_ += editor_->signals().current_texture_modified.connect(
 		[this](bool texture, bool patch_list)
 		{
 			toolbar_texture_->enableItem("revert", editor_->currentTextureModified());
@@ -292,7 +347,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 		});
 
 	// Close texture if it's deleted (eg. via undo)
-	sc_tex_deleted_ = editor_->signals().texture_deleted.connect_scoped(
+	connections_ += editor_->signals().texture_deleted.connect(
 		[this](TextureXList* list, CTexture* texture)
 		{
 			if (texture == editor_->currentTexture())
@@ -300,6 +355,9 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 				editor_->closeTexture();
 				updateUI(true);
 			}
+
+			if (tex_list_browsing_ == list)
+				populateTextureBrowser(*list);
 		});
 
 	// Init UI (expandAll must be deferred until the native window exists)
@@ -537,6 +595,19 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	tex_canvas_->setPalette(maineditor::currentPalette()); // TODO: Update when main palette is changed
 	sizer->Add(tex_canvas_->window(), lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
 
+	// Texture list browser (shown instead of the canvas when a texture list is selected)
+	auto browser_hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(browser_hbox, lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
+	tex_browser_canvas_ = new BrowserCanvas(panel);
+	tex_browser_canvas_->setPalette(maineditor::currentPalette()); // TODO: Update when main palette is changed
+	browser_hbox->Add(tex_browser_canvas_, wxSizerFlags(1).Expand());
+	tex_browser_scrollbar_ = new wxScrollBar(panel, -1, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
+	browser_hbox->Add(tex_browser_scrollbar_, wxSizerFlags().Expand());
+	tex_browser_canvas_->setScrollBar(tex_browser_scrollbar_);
+	tex_browser_canvas_->setItemSize(144);
+	tex_browser_canvas_->Show(false);
+	tex_browser_scrollbar_->Show(false);
+
 	// Bottom toolbar
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, lh.sfWithBorder(0, wxTOP).Expand());
@@ -697,7 +768,25 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		toolbar_patches_->enableItem("txed_patch_add", false);
 		panel_offsets_->Show(false);
 
-		if (splitter_left_->GetWindow2() == panel_main_)
+		if (texture_changed)
+		{
+			if (tex_list_browsing_)
+				populateTextureBrowser(*tex_list_browsing_);
+			showTextureBrowser(tex_list_browsing_ != nullptr);
+		}
+
+		// Show the main panel (with the browser in place of the canvas) if
+		// browsing a texture list, otherwise show the blank panel
+		if (tex_list_browsing_)
+		{
+			if (splitter_left_->GetWindow2() == panel_blank_)
+			{
+				panel_blank_->Hide();
+				splitter_left_->ReplaceWindow(panel_blank_, panel_main_);
+				panel_main_->Show();
+			}
+		}
+		else if (splitter_left_->GetWindow2() == panel_main_)
 		{
 			panel_main_->Hide();
 			splitter_left_->ReplaceWindow(panel_main_, panel_blank_);
@@ -708,6 +797,7 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 	{
 		if (texture_changed)
 		{
+			showTextureBrowser(false);
 			tex_canvas_->openTexture(ctex);
 			pg_properties_->textureChanged();
 			populatePatchesList();
@@ -764,6 +854,7 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 
 	Refresh();
 	tex_canvas_->window()->Refresh();
+	tex_browser_canvas_->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -799,6 +890,34 @@ void TextureEditorPanel::populatePatchesList() const
 	list_patches_->SetSelections(wxDataViewItemArray());
 	for (auto i : editor_->selectedPatches())
 		list_patches_->SelectRow(i);
+}
+
+// -----------------------------------------------------------------------------
+// Shows/hides the texture list browser canvas in place of the texture canvas
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::showTextureBrowser(bool show) const
+{
+	tex_canvas_->window()->Show(!show);
+	tex_browser_canvas_->Show(show);
+	tex_browser_scrollbar_->Show(show);
+	toolbar_texture_->Show(!show);
+	zc_zoom_->Show(!show);
+	panel_offsets_->GetParent()->Layout();
+}
+
+// -----------------------------------------------------------------------------
+// Populates the texture browser canvas with all textures in [list]
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::populateTextureBrowser(const TextureXList& list) const
+{
+	tex_browser_canvas_->clearItems();
+
+	for (auto& ctex : list.textures())
+		tex_browser_canvas_->addItem(
+			new CTextureBrowserItem(ctex.get(), editor_->archive(), tex_browser_canvas_->palette()));
+
+	tex_browser_canvas_->filterItems({});
+	tex_browser_canvas_->updateLayout();
 }
 
 // -----------------------------------------------------------------------------
@@ -1355,13 +1474,19 @@ void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
 {
 	wxDataViewItemArray selection;
 	textures_tree_view_->GetSelections(selection);
+	tex_list_browsing_ = nullptr;
 	if (selection.Count() == 1)
 	{
 		// Single selection, open texture if one is selected
 		if (auto ctex = textures_tree_view_->textureForItem(e.GetItem()))
 			editor_->openTexture(*ctex);
 		else
+		{
 			editor_->closeTexture();
+
+			// If a texture list (rather than an individual texture) is selected, browse its textures
+			tex_list_browsing_ = textures_tree_view_->textureListForItem(e.GetItem());
+		}
 	}
 	else
 		editor_->closeTexture();
@@ -1369,6 +1494,28 @@ void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
 	updateUI(true);
 
 	e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called when a texture is double-clicked in the texture list browser
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTexBrowserDClick(wxMouseEvent& e)
+{
+	auto item = dynamic_cast<CTextureBrowserItem*>(tex_browser_canvas_->selectedItem());
+	if (!item)
+		return;
+
+	auto ctex = item->texture();
+
+	// Focus the texture in the tree view and open it
+	// (triggers onTextureSelectionChanged, which swaps back to the texture canvas)
+	wxDataViewItemArray selection;
+	selection.Add(wxDataViewItem(ctex));
+	textures_tree_view_->SetSelections(selection);
+	textures_tree_view_->EnsureVisible(wxDataViewItem(ctex));
+
+	wxDataViewEvent de(wxEVT_DATAVIEW_SELECTION_CHANGED, textures_tree_view_, wxDataViewItem(ctex));
+	textures_tree_view_->ProcessWindowEvent(de);
 }
 
 // -----------------------------------------------------------------------------
