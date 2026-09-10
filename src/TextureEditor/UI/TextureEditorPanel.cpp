@@ -1,0 +1,1863 @@
+
+// -----------------------------------------------------------------------------
+// SLADE - It's a Doom Editor
+// Copyright(C) 2008 - 2026 Simon Judd
+//
+// Email:       sirjuddington@gmail.com
+// Web:         http://slade.mancubus.net
+// Filename:    TextureEditorPanel.cpp
+// Description: TextureEditorPanel class, the main UI for the texture editor
+//
+// This program is free software; you can redistribute it and/or modify it
+// under the terms of the GNU General Public License as published by the Free
+// Software Foundation; either version 2 of the License, or (at your option)
+// any later version.
+//
+// This program is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+// more details.
+//
+// You should have received a copy of the GNU General Public License along with
+// this program; if not, write to the Free Software Foundation, Inc.,
+// 51 Franklin Street, Fifth Floor, Boston, MA  02110 - 1301, USA.
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+//
+// Includes
+//
+// -----------------------------------------------------------------------------
+#include "Main.h"
+#include "TextureEditorPanel.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Canvas/CTextureCanvasBase.h"
+#include "General/KeyBind.h"
+#include "General/Misc.h"
+#include "General/SAction.h"
+#include "General/UndoRedo.h"
+#include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/PatchTable.h"
+#include "Graphics/CTexture/TextureXList.h"
+#include "Graphics/SImage/SImage.h"
+#include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/TextureXEditor/PatchBrowser.h"
+#include "NewTextureDialog.h"
+#include "OpenGL/GLTexture.h"
+#include "OpenGL/View.h"
+#include "PatchTablePanel.h"
+#include "TextureEditor/TextureEditor.h"
+#include "TexturePropGrid.h"
+#include "TextureTreeView.h"
+#include "UI/Browser/BrowserCanvas.h"
+#include "UI/Browser/BrowserItem.h"
+#include "UI/Controls/SIconButton.h"
+#include "UI/Controls/STabCtrl.h"
+#include "UI/Controls/Splitter.h"
+#include "UI/Controls/ZoomControl.h"
+#include "UI/Dialogs/GfxConvDialog.h"
+#include "UI/Dialogs/ModifyOffsetsDialog.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
+#include "UI/State.h"
+#include "UI/UI.h"
+#include "UI/WxUtils.h"
+#include "Utility/SFileDialog.h"
+#include "Utility/StringUtils.h"
+#include <wx/richmsgdlg.h>
+
+using namespace slade;
+using namespace texeditor;
+
+
+// -----------------------------------------------------------------------------
+//
+// Structs
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// Computed placement of a patch being dropped onto the texture canvas
+struct PatchDropPlacement
+{
+	bool  valid = false;
+	Vec2i tex_offset;
+	Rectd canvas_rect;
+};
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Determines where [patch] would be placed (centered at position [x],[y]) if
+// dropped on the texture [canvas], in both canvas and client coordinates
+// -----------------------------------------------------------------------------
+PatchDropPlacement determinePatchDropPlacement(
+	TextureEditor&      editor,
+	CTextureCanvasBase& canvas,
+	string_view         patch,
+	int                 x,
+	int                 y)
+{
+	PatchDropPlacement placement;
+
+	auto ctex = editor.currentTexture();
+	if (!ctex || patch.empty())
+		return placement;
+
+	// Get the patch image size (if possible) so it can be centered on the drop position
+	int width = 0, height = 0;
+	if (auto entry = editor.patchTable()->patchEntry(patch))
+	{
+		SImage image;
+		if (misc::loadImageFromEntry(&image, entry))
+		{
+			width  = image.width();
+			height = image.height();
+		}
+	}
+
+	// Convert drop position to canvas coordinates
+	auto* window   = canvas.window();
+	Vec2i phys_pos = { window->ToPhys(x), window->ToPhys(y) };
+	auto  cpos     = canvas.view().canvasPos({ phys_pos.x, phys_pos.y });
+	auto  tex_rect = canvas.textureRect(canvas.applyTexScale(), canvas.viewType() != CTextureView::Normal);
+	auto  sf       = canvas.applyTexScale() ? ctex->scaleFactor() : Vec2d{ 1.0, 1.0 };
+	Vec2d tex_pos  = { (cpos.x - tex_rect.x1()) / sf.x, (cpos.y - tex_rect.y1()) / sf.y };
+
+	placement.tex_offset  = { static_cast<int>(std::lround(tex_pos.x - width / 2.0)),
+							  static_cast<int>(std::lround(tex_pos.y - height / 2.0)) };
+	placement.valid       = true;
+	placement.canvas_rect = { placement.tex_offset.x * sf.x + tex_rect.x1(),
+							  placement.tex_offset.y * sf.y + tex_rect.y1(),
+							  (placement.tex_offset.x + width) * sf.x + tex_rect.x1(),
+							  (placement.tex_offset.y + height) * sf.y + tex_rect.y1() };
+
+	return placement;
+}
+
+
+// -----------------------------------------------------------------------------
+// PatchDropTarget Class
+//
+// wxDropTarget used to allow dragging patches from the patch table on to the
+// texture canvas.
+// Draws an overlay on the canvas showing where the patch will be placed while
+// dragging over it.
+// -----------------------------------------------------------------------------
+class PatchDropTarget : public wxTextDropTarget
+{
+public:
+	PatchDropTarget(
+		std::function<void(int, int)>                  update_preview,
+		std::function<void()>                          clear_preview,
+		std::function<void(const wxString&, int, int)> on_drop) :
+		update_preview_{ std::move(update_preview) },
+		clear_preview_{ std::move(clear_preview) },
+		on_drop_{ std::move(on_drop) }
+	{
+		SetDefaultAction(wxDragCopy);
+	}
+
+	wxDragResult OnEnter(wxCoord x, wxCoord y, wxDragResult def) override { return OnDragOver(x, y, def); }
+
+	wxDragResult OnDragOver(wxCoord x, wxCoord y, wxDragResult def) override
+	{
+		update_preview_(x, y);
+		return wxDragCopy;
+	}
+
+	void OnLeave() override { clear_preview_(); }
+
+	bool OnDropText(wxCoord x, wxCoord y, const wxString& text) override
+	{
+		clear_preview_();
+		on_drop_(text, x, y);
+		return true;
+	}
+
+private:
+	std::function<void(int, int)>                  update_preview_;
+	std::function<void()>                          clear_preview_;
+	std::function<void(const wxString&, int, int)> on_drop_;
+};
+
+
+// -----------------------------------------------------------------------------
+// CTextureBrowserItem Class
+//
+// BrowserItem for displaying a composite texture
+// -----------------------------------------------------------------------------
+class CTextureBrowserItem : public BrowserItem
+{
+public:
+	CTextureBrowserItem(CTexture* texture, Archive* archive, const Palette* palette) :
+		BrowserItem(texture->name(), static_cast<unsigned>(std::max(texture->index(), 0))),
+		texture_{ texture },
+		archive_{ archive },
+		palette_{ palette }
+	{
+	}
+
+	CTexture* texture() const { return texture_; }
+
+	bool loadImage() override
+	{
+		SImage image;
+		if (!texture_->toImage(image, archive_, palette_))
+			return false;
+
+		gl::Texture::clear(image_tex_);
+		image_tex_ = gl::Texture::createFromImage(image, palette_);
+		return image_tex_ > 0;
+	}
+
+	void clearImage() override
+	{
+		gl::Texture::clear(image_tex_);
+		image_tex_ = 0;
+	}
+
+	string itemInfo() override
+	{
+		if (!image_tex_ && !loadImage())
+			return "Unknown size";
+
+		auto& tex_info = gl::Texture::info(image_tex_);
+		return fmt::format("{}x{}", tex_info.size.x, tex_info.size.y);
+	}
+
+private:
+	CTexture*      texture_ = nullptr;
+	Archive*       archive_ = nullptr;
+	const Palette* palette_ = nullptr;
+};
+} // namespace
+
+
+// -----------------------------------------------------------------------------
+//
+// TextureEditorPanel Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// TextureEditorPanel class constructor
+// -----------------------------------------------------------------------------
+TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive) : wxPanel(parent, wxID_ANY)
+{
+	wxWindowBase::SetName(wxS("texture"));
+
+	editor_        = std::make_unique<TextureEditor>(archive);
+	splitter_left_ = new ui::Splitter(this, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
+
+	// Create texture menu
+	menu_texture_ = new wxMenu();
+	SAction::fromId("txed_new")->addToMenu(menu_texture_);
+	SAction::fromId("txed_new_file")->addToMenu(menu_texture_);
+	SAction::fromId("txed_delete")->addToMenu(menu_texture_);
+	menu_texture_->AppendSeparator();
+	SAction::fromId("txed_rename")->addToMenu(menu_texture_);
+	SAction::fromId("txed_rename_each")->addToMenu(menu_texture_);
+	auto menu_export = new wxMenu();
+	SAction::fromId("txed_export")->addToMenu(menu_export, true, "Archive (as image)");
+	SAction::fromId("txed_extract")->addToMenu(menu_export, true, "File");
+	menu_texture_->AppendSubMenu(menu_export, wxS("&Export To"));
+	menu_texture_->AppendSeparator();
+	SAction::fromId("txed_copy")->addToMenu(menu_texture_);
+	SAction::fromId("txed_cut")->addToMenu(menu_texture_);
+	SAction::fromId("txed_paste")->addToMenu(menu_texture_);
+	menu_texture_->AppendSeparator();
+	SAction::fromId("txed_up")->addToMenu(menu_texture_);
+	SAction::fromId("txed_down")->addToMenu(menu_texture_);
+	SAction::fromId("txed_sort")->addToMenu(menu_texture_);
+	auto menu_patch = new wxMenu();
+	SAction::fromId("txed_patch_add")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_remove")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_replace")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_back")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_forward")->addToMenu(menu_patch);
+	SAction::fromId("txed_patch_duplicate")->addToMenu(menu_patch);
+	menu_texture_->AppendSubMenu(menu_patch, wxS("&Patch"));
+
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
+	SetSizer(sizer);
+
+	// Setup left splitter
+	auto lh = ui::LayoutHelper(this);
+	splitter_left_->SetMinimumPaneSize(FromDIP(200));
+	sizer->Add(splitter_left_, lh.sfWithBorder(1, wxTOP | wxBOTTOM).Expand());
+	splitter_left_->splitVertically(
+		createLeftPanel(splitter_left_),
+		panel_main_ = createMainPanel(splitter_left_),
+		ui::TEXEDITOR_SPLIT_POS_LEFT,
+		280,
+		archive.get());
+
+	// Blank panel to show when no texture is open
+	panel_blank_ = new wxPanel(splitter_left_);
+
+	// Bind Events
+	textures_tree_view_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onTextureSelectionChanged, this);
+	textures_tree_view_->GetMainWindow()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTreeViewKeyDown, this);
+	list_patches_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onPatchSelectionChanged, this);
+	tex_canvas_->window()->Bind(wxEVT_LEFT_DOWN, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_LEFT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_RIGHT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(wxEVT_MOTION, &TextureEditorPanel::onTexCanvasMouseEvent, this);
+	tex_canvas_->window()->Bind(EVT_DRAG_END, &TextureEditorPanel::onTexCanvasDragEnd, this);
+	tex_canvas_->window()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
+	tex_canvas_->window()->SetDropTarget(new PatchDropTarget(
+		[this](int x, int y) { updatePatchDropPreview(x, y); },
+		[this] { clearPatchDropPreview(); },
+		[this](const wxString& patch, int x, int y) { dropPatchOnCanvas(patch.utf8_string(), x, y); }));
+	spin_offset_x_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexOffsetXChanged, this);
+	spin_offset_y_->Bind(wxEVT_SPINCTRL, &TextureEditorPanel::onTexOffsetYChanged, this);
+	spin_offset_x_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexOffsetXChanged, this);
+	spin_offset_y_->Bind(wxEVT_TEXT_ENTER, &TextureEditorPanel::onTexOffsetYChanged, this);
+	btn_auto_offset_->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnAutoOffset, this);
+	choice_offset_type_->Bind(wxEVT_CHOICE, &TextureEditorPanel::onChoiceOffsetTypeSelected, this);
+	tex_browser_canvas_->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexBrowserDClick, this);
+	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
+
+	// Enable/disable reset view button when view changes/resets
+	connections_ += tex_canvas_->signals().view_changed.connect([this]
+																{ toolbar_texture_->enableItem("reset_view", true); });
+	connections_ += tex_canvas_->signals().view_reset.connect([this]
+															  { toolbar_texture_->enableItem("reset_view", false); });
+
+	// Update toolbar buttons when texture is modified
+	connections_ += editor_->signals().current_texture_modified.connect(
+		[this](bool texture, bool patch_list)
+		{
+			toolbar_texture_->enableItem("revert", editor_->currentTextureModified());
+			pg_properties_->refreshTextureProperties();
+			pg_properties_->refreshPatchProperties();
+		});
+
+	// Close texture if it's deleted (eg. via undo)
+	connections_ += editor_->signals().texture_deleted.connect(
+		[this](TextureXList* list, CTexture* texture)
+		{
+			if (texture == editor_->currentTexture())
+			{
+				editor_->closeTexture();
+				updateUI(true);
+			}
+
+			if (tex_list_browsing_ == list)
+				populateTextureBrowser(*list);
+		});
+
+	// Init UI (expandAll must be deferred until the native window exists)
+	CallAfter([this]() { textures_tree_view_->expandAll(); });
+	updateUI(true);
+}
+
+// -----------------------------------------------------------------------------
+// TextureEditorPanel class destructor
+// -----------------------------------------------------------------------------
+TextureEditorPanel::~TextureEditorPanel()
+{
+	delete menu_texture_;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the parent archive of the texture editor
+// -----------------------------------------------------------------------------
+Archive* TextureEditorPanel::archive() const
+{
+	return editor_->archive();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the undo manager used by the texture editor
+// -----------------------------------------------------------------------------
+UndoManager* TextureEditorPanel::undoManager() const
+{
+	return editor_->undoManager();
+}
+
+// -----------------------------------------------------------------------------
+// Performs an undo operation and updates the UI if successful
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::undo()
+{
+	if (editor_->undo())
+		updateUI();
+}
+
+// -----------------------------------------------------------------------------
+// Performs a redo operation and updates the UI if successful
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::redo()
+{
+	if (editor_->redo())
+		updateUI();
+}
+
+// -----------------------------------------------------------------------------
+// Saves all texture lists and the patch table (if modified)
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::saveAll() const
+{
+	editor_->saveAll();
+	textures_tree_view_->Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Checks for any unsaved changes and prompts the user to save them, returning
+// false if the user cancelled (ie. the editor should not be closed)
+// -----------------------------------------------------------------------------
+bool TextureEditorPanel::close()
+{
+	// Check for any modified texture lists
+	bool apply_all = false;
+	for (unsigned i = 0; i < editor_->nTextureLists(); ++i)
+	{
+		if (editor_->textureListModified(i))
+		{
+			// If user has already selected "Yes to All", save without asking
+			if (apply_all)
+			{
+				editor_->saveTextureList(i);
+				continue;
+			}
+
+			// Ask user if they want to save changes
+			wxRichMessageDialog md(
+				this,
+				WX_FMT("Save changes to {}?", editor_->textureListName(i)),
+				wxS("Unsaved Changes"),
+				wxYES_NO | wxCANCEL | wxICON_QUESTION);
+
+			md.ShowCheckBox(wxS("Apply to All"), apply_all);
+
+			int result = md.ShowModal();
+			apply_all  = md.IsCheckBoxChecked();
+			if (result == wxID_YES)
+				editor_->saveTextureList(i); // User selected to save
+			else if (result == wxID_CANCEL)
+				return false; // User selected cancel, don't close the editor
+			else if (result == wxID_NO && apply_all)
+				return true; // User selected "No to All", don't save any more changes
+		}
+	}
+
+	// Check for modified patch table
+	if (editor_->hasPatchTable() && editor_->patchTableModified())
+	{
+		if (!apply_all)
+		{
+			// Ask user if they want to save changes
+			wxMessageDialog md(
+				this,
+				wxS("Save changes to the patch table (PNAMES)?"),
+				wxS("Unsaved Changes"),
+				wxYES_NO | wxCANCEL | wxICON_QUESTION);
+
+			int result = md.ShowModal();
+			if (result == wxID_YES)
+				editor_->savePatchTable(); // User selected to save
+			else if (result == wxID_CANCEL)
+				return false; // User selected cancel, don't close the editor
+		}
+		else
+		{
+			// User previously selected "Yes to All", save without asking
+			editor_->savePatchTable();
+		}
+	}
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the left panel (texture list, with a patch table tab if the
+// archive has a patch table)
+// -----------------------------------------------------------------------------
+wxPanel* TextureEditorPanel::createLeftPanel(wxWindow* parent)
+{
+	// If the archive has a patch table, setup tabbed layout
+	if (editor_->hasPatchTable())
+	{
+		auto panel = new wxPanel(parent);
+		auto lh    = ui::LayoutHelper(panel);
+		auto sizer = new wxBoxSizer(wxHORIZONTAL);
+		panel->SetSizer(sizer);
+
+		auto tabs = STabCtrl::createControl(panel);
+		sizer->Add(tabs, lh.sfWithBorder(1, wxLEFT).Expand());
+
+		tabs->AddPage(createTextureListPanel(tabs), wxS("Textures"));
+		tabs->AddPage(createPatchTablePanel(tabs), wxS("Patches"));
+
+		sizer->AddSpacer(lh.padSmall());
+
+		return panel;
+	}
+
+	// No patch table, just show the texture list
+	return createTextureListPanel(parent);
+}
+
+// -----------------------------------------------------------------------------
+// Creates the texture list panel (toolbar + texture tree view)
+// -----------------------------------------------------------------------------
+wxPanel* TextureEditorPanel::createTextureListPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = ui::LayoutHelper(panel);
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
+	panel->SetSizer(sizer);
+
+	// Toolbar
+	toolbar_texlist_ = new SAuiToolBar(panel, true);
+	toolbar_texlist_->loadLayoutFromResource("texturex_list");
+	sizer->Add(toolbar_texlist_, lh.sfWithSmallBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
+
+	// Texture tree
+	textures_tree_view_ = new TextureTreeView(panel, *editor_);
+	sizer->Add(textures_tree_view_, lh.sfWithSmallBorder(1, wxRIGHT | wxTOP | wxBOTTOM).Expand());
+
+	return panel;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the patch table panel
+// -----------------------------------------------------------------------------
+wxPanel* TextureEditorPanel::createPatchTablePanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = ui::LayoutHelper(panel);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sizer);
+
+	patch_table_panel_ = new PatchTablePanel(panel, *editor_);
+	sizer->Add(patch_table_panel_, lh.sfWithSmallBorder(1, wxALL).Expand());
+
+	return panel;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the main panel (texture view | properties, split)
+// -----------------------------------------------------------------------------
+wxPanel* TextureEditorPanel::createMainPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
+	panel->SetSizer(sizer);
+
+	// Split (texture view | properties)
+	splitter_right_ = new ui::Splitter(panel, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
+	splitter_right_->SetSashGravity(1.0);
+	splitter_right_->SetMinimumPaneSize(FromDIP(200));
+	splitter_right_->splitVertically(
+		createTextureViewPanel(splitter_right_),
+		createRightPanel(splitter_right_),
+		ui::TEXEDITOR_SPLIT_POS_RIGHT,
+		-250,
+		editor_->archive());
+	sizer->Add(splitter_right_, wxSizerFlags(1).Expand());
+
+	return panel;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the texture view panel (canvas with top and bottom toolbars)
+// -----------------------------------------------------------------------------
+wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = ui::LayoutHelper(panel);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sizer);
+
+	// Top toolbar
+	toolbar_texture_ = new SAuiToolBar(panel);
+	toolbar_texture_->loadLayoutFromResource("texturex_top");
+	toolbar_texture_->enableItem("reset_view", false);
+	sizer->Add(toolbar_texture_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
+
+	// Canvas
+	tex_canvas_ = CTextureCanvasBase::createCanvas(panel, *editor_);
+	tex_canvas_->setPalette(maineditor::currentPalette()); // TODO: Update when main palette is changed
+	sizer->Add(tex_canvas_->window(), lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
+
+	// Texture list browser (shown instead of the canvas when a texture list is selected)
+	auto browser_hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(browser_hbox, lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
+	tex_browser_canvas_ = new BrowserCanvas(panel);
+	tex_browser_canvas_->setPalette(maineditor::currentPalette()); // TODO: Update when main palette is changed
+	browser_hbox->Add(tex_browser_canvas_, wxSizerFlags(1).Expand());
+	tex_browser_scrollbar_ = new wxScrollBar(panel, -1, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
+	browser_hbox->Add(tex_browser_scrollbar_, wxSizerFlags().Expand());
+	tex_browser_canvas_->setScrollBar(tex_browser_scrollbar_);
+	tex_browser_canvas_->setItemSize(144);
+	tex_browser_canvas_->Show(false);
+	tex_browser_scrollbar_->Show(false);
+
+	// Bottom toolbar
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, lh.sfWithBorder(0, wxTOP).Expand());
+	hbox->AddSpacer(lh.padSmall());
+
+	// Offsets
+	panel_offsets_ = createOffsetsPanel(panel);
+	hbox->Add(panel_offsets_, wxSizerFlags().Expand());
+
+	hbox->AddStretchSpacer();
+
+	// Zoom
+	zc_zoom_ = new ui::ZoomControl(panel, tex_canvas_);
+	hbox->Add(zc_zoom_, lh.sfWithSmallBorder(0, wxRIGHT).Expand());
+
+	return panel;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the right panel (patch list | texture/patch properties, split)
+// -----------------------------------------------------------------------------
+wxPanel* TextureEditorPanel::createRightPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = ui::LayoutHelper(panel);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sizer);
+
+	// Setup splitter
+	splitter_props_ = new ui::Splitter(panel, -1, wxSP_3DSASH | wxSP_LIVE_UPDATE);
+	sizer->Add(splitter_props_, lh.sfWithSmallBorder(1, wxLEFT).Expand());
+
+	// Patch list
+	auto patch_list_panel = createPatchListPanel(splitter_props_);
+
+	// We need odd borders around the property grid so create a temp panel
+	auto props_panel = new wxPanel(splitter_props_);
+	props_panel->SetSizer(new wxBoxSizer(wxVERTICAL));
+	pg_properties_ = new TexturePropGrid(props_panel, *editor_);
+	props_panel->GetSizer()->AddSpacer(lh.padSmall());
+	props_panel->GetSizer()->Add(pg_properties_, lh.sfWithBorder(1, wxRIGHT).Expand());
+
+	// Split
+	splitter_props_->splitHorizontally(
+		patch_list_panel,
+		props_panel,
+		ui::TEXEDITOR_SPLIT_POS_PROPS,
+		ToDIP(patch_list_panel->GetBestSize().y),
+		editor_->archive());
+	splitter_props_->SetMinimumPaneSize(FromDIP(150));
+
+	return panel;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the patch list panel (toolbar + patch list)
+// -----------------------------------------------------------------------------
+wxPanel* TextureEditorPanel::createPatchListPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = ui::LayoutHelper(panel);
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	panel->SetSizer(sizer);
+
+	// Patch list
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(new wxStaticText(panel, wxID_ANY, wxS("Patches")), lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
+	sizer->Add(hbox, wxSizerFlags(1).Expand());
+	list_patches_ = new wxDataViewListCtrl(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE);
+	list_patches_->AppendTextColumn(wxS("#"));
+	list_patches_->AppendTextColumn(wxS("Name"));
+	hbox->Add(list_patches_, wxSizerFlags(1).Expand());
+
+	// Patches toolbar
+	toolbar_patches_ = new SAuiToolBar(panel, true);
+	toolbar_patches_->loadLayoutFromResource("texturex_patches");
+	hbox->Add(toolbar_patches_, lh.sfWithSmallBorder(0, wxLEFT | wxRIGHT).Expand());
+
+	sizer->AddSpacer(lh.padSmall());
+
+	return panel;
+}
+
+// -----------------------------------------------------------------------------
+// Creates the texture offsets panel
+// -----------------------------------------------------------------------------
+wxPanel* TextureEditorPanel::createOffsetsPanel(wxWindow* parent)
+{
+	auto panel = new wxPanel(parent);
+	auto lh    = ui::LayoutHelper(panel);
+	auto sizer = new wxBoxSizer(wxHORIZONTAL);
+	panel->SetSizer(sizer);
+
+	// Offsets
+	spin_offset_x_ = new wxSpinCtrl(
+		panel,
+		-1,
+		wxEmptyString,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
+		SHRT_MIN,
+		SHRT_MAX,
+		0);
+	spin_offset_y_ = new wxSpinCtrl(
+		panel,
+		-1,
+		wxEmptyString,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxSP_ARROW_KEYS | wxTE_PROCESS_ENTER,
+		SHRT_MIN,
+		SHRT_MAX,
+		0);
+	spin_offset_x_->SetMinSize(lh.spinSize());
+	spin_offset_y_->SetMinSize(lh.spinSize());
+	sizer->Add(new wxStaticText(panel, -1, wxS("Offsets:")), wxSizerFlags().CenterVertical());
+	sizer->Add(spin_offset_x_, lh.sfWithBorder(0, wxLEFT | wxRIGHT).CenterVertical());
+	sizer->Add(spin_offset_y_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+
+	// Offset view type
+	vector<string> offset_types = { "Auto", "Texture", "Sprite", "HUD" };
+	choice_offset_type_         = new wxChoice(
+        panel, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(offset_types));
+	choice_offset_type_->SetSelection(0);
+	sizer->Add(choice_offset_type_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+
+	// Auto offset
+	btn_auto_offset_ = new SIconButton(panel, "offset", "Modify Offsets...");
+	sizer->Add(btn_auto_offset_, wxSizerFlags().CenterVertical());
+
+	return panel;
+}
+
+// -----------------------------------------------------------------------------
+// Updates the UI to reflect the current editor state.
+// If [texture_changed] is true, the current texture, its properties and patch
+// list are refreshed
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::updateUI(bool texture_changed)
+{
+	auto ctex = editor_->currentTexture();
+
+	// No texture open
+	if (!ctex)
+	{
+		if (texture_changed)
+		{
+			tex_canvas_->clearTexture();
+			list_patches_->DeleteAllItems();
+			pg_properties_->textureChanged();
+		}
+
+		toolbar_patches_->enableGroup("Patch", false);
+		toolbar_texture_->showItem("txed_toggle_truecolour", false);
+		toolbar_texture_->enableItem("txed_save", false);
+		toolbar_texture_->enableItem("revert", false);
+		toolbar_patches_->enableItem("txed_patch_add", false);
+		panel_offsets_->Show(false);
+
+		if (texture_changed)
+		{
+			if (tex_list_browsing_)
+				populateTextureBrowser(*tex_list_browsing_);
+			showTextureBrowser(tex_list_browsing_ != nullptr);
+		}
+
+		// Show the main panel (with the browser in place of the canvas) if
+		// browsing a texture list, otherwise show the blank panel
+		if (tex_list_browsing_)
+		{
+			if (splitter_left_->GetWindow2() == panel_blank_)
+			{
+				panel_blank_->Hide();
+				splitter_left_->ReplaceWindow(panel_blank_, panel_main_);
+				panel_main_->Show();
+			}
+		}
+		else if (splitter_left_->GetWindow2() == panel_main_)
+		{
+			panel_main_->Hide();
+			splitter_left_->ReplaceWindow(panel_main_, panel_blank_);
+			panel_blank_->Show();
+		}
+	}
+	else
+	{
+		if (texture_changed)
+		{
+			showTextureBrowser(false);
+			tex_canvas_->openTexture(ctex);
+			pg_properties_->textureChanged();
+			populatePatchesList();
+		}
+
+		toolbar_texture_->showItem("txed_toggle_truecolour", ctex->isExtended());
+		toolbar_texture_->enableItem("txed_save", editor_->currentTextureModified());
+		toolbar_texture_->enableItem("revert", editor_->currentTextureModified());
+		toolbar_patches_->enableItem("txed_patch_add", true);
+		toolbar_patches_->enableGroup("Patch", !editor_->selectedPatches().empty());
+		panel_offsets_->Show(ctex->isExtended());
+		panel_offsets_->GetParent()->Layout();
+
+		if (splitter_left_->GetWindow2() == panel_blank_)
+		{
+			panel_blank_->Hide();
+			splitter_left_->ReplaceWindow(panel_blank_, panel_main_);
+			panel_main_->Show();
+		}
+	}
+
+	// Update texture list toolbar
+	if (texture_changed)
+	{
+		// Determine what we have selected in the tree view
+		wxDataViewItemArray selection;
+		textures_tree_view_->GetSelections(selection);
+		bool has_list  = false;
+		bool has_tex   = false;
+		bool multi_tex = false;
+		for (auto& item : selection)
+		{
+			if (!has_list && textures_tree_view_->textureListForItem(item))
+				has_list = true;
+			if (textures_tree_view_->textureForItem(item))
+			{
+				if (has_tex)
+					multi_tex = true;
+				else
+					has_tex = true;
+			}
+		}
+
+		// Update toolbar buttons
+		toolbar_texlist_->enableItem("txed_new", has_list);
+		toolbar_texlist_->enableItem("txed_new_file", has_list);
+		toolbar_texlist_->enableItem("txed_rename", has_tex);
+		toolbar_texlist_->enableItem("txed_rename_each", multi_tex);
+		toolbar_texlist_->enableItem("txed_delete", has_tex);
+		toolbar_texlist_->enableItem("txed_up", has_tex);
+		toolbar_texlist_->enableItem("txed_down", has_tex);
+		toolbar_texlist_->enableItem("txed_sort", has_tex);
+	}
+
+	Refresh();
+	tex_canvas_->window()->Refresh();
+	tex_browser_canvas_->Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Populates the patch list with the current texture's patches
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::populatePatchesList() const
+{
+	list_patches_->DeleteAllItems();
+
+	auto ctex = editor_->currentTexture();
+	if (!ctex)
+		return;
+
+	// Add patches to list
+	int patch_index = 0;
+#if wxCHECK_VERSION(3, 3, 0)
+	for (auto& p : ctex->patches())
+		list_patches_->AppendItem({ WX_FMT("{}", patch_index++), wxString::FromUTF8(p->name()) });
+#else
+	for (auto& p : ctex->patches())
+	{
+		wxVector<wxVariant> data;
+		data.push_back(WX_FMT("{}", patch_index++));
+		data.push_back(wxString::FromUTF8(p->name()));
+		list_patches_->AppendItem(data);
+	}
+#endif
+
+	// Just set # column to a fixed width
+	list_patches_->GetColumn(0)->SetWidth(FromDIP(30));
+
+	// Update patch selection
+	list_patches_->SetSelections(wxDataViewItemArray());
+	for (auto i : editor_->selectedPatches())
+		list_patches_->SelectRow(i);
+}
+
+// -----------------------------------------------------------------------------
+// Shows/hides the texture list browser canvas in place of the texture canvas
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::showTextureBrowser(bool show) const
+{
+	tex_canvas_->window()->Show(!show);
+	tex_browser_canvas_->Show(show);
+	tex_browser_scrollbar_->Show(show);
+	toolbar_texture_->Show(!show);
+	zc_zoom_->Show(!show);
+	panel_offsets_->GetParent()->Layout();
+}
+
+// -----------------------------------------------------------------------------
+// Populates the texture browser canvas with all textures in [list]
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::populateTextureBrowser(const TextureXList& list) const
+{
+	tex_browser_canvas_->clearItems();
+
+	for (auto& ctex : list.textures())
+		tex_browser_canvas_->addItem(
+			new CTextureBrowserItem(ctex.get(), editor_->archive(), tex_browser_canvas_->palette()));
+
+	tex_browser_canvas_->filterItems({});
+	tex_browser_canvas_->updateLayout();
+}
+
+// -----------------------------------------------------------------------------
+// Creates the patch browser, populating it from the patch table or, for
+// TEXTURES-format lists, the archive and its resources
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::initPatchBrowser()
+{
+	patch_browser_ = new PatchBrowser(this);
+	patch_browser_->setPalette(maineditor::currentPalette());
+
+	auto list = textures_tree_view_->textureListForItem(textures_tree_view_->lastSelectedItem());
+
+	if (list->format() == TextureXList::Format::Textures)
+	{
+		// TEXTURES, load patches from the archive and resources, and any
+		// texture lists in the archive
+		patch_browser_->openArchive(editor_->archive());
+		for (auto i = 0; i < editor_->nTextureLists(); ++i)
+		{
+			if (auto tl = editor_->textureList(i))
+				patch_browser_->openTextureXList(tl, editor_->archive());
+		}
+		patch_browser_->setFullPath(true);
+	}
+	else
+	{
+		// TEXTUREx, load patches from the patch table
+		patch_browser_->openPatchTable(editor_->patchTable());
+		patch_browser_->setFullPath(false);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Opens the patch browser (creating it if needed), optionally selecting
+// [initial] as the initially selected patch.
+// Returns the name of the selected patch, or an empty string if the dialog was
+// cancelled
+// -----------------------------------------------------------------------------
+string TextureEditorPanel::browsePatch(string_view initial)
+{
+	// Create patch browser if needed
+	if (!patch_browser_)
+		initPatchBrowser();
+
+	// Select initial patch if specified
+	if (!initial.empty())
+		patch_browser_->selectPatch(initial);
+
+	// Open browser and return selected patch name (empty if cancelled)
+	if (patch_browser_->ShowModal() == wxID_OK && patch_browser_->selectedItem())
+		return patch_browser_->selectedItem()->name();
+	else
+		return "";
+}
+
+// -----------------------------------------------------------------------------
+// Opens the patch browser and adds the selected patch to the current texture
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::addPatch()
+{
+	if (auto patch = browsePatch(); !patch.empty())
+	{
+		editor_->addPatch(patch);
+		updateUI(true);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Adds [patch], dropped at client position [x],[y] on the texture canvas,
+// centering it on the drop position
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::dropPatchOnCanvas(string_view patch, int x, int y)
+{
+	auto placement = determinePatchDropPlacement(*editor_, *tex_canvas_, patch, x, y);
+	if (!placement.valid)
+		return;
+
+	editor_->addPatch(patch, placement.tex_offset);
+	updateUI(true);
+}
+
+// -----------------------------------------------------------------------------
+// Updates the canvas drop outline to show where the currently dragged patch
+// would be placed at position [x],[y]
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::updatePatchDropPreview(int x, int y)
+{
+	if (patch_table_panel_->draggingPatch().empty())
+	{
+		clearPatchDropPreview();
+		return;
+	}
+
+	auto placement = determinePatchDropPlacement(*editor_, *tex_canvas_, patch_table_panel_->draggingPatch(), x, y);
+	if (placement.valid)
+		tex_canvas_->setDropPatchOutline(placement.canvas_rect);
+	else
+		clearPatchDropPreview();
+}
+
+// -----------------------------------------------------------------------------
+// Clears the canvas drop outline used to preview a dragged patch
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::clearPatchDropPreview() const
+{
+	tex_canvas_->clearDropPatchOutline();
+}
+
+// -----------------------------------------------------------------------------
+// Removes the selected patch(es) from the current texture
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::removePatch()
+{
+	editor_->removePatch();
+	updateUI(true);
+}
+
+// -----------------------------------------------------------------------------
+// Opens the patch browser and replaces the selected patch(es) in the current
+// texture with the chosen patch
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::replacePatch()
+{
+	// Get first selected patch to use as initial selection in browser
+	string initial_patch;
+	for (unsigned i : editor_->selectedPatches())
+		if (auto p = editor_->currentTexture()->patch(i))
+		{
+			initial_patch = p->name();
+			break;
+		}
+
+	if (auto patch = browsePatch(initial_patch); !patch.empty())
+	{
+		editor_->replacePatch(patch);
+		updateUI(true);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Duplicates the selected patch(es) in the current texture
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::duplicatePatch()
+{
+	editor_->duplicatePatch(8, 8); // TODO: use grid size
+	updateUI(true);
+}
+
+// -----------------------------------------------------------------------------
+// Moves the selected patch(es) forward or back in the current texture's
+// patch list, depending on [forward]
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::pushPatch(bool forward)
+{
+	if (forward)
+		editor_->patchForward();
+	else
+		editor_->patchBack();
+
+	updateUI(true);
+}
+
+// -----------------------------------------------------------------------------
+// Opens the new texture dialog and creates a new texture (blank or from a
+// patch) in the currently selected texture list
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::newTexture()
+{
+	// Determine index to insert new texture at
+	int  index         = -1;
+	auto last_selected = textures_tree_view_->lastSelectedItem();
+	auto ctex          = textures_tree_view_->textureForItem(last_selected);
+	auto list          = textures_tree_view_->textureListForItem(last_selected);
+
+	// Do nothing if no texture or texture list is selected
+	if (!list)
+		return;
+
+	// Insert after selected texture (if any)
+	if (ctex)
+		index = ctex->index() + 1;
+
+	// Init patch browser if needed
+	if (!patch_browser_)
+		initPatchBrowser();
+
+	auto dlg = new NewTextureDialog(this, patch_browser_);
+	if (dlg->ShowModal() == wxID_OK)
+	{
+		if (dlg->blankSelected())
+			editor_->newTexture(list, dlg->texName(), index, dlg->texWidth(), dlg->texHeight());
+		else
+			editor_->newTexture(list, dlg->texName(), index, 0, 0, dlg->patch());
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Prompts for one or more image files, importing each as a patch and
+// creating a new texture from it in the currently selected texture list
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::newTextureFromFile()
+{
+	// Determine index to insert new texture at
+	int  index         = -1;
+	auto last_selected = textures_tree_view_->lastSelectedItem();
+	auto ctex          = textures_tree_view_->textureForItem(last_selected);
+	auto list          = textures_tree_view_->textureListForItem(last_selected);
+
+	// Do nothing if no texture or texture list is selected
+	if (!list)
+		return;
+
+	// Insert after selected texture (if any)
+	if (ctex)
+		index = ctex->index() + 1;
+
+	// Get all entry types
+	auto etypes = EntryType::allTypes();
+
+	// Go through types
+	string ext_filter = "All files (*.*)|*|";
+	for (auto& etype : etypes)
+	{
+		// If the type is a valid image type, add its extension filter
+		if (etype->extraProps().contains("image"))
+		{
+			ext_filter += etype->fileFilterString();
+			ext_filter += "|";
+		}
+	}
+	if (ext_filter.ends_with('|'))
+		ext_filter.pop_back();
+
+	// Popup a file dialog to choose patch file(s)
+	auto fd_info = filedialog::openFiles("Choose file(s) to open", ext_filter, this);
+
+	// Abort if no files were selected
+	if (fd_info.filenames.empty())
+		return;
+
+	// Begin undo level
+	if (fd_info.filenames.size() > 1)
+		editor_->undoManager()->beginRecord(fmt::format("{} New Textures from Files", fd_info.filenames.size()));
+	else
+		editor_->undoManager()->beginRecord("New Texture from File");
+
+	// Go through file selection, import patches and create textures from each
+	for (const auto& file : fd_info.filenames)
+		if (auto name = editor_->importPatchFile(file, list->format() != TextureXList::Format::Textures); !name.empty())
+			editor_->newTexture(list, name, index < 0 ? index : index++, 0, 0, name);
+
+	editor_->undoManager()->endRecord(true);
+}
+
+// -----------------------------------------------------------------------------
+// Deletes all selected textures
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::deleteTexture() const
+{
+	editor_->deleteTextures(textures_tree_view_->selectedTextures());
+}
+
+// -----------------------------------------------------------------------------
+// Moves all selected textures up or down (depending on [direction]) in their
+// list, preserving the tree view selection
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::moveTexture(Direction direction) const
+{
+	wxDataViewItemArray sel_items;
+	textures_tree_view_->GetSelections(sel_items);
+
+	textures_tree_view_->Freeze();
+
+	editor_->moveTextures(textures_tree_view_->selectedTextures(), direction);
+
+	// Restore selection
+	textures_tree_view_->SetSelections(sel_items);
+	textures_tree_view_->GetModel()->Resort();
+
+	textures_tree_view_->Thaw();
+}
+
+// -----------------------------------------------------------------------------
+// Sorts the selected textures alphabetically (or all textures in the current
+// list if less than 2 are selected)
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::sortTextures() const
+{
+	// Get selected textures
+	auto selection = textures_tree_view_->selectedTextures();
+	if (selection.empty())
+		return;
+
+	auto list = textures_tree_view_->textureListForItem(textures_tree_view_->lastSelectedItem());
+
+	// Without selection of multiple textures, sort everything instead
+	if (selection.size() < 2)
+	{
+		selection.clear();
+		selection.resize(list->size());
+		for (unsigned i = 0; i < list->size(); ++i)
+			selection[i] = list->texture(i);
+	}
+
+	// No sorting needed even after adding everything
+	if (selection.size() < 2)
+		return;
+
+	editor_->sortTextures(selection);
+
+	wxDataViewItemArray items;
+	for (auto ctex : selection)
+		items.Add(wxDataViewItem(ctex));
+	textures_tree_view_->GetModel()->ItemsChanged(items);
+
+	textures_tree_view_->GetModel()->Resort();
+}
+
+// -----------------------------------------------------------------------------
+// Renames the selected textures, prompting the user for a new name (or mass
+// rename filter if [each] is false and multiple textures are selected)
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::renameTexture(bool each) const
+{
+	auto selection = textures_tree_view_->selectedTextures();
+	if (selection.empty())
+		return;
+
+	editor_->renameTextures(selection, each);
+
+	wxDataViewItemArray items;
+	for (auto ctex : selection)
+		items.Add(wxDataViewItem(ctex));
+	textures_tree_view_->GetModel()->ItemsChanged(items);
+}
+
+// -----------------------------------------------------------------------------
+// Converts the selected textures to images and adds them as new entries in
+// the archive, using the graphic conversion dialog
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::exportTexturesToEntries() const
+{
+	auto selection = textures_tree_view_->selectedTextures();
+	if (selection.empty())
+		return;
+
+	// Create gfx conversion dialog
+	GfxConvDialog gcd(maineditor::windowWx());
+
+	// Send selection to the gcd
+	bool force_rgba = tex_canvas_->blendRGBA();
+	gcd.openTextures(selection, tex_canvas_->palette(), editor_->archive(), force_rgba);
+
+	// Run the gcd
+	gcd.ShowModal();
+
+	// Show splash window
+	ui::showSplash("Writing converted image data...", true, maineditor::windowWx());
+
+	// Write any changes
+	for (unsigned a = 0; a < selection.size(); a++)
+	{
+		// Update splash window
+		ui::setSplashProgressMessage(selection[a]->name());
+		ui::setSplashProgress(a, selection.size());
+
+		// Skip if the image wasn't converted
+		if (!gcd.itemModified(a))
+			continue;
+
+		// Get image and conversion info
+		auto image  = gcd.itemImage(a);
+		auto format = gcd.itemFormat(a);
+
+		// Apply offsets if texture has them
+		if (selection[a]->isExtended())
+			image->setOffsets({ selection[a]->offsetX(), selection[a]->offsetY() });
+
+		// Write converted image back to entry
+		MemChunk mc;
+		format->saveImage(*image, mc, force_rgba ? nullptr : gcd.itemPalette(a));
+		auto lump = std::make_shared<ArchiveEntry>();
+		lump->importMemChunk(mc);
+		lump->rename(selection[a]->name());
+		editor_->archive()->addEntry(lump, "textures");
+		EntryType::detectEntryType(*lump);
+		lump->setExtensionByType();
+	}
+
+	// Hide splash window
+	ui::hideSplash();
+}
+
+// -----------------------------------------------------------------------------
+// Exports the selected textures as PNG image files
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::exportTexturesAsPNG() const
+{
+	// Get selected textures
+	auto selection = textures_tree_view_->selectedTextures();
+	if (selection.empty())
+		return;
+
+	bool force_rgba = tex_canvas_->blendRGBA();
+
+	// If we're just exporting one texture
+	if (selection.size() == 1)
+	{
+		auto          name = misc::lumpNameToFileName(selection[0]->name());
+		strutil::Path fn(name);
+
+		// Set extension
+		fn.setExtension("png");
+
+		// Run save file dialog
+		filedialog::FDInfo info;
+		if (filedialog::saveFile(
+				info,
+				"Export Texture \"" + selection[0]->name() + "\" as PNG",
+				"PNG Files (*.png)|*.png",
+				maineditor::windowWx(),
+				fn.fileName()))
+		{
+			// If a filename was selected, export it
+			if (!editor_->exportAsPNG(*selection[0], info.filenames[0], tex_canvas_->palette(), force_rgba))
+			{
+				wxMessageBox(WX_FMT("Error: {}", global::error), wxS("Error"), wxOK | wxICON_ERROR);
+				return;
+			}
+		}
+
+		return;
+	}
+	else
+	{
+		// Run save files dialog
+		filedialog::FDInfo info;
+		if (filedialog::saveFiles(
+				info,
+				"Export Textures as PNG (Filename will be ignored)",
+				"PNG Files (*.png)|*.png",
+				maineditor::windowWx()))
+		{
+			// Show splash window
+			ui::showSplash("Saving converted image data...", true, maineditor::windowWx());
+
+			// Go through the selection
+			for (size_t a = 0; a < selection.size(); a++)
+			{
+				// Update splash window
+				ui::setSplashProgressMessage(selection[a]->name());
+				ui::setSplashProgress(a, selection.size());
+
+				// Setup entry filename
+				strutil::Path fn(selection[a]->name());
+				fn.setPath(info.path);
+				fn.setExtension("png");
+
+				// Do export
+				editor_->exportAsPNG(*selection[a], fn.fullPath(), tex_canvas_->palette(), force_rgba);
+			}
+
+			// Hide splash window
+			ui::hideSplash();
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Handles the SAction [id]. Returns true if handled
+// -----------------------------------------------------------------------------
+bool TextureEditorPanel::handleAction(string_view id)
+{
+	if (id == "txed_savelist")
+		saveAll();
+
+	else if (id == "txed_new")
+		newTexture();
+
+	else if (id == "txed_new_file")
+		newTextureFromFile();
+
+	else if (id == "txed_delete")
+		deleteTexture();
+
+	else if (id == "txed_rename")
+		renameTexture(false);
+	else if (id == "txed_rename_each")
+		renameTexture(true);
+
+	else if (id == "txed_up")
+		moveTexture(Direction::Up);
+	else if (id == "txed_down")
+		moveTexture(Direction::Down);
+
+	else if (id == "txed_sort")
+		sortTextures();
+
+	else if (id == "txed_export")
+		exportTexturesToEntries();
+	else if (id == "txed_extract")
+		exportTexturesAsPNG();
+
+	else if (id == "txed_toggle_truecolour")
+	{
+		tex_canvas_->setBlendRGBA(CVar::getBool("tx_truecolour"));
+		tex_canvas_->redraw(true);
+	}
+
+	else if (id == "txed_apply_scale")
+	{
+		tex_canvas_->applyTexScale(CVar::getBool("tx_apply_scale"));
+		tex_canvas_->redraw();
+	}
+
+	else if (id == "txed_arc")
+		tex_canvas_->redraw();
+
+	else if (id == "txed_show_outside")
+	{
+		tex_canvas_->drawOutside(CVar::getBool("tx_show_outside"));
+		tex_canvas_->redraw();
+	}
+
+	else if (id == "txed_patch_add")
+		addPatch();
+
+	else if (id == "txed_patch_remove")
+		removePatch();
+
+	else if (id == "txed_patch_replace")
+		replacePatch();
+
+	else if (id == "txed_patch_duplicate")
+		duplicatePatch();
+
+	else if (id == "txed_patch_forward")
+		pushPatch(true);
+
+	else if (id == "txed_patch_back")
+		pushPatch(false);
+
+	else
+		return false; // Not handled
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Called when the texture tree view selection changes
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
+{
+	wxDataViewItemArray selection;
+	textures_tree_view_->GetSelections(selection);
+	tex_list_browsing_ = nullptr;
+	if (selection.Count() == 1)
+	{
+		// Single selection, open texture if one is selected
+		if (auto ctex = textures_tree_view_->textureForItem(e.GetItem()))
+			editor_->openTexture(*ctex);
+		else
+		{
+			editor_->closeTexture();
+
+			// If a texture list (rather than an individual texture) is selected, browse its textures
+			tex_list_browsing_ = textures_tree_view_->textureListForItem(e.GetItem());
+		}
+	}
+	else
+		editor_->closeTexture();
+
+	updateUI(true);
+
+	e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called when a texture is double-clicked in the texture list browser
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTexBrowserDClick(wxMouseEvent& e)
+{
+	auto item = dynamic_cast<CTextureBrowserItem*>(tex_browser_canvas_->selectedItem());
+	if (!item)
+		return;
+
+	auto ctex = item->texture();
+
+	// Focus the texture in the tree view and open it
+	// (triggers onTextureSelectionChanged, which swaps back to the texture canvas)
+	wxDataViewItemArray selection;
+	selection.Add(wxDataViewItem(ctex));
+	textures_tree_view_->SetSelections(selection);
+	textures_tree_view_->EnsureVisible(wxDataViewItem(ctex));
+
+	wxDataViewEvent de(wxEVT_DATAVIEW_SELECTION_CHANGED, textures_tree_view_, wxDataViewItem(ctex));
+	textures_tree_view_->ProcessWindowEvent(de);
+}
+
+// -----------------------------------------------------------------------------
+// Called when the patch list selection changes
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
+{
+	// Update patch selection in editor
+	for (unsigned i = 0; std::cmp_less(i, list_patches_->GetItemCount()); ++i)
+	{
+		auto item = list_patches_->RowToItem(i);
+		if (item.IsOk() && list_patches_->IsSelected(item))
+			editor_->selectPatch(i);
+		else
+			editor_->selectPatch(i, false);
+	}
+
+	updateUI(false);
+	pg_properties_->patchesChanged();
+}
+
+// -----------------------------------------------------------------------------
+// Called when a key is pressed within the texture tree view
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTreeViewKeyDown(wxKeyEvent& e)
+{
+	auto binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+
+	for (const auto& name : binds)
+	{
+		if (name == "select_all")
+		{
+			textures_tree_view_->SelectAll();
+
+			// Trigger selection change event (since SelectAll doesn't trigger it)
+			wxDataViewEvent de;
+			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+			textures_tree_view_->ProcessWindowEvent(de);
+
+			return;
+		}
+
+		if (name == "txed_tex_new")
+		{
+			newTexture();
+			return;
+		}
+
+		if (name == "txed_tex_new_file")
+		{
+			newTextureFromFile();
+			return;
+		}
+
+		if (name == "txed_tex_delete")
+		{
+			deleteTexture();
+			return;
+		}
+
+		if (name == "txed_tex_up")
+		{
+			moveTexture(Direction::Up);
+			return;
+		}
+
+		if (name == "txed_tex_down")
+		{
+			moveTexture(Direction::Down);
+			return;
+		}
+	}
+
+	e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called on any mouse event within the texture canvas
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
+{
+	auto tex_current = editor_->currentTexture();
+
+	// Get mouse position relative to texture
+	Vec2i pos        = { tex_canvas_->window()->ToPhys(e.GetX()), tex_canvas_->window()->ToPhys(e.GetY()) };
+	auto  canvas_pos = tex_canvas_->view().canvasPos({ pos.x, pos.y });
+
+	// Get patch that the mouse is over (if any)
+	int patch = tex_canvas_->patchAt(canvas_pos.x, canvas_pos.y);
+
+	// Left click
+	if (e.LeftDown() && tex_current)
+	{
+		if (patch != -1)
+		{
+			// Clicked on a patch, select it
+			// (and clear other selections if shift is not held)
+			if (!e.ShiftDown())
+				list_patches_->UnselectAll();
+			list_patches_->SelectRow(patch);
+			list_patches_->EnsureVisible(list_patches_->RowToItem(patch));
+
+			// Send selection changed event (SelectRow does not)
+			wxDataViewEvent de;
+			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+			list_patches_->ProcessWindowEvent(de);
+		}
+		else
+		{
+			// Clicked on empty space, deselect all
+			list_patches_->UnselectAll();
+
+			// Send selection changed event (UnselectAll does not)
+			wxDataViewEvent de;
+			de.SetEventType(wxEVT_DATAVIEW_SELECTION_CHANGED);
+			list_patches_->ProcessWindowEvent(de);
+		}
+
+		tex_canvas_->onMouseEvent(e);
+	}
+
+	// Right click
+	if (e.RightUp() && tex_current)
+	{
+		// Create context menu
+		wxMenu popup;
+		SAction::fromId("txed_patch_add")->addToMenu(&popup, 1);
+		if (list_patches_->GetSelectedItemsCount() > 0)
+		{
+			SAction::fromId("txed_patch_remove")->addToMenu(&popup, 1);
+			SAction::fromId("txed_patch_replace")->addToMenu(&popup, 1);
+			SAction::fromId("txed_patch_back")->addToMenu(&popup, 1);
+			SAction::fromId("txed_patch_forward")->addToMenu(&popup, 1);
+			SAction::fromId("txed_patch_duplicate")->addToMenu(&popup, 1);
+		}
+		PopupMenu(&popup);
+	}
+
+	e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called when a mouse drag action ends on the texture canvas
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTexCanvasDragEnd(wxCommandEvent& e)
+{
+	// If patch dragging ended (left button)
+	if (e.GetInt() == wxMOUSE_BTN_LEFT)
+	{
+		// Move selected patches by the drag amount
+		auto drag_offset = tex_canvas_->dragOffset(false);
+		if (drag_offset.x != 0 || drag_offset.y != 0)
+		{
+			editor_->movePatch(drag_offset);
+			pg_properties_->refreshPatchProperties();
+			tex_canvas_->redraw(true);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Called when a key is pressed within the texture canvas
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
+{
+	// Check if keypress matches any keybinds
+	auto binds = KeyBind::bindsForKey(KeyBind::asKeyPress(e.GetKeyCode(), e.GetModifiers()));
+
+	// Go through matching binds
+	int  x_movement = 0;
+	int  y_movement = 0;
+	bool handled    = false;
+	for (const auto& name : binds)
+	{
+		// Move patch left
+		if (name == "txed_patch_left")
+			x_movement = -1;
+		else if (name == "txed_patch_left8")
+			x_movement = -8;
+
+		// Move patch up
+		else if (name == "txed_patch_up")
+			y_movement = -1;
+		else if (name == "txed_patch_up8")
+			y_movement = -8;
+
+		// Move patch right
+		else if (name == "txed_patch_right")
+			x_movement = 1;
+		else if (name == "txed_patch_right8")
+			x_movement = 8;
+
+		// Move patch down
+		else if (name == "txed_patch_down")
+			y_movement = 1;
+		else if (name == "txed_patch_down8")
+			y_movement = 8;
+
+		// Add patch
+		else if (name == "txed_patch_add")
+		{
+			addPatch();
+			handled = true;
+		}
+
+		// Delete patch
+		else if (name == "txed_patch_delete")
+		{
+			removePatch();
+			handled = true;
+		}
+
+		// Replace patch
+		else if (name == "txed_patch_replace")
+		{
+			replacePatch();
+			handled = true;
+		}
+
+		// Duplicate patch
+		else if (name == "txed_patch_duplicate")
+		{
+			duplicatePatch();
+			handled = true;
+		}
+
+		// Bring patch forward
+		else if (name == "txed_patch_forward")
+		{
+			pushPatch(true);
+			handled = true;
+		}
+
+		// Send patch back
+		else if (name == "txed_patch_back")
+		{
+			pushPatch(false);
+			handled = true;
+		}
+	}
+
+	// Move patches if needed
+	if (x_movement != 0 || y_movement != 0)
+	{
+		editor_->movePatch({ x_movement, y_movement });
+		handled = true;
+	}
+
+	if (!handled)
+		e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called when a toolbar button is clicked
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onToolbarButton(wxCommandEvent& e)
+{
+	string button;
+	if (e.GetEventObject() == toolbar_texture_)
+		button = toolbar_texture_->actionFromWxId(e.GetId());
+	else if (e.GetEventObject() == toolbar_patches_)
+		button = toolbar_patches_->actionFromWxId(e.GetId());
+	else if (e.GetEventObject() == toolbar_texlist_)
+		button = toolbar_texlist_->actionFromWxId(e.GetId());
+
+	if (button == "revert")
+	{
+		editor_->revertTexture();
+		updateUI(true);
+	}
+	else if (button == "reset_view")
+	{
+		tex_canvas_->resetViewOffsets();
+		tex_canvas_->window()->Refresh();
+	}
+
+	else
+		e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called when the X offset spin control value changes
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTexOffsetXChanged(wxCommandEvent& e)
+{
+	editor_->setTextureOffset(spin_offset_x_->GetValue(), {});
+	tex_canvas_->redraw();
+}
+
+// -----------------------------------------------------------------------------
+// Called when the Y offset spin control value changes
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTexOffsetYChanged(wxCommandEvent& e)
+{
+	editor_->setTextureOffset({}, spin_offset_y_->GetValue());
+	tex_canvas_->redraw();
+}
+
+// -----------------------------------------------------------------------------
+// Called when the 'Modify Offsets' button is clicked
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onBtnAutoOffset(wxCommandEvent& e)
+{
+	auto ctex = editor_->currentTexture();
+	if (!ctex)
+		return;
+
+	ModifyOffsetsDialog dlg;
+	dlg.SetParent(maineditor::windowWx());
+	dlg.CenterOnParent();
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		const Vec2i offsets = dlg.calculateOffsets(
+			spin_offset_x_->GetValue(), spin_offset_y_->GetValue(), ctex->width(), ctex->height());
+
+		spin_offset_x_->SetValue(offsets.x);
+		spin_offset_y_->SetValue(offsets.y);
+		editor_->setTextureOffset(offsets.x, offsets.y);
+		tex_canvas_->redraw();
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Called when the offset view type choice selection changes
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onChoiceOffsetTypeSelected(wxCommandEvent& e)
+{
+	switch (choice_offset_type_->GetSelection())
+	{
+	case 0: // Auto
+		tex_canvas_->setViewType(tex_canvas_->autoDetectViewType());
+		break;
+	case 1: // Texture
+		tex_canvas_->setViewType(CTextureView::Normal);
+		break;
+	case 2: // Sprite
+		tex_canvas_->setViewType(CTextureView::Sprite);
+		break;
+	case 3: // HUD
+		tex_canvas_->setViewType(CTextureView::HUD);
+		break;
+	}
+
+	tex_canvas_->redraw();
+}

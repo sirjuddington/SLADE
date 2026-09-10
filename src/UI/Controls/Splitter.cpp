@@ -7,8 +7,7 @@
 // Web:         http://slade.mancubus.net
 // Filename:    Splitter.cpp
 // Description: A wxSplitterWindow specialisation that increases the splitter
-//              sash size and draws an indicator (Windows only, unchanged
-//              elsewhere)
+//              sash size (on Windows) and draws an indicator
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -33,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Splitter.h"
+#include "UI/State.h"
 
 using namespace slade;
 using namespace ui;
@@ -44,14 +44,79 @@ using namespace ui;
 //
 // -----------------------------------------------------------------------------
 
+
+// -----------------------------------------------------------------------------
+// Returns the sash size (platform dependant)
+// -----------------------------------------------------------------------------
+int Splitter::getSashSize() const
+{
+#ifndef __WXMSW__
+	auto size = GetSashSize();
+#else
+	// Double width on windows
+	auto size = GetSashSize() * 2;
+#endif
+
+	// Ensure size is even so the indicator is properly centered
+	if (size % 2 != 0)
+		size++;
+
+	return size;
+}
+
+// -----------------------------------------------------------------------------
+// Splits the window with a vertical sash, restoring the sash position
+// previously saved to ui state under [state_id]/[archive] (or [default_pos] if
+// none saved), and saves it to the same key whenever it's changed
+// -----------------------------------------------------------------------------
+bool Splitter::splitVertically(
+	wxWindow*      window1,
+	wxWindow*      window2,
+	string_view    state_id,
+	int            default_pos,
+	const Archive* archive)
+{
+	state_id_      = state_id;
+	state_archive_ = archive;
+
+	if (ui::hasSavedState(state_id_, state_archive_, true))
+		default_pos = ui::getStateInt(state_id_, state_archive_);
+
+	Bind(wxEVT_SPLITTER_SASH_POS_CHANGING, &Splitter::onSashPosChanging, this);
+	Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, &Splitter::onSashPosChanged, this);
+
+	return wxSplitterWindow::SplitVertically(window1, window2, FromDIP(default_pos));
+}
+
+// -----------------------------------------------------------------------------
+// Splits the window with a horizontal sash, restoring the sash position
+// previously saved to ui state under [state_id]/[archive] (or [default_pos] if
+// none saved), and saves it to the same key whenever it's changed
+// -----------------------------------------------------------------------------
+bool Splitter::splitHorizontally(
+	wxWindow*      window1,
+	wxWindow*      window2,
+	string_view    state_id,
+	int            default_pos,
+	const Archive* archive)
+{
+	state_id_      = state_id;
+	state_archive_ = archive;
+
+	if (ui::hasSavedState(state_id_, state_archive_, true))
+		default_pos = ui::getStateInt(state_id_, state_archive_);
+
+	Bind(wxEVT_SPLITTER_SASH_POS_CHANGING, &Splitter::onSashPosChanging, this);
+	Bind(wxEVT_SPLITTER_SASH_POS_CHANGED, &Splitter::onSashPosChanged, this);
+
+	return wxSplitterWindow::SplitHorizontally(window1, window2, FromDIP(default_pos));
+}
+
 // -----------------------------------------------------------------------------
 // wxSplitterWindow::SashHitTest override
 // -----------------------------------------------------------------------------
 bool Splitter::SashHitTest(int x, int y)
 {
-#ifndef __WXMSW__
-	return wxSplitterWindow::SashHitTest(x, y);
-#else
 	if (m_windowTwo == nullptr || m_sashPosition == 0)
 		return false; // No sash
 
@@ -59,7 +124,6 @@ bool Splitter::SashHitTest(int x, int y)
 	int hitMax = m_sashPosition + getSashSize() - 1;
 
 	return z >= m_sashPosition && z <= hitMax;
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -67,9 +131,6 @@ bool Splitter::SashHitTest(int x, int y)
 // -----------------------------------------------------------------------------
 void Splitter::SizeWindows()
 {
-#ifndef __WXMSW__
-	wxSplitterWindow::SizeWindows();
-#else
 	// check if we have delayed setting the real sash position
 	if (m_requestedSashPosition != INT_MAX)
 	{
@@ -133,7 +194,6 @@ void Splitter::SizeWindows()
 
 	wxClientDC dc(this);
 	DrawSash(dc);
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -141,9 +201,6 @@ void Splitter::SizeWindows()
 // -----------------------------------------------------------------------------
 void Splitter::DrawSash(wxDC& dc)
 {
-#ifndef __WXMSW__
-	wxSplitterWindow::DrawSash(dc);
-#else
 	if (HasFlag(wxSP_3DBORDER))
 		wxRendererNative::Get().DrawSplitterBorder(this, dc, GetClientRect());
 
@@ -160,21 +217,36 @@ void Splitter::DrawSash(wxDC& dc)
 	auto size  = GetClientSize();
 	dc.SetBrush(wxBrush(bgcol));
 	dc.SetPen(*wxTRANSPARENT_PEN);
-	dc.DrawRectangle(m_sashPosition, 0, getSashSize(), size.y);
+	if (m_splitMode == wxSPLIT_VERTICAL)
+		dc.DrawRectangle(m_sashPosition, 0, getSashSize(), size.y);
+	else
+		dc.DrawRectangle(0, m_sashPosition, size.x, getSashSize());
 
 	// Indicator
 	auto colour = (bgcol.GetLuminance() > 0.5) ? bgcol.ChangeLightness(m_isHot ? 50 : 80)
-											   : bgcol.ChangeLightness(m_isHot ? 150 : 120);
+											   : bgcol.ChangeLightness(m_isHot ? 140 : 120);
 	dc.SetBrush(wxBrush(colour));
-	auto line_x   = m_sashPosition + getSashSize() / 2;
-	auto line_top = size.y / 2 - FromDIP(24);
-	if (line_top < 0)
-		line_top = 0;
-	auto line_height = FromDIP(48);
-	if (line_top + line_height > size.y)
-		line_height = size.y - line_top;
-	dc.DrawRoundedRectangle(line_x - FromDIP(1), line_top, FromDIP(2), line_height, FromDIP(1));
-#endif
+
+	if (m_splitMode == wxSPLIT_VERTICAL)
+	{
+		auto line_x      = m_sashPosition + std::ceil(getSashSize() / 2.0);
+		auto line_top    = size.y / 2 - FromDIP(28);
+		line_top         = std::max(line_top, 0);
+		auto line_height = FromDIP(56);
+		if (line_top + line_height > size.y)
+			line_height = size.y - line_top;
+		dc.DrawRoundedRectangle(line_x - FromDIP(1), line_top, FromDIP(2), line_height, FromDIP(1));
+	}
+	else
+	{
+		auto line_y     = m_sashPosition + std::ceil(getSashSize() / 2.0);
+		auto line_left  = size.x / 2 - FromDIP(28);
+		line_left       = std::max(line_left, 0);
+		auto line_width = FromDIP(56);
+		if (line_left + line_width > size.x)
+			line_width = size.x - line_left;
+		dc.DrawRoundedRectangle(line_left, line_y - FromDIP(1), line_width, FromDIP(2), FromDIP(1));
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -182,9 +254,6 @@ void Splitter::DrawSash(wxDC& dc)
 // -----------------------------------------------------------------------------
 wxSize Splitter::DoGetBestSize() const
 {
-#ifndef __WXMSW__
-	return wxSplitterWindow::DoGetBestSize();
-#else
 	// get best sizes of subwindows
 	wxSize size1, size2;
 	if (m_windowOne)
@@ -222,5 +291,46 @@ wxSize Splitter::DoGetBestSize() const
 	sizeBest.y += border;
 
 	return sizeBest;
-#endif
+}
+
+// -----------------------------------------------------------------------------
+// Called when the sash position is about to change
+// -----------------------------------------------------------------------------
+void Splitter::onSashPosChanging(wxSplitterEvent& e)
+{
+	// Wx only sends SASH_POS_CHANGING while the user is actively dragging the
+	// sash, so we can use this to determine whether the change was
+	// user-initiated or programmatic
+	if (e.GetEventObject() == this)
+		user_dragging_sash_ = true;
+}
+
+// -----------------------------------------------------------------------------
+// Called when the sash position has changed
+// -----------------------------------------------------------------------------
+void Splitter::onSashPosChanged(wxSplitterEvent& e)
+{
+	// For some reason *any* child splitter will trigger this event
+	if (e.GetEventObject() != this)
+		return;
+
+	// Save the new sash position to ui state only if it was changed via drag
+	if (user_dragging_sash_)
+	{
+		ui::saveStateInt(state_id_, ToDIP(gravityAdjustedSashPos(e.GetSashPosition())), state_archive_);
+		user_dragging_sash_ = false;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns [sash_pos] taking into account the sash gravity - if it's 1.0, the
+// position is converted to the negative offset from the right/bottom edge
+// -----------------------------------------------------------------------------
+int Splitter::gravityAdjustedSashPos(int sash_pos) const
+{
+	if (GetSashGravity() < 1.0)
+		return sash_pos;
+
+	auto dim = GetSplitMode() == wxSPLIT_VERTICAL ? GetClientSize().x : GetClientSize().y;
+	return sash_pos - dim;
 }

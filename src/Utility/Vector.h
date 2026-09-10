@@ -18,7 +18,9 @@ template<typename T> constexpr auto vectorAddUnique(vector<T>& vec, T val)
 // Remove the first item with a given value from a vector
 template<typename T> constexpr auto vectorRemoveVal(vector<T>& vec, T val)
 {
-	return vec.erase(find(vec.begin(), vec.end(), val));
+	if (auto it = find(vec.begin(), vec.end(), val); it != vec.end())
+		return vec.erase(it);
+	return vec.end();
 }
 
 // Remove an item at the given index from a vector

@@ -31,8 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Canvas.h"
-#include "CTextureCanvas.h"
-#include "GL/CTextureGLCanvas.h"
 #include "GL/GfxGLCanvas.h"
 #include "GL/MapPreviewGLCanvas.h"
 #include "GfxCanvas.h"
@@ -62,7 +60,8 @@ CVAR(Float, canvas_scale_factor, 0.0f, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 // Canvas class constructor
 // -----------------------------------------------------------------------------
-Canvas::Canvas(wxWindow* parent) : wxPanel(parent)
+Canvas::Canvas(wxWindow* parent) :
+	wxControl(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxBORDER_NONE | wxWANTS_CHARS)
 {
 	wxWindow::SetDoubleBuffered(true);
 }
@@ -85,7 +84,7 @@ double Canvas::GetContentScaleFactor() const
 	if (canvas_scale_factor > 0)
 		return canvas_scale_factor;
 
-	return wxPanel::GetContentScaleFactor();
+	return wxControl::GetContentScaleFactor();
 }
 
 
@@ -118,17 +117,5 @@ GfxCanvasBase* createGfxCanvas(wxWindow* parent)
 		return new GfxCanvas(parent);
 	else
 		return new GfxGLCanvas(parent);
-}
-
-// -----------------------------------------------------------------------------
-// Creates a new CTextureGLCanvas if OpenGL is available, otherwise will fall
-// back to a software-rendered CTextureCanvas
-// -----------------------------------------------------------------------------
-CTextureCanvasBase* createCTextureCanvas(wxWindow* parent)
-{
-	if (gl::contextCreationFailed() || !canvas_use_opengl)
-		return new CTextureCanvas(parent);
-	else
-		return new CTextureGLCanvas(parent);
 }
 } // namespace slade::ui

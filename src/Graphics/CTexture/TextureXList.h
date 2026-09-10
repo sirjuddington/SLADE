@@ -50,6 +50,7 @@ public:
 	unique_ptr<CTexture> removeTexture(unsigned index);
 	void                 swapTextures(unsigned index1, unsigned index2);
 	unique_ptr<CTexture> replaceTexture(unsigned index, unique_ptr<CTexture> replacement);
+	void                 sortTextures(unsigned first, unsigned last);
 
 	void clear(bool clear_patches = false);
 	void removePatch(string_view patch) const;
@@ -62,7 +63,7 @@ public:
 
 	bool convertToTEXTURES();
 	bool findErrors() const;
-	bool removeDupesFoundIn(TextureXList& texture_list);
+	bool removeDupesFoundIn(const TextureXList& texture_list);
 	bool cleanTEXTURESsinglePatch(Archive* current_archive);
 
 private:

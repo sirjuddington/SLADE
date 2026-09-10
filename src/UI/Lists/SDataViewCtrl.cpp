@@ -61,6 +61,7 @@ vector<int> real_chars = {
 //
 // -----------------------------------------------------------------------------
 
+
 // -----------------------------------------------------------------------------
 // SDataViewCtrl class constructor
 // -----------------------------------------------------------------------------
@@ -93,6 +94,28 @@ SDataViewCtrl::SDataViewCtrl(wxWindow* parent, long style) :
 					wxDataViewEvent de{ EVT_SDVC_COLUMN_RESIZED, this, col };
 					ProcessWindowEvent(de);
 					onAnyColumnResized();
+				});
+
+			// Double-clicking a column separator to autosize doesn't send
+			// wxEVT_HEADER_END_RESIZE, so it needs to be handled separately
+			header->Bind(
+				wxEVT_HEADER_SEPARATOR_DCLICK,
+				[this](wxHeaderCtrlEvent& e)
+				{
+					e.Skip();
+
+					auto col = GetColumn(e.GetColumn());
+					if (col == lastVisibleColumn())
+						return; // Ignore last column - is stretched
+
+					CallAfter(
+						[this, col]
+						{
+							onColumnResized(col);
+							wxDataViewEvent de{ EVT_SDVC_COLUMN_RESIZED, this, col };
+							ProcessWindowEvent(de);
+							onAnyColumnResized();
+						});
 				});
 		});
 #else
@@ -206,6 +229,11 @@ SDataViewCtrl::SDataViewCtrl(wxWindow* parent, long style) :
 }
 
 // -----------------------------------------------------------------------------
+// SDataViewCtrl class destructor
+// -----------------------------------------------------------------------------
+SDataViewCtrl::~SDataViewCtrl() = default;
+
+// -----------------------------------------------------------------------------
 // Returns the last visible column
 // -----------------------------------------------------------------------------
 wxDataViewColumn* SDataViewCtrl::lastVisibleColumn() const
@@ -215,6 +243,107 @@ wxDataViewColumn* SDataViewCtrl::lastVisibleColumn() const
 			return GetColumn(i);
 
 	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
+// Enables and sets up the header right-click context menu, which allows
+// toggling visibility of registered columns (except where always_visible =
+// true) and resetting sorting
+// -----------------------------------------------------------------------------
+void SDataViewCtrl::enableHeaderContextMenu()
+{
+	// Right-click on header: show column visibility + reset sorting menu
+	Bind(
+		wxEVT_DATAVIEW_COLUMN_HEADER_RIGHT_CLICK,
+		[this](wxDataViewEvent& e)
+		{
+			wxMenu menu;
+			menu.Append(id_reset_sorting_, wxS("Reset Sorting"));
+			menu.AppendSeparator();
+
+			for (auto& cs : columns_state_)
+				if (cs.column && !cs.always_visible)
+					appendColumnToggleItem(menu, cs.column->GetModelColumn());
+
+			PopupMenu(&menu);
+			e.Skip();
+		});
+
+	// Handle menu item selections
+	Bind(
+		wxEVT_MENU,
+		[this](wxCommandEvent& e)
+		{
+			if (e.GetId() == id_reset_sorting_)
+				resetSorting();
+			else if (modelColumnIndex(e.GetId()) != wxNOT_FOUND)
+			{
+				toggleColumnVisibility(e.GetId());
+				restoreColumnWidths();
+			}
+			else
+			{
+				e.Skip();
+				return;
+			}
+
+			saveSortState();
+		});
+}
+
+// -----------------------------------------------------------------------------
+// Adds a column of [type] to the view, linked to [model_column] in the model,
+// with given [title] and initial [width].
+// Optionally, a [state_id] can be provided to automatically save/restore the
+// column's width and visibility state to the program database.
+// [state_id] is used as a prefix for the state property names (eg. state_id
+// "Col1" will use "Col1Width" and "Col1Visible")
+// -----------------------------------------------------------------------------
+wxDataViewColumn* SDataViewCtrl::addColumn(
+	ColumnType       type,
+	int              model_column,
+	string_view      title,
+	int              width,
+	string_view      state_id,
+	ColumnVisibility visibility,
+	bool             editable)
+{
+	wxDataViewColumn* column = nullptr;
+
+	auto colstyle = wxDATAVIEW_COL_SORTABLE | wxDATAVIEW_COL_RESIZABLE;
+	if (visibility == ColumnVisibility::Hidden)
+		colstyle |= wxDATAVIEW_COL_HIDDEN;
+
+	auto cellmode = editable ? wxDATAVIEW_CELL_EDITABLE : wxDATAVIEW_CELL_INERT;
+
+	switch (type)
+	{
+	case ColumnType::Text:
+		column = AppendTextColumn(
+			wxString::FromUTF8(title.data(), title.size()), model_column, cellmode, FromDIP(width), wxALIGN_NOT, colstyle);
+		break;
+	case ColumnType::IconAndText:
+		column = AppendIconTextColumn(
+			wxString::FromUTF8(title.data(), title.size()), model_column, cellmode, FromDIP(width), wxALIGN_NOT, colstyle);
+		break;
+	default: return nullptr;
+	}
+
+	if (!state_id.empty())
+	{
+		columns_state_.push_back(
+			ColumnDef{ .column         = column,
+					   .id             = string{ state_id },
+					   .always_visible = visibility == ColumnVisibility::AlwaysVisible });
+
+		if (!hasSavedState(fmt::format("{}Width", state_id)))
+			saveStateInt(fmt::format("{}Width", state_id), width);
+
+		if (visibility != ColumnVisibility::AlwaysVisible && !hasSavedState(fmt::format("{}Visible", state_id)))
+			saveStateBool(fmt::format("{}Visible", state_id), visibility == ColumnVisibility::Visible);
+	}
+
+	return column;
 }
 
 // -----------------------------------------------------------------------------
@@ -258,17 +387,21 @@ void SDataViewCtrl::appendColumnToggleItem(wxMenu& menu, int col_model) const
 }
 
 // -----------------------------------------------------------------------------
-// Toggles visibility of column [col_model], saving the result to UI state
-// property [state_prop]
+// Toggles visibility of column [col_model] (column index in model) and saves
+// the new state to UI state
 // -----------------------------------------------------------------------------
-void SDataViewCtrl::toggleColumnVisibility(int col_model, string_view state_prop) const
+void SDataViewCtrl::toggleColumnVisibility(int col_model) const
 {
 	auto* column = GetColumn(modelColumnIndex(col_model));
 
 	column->SetHidden(!column->IsHidden());
 
-	if (!state_prop.empty())
-		saveStateBool(state_prop, column->IsShown());
+	for (const auto& cs : columns_state_)
+		if (cs.column->GetModelColumn() == col_model && !cs.id.empty())
+		{
+			saveStateBool(fmt::format("{}Visible", cs.id), column->IsShown());
+			return;
+		}
 }
 
 // -----------------------------------------------------------------------------
@@ -303,6 +436,141 @@ int SDataViewCtrl::modelColumnIndex(int model_column) const
 			return index;
 	}
 	return wxNOT_FOUND;
+}
+
+// -----------------------------------------------------------------------------
+// Loads width/visibility state for all registered columns from UI state,
+// associated with [archive] if given (or stateArchive() otherwise)
+// -----------------------------------------------------------------------------
+void SDataViewCtrl::loadColumnState(const Archive* archive)
+{
+	if (!archive)
+		archive = stateArchive();
+
+	for (auto& cs : columns_state_)
+	{
+		if (!cs.column || cs.id.empty())
+			continue;
+
+		// Visibility (unless always visible)
+		if (!cs.always_visible && hasSavedState(fmt::format("{}Visible", cs.id), archive, true))
+			cs.column->SetHidden(!getStateBool(fmt::format("{}Visible", cs.id), archive));
+
+		// Width
+		cs.column->SetWidth(FromDIP(getStateInt(fmt::format("{}Width", cs.id), archive)));
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Restores the currently visible registered columns' widths from UI state,
+// associated with [archive] if given (or stateArchive() otherwise).
+// The current last visible column is excluded since it stretches to fill
+// -----------------------------------------------------------------------------
+void SDataViewCtrl::restoreColumnWidths(const Archive* archive)
+{
+	if (!archive)
+		archive = stateArchive();
+
+	auto* last_col = lastVisibleColumn();
+
+	Freeze();
+	for (auto& cs : columns_state_)
+	{
+		if (!cs.column || !cs.column->IsShown())
+			continue;
+
+		if (cs.column == last_col)
+		{
+			cs.column->SetWidth(0);
+			continue;
+		}
+
+		if (!cs.id.empty())
+			cs.column->SetWidth(FromDIP(getStateInt(fmt::format("{}Width", cs.id), archive)));
+	}
+	Thaw();
+}
+
+// -----------------------------------------------------------------------------
+// Loads the sort column/order from UI state properties [prop_sort_column] and
+// [prop_sort_descending], associated with [archive] if given (or
+// stateArchive() otherwise)
+// -----------------------------------------------------------------------------
+void SDataViewCtrl::loadSortState(const Archive* archive)
+{
+	if (prop_sort_column_.empty() || prop_sort_descending_.empty())
+		return;
+
+	if (!archive)
+		archive = stateArchive();
+
+	if (!hasSavedState(prop_sort_column_, archive))
+		return;
+
+	auto sort_column     = getStateInt(prop_sort_column_, archive);
+	auto sort_descending = getStateBool(prop_sort_descending_, archive);
+
+	for (auto& cs : columns_state_)
+		if (cs.column && cs.column->GetModelColumn() == sort_column)
+		{
+			cs.column->SetSortOrder(!sort_descending);
+			break;
+		}
+
+	if (auto* model = GetModel())
+		model->Resort();
+}
+
+// -----------------------------------------------------------------------------
+// Saves the current sort column/order to UI state properties
+// [prop_sort_column] and [prop_sort_descending], associated with [archive] if
+// given (or stateArchive() otherwise).
+// -----------------------------------------------------------------------------
+void SDataViewCtrl::saveSortState(const Archive* archive) const
+{
+	if (prop_sort_column_.empty() || prop_sort_descending_.empty())
+		return;
+
+	if (!archive)
+		archive = stateArchive();
+
+	int  sort_column     = -1;
+	bool sort_descending = false;
+	for (auto& cs : columns_state_)
+		if (cs.column && cs.column->IsSortKey())
+		{
+			sort_column     = cs.column->GetModelColumn();
+			sort_descending = !cs.column->IsSortOrderAscending();
+			break;
+		}
+
+	saveStateInt(prop_sort_column_, sort_column, archive);
+	saveStateBool(prop_sort_descending_, sort_descending, archive);
+}
+
+// -----------------------------------------------------------------------------
+// Default handling for when any column is resized - saves the new width(s) of
+// registered columns to UI state (excluding the current last visible column,
+// since it stretches to fill)
+// -----------------------------------------------------------------------------
+void SDataViewCtrl::onAnyColumnResized()
+{
+	if (columns_state_.empty())
+		return;
+
+	auto* archive  = stateArchive();
+	auto* last_col = lastVisibleColumn();
+
+	for (auto& cs : columns_state_)
+	{
+		if (!cs.column || cs.column == last_col || !cs.column->IsShown())
+			continue;
+
+		auto width = ToDIP(cs.column->GetWidth());
+
+		if (!cs.id.empty())
+			saveStateInt(fmt::format("{}Width", cs.id), width, archive, true);
+	}
 }
 
 #ifdef __WXMSW__

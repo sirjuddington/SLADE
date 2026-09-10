@@ -344,6 +344,9 @@ unique_ptr<wxGraphicsContext> wxgfx::createGraphicsContext(wxWindowDC& dc)
 // -----------------------------------------------------------------------------
 void wxgfx::applyViewToGC(const gl::View& view, wxGraphicsContext* gc)
 {
+	// Reset any existing transforms
+	gc->SetTransform(gc->CreateMatrix());
+
 	auto scale = gc->GetContentScaleFactor();
 	if (view.centered())
 		gc->Translate((view.size().x * 0.5) / scale, (view.size().y * 0.5) / scale);

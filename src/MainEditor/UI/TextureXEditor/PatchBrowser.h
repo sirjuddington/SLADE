@@ -18,7 +18,7 @@ public:
 	bool openTextureXList(const TextureXList* texturex, Archive* parent);
 	int  selectedPatch() const;
 	void selectPatch(int pt_index);
-	void selectPatch(const string& name);
+	void selectPatch(string_view name);
 	void setFullPath(bool enabled) { full_path_ = enabled; }
 
 private:

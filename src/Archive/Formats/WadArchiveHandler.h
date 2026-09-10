@@ -45,13 +45,13 @@ public:
 	vector<MapDesc> detectMaps(const Archive& archive) override;
 	string          detectNamespace(const Archive& archive, ArchiveEntry* entry) override;
 	string          detectNamespace(const Archive& archive, unsigned index, ArchiveDir* dir = nullptr) override;
-	void            detectIncludes(Archive& archive);
+	void            detectIncludes(const Archive& archive);
 	bool            hasFlatHack() override;
 
 	// Search
-	ArchiveEntry*         findFirst(const Archive& archive, ArchiveSearchOptions& options) override;
-	ArchiveEntry*         findLast(const Archive& archive, ArchiveSearchOptions& options) override;
-	vector<ArchiveEntry*> findAll(const Archive& archive, ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findFirst(const Archive& archive, const ArchiveSearchOptions& options) override;
+	ArchiveEntry*         findLast(const Archive& archive, const ArchiveSearchOptions& options) override;
+	vector<ArchiveEntry*> findAll(const Archive& archive, const ArchiveSearchOptions& options) override;
 
 	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;

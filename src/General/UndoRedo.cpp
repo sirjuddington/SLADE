@@ -305,6 +305,8 @@ void UndoManager::clearToResetPoint()
 
 	current_level_ = nullptr;
 	undo_running_  = false;
+
+	signals_.undo();
 }
 
 // -----------------------------------------------------------------------------

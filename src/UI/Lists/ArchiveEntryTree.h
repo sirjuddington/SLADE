@@ -88,6 +88,8 @@ namespace ui
 			const Archive*      parent_archive = nullptr,
 			const ArchiveDir*   parent_dir     = nullptr) const;
 		bool dirIsInList(const ArchiveDir& dir, bool filter = true, const ArchiveDir* parent_dir = nullptr) const;
+
+		static std::unordered_map<string, wxBitmapBundle>& iconCache();
 	};
 
 	class ArchiveEntryTree : public SDataViewCtrl
@@ -139,18 +141,16 @@ namespace ui
 
 	private:
 		weak_ptr<Archive> archive_;
-		ArchiveViewModel* model_                   = nullptr;
-		wxDataViewColumn* col_name_                = nullptr;
-		wxDataViewColumn* col_size_                = nullptr;
-		wxDataViewColumn* col_type_                = nullptr;
-		wxDataViewColumn* col_index_               = nullptr;
-		int               multi_select_base_index_ = -1;
+		ArchiveViewModel* model_     = nullptr;
+		wxDataViewColumn* col_name_  = nullptr;
+		wxDataViewColumn* col_size_  = nullptr;
+		wxDataViewColumn* col_type_  = nullptr;
+		wxDataViewColumn* col_index_ = nullptr;
 		string            search_;
 
+		const Archive* stateArchive() const override { return archive_.lock().get(); }
+
 		void setupColumns();
-		void updateColumnWidths();
-		void saveColumnConfig();
-		void onAnyColumnResized() override;
 	};
 
 } // namespace ui

@@ -457,6 +457,10 @@
     "saveas": {
       "svg": "icons/general/saveas.svg"
     },
+    "scale": {
+      "svg_light": "icons/general/scale.svg",
+      "svg_dark": "icons/general/dark/scale.svg"
+    },
     "script": {
       "svg_light": "icons/general/script.svg",
       "svg_dark": "icons/general/dark/script.svg"
@@ -522,6 +526,10 @@
     "tex_renameeach": {
       "svg": "icons/general/renameeach.svg"
     },
+    "tex_show_outside": {
+      "svg_light": "icons/general/tex_show_outside.svg",
+      "svg_dark": "icons/general/dark/tex_show_outside.svg"
+    },
     "texeditor": {
       "svg": "icons/general/texeditor.svg"
     },
@@ -545,9 +553,28 @@
       "svg_light": "icons/general/tint.svg",
       "svg_dark": "icons/general/dark/tint.svg"
     },
+    "tlist_folder": {
+      "svg_light": "icons/general/tlist_folder.svg",
+      "svg_dark": "icons/general/dark/tlist_folder.svg"
+    },
+    "tlist_graphic": {
+      "svg_light": "icons/general/tlist_graphic.svg",
+      "svg_dark": "icons/general/dark/tlist_graphic.svg"
+    },
+    "tlist_sprite": {
+      "svg_light": "icons/general/tlist_sprite.svg",
+      "svg_dark": "icons/general/dark/tlist_sprite.svg"
+    },
+    "tlist_texture": {
+      "svg_light": "icons/general/tlist_texture.svg",
+      "svg_dark": "icons/general/dark/tlist_texture.svg"
+    },
     "tool_text": {
       "svg_light": "icons/general/tool_text.svg",
       "svg_dark": "icons/general/dark/tool_text.svg"
+    },
+    "truecolour_preview": {
+      "svg": "icons/general/truecolour_preview.svg"
     },
     "undo": {
       "svg_light": "icons/general/undo.svg",

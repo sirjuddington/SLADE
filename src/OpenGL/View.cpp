@@ -355,6 +355,9 @@ void View::updateMatrices()
 	// View --------------------------------------------------------------------
 	view_matrix_ = glm::mat4{ 1.0f };
 
+	// Translate to pixel center to avoid inaccuracy issues
+	view_matrix_ = glm::translate(view_matrix_, { 0.375f, 0.375f, 0.f });
+
 	// Translate to middle of screen if centered
 	if (centered_)
 		view_matrix_ = glm::translate(view_matrix_, { size_.x * 0.5f, size_.y * 0.5f, 0.f });

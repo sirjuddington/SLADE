@@ -976,7 +976,7 @@ string Archive::detectNamespace(ArchiveEntry* entry) const
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::findFirst(ArchiveSearchOptions& options) const
+ArchiveEntry* Archive::findFirst(const ArchiveSearchOptions& options) const
 {
 	return format_handler_->findFirst(*this, options);
 }
@@ -985,7 +985,7 @@ ArchiveEntry* Archive::findFirst(ArchiveSearchOptions& options) const
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* Archive::findLast(ArchiveSearchOptions& options) const
+ArchiveEntry* Archive::findLast(const ArchiveSearchOptions& options) const
 {
 	return format_handler_->findLast(*this, options);
 }
@@ -993,7 +993,7 @@ ArchiveEntry* Archive::findLast(ArchiveSearchOptions& options) const
 // -----------------------------------------------------------------------------
 // Returns a list of entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> Archive::findAll(ArchiveSearchOptions& options) const
+vector<ArchiveEntry*> Archive::findAll(const ArchiveSearchOptions& options) const
 {
 	return format_handler_->findAll(*this, options);
 }

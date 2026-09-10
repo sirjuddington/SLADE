@@ -137,7 +137,16 @@ void ui::initStateProps()
 									  { MAINWINDOW_MAXIMIZED, true },
 									  { MAPEDITORWINDOW_MAXIMIZED, true },
 									  { SCRIPTMANAGERWINDOW_MAXIMIZED, false },
-									  { SETUP_WIZARD_RUN, false } };
+									  { SETUP_WIZARD_RUN, false },
+									  { TEXTURELIST_INDEX_VISIBLE, false },
+									  { TEXTURELIST_INDEX_WIDTH, 50 },
+									  { TEXTURELIST_SIZE_VISIBLE, true },
+									  { TEXTURELIST_SIZE_WIDTH, 70 },
+									  { TEXTURELIST_TYPE_VISIBLE, false },
+									  { TEXTURELIST_TYPE_WIDTH, 180 },
+									  { TEXTURELIST_NAME_WIDTH, 130 },
+									  { TEXTURELIST_PATCHES_VISIBLE, false },
+									  { TEXTURELIST_PATCHES_WIDTH, 70 } };
 
 	auto ps = database::context().preparedStatement("init_ui_state", "INSERT INTO ui_state VALUES (?,?,?)", true);
 
@@ -165,11 +174,19 @@ void ui::initStateProps()
 
 // -----------------------------------------------------------------------------
 // Returns true if saved state [name] exists in the database for [archive].
-// If no archive is given the global saved state is checked
+// If [archive] is nullptr the global saved state is checked.
+// If [archive] is *not* nullptr and [check_global] is true, the global saved
+// state will be checked if no archive-specific value exists
 // -----------------------------------------------------------------------------
-bool ui::hasSavedState(string_view name, const Archive* archive)
+bool ui::hasSavedState(string_view name, const Archive* archive, bool check_global)
 {
-	return hasSavedState(name, archiveDbId(archive));
+	if (hasSavedState(name, archiveDbId(archive)))
+		return true;
+
+	if (check_global)
+		return hasSavedState(name, std::nullopt);
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

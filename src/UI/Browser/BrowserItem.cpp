@@ -89,8 +89,8 @@ void BrowserItem::draw(int size, gl::draw2d::Context& dc, NameType nametype, Ite
 	else if (nametype == NameType::Index)
 		draw_name = fmt::format("{}", index_);
 
-	// Truncate name if needed
-	if (parent_->truncateNames() && draw_name.size() > 8)
+	// Truncate name if needed (only when used within a BrowserWindow)
+	if (parent_ && parent_->truncateNames() && draw_name.size() > 8)
 	{
 		// textures/aquatex/AQCONC13.png -> t./a./AQCONC13.png
 		// textures/AQDIRT01.png -> t./AQDIRT01.png

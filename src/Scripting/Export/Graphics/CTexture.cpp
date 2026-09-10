@@ -111,7 +111,10 @@ void registerCTexturePatchTypes(lua_State* lua)
 	lua_ctpatch_ex.addProperty("alpha", &CTPatchEx::alpha, &CTPatchEx::setAlpha);
 	lua_ctpatch_ex.addProperty("style", &CTPatchEx::style, &CTPatchEx::setStyle);
 	lua_ctpatch_ex.addProperty("blendType", &CTPatchEx::blendType, &CTPatchEx::setBlendType);
-	lua_ctpatch_ex.addProperty("translation", &CTPatchEx::translation, &CTPatchEx::setTranslation);
+	lua_ctpatch_ex.addProperty(
+		"translation",
+		&CTPatchEx::translation,
+		[](CTPatchEx& self, const Translation& trans) { self.setTranslation(trans); });
 
 	// Functions
 	// -------------------------------------------------------------------------
@@ -149,7 +152,7 @@ void registerCTextureType(lua_State* lua)
 	lua_ctexture.addProperty("offsetX", &CTexture::offsetX, &CTexture::setOffsetX);
 	lua_ctexture.addProperty("offsetY", &CTexture::offsetY, &CTexture::setOffsetY);
 	lua_ctexture.addProperty("worldPanning", &CTexture::worldPanning, &CTexture::setWorldPanning);
-	lua_ctexture.addProperty("type", &CTexture::type, &CTexture::setType);
+	lua_ctexture.addProperty("type", &CTexture::type, [](CTexture& self, const string& type) { self.setType(type); });
 	lua_ctexture.addProperty("extended", &CTexture::isExtended, &CTexture::setExtended);
 	lua_ctexture.addProperty("optional", &CTexture::isOptional, &CTexture::setOptional);
 	lua_ctexture.addProperty("noDecals", &CTexture::noDecals, &CTexture::setNoDecals);

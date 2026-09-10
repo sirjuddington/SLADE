@@ -631,7 +631,7 @@ void KeyBind::initBinds()
 	addBind("txed_tex_down", Keypress("down", KPM_CTRL), "Move Texture down", group);
 	addBind("txed_tex_down", Keypress("D", KPM_CTRL));
 	addBind("txed_tex_new", Keypress("N", KPM_CTRL), "New Texture", group);
-	addBind("txed_tex_new_patch", Keypress("N", KPM_CTRL | KPM_SHIFT), "New Texture from Patch", group);
+	// addBind("txed_tex_new_patch", Keypress("N", KPM_CTRL | KPM_SHIFT), "New Texture from Patch", group);
 	addBind("txed_tex_new_file", Keypress("N", KPM_CTRL | KPM_ALT), "New Texture from File", group);
 	addBind("txed_tex_delete", Keypress("delete"), "Delete Texture", group);
 

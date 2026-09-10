@@ -16,6 +16,7 @@ namespace ui
 {
 	class ArchivePathPanel;
 	class ArchiveEntryTree;
+	class Splitter;
 } // namespace ui
 } // namespace slade
 
@@ -121,7 +122,7 @@ protected:
 	wxChoice*             choice_category_  = nullptr;
 	SAuiToolBar*          toolbar_elist_    = nullptr;
 	wxPanel*              panel_filter_     = nullptr;
-	wxSplitterWindow*     splitter_         = nullptr;
+	ui::Splitter*         splitter_         = nullptr;
 
 	// Entry panels
 	EntryPanel* cur_area_     = nullptr;

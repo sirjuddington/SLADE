@@ -9,9 +9,8 @@ inline constexpr string_view ENTRYLIST_SIZE_VISIBLE        = "EntryListSizeVisib
 inline constexpr string_view ENTRYLIST_SIZE_WIDTH          = "EntryListSizeWidth";
 inline constexpr string_view ENTRYLIST_TYPE_VISIBLE        = "EntryListTypeVisible";
 inline constexpr string_view ENTRYLIST_TYPE_WIDTH          = "EntryListTypeWidth";
-inline constexpr string_view ENTRYLIST_NAME_WIDTH          = "EntryListNameWidth";
-inline constexpr string_view ENTRYLIST_NAME_WIDTH_LIST     = "EntryListNameWidthList";
-inline constexpr string_view ENTRYLIST_NAME_WIDTH_TREE     = "EntryListNameWidthTree";
+inline constexpr string_view ENTRYLIST_NAME_WIDTH_LIST     = "EntryListNameLWidth";
+inline constexpr string_view ENTRYLIST_NAME_WIDTH_TREE     = "EntryListNameTWidth";
 inline constexpr string_view ENTRYLIST_VIEW_TYPE           = "EntryListViewType";
 inline constexpr string_view ENTRYLIST_SORT_COLUMN         = "EntryListSortColumn";
 inline constexpr string_view ENTRYLIST_SORT_DESCENDING     = "EntryListSortDescending";
@@ -36,9 +35,23 @@ inline constexpr string_view RUNDIALOG_START_3D            = "RunDialogStart3d";
 inline constexpr string_view MAPDIALOG_LAST_GAME           = "MapDialogLastGame";
 inline constexpr string_view MAPDIALOG_LAST_PORT           = "MapDialogLastPort";
 inline constexpr string_view FILEDIALOG_LAST_DIR           = "FileDialogLastDir";
+inline constexpr string_view TEXTURELIST_INDEX_VISIBLE     = "TextureListIndexVisible";
+inline constexpr string_view TEXTURELIST_INDEX_WIDTH       = "TextureListIndexWidth";
+inline constexpr string_view TEXTURELIST_SIZE_VISIBLE      = "TextureListSizeVisible";
+inline constexpr string_view TEXTURELIST_SIZE_WIDTH        = "TextureListSizeWidth";
+inline constexpr string_view TEXTURELIST_TYPE_VISIBLE      = "TextureListTypeVisible";
+inline constexpr string_view TEXTURELIST_TYPE_WIDTH        = "TextureListTypeWidth";
+inline constexpr string_view TEXTURELIST_NAME_WIDTH        = "TextureListNameWidth";
+inline constexpr string_view TEXTURELIST_PATCHES_VISIBLE   = "TextureListPatchesVisible";
+inline constexpr string_view TEXTURELIST_PATCHES_WIDTH     = "TextureListPatchesWidth";
+inline constexpr string_view TEXTURELIST_SORT_COLUMN       = "TextureListSortColumn";
+inline constexpr string_view TEXTURELIST_SORT_DESCENDING   = "TextureListSortDescending";
+inline constexpr string_view TEXEDITOR_SPLIT_POS_LEFT      = "TexEditorSplitPosLeft";
+inline constexpr string_view TEXEDITOR_SPLIT_POS_RIGHT     = "TexEditorSplitPosRight";
+inline constexpr string_view TEXEDITOR_SPLIT_POS_PROPS     = "TexEditorSplitPosProps";
 
 void initStateProps();
-bool hasSavedState(string_view name, const Archive* archive = nullptr);
+bool hasSavedState(string_view name, const Archive* archive = nullptr, bool check_global = false);
 
 bool   getStateBool(string_view name, const Archive* archive = nullptr);
 int    getStateInt(string_view name, const Archive* archive = nullptr);

@@ -51,8 +51,9 @@ SIconButton::SIconButton(
 	icons::Type   icon_type,
 	const string& icon,
 	const string& tooltip,
-	int           icon_size) :
-	wxBitmapButton{ parent, -1, wxNullBitmap }
+	int           icon_size,
+	int           button_size) :
+	wxBitmapButton{ parent, -1, wxNullBitmap, wxDefaultPosition, wxSize(button_size, button_size) }
 {
 	auto bmp = icons::getIcon(icon_type, icon, icon_size);
 

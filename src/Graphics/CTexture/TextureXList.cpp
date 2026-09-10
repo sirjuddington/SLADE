@@ -255,6 +255,24 @@ unique_ptr<CTexture> TextureXList::replaceTexture(unsigned index, unique_ptr<CTe
 }
 
 // -----------------------------------------------------------------------------
+// Sorts the textures in the list between [first] and [last] (inclusive) by
+// name, then index
+// -----------------------------------------------------------------------------
+void TextureXList::sortTextures(unsigned first, unsigned last)
+{
+	// Check indices
+	if (first >= textures_.size() || last >= textures_.size())
+		return;
+
+	// Sort the textures
+	std::sort(
+		textures_.begin() + first,
+		textures_.begin() + last + 1,
+		[](const unique_ptr<CTexture>& a, const unique_ptr<CTexture>& b)
+		{ return a->name() == b->name() ? a->index() < b->index() : a->name() < b->name(); });
+}
+
+// -----------------------------------------------------------------------------
 // Clears all textures
 // -----------------------------------------------------------------------------
 void TextureXList::clear(bool clear_patches)
@@ -343,8 +361,11 @@ bool TextureXList::readTEXTUREXData(const ArchiveEntry* texturex, const PatchTab
 			// log::info(1, "Jaguar texture");
 			break;
 		}
-		else if (!((tempname[a] >= 'A' && tempname[a] <= '[') || (tempname[a] >= '0' && tempname[a] <= '9')
-				   || tempname[a] == ']' || tempname[a] == '-' || tempname[a] == '_'))
+		else if (!((tempname[a] >= 'A' && tempname[a] <= '[')
+				   || (tempname[a] >= '0' && tempname[a] <= '9')
+				   || tempname[a] == ']'
+				   || tempname[a] == '-'
+				   || tempname[a] == '_'))
 		// We're out of character range, so this is probably not a texture name.
 		{
 			txformat_ = Format::Nameless;
@@ -436,7 +457,7 @@ bool TextureXList::readTEXTUREXData(const ArchiveEntry* texturex, const PatchTab
 
 		// Set flags
 		if (tdef.flags & Flags::WorldPanning)
-			tex->world_panning_ = true;
+			tex->setFlag(CTexture::Flag::WorldPanning, true);
 
 		// Read patches
 		int16_t n_patches = 0;
@@ -588,7 +609,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 			txdef.patchcount   = tex->nPatches();
 
 			// Check for WorldPanning flag
-			if (tex->world_panning_)
+			if (tex->worldPanning())
 				txdef.flags |= Flags::WorldPanning;
 
 			// Write texture definition
@@ -630,7 +651,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 			txdef.patchcount = tex->nPatches();
 
 			// Check for WorldPanning flag
-			if (tex->world_panning_)
+			if (tex->worldPanning())
 				txdef.flags |= Flags::WorldPanning;
 
 			// Write texture definition
@@ -829,7 +850,7 @@ bool TextureXList::convertToTEXTURES()
 
 	// First texture is null texture
 	if (!textures_.empty())
-		textures_[0]->null_texture_ = true;
+		textures_[0]->setFlag(CTexture::Flag::NullTexture, true);
 
 	// Set new format
 	txformat_ = Format::Textures;
@@ -901,7 +922,7 @@ bool TextureXList::findErrors() const
 // -----------------------------------------------------------------------------
 // Find and remove duplicates that exist in another texture list
 // -----------------------------------------------------------------------------
-bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
+bool TextureXList::removeDupesFoundIn(const TextureXList& texture_list)
 {
 	vector<unsigned int> indices_to_remove;
 
@@ -933,9 +954,12 @@ bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
 		other_texture_copy.copyTexture(*other_texture, true);
 
 		// Force a null texture because that value doesn't transfer from TEXTUREX defs
-		if (a == 0 && other_texture_index == 0
-			&& (this_texture->name() == "AASHITTY" || this_texture->name() == "AASTINKY"
-				|| this_texture->name() == "BADPATCH" || this_texture->name() == "ABADONE"))
+		if (a == 0
+			&& other_texture_index == 0
+			&& (this_texture->name() == "AASHITTY"
+				|| this_texture->name() == "AASTINKY"
+				|| this_texture->name() == "BADPATCH"
+				|| this_texture->name() == "ABADONE"))
 		{
 			this_texture_copy.setNullTexture(true);
 			other_texture_copy.setNullTexture(true);
@@ -1008,8 +1032,14 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		}
 
 		// Check for any properties
-		if (texture->scaleX() != 1.0 || texture->scaleY() != 1.0 || texture->offsetX() != 0 || texture->offsetY() != 0
-			|| texture->worldPanning() || texture->isOptional() || texture->noDecals() || texture->nullTexture())
+		if (texture->scaleX() != 1.0
+			|| texture->scaleY() != 1.0
+			|| texture->offsetX() != 0
+			|| texture->offsetY() != 0
+			|| texture->worldPanning()
+			|| texture->isOptional()
+			|| texture->noDecals()
+			|| texture->nullTexture())
 		{
 			log::info("KEEP Texture: {}. It has some special properties set.", texture->name());
 			continue;
@@ -1092,8 +1122,13 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		}
 
 		// Check for any properties
-		if (patch->flipX() || patch->flipY() || patch->useOffsets() || patch->rotation() != 0 || patch->alpha() < 1.0f
-			|| !(strutil::equalCI(patch->style(), "Copy")) || patch->blendType() != CTPatchEx::BlendType::None)
+		if (patch->flipX()
+			|| patch->flipY()
+			|| patch->useOffsets()
+			|| patch->rotation() != 0
+			|| patch->alpha() < 1.0f
+			|| !(strutil::equalCI(patch->style(), "Copy"))
+			|| patch->blendType() != CTPatchEx::BlendType::None)
 		{
 			log::info("KEEP Texture: {}. Its single patch has some special properties set.", texture->name());
 			continue;

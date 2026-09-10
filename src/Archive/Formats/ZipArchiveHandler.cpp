@@ -293,12 +293,12 @@ bool ZipArchiveHandler::write(Archive& archive, string_view filename)
 		{
 			// Get a list of all entries in the old zip
 			c_entries.resize(inzip->GetTotalEntries(), nullptr);
-			for (unsigned a = 0; a < c_entries.size(); a++)
+			for (auto& c_entry : c_entries)
 			{
-				c_entries[a] = inzip->GetNextEntry();
+				c_entry = inzip->GetNextEntry();
 
 				// Stop if reading the zip failed
-				if (!c_entries[a])
+				if (!c_entry)
 					break;
 			}
 			inzip->Reset();
@@ -540,10 +540,11 @@ vector<MapDesc> ZipArchiveHandler::detectMaps(const Archive& archive)
 // Returns the first entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ZipArchiveHandler::findFirst(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
+	auto search_subdirs = options.search_subdirs;
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -559,13 +560,14 @@ ArchiveEntry* ZipArchiveHandler::findFirst(const Archive& archive, ArchiveSearch
 		if (!dir)
 			return nullptr;
 		else
-			options.search_subdirs = true; // Namespace search always includes namespace subdirs
+			search_subdirs = true; // Namespace search always includes namespace subdirs
 	}
 
 	// Do default search
 	auto opt            = options;
 	opt.dir             = dir;
 	opt.match_namespace = "";
+	opt.search_subdirs  = search_subdirs;
 	return ArchiveFormatHandler::findFirst(archive, opt);
 }
 
@@ -573,10 +575,11 @@ ArchiveEntry* ZipArchiveHandler::findFirst(const Archive& archive, ArchiveSearch
 // Returns the last entry matching the search criteria in [options], or null if
 // no matching entry was found
 // -----------------------------------------------------------------------------
-ArchiveEntry* ZipArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* ZipArchiveHandler::findLast(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
+	auto search_subdirs = options.search_subdirs;
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -592,23 +595,25 @@ ArchiveEntry* ZipArchiveHandler::findLast(const Archive& archive, ArchiveSearchO
 		if (!dir)
 			return nullptr;
 		else
-			options.search_subdirs = true; // Namespace search always includes namespace subdirs
+			search_subdirs = true; // Namespace search always includes namespace subdirs
 	}
 
 	// Do default search
 	auto opt            = options;
 	opt.dir             = dir;
 	opt.match_namespace = "";
+	opt.search_subdirs  = search_subdirs;
 	return ArchiveFormatHandler::findLast(archive, opt);
 }
 
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ZipArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> ZipArchiveHandler::findAll(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
 	auto dir = archive.rootDir().get();
+	auto search_subdirs = options.search_subdirs;
 
 	// Check for search directory (overrides namespace)
 	if (options.dir)
@@ -624,13 +629,14 @@ vector<ArchiveEntry*> ZipArchiveHandler::findAll(const Archive& archive, Archive
 		if (!dir)
 			return {};
 		else
-			options.search_subdirs = true; // Namespace search always includes namespace subdirs
+			search_subdirs = true; // Namespace search always includes namespace subdirs
 	}
 
 	// Do default search
 	auto opt            = options;
 	opt.dir             = dir;
 	opt.match_namespace = "";
+	opt.search_subdirs  = search_subdirs;
 	return ArchiveFormatHandler::findAll(archive, opt);
 }
 

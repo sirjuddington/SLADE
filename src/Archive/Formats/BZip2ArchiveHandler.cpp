@@ -151,10 +151,10 @@ bool BZip2ArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* en
 // Returns the entry if it matches the search criteria in [options],
 // or null otherwise
 // -----------------------------------------------------------------------------
-ArchiveEntry* BZip2ArchiveHandler::findFirst(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* BZip2ArchiveHandler::findFirst(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
-	strutil::upperIP(options.match_name);
+	auto match_name_upper = strutil::upper(options.match_name);
 	auto entry = archive.entryAt(0);
 	if (entry == nullptr)
 		return entry;
@@ -176,9 +176,9 @@ ArchiveEntry* BZip2ArchiveHandler::findFirst(const Archive& archive, ArchiveSear
 	}
 
 	// Check name
-	if (!options.match_name.empty())
+	if (!match_name_upper.empty())
 	{
-		if (!strutil::matches(entry->upperName(), options.match_name))
+		if (!strutil::matches(entry->upperName(), match_name_upper))
 		{
 			return nullptr;
 		}
@@ -191,7 +191,7 @@ ArchiveEntry* BZip2ArchiveHandler::findFirst(const Archive& archive, ArchiveSear
 // -----------------------------------------------------------------------------
 // Same as findFirst since there's just one entry
 // -----------------------------------------------------------------------------
-ArchiveEntry* BZip2ArchiveHandler::findLast(const Archive& archive, ArchiveSearchOptions& options)
+ArchiveEntry* BZip2ArchiveHandler::findLast(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	return findFirst(archive, options);
 }
@@ -199,7 +199,7 @@ ArchiveEntry* BZip2ArchiveHandler::findLast(const Archive& archive, ArchiveSearc
 // -----------------------------------------------------------------------------
 // Returns all entries matching the search criteria in [options]
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> BZip2ArchiveHandler::findAll(const Archive& archive, ArchiveSearchOptions& options)
+vector<ArchiveEntry*> BZip2ArchiveHandler::findAll(const Archive& archive, const ArchiveSearchOptions& options)
 {
 	// Init search variables
 	vector<ArchiveEntry*> ret;

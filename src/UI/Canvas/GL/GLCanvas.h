@@ -36,11 +36,7 @@ public:
 
 	void         setView(const gl::View& view) { view_ = view; }
 	virtual void setPalette(const Palette* pal);
-	void         setBackground(BGStyle style, ColRGBA colour)
-	{
-		bg_colour_ = colour;
-		bg_style_  = style;
-	}
+	void         setBackground(BGStyle style, const ColRGBA& colour = {});
 
 	void setupMousewheelZoom();
 	void setupMousePanning();
