@@ -181,6 +181,8 @@ bool TexturePatchListChangeUS::swapLists()
 
 	if (tex->replacePatches(patches_))
 	{
+		editor_->signals().current_texture_modified(true, true);
+
 		if (editor_->hasPatchTable())
 			editor_->patchTable()->updatePatchUsage(tex);
 
