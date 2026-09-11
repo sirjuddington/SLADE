@@ -329,6 +329,8 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	btn_auto_offset_->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnAutoOffset, this);
 	choice_offset_type_->Bind(wxEVT_CHOICE, &TextureEditorPanel::onChoiceOffsetTypeSelected, this);
 	tex_browser_canvas_->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexBrowserDClick, this);
+	tex_browser_canvas_->Bind(
+		wxEVT_BROWSERCANVAS_SELECTION_CHANGED, &TextureEditorPanel::onTexBrowserSelectionChanged, this);
 	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
 
 	// Enable/disable reset view button when view changes/resets
@@ -855,6 +857,29 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 	Refresh();
 	tex_canvas_->window()->Refresh();
 	tex_browser_canvas_->Refresh();
+	updateStatusText(ctex);
+}
+
+// -----------------------------------------------------------------------------
+// Updates the main window status bar text to show [ctex]'s info
+// (or clears it if [ctex] is null)
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::updateStatusText(const CTexture* ctex)
+{
+	if (!ctex)
+	{
+		maineditor::setStatusText("");
+		return;
+	}
+
+	string status_primary = fmt::format("{}: {}, {}x{}", ctex->index(), ctex->name(), ctex->width(), ctex->height());
+
+	auto scale_factor = ctex->scaleFactor();
+	if (scale_factor.x != 1.0 || scale_factor.y != 1.0)
+		status_primary += fmt::format(
+			" (scaled {}x{})", ctex->width() * scale_factor.x, ctex->height() * scale_factor.y);
+
+	maineditor::setStatusText(status_primary);
 }
 
 // -----------------------------------------------------------------------------
@@ -1516,6 +1541,19 @@ void TextureEditorPanel::onTexBrowserDClick(wxMouseEvent& e)
 
 	wxDataViewEvent de(wxEVT_DATAVIEW_SELECTION_CHANGED, textures_tree_view_, wxDataViewItem(ctex));
 	textures_tree_view_->ProcessWindowEvent(de);
+}
+
+// -----------------------------------------------------------------------------
+// Called when the texture list browser selection changes
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTexBrowserSelectionChanged(wxEvent& e)
+{
+	// Get the selected texture (if any)
+	CTexture* ctex = nullptr;
+	if (auto item = dynamic_cast<CTextureBrowserItem*>(tex_browser_canvas_->selectedItem()))
+		ctex = item->texture();
+
+	updateStatusText(ctex);
 }
 
 // -----------------------------------------------------------------------------

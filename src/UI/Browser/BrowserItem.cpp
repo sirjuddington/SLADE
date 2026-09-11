@@ -114,7 +114,7 @@ void BrowserItem::draw(int size, gl::draw2d::Context& dc, NameType nametype, Ite
 	if (viewtype == ItemView::Normal)
 	{
 		dc.text_alignment = gl::draw2d::Align::Center;
-		dc.drawText(draw_name, { sizef * 0.5f, sizef + 4.0f });
+		dc.drawText(draw_name, { sizef * 0.5f, sizef });
 	}
 	else if (viewtype == ItemView::Tiles)
 	{

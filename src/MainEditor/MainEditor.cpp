@@ -161,6 +161,15 @@ void maineditor::setGlobalPaletteFromArchive(Archive* archive)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the status text in the main window's status bar
+// -----------------------------------------------------------------------------
+void maineditor::setStatusText(string_view primary, string_view secondary)
+{
+	main_window->SetStatusText(wxString::FromUTF8(primary.data(), primary.size()), 1);
+	main_window->SetStatusText(wxString::FromUTF8(secondary.data(), secondary.size()), 2);
+}
+
+// -----------------------------------------------------------------------------
 // Returns the currently selected palette
 // -----------------------------------------------------------------------------
 Palette* maineditor::currentPalette(ArchiveEntry* entry)

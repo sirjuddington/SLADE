@@ -96,6 +96,7 @@ private:
 	wxPanel* createOffsetsPanel(wxWindow* parent);
 
 	void updateUI(bool texture_changed = false);
+	void updateStatusText(const CTexture* ctex);
 	void populatePatchesList() const;
 
 	void   initPatchBrowser();
@@ -137,5 +138,6 @@ private:
 	void onBtnAutoOffset(wxCommandEvent& e);
 	void onChoiceOffsetTypeSelected(wxCommandEvent& e);
 	void onTexBrowserDClick(wxMouseEvent& e);
+	void onTexBrowserSelectionChanged(wxEvent& e);
 };
 } // namespace slade::texeditor

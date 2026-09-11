@@ -39,6 +39,8 @@ namespace maineditor
 	bool saveArchiveAs(Archive* archive);
 
 	void setGlobalPaletteFromArchive(Archive* archive);
+
+	void setStatusText(string_view primary, string_view secondary = {});
 } // namespace maineditor
 } // namespace slade
 
