@@ -174,10 +174,10 @@ void TextureTreeModel::GetValue(wxVariant& variant, const wxDataViewItem& item, 
 				icon = "tlist_sprite";
 			else if (strutil::equalCI(tex->type(), "graphic"))
 				icon = "tlist_graphic";
-			// else if (strutil::equalCI(tex->type(), "walltexture"))
-			// 	icon = "tlist_walltexture";
-			// else if (strutil::equalCI(tex->type(), "flat"))
-			// 	icon = "tlist_flat";
+			else if (strutil::equalCI(tex->type(), "walltexture"))
+				icon = "tlist_walltexture";
+			else if (strutil::equalCI(tex->type(), "flat"))
+				icon = "tlist_flat";
 		}
 		else
 			icon = "tlist_folder";

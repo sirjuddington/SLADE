@@ -531,7 +531,8 @@
       "svg_dark": "icons/general/dark/tex_show_outside.svg"
     },
     "texeditor": {
-      "svg": "icons/general/texeditor.svg"
+      "svg_light": "icons/general/texeditor.svg",
+      "svg_dark": "icons/general/dark/texeditor.svg"
     },
     "thing_box": {
       "svg": "icons/general/thing_box.svg"
@@ -553,6 +554,10 @@
       "svg_light": "icons/general/tint.svg",
       "svg_dark": "icons/general/dark/tint.svg"
     },
+    "tlist_flat": {
+      "svg_light": "icons/general/tlist_flat.svg",
+      "svg_dark": "icons/general/dark/tlist_flat.svg"
+    },
     "tlist_folder": {
       "svg_light": "icons/general/tlist_folder.svg",
       "svg_dark": "icons/general/dark/tlist_folder.svg"
@@ -568,6 +573,10 @@
     "tlist_texture": {
       "svg_light": "icons/general/tlist_texture.svg",
       "svg_dark": "icons/general/dark/tlist_texture.svg"
+    },
+    "tlist_walltexture": {
+      "svg_light": "icons/general/tlist_walltexture.svg",
+      "svg_dark": "icons/general/dark/tlist_walltexture.svg"
     },
     "tool_text": {
       "svg_light": "icons/general/tool_text.svg",
