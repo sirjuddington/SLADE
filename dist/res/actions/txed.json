@@ -166,15 +166,22 @@
   "txed_arc": {
     "text": "Aspect Ratio Correction",
     "icon": "aspectratio",
-    "help_text": "Toggle aspect ratio correction",
+    "help_text": "Apply aspect ratio correction",
     "type": "check",
     "linked_cvar": "tx_arc"
   },
   "txed_show_outside": {
     "text": "Show Outside",
     "icon": "tex_show_outside",
-    "help_text": "Toggle visibility of patches that are outside the texture",
+    "help_text": "Show patches that are outside the texture",
     "type": "check",
     "linked_cvar": "tx_show_outside"
+  },
+  "txed_patch_hover_info": {
+    "text": "Patch Hover Info",
+    "icon": "info",
+    "help_text": "Show patch info text on hover",
+    "type": "check",
+    "linked_cvar": "tx_hover_info"
   }
 }

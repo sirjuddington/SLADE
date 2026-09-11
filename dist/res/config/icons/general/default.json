@@ -249,6 +249,10 @@
     "importfiles": {
       "svg": "icons/general/importfiles.svg"
     },
+    "info": {
+      "svg_light": "icons/general/info.svg",
+      "svg_dark": "icons/general/dark/info.svg"
+    },
     "keyboard": {
       "svg_light": "icons/general/keyboard.svg",
       "svg_dark": "icons/general/dark/keyboard.svg"

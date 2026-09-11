@@ -55,6 +55,7 @@ using namespace texeditor;
 // -----------------------------------------------------------------------------
 wxDEFINE_EVENT(EVT_DRAG_END, wxCommandEvent);
 CVAR(Bool, tx_arc, false, CVar::Flag::Save)
+CVAR(Bool, tx_hover_info, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -542,19 +543,22 @@ void CTextureCanvasBase::drawContent()
 		drawPatchOutline(patch_rects[hilight_patch_], { 255, 255, 255, 150 }, 1.5);
 
 		// Add info text
-		auto patch = texture_->patch(hilight_patch_);
-		auto image = patch_images_[hilight_patch_].get();
-		auto mid_x = patch_rects[hilight_patch_].tl.x + (patch_rects[hilight_patch_].width() * 0.5);
-		auto mid_y = patch_rects[hilight_patch_].tl.y + (patch_rects[hilight_patch_].height() * 0.5);
-		texts_.push_back(
-			{ .text      = patch->name(),
-			  .position  = { mid_x, mid_y },
-			  .alignment = gl::draw2d::Align::Center,
-			  .above     = true });
-		texts_.push_back(
-			{ .text      = fmt::format("{} x {}", image->width(), image->height()),
-			  .position  = { mid_x, mid_y },
-			  .alignment = gl::draw2d::Align::Center });
+		if (tx_hover_info)
+		{
+			auto patch = texture_->patch(hilight_patch_);
+			auto image = patch_images_[hilight_patch_].get();
+			auto mid_x = patch_rects[hilight_patch_].tl.x + (patch_rects[hilight_patch_].width() * 0.5);
+			auto mid_y = patch_rects[hilight_patch_].tl.y + (patch_rects[hilight_patch_].height() * 0.5);
+			texts_.push_back(
+				{ .text      = patch->name(),
+				  .position  = { mid_x, mid_y },
+				  .alignment = gl::draw2d::Align::Center,
+				  .above     = true });
+			texts_.push_back(
+				{ .text      = fmt::format("{} x {}", image->width(), image->height()),
+				  .position  = { mid_x, mid_y },
+				  .alignment = gl::draw2d::Align::Center });
+		}
 	}
 
 	// Draw any info texts

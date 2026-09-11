@@ -18,6 +18,7 @@
       "icon": "reset",
       "help_text": "Reset the view to the default position"
     },
+    { "type": "action", "id": "txed_patch_hover_info" },
     { "type": "action", "id": "txed_toggle_truecolour" },
     { "type": "action", "id": "txed_apply_scale" },
     { "type": "action", "id": "txed_arc" },
