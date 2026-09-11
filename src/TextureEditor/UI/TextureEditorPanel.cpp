@@ -931,7 +931,7 @@ void TextureEditorPanel::initPatchBrowser()
 
 	auto list = textures_tree_view_->textureListForItem(textures_tree_view_->lastSelectedItem());
 
-	if (list->format() == TextureXList::Format::Textures)
+	if (list->format() == TextureXFormat::Textures)
 	{
 		// TEXTURES, load patches from the archive and resources, and any
 		// texture lists in the archive
@@ -1167,7 +1167,7 @@ void TextureEditorPanel::newTextureFromFile()
 
 	// Go through file selection, import patches and create textures from each
 	for (const auto& file : fd_info.filenames)
-		if (auto name = editor_->importPatchFile(file, list->format() != TextureXList::Format::Textures); !name.empty())
+		if (auto name = editor_->importPatchFile(file, list->format() != TextureXFormat::Textures); !name.empty())
 			editor_->newTexture(list, name, index < 0 ? index : index++, 0, 0, name);
 
 	editor_->undoManager()->endRecord(true);

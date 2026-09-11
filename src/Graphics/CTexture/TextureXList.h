@@ -1,5 +1,7 @@
 #pragma once
 
+#include "TextureXFormat.h"
+
 namespace slade
 {
 class CTexture;
@@ -16,35 +18,25 @@ public:
 		uint16_t patch;
 	};
 
-	// Enum for different texturex formats
-	enum class Format
-	{
-		Normal,
-		Strife11,
-		Nameless,
-		Textures,
-		Jaguar,
-	};
-
 	enum Flags
 	{
 		WorldPanning = 0x8000
 	};
 
 	TextureXList();
-	TextureXList(Format format) : txformat_{ format } {}
+	TextureXList(TextureXFormat format) : txformat_{ format } {}
 	~TextureXList();
 
 	const vector<unique_ptr<CTexture>>& textures() const { return textures_; }
 	uint32_t                            size() const { return textures_.size(); }
 
-	CTexture* texture(size_t index) const;
-	CTexture* texture(string_view name) const;
-	Format    format() const { return txformat_; }
-	string    textureXFormatString() const;
-	int       textureIndex(string_view name) const;
+	CTexture*      texture(size_t index) const;
+	CTexture*      texture(string_view name) const;
+	TextureXFormat format() const { return txformat_; }
+	string         textureXFormatString() const;
+	int            textureIndex(string_view name) const;
 
-	void setFormat(Format format) { txformat_ = format; }
+	void setFormat(TextureXFormat format) { txformat_ = format; }
 
 	void                 addTexture(unique_ptr<CTexture> tex, int position = -1);
 	unique_ptr<CTexture> removeTexture(unsigned index);
@@ -68,7 +60,7 @@ public:
 
 private:
 	vector<unique_ptr<CTexture>> textures_;
-	Format                       txformat_ = Format::Normal;
+	TextureXFormat               txformat_ = TextureXFormat::Normal;
 	unique_ptr<CTexture>         tex_invalid_;
 };
 } // namespace slade

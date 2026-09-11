@@ -32,8 +32,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextureEditor.h"
+#include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "General/UndoRedo.h"
@@ -43,6 +45,7 @@
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
+#include "UI/Dialogs/CreateTextureXDialog.h"
 #include "UndoSteps.h"
 #include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
@@ -151,7 +154,7 @@ bool TextureEditor::saveTextureList(unsigned index) const
 	// Write list to entry, in the correct format
 	entry->unlock(); // Have to unlock the entry first
 	bool ok = false;
-	if (list->format() == TextureXList::Format::Textures)
+	if (list->format() == TextureXFormat::Textures)
 		ok = list->writeTEXTURESData(entry);
 	else
 		ok = list->writeTEXTUREXData(entry, *patch_table_);
@@ -388,7 +391,7 @@ void TextureEditor::newTexture(
 {
 	// Process name
 	string tex_name{ name };
-	if (list->format() != TextureXList::Format::Textures)
+	if (list->format() != TextureXFormat::Textures)
 	{
 		strutil::upperIP(tex_name);
 		strutil::truncateIP(tex_name, 8);
@@ -399,7 +402,7 @@ void TextureEditor::newTexture(
 	tex->setState(CTexture::State::New);
 
 	// Setup texture scale
-	if (list->format() == TextureXList::Format::Textures)
+	if (list->format() == TextureXFormat::Textures)
 	{
 		tex->setScale({ 1., 1. });
 		tex->setExtended(true);
@@ -1360,6 +1363,204 @@ void TextureEditor::replacePatchInTable(unsigned index, string_view newname) con
 	undo_manager_->endRecord(true);
 
 	patch_table_modified_ = true;
+}
+
+// -----------------------------------------------------------------------------
+// Static function to check if an [archive] has sufficient texture related
+// entries, and if not, prompts the user to either create or import them.
+// Returns true if the entries exist (or were created), false otherwise
+// -----------------------------------------------------------------------------
+bool TextureEditor::setupTextureEntries(shared_ptr<Archive> archive, wxWindow* parent)
+{
+	using Format = TextureXFormat;
+
+	// Check any archive was given
+	if (!archive)
+		return false;
+
+	// Search archive for any ZDoom TEXTURES entries
+	ArchiveSearchOptions options;
+	options.match_type = EntryType::fromId("zdtextures");
+	auto entry_tx      = archive->findFirst(options); // Find any TEXTURES entry
+
+	// If it's found, we're done
+	if (entry_tx)
+		return true;
+
+
+	// Search archive for any texture-related entries
+	options.match_type = EntryType::fromId("texturex");
+	entry_tx           = archive->findFirst(options); // Find any TEXTUREx entry
+	options.match_type = EntryType::fromId("pnames");
+	auto entry_pnames  = archive->findFirst(options); // Find any PNAMES entry
+
+	// If both exist, we're done
+	if (entry_tx && entry_pnames)
+		return true;
+
+	// Todo: accept entry_tx without pnames if the textures are in Jaguar mode
+
+	// If no TEXTUREx entry exists
+	if (!entry_tx)
+	{
+		// No TEXTUREx entries found, so ask if the user wishes to create one
+		wxMessageDialog dlg(
+			parent,
+			wxS("The archive does not contain any texture definitions (TEXTURE1/2 or TEXTURES). ")
+			"Do you wish to create or import a texture definition list?",
+			wxS("No Texture Definitions Found"),
+			wxYES_NO);
+
+		if (dlg.ShowModal() == wxID_YES)
+		{
+			CreateTextureXDialog ctxd(parent);
+
+			while (true)
+			{
+				// Check if cancelled
+				if (ctxd.ShowModal() == wxID_CANCEL)
+					return false;
+
+				if (ctxd.createNewSelected())
+				{
+					// User selected to create a new TEXTUREx list
+					ArchiveEntry* texturex = nullptr;
+
+					// Doom or Strife TEXTUREx
+					if (ctxd.getSelectedFormat() == Format::Normal || ctxd.getSelectedFormat() == Format::Strife11)
+					{
+						// Create texture list
+						TextureXList txlist;
+						txlist.setFormat(ctxd.getSelectedFormat());
+
+						// Create patch table
+						PatchTable ptt;
+
+						// Create dummy patch
+						auto dpatch = app::archiveManager().programResourceArchive()->entryAtPath("s3dummy.lmp");
+						archive->addEntry(std::make_shared<ArchiveEntry>(*dpatch), "patches");
+						ptt.addPatch("S3DUMMY");
+
+						// Create dummy texture
+						auto dummytex = std::make_unique<CTexture>();
+						dummytex->setName("S3DUMMY");
+						dummytex->addPatch("S3DUMMY", 0, 0);
+						dummytex->setWidth(128);
+						dummytex->setHeight(128);
+						dummytex->setScale({ 0., 0. });
+
+						// Add dummy texture to list
+						// (this serves two purposes - supplies the special 'invalid' texture by default,
+						//   and allows the texturex format to be detected)
+						txlist.addTexture(std::move(dummytex));
+
+						// Add empty PNAMES entry to archive
+						entry_pnames = archive->addNewEntry("PNAMES").get();
+						ptt.writePNAMES(entry_pnames);
+						entry_pnames->setType(EntryType::fromId("pnames"));
+						entry_pnames->setExtensionByType();
+
+						// Add empty TEXTURE1 entry to archive
+						texturex = archive->addNewEntry("TEXTURE1").get();
+						txlist.writeTEXTUREXData(texturex, ptt);
+						texturex->setType(EntryType::fromId("texturex"));
+						texturex->setExtensionByType();
+					}
+					else if (ctxd.getSelectedFormat() == Format::Textures)
+					{
+						// Create texture list
+						TextureXList txlist;
+						txlist.setFormat(Format::Textures);
+
+						// Add empty TEXTURES entry to archive
+						texturex = archive->addNewEntry("TEXTURES").get();
+						texturex->setType(EntryType::fromId("zdtextures"));
+						texturex->setExtensionByType();
+
+						return false;
+					}
+
+					if (!texturex)
+						return false;
+				}
+				else
+				{
+					// User selected to import texture definitions from the base resource archive
+					auto bra = app::archiveManager().baseResourceArchive();
+
+					if (!bra)
+					{
+						wxMessageBox(
+							wxS("No Base Resource Archive is opened, please select/open one"),
+							wxS("Error"),
+							wxICON_ERROR);
+						continue;
+					}
+
+					// Find all relevant entries in the base resource archive
+					ArchiveSearchOptions opt;
+					opt.match_type     = EntryType::fromId("texturex");
+					auto import_tx     = bra->findAll(opt); // Find all TEXTUREx entries
+					opt.match_type     = EntryType::fromId("pnames");
+					auto import_pnames = bra->findLast(opt); // Find last PNAMES entry
+
+					// Check enough entries exist
+					if (import_tx.empty() || !import_pnames)
+					{
+						wxMessageBox(
+							wxS("The selected Base Resource Archive does not contain ")
+							"sufficient texture definition entries",
+							wxS("Error"),
+							wxICON_ERROR);
+						continue;
+					}
+
+					// Copy TEXTUREx entries over to current archive
+					for (auto& entry : import_tx)
+					{
+						auto texturex = archive->addEntry(std::make_shared<ArchiveEntry>(*entry), "global");
+						texturex->setType(EntryType::fromId("texturex"));
+						texturex->setExtensionByType();
+					}
+
+					// Copy PNAMES entry over to current archive
+					entry_pnames = archive->addEntry(std::make_shared<ArchiveEntry>(*import_pnames), "global").get();
+					entry_pnames->setType(EntryType::fromId("pnames"));
+					entry_pnames->setExtensionByType();
+				}
+
+				break;
+			}
+
+			return true;
+		}
+
+		// 'No' clicked
+		return false;
+	}
+	else // TEXTUREx entry exists
+	{
+		// TODO: Probably a better idea here to get the user to select an archive to import the patch table from
+		// If no PNAMES entry was found, search resource archives
+		if (!entry_pnames)
+		{
+			ArchiveSearchOptions opt;
+			opt.match_type = EntryType::fromId("pnames");
+			entry_pnames   = app::archiveManager().findResourceEntry(opt, archive.get());
+		}
+
+		// If no PNAMES entry is found at all, show an error and abort
+		// TODO: ask user to select appropriate base resource archive
+		if (!entry_pnames)
+		{
+			wxMessageBox(wxS("PNAMES entry not found!"), wxS("Error"), wxICON_ERROR);
+			return false;
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

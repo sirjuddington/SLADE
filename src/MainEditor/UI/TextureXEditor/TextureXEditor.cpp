@@ -114,16 +114,16 @@ public:
 
 	~CreateTextureXDialog() override = default;
 
-	TextureXList::Format getSelectedFormat() const
+	TextureXFormat getSelectedFormat() const
 	{
 		if (rb_format_doom_->GetValue())
-			return TextureXList::Format::Normal;
+			return TextureXFormat::Normal;
 		else if (rb_format_strife_->GetValue())
-			return TextureXList::Format::Strife11;
+			return TextureXFormat::Strife11;
 		else if (rb_format_textures_->GetValue())
-			return TextureXList::Format::Textures;
+			return TextureXFormat::Textures;
 		else
-			return TextureXList::Format::Normal;
+			return TextureXFormat::Normal;
 	}
 
 	bool createNewSelected() const { return rb_new_->GetValue(); }
@@ -936,7 +936,7 @@ void TextureXEditor::onShow(wxShowEvent& e)
 // -----------------------------------------------------------------------------
 bool TextureXEditor::setupTextureEntries(Archive* archive)
 {
-	using Format = TextureXList::Format;
+	using Format = TextureXFormat;
 
 	// Check any archive was given
 	if (!archive)

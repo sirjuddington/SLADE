@@ -296,6 +296,8 @@ void TextureXList::removePatch(string_view patch) const
 // -----------------------------------------------------------------------------
 bool TextureXList::readTEXTUREXData(const ArchiveEntry* texturex, const PatchTable& patch_table, bool add)
 {
+	using Format = TextureXFormat;
+
 	// Check entries were actually given
 	if (!texturex)
 		return false;
@@ -529,6 +531,8 @@ bool TextureXList::readTEXTUREXData(const ArchiveEntry* texturex, const PatchTab
 // -----------------------------------------------------------------------------
 bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table) const
 {
+	using Format = TextureXFormat;
+
 	// Check entry was given
 	if (!texturex)
 		return false;
@@ -717,6 +721,8 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 // -----------------------------------------------------------------------------
 bool TextureXList::readTEXTURESData(const ArchiveEntry* textures)
 {
+	using Format = TextureXFormat;
+
 	// Check for empty entry
 	if (!textures)
 	{
@@ -799,7 +805,7 @@ bool TextureXList::readTEXTURESData(const ArchiveEntry* textures)
 bool TextureXList::writeTEXTURESData(ArchiveEntry* textures) const
 {
 	// Check format
-	if (txformat_ != Format::Textures)
+	if (txformat_ != TextureXFormat::Textures)
 		return false;
 
 	log::info("Writing ZDoom text format TEXTURES entry");
@@ -824,11 +830,11 @@ string TextureXList::textureXFormatString() const
 {
 	switch (txformat_)
 	{
-	case Format::Normal:   return "Doom TEXTUREx";
-	case Format::Strife11: return "Strife TEXTUREx";
-	case Format::Nameless: return "Nameless (Doom Alpha)";
-	case Format::Textures: return "ZDoom TEXTURES";
-	default:               return "Unknown";
+	case TextureXFormat::Normal:   return "Doom TEXTUREx";
+	case TextureXFormat::Strife11: return "Strife TEXTUREx";
+	case TextureXFormat::Nameless: return "Nameless (Doom Alpha)";
+	case TextureXFormat::Textures: return "ZDoom TEXTURES";
+	default:                       return "Unknown";
 	}
 }
 
@@ -838,7 +844,7 @@ string TextureXList::textureXFormatString() const
 bool TextureXList::convertToTEXTURES()
 {
 	// Check format is appropriate
-	if (txformat_ == Format::Textures)
+	if (txformat_ == TextureXFormat::Textures)
 	{
 		global::error = "Already TEXTURES format";
 		return false;
@@ -853,7 +859,7 @@ bool TextureXList::convertToTEXTURES()
 		textures_[0]->setFlag(CTexture::Flag::NullTexture, true);
 
 	// Set new format
-	txformat_ = Format::Textures;
+	txformat_ = TextureXFormat::Textures;
 
 	return true;
 }
@@ -999,7 +1005,7 @@ bool TextureXList::removeDupesFoundIn(const TextureXList& texture_list)
 bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 {
 	// Check format is appropriate
-	if (txformat_ != Format::Textures)
+	if (txformat_ != TextureXFormat::Textures)
 	{
 		global::error = "Not TEXTURES format";
 		return false;

@@ -126,6 +126,8 @@ public:
 	};
 	Signals& signals() const { return signals_; }
 
+	static bool setupTextureEntries(shared_ptr<Archive> archive, wxWindow* parent = nullptr);
+
 private:
 	shared_ptr<Archive>     archive_;
 	mutable Signals         signals_;

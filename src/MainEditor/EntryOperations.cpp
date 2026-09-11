@@ -955,7 +955,7 @@ bool entryoperations::createTexture(const vector<ArchiveEntry*>& entries)
 		ntex->setHeight(image.height());
 
 		// Setup texture scale
-		if (tx.format() == TextureXList::Format::Textures)
+		if (tx.format() == TextureXFormat::Textures)
 			ntex->setScale({ 1., 1. });
 		else
 			ntex->setScale({ 0., 0. });
@@ -1752,7 +1752,8 @@ bool entryoperations::optimizePNG(ArchiveEntry* entry)
 	string pngpathc = path_pngcrush;
 	string pngpatho = path_pngout;
 	string pngpathd = path_deflopt;
-	if ((pngpathc.empty() || !fileutil::fileExists(pngpathc)) && (pngpatho.empty() || !fileutil::fileExists(pngpatho))
+	if ((pngpathc.empty() || !fileutil::fileExists(pngpathc))
+		&& (pngpatho.empty() || !fileutil::fileExists(pngpatho))
 		&& (pngpathd.empty() || !fileutil::fileExists(pngpathd)))
 	{
 		log::error(1, "PNG tool paths not defined or invalid, no optimization done.");
@@ -2093,7 +2094,8 @@ bool entryoperations::optimizePNGEntries(const vector<ArchiveEntry*>& entries, U
 	string pngpathc = path_pngcrush;
 	string pngpatho = path_pngout;
 	string pngpathd = path_deflopt;
-	if ((pngpathc.empty() || !fileutil::fileExists(pngpathc)) && (pngpatho.empty() || !fileutil::fileExists(pngpatho))
+	if ((pngpathc.empty() || !fileutil::fileExists(pngpathc))
+		&& (pngpatho.empty() || !fileutil::fileExists(pngpatho))
 		&& (pngpathd.empty() || !fileutil::fileExists(pngpathd)))
 	{
 		wxMessageBox(

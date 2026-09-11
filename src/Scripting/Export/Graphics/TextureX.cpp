@@ -45,7 +45,7 @@ using namespace slade;
 // Types
 //
 // -----------------------------------------------------------------------------
-template<> struct luabridge::Stack<TextureXList::Format> : Enum<TextureXList::Format>
+template<> struct luabridge::Stack<TextureXFormat> : Enum<TextureXFormat>
 {
 };
 
@@ -115,15 +115,15 @@ static CTexture* addTexture(TextureXList& self, string_view name, bool extended,
 void registerTextureXListType(lua_State* lua)
 {
 	auto lua_txlist = luabridge::getGlobalNamespace(lua).beginClass<TextureXList>("TextureXList");
-	lua_txlist.addConstructor<void(), void(TextureXList::Format)>();
+	lua_txlist.addConstructor<void(), void(TextureXFormat)>();
 
 	// Constants
 	// -------------------------------------------------------------------------
-	lua_txlist.addStaticProperty("FORMAT_NORMAL", +[] { return TextureXList::Format::Normal; });
-	lua_txlist.addStaticProperty("FORMAT_STRIFE11", +[] { return TextureXList::Format::Strife11; });
-	lua_txlist.addStaticProperty("FORMAT_NAMELESS", +[] { return TextureXList::Format::Nameless; });
-	lua_txlist.addStaticProperty("FORMAT_TEXTURES", +[] { return TextureXList::Format::Textures; });
-	lua_txlist.addStaticProperty("FORMAT_JAGUAR", +[] { return TextureXList::Format::Jaguar; });
+	lua_txlist.addStaticProperty("FORMAT_NORMAL", +[] { return TextureXFormat::Normal; });
+	lua_txlist.addStaticProperty("FORMAT_STRIFE11", +[] { return TextureXFormat::Strife11; });
+	lua_txlist.addStaticProperty("FORMAT_NAMELESS", +[] { return TextureXFormat::Nameless; });
+	lua_txlist.addStaticProperty("FORMAT_TEXTURES", +[] { return TextureXFormat::Textures; });
+	lua_txlist.addStaticProperty("FORMAT_JAGUAR", +[] { return TextureXFormat::Jaguar; });
 
 	// Properties
 	// -------------------------------------------------------------------------

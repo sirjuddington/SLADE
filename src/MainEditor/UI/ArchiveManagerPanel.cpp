@@ -50,6 +50,7 @@
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
+#include "TextureEditor/TextureEditor.h"
 #include "TextureEditor/UI/TextureEditorPanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
@@ -950,6 +951,10 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 				return;
 			}
 		}
+
+		// Before opening the texture editor, ensure we have valid TEXTUREx/PNAMES entries in the archive
+		if (!texeditor::TextureEditor::setupTextureEntries(archive, maineditor::windowWx()))
+			return;
 
 		// If tab isn't already open, open a new one
 		maineditor::window()->Freeze();

@@ -80,7 +80,7 @@ namespace
 {
 bool txListIsTextures(const TextureXList& tx)
 {
-	return tx.format() == TextureXList::Format::Textures;
+	return tx.format() == TextureXFormat::Textures;
 }
 } // namespace
 
@@ -718,7 +718,7 @@ bool TextureXPanel::openTEXTUREX(ArchiveEntry* entry)
 void TextureXPanel::setupUI()
 {
 	// TEXTURES format
-	if (texturex_->format() == TextureXList::Format::Textures)
+	if (texturex_->format() == TextureXFormat::Textures)
 	{
 		// Create extended texture editor
 		texture_editor_ = new ZTextureEditorPanel(this, tx_editor_);
