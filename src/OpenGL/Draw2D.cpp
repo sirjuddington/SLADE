@@ -79,12 +79,12 @@ struct FontDef
 	float     yoff     = 0.08f;
 };
 constexpr int   FONT_SIZE_BASE = 36;
-vector<FontDef> fonts          = { { "FiraSans-Regular", 0.018f, nullptr },          // Normal
-								   { "FiraSans-Bold", 0.018f, nullptr },             // Bold
-								   { "FiraSansCondensed-Regular", 0.018f, nullptr }, // Condensed
-								   { "FiraSansCondensed-Bold", 0.018f, nullptr },    // CondensedBold
-								   { "FiraMono-Medium", 0.02f, nullptr },            // Monospace
-								   { "FiraMono-Bold", 0.02f, nullptr } };            // MonospaceBold
+vector<FontDef> fonts          = { { "RedditSans-Regular", 0.018f, nullptr },          // Normal
+								   { "RedditSans-Bold", 0.018f, nullptr },             // Bold
+								   { "RedditSansCondensed-Regular", 0.018f, nullptr }, // Condensed
+								   { "RedditSansCondensed-Bold", 0.018f, nullptr },    // CondensedBold
+								   { "RedditMono-Regular", 0.02f, nullptr },           // Monospace
+								   { "RedditMono-Bold", 0.02f, nullptr } };            // MonospaceBold
 VertexBuffer2D  vb_text;
 bool            text_draw_init = false;
 glm::vec2       text_offset;
@@ -324,7 +324,7 @@ void draw2d::Context::drawLines(const vector<Rectf>& lines, bool gradient_to_out
 		line_buffer = std::make_unique<LineBuffer>();
 
 	// Build line buffer
-	glm::vec4 col = colour;
+	glm::vec4 col  = colour;
 	glm::vec4 col2 = gradient_to_outline_colour ? outline_colour : colour;
 	for (const auto& line : lines)
 	{
@@ -530,7 +530,9 @@ void draw2d::Context::drawHud() const
 	}
 
 	// Rebuild line buffer if hud drawing options changed
-	if (hud_wide != hud_wide_prev || hud_statusbar != hud_statusbar_prev || hud_center != hud_center_prev
+	if (hud_wide != hud_wide_prev
+		|| hud_statusbar != hud_statusbar_prev
+		|| hud_center != hud_center_prev
 		|| hud_bob != hud_bob_prev)
 	{
 		glm::vec4 col{ 0.0f, 0.0f, 0.0f, 1.0f };
