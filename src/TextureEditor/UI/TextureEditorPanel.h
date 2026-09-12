@@ -140,5 +140,6 @@ private:
 	void onChoiceOffsetTypeSelected(wxCommandEvent& e);
 	void onTexBrowserDClick(wxMouseEvent& e);
 	void onTexBrowserSelectionChanged(wxEvent& e);
+	void onPatchTableTextureDClick(wxCommandEvent& e);
 };
 } // namespace slade::texeditor

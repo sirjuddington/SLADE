@@ -259,6 +259,27 @@ bool TextureEditor::textureListModified(unsigned index) const
 }
 
 // -----------------------------------------------------------------------------
+// Finds a texture by [name] in any of the loaded texture lists (first match)
+// -----------------------------------------------------------------------------
+CTexture* TextureEditor::findTexture(string_view name) const
+{
+	// Find texture in any list
+	for (auto& tx : texturex_entries_)
+	{
+		if (auto list = tx.texturex.get())
+		{
+			for (unsigned i = 0; i < list->size(); ++i)
+			{
+				if (strutil::equalCI(list->texture(i)->name(), name))
+					return list->texture(i);
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+// -----------------------------------------------------------------------------
 // Sets [texture] as the currently open texture, backing it up for reverting
 // and clearing the current patch selection
 // -----------------------------------------------------------------------------

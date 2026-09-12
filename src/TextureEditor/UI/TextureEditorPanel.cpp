@@ -333,6 +333,9 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 		wxEVT_BROWSERCANVAS_SELECTION_CHANGED, &TextureEditorPanel::onTexBrowserSelectionChanged, this);
 	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
 
+	if (patch_table_panel_)
+		patch_table_panel_->Bind(wxEVT_LISTBOX_DCLICK, &TextureEditorPanel::onPatchTableTextureDClick, this);
+
 	// Enable/disable reset view button when view changes/resets
 	connections_ += tex_canvas_->signals().view_changed.connect([this]
 																{ toolbar_texture_->enableItem("reset_view", true); });
@@ -1560,41 +1563,6 @@ void TextureEditorPanel::onTextureSelectionChanged(wxDataViewEvent& e)
 }
 
 // -----------------------------------------------------------------------------
-// Called when a texture is double-clicked in the texture list browser
-// -----------------------------------------------------------------------------
-void TextureEditorPanel::onTexBrowserDClick(wxMouseEvent& e)
-{
-	auto item = dynamic_cast<CTextureBrowserItem*>(tex_browser_canvas_->selectedItem());
-	if (!item)
-		return;
-
-	auto ctex = item->texture();
-
-	// Focus the texture in the tree view and open it
-	// (triggers onTextureSelectionChanged, which swaps back to the texture canvas)
-	wxDataViewItemArray selection;
-	selection.Add(wxDataViewItem(ctex));
-	textures_tree_view_->SetSelections(selection);
-	textures_tree_view_->EnsureVisible(wxDataViewItem(ctex));
-
-	wxDataViewEvent de(wxEVT_DATAVIEW_SELECTION_CHANGED, textures_tree_view_, wxDataViewItem(ctex));
-	textures_tree_view_->ProcessWindowEvent(de);
-}
-
-// -----------------------------------------------------------------------------
-// Called when the texture list browser selection changes
-// -----------------------------------------------------------------------------
-void TextureEditorPanel::onTexBrowserSelectionChanged(wxEvent& e)
-{
-	// Get the selected texture (if any)
-	CTexture* ctex = nullptr;
-	if (auto item = dynamic_cast<CTextureBrowserItem*>(tex_browser_canvas_->selectedItem()))
-		ctex = item->texture();
-
-	updateStatusText(ctex);
-}
-
-// -----------------------------------------------------------------------------
 // Called when the patch list selection changes
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::onPatchSelectionChanged(wxDataViewEvent& e)
@@ -1975,4 +1943,57 @@ void TextureEditorPanel::onChoiceOffsetTypeSelected(wxCommandEvent& e)
 	}
 
 	updateUI();
+}
+
+// -----------------------------------------------------------------------------
+// Called when a texture is double-clicked in the texture list browser
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTexBrowserDClick(wxMouseEvent& e)
+{
+	auto item = dynamic_cast<CTextureBrowserItem*>(tex_browser_canvas_->selectedItem());
+	if (!item)
+		return;
+
+	auto ctex = item->texture();
+
+	// Focus the texture in the tree view and open it
+	// (triggers onTextureSelectionChanged, which swaps back to the texture canvas)
+	wxDataViewItemArray selection;
+	selection.Add(wxDataViewItem(ctex));
+	textures_tree_view_->SetSelections(selection);
+	textures_tree_view_->EnsureVisible(wxDataViewItem(ctex));
+
+	wxDataViewEvent de(wxEVT_DATAVIEW_SELECTION_CHANGED, textures_tree_view_, wxDataViewItem(ctex));
+	textures_tree_view_->ProcessWindowEvent(de);
+}
+
+// -----------------------------------------------------------------------------
+// Called when the texture list browser selection changes
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTexBrowserSelectionChanged(wxEvent& e)
+{
+	// Get the selected texture (if any)
+	CTexture* ctex = nullptr;
+	if (auto item = dynamic_cast<CTextureBrowserItem*>(tex_browser_canvas_->selectedItem()))
+		ctex = item->texture();
+
+	updateStatusText(ctex);
+}
+
+// -----------------------------------------------------------------------------
+// Called when a 'Used in' texture is double-clicked in the patch table panel
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onPatchTableTextureDClick(wxCommandEvent& e)
+{
+	if (auto ctex = editor_->findTexture(e.GetString().utf8_string()))
+	{
+		// Focus the texture in the tree view and open it
+		wxDataViewItemArray selection;
+		selection.Add(wxDataViewItem(ctex));
+		textures_tree_view_->SetSelections(selection);
+		textures_tree_view_->EnsureVisible(wxDataViewItem(ctex));
+
+		wxDataViewEvent de(wxEVT_DATAVIEW_SELECTION_CHANGED, textures_tree_view_, wxDataViewItem(ctex));
+		textures_tree_view_->ProcessWindowEvent(de);
+	}
 }

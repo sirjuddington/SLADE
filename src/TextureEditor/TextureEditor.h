@@ -34,6 +34,7 @@ public:
 	bool          textureListModified(unsigned index) const;
 
 	CTexture* currentTexture() const { return tex_current_; }
+	CTexture* findTexture(string_view name) const;
 	bool currentTextureModified() const { return tex_current_ && tex_current_->state() == CTexture::State::Modified; }
 	void openTexture(CTexture& texture);
 	void closeTexture();

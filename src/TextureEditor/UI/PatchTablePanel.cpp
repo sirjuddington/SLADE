@@ -84,44 +84,49 @@ public:
 //
 // -----------------------------------------------------------------------------
 
+
 // -----------------------------------------------------------------------------
 // PatchTablePanel class constructor
 // -----------------------------------------------------------------------------
 PatchTablePanel::PatchTablePanel(wxWindow* parent, TextureEditor& editor) : wxPanel(parent), editor_(&editor)
 {
 	auto lh    = ui::LayoutHelper(this);
-	auto sizer = new wxBoxSizer(wxHORIZONTAL);
+	auto sizer = new wxGridBagSizer(lh.padSmall(), lh.padSmall());
 	SetSizer(sizer);
 
 	// Toolbar
 	toolbar_ = new SAuiToolBar(this, true);
 	toolbar_->loadLayoutFromResource("texturex_patch_table");
-	sizer->Add(toolbar_, lh.sfWithSmallBorder(0, wxRIGHT).Expand());
-
-	auto vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(vbox, wxSizerFlags(1).Expand());
+	sizer->Add(toolbar_, { 0, 0 }, { 3, 1 });
 
 	// List
 	patch_list_ = new PatchTableList(this, editor_->patchTable());
 	patch_list_->EnableDragSource(wxDF_UNICODETEXT);
-	vbox->Add(patch_list_, wxSizerFlags(1).Expand());
+	sizer->Add(patch_list_, { 0, 1 }, { 1, 2 }, wxEXPAND);
+
+	// Info label
+	info_text_ = new wxStaticText(this, wxID_ANY, wxS("No patch selected"));
+	sizer->Add(info_text_, { 1, 1 }, { 1, 1 }, wxALIGN_BOTTOM | wxTOP, lh.padSmall());
 
 	// Patch preview
-	auto preview_height = FromDIP(144);
-	preview_            = new GfxCanvas(this);
+	preview_ = new GfxCanvas(this);
 	preview_->SetWindowStyleFlag(wxBORDER_SIMPLE);
-	preview_->SetInitialSize(wxSize(-1, preview_height));
-	preview_->SetMinSize(wxSize(-1, preview_height));
-	preview_->SetMaxSize(wxSize(-1, preview_height));
+	preview_->SetInitialSize(wxSize(-1, FromDIP(144)));
+	preview_->SetMinSize(wxSize(-1, FromDIP(144)));
+	preview_->SetMaxSize(wxSize(-1, FromDIP(144)));
 	preview_->setViewType(GfxView::Centered);
 	preview_->allowDrag(false);
 	preview_->allowScroll(false);
-	vbox->Add(preview_, lh.sfWithSmallBorder(0, wxTOP).Expand());
+	sizer->Add(preview_, { 2, 1 }, { 1, 1 }, wxEXPAND);
 
-	// Patch info
-	info_text_ = new wxTextCtrl(
-		this, wxID_ANY, wxS(""), wxDefaultPosition, wxSize(-1, FromDIP(80)), wxTE_MULTILINE | wxTE_READONLY);
-	vbox->Add(info_text_, lh.sfWithSmallBorder(0, wxTOP).Expand());
+	// "In Textures" List
+	sizer->Add(
+		new wxStaticText(this, wxID_ANY, wxS("Used in:")), { 1, 2 }, { 1, 1 }, wxALIGN_BOTTOM | wxTOP, lh.padSmall());
+	list_in_textures_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(100), -1));
+	sizer->Add(list_in_textures_, { 2, 2 }, { 1, 1 }, wxEXPAND);
+
+	sizer->AddGrowableCol(1);
+	sizer->AddGrowableRow(0);
 
 
 	// Bind Events
@@ -141,7 +146,7 @@ void PatchTablePanel::updatePatchTablePreview() const
 	if (index < 0)
 	{
 		preview_->image().clear();
-		info_text_->SetValue(wxString());
+		info_text_->SetLabel(wxS("No patch selected"));
 		preview_->window()->Refresh();
 		return;
 	}
@@ -156,45 +161,33 @@ void PatchTablePanel::updatePatchTablePreview() const
 	{
 		preview_->setPalette(maineditor::currentPalette());
 		preview_->zoomToFit();
-		info += fmt::format("{} ({} x {})\n", patch.name, preview_->image().width(), preview_->image().height());
+		info += fmt::format("{} ({} x {})", patch.name, preview_->image().width(), preview_->image().height());
 	}
 	else
 	{
 		preview_->image().clear();
-		info += fmt::format("{} (Unknown size)\n", patch.name);
+		info += fmt::format("{} (Unknown size)", patch.name);
 	}
 	preview_->resetViewOffsets();
 	preview_->window()->Refresh();
 
-	// List which textures use this patch
+	// Update info text
+	info_text_->SetLabel(wxString::FromUTF8(info));
+
+	// Update "Used in" list
+	list_in_textures_->Clear();
 	if (!patch.used_in.empty())
 	{
-		info += "Used in: ";
-		int    count = 0;
-		string previous;
-		for (const auto& tex_name : patch.used_in)
+		string last = patch.used_in[0];
+		for (auto i = 0; i < patch.used_in.size(); ++i)
 		{
-			// Same texture as previous use, just increment the count
-			if (strutil::equalCI(tex_name, previous))
-			{
-				++count;
+			if (i > 0 && strutil::equalCI(patch.used_in[i], last))
 				continue;
-			}
 
-			if (!previous.empty())
-				info += count > 0 ? fmt::format(" (x{}), ", count + 1) : ", ";
-
-			info += tex_name;
-			previous = tex_name;
-			count    = 0;
+			list_in_textures_->Append(wxString::FromUTF8(patch.used_in[i]));
+			last = patch.used_in[i];
 		}
-		if (count > 0)
-			info += fmt::format(" (x{})", count + 1);
 	}
-	else
-		info += "Not used in any textures";
-
-	info_text_->SetValue(wxString::FromUTF8(info));
 }
 
 // -----------------------------------------------------------------------------

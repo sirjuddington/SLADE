@@ -25,11 +25,12 @@ public:
 	const string& draggingPatch() const { return dragging_patch_; }
 
 private:
-	TextureEditor*  editor_     = nullptr;
-	PatchTableList* patch_list_ = nullptr;
-	SAuiToolBar*    toolbar_    = nullptr;
-	GfxCanvas*      preview_    = nullptr;
-	wxTextCtrl*     info_text_  = nullptr;
+	TextureEditor*  editor_           = nullptr;
+	PatchTableList* patch_list_       = nullptr;
+	SAuiToolBar*    toolbar_          = nullptr;
+	GfxCanvas*      preview_          = nullptr;
+	wxStaticText*   info_text_        = nullptr;
+	wxListBox*      list_in_textures_ = nullptr;
 	string          dragging_patch_;
 
 	void updatePatchTablePreview() const;
