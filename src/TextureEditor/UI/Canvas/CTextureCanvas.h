@@ -33,7 +33,7 @@ protected:
 	// CTextureCanvasBase drawing overrides
 	void initDrawing(const Rectd& tex_rect) override;
 	void drawOffsetLines() override;
-	void drawTexture(const Rectd& tex_rect) override;
+	void drawTexture(const Rectd& tex_rect, float alpha = 1.0f) override;
 	void drawTextureBorder(const Rectd& tex_rect) override;
 	void drawTextureGrid(const Rectd& tex_rect) override;
 	void drawPatch(const Rectd& patch_rect, int index, float alpha, bool highlight) override;
@@ -57,4 +57,4 @@ private:
 	// Events
 	void onPaint(wxPaintEvent& e);
 };
-} // namespace slade
+} // namespace slade::texeditor

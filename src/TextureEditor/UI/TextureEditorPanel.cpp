@@ -592,10 +592,19 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	toolbar_texture_->enableItem("reset_view", false);
 	sizer->Add(toolbar_texture_, lh.sfWithSmallBorder(0, wxBOTTOM).Expand());
 
-	// Canvas
+	// Canvas and left toolbar
 	tex_canvas_ = CTextureCanvasBase::createCanvas(panel, *editor_);
 	tex_canvas_->setPalette(maineditor::currentPalette()); // TODO: Update when main palette is changed
-	sizer->Add(tex_canvas_->window(), lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
+
+	toolbar_left_ = new SAuiToolBar(panel, true);
+	toolbar_left_->loadLayoutFromResource("texturex_left");
+	toolbar_left_->setItemChecked("tool_edit", true);
+	toolbar_left_->Show(false);
+
+	auto canvas_hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(canvas_hbox, lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
+	canvas_hbox->Add(toolbar_left_, lh.sfWithSmallBorder(0, wxRIGHT).Expand());
+	canvas_hbox->Add(tex_canvas_->window(), wxSizerFlags(1).Expand());
 
 	// Texture list browser (shown instead of the canvas when a texture list is selected)
 	auto browser_hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -821,6 +830,33 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 		}
 	}
 
+	// Update left toolbar visibility
+	bool show_left_toolbar = false;
+	if (ctex && !tex_list_browsing_)
+	{
+		CTextureView view_type = tex_canvas_->viewType();
+		if (choice_offset_type_->GetSelection() == 0)
+		{
+			view_type = tex_canvas_->autoDetectViewType();
+			tex_canvas_->setViewType(view_type);
+		}
+
+		if (view_type == CTextureView::Sprite || view_type == CTextureView::HUD)
+			show_left_toolbar = true;
+	}
+
+	if (toolbar_left_)
+	{
+		toolbar_left_->Show(show_left_toolbar);
+		if (!show_left_toolbar && tex_canvas_->mode() != CTextureCanvasBase::Mode::Edit)
+		{
+			tex_canvas_->setMode(CTextureCanvasBase::Mode::Edit);
+			toolbar_left_->setItemChecked("tool_edit", true);
+			toolbar_left_->setItemChecked("tool_drag", false);
+		}
+		toolbar_left_->GetParent()->Layout();
+	}
+
 	// Update texture list toolbar
 	if (texture_changed)
 	{
@@ -923,6 +959,8 @@ void TextureEditorPanel::populatePatchesList() const
 void TextureEditorPanel::showTextureBrowser(bool show) const
 {
 	tex_canvas_->window()->Show(!show);
+	if (toolbar_left_ && show)
+		toolbar_left_->Show(false);
 	tex_browser_canvas_->Show(show);
 	tex_browser_scrollbar_->Show(show);
 	toolbar_texture_->Show(!show);
@@ -1637,6 +1675,16 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 {
 	auto tex_current = editor_->currentTexture();
 
+	// If in Drag Offsets mode
+	if (tex_canvas_->mode() == CTextureCanvasBase::Mode::DragOffsets)
+	{
+		if (e.LeftDown() && tex_current)
+			tex_canvas_->onMouseEvent(e);
+
+		e.Skip();
+		return;
+	}
+
 	// Get mouse position relative to texture
 	Vec2i pos        = { tex_canvas_->window()->ToPhys(e.GetX()), tex_canvas_->window()->ToPhys(e.GetY()) };
 	auto  canvas_pos = tex_canvas_->view().canvasPos({ pos.x, pos.y });
@@ -1700,16 +1748,31 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::onTexCanvasDragEnd(wxCommandEvent& e)
 {
-	// If patch dragging ended (left button)
+	// If dragging ended (left button)
 	if (e.GetInt() == wxMOUSE_BTN_LEFT)
 	{
-		// Move selected patches by the drag amount
 		auto drag_offset = tex_canvas_->dragOffset(false);
 		if (drag_offset.x != 0 || drag_offset.y != 0)
 		{
-			editor_->movePatch(drag_offset);
-			pg_properties_->refreshPatchProperties();
-			tex_canvas_->redraw(true);
+			if (tex_canvas_->mode() == CTextureCanvasBase::Mode::Edit)
+			{
+				editor_->movePatch(drag_offset);
+				pg_properties_->refreshPatchProperties();
+				tex_canvas_->redraw(true);
+			}
+			else if (tex_canvas_->mode() == CTextureCanvasBase::Mode::DragOffsets)
+			{
+				if (auto ctex = editor_->currentTexture())
+				{
+					auto sf    = tex_canvas_->applyTexScale() ? ctex->scaleFactor() : Vec2d{ 1.0, 1.0 };
+					int  new_x = ctex->offsetX() - static_cast<int>(std::lround(drag_offset.x / sf.x));
+					int  new_y = ctex->offsetY() - static_cast<int>(std::lround(drag_offset.y / sf.y));
+					editor_->setTextureOffset(new_x, new_y);
+					spin_offset_x_->SetValue(new_x);
+					spin_offset_y_->SetValue(new_y);
+					tex_canvas_->redraw(true);
+				}
+			}
 		}
 	}
 }
@@ -1818,8 +1881,22 @@ void TextureEditorPanel::onToolbarButton(wxCommandEvent& e)
 		button = toolbar_patches_->actionFromWxId(e.GetId());
 	else if (e.GetEventObject() == toolbar_texlist_)
 		button = toolbar_texlist_->actionFromWxId(e.GetId());
+	else if (e.GetEventObject() == toolbar_left_)
+		button = toolbar_left_->actionFromWxId(e.GetId());
 
-	if (button == "revert")
+	if (button == "tool_edit")
+	{
+		toolbar_left_->setItemChecked("tool_edit", true);
+		toolbar_left_->setItemChecked("tool_drag", false);
+		tex_canvas_->setMode(CTextureCanvasBase::Mode::Edit);
+	}
+	else if (button == "tool_drag")
+	{
+		toolbar_left_->setItemChecked("tool_edit", false);
+		toolbar_left_->setItemChecked("tool_drag", true);
+		tex_canvas_->setMode(CTextureCanvasBase::Mode::DragOffsets);
+	}
+	else if (button == "revert")
 	{
 		editor_->revertTexture();
 		updateUI(true);
@@ -1897,5 +1974,5 @@ void TextureEditorPanel::onChoiceOffsetTypeSelected(wxCommandEvent& e)
 		break;
 	}
 
-	tex_canvas_->redraw();
+	updateUI();
 }

@@ -1,0 +1,18 @@
+{
+  "items": [
+    {
+      "type": "button",
+      "id": "tool_edit",
+      "text": "Edit",
+      "icon": "edit",
+      "help_text": "Edit texture patches"
+    },
+    {
+      "type": "button",
+      "id": "tool_drag",
+      "text": "Drag offsets",
+      "icon": "gfx_drag",
+      "help_text": "Drag texture to change its offsets"
+    }
+  ]
+}

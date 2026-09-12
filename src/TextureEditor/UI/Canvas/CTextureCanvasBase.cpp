@@ -136,6 +136,36 @@ void CTextureCanvasBase::setViewType(View type)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the editing mode
+// -----------------------------------------------------------------------------
+void CTextureCanvasBase::setMode(Mode mode)
+{
+	if (mode_ == mode)
+		return;
+
+	mode_ = mode;
+	if (mode_ == Mode::DragOffsets)
+		hilight_patch_ = -1;
+
+	window()->SetCursor(wxNullCursor);
+	redraw();
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the position [x,y] (in physical window coordinates) is over
+// the texture rectangle
+// -----------------------------------------------------------------------------
+bool CTextureCanvasBase::onTexture(int x, int y) const
+{
+	if (!texture_)
+		return false;
+
+	auto pos  = view().canvasPos({ x, y });
+	auto rect = textureRect(tex_scale_, view_type_ != View::Normal);
+	return pos.x >= rect.x1() && pos.x <= rect.x2() && pos.y >= rect.y1() && pos.y <= rect.y2();
+}
+
+// -----------------------------------------------------------------------------
 // Sets the outline of the patch being dragged (externally via drag-and-drop, not
 // internally via the editor), and shows it
 // -----------------------------------------------------------------------------
@@ -461,7 +491,13 @@ void CTextureCanvasBase::drawContent()
 			loadPatchImage(i);
 
 	// Calcluate texture and patch rectangles
-	auto          tex_rect = textureRect(tex_scale_, view_type_ != View::Normal);
+	auto tex_rect          = textureRect(tex_scale_, view_type_ != View::Normal);
+	auto tex_rect_original = tex_rect;
+	if (mode_ == Mode::DragOffsets && dragging_)
+	{
+		auto offset = dragOffset(false);
+		tex_rect.move(offset.x, offset.y);
+	}
 	vector<Rectd> patch_rects;
 	patch_rects.reserve(patch_images_.size());
 	for (unsigned i = 0; i < patch_images_.size(); ++i)
@@ -473,25 +509,35 @@ void CTextureCanvasBase::drawContent()
 	// Do any required initialization for drawing
 	initDrawing(tex_rect);
 
+	// If we are dragging the texture offsets, draw the texture at the original position at 1/2 alpha
+	if (dragging_ && mode_ == Mode::DragOffsets)
+	{
+		// Generate full texture preview if needed
+		if (!tex_preview_)
+			loadTexturePreview();
+
+		drawTexture(tex_rect_original, 0.5f);
+	}
+
 	// Draw the texture border
 	drawTextureBorder(tex_rect);
 
 	// Draw individual patches if we are dragging or 'show outside' is enabled
 	const auto& selection = editor_->selectedPatches();
-	if (draw_outside_ || dragging_)
+	if (draw_outside_ || (dragging_ && mode_ == Mode::Edit))
 	{
 		for (unsigned i = 0; i < patch_images_.size(); ++i)
 		{
-			// If we're dragging, draw selected patches with 50% opacity
-			if (dragging_ && vectorContains(selection, i))
+			// If we're dragging a patch, draw selected patches with 50% opacity
+			if (dragging_ && mode_ == Mode::Edit && vectorContains(selection, i))
 				drawPatch(patch_rects[i], i, 0.5f, false);
 			else
 				drawPatch(patch_rects[i], i, 1.0f, false);
 		}
 	}
 
-	// Draw full texture preview if we aren't dragging
-	if (!dragging_)
+	// Draw full texture preview if we aren't dragging a patch
+	if (!dragging_ || mode_ == Mode::DragOffsets)
 	{
 		// Generate full texture preview if needed
 		if (!tex_preview_)
@@ -500,8 +546,8 @@ void CTextureCanvasBase::drawContent()
 		drawTexture(tex_rect);
 	}
 
-	// Draw dragged patches if currently dragging
-	if (dragging_ && (drag_origin_.x >= 0 || drag_origin_.y >= 0))
+	// Draw dragged patches if currently dragging a patch
+	if (dragging_ && mode_ == Mode::Edit && (drag_origin_.x >= 0 || drag_origin_.y >= 0))
 	{
 		auto offset = dragOffset(false);
 		for (auto i : selection)
@@ -520,21 +566,32 @@ void CTextureCanvasBase::drawContent()
 				  .alignment = gl::draw2d::Align::Left });
 		}
 	}
+	else if (dragging_ && mode_ == Mode::DragOffsets)
+	{
+		auto drag_offset = dragOffset(false);
+		auto sf          = tex_scale_ ? texture_->scaleFactor() : Vec2d{ 1.0, 1.0 };
+		int  cur_x       = texture_->offsetX() - static_cast<int>(std::lround(drag_offset.x / sf.x));
+		int  cur_y       = texture_->offsetY() - static_cast<int>(std::lround(drag_offset.y / sf.y));
+		texts_.push_back(
+			{ .text      = fmt::format("{},{}", cur_x, cur_y),
+			  .position  = { tex_rect.x1() + 1, tex_rect.y1() + 1 },
+			  .alignment = gl::draw2d::Align::Left });
+	}
 
 	// Draw grid if needed
-	if (show_grid_ || dragging_)
+	if (show_grid_ || (dragging_ && mode_ == Mode::Edit))
 		drawTextureGrid(tex_rect);
 
 	if (show_drop_patch_outline_)
 		drawPatchOutline(drop_patch_outline_, { 255, 255, 255, 255 }, 2.0);
 
-	// Draw selected patch outlines (if not dragging)
-	if (!dragging_)
+	// Draw selected patch outlines (if not dragging a patch)
+	if (!dragging_ && mode_ == Mode::Edit)
 		for (auto i : selection)
 			drawPatchOutline(patch_rects[i], { 70, 210, 220, 255 }, 2.0);
 
-	// Draw hilighted patch (if not dragging)
-	if (hilight_patch_ >= 0 && std::cmp_less(hilight_patch_, texture_->nPatches()) && !dragging_)
+	// Draw hilighted patch (if not dragging a patch)
+	if (hilight_patch_ >= 0 && std::cmp_less(hilight_patch_, texture_->nPatches()) && !dragging_ && mode_ == Mode::Edit)
 	{
 		// Highlight
 		drawPatch(patch_rects[hilight_patch_], hilight_patch_, 0.15f, true);
@@ -588,15 +645,31 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 	// MOUSE MOVEMENT
 	if (e.Moving())
 	{
-		// Check if patch hilight changes
-		if (!e.LeftIsDown())
+		if (mode_ == Mode::DragOffsets)
 		{
-			const auto pos   = view().canvasPos({ p_x, p_y });
-			const int  patch = patchAt(pos.x, pos.y);
-			if (hilight_patch_ != patch)
+			if (onTexture(p_x, p_y))
+				window()->SetCursor(wxCursor(wxCURSOR_SIZING));
+			else
+				window()->SetCursor(wxNullCursor);
+
+			if (hilight_patch_ != -1)
 			{
-				hilight_patch_ = patch;
+				hilight_patch_ = -1;
 				refresh        = true;
+			}
+		}
+		else
+		{
+			// Check if patch hilight changes
+			if (!e.LeftIsDown())
+			{
+				const auto pos   = view().canvasPos({ p_x, p_y });
+				const int  patch = patchAt(pos.x, pos.y);
+				if (hilight_patch_ != patch)
+				{
+					hilight_patch_ = patch;
+					refresh        = true;
+				}
 			}
 		}
 
@@ -619,7 +692,8 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 			// Check if we are starting a drag
 			if (e.LeftIsDown()
 				&& !dragging_
-				&& (std::abs(p_x - drag_origin_.x) >= 4 || std::abs(p_y - drag_origin_.y) >= 4))
+				&& (std::abs(p_x - drag_origin_.x) >= 4 || std::abs(p_y - drag_origin_.y) >= 4)
+				&& (mode_ == Mode::Edit || (mode_ == Mode::DragOffsets && drag_on_texture_)))
 				dragging_ = true;
 
 			if (dragging_)
@@ -632,7 +706,8 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 	// LEFT BUTTON DOWN
 	else if (e.LeftDown())
 	{
-		drag_origin_ = { p_x, p_y };
+		drag_origin_     = { p_x, p_y };
+		drag_on_texture_ = onTexture(p_x, p_y);
 		e.Skip();
 	}
 
@@ -642,7 +717,8 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 		// If we were dragging, generate end drag event
 		if (dragging_)
 		{
-			dragging_ = false;
+			dragging_        = false;
+			drag_on_texture_ = false;
 			refreshTexturePreview();
 			refresh = true;
 			wxCommandEvent evt(EVT_DRAG_END, window()->GetId());
@@ -656,7 +732,9 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 	{
 		// Set no hilighted patch
 		hilight_patch_ = -1;
-		refresh        = true;
+		if (mode_ == Mode::DragOffsets)
+			window()->SetCursor(wxNullCursor);
+		refresh = true;
 	}
 
 	// MOUSEWHEEL

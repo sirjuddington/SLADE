@@ -40,6 +40,12 @@ class CTextureCanvasBase
 public:
 	using View = CTextureView;
 
+	enum class Mode
+	{
+		Edit,
+		DragOffsets
+	};
+
 	CTextureCanvasBase(TextureEditor& editor);
 	virtual ~CTextureCanvasBase();
 
@@ -66,6 +72,10 @@ public:
 	void      applyTexScale(bool apply) { tex_scale_ = apply; }
 	Vec2i     dragOrigin() const { return { drag_origin_.x, drag_origin_.y }; }
 	Vec2i     dragOffset(bool grid_snap = true) const;
+
+	Mode mode() const { return mode_; }
+	void setMode(Mode mode);
+	bool onTexture(int x, int y) const;
 
 	virtual void clearTexture();
 	virtual void clearPatches();
@@ -108,9 +118,10 @@ protected:
 	ui::ZoomControl* linked_zoom_control_ = nullptr;
 	Vec2i            zoom_point_          = { -1, -1 };
 
-	Vec2i drag_origin_ = { -1, -1 };
-	Vec2i mouse_pos_   = { -1, -1 };
-	bool  dragging_    = false;
+	Vec2i drag_origin_     = { -1, -1 };
+	Vec2i mouse_pos_       = { -1, -1 };
+	bool  dragging_        = false;
+	bool  drag_on_texture_ = false;
 
 	bool  show_grid_ = false;
 	Vec2i grid_size_ = { 8, 8 };
@@ -119,6 +130,7 @@ protected:
 	bool  blend_rgba_   = false;
 	bool  tex_scale_    = false;
 	View  view_type_    = View::Normal;
+	Mode  mode_         = Mode::Edit;
 	Rectd drop_patch_outline_;
 	bool  show_drop_patch_outline_ = false;
 
@@ -138,7 +150,7 @@ protected:
 	void         drawContent();
 	virtual void initDrawing(const Rectd& tex_rect) {}
 	virtual void drawOffsetLines() {}
-	virtual void drawTexture(const Rectd& tex_rect) {}
+	virtual void drawTexture(const Rectd& tex_rect, float alpha = 1.0f) {}
 	virtual void drawTextureBorder(const Rectd& tex_rect) {}
 	virtual void drawTextureGrid(const Rectd& tex_rect) {}
 	virtual void drawPatch(const Rectd& patch_rect, int index, float alpha, bool highlight) {}

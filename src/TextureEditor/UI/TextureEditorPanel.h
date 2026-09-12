@@ -65,6 +65,7 @@ private:
 
 	// Texture view
 	SAuiToolBar*        toolbar_texture_    = nullptr;
+	SAuiToolBar*        toolbar_left_       = nullptr;
 	CTextureCanvasBase* tex_canvas_         = nullptr;
 	BrowserCanvas*      tex_browser_canvas_ = nullptr; // Shown instead of tex_canvas_ when a texture list is selected
 	wxScrollBar*        tex_browser_scrollbar_ = nullptr;

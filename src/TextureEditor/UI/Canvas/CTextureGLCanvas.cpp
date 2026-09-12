@@ -192,15 +192,16 @@ void CTextureGLCanvas::drawOffsetLines()
 // -----------------------------------------------------------------------------
 // Draws the full generated texture
 // -----------------------------------------------------------------------------
-void CTextureGLCanvas::drawTexture(const Rectd& tex_rect)
+void CTextureGLCanvas::drawTexture(const Rectd& tex_rect, float alpha)
 {
 	// Generate if needed
 	if (gl_tex_preview_ == 0)
 		gl_tex_preview_ = gl::Texture::createFromImage(*tex_preview_, palette_.get());
 
 	// Draw the texture
-	dc_.texture = gl_tex_preview_;
-	dc_.colour  = ColRGBA::WHITE;
+	dc_.texture  = gl_tex_preview_;
+	dc_.colour   = ColRGBA::WHITE;
+	dc_.colour.a = alpha * 255;
 	dc_.drawRect({ tex_rect.x1(), tex_rect.y1(), tex_rect.x2(), tex_rect.y2() });
 }
 

@@ -165,7 +165,7 @@ void CTextureCanvas::drawOffsetLines()
 // -----------------------------------------------------------------------------
 // Draws the full generated texture
 // -----------------------------------------------------------------------------
-void CTextureCanvas::drawTexture(const Rectd& tex_rect)
+void CTextureCanvas::drawTexture(const Rectd& tex_rect, float alpha)
 {
 	// Generate if needed
 	if (!tex_bitmap_.IsOk())
@@ -174,7 +174,7 @@ void CTextureCanvas::drawTexture(const Rectd& tex_rect)
 		sImageToBitmap(*tex_preview_, palette_.get(), tex_bitmap_, view_.scale());
 	}
 
-	gc_->drawBitmap(tex_bitmap_, tex_rect.x1(), tex_rect.y1(), 1.0, tex_rect.width(), tex_rect.height());
+	gc_->drawBitmap(tex_bitmap_, tex_rect.x1(), tex_rect.y1(), alpha, tex_rect.width(), tex_rect.height());
 }
 
 // -----------------------------------------------------------------------------
