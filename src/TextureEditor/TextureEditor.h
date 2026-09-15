@@ -57,6 +57,9 @@ public:
 		int           height = 0,
 		string_view   patch  = {}) const;
 	void deleteTextures(const vector<CTexture*>& textures) const;
+	void copyTextures(const vector<CTexture*>& textures) const;
+	void cutTextures(const vector<CTexture*>& textures) const;
+	bool pasteTextures(TextureXList* list, int index) const;
 	void moveTextures(const vector<CTexture*>& textures, Direction direction) const;
 	void sortTextures(const vector<CTexture*>& textures) const;
 	void renameTexture(CTexture& texture, string_view new_name) const;

@@ -116,6 +116,9 @@ private:
 
 	void newTexture();
 	void newTextureFromFile();
+	void copyTextures() const;
+	void cutTextures();
+	void pasteTextures();
 	void deleteTexture() const;
 	void moveTexture(Direction direction) const;
 	void sortTextures() const;

@@ -37,6 +37,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Archive/EntryType/EntryType.h"
+#include "General/Clipboard.h"
 #include "General/Misc.h"
 #include "General/UndoRedo.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -53,6 +54,54 @@
 
 using namespace slade;
 using namespace texeditor;
+
+
+// -----------------------------------------------------------------------------
+// TextureClipboardItem Class
+//
+// A clipboard item that contains a composite texture and all its patches
+// -----------------------------------------------------------------------------
+namespace
+{
+class TextureClipboardItem : public ClipboardItem
+{
+public:
+	TextureClipboardItem(const CTexture& texture, Archive* parent) :
+		ClipboardItem(Type::CompositeTexture),
+		texture_{ std::make_unique<CTexture>() }
+	{
+		texture_->copyTexture(texture);
+
+		for (unsigned i = 0; i < texture.nPatches(); ++i)
+		{
+			auto entry = texture.patch(i)->patchEntry(parent);
+			if (!entry)
+				continue;
+
+			if (std::ranges::any_of(
+					patch_entries_, [&](const auto& copied) { return copied->name() == entry->name(); }))
+				continue;
+
+			patch_entries_.emplace_back(std::make_unique<ArchiveEntry>(*entry));
+		}
+	}
+
+	const CTexture& texture() const { return *texture_; }
+
+	ArchiveEntry* patchEntry(string_view patch) const
+	{
+		for (auto& entry : patch_entries_)
+			if (strutil::equalCI(strutil::truncate(entry->nameNoExt(), 8), patch))
+				return entry.get();
+
+		return nullptr;
+	}
+
+private:
+	unique_ptr<CTexture>             texture_;
+	vector<unique_ptr<ArchiveEntry>> patch_entries_;
+};
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -496,6 +545,88 @@ void TextureEditor::deleteTextures(const vector<CTexture*>& textures) const
 
 	if (!undo_recording)
 		undo_manager_->endRecord(any_deleted);
+}
+
+// -----------------------------------------------------------------------------
+// Copies [textures] to the application clipboard
+// -----------------------------------------------------------------------------
+void TextureEditor::copyTextures(const vector<CTexture*>& textures) const
+{
+	if (textures.empty())
+		return;
+
+	vector<unique_ptr<ClipboardItem>> copy_items;
+	copy_items.reserve(textures.size());
+	for (auto texture : textures)
+		copy_items.emplace_back(std::make_unique<TextureClipboardItem>(*texture, archive_.get()));
+
+	app::clipboard().clear();
+	app::clipboard().add(copy_items);
+}
+
+// -----------------------------------------------------------------------------
+// Copies [textures] to the application clipboard then removes them
+// -----------------------------------------------------------------------------
+void TextureEditor::cutTextures(const vector<CTexture*>& textures) const
+{
+	copyTextures(textures);
+	deleteTextures(textures);
+}
+
+// -----------------------------------------------------------------------------
+// Pastes textures from the clipboard into [list] after [index]
+// -----------------------------------------------------------------------------
+bool TextureEditor::pasteTextures(TextureXList* list, int index) const
+{
+	if (!list || app::clipboard().empty())
+		return false;
+
+	bool pasted = false;
+	undo_manager_->beginRecord("Paste Texture(s)");
+
+	for (unsigned i = 0; i < app::clipboard().size(); ++i)
+	{
+		if (app::clipboard().item(i)->type() != ClipboardItem::Type::CompositeTexture)
+			continue;
+
+		auto item = dynamic_cast<TextureClipboardItem*>(app::clipboard().item(i));
+		if (!item)
+			continue;
+
+		auto texture = std::make_unique<CTexture>(list->format() == TextureXFormat::Textures);
+		texture->copyTexture(item->texture(), true);
+		texture->setState(CTexture::State::New);
+
+		++index;
+		auto texture_ptr = texture.get();
+		list->addTexture(std::move(texture), index);
+		signals_.texture_added(list, texture_ptr);
+		undo_manager_->recordUndoStep<TextureCreateDeleteUS>(*this, list, index);
+		pasted = true;
+
+		for (unsigned patch_index = 0; patch_index < texture_ptr->nPatches(); ++patch_index)
+		{
+			auto patch = texture_ptr->patch(patch_index);
+			if (list->format() != TextureXFormat::Textures)
+				patch_table_->addPatch(patch->name());
+
+			auto entry = patch->patchEntry(archive_.get());
+			if (!entry)
+			{
+				if (auto copied_entry = item->patchEntry(patch->name()))
+					archive_->addEntry(std::make_shared<ArchiveEntry>(*copied_entry), "patches");
+			}
+			else if (
+				entry->parent() != app::archiveManager().baseResourceArchive() && entry->parent() != archive_.get())
+				archive_->addEntry(std::make_shared<ArchiveEntry>(*entry), "patches");
+		}
+
+		if (hasPatchTable())
+			patch_table_->updatePatchUsage(texture_ptr);
+	}
+
+	undo_manager_->endRecord(pasted);
+	return pasted;
 }
 
 // -----------------------------------------------------------------------------

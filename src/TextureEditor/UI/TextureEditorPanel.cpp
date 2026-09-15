@@ -1240,6 +1240,38 @@ void TextureEditorPanel::newTextureFromFile()
 }
 
 // -----------------------------------------------------------------------------
+// Copies the selected textures to the application clipboard
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::copyTextures() const
+{
+	editor_->copyTextures(textures_tree_view_->selectedTextures());
+}
+
+// -----------------------------------------------------------------------------
+// Cuts the selected textures to the application clipboard
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::cutTextures()
+{
+	editor_->cutTextures(textures_tree_view_->selectedTextures());
+}
+
+// -----------------------------------------------------------------------------
+// Pastes clipboard textures after the last selected texture
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::pasteTextures()
+{
+	auto last_selected = textures_tree_view_->lastSelectedItem();
+	auto list          = textures_tree_view_->textureListForItem(last_selected);
+	if (!list)
+		return;
+
+	auto selected_texture = textures_tree_view_->textureForItem(last_selected);
+	int  selected         = selected_texture ? selected_texture->index() : static_cast<int>(list->size()) - 1;
+	if (editor_->pasteTextures(list, selected))
+		updateUI(true);
+}
+
+// -----------------------------------------------------------------------------
 // Deletes all selected textures
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::deleteTexture() const
@@ -1458,6 +1490,9 @@ void TextureEditorPanel::exportTexturesAsPNG() const
 // -----------------------------------------------------------------------------
 bool TextureEditorPanel::handleAction(string_view id)
 {
+	if (!IsShown())
+		return false;
+
 	if (id == "txed_savelist")
 		saveAll();
 
@@ -1482,6 +1517,12 @@ bool TextureEditorPanel::handleAction(string_view id)
 
 	else if (id == "txed_sort")
 		sortTextures();
+	else if (id == "txed_copy")
+		copyTextures();
+	else if (id == "txed_cut")
+		cutTextures();
+	else if (id == "txed_paste")
+		pasteTextures();
 
 	else if (id == "txed_export")
 		exportTexturesToEntries();
