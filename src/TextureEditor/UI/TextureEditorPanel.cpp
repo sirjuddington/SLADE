@@ -66,6 +66,7 @@
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
+#include "Utility/Vector.h"
 #include <wx/richmsgdlg.h>
 
 using namespace slade;
@@ -317,6 +318,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	// Bind Events
 	textures_tree_view_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onTextureSelectionChanged, this);
 	textures_tree_view_->GetMainWindow()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTreeViewKeyDown, this);
+	textures_tree_view_->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &TextureEditorPanel::onTreeViewRightClick, this);
 	list_patches_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onPatchSelectionChanged, this);
 	tex_canvas_->window()->Bind(wxEVT_LEFT_DOWN, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas_->window()->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexCanvasMouseEvent, this);
@@ -867,6 +869,13 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 					tabs_right_->InsertPage(0, panel_tex_patch_props_, title, true);
 				else
 					tabs_right_->SetPageText(idx, title);
+			}
+
+			// Update offset spin controls if visible
+			if (panel_offsets_->IsShown())
+			{
+				spin_offset_x_->SetValue(ctex->offsetX());
+				spin_offset_y_->SetValue(ctex->offsetY());
 			}
 		}
 
@@ -1550,6 +1559,26 @@ void TextureEditorPanel::exportTexturesAsPNG() const
 }
 
 // -----------------------------------------------------------------------------
+// Opens the modify offsets dialog to adjust the offsets of the selected
+// textures
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::modifyTextureOffsets()
+{
+	auto selection = textures_tree_view_->selectedTextures();
+	if (selection.empty())
+		return;
+
+	ModifyOffsetsDialog dlg;
+	dlg.SetParent(maineditor::windowWx());
+	dlg.CenterOnParent();
+	if (dlg.ShowModal() == wxID_OK)
+		editor_->modifyTextureOffsets(selection, dlg);
+
+	if (vectorContains(selection, editor_->currentTexture()))
+		updateUI(true);
+}
+
+// -----------------------------------------------------------------------------
 // Handles the SAction [id]. Returns true if handled
 // -----------------------------------------------------------------------------
 bool TextureEditorPanel::handleAction(string_view id)
@@ -1638,6 +1667,9 @@ bool TextureEditorPanel::handleAction(string_view id)
 		panel_filter_->Show(txed_show_filter);
 		panel_filter_->GetParent()->Layout();
 	}
+
+	else if (id == "txed_offsets")
+		modifyTextureOffsets();
 
 	else
 		return false; // Not handled
@@ -1746,6 +1778,41 @@ void TextureEditorPanel::onTreeViewKeyDown(wxKeyEvent& e)
 	}
 
 	e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called when an item in the texture tree view is right-clicked
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTreeViewRightClick(wxDataViewEvent& e)
+{
+	auto selection = textures_tree_view_->selectedTextures();
+	if (selection.empty())
+		return;
+
+	// Create context menu
+	wxMenu context;
+	auto   texport = new wxMenu();
+	SAction::fromId("txed_delete")->addToMenu(&context, true);
+	context.AppendSeparator();
+	SAction::fromId("txed_rename")->addToMenu(&context, true);
+	if (selection.size() > 1)
+		SAction::fromId("txed_rename_each")->addToMenu(&context, true);
+	if (selection[0]->isExtended())
+		SAction::fromId("txed_offsets")->addToMenu(&context, true);
+	SAction::fromId("txed_export")->addToMenu(texport, true, "Archive (as image)");
+	SAction::fromId("txed_extract")->addToMenu(texport, true, "File");
+	context.AppendSubMenu(texport, wxS("&Export To"));
+	context.AppendSeparator();
+	SAction::fromId("txed_copy")->addToMenu(&context, true);
+	SAction::fromId("txed_cut")->addToMenu(&context, true);
+	SAction::fromId("txed_paste")->addToMenu(&context, true);
+	context.AppendSeparator();
+	SAction::fromId("txed_up")->addToMenu(&context, true);
+	SAction::fromId("txed_down")->addToMenu(&context, true);
+	SAction::fromId("txed_sort")->addToMenu(&context, true);
+
+	// Pop it up
+	PopupMenu(&context);
 }
 
 // -----------------------------------------------------------------------------

@@ -4,6 +4,7 @@
 
 namespace slade
 {
+class ModifyOffsetsDialog;
 class UndoManager;
 class CTexture;
 class PatchTable;
@@ -65,6 +66,7 @@ public:
 	void renameTexture(CTexture& texture, string_view new_name) const;
 	void renameTextures(const vector<CTexture*>& textures, bool each) const;
 	bool exportAsPNG(const CTexture& texture, string_view filename, const Palette* palette, bool force_rgba);
+	void modifyTextureOffsets(const vector<CTexture*>& textures, const ModifyOffsetsDialog& dlg) const;
 
 	// Texture Editing
 	void setTextureSize(int width = -1, int height = -1) const;

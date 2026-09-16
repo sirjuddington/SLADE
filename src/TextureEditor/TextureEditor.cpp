@@ -47,6 +47,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "Graphics/Translation.h"
 #include "UI/Dialogs/CreateTextureXDialog.h"
+#include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UndoSteps.h"
 #include "Utility/Colour.h"
 #include "Utility/StringUtils.h"
@@ -915,6 +916,44 @@ bool TextureEditor::exportAsPNG(const CTexture& texture, string_view filename, c
 
 	// Export file
 	return png.exportFile(filename);
+}
+
+// -----------------------------------------------------------------------------
+// Modifies the offsets of the given [textures] using settings from the provided
+// ModifyOffsetsDialog [dlg]
+// -----------------------------------------------------------------------------
+void TextureEditor::modifyTextureOffsets(const vector<CTexture*>& textures, const ModifyOffsetsDialog& dlg) const
+{
+	if (textures.size() == 1)
+		undo_manager_->beginRecord(fmt::format("{}: Modify Texture Offsets", textures[0]->name()));
+	else
+		undo_manager_->beginRecord(fmt::format("Modify {} Texture Offsets", textures.size()));
+
+	for (auto texture : textures)
+	{
+		// Skip textures that aren't extended (can't have offsets)
+		if (!texture || !texture->isExtended())
+			continue;
+
+		// Record undo steps for offsets and state
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(*this, *texture, "offset_x", texture->offsetX());
+		undo_manager_->recordUndoStep<TexturePropertyChangeUS>(*this, *texture, "offset_y", texture->offsetY());
+		if (texture->state() != CTexture::State::Modified)
+			undo_manager_->recordUndoStep<TexturePropertyChangeUS>(
+				*this, *texture, "state", static_cast<int>(texture->state()));
+
+		// Calculate new offsets based on dialog settings
+		auto offsets = dlg.calculateOffsets(
+			texture->offsetX(), texture->offsetY(), texture->width(), texture->height());
+
+		// Apply new offsets
+		texture->setOffset(offsets);
+		texture->setState(CTexture::State::Modified);
+	}
+
+	undo_manager_->endRecord(true);
+
+	signals_.textures_modified(textures);
 }
 
 // -----------------------------------------------------------------------------

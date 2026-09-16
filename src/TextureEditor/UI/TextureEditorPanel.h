@@ -134,6 +134,7 @@ private:
 	void renameTexture(bool each) const;
 	void exportTexturesToEntries() const;
 	void exportTexturesAsPNG() const;
+	void modifyTextureOffsets();
 
 	// SActionHandler
 	bool handleAction(string_view id) override;
@@ -142,6 +143,7 @@ private:
 	void onTextureSelectionChanged(wxDataViewEvent& e);
 	void onPatchSelectionChanged(wxDataViewEvent& e);
 	void onTreeViewKeyDown(wxKeyEvent& e);
+	void onTreeViewRightClick(wxDataViewEvent& e);
 	void onTexCanvasMouseEvent(wxMouseEvent& e);
 	void onTexCanvasDragEnd(wxCommandEvent& e);
 	void onTexCanvasKeyDown(wxKeyEvent& e);
