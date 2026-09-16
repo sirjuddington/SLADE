@@ -55,7 +55,6 @@
 #include "UI/Browser/BrowserCanvas.h"
 #include "UI/Browser/BrowserItem.h"
 #include "UI/Controls/SIconButton.h"
-#include "UI/Controls/STabCtrl.h"
 #include "UI/Controls/Splitter.h"
 #include "UI/Controls/ZoomControl.h"
 #include "UI/Dialogs/GfxConvDialog.h"
@@ -306,7 +305,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	splitter_left_->SetMinimumPaneSize(FromDIP(200));
 	sizer->Add(splitter_left_, lh.sfWithBorder(1, wxTOP | wxBOTTOM).Expand());
 	splitter_left_->splitVertically(
-		createLeftPanel(splitter_left_),
+		createTextureListPanel(splitter_left_),
 		panel_main_ = createMainPanel(splitter_left_),
 		ui::TEXEDITOR_SPLIT_POS_LEFT,
 		280,
@@ -497,35 +496,6 @@ bool TextureEditorPanel::close()
 }
 
 // -----------------------------------------------------------------------------
-// Creates the left panel (texture list, with a patch table tab if the
-// archive has a patch table)
-// -----------------------------------------------------------------------------
-wxPanel* TextureEditorPanel::createLeftPanel(wxWindow* parent)
-{
-	// If the archive has a patch table, setup tabbed layout
-	if (editor_->hasPatchTable())
-	{
-		auto panel = new wxPanel(parent);
-		auto lh    = ui::LayoutHelper(panel);
-		auto sizer = new wxBoxSizer(wxHORIZONTAL);
-		panel->SetSizer(sizer);
-
-		auto tabs = STabCtrl::createControl(panel);
-		sizer->Add(tabs, lh.sfWithBorder(1, wxLEFT).Expand());
-
-		tabs->AddPage(createTextureListPanel(tabs), wxS("Textures"));
-		tabs->AddPage(createPatchTablePanel(tabs), wxS("Patches"));
-
-		sizer->AddSpacer(lh.padSmall());
-
-		return panel;
-	}
-
-	// No patch table, just show the texture list
-	return createTextureListPanel(parent);
-}
-
-// -----------------------------------------------------------------------------
 // Creates the texture list panel (toolbar + texture tree view)
 // -----------------------------------------------------------------------------
 wxPanel* TextureEditorPanel::createTextureListPanel(wxWindow* parent)
@@ -672,9 +642,39 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 }
 
 // -----------------------------------------------------------------------------
-// Creates the right panel (patch list | texture/patch properties, split)
+// Creates the right panel (texture patches/properties, with a patch table tab
+// if the archive has a patch table)
 // -----------------------------------------------------------------------------
 wxPanel* TextureEditorPanel::createRightPanel(wxWindow* parent)
+{
+	// If the archive has a patch table, setup tabbed layout (texture patches/
+	// properties tab + patch table tab)
+	if (editor_->hasPatchTable())
+	{
+		auto panel = new wxPanel(parent);
+		auto lh    = ui::LayoutHelper(panel);
+		auto sizer = new wxBoxSizer(wxHORIZONTAL);
+		panel->SetSizer(sizer);
+
+		tabs_right_ = STabCtrl::createControl(panel);
+		sizer->Add(tabs_right_, lh.sfWithSmallBorder(1, wxLEFT).Expand());
+
+		panel_tex_patch_props_ = createTexturePatchPropsPanel(tabs_right_);
+		panel_tex_patch_props_->Hide(); // Only shown (as a tab) when a texture is selected
+		tabs_right_->AddPage(createPatchTablePanel(tabs_right_), wxS("Patch Table (PNAMES)"));
+
+		return panel;
+	}
+
+	// No patch table, just show the texture patches/properties panel
+	return panel_tex_patch_props_ = createTexturePatchPropsPanel(parent);
+}
+
+// -----------------------------------------------------------------------------
+// Creates the texture patches/properties panel (patch list | properties,
+// split)
+// -----------------------------------------------------------------------------
+wxPanel* TextureEditorPanel::createTexturePatchPropsPanel(wxWindow* parent)
 {
 	auto panel = new wxPanel(parent);
 	auto lh    = ui::LayoutHelper(panel);
@@ -804,6 +804,17 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 			tex_canvas_->clearTexture();
 			list_patches_->DeleteAllItems();
 			pg_properties_->textureChanged();
+
+			// Hide the texture patches/properties tab if it's currently shown
+			if (tabs_right_)
+			{
+				int idx = tabs_right_->GetPageIndex(panel_tex_patch_props_);
+				if (idx != wxNOT_FOUND)
+				{
+					tabs_right_->RemovePage(idx);
+					panel_tex_patch_props_->Hide();
+				}
+			}
 		}
 
 		toolbar_patches_->enableGroup("Patch", false);
@@ -846,6 +857,17 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 			tex_canvas_->openTexture(ctex);
 			pg_properties_->textureChanged();
 			populatePatchesList();
+
+			// Show the texture patches/properties tab, named for the current texture
+			if (tabs_right_)
+			{
+				auto title = wxString::FromUTF8(ctex->name());
+				int  idx   = tabs_right_->GetPageIndex(panel_tex_patch_props_);
+				if (idx == wxNOT_FOUND)
+					tabs_right_->InsertPage(0, panel_tex_patch_props_, title, true);
+				else
+					tabs_right_->SetPageText(idx, title);
+			}
 		}
 
 		toolbar_texture_->showItem("txed_toggle_truecolour", ctex->isExtended());

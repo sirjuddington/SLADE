@@ -2,6 +2,7 @@
 
 #include "General/SActionHandler.h"
 #include "General/Sigslot.h"
+#include "UI/Controls/STabCtrl.h"
 
 // Forward declarations
 class wxSplitterWindow;
@@ -85,19 +86,21 @@ private:
 	SIconButton* btn_auto_offset_    = nullptr;
 
 	// Texture/Patch properties
-	ui::Splitter*       splitter_props_  = nullptr;
-	wxDataViewListCtrl* list_patches_    = nullptr;
-	SAuiToolBar*        toolbar_patches_ = nullptr;
-	TexturePropGrid*    pg_properties_   = nullptr;
+	TabControl*         tabs_right_            = nullptr; // Only used if the archive has a patch table
+	wxPanel*            panel_tex_patch_props_ = nullptr;
+	ui::Splitter*       splitter_props_        = nullptr;
+	wxDataViewListCtrl* list_patches_          = nullptr;
+	SAuiToolBar*        toolbar_patches_       = nullptr;
+	TexturePropGrid*    pg_properties_         = nullptr;
 
 	ScopedConnectionList connections_;
 
-	wxPanel* createLeftPanel(wxWindow* parent);
 	wxPanel* createTextureListPanel(wxWindow* parent);
 	wxPanel* createPatchTablePanel(wxWindow* parent);
 	wxPanel* createMainPanel(wxWindow* parent);
 	wxPanel* createTextureViewPanel(wxWindow* parent);
 	wxPanel* createRightPanel(wxWindow* parent);
+	wxPanel* createTexturePatchPropsPanel(wxWindow* parent);
 	wxPanel* createPatchListPanel(wxWindow* parent);
 	wxPanel* createOffsetsPanel(wxWindow* parent);
 

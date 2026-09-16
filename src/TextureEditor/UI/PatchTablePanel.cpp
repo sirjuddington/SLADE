@@ -97,16 +97,16 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, TextureEditor& editor) : wxPa
 	// Toolbar
 	toolbar_ = new SAuiToolBar(this, true);
 	toolbar_->loadLayoutFromResource("texturex_patch_table");
-	sizer->Add(toolbar_, { 0, 0 }, { 3, 1 });
+	sizer->Add(toolbar_, { 0, 2 }, { 3, 1 });
 
 	// List
 	patch_list_ = new PatchTableList(this, editor_->patchTable());
 	patch_list_->EnableDragSource(wxDF_UNICODETEXT);
-	sizer->Add(patch_list_, { 0, 1 }, { 1, 2 }, wxEXPAND);
+	sizer->Add(patch_list_, { 0, 0 }, { 1, 2 }, wxEXPAND);
 
 	// Info label
 	info_text_ = new wxStaticText(this, wxID_ANY, wxS("No patch selected"));
-	sizer->Add(info_text_, { 1, 1 }, { 1, 1 }, wxALIGN_BOTTOM | wxTOP, lh.padSmall());
+	sizer->Add(info_text_, { 1, 0 }, { 1, 1 }, wxALIGN_BOTTOM | wxTOP, lh.padSmall());
 
 	// Patch preview
 	preview_ = new GfxCanvas(this);
@@ -117,15 +117,15 @@ PatchTablePanel::PatchTablePanel(wxWindow* parent, TextureEditor& editor) : wxPa
 	preview_->setViewType(GfxView::Centered);
 	preview_->allowDrag(false);
 	preview_->allowScroll(false);
-	sizer->Add(preview_, { 2, 1 }, { 1, 1 }, wxEXPAND);
+	sizer->Add(preview_, { 2, 0 }, { 1, 1 }, wxEXPAND);
 
 	// "In Textures" List
 	sizer->Add(
-		new wxStaticText(this, wxID_ANY, wxS("Used in:")), { 1, 2 }, { 1, 1 }, wxALIGN_BOTTOM | wxTOP, lh.padSmall());
+		new wxStaticText(this, wxID_ANY, wxS("Used in:")), { 1, 1 }, { 1, 1 }, wxALIGN_BOTTOM | wxTOP, lh.padSmall());
 	list_in_textures_ = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxSize(FromDIP(100), -1));
-	sizer->Add(list_in_textures_, { 2, 2 }, { 1, 1 }, wxEXPAND);
+	sizer->Add(list_in_textures_, { 2, 1 }, { 1, 1 }, wxEXPAND);
 
-	sizer->AddGrowableCol(1);
+	sizer->AddGrowableCol(0);
 	sizer->AddGrowableRow(0);
 
 
