@@ -48,6 +48,13 @@
     "icon": "tex_extract",
     "help_text": "Export the selected texture(s) as PNG files"
   },
+  "txed_toggle_filter": {
+    "text": "Toggle Filter Controls",
+    "icon": "filter",
+    "help_text": "Toggle the texture list filtering controls",
+    "type": "check",
+    "linked_cvar": "txed_show_filter"
+  },
   "txed_offsets": {
     "text": "Modify Offsets",
     "icon": "tex_offset",

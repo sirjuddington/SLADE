@@ -36,9 +36,15 @@ public:
 
 	vector<wxDataViewItem> texListItems() const;
 
+	void setFilter(string_view name);
+
 private:
 	const TextureEditor* editor_ = nullptr;
 	ScopedConnectionList connections_;
+
+	vector<string> filter_name_;
+
+	bool matchesFilter(const CTexture& tex) const;
 
 	struct RootItem
 	{

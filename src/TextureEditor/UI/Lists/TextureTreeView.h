@@ -25,6 +25,8 @@ public:
 
 	void expandAll();
 
+	void setFilter(string_view name);
+
 private:
 	const TextureEditor* editor_ = nullptr;
 

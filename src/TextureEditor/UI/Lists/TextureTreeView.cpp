@@ -139,6 +139,34 @@ void TextureTreeView::expandAll()
 }
 
 // -----------------------------------------------------------------------------
+// Sets the current name filter on the tree, refreshing the displayed items
+// -----------------------------------------------------------------------------
+void TextureTreeView::setFilter(string_view name)
+{
+	auto model = dynamic_cast<TextureTreeModel*>(GetModel());
+	if (!model)
+		return;
+
+	// Get selected items
+	wxDataViewItemArray selected;
+	GetSelections(selected);
+
+	// Set filter on model
+	Freeze();
+	model->setFilter(name);
+
+	// Re-expand texture list (root) items, since the filter refresh collapses them
+	expandAll();
+
+	if (!selected.empty())
+	{
+		SetSelections(selected);
+		EnsureVisible(selected[0]);
+	}
+	Thaw();
+}
+
+// -----------------------------------------------------------------------------
 // Sets up the tree columns
 // -----------------------------------------------------------------------------
 void TextureTreeView::setupColumns()

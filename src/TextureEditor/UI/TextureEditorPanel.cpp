@@ -75,6 +75,14 @@ using namespace texeditor;
 
 // -----------------------------------------------------------------------------
 //
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Bool, txed_show_filter, false, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
 // Structs
 //
 // -----------------------------------------------------------------------------
@@ -530,11 +538,34 @@ wxPanel* TextureEditorPanel::createTextureListPanel(wxWindow* parent)
 	// Toolbar
 	toolbar_texlist_ = new SAuiToolBar(panel, true);
 	toolbar_texlist_->loadLayoutFromResource("texturex_list");
-	sizer->Add(toolbar_texlist_, lh.sfWithSmallBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
+	sizer->Add(toolbar_texlist_, lh.sfWithSmallBorder(0).Expand());
 
 	// Texture tree
 	textures_tree_view_ = new TextureTreeView(panel, *editor_);
-	sizer->Add(textures_tree_view_, lh.sfWithSmallBorder(1, wxRIGHT | wxTOP | wxBOTTOM).Expand());
+
+	// Texture list filter controls
+	panel_filter_ = new wxPanel(panel, -1);
+	auto* hbox    = new wxBoxSizer(wxHORIZONTAL);
+	panel_filter_->SetSizer(hbox);
+	hbox->Add(new wxStaticText(panel_filter_, -1, wxS("Filter:")), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
+	text_filter_ = new wxTextCtrl(panel_filter_, -1);
+	hbox->Add(text_filter_, wxSizerFlags(1).CenterVertical());
+	btn_clear_filter_ = new SIconButton(panel_filter_, "close");
+	btn_clear_filter_->SetToolTip(wxS("Clear Filter"));
+	hbox->Add(btn_clear_filter_, lh.sfWithSmallBorder(0, wxLEFT).Expand());
+
+	// Show/hide filter controls depending on cvar
+	panel_filter_->Show(txed_show_filter);
+
+	// Layout texture tree + filter controls
+	auto* vbox = new wxBoxSizer(wxVERTICAL);
+	sizer->Add(vbox, lh.sfWithSmallBorder(1, wxRIGHT | wxTOP | wxBOTTOM).Expand());
+	vbox->Add(textures_tree_view_, wxSizerFlags(1).Expand());
+	vbox->Add(panel_filter_, lh.sfWithBorder(0, wxTOP).Expand());
+
+	// Bind filter control events
+	text_filter_->Bind(wxEVT_TEXT, &TextureEditorPanel::onTextFilterChanged, this);
+	btn_clear_filter_->Bind(wxEVT_BUTTON, &TextureEditorPanel::onBtnClearFilter, this);
 
 	return panel;
 }
@@ -954,6 +985,17 @@ void TextureEditorPanel::populatePatchesList() const
 	list_patches_->SetSelections(wxDataViewItemArray());
 	for (auto i : editor_->selectedPatches())
 		list_patches_->SelectRow(i);
+}
+
+// -----------------------------------------------------------------------------
+// Updates the filtering on the texture tree
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::updateFilter() const
+{
+	if (txed_show_filter)
+		textures_tree_view_->setFilter(text_filter_->GetValue().utf8_string());
+	else
+		textures_tree_view_->setFilter({});
 }
 
 // -----------------------------------------------------------------------------
@@ -1568,6 +1610,13 @@ bool TextureEditorPanel::handleAction(string_view id)
 	else if (id == "txed_patch_back")
 		pushPatch(false);
 
+	else if (id == "txed_toggle_filter")
+	{
+		updateFilter();
+		panel_filter_->Show(txed_show_filter);
+		panel_filter_->GetParent()->Layout();
+	}
+
 	else
 		return false; // Not handled
 
@@ -2037,4 +2086,21 @@ void TextureEditorPanel::onPatchTableTextureDClick(wxCommandEvent& e)
 		wxDataViewEvent de(wxEVT_DATAVIEW_SELECTION_CHANGED, textures_tree_view_, wxDataViewItem(ctex));
 		textures_tree_view_->ProcessWindowEvent(de);
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Called when the filter text is changed
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onTextFilterChanged(wxCommandEvent& e)
+{
+	updateFilter();
+	e.Skip();
+}
+
+// -----------------------------------------------------------------------------
+// Called when the 'Clear Filter' button is clicked
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onBtnClearFilter(wxCommandEvent& e)
+{
+	text_filter_->SetValue(wxEmptyString);
 }

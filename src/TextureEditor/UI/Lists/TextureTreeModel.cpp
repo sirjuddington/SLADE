@@ -37,6 +37,7 @@
 #include "Graphics/Icons.h"
 #include "TextureEditor/TextureEditor.h"
 #include "Utility/PropertyList.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace texeditor;
@@ -81,7 +82,10 @@ void TextureTreeModel::open(const TextureEditor& editor)
 		[this](TextureXList* list, CTexture* tex)
 		{
 			if (auto parent = itemForTexList(list); parent.IsOk())
-				ItemAdded(parent, wxDataViewItem(tex));
+			{
+				if (matchesFilter(*tex))
+					ItemAdded(parent, wxDataViewItem(tex));
+			}
 			else
 				log::warning("Texture \"{}\" added to unknown list", tex->name());
 		});
@@ -91,7 +95,10 @@ void TextureTreeModel::open(const TextureEditor& editor)
 		[this](TextureXList* list, CTexture* tex)
 		{
 			if (auto parent = itemForTexList(list); parent.IsOk())
-				ItemDeleted(parent, wxDataViewItem(tex));
+			{
+				if (matchesFilter(*tex))
+					ItemDeleted(parent, wxDataViewItem(tex));
+			}
 			else
 				log::warning("Texture \"{}\" deleted from unknown list", tex->name());
 		});
@@ -148,6 +155,52 @@ vector<wxDataViewItem> TextureTreeModel::texListItems() const
 	for (auto& item : root_items_)
 		items.emplace_back(item.id.get());
 	return items;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the current [name] filter for the model
+// -----------------------------------------------------------------------------
+void TextureTreeModel::setFilter(string_view name)
+{
+	// Check any change is required
+	if (name.empty() && filter_name_.empty())
+		return;
+
+	// Process filter string
+	filter_name_.clear();
+	if (!name.empty())
+	{
+		auto filter_parts = strutil::splitV(name, ',');
+		for (const auto p : filter_parts)
+		{
+			auto filter_part = strutil::trim(p);
+			if (filter_part.empty())
+				continue;
+
+			strutil::upperIP(filter_part);
+			filter_part += '*';
+			filter_name_.push_back(filter_part);
+		}
+	}
+
+	// Fully refresh the list
+	Cleared();
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if [tex] matches the current filter
+// -----------------------------------------------------------------------------
+bool TextureTreeModel::matchesFilter(const CTexture& tex) const
+{
+	if (filter_name_.empty())
+		return true;
+
+	auto name_upper = strutil::upper(tex.name());
+	for (const auto& f : filter_name_)
+		if (strutil::matches(name_upper, f))
+			return true;
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -351,10 +404,16 @@ unsigned int TextureTreeModel::GetChildren(const wxDataViewItem& item, wxDataVie
 		if (tex->index() < 0)
 		{
 			// Index of -1 means this item is a TextureXList, add all textures in the list as children
+			// (that match the current filter, if any)
+			unsigned int count = 0;
 			for (const auto& t : tex->list()->textures())
-				children.Add(wxDataViewItem(t.get()));
+				if (matchesFilter(*t))
+				{
+					children.Add(wxDataViewItem(t.get()));
+					++count;
+				}
 
-			return tex->list()->textures().size();
+			return count;
 		}
 	}
 

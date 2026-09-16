@@ -17,7 +17,9 @@
 
     { "type": "action", "id": "txed_up" },
     { "type": "action", "id": "txed_down" },
-    { "type": "action", "id": "txed_sort" }
+    { "type": "action", "id": "txed_sort" },
+    { "type": "stretch_spacer" },
+    { "type": "action", "id": "txed_toggle_filter" }
   ],
 
   "groups": [

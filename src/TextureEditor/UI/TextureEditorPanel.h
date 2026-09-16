@@ -63,6 +63,11 @@ private:
 	SAuiToolBar*     toolbar_texlist_    = nullptr;
 	PatchTablePanel* patch_table_panel_  = nullptr;
 
+	// Texture list filter controls
+	wxPanel*     panel_filter_     = nullptr;
+	wxTextCtrl*  text_filter_      = nullptr;
+	SIconButton* btn_clear_filter_ = nullptr;
+
 	// Texture view
 	SAuiToolBar*        toolbar_texture_    = nullptr;
 	SAuiToolBar*        toolbar_left_       = nullptr;
@@ -99,6 +104,7 @@ private:
 	void updateUI(bool texture_changed = false);
 	void updateStatusText(const CTexture* ctex);
 	void populatePatchesList() const;
+	void updateFilter() const;
 
 	void   initPatchBrowser();
 	string browsePatch(string_view initial = {});
@@ -144,5 +150,7 @@ private:
 	void onTexBrowserDClick(wxMouseEvent& e);
 	void onTexBrowserSelectionChanged(wxEvent& e);
 	void onPatchTableTextureDClick(wxCommandEvent& e);
+	void onTextFilterChanged(wxCommandEvent& e);
+	void onBtnClearFilter(wxCommandEvent& e);
 };
 } // namespace slade::texeditor
