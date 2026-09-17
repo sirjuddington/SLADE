@@ -402,11 +402,20 @@ Rectd CTextureCanvasBase::patchRect(int index, bool scale) const
 	if (!patch_images_[index])
 		return {};
 
+	// Get patch offset, applying existing patch image offset if
+	// 'Use Source Offsets' is enabled
+	auto offset = patch->offset();
+	if (patch->isExtended() && dynamic_cast<CTPatchEx*>(patch)->useOffsets())
+	{
+		offset.x -= patch_images_[index]->offset().x;
+		offset.y -= patch_images_[index]->offset().y;
+	}
+
 	auto sf = scale ? texture_->scaleFactor() : Vec2d{ 1.0, 1.0 };
-	return { (patch->xOffset() * sf.x),
-			 (patch->yOffset() * sf.y),
-			 ((patch->xOffset() + patch_images_[index]->width()) * sf.x),
-			 ((patch->yOffset() + patch_images_[index]->height()) * sf.y) };
+	return { (offset.x * sf.x),
+			 (offset.y * sf.y),
+			 ((offset.x + patch_images_[index]->width()) * sf.x),
+			 ((offset.y + patch_images_[index]->height()) * sf.y) };
 }
 
 // -----------------------------------------------------------------------------

@@ -302,7 +302,7 @@ bool TextureEditor::textureListModified(unsigned index) const
 		return false;
 
 	for (unsigned i = 0; i < list->size(); ++i)
-		if (list->texture(i)->state() == CTexture::State::Modified)
+		if (list->texture(i)->state() != CTexture::State::Unmodified)
 			return true;
 
 	return false;
