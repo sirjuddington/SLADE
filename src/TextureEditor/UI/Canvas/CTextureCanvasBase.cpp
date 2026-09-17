@@ -224,6 +224,20 @@ Vec2i CTextureCanvasBase::dragOffset(bool grid_snap) const
 }
 
 // -----------------------------------------------------------------------------
+// Cancels any active drag operation and clears its cached state
+// -----------------------------------------------------------------------------
+void CTextureCanvasBase::cancelDrag()
+{
+	dragging_        = false;
+	drag_on_texture_ = false;
+	drag_origin_     = { -1, -1 };
+	mouse_pos_       = { -1, -1 };
+	last_drag_offset_ = { 0, 0 };
+	refreshTexturePreview();
+	window()->Refresh();
+}
+
+// -----------------------------------------------------------------------------
 // Clears the current texture and the patch textures list
 // -----------------------------------------------------------------------------
 void CTextureCanvasBase::clearTexture()
@@ -717,6 +731,7 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 	{
 		drag_origin_     = { p_x, p_y };
 		drag_on_texture_ = onTexture(p_x, p_y);
+		last_drag_offset_ = { 0, 0 };
 		e.Skip();
 	}
 
@@ -724,8 +739,9 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 	else if (e.LeftUp())
 	{
 		// If we were dragging, generate end drag event
-		if (dragging_)
+		if (dragging_ && drag_origin_.x >= 0 && drag_origin_.y >= 0 && mouse_pos_.x >= 0 && mouse_pos_.y >= 0)
 		{
+			last_drag_offset_ = dragOffset(false);
 			dragging_        = false;
 			drag_on_texture_ = false;
 			refreshTexturePreview();
@@ -733,7 +749,11 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 			wxCommandEvent evt(EVT_DRAG_END, window()->GetId());
 			evt.SetInt(wxMOUSE_BTN_LEFT);
 			window()->ProcessWindowEvent(evt);
+			drag_origin_ = { -1, -1 };
+			mouse_pos_   = { -1, -1 };
 		}
+		else
+			cancelDrag();
 	}
 
 	// LEAVING

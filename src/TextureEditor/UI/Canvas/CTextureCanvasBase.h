@@ -64,6 +64,7 @@ public:
 	View      autoDetectViewType() const;
 	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
 	bool      isDragging() const { return dragging_; }
+	void      cancelDrag();
 	bool      showGrid() const { return show_grid_; }
 	void      showGrid(bool show = true) { show_grid_ = show; }
 	void      setBlendRGBA(bool rgba) { blend_rgba_ = rgba; }
@@ -72,6 +73,7 @@ public:
 	void      applyTexScale(bool apply) { tex_scale_ = apply; }
 	Vec2i     dragOrigin() const { return { drag_origin_.x, drag_origin_.y }; }
 	Vec2i     dragOffset(bool grid_snap = true) const;
+	Vec2i     lastDragOffset() const { return last_drag_offset_; }
 
 	Mode mode() const { return mode_; }
 	void setMode(Mode mode);
@@ -118,10 +120,11 @@ protected:
 	ui::ZoomControl* linked_zoom_control_ = nullptr;
 	Vec2i            zoom_point_          = { -1, -1 };
 
-	Vec2i drag_origin_     = { -1, -1 };
-	Vec2i mouse_pos_       = { -1, -1 };
-	bool  dragging_        = false;
-	bool  drag_on_texture_ = false;
+	Vec2i drag_origin_      = { -1, -1 };
+	Vec2i mouse_pos_        = { -1, -1 };
+	Vec2i last_drag_offset_ = { 0, 0 };
+	bool  dragging_         = false;
+	bool  drag_on_texture_  = false;
 
 	bool  show_grid_ = false;
 	Vec2i grid_size_ = { 8, 8 };

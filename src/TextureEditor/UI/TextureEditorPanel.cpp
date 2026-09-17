@@ -1102,6 +1102,10 @@ string TextureEditorPanel::browsePatch(string_view initial)
 	if (!patch_browser_)
 		initPatchBrowser();
 
+	// Prevent the current patch from being moved if the user double-clicks a
+	// patch to select it in the browser
+	tex_canvas_->cancelDrag();
+
 	// Select initial patch if specified
 	if (!initial.empty())
 		patch_browser_->selectPatch(initial);
@@ -1839,8 +1843,22 @@ void TextureEditorPanel::onTexCanvasMouseEvent(wxMouseEvent& e)
 	// Get patch that the mouse is over (if any)
 	int patch = tex_canvas_->patchAt(canvas_pos.x, canvas_pos.y);
 
+	// Left double click
+	if (e.LeftDClick() && tex_current && patch != -1)
+	{
+		// Double-clicked on a patch, open the patch browser to replace it
+		if (auto p = tex_current->patch(patch))
+		{
+			if (auto new_patch = browsePatch(p->name()); !new_patch.empty())
+			{
+				editor_->replacePatch(new_patch);
+				updateUI(true);
+			}
+		}
+	}
+
 	// Left click
-	if (e.LeftDown() && tex_current)
+	else if (e.LeftDown() && tex_current)
 	{
 		if (patch != -1)
 		{
@@ -1898,7 +1916,7 @@ void TextureEditorPanel::onTexCanvasDragEnd(wxCommandEvent& e)
 	// If dragging ended (left button)
 	if (e.GetInt() == wxMOUSE_BTN_LEFT)
 	{
-		auto drag_offset = tex_canvas_->dragOffset(false);
+		auto drag_offset = tex_canvas_->lastDragOffset();
 		if (drag_offset.x != 0 || drag_offset.y != 0)
 		{
 			if (tex_canvas_->mode() == CTextureCanvasBase::Mode::Edit)
