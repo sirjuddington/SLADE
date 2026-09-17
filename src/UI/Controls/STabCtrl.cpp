@@ -126,3 +126,15 @@ TabControl* STabCtrl::createControl(
 	return new wxNotebook(parent, -1);
 #endif
 }
+
+// ----------------------------------------------------------------------------
+// Returns the index of [page] in [tabs]
+// ----------------------------------------------------------------------------
+int STabCtrl::getPageIndex(TabControl* tabs, wxWindow* page)
+{
+#ifdef WIN32
+	return tabs->GetPageIndex(page);
+#else
+	return tabs->FindPage(page);
+#endif
+}

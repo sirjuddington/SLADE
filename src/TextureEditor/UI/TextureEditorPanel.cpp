@@ -828,7 +828,7 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 			// Hide the texture patches/properties tab if it's currently shown
 			if (tabs_right_)
 			{
-				int idx = tabs_right_->GetPageIndex(panel_tex_patch_props_);
+				int idx = STabCtrl::getPageIndex(tabs_right_, panel_tex_patch_props_);
 				if (idx != wxNOT_FOUND)
 				{
 					tabs_right_->RemovePage(idx);
@@ -882,9 +882,14 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 			if (tabs_right_)
 			{
 				auto title = wxString::FromUTF8(ctex->name());
-				int  idx   = tabs_right_->GetPageIndex(panel_tex_patch_props_);
+				int  idx   = STabCtrl::getPageIndex(tabs_right_, panel_tex_patch_props_);
 				if (idx == wxNOT_FOUND)
-					tabs_right_->InsertPage(0, panel_tex_patch_props_, title, true);
+				{
+					// wxNotebook on GTK can fail to insert/select a hidden page.
+					panel_tex_patch_props_->Show();
+					if (!tabs_right_->InsertPage(0, panel_tex_patch_props_, title, true))
+						tabs_right_->AddPage(panel_tex_patch_props_, title, true);
+				}
 				else
 					tabs_right_->SetPageText(idx, title);
 			}
