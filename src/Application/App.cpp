@@ -428,6 +428,13 @@ vector<string> processCommandLine(const vector<string>& args)
 			log::info("Portable mode enabled");
 		}
 
+		// --nouistate: Disable saving/restoring UI state
+		else if (strutil::equalCI(arg, "--nouistate"))
+		{
+			ui::enableSavedState(false);
+			log::info("UI state saving disabled");
+		}
+
 		// Other (no dash), open as archive
 		else if (!strutil::startsWith(arg, '-'))
 			to_open.push_back(arg);

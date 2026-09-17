@@ -53,6 +53,39 @@ namespace
 string get_ui_state    = "SELECT value FROM ui_state WHERE name = ? AND archive_id IS ?";
 string insert_ui_state = "INSERT INTO ui_state (name, value, archive_id) VALUES (?,?,?)";
 string update_ui_state = "UPDATE ui_state SET value = ? WHERE name = ? AND archive_id IS ?";
+bool   state_enabled   = true;
+
+vector<Named<Property>> default_props = { { ENTRYLIST_INDEX_VISIBLE, false },
+										  { ENTRYLIST_INDEX_WIDTH, 50 },
+										  { ENTRYLIST_SIZE_VISIBLE, true },
+										  { ENTRYLIST_SIZE_WIDTH, 70 },
+										  { ENTRYLIST_TYPE_VISIBLE, true },
+										  { ENTRYLIST_TYPE_WIDTH, 180 },
+										  { ENTRYLIST_NAME_WIDTH_LIST, 110 },
+										  { ENTRYLIST_NAME_WIDTH_TREE, 190 },
+										  { ENTRYLIST_VIEW_TYPE, 1 },
+										  { ARCHIVEPANEL_SPLIT_POS_LIST, 370 },
+										  { ARCHIVEPANEL_SPLIT_POS_TREE, 450 },
+										  { ARCHIVE_LAST_CREATED_FORMAT, "wad" },
+										  { COLOURISEDIALOG_LAST_COLOUR, "RGB(255, 0, 0)" },
+										  { TINTDIALOG_LAST_COLOUR, "RGB(255, 0, 0)" },
+										  { TINTDIALOG_LAST_AMOUNT, 50 },
+										  { ZOOM_GFXCANVAS, 100 },
+										  { ZOOM_CTEXTURECANVAS, 100 },
+										  { BROWSERWINDOW_MAXIMIZED, false },
+										  { MAINWINDOW_MAXIMIZED, true },
+										  { MAPEDITORWINDOW_MAXIMIZED, true },
+										  { SCRIPTMANAGERWINDOW_MAXIMIZED, false },
+										  { SETUP_WIZARD_RUN, false },
+										  { TEXTURELIST_INDEX_VISIBLE, false },
+										  { TEXTURELIST_INDEX_WIDTH, 50 },
+										  { TEXTURELIST_SIZE_VISIBLE, true },
+										  { TEXTURELIST_SIZE_WIDTH, 70 },
+										  { TEXTURELIST_TYPE_VISIBLE, false },
+										  { TEXTURELIST_TYPE_WIDTH, 180 },
+										  { TEXTURELIST_NAME_WIDTH, 130 },
+										  { TEXTURELIST_PATCHES_VISIBLE, false },
+										  { TEXTURELIST_PATCHES_WIDTH, 70 } };
 } // namespace
 
 
@@ -65,6 +98,9 @@ namespace slade::ui
 {
 bool hasSavedState(string_view name, optional<i64> archive_id)
 {
+	if (!state_enabled)
+		return false;
+
 	auto ps = database::context().preparedStatement(
 		"ui_has_saved_state", "SELECT archive_id FROM ui_state WHERE name = ? AND archive_id IS ?");
 	ps.bind(1, name);
@@ -74,6 +110,9 @@ bool hasSavedState(string_view name, optional<i64> archive_id)
 
 template<typename T> void saveState(string_view name, T value, optional<i64> archive_id)
 {
+	if (!state_enabled)
+		return;
+
 	try
 	{
 		if (hasSavedState(name, archive_id))
@@ -106,6 +145,17 @@ inline optional<i64> archiveDbId(const Archive* archive)
 
 	return std::nullopt;
 }
+
+optional<Property> getDefaultStateProp(string_view name)
+{
+	for (const auto& prop : default_props)
+	{
+		if (prop.name == name)
+			return prop.value;
+	}
+
+	return std::nullopt;
+}
 } // namespace slade::ui
 
 
@@ -116,41 +166,8 @@ inline optional<i64> archiveDbId(const Archive* archive)
 void ui::initStateProps()
 {
 	// Set default values
-	vector<Named<Property>> props = { { ENTRYLIST_INDEX_VISIBLE, false },
-									  { ENTRYLIST_INDEX_WIDTH, 50 },
-									  { ENTRYLIST_SIZE_VISIBLE, true },
-									  { ENTRYLIST_SIZE_WIDTH, 70 },
-									  { ENTRYLIST_TYPE_VISIBLE, true },
-									  { ENTRYLIST_TYPE_WIDTH, 180 },
-									  { ENTRYLIST_NAME_WIDTH_LIST, 110 },
-									  { ENTRYLIST_NAME_WIDTH_TREE, 190 },
-									  { ENTRYLIST_VIEW_TYPE, 1 },
-									  { ARCHIVEPANEL_SPLIT_POS_LIST, 370 },
-									  { ARCHIVEPANEL_SPLIT_POS_TREE, 450 },
-									  { ARCHIVE_LAST_CREATED_FORMAT, "wad" },
-									  { COLOURISEDIALOG_LAST_COLOUR, "RGB(255, 0, 0)" },
-									  { TINTDIALOG_LAST_COLOUR, "RGB(255, 0, 0)" },
-									  { TINTDIALOG_LAST_AMOUNT, 50 },
-									  { ZOOM_GFXCANVAS, 100 },
-									  { ZOOM_CTEXTURECANVAS, 100 },
-									  { BROWSERWINDOW_MAXIMIZED, false },
-									  { MAINWINDOW_MAXIMIZED, true },
-									  { MAPEDITORWINDOW_MAXIMIZED, true },
-									  { SCRIPTMANAGERWINDOW_MAXIMIZED, false },
-									  { SETUP_WIZARD_RUN, false },
-									  { TEXTURELIST_INDEX_VISIBLE, false },
-									  { TEXTURELIST_INDEX_WIDTH, 50 },
-									  { TEXTURELIST_SIZE_VISIBLE, true },
-									  { TEXTURELIST_SIZE_WIDTH, 70 },
-									  { TEXTURELIST_TYPE_VISIBLE, false },
-									  { TEXTURELIST_TYPE_WIDTH, 180 },
-									  { TEXTURELIST_NAME_WIDTH, 130 },
-									  { TEXTURELIST_PATCHES_VISIBLE, false },
-									  { TEXTURELIST_PATCHES_WIDTH, 70 } };
-
 	auto ps = database::context().preparedStatement("init_ui_state", "INSERT INTO ui_state VALUES (?,?,?)", true);
-
-	for (const auto& prop : props)
+	for (const auto& prop : default_props)
 	{
 		if (hasSavedState(prop.name, std::nullopt))
 			continue;
@@ -190,6 +207,14 @@ bool ui::hasSavedState(string_view name, const Archive* archive, bool check_glob
 }
 
 // -----------------------------------------------------------------------------
+// Enables/disables saving of UI state values to the database
+// -----------------------------------------------------------------------------
+void ui::enableSavedState(bool enable)
+{
+	state_enabled = enable;
+}
+
+// -----------------------------------------------------------------------------
 // Returns boolean UI state value [name] for [archive].
 // If no archive is given or the value is not set for the archive, the global
 // value is returned
@@ -197,6 +222,14 @@ bool ui::hasSavedState(string_view name, const Archive* archive, bool check_glob
 bool ui::getStateBool(string_view name, const Archive* archive)
 {
 	auto val = false;
+
+	if (!state_enabled)
+	{
+		if (auto def = getDefaultStateProp(name); def.has_value())
+			return std::get<bool>(*def);
+		else
+			return val;
+	}
 
 	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
 	ps.bind(1, name);
@@ -224,6 +257,14 @@ int ui::getStateInt(string_view name, const Archive* archive)
 {
 	auto val = 0;
 
+	if (!state_enabled)
+	{
+		if (auto def = getDefaultStateProp(name); def.has_value())
+			return std::get<int>(*def);
+		else
+			return val;
+	}
+
 	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
 	ps.bind(1, name);
 	ps.bind(2, archiveDbId(archive));
@@ -250,6 +291,14 @@ double ui::getStateFloat(string_view name, const Archive* archive)
 {
 	auto val = 0.;
 
+	if (!state_enabled)
+	{
+		if (auto def = getDefaultStateProp(name); def.has_value())
+			return std::get<double>(*def);
+		else
+			return val;
+	}
+
 	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
 	ps.bind(1, name);
 	ps.bind(2, archiveDbId(archive));
@@ -275,6 +324,14 @@ double ui::getStateFloat(string_view name, const Archive* archive)
 string ui::getStateString(string_view name, const Archive* archive)
 {
 	string val;
+
+	if (!state_enabled)
+	{
+		if (auto def = getDefaultStateProp(name); def.has_value())
+			return std::get<string>(*def);
+		else
+			return val;
+	}
 
 	auto ps = database::context().preparedStatement("get_ui_state", get_ui_state);
 	ps.bind(1, name);
@@ -359,6 +416,9 @@ void ui::saveStateString(string_view name, string_view value, const Archive* arc
 // -----------------------------------------------------------------------------
 void ui::toggleStateBool(string_view name, const Archive* archive)
 {
+	if (!state_enabled)
+		return;
+
 	auto ps = database::context().preparedStatement(
 		"toggle_ui_state_bool",
 		"UPDATE ui_state SET value = CASE value WHEN 0 THEN 1 ELSE 0 END WHERE name = ? AND archive_id IS ?",

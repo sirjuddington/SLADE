@@ -52,6 +52,7 @@ inline constexpr string_view TEXEDITOR_SPLIT_POS_PROPS     = "TexEditorSplitPosP
 
 void initStateProps();
 bool hasSavedState(string_view name, const Archive* archive = nullptr, bool check_global = false);
+void enableSavedState(bool enable = true);
 
 bool   getStateBool(string_view name, const Archive* archive = nullptr);
 int    getStateInt(string_view name, const Archive* archive = nullptr);
