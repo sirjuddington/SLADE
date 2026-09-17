@@ -66,7 +66,7 @@ public:
 	ArchivePanel*                  tabForArchive(const Archive* archive) const;
 	void                           openTab(const Archive* archive) const;
 	void                           closeTab(int archive_index) const;
-	void                           openTextureTab(int archive_index, ArchiveEntry* entry = nullptr) const;
+	void                           openTextureTab(int archive_index, const ArchiveEntry* entry = nullptr) const;
 	texeditor::TextureEditorPanel* textureTabForArchive(int archive_index) const;
 	void                           closeTextureTab(int archive_index) const;
 	void                           openEntryTab(ArchiveEntry* entry) const;

@@ -454,6 +454,12 @@ int TextureTreeModel::Compare(
 		}
 	}
 
+	if ((tex1 && tex1->index() < 0) || (tex2 && tex2->index() < 0))
+	{
+		// One of the items is a root item, sort it before the other
+		return tex1->index() < tex2->index() ? -1 : 1;
+	}
+
 	return wxDataViewModel::Compare(item1, item2, column, ascending);
 }
 

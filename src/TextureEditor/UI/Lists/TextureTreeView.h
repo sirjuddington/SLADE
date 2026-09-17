@@ -22,6 +22,7 @@ public:
 
 	wxDataViewItem    lastSelectedItem() const;
 	vector<CTexture*> selectedTextures() const;
+	void              selectTextureList(const TextureXList* list);
 
 	void expandAll();
 

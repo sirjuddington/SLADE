@@ -36,7 +36,7 @@ namespace slade::texeditor
 class TextureEditorPanel : public wxPanel, public SActionHandler
 {
 public:
-	TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive);
+	TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive, const ArchiveEntry* tx_entry = nullptr);
 	~TextureEditorPanel() override;
 
 	Archive*     archive() const;

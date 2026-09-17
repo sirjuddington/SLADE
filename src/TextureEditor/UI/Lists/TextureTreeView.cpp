@@ -129,6 +129,29 @@ vector<CTexture*> TextureTreeView::selectedTextures() const
 }
 
 // -----------------------------------------------------------------------------
+// Selects the given texture [list] in the tree
+// -----------------------------------------------------------------------------
+void TextureTreeView::selectTextureList(const TextureXList* list)
+{
+	if (!list)
+		return;
+
+	if (auto model = dynamic_cast<TextureTreeModel*>(GetModel()))
+	{
+		auto item = model->itemForTexList(list);
+		if (item.IsOk())
+		{
+			SetSelections({ item });
+			EnsureVisible(item);
+
+			// Send selection changed event
+			wxDataViewEvent de(wxEVT_DATAVIEW_SELECTION_CHANGED, this, item);
+			ProcessWindowEvent(de);
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Expands all texture list (root) items in the tree
 // -----------------------------------------------------------------------------
 void TextureTreeView::expandAll()

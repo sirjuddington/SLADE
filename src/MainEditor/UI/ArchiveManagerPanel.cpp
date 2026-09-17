@@ -930,7 +930,7 @@ void ArchiveManagerPanel::closeTab(int archive_index) const
 // Opens a new texture editor tab for the archive at [archive_index] in the
 // archive manager
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry) const
+void ArchiveManagerPanel::openTextureTab(int archive_index, const ArchiveEntry* entry) const
 {
 	auto archive = app::archiveManager().getArchive(archive_index);
 
@@ -958,7 +958,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 
 		// If tab isn't already open, open a new one
 		maineditor::window()->Freeze();
-		auto* txed = new texeditor::TextureEditorPanel(stc_archives_, archive);
+		auto* txed = new texeditor::TextureEditorPanel(stc_archives_, archive, entry);
 		stc_archives_->AddPage(txed, WX_FMT("Texture Editor ({})", archive->filename(false)), true);
 		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::General, "texeditor"));
 

@@ -262,7 +262,8 @@ private:
 // -----------------------------------------------------------------------------
 // TextureEditorPanel class constructor
 // -----------------------------------------------------------------------------
-TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive) : wxPanel(parent, wxID_ANY)
+TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> archive, const ArchiveEntry* tx_entry) :
+	wxPanel(parent, wxID_ANY)
 {
 	wxWindowBase::SetName(wxS("texture"));
 
@@ -374,9 +375,26 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 				populateTextureBrowser(*list);
 		});
 
-	// Init UI (expandAll must be deferred until the native window exists)
-	CallAfter([this]() { textures_tree_view_->expandAll(); });
-	updateUI(true);
+	// Init UI
+	CallAfter(
+		[this, tx_entry]()
+		{
+			// expandAll must be deferred until the native window exists
+			textures_tree_view_->expandAll();
+
+			// Show the texture list for the given TEXTUREx entry, or the first
+			// list if none was given
+			auto list = editor_->textureList(0);
+			for (unsigned a = 0; a < editor_->nTextureLists(); ++a)
+			{
+				if (tx_entry && editor_->textureListEntry(a) == tx_entry)
+					list = editor_->textureList(a);
+			}
+			if (list)
+				textures_tree_view_->selectTextureList(list);
+
+			updateUI(true);
+		});
 }
 
 // -----------------------------------------------------------------------------
