@@ -105,7 +105,6 @@ private:
 	wxPanel* createOffsetsPanel(wxWindow* parent);
 
 	void updateUI(bool texture_changed = false);
-	void updateStatusText(const CTexture* ctex);
 	void populatePatchesList() const;
 	void updateFilter() const;
 

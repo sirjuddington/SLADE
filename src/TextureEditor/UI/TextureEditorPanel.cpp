@@ -153,6 +153,28 @@ PatchDropPlacement determinePatchDropPlacement(
 	return placement;
 }
 
+// -----------------------------------------------------------------------------
+// Updates the main window status bar text to show [ctex]'s info
+// (or clears it if [ctex] is null)
+// -----------------------------------------------------------------------------
+void updateStatusText(const CTexture* ctex)
+{
+	if (!ctex)
+	{
+		maineditor::setStatusText("");
+		return;
+	}
+
+	string status_primary = fmt::format("{}: {}, {}x{}", ctex->index(), ctex->name(), ctex->width(), ctex->height());
+
+	auto scale_factor = ctex->scaleFactor();
+	if (scale_factor.x != 1.0 || scale_factor.y != 1.0)
+		status_primary += fmt::format(
+			" (scaled {}x{})", ctex->width() * scale_factor.x, ctex->height() * scale_factor.y);
+
+	maineditor::setStatusText(status_primary);
+}
+
 
 // -----------------------------------------------------------------------------
 // PatchDropTarget Class
@@ -593,7 +615,7 @@ wxPanel* TextureEditorPanel::createMainPanel(wxWindow* parent)
 		createTextureViewPanel(splitter_right_),
 		createRightPanel(splitter_right_),
 		ui::TEXEDITOR_SPLIT_POS_RIGHT,
-		-250,
+		-300,
 		editor_->archive());
 	sizer->Add(splitter_right_, wxSizerFlags(1).Expand());
 
@@ -744,6 +766,7 @@ wxPanel* TextureEditorPanel::createPatchListPanel(wxWindow* parent)
 	list_patches_ = new wxDataViewListCtrl(panel, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxDV_MULTIPLE);
 	list_patches_->AppendTextColumn(wxS("#"));
 	list_patches_->AppendTextColumn(wxS("Name"));
+	list_patches_->AppendTextColumn(wxS("Position"));
 	hbox->Add(list_patches_, wxSizerFlags(1).Expand());
 
 	// Patches toolbar
@@ -985,28 +1008,6 @@ void TextureEditorPanel::updateUI(bool texture_changed)
 }
 
 // -----------------------------------------------------------------------------
-// Updates the main window status bar text to show [ctex]'s info
-// (or clears it if [ctex] is null)
-// -----------------------------------------------------------------------------
-void TextureEditorPanel::updateStatusText(const CTexture* ctex)
-{
-	if (!ctex)
-	{
-		maineditor::setStatusText("");
-		return;
-	}
-
-	string status_primary = fmt::format("{}: {}, {}x{}", ctex->index(), ctex->name(), ctex->width(), ctex->height());
-
-	auto scale_factor = ctex->scaleFactor();
-	if (scale_factor.x != 1.0 || scale_factor.y != 1.0)
-		status_primary += fmt::format(
-			" (scaled {}x{})", ctex->width() * scale_factor.x, ctex->height() * scale_factor.y);
-
-	maineditor::setStatusText(status_primary);
-}
-
-// -----------------------------------------------------------------------------
 // Populates the patch list with the current texture's patches
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::populatePatchesList() const
@@ -1021,13 +1022,17 @@ void TextureEditorPanel::populatePatchesList() const
 	int patch_index = 0;
 #if wxCHECK_VERSION(3, 3, 0)
 	for (auto& p : ctex->patches())
-		list_patches_->AppendItem({ WX_FMT("{}", patch_index++), wxString::FromUTF8(p->name()) });
+		list_patches_->AppendItem(
+			{ WX_FMT("{}", patch_index++),
+			  wxString::FromUTF8(p->name()),
+			  WX_FMT("{}, {}", p->xOffset(), p->yOffset()) });
 #else
 	for (auto& p : ctex->patches())
 	{
 		wxVector<wxVariant> data;
 		data.push_back(WX_FMT("{}", patch_index++));
 		data.push_back(wxString::FromUTF8(p->name()));
+		data.push_back(WX_FMT("{}, {}", p->xOffset(), p->yOffset()));
 		list_patches_->AppendItem(data);
 	}
 #endif
@@ -1946,6 +1951,7 @@ void TextureEditorPanel::onTexCanvasDragEnd(wxCommandEvent& e)
 			{
 				editor_->movePatch(drag_offset);
 				pg_properties_->refreshPatchProperties();
+				populatePatchesList();
 				tex_canvas_->redraw(true);
 			}
 			else if (tex_canvas_->mode() == CTextureCanvasBase::Mode::DragOffsets)
@@ -2050,6 +2056,7 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 	if (x_movement != 0 || y_movement != 0)
 	{
 		editor_->movePatch({ x_movement, y_movement });
+		populatePatchesList();
 		handled = true;
 	}
 

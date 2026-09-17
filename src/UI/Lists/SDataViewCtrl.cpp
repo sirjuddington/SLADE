@@ -320,11 +320,21 @@ wxDataViewColumn* SDataViewCtrl::addColumn(
 	{
 	case ColumnType::Text:
 		column = AppendTextColumn(
-			wxString::FromUTF8(title.data(), title.size()), model_column, cellmode, FromDIP(width), wxALIGN_NOT, colstyle);
+			wxString::FromUTF8(title.data(), title.size()),
+			model_column,
+			cellmode,
+			FromDIP(width),
+			wxALIGN_NOT,
+			colstyle);
 		break;
 	case ColumnType::IconAndText:
 		column = AppendIconTextColumn(
-			wxString::FromUTF8(title.data(), title.size()), model_column, cellmode, FromDIP(width), wxALIGN_NOT, colstyle);
+			wxString::FromUTF8(title.data(), title.size()),
+			model_column,
+			cellmode,
+			FromDIP(width),
+			wxALIGN_NOT,
+			colstyle);
 		break;
 	default: return nullptr;
 	}
@@ -457,7 +467,8 @@ void SDataViewCtrl::loadColumnState(const Archive* archive)
 			cs.column->SetHidden(!getStateBool(fmt::format("{}Visible", cs.id), archive));
 
 		// Width
-		cs.column->SetWidth(FromDIP(getStateInt(fmt::format("{}Width", cs.id), archive)));
+		if (auto width = getStateInt(fmt::format("{}Width", cs.id), archive); width > 0)
+			cs.column->SetWidth(FromDIP(width));
 	}
 }
 
@@ -486,7 +497,8 @@ void SDataViewCtrl::restoreColumnWidths(const Archive* archive)
 		}
 
 		if (!cs.id.empty())
-			cs.column->SetWidth(FromDIP(getStateInt(fmt::format("{}Width", cs.id), archive)));
+			if (auto width = getStateInt(fmt::format("{}Width", cs.id), archive); width > 0)
+				cs.column->SetWidth(FromDIP(width));
 	}
 	Thaw();
 }

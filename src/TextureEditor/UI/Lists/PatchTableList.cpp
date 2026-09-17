@@ -135,9 +135,9 @@ const Archive* PatchTableList::stateArchive() const
 void PatchTableList::setupColumns()
 {
 	// Add columns
-	col_index_   = addColumn(ColumnType::Text, 0, "#", 50, "PatchTableIndex");
-	col_name_    = addColumn(ColumnType::Text, 1, "Name", 100, "PatchTableName", ColumnVisibility::AlwaysVisible);
-	col_used_in_ = addColumn(ColumnType::Text, 2, "# Uses", 80, "PatchTableUsedIn");
+	col_index_   = addColumn(ColumnType::Text, 0, "#", 50, "PatchTableIndex", ColumnVisibility::Hidden);
+	col_name_    = addColumn(ColumnType::Text, 1, "Name", 80, "PatchTableName", ColumnVisibility::AlwaysVisible);
+	col_used_in_ = addColumn(ColumnType::Text, 2, "# Uses", 60, "PatchTableUsedIn");
 	col_archive_ = addColumn(ColumnType::Text, 3, "In Archive", 130, "PatchTableArchive");
 
 	// Load width/visibility state
