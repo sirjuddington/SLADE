@@ -138,7 +138,7 @@ bool BSPArchiveHandler::open(Archive& archive, const MemChunk& mc)
 		// Update splash window progress
 		ui::setSplashProgress(a, numtex);
 
-		size_t offset;
+		uint32_t offset;
 		mc.read(&offset, 4);
 		offset = wxINT32_SWAP_ON_BE(offset);
 
@@ -296,7 +296,7 @@ bool BSPArchiveHandler::isThisFormat(const MemChunk& mc)
 	// Check that each texture is within bounds
 	for (size_t a = 0; a < numtex; ++a)
 	{
-		size_t offset;
+		uint32_t offset;
 		mc.read(&offset, 4);
 		offset = wxINT32_SWAP_ON_BE(offset);
 
@@ -410,7 +410,7 @@ bool BSPArchiveHandler::isThisFormat(const string& filename)
 	// Check that each texture is within bounds
 	for (size_t a = 0; a < numtex; ++a)
 	{
-		size_t offset;
+		uint32_t offset;
 		file.Read(&offset, 4);
 		offset = wxINT32_SWAP_ON_BE(offset);
 		// A texture header takes 40 bytes (16 bytes for name, 6 int32 for records),
