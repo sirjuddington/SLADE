@@ -96,6 +96,77 @@ void objectSetStringProperty(MapObject& self, string_view key, string_view value
 }
 
 // -----------------------------------------------------------------------------
+// Sets UDMF plane properties from [plane], using SLADE's internal plane sign
+// convention, then updates the live sector plane.
+// -----------------------------------------------------------------------------
+void setSectorPlane(
+	MapSector&   self,
+	const Plane& plane,
+	string_view  prop_a,
+	string_view  prop_b,
+	string_view  prop_c,
+	string_view  prop_d,
+	void (MapSector::*setter)(const Plane&))
+{
+	self.setFloatProperty(prop_a, -plane.a);
+	self.setFloatProperty(prop_b, -plane.b);
+	self.setFloatProperty(prop_c, -plane.c);
+	self.setFloatProperty(prop_d, plane.d);
+	(self.*setter)(plane);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the authored floor plane for sector [self]
+// -----------------------------------------------------------------------------
+void setSectorFloorPlane(MapSector& self, const Plane& plane)
+{
+	setSectorPlane(
+		self, plane, "floorplane_a", "floorplane_b", "floorplane_c", "floorplane_d", &MapSector::setFloorPlane);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the authored ceiling plane for sector [self]
+// -----------------------------------------------------------------------------
+void setSectorCeilingPlane(MapSector& self, const Plane& plane)
+{
+	setSectorPlane(
+		self,
+		plane,
+		"ceilingplane_a",
+		"ceilingplane_b",
+		"ceilingplane_c",
+		"ceilingplane_d",
+		&MapSector::setCeilingPlane);
+}
+
+// -----------------------------------------------------------------------------
+// Attempts to correct the sectors for [line] in [self]
+// -----------------------------------------------------------------------------
+bool correctLineSectors(SLADEMap& self, MapLine* line)
+{
+	return line && self.correctLineSectors(line);
+}
+
+// -----------------------------------------------------------------------------
+// Sets [side] on [line] in [self], ignoring invalid pointers from lua
+// -----------------------------------------------------------------------------
+void setLineSide(SLADEMap& self, MapLine* line, MapSide* side, bool front)
+{
+	if (line && side)
+		self.setLineSide(line, side, front);
+}
+
+// -----------------------------------------------------------------------------
+// Corrects sectors for [lines] in [self], ignoring invalid pointers from lua
+// -----------------------------------------------------------------------------
+void correctSectors(SLADEMap& self, sol::as_table_t<vector<MapLine*>> lines, bool existing_only)
+{
+	auto map_lines = lines.value();
+	map_lines.erase(std::remove(map_lines.begin(), map_lines.end(), nullptr), map_lines.end());
+	self.correctSectors(map_lines, existing_only);
+}
+
+// -----------------------------------------------------------------------------
 // Registers the Map type with lua
 // -----------------------------------------------------------------------------
 void registerSLADEMap(sol::state& lua)
@@ -112,6 +183,71 @@ void registerSLADEMap(sol::state& lua)
 	lua_map["sidedefs"]      = sol::property([](SLADEMap& self) { return self.sides().all(); });
 	lua_map["sectors"]       = sol::property([](SLADEMap& self) { return self.sectors().all(); });
 	lua_map["things"]        = sol::property([](SLADEMap& self) { return self.things().all(); });
+
+	// Creation Functions
+	// -------------------------------------------------------------------------
+	lua_map["CreateVertex"] = sol::overload(
+		[](SLADEMap& self, Vec2d pos) { return self.createVertex(pos); },
+		[](SLADEMap& self, Vec2d pos, double split_dist) { return self.createVertex(pos, split_dist); });
+	lua_map["CreateLine"] = sol::overload(
+		[](SLADEMap& self, Vec2d p1, Vec2d p2) { return self.createLine(p1, p2); },
+		[](SLADEMap& self, Vec2d p1, Vec2d p2, double split_dist) {
+			return self.createLine(p1, p2, split_dist);
+		},
+		[](SLADEMap& self, MapVertex* v1, MapVertex* v2) { return self.createLine(v1, v2); },
+		[](SLADEMap& self, MapVertex* v1, MapVertex* v2, bool force) { return self.createLine(v1, v2, force); });
+	lua_map["CreateThing"] = sol::overload(
+		[](SLADEMap& self, Vec2d pos) { return self.createThing(pos); },
+		[](SLADEMap& self, Vec2d pos, int type) { return self.createThing(pos, type); });
+	lua_map["CreateSector"] = &SLADEMap::createSector;
+	lua_map["CreateSide"]   = &SLADEMap::createSide;
+
+	// Removal Functions
+	// -------------------------------------------------------------------------
+	lua_map["RemoveVertex"] = sol::overload(
+		[](SLADEMap& self, MapVertex* vertex) { return self.removeVertex(vertex); },
+		[](SLADEMap& self, MapVertex* vertex, bool merge_lines) { return self.removeVertex(vertex, merge_lines); },
+		[](SLADEMap& self, unsigned index) { return self.removeVertex(index); },
+		[](SLADEMap& self, unsigned index, bool merge_lines) { return self.removeVertex(index, merge_lines); });
+	lua_map["RemoveLine"] = sol::overload(
+		[](SLADEMap& self, MapLine* line) { return self.removeLine(line); },
+		[](SLADEMap& self, unsigned index) { return self.removeLine(index); });
+	lua_map["RemoveSide"] = sol::overload(
+		[](SLADEMap& self, MapSide* side) { return self.removeSide(side); },
+		[](SLADEMap& self, MapSide* side, bool remove_from_line) { return self.removeSide(side, remove_from_line); },
+		[](SLADEMap& self, unsigned index) { return self.removeSide(index); },
+		[](SLADEMap& self, unsigned index, bool remove_from_line) { return self.removeSide(index, remove_from_line); });
+	lua_map["RemoveSector"] = sol::overload(
+		[](SLADEMap& self, MapSector* sector) { return self.removeSector(sector); },
+		[](SLADEMap& self, unsigned index) { return self.removeSector(index); });
+	lua_map["RemoveThing"] = sol::overload(
+		[](SLADEMap& self, MapThing* thing) { return self.removeThing(thing); },
+		[](SLADEMap& self, unsigned index) { return self.removeThing(index); });
+	lua_map["RemoveDetachedVertices"] = &SLADEMap::removeDetachedVertices;
+
+	// Editing Functions
+	// -------------------------------------------------------------------------
+	lua_map["MergeVertices"]      = &SLADEMap::mergeVertices;
+	lua_map["MergeVerticesPoint"] = &SLADEMap::mergeVerticesPoint;
+	lua_map["SplitLine"]          = &SLADEMap::splitLine;
+	lua_map["SplitLinesAt"]       = sol::overload(
+		[](SLADEMap& self, MapVertex* vertex) { self.splitLinesAt(vertex); },
+		[](SLADEMap& self, MapVertex* vertex, double split_dist) { self.splitLinesAt(vertex, split_dist); });
+	lua_map["SetLineSector"] = sol::overload(
+		[](SLADEMap& self, unsigned line_index, unsigned sector_index) {
+			return self.setLineSector(line_index, sector_index);
+		},
+		[](SLADEMap& self, unsigned line_index, unsigned sector_index, bool front) {
+			return self.setLineSector(line_index, sector_index, front);
+		});
+	lua_map["MergeLine"]          = &SLADEMap::mergeLine;
+	lua_map["CorrectLineSectors"] = &correctLineSectors;
+	lua_map["SetLineSide"]        = &setLineSide;
+	lua_map["CorrectSectors"]     = sol::overload(
+		[](SLADEMap& self, sol::as_table_t<vector<MapLine*>> lines) { correctSectors(self, lines, false); },
+		[](SLADEMap& self, sol::as_table_t<vector<MapLine*>> lines, bool existing_only) {
+			correctSectors(self, lines, existing_only);
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -196,9 +332,9 @@ void registerMapVertex(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_vertex["x"]              = &MapVertex::xPos;
-	lua_vertex["y"]              = &MapVertex::yPos;
-	lua_vertex["connectedLines"] = &MapVertex::connectedLines;
+	lua_vertex["x"]              = sol::property(&MapVertex::xPos);
+	lua_vertex["y"]              = sol::property(&MapVertex::yPos);
+	lua_vertex["connectedLines"] = sol::property(&MapVertex::connectedLines);
 }
 
 // -----------------------------------------------------------------------------
@@ -253,6 +389,7 @@ void registerMapLine(sol::state& lua)
 	lua_line["side1"]   = sol::property(&MapLine::s1);
 	lua_line["side2"]   = sol::property(&MapLine::s2);
 	lua_line["special"] = sol::property(&MapLine::special);
+	lua_line["id"]      = sol::property(&MapLine::id);
 	lua_line["length"]  = sol::property(&MapLine::length);
 
 	// Functions
@@ -273,7 +410,7 @@ void registerMapSide(sol::state& lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_side["sector"]        = sol::property(&MapSide::sector);
+	lua_side["sector"]        = sol::property(&MapSide::sector, &MapSide::setSector);
 	lua_side["line"]          = sol::property(&MapSide::parentLine);
 	lua_side["textureBottom"] = sol::property(&MapSide::texLower);
 	lua_side["textureMiddle"] = sol::property(&MapSide::texMiddle);
@@ -303,8 +440,9 @@ void registerMapSector(sol::state& lua)
 	lua_sector["connectedSides"] = sol::property(&MapSector::connectedSides);
 	lua_sector["colour"]         = sol::property(&MapSector::colourAt);
 	lua_sector["fogColour"]      = sol::property(&MapSector::fogColour);
-	lua_sector["planeFloor"]     = sol::property([](MapSector& self) { return self.floor().plane; });
-	lua_sector["planeCeiling"]   = sol::property([](MapSector& self) { return self.ceiling().plane; });
+	lua_sector["planeFloor"] = sol::property([](MapSector& self) { return self.floor().plane; }, &setSectorFloorPlane);
+	lua_sector["planeCeiling"] =
+		sol::property([](MapSector& self) { return self.ceiling().plane; }, &setSectorCeilingPlane);
 	// TODO: bbox (need to export BBox struct first)
 
 	// Functions

@@ -150,6 +150,28 @@ sladescript : lua
 					MapEditor.Select = "MapObject object, [boolean add]";
 					MapEditor.SetEditMode = "integer mode, [integer sectorMode]";
 
+		// Map type
+		MapVertex	Map.CreateVertex = "Point position, [float splitDist]";
+		MapLine		Map.CreateLine = "Point start, Point end, [float splitDist]", "MapVertex vertex1, MapVertex vertex2, [boolean force]";
+		MapThing	Map.CreateThing = "Point position, [integer type]";
+		MapSector	Map.CreateSector;
+		MapSide		Map.CreateSide = "MapSector sector";
+		boolean		Map.RemoveVertex = "MapVertex vertex, [boolean mergeLines]", "integer index, [boolean mergeLines]";
+		boolean		Map.RemoveLine = "MapLine line", "integer index";
+		boolean		Map.RemoveSide = "MapSide side, [boolean removeFromLine]", "integer index, [boolean removeFromLine]";
+		boolean		Map.RemoveSector = "MapSector sector", "integer index";
+		boolean		Map.RemoveThing = "MapThing thing", "integer index";
+		integer		Map.RemoveDetachedVertices;
+					Map.MergeVertices = "integer vertex1, integer vertex2";
+		MapVertex	Map.MergeVerticesPoint = "Point position";
+		MapLine		Map.SplitLine = "MapLine line, MapVertex vertex";
+					Map.SplitLinesAt = "MapVertex vertex, [float splitDist]";
+		boolean		Map.SetLineSector = "integer lineIndex, integer sectorIndex, [boolean front]";
+		integer		Map.MergeLine = "integer index";
+		boolean		Map.CorrectLineSectors = "MapLine line";
+					Map.SetLineSide = "MapLine line, MapSide side, boolean front";
+					Map.CorrectSectors = "MapLine[] lines, [boolean existingOnly]";
+
 		// MapLine type
 		boolean	MapLine.Flag = "string flagName";
 				MapLine.Flip = "[boolean swapSides]";
