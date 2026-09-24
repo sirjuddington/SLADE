@@ -388,7 +388,7 @@ bool TarArchiveHandler::write(Archive& archive, MemChunk& mc)
 		name.erase(0, 1); // Remove leading /
 		if (name.size() > 99)
 		{
-			log::warning("Entry %s path is too long (> 99 characters), putting it in the root directory", name);
+			log::warning("Entry {} path is too long (> 99 characters), putting it in the root directory", name);
 			auto fname = strutil::Path::fileNameOf(name);
 			name       = fname.size() > 99 ? fname.substr(0, 99) : fname;
 		}

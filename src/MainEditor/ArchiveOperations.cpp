@@ -360,7 +360,7 @@ bool archiveoperations::removeUnusedPatches(Archive* archive)
 
 	// Notify user
 	wxMessageBox(
-		WX_FMT("Removed %d patches and {} entries. See console log for details.", removed, to_remove.size()),
+		WX_FMT("Removed {} patches and {} entries. See console log for details.", removed, to_remove.size()),
 		wxS("Removed Unused Patches"),
 		wxOK | wxICON_INFORMATION);
 

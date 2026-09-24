@@ -1499,7 +1499,7 @@ bool ArchivePanel::importEntry()
 				if (ok && si.format() && !si.format()->writeOffset(si, entry, offset))
 					log::warning(
 						"Old offset information [{}, {}] couldn't be "
-						"preserved in the new image format for image %s.",
+						"preserved in the new image format for image {}.",
 						offset.x,
 						offset.y,
 						entry->name());
