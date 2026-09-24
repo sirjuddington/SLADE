@@ -33,6 +33,7 @@
 #include "Main.h"
 #include "FileUtils.h"
 #include "General/Misc.h"
+#include "StringUtils.h"
 #include "UI/WxUtils.h"
 #include "thirdparty/xxhash/xxhash.h"
 #include <algorithm>
@@ -323,11 +324,21 @@ bool MemChunk::exportFile(string_view filename, u32 start, u32 size) const
 	if (size == 0)
 		size = static_cast<u32>(data_.size()) - start;
 
+	// Sanitize filename
+#ifdef __WXMSW__
+	auto path = strutil::Path(filename);
+	auto fn   = fileutil::sanitizeFilename(path.fileName(false));
+	path.setFileName(fn);
+	auto fn_wx = wxString::FromUTF8(path.fullPath());
+#else
+	auto fn_wx = wxString::FromUTF8(filename);
+#endif
+
 	// Open file for writing
-	wxFile file(wxutil::strFromView(filename), wxFile::write);
+	wxFile file(fn_wx, wxFile::write);
 	if (!file.IsOpened())
 	{
-		log::error("Unable to write to file {}", filename);
+		log::error("Unable to write to file {}", fn_wx.utf8_string());
 		global::error = "Unable to open file for writing";
 		return false;
 	}

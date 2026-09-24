@@ -326,7 +326,7 @@ bool entryoperations::renameDir(const vector<ArchiveDir*>& dirs, Archive* archiv
 // -----------------------------------------------------------------------------
 bool entryoperations::exportEntry(ArchiveEntry* entry)
 {
-	auto          name = misc::lumpNameToFileName(entry->name());
+	auto          name = misc::lumpNameToFileName(entry->name(), true);
 	strutil::Path fn(name);
 
 	// Add appropriate extension if needed
@@ -2033,7 +2033,7 @@ bool entryoperations::exportEntriesAsPNG(const vector<ArchiveEntry*>& entries)
 	// If we're just exporting 1 entry
 	if (entries.size() == 1)
 	{
-		auto          name = misc::lumpNameToFileName(entries[0]->name());
+		auto          name = misc::lumpNameToFileName(entries[0]->name(), true);
 		strutil::Path fn(name);
 
 		// Set extension

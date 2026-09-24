@@ -1602,7 +1602,7 @@ void TextureXPanel::extractTexture()
 	// If we're just exporting one texture
 	if (selection.size() == 1)
 	{
-		auto          name = misc::lumpNameToFileName(selection[0]->name());
+		auto          name = misc::lumpNameToFileName(selection[0]->name(), true);
 		strutil::Path fn(name);
 
 		// Set extension

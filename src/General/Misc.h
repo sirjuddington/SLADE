@@ -28,7 +28,7 @@ namespace misc
 	bool loadPaletteFromArchive(Palette* pal, Archive* archive, int lump = palhack::NONE);
 
 	string   sizeAsString(uint32_t size);
-	string   lumpNameToFileName(string_view lump);
+	string   lumpNameToFileName(string_view lump, bool for_filesystem = false);
 	string   fileNameToLumpName(string_view file, bool percent_encoding_only = false);
 	uint32_t crc(const uint8_t* buf, uint32_t len);
 	Vec2i    findJaguarTextureDimensions(const ArchiveEntry* entry, string_view name);

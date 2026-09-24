@@ -326,6 +326,26 @@ string fileutil::systemPath(string_view path)
 #endif
 }
 
+// -----------------------------------------------------------------------------
+// Sanitizes a [filename] by replacing invalid characters with underscores.
+// Note that this will strip / and \ so [filename] should not be a path
+// -----------------------------------------------------------------------------
+string fileutil::sanitizeFilename(string_view filename)
+{
+	auto filename_str = string{ filename };
+
+#ifdef __WXMSW__
+	// On Windows, replace invalid filename characters with underscores
+	for (auto& c : filename_str)
+	{
+		if (c == '<' || c == '>' || c == ':' || c == '"' || c == '/' || c == '\\' || c == '|' || c == '?' || c == '*')
+			c = '_';
+	}
+#endif
+
+	return filename_str;
+}
+
 
 // -----------------------------------------------------------------------------
 //

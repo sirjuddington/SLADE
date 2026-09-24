@@ -313,8 +313,10 @@ string misc::sizeAsString(uint32_t size)
 // Sanitizes a wad lump name for exporting as a file name.
 // ZDoom merely substitutes \ to ^, but Doomsday requires percent encoding of
 // every non-alphanumeric character.
+// If [for_filesystem] is true, the name will be sanitized for use as a
+// filesystem path (ie. invalid characters replaced with underscores on Windows)
 // -----------------------------------------------------------------------------
-string misc::lumpNameToFileName(string_view lump)
+string misc::lumpNameToFileName(string_view lump, bool for_filesystem)
 {
 	if (percent_encoding)
 	{
@@ -322,8 +324,13 @@ string misc::lumpNameToFileName(string_view lump)
 		string file;
 		for (char chr : lump)
 		{
-			if ((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (chr < '0' || chr > '9') && chr != '-'
-				&& chr != '.' && chr != '_' && chr != '~')
+			if ((chr < 'a' || chr > 'z')
+				&& (chr < 'A' || chr > 'Z')
+				&& (chr < '0' || chr > '9')
+				&& chr != '-'
+				&& chr != '.'
+				&& chr != '_'
+				&& chr != '~')
 			{
 				file += fmt::format("%{:02X}", static_cast<unsigned char>(chr));
 			}
@@ -336,8 +343,14 @@ string misc::lumpNameToFileName(string_view lump)
 
 	// ZDoom
 	string fname{ lump };
-	std::replace(fname.begin(), fname.end(), '\\', '^');
-	std::replace(fname.begin(), fname.end(), '/', '^');
+	std::ranges::replace(fname, '\\', '^');
+	std::ranges::replace(fname, '/', '^');
+
+#ifdef __WXMSW__
+	if (for_filesystem)
+		fname = fileutil::sanitizeFilename(fname);
+#endif
+
 	return fname;
 }
 

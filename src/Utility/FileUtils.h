@@ -20,6 +20,7 @@ namespace fileutil
 	string         findExecutable(string_view exe_name, string_view bundle_dir = {});
 	string         fileHash(string_view path);
 	string         systemPath(string_view path);
+	string         sanitizeFilename(string_view filename);
 } // namespace fileutil
 
 class SFile : public SeekableData
