@@ -648,6 +648,9 @@ void DirArchiveHandler::updateChangedEntries(Archive& archive, vector<DirEntryCh
 		if (change.action == DirEntryChange::Action::Updated)
 		{
 			auto entry = archive.entryAtPath(change.entry_path);
+			if (!entry)
+				continue;
+
 			entry->importFile(change.file_path);
 			EntryType::detectEntryType(*entry);
 			file_modification_times_[entry] = fileutil::fileModifiedTime(change.file_path);
