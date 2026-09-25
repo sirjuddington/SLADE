@@ -149,15 +149,14 @@ void UndoListView::connectManagerSignals()
 {
 	if (manager_)
 	{
-		sc_recorded_ = manager_->signals().level_recorded.connect([this]() { updateFromManager(); });
-		sc_undo_     = manager_->signals().undo.connect([this]() { updateFromManager(); });
-		sc_redo_     = manager_->signals().redo.connect([this]() { updateFromManager(); });
+		connections_ += manager_->signals().level_recorded.connect([this]() { updateFromManager(); });
+		connections_ += manager_->signals().undo.connect([this]() { updateFromManager(); });
+		connections_ += manager_->signals().redo.connect([this]() { updateFromManager(); });
+		connections_ += manager_->signals().cleared.connect([this]() { updateFromManager(); });
 	}
 	else
 	{
-		sc_recorded_.disconnect();
-		sc_undo_.disconnect();
-		sc_redo_.disconnect();
+		connections_.disconnect();
 	}
 }
 

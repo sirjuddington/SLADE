@@ -75,6 +75,7 @@ public:
 		sigslot::signal<> level_recorded;
 		sigslot::signal<> undo;
 		sigslot::signal<> redo;
+		sigslot::signal<> cleared;
 	};
 	Signals& signals() { return signals_; }
 

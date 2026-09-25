@@ -319,6 +319,7 @@ void UndoManager::clear()
 	current_level_.reset(nullptr);
 	current_level_index_ = -1;
 	undo_running_        = false;
+	signals_.cleared();
 }
 
 // -----------------------------------------------------------------------------
