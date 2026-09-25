@@ -484,11 +484,19 @@ MapDesc ZipArchiveHandler::mapDesc(const Archive& archive, ArchiveEntry* maphead
 	if (maphead->parentDir()->parent() != archive.rootDir() || !strutil::equalCI(maphead->parentDir()->name(), "maps"))
 		return map;
 
+	// Check wad contains a valid map
+	Archive wad(ArchiveFormat::Wad);
+	wad.open(maphead->data());
+	auto wad_maps = wad.detectMaps();
+	if (wad_maps.empty())
+		return map;
+
 	// Setup map info
 	map.archive = true;
 	map.head    = maphead->getShared();
 	map.end     = maphead->getShared();
 	map.name    = maphead->upperNameNoExt();
+	map.format  = wad_maps[0].format;
 
 	return map;
 }
