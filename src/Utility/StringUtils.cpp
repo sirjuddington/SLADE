@@ -977,7 +977,12 @@ strutil::Path::Path(string_view full_path) : full_path_{ full_path.data(), full_
 	const auto last_sep_pos = full_path_.find_last_of('/');
 	filename_start_         = last_sep_pos == string::npos ? 0 : last_sep_pos + 1;
 	const auto ext_pos      = full_path_.find_last_of('.');
-	filename_end_           = ext_pos == string::npos ? full_path_.size() : ext_pos;
+
+	// Only treat the '.' as an extension separator if it's actually within the
+	// filename part of the path (ie. after the last '/'), otherwise a '.' in a
+	// parent directory name (eg. "user.name/My Folder") would cause
+	// filename_end_ to end up before filename_start_
+	filename_end_ = (ext_pos == string::npos || ext_pos < filename_start_) ? full_path_.size() : ext_pos;
 }
 
 string_view strutil::Path::path(bool include_end_sep) const
@@ -1034,7 +1039,7 @@ void strutil::Path::set(string_view full_path)
 	const auto last_sep_pos = full_path_.find_last_of('/');
 	filename_start_         = last_sep_pos == string::npos ? 0 : last_sep_pos + 1;
 	const auto ext_pos      = full_path_.find_last_of('.');
-	filename_end_           = ext_pos == string::npos ? full_path_.size() : ext_pos;
+	filename_end_           = (ext_pos == string::npos || ext_pos < filename_start_) ? full_path_.size() : ext_pos;
 }
 
 void strutil::Path::setPath(string_view path)

@@ -757,25 +757,32 @@ shared_ptr<ArchiveDir> ArchiveDir::getOrCreateSubdir(
 	string_view                     path,
 	vector<shared_ptr<ArchiveDir>>* created_dirs)
 {
-	auto subdir_name = strutil::beforeFirstV(path, '/');
+	auto        current   = root;
+	string_view path_left = path;
 
-	// Find subdir in root
-	auto subdir = root->subdir(subdir_name);
-	if (!subdir)
+	while (true)
 	{
-		// Not found, create it
-		subdir = std::make_shared<ArchiveDir>(subdir_name, root, root->archive_);
-		root->addSubdir(subdir, -1);
-		if (created_dirs)
-			created_dirs->push_back(subdir);
-	}
+		auto subdir_name = strutil::beforeFirstV(path_left, '/');
 
-	// Check if there is more of [path] to follow
-	const auto path_rest = strutil::afterFirstV(path, '/');
-	if (path_rest.empty() || path_rest == path)
-		return subdir;
-	else
-		return getOrCreateSubdir(subdir, path_rest, created_dirs);
+		// Find subdir in current
+		auto subdir = current->subdir(subdir_name);
+		if (!subdir)
+		{
+			// Not found, create it
+			subdir = std::make_shared<ArchiveDir>(subdir_name, current, current->archive_);
+			current->addSubdir(subdir, -1);
+			if (created_dirs)
+				created_dirs->push_back(subdir);
+		}
+
+		// Check if there is more of [path] to follow
+		const auto path_rest = strutil::afterFirstV(path_left, '/');
+		if (path_rest.empty() || path_rest == path_left)
+			return subdir;
+
+		current   = subdir;
+		path_left = path_rest;
+	}
 }
 
 // -----------------------------------------------------------------------------
