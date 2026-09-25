@@ -425,9 +425,6 @@ void ActionSpecialPanel::setupSpecialPanel()
 			if (selection != selectedSpecial())
 				updateArgsPanel();
 		});
-	// Focusing the text also select-alls; if you leave and return you probably want to start over,
-	// not make small edits
-	text_special_->Bind(wxEVT_SET_FOCUS, [&](wxFocusEvent& e) { text_special_->SetSelection(-1, -1); });
 
 	// Action specials tree
 	tree_specials_ = new ActionSpecialTreeView(panel_action_special_);
@@ -830,7 +827,8 @@ void ActionSpecialPanel::onRadioButtonChanged(wxCommandEvent& e)
 // -----------------------------------------------------------------------------
 void ActionSpecialPanel::onSpecialSelectionChanged(wxDataViewEvent& e)
 {
-	if (ignore_select_event_ || selectedSpecial() < 0
+	if (ignore_select_event_
+		|| selectedSpecial() < 0
 		|| (game::configuration().featureSupported(game::Feature::Boom) && rb_generalised_->GetValue()))
 	{
 		e.Skip();
