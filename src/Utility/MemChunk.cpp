@@ -331,7 +331,7 @@ bool MemChunk::exportFile(string_view filename, u32 start, u32 size) const
 	path.setFileName(fn);
 	auto fn_wx = wxString::FromUTF8(path.fullPath());
 #else
-	auto fn_wx = wxString::FromUTF8(filename);
+	auto fn_wx = wxString::FromUTF8(filename.data(), filename.size());
 #endif
 
 	// Open file for writing
