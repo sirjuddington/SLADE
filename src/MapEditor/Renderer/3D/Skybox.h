@@ -21,6 +21,8 @@ public:
 
 	void setSkyTextures(string_view tex1, string_view tex2 = "");
 
+	void reset();
+
 	void render(const gl::Camera& camera);
 
 private:

@@ -82,6 +82,15 @@ void Skybox::setSkyTextures(string_view tex1, string_view tex2)
 	skytex2_ = tex2;
 
 	// Clear vertex buffer to force rebuild
+	reset();
+}
+
+// -----------------------------------------------------------------------------
+// Resets the skybox, clearing the vertex buffer and sky texture ID
+// -----------------------------------------------------------------------------
+void Skybox::reset()
+{
+	sky_tex_id_ = 0;
 	vertex_buffer_->buffer().clear();
 }
 

@@ -635,11 +635,13 @@ void MapRenderer3D::renderSelection(const gl::Camera& camera, const gl::View& vi
 // -----------------------------------------------------------------------------
 void MapRenderer3D::clearData()
 {
+	// Renderers
 	flat_renderer_->clear();
 	wall_renderer_->clear();
-
-	// Things
 	thing_renderer_->clear();
+
+	// Skybox
+	skybox_->reset();
 
 	// Selection/Highlight
 	highlight_lines_.reset();
