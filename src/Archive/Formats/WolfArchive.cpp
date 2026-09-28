@@ -1048,7 +1048,7 @@ bool WolfArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(wxString::FromUTF8(filename_));
+	wxFFile file(wxString::FromUTF8(filename_), "rb");
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -1163,7 +1163,7 @@ bool WolfArchive::isWolfArchive(const string& filename)
 	// else we have to deal with a VSWAP archive, which is the only self-contained type
 
 	// Open file for reading
-	wxFile file(wxString::FromUTF8(filename));
+	wxFFile file(wxString::FromUTF8(filename), "rb");
 
 	// Check it opened ok
 	if (!file.IsOpened())

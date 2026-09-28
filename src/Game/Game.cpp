@@ -766,7 +766,7 @@ namespace
 			//			lines[l].type, lines[l].description, lines[l].flags, lines[l].special,
 			//			lines[l].args[0], lines[l].args[1], lines[l].args[2], lines[l].args[3], lines[l].args[4]);
 		}
-		wxFile tempfile(app::path("prefabs.txt", app::Dir::Executable), wxFile::write);
+		wxFFile tempfile(app::path("prefabs.txt", app::Dir::Executable), "wb+");
 		tempfile.Write(file);
 		tempfile.Close();
 #endif

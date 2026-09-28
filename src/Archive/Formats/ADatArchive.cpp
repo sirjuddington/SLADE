@@ -324,7 +324,7 @@ bool ADatArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(wxString::FromUTF8(filename_));
+	wxFFile file(wxString::FromUTF8(filename_), "rb");
 
 	// Check it opened
 	if (!file.IsOpened())
@@ -396,7 +396,7 @@ bool ADatArchive::isADatArchive(MemChunk& mc)
 bool ADatArchive::isADatArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(wxString::FromUTF8(filename));
+	wxFFile file(wxString::FromUTF8(filename), "rb");
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < 16)

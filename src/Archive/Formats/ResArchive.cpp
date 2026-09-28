@@ -329,7 +329,7 @@ bool ResArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open resfile
-	wxFile file(wxString::FromUTF8(filename_));
+	wxFFile file(wxString::FromUTF8(filename_), "rb");
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -400,7 +400,7 @@ bool ResArchive::isResArchive(MemChunk& mc, size_t& dir_offset, size_t& num_lump
 bool ResArchive::isResArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(wxString::FromUTF8(filename));
+	wxFFile file(wxString::FromUTF8(filename), "rb");
 
 	// Check it opened ok
 	if (!file.IsOpened())

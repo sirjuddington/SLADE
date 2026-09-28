@@ -716,7 +716,7 @@ bool ZipArchive::isZipArchive(MemChunk& mc)
 bool ZipArchive::isZipArchive(const string& filename)
 {
 	// Open the file for reading
-	wxFile file(wxString::FromUTF8(filename));
+	wxFFile file(wxString::FromUTF8(filename), "rb");
 
 	// Check it opened
 	if (!file.IsOpened())

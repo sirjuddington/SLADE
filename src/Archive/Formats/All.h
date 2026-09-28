@@ -16,6 +16,7 @@
 #include "ResArchive.h"
 #include "RffArchive.h"
 #include "SiNArchive.h"
+#include "SiNReloadedArchive.h"
 #include "TarArchive.h"
 #include "Wad2Archive.h"
 #include "WadArchive.h"

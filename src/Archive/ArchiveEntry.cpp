@@ -470,7 +470,7 @@ bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t si
 	}
 
 	// Open the file
-	wxFile file(wxutil::strFromView(filename));
+	wxFFile file(wxutil::strFromView(filename), "rb");
 
 	// Check that it opened ok
 	if (!file.IsOpened())
@@ -508,7 +508,7 @@ bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t si
 // -----------------------------------------------------------------------------
 // Imports [len] data from [file]
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
+bool ArchiveEntry::importFileStream(wxFFile& file, uint32_t len)
 {
 	// Check if locked
 	if (locked_)
@@ -570,7 +570,7 @@ bool ArchiveEntry::importEntry(ArchiveEntry* entry)
 bool ArchiveEntry::exportFile(string_view filename)
 {
 	// Attempt to open file
-	wxFile file(wxutil::strFromView(filename), wxFile::write);
+	wxFFile file(wxutil::strFromView(filename), "wb+");
 
 	// Check it opened ok
 	if (!file.IsOpened())

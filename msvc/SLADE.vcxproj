@@ -30,26 +30,27 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
+    <EnableASAN>false</EnableASAN>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -147,10 +148,13 @@
   <PropertyGroup Label="Vcpkg" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <VcpkgUseStatic>true</VcpkgUseStatic>
   </PropertyGroup>
+  <PropertyGroup Label="Vcpkg">
+    <VcpkgEnabled>true</VcpkgEnabled>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NO_FLUIDSYNTH;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -163,7 +167,7 @@
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/bigobj /utf-8 </AdditionalOptions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
@@ -180,7 +184,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NO_FLUIDSYNTH;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;SFML_STATIC;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -192,7 +196,7 @@
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>$(IntDir)$(Configuration)\%(RelativeDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/bigobj /utf-8 </AdditionalOptions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
@@ -210,7 +214,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>SFML_STATIC;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;NOLIBMODPLUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NO_FLUIDSYNTH;SFML_STATIC;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;NOLIBMODPLUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
       <StringPooling>true</StringPooling>
@@ -227,7 +231,7 @@
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>$(IntDir)/%(RelativeDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/bigobj /utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;wldap32.lib;dsound.lib;ThirdPartyLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -250,7 +254,7 @@
       <Optimization>MaxSpeed</Optimization>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <WholeProgramOptimization>false</WholeProgramOptimization>
-      <PreprocessorDefinitions>SFML_STATIC;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;NOLIBMODPLUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NO_FLUIDSYNTH;SFML_STATIC;WIN32;USE_SFML_RENDERWINDOW;USE_WEBVIEW_STARTPAGE;__WXMSW__;_WINDOWS;NOPCH;_CRT_SECURE_NO_WARNINGS;NDEBUG;NOLIBMODPLUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessToFile>false</PreprocessToFile>
       <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
       <StringPooling>true</StringPooling>
@@ -266,7 +270,7 @@
       <PrecompiledHeaderOutputFile>$(MSBuildProjectDirectory)\$(TargetName).pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>$(IntDir)$(Configuration)\%(RelativeDir)</ObjectFileName>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/bigobj /utf-8 </AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>winmm.lib;rpcrt4.lib;kernel32.lib;user32.lib;gdi32.lib;ole32.lib;oleaut32.lib;comctl32.lib;comdlg32.lib;uuid.lib;advapi32.lib;shell32.lib;ws2_32.lib;crypt32.lib;wldap32.lib;dsound.lib;ThirdPartyLib.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -310,6 +314,7 @@
     <ClCompile Include="..\src\Archive\Formats\ResArchive.cpp" />
     <ClCompile Include="..\src\Archive\Formats\RffArchive.cpp" />
     <ClCompile Include="..\src\Archive\Formats\SiNArchive.cpp" />
+    <ClCompile Include="..\src\Archive\Formats\SiNReloadedArchive.cpp" />
     <ClCompile Include="..\src\Archive\Formats\TarArchive.cpp" />
     <ClCompile Include="..\src\Archive\Formats\Wad2Archive.cpp" />
     <ClCompile Include="..\src\Archive\Formats\WadArchive.cpp" />
@@ -322,6 +327,7 @@
     <ClCompile Include="..\src\Audio\Mp3Music.cpp" />
     <ClCompile Include="..\src\General\Console.cpp" />
     <ClCompile Include="..\src\Graphics\Graphics.cpp" />
+    <ClCompile Include="..\src\MainEditor\Mus2Mid.cpp" />
     <ClCompile Include="..\src\OpenGL\View.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Archive.cpp" />
     <ClCompile Include="..\src\Scripting\Export\Game.cpp" />
@@ -350,6 +356,7 @@
     <ClCompile Include="..\src\UI\Dialogs\Preferences\BaseResourceArchivesPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\ColorimetryPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\ColourPrefsPanel.cpp" />
+    <ClCompile Include="..\src\UI\Dialogs\Preferences\DECOHackPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\EditingPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\GeneralPrefsPanel.cpp" />
     <ClCompile Include="..\src\UI\Dialogs\Preferences\GraphicsPrefsPanel.cpp" />
@@ -580,60 +587,14 @@
     <ClCompile Include="..\src\Utility\StringUtils.cpp" />
     <ClCompile Include="..\src\Utility\Tokenizer.cpp" />
     <ClCompile Include="..\src\Utility\Tree.cpp" />
-    <ClCompile Include="..\thirdparty\mus2mid\mus2mid.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\files.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\i_music.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_hmi_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_midistream.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_mus_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_smf_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_xmi_midiout.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\m_alloc.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="..\src\ZReaders\files.cpp" />
+    <ClCompile Include="..\src\ZReaders\i_music.cpp" />
+    <ClCompile Include="..\src\ZReaders\music_hmi_midiout.cpp" />
+    <ClCompile Include="..\src\ZReaders\music_midistream.cpp" />
+    <ClCompile Include="..\src\ZReaders\music_mus_midiout.cpp" />
+    <ClCompile Include="..\src\ZReaders\music_smf_midiout.cpp" />
+    <ClCompile Include="..\src\ZReaders\music_xmi_midiout.cpp" />
+    <ClCompile Include="..\src\ZReaders\m_alloc.cpp" />
     <ClCompile Include="_CreatePCH.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -676,6 +637,7 @@
     <ClInclude Include="..\src\Archive\Formats\ResArchive.h" />
     <ClInclude Include="..\src\Archive\Formats\RffArchive.h" />
     <ClInclude Include="..\src\Archive\Formats\SiNArchive.h" />
+    <ClInclude Include="..\src\Archive\Formats\SiNReloadedArchive.h" />
     <ClInclude Include="..\src\Archive\Formats\TarArchive.h" />
     <ClInclude Include="..\src\Archive\Formats\Wad2Archive.h" />
     <ClInclude Include="..\src\Archive\Formats\WadArchive.h" />
@@ -943,14 +905,14 @@
     <ClInclude Include="..\src\Utility\Structs.h" />
     <ClInclude Include="..\src\Utility\Tokenizer.h" />
     <ClInclude Include="..\src\Utility\Tree.h" />
-    <ClInclude Include="..\thirdparty\mus2mid\mus2mid.h" />
-    <ClInclude Include="..\thirdparty\zreaders\files.h" />
-    <ClInclude Include="..\thirdparty\zreaders\i_music.h" />
-    <ClInclude Include="..\thirdparty\zreaders\i_musicinterns.h" />
-    <ClInclude Include="..\thirdparty\zreaders\mus2midi.h" />
-    <ClInclude Include="..\thirdparty\zreaders\m_alloc.h" />
-    <ClInclude Include="..\thirdparty\zreaders\tarray.h" />
-    <ClInclude Include="..\thirdparty\zreaders\templates.h" />
+    <ClInclude Include="..\src\ZReaders\files.h" />
+    <ClInclude Include="..\src\ZReaders\i_music.h" />
+    <ClInclude Include="..\src\ZReaders\i_musicinterns.h" />
+    <ClInclude Include="..\src\ZReaders\mus2midi.h" />
+    <ClInclude Include="..\src\ZReaders\m_alloc.h" />
+    <ClInclude Include="..\src\ZReaders\portable_endian.h" />
+    <ClInclude Include="..\src\ZReaders\tarray.h" />
+    <ClInclude Include="..\src\ZReaders\templates.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>

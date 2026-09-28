@@ -436,7 +436,7 @@ bool Palette::saveFile(string_view filename, Format format)
 bool Palette::loadFile(string_view filename, Format format)
 {
 	// Open the file
-	wxFile file(wxutil::strFromView(filename));
+	wxFFile file(wxutil::strFromView(filename), "rb");
 
 	// Check that it opened ok
 	if (!file.IsOpened())

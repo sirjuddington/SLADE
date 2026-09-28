@@ -207,3 +207,11 @@ public:
 
 	int isThisFormat(MemChunk& mc) override { return SiNArchive::isSiNArchive(mc) ? MATCH_TRUE : MATCH_FALSE; }
 };
+
+class SinReloadedArchiveDataFormat : public EntryDataFormat
+{
+public:
+	SinReloadedArchiveDataFormat() : EntryDataFormat("archive_sin_reloaded") {}
+
+	int isThisFormat(MemChunk& mc) override { return SiNReloadedArchive::isSiNReloadedArchive(mc) ? MATCH_TRUE : MATCH_FALSE; }
+};

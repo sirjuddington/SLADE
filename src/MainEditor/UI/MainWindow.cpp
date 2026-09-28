@@ -169,7 +169,7 @@ void MainWindow::loadLayout() const
 void MainWindow::saveLayout() const
 {
 	// Open layout file
-	wxFile file(wxString::FromUTF8(app::path("mainwindow.layout", app::Dir::User)), wxFile::write);
+	wxFFile file(wxString::FromUTF8(app::path("mainwindow.layout", app::Dir::User)), "wb+");
 
 	// Write component layout
 

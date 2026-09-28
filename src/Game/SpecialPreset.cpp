@@ -198,8 +198,8 @@ bool game::saveCustomSpecialPresets()
 		return true;
 
 	// Open file
-	wxFile file;
-	if (!file.Open(wxString::FromUTF8(app::path("special_presets.cfg", app::Dir::User)), wxFile::write))
+	wxFFile file;
+	if (!file.Open(wxString::FromUTF8(app::path("special_presets.cfg", app::Dir::User)), "wb+"))
 	{
 		log::error("Unable to open special_presets.cfg file for writing");
 		return false;

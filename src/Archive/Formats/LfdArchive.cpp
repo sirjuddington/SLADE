@@ -306,7 +306,7 @@ bool LfdArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open lfdfile
-	wxFile file(wxString::FromUTF8(filename_));
+	wxFFile file(wxString::FromUTF8(filename_), "rb");
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -384,7 +384,7 @@ bool LfdArchive::isLfdArchive(MemChunk& mc)
 bool LfdArchive::isLfdArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(wxString::FromUTF8(filename));
+	wxFFile file(wxString::FromUTF8(filename), "rb");
 
 	// Check it opened ok
 	if (!file.IsOpened())

@@ -611,8 +611,8 @@ bool WadArchive::write(string_view filename, bool update)
 	}
 
 	// Open file for writing
-	wxFile file;
-	file.Open(wxutil::strFromView(filename), wxFile::write);
+	wxFFile file;
+	file.Open(wxutil::strFromView(filename), "wb+");
 	if (!file.IsOpened())
 	{
 		global::error = "Unable to open file for writing";
@@ -696,7 +696,7 @@ bool WadArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(wxString::FromUTF8(filename_));
+	wxFFile file(wxString::FromUTF8(filename_), "rb");
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -1536,7 +1536,7 @@ bool WadArchive::isWadArchive(MemChunk& mc)
 bool WadArchive::isWadArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(wxString::FromUTF8(filename));
+	wxFFile file(wxString::FromUTF8(filename), "rb");
 
 	// Check it opened ok
 	if (!file.IsOpened())

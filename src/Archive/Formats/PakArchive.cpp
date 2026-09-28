@@ -51,6 +51,74 @@ EXTERN_CVAR(Bool, archive_load_data)
 //
 // -----------------------------------------------------------------------------
 
+// reference: https://github.com/TrenchBroom/TrenchBroom/blob/master/lib/TbFsLib/src/DkPakFileSystem.cpp
+static bool dkDecompress(MemChunk &input, MemChunk &output)
+{
+	while(input.currentPos() != input.size())
+	{
+		uint8_t c;
+		
+		if (!input.read(&c, sizeof(c)))
+			return false;
+
+		if (c < 0x40)
+		{
+			// x+1 bytes of uncompressed data follow (just read+write them as they are)
+			size_t len = c + 1;
+
+			if (!output.write(input.data() + input.currentPos(), len))
+				return false;
+
+			if (!input.seek(len))
+				return false;
+		}
+		else if (c < 0x80)
+		{
+			// run-length encoded zeros, write (x - 62) zero-bytes to output
+			size_t len = c - 62;
+
+			memset(output.data() + output.currentPos(), 0, len);
+
+			if (!output.seek(len))
+				return false;
+		}
+		else if (c < 0xC0)
+		{
+			// run-length encoded data, read one byte, write it (x-126) times to output
+			size_t len = c - 126;
+			uint8_t val;
+
+			if (!input.read(&val, sizeof(val)))
+				return false;
+			
+			memset(output.data() + output.currentPos(), val, len);
+
+			if (!output.seek(len))
+				return false;
+		}
+		else if (c < 0xFE)
+		{
+			// this references previously uncompressed data
+			// read one byte to get _offset_
+			// read (x-190) bytes from the already uncompressed and written output data,
+			// starting at (offset+2) bytes before the current write position (and add them
+			// to output, of course)
+			size_t len = c - 190;
+			uint8_t offset;
+
+			if (!input.read(&offset, sizeof(offset)))
+				return false;
+
+			if (!output.write(output.data() + output.currentPos() - (offset + 2), len))
+				return false;
+		}
+	}
+
+	if (input.currentPos() != input.size() && output.currentPos() != output.size())
+		return false;
+
+	return true;
+}
 
 // -----------------------------------------------------------------------------
 // Reads pak format data from a MemChunk
@@ -78,12 +146,81 @@ bool PakArchive::open(MemChunk& mc)
 		global::error = "Invalid pak header";
 		return false;
 	}
+	
+	// Detect if it's a Daikatana-style pak.
+	// Annoyingly, the only real difference is there's two
+	// ints after each entry that are effectively unused (so
+	// entries are 72 bytes, not 64).
+	bool isDaikatana = remainder(dir_size, 64) != 0;
+
+	if (dir_size % 576 == 0)
+	{
+		// try loading it as DK just to see 
+		isDaikatana = true;
+
+		size_t num_entries = dir_size / 72;
+		mc.seek(dir_offset, SEEK_SET);
+
+		for (uint32_t d = 0; d < num_entries; d++)
+		{
+			// Read entry info
+			char    name[56];
+			int32_t offset;
+			int32_t size;
+			mc.read(name, 56);
+			mc.read(&offset, 4);
+			mc.read(&size, 4);
+
+			int i;
+
+			for (i = 0; i < 56; i++)
+			{
+				if (name[i] == '\0' ||
+					!isalnum(name[i]))
+					break;
+			}
+
+			if (i == 0 || !isalnum(name[i]))
+			{
+				isDaikatana = false;
+				break;
+			}
+
+			// Byteswap if needed
+			offset = wxINT32_SWAP_ON_BE(offset);
+			size   = wxINT32_SWAP_ON_BE(size);
+
+			{
+				int complen, comptype;
+				mc.read(&complen, 4);
+				mc.read(&comptype, 4);
+
+				if (comptype != 0 && comptype != 1)
+				{
+					isDaikatana = false;
+					break;
+				}
+
+				if (comptype == 1)
+				{
+					size = complen;
+				}
+			}
+
+			// Check offset+size
+			if ((unsigned)(offset + size) > mc.size())
+			{
+				isDaikatana = false;
+				break;
+			}
+		}
+	}
 
 	// Stop announcements (don't want to be announcing modification due to entries being added etc)
 	ArchiveModSignalBlocker sig_blocker{ *this };
 
 	// Read the directory
-	size_t num_entries = dir_size / 64;
+	size_t num_entries = dir_size / (isDaikatana ? 72 : 64);
 	mc.seek(dir_offset, SEEK_SET);
 	ui::setSplashProgressMessage("Reading pak archive data");
 	for (uint32_t d = 0; d < num_entries; d++)
@@ -103,8 +240,27 @@ bool PakArchive::open(MemChunk& mc)
 		offset = wxINT32_SWAP_ON_BE(offset);
 		size   = wxINT32_SWAP_ON_BE(size);
 
+		int complen = size;
+		int comptype;
+
+		if (isDaikatana)
+		{
+			mc.read(&complen, 4);
+			mc.read(&comptype, 4);
+
+			if (comptype)
+			{
+				if (comptype != 1)
+				{
+					log::error("PakArchive::open: Pak archive is invalid or corrupt (Daikatana-type compression value not valid)");
+					global::error = "Archive is invalid and/or corrupt";
+					return false;
+				}
+			}
+		}
+
 		// Check offset+size
-		if ((unsigned)(offset + size) > mc.size())
+		if ((unsigned)(offset + complen) > mc.size())
 		{
 			log::error("PakArchive::open: Pak archive is invalid or corrupt (entry goes past end of file)");
 			global::error = "Archive is invalid and/or corrupt";
@@ -115,8 +271,15 @@ bool PakArchive::open(MemChunk& mc)
 		auto dir = createDir(strutil::Path::pathOf(name));
 
 		// Create entry
-		auto entry              = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), size);
+		auto entry              = std::make_shared<ArchiveEntry>(strutil::Path::fileNameOf(name), complen);
 		entry->exProp("Offset") = (int)offset;
+
+		if (isDaikatana && comptype)
+		{
+			entry->exProp("Compression") = (int)comptype;
+			entry->exProp("DecompressLen") = (int)size;
+		}
+
 		entry->setLoaded(false);
 		entry->setState(ArchiveEntry::State::Unmodified);
 
@@ -142,7 +305,19 @@ bool PakArchive::open(MemChunk& mc)
 		{
 			// Read the entry data
 			mc.exportMemChunk(edata, entry->exProp<int>("Offset"), entry->size());
-			entry->importMemChunk(edata);
+
+			if (entry->exProps().contains("Compression"))
+			{
+				MemChunk ddata(std::get<int>(entry->exProp("DecompressLen")));
+
+				dkDecompress(edata, ddata);
+
+				entry->importMemChunk(ddata);
+			}
+			else
+			{
+				entry->importMemChunk(edata);
+			}
 		}
 
 		// Detect entry type
@@ -281,7 +456,7 @@ bool PakArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(wxString::FromUTF8(filename_));
+	wxFFile file(wxString::FromUTF8(filename_), "rb");
 
 	// Check it opened
 	if (!file.IsOpened())
@@ -348,7 +523,7 @@ bool PakArchive::isPakArchive(MemChunk& mc)
 bool PakArchive::isPakArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(wxString::FromUTF8(filename));
+	wxFFile file(wxString::FromUTF8(filename), "rb");
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < 12)

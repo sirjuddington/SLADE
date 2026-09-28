@@ -10,12 +10,6 @@
     <Filter Include="Map Editor">
       <UniqueIdentifier>{e7c66597-c337-43fc-bedc-5e753bf3ddb8}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ThirdParty">
-      <UniqueIdentifier>{b8ed0eb6-a1df-4b4b-8a59-d56cf99d842b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="ThirdParty\ZReaders">
-      <UniqueIdentifier>{5e648a80-c228-40a7-9817-b3e2695df54e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Installer">
       <UniqueIdentifier>{fa5a343f-ee94-41ea-a75f-1d0292b58329}</UniqueIdentifier>
     </Filter>
@@ -136,9 +130,6 @@
     <Filter Include="SLADEMap\MapObject">
       <UniqueIdentifier>{b0590a65-315e-4e14-88c6-6abbee8593b4}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ThirdParty\Mus2Mid">
-      <UniqueIdentifier>{a1d01339-99bd-4f02-a687-79842299211c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="UI\Dialogs">
       <UniqueIdentifier>{32da38d5-4411-486c-84bd-48500922ce1a}</UniqueIdentifier>
     </Filter>
@@ -148,32 +139,11 @@
     <Filter Include="UI\Dialogs\SetupWizard">
       <UniqueIdentifier>{9595ab62-f3f5-4d26-a476-89125f68b297}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ZReaders">
+      <UniqueIdentifier>{cdbacf22-f816-434a-ab28-838797c181bc}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\thirdparty\zreaders\files.cpp">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\m_alloc.cpp">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\i_music.cpp">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_hmi_midiout.cpp">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_midistream.cpp">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_mus_midiout.cpp">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_smf_midiout.cpp">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClCompile>
-    <ClCompile Include="..\thirdparty\zreaders\music_xmi_midiout.cpp">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Audio\MIDIPlayer.cpp">
       <Filter>Audio</Filter>
     </ClCompile>
@@ -870,9 +840,6 @@
     <ClCompile Include="..\src\General\Console.cpp">
       <Filter>General</Filter>
     </ClCompile>
-    <ClCompile Include="..\thirdparty\mus2mid\mus2mid.cpp">
-      <Filter>ThirdParty\Mus2Mid</Filter>
-    </ClCompile>
     <ClCompile Include="..\src\Utility\Property.cpp">
       <Filter>Utility</Filter>
     </ClCompile>
@@ -1011,29 +978,41 @@
     <ClCompile Include="..\src\SLADEMap\MapFormat\Doom32XMapFormat.cpp">
       <Filter>SLADEMap\MapFormat</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\Archive\Formats\SiNReloadedArchive.cpp">
+      <Filter>Archive\Formats</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ZReaders\i_music.cpp">
+      <Filter>ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ZReaders\m_alloc.cpp">
+      <Filter>ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ZReaders\files.cpp">
+      <Filter>ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ZReaders\music_hmi_midiout.cpp">
+      <Filter>ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ZReaders\music_midistream.cpp">
+      <Filter>ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ZReaders\music_mus_midiout.cpp">
+      <Filter>ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ZReaders\music_smf_midiout.cpp">
+      <Filter>ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\ZReaders\music_xmi_midiout.cpp">
+      <Filter>ZReaders</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\UI\Dialogs\Preferences\DECOHackPrefsPanel.cpp">
+      <Filter>UI\Dialogs\Preferences</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\MainEditor\Mus2Mid.cpp">
+      <Filter>Main Editor</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\thirdparty\zreaders\files.h">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\zreaders\m_alloc.h">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\zreaders\tarray.h">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\zreaders\templates.h">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\zreaders\i_music.h">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\zreaders\i_musicinterns.h">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClInclude>
-    <ClInclude Include="..\thirdparty\zreaders\mus2midi.h">
-      <Filter>ThirdParty\ZReaders</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Audio\MIDIPlayer.h">
       <Filter>Audio</Filter>
     </ClInclude>
@@ -1786,9 +1765,6 @@
     <ClInclude Include="..\src\General\Console.h">
       <Filter>General</Filter>
     </ClInclude>
-    <ClInclude Include="..\thirdparty\mus2mid\mus2mid.h">
-      <Filter>ThirdParty\Mus2Mid</Filter>
-    </ClInclude>
     <ClInclude Include="..\src\Utility\Property.h">
       <Filter>Utility</Filter>
     </ClInclude>
@@ -1939,6 +1915,33 @@
     </ClInclude>
     <ClInclude Include="..\src\Audio\Music.h">
       <Filter>Audio</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\Archive\Formats\SiNReloadedArchive.h">
+      <Filter>Archive\Formats</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ZReaders\i_music.h">
+      <Filter>ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ZReaders\i_musicinterns.h">
+      <Filter>ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ZReaders\m_alloc.h">
+      <Filter>ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ZReaders\mus2midi.h">
+      <Filter>ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ZReaders\portable_endian.h">
+      <Filter>ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ZReaders\tarray.h">
+      <Filter>ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ZReaders\templates.h">
+      <Filter>ZReaders</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\ZReaders\files.h">
+      <Filter>ZReaders</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

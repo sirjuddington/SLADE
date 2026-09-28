@@ -222,7 +222,7 @@ ScriptManagerWindow::ScriptManagerWindow() : STopWindow("SLADE Script Manager", 
 void ScriptManagerWindow::loadLayout()
 {
 	// Open layout file
-	wxFile file(wxString::FromUTF8(app::path("scriptmanager.layout", app::Dir::User)), wxFile::read);
+	wxFFile file(wxString::FromUTF8(app::path("scriptmanager.layout", app::Dir::User)), "r");
 
 	// Read component layout
 	if (file.IsOpened())
@@ -256,7 +256,7 @@ void ScriptManagerWindow::loadLayout()
 void ScriptManagerWindow::saveLayout()
 {
 	// Open layout file
-	wxFile file(wxString::FromUTF8(app::path("scriptmanager.layout", app::Dir::User)), wxFile::write);
+	wxFFile file(wxString::FromUTF8(app::path("scriptmanager.layout", app::Dir::User)), "wb+");
 
 	// Write component layout
 	file.Write(WX_FMT("{}\n", layout_version));

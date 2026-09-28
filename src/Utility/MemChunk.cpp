@@ -155,7 +155,7 @@ bool MemChunk::reSize(uint32_t new_size, bool preserve_data)
 bool MemChunk::importFile(string_view filename, uint32_t offset, uint32_t len)
 {
 	// Open the file
-	wxFile file(wxutil::strFromView(filename));
+	wxFFile file(wxutil::strFromView(filename), "rb");
 
 	// Return false if file open failed
 	if (!file.IsOpened())
@@ -206,7 +206,7 @@ bool MemChunk::importFile(string_view filename, uint32_t offset, uint32_t len)
 // Loads a file (or part of it) from a currently open file stream into memory.
 // Returns false if file couldn't be opened, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::importFileStreamWx(wxFile& file, uint32_t len)
+bool MemChunk::importFileStreamWx(wxFFile& file, uint32_t len)
 {
 	// Check file
 	if (!file.IsOpened())
@@ -319,7 +319,7 @@ bool MemChunk::exportFile(string_view filename, uint32_t start, uint32_t size) c
 		size = size_ - start;
 
 	// Open file for writing
-	wxFile file(wxutil::strFromView(filename), wxFile::write);
+	wxFFile file(wxutil::strFromView(filename), "wb+");
 	if (!file.IsOpened())
 	{
 		log::error("Unable to write to file {}", filename);

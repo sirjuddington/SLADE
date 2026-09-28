@@ -1270,7 +1270,7 @@ void TranslationEditorDialog::onBtnLoad(wxCommandEvent& e)
 	if (dialog_open.ShowModal() == wxID_OK)
 	{
 		// Load selected file to string
-		wxFile   file;
+		wxFFile  file;
 		wxString tstring;
 		if (file.Open(dialog_open.GetPath()))
 			file.ReadAll(&tstring);

@@ -254,7 +254,7 @@ bool Wad2Archive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open wadfile
-	wxFile file(wxString::FromUTF8(filename_));
+	wxFFile file(wxString::FromUTF8(filename_), "rb");
 
 	// Check if opening the file failed
 	if (!file.IsOpened())
@@ -322,7 +322,7 @@ bool Wad2Archive::isWad2Archive(MemChunk& mc)
 bool Wad2Archive::isWad2Archive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(wxString::FromUTF8(filename));
+	wxFFile file(wxString::FromUTF8(filename), "rb");
 
 	// Check it opened ok
 	if (!file.IsOpened())

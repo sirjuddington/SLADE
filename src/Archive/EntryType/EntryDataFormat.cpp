@@ -272,6 +272,7 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<PodArchiveDataFormat>();
 	registerDataFormat<ChasmBinArchiveDataFormat>();
 	registerDataFormat<SinArchiveDataFormat>();
+	registerDataFormat<SinReloadedArchiveDataFormat>();
 	registerDataFormat<MUSDataFormat>();
 	registerDataFormat<MIDIDataFormat>();
 	registerDataFormat<XMIDataFormat>();

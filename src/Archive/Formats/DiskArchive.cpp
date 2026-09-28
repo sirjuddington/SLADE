@@ -292,7 +292,7 @@ bool DiskArchive::loadEntryData(ArchiveEntry* entry)
 	}
 
 	// Open archive file
-	wxFile file(wxString::FromUTF8(filename_));
+	wxFFile file(wxString::FromUTF8(filename_), "rb");
 
 	// Check it opened
 	if (!file.IsOpened())
@@ -374,7 +374,7 @@ bool DiskArchive::isDiskArchive(MemChunk& mc)
 bool DiskArchive::isDiskArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(wxString::FromUTF8(filename));
+	wxFFile file(wxString::FromUTF8(filename), "rb");
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < 4)

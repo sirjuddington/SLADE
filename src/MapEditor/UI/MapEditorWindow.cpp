@@ -161,7 +161,7 @@ void MapEditorWindow::loadLayout()
 void MapEditorWindow::saveLayout()
 {
 	// Open layout file
-	wxFile file(wxString::FromUTF8(app::path("mapwindow.layout", app::Dir::User)), wxFile::write);
+	wxFFile file(wxString::FromUTF8(app::path("mapwindow.layout", app::Dir::User)), "wb+");
 
 	// Write component layout
 	auto m_mgr = wxAuiManager::GetManager(this);

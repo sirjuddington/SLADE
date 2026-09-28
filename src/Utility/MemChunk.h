@@ -36,7 +36,7 @@ public:
 
 	// Data import
 	bool importFile(string_view filename, uint32_t offset = 0, uint32_t len = 0);
-	bool importFileStreamWx(wxFile& file, uint32_t len = 0);
+	bool importFileStreamWx(wxFFile& file, uint32_t len = 0);
 	bool importFileStream(SFile& file, unsigned len = 0);
 	bool importMem(const uint8_t* start, uint32_t len);
 	bool importMem(const MemChunk& other) { return importMem(other.data_, other.size_); }

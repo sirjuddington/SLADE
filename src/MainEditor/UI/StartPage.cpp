@@ -291,7 +291,7 @@ void SStartPage::load(bool new_tip)
 	for (auto& a : entry_export_)
 		a->exportFile(app::path(a->name(), app::Dir::Temp));
 	wxString html_file = wxString::FromUTF8(app::path("startpage.htm", app::Dir::Temp));
-	wxFile   outfile(html_file, wxFile::write);
+	wxFFile   outfile(html_file, "wb+");
 	outfile.Write(html);
 	outfile.Close();
 
@@ -381,7 +381,7 @@ void SStartPage::load(bool new_tip)
 	if (entry_logo)
 		entry_logo->exportFile(app::path("logo.png", app::Dir::Temp));
 	auto   html_file = wxString::FromUTF8(app::path("startpage_basic.htm", app::Dir::Temp));
-	wxFile outfile(html_file, wxFile::write);
+	wxFFile outfile(html_file, "wb+");
 	outfile.Write(html);
 	outfile.Close();
 

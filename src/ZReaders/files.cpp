@@ -33,6 +33,7 @@
 **
 */
 
+#include "Main.h"
 #include "files.h"
 #include "templates.h"
 

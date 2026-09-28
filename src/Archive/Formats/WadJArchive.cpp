@@ -365,7 +365,7 @@ bool WadJArchive::isWadJArchive(MemChunk& mc)
 bool WadJArchive::isWadJArchive(const string& filename)
 {
 	// Open file for reading
-	wxFile file(wxString::FromUTF8(filename));
+	wxFFile file(wxString::FromUTF8(filename), "rb");
 
 	// Check it opened ok
 	if (!file.IsOpened())
