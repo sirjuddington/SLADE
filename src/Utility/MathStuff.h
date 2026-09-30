@@ -1,5 +1,7 @@
 #pragma once
 
+#include <numbers>
+
 namespace slade
 {
 struct Plane;
@@ -7,7 +9,7 @@ struct Plane;
 
 namespace slade::math
 {
-constexpr double PI      = 3.1415926535897932384626433832795;
+constexpr double PI      = std::numbers::pi;
 constexpr double EPSILON = 1.0 / 65536.0;
 
 double clamp(double val, double min, double max);

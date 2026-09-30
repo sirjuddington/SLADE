@@ -701,7 +701,12 @@ void RunDialog::onBtnRun(wxCommandEvent& e)
 	}
 
 	// Update game executable config
-	auto exe  = executables::gameExe(choice_game_exes_->GetSelection());
+	auto exe = executables::gameExe(choice_game_exes_->GetSelection());
+	if (!exe)
+	{
+		wxMessageBox(wxS("No game executable selected"), wxS("Error"), wxICON_ERROR);
+		return;
+	}
 	exe->path = exe_path;
 
 	// Update cvars

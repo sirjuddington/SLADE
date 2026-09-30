@@ -122,27 +122,25 @@ public:
 		path_ = fmt::format("{}/{}", dir->path(false), new_name);
 	}
 
-	void swapNames()
+	bool swapNames(bool restore_state)
 	{
 		const auto dir = archive_->dirAtPath(path_);
+		if (!dir)
+			return false;
+
 		archive_->renameDir(dir, old_name_);
 		old_name_ = new_name_;
 		new_name_ = dir->name();
 		path_     = dir->path();
-	}
 
-	bool doUndo() override
-	{
-		swapNames();
-		archive_->dirAtPath(path_)->dirEntry()->setState(prev_state_);
+		if (restore_state)
+			dir->dirEntry()->setState(prev_state_);
+
 		return true;
 	}
 
-	bool doRedo() override
-	{
-		swapNames();
-		return true;
-	}
+	bool doUndo() override { return swapNames(true); }
+	bool doRedo() override { return swapNames(false); }
 
 private:
 	Archive*   archive_;

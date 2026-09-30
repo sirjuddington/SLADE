@@ -36,7 +36,8 @@ private:
 	glm::vec4                      skycol_bottom_;
 	std::array<Vec2d, 32>          sky_circle_;
 
-	void buildSkySlice(float top, float bottom, float alpha_top, float alpha_bottom, float size, float tx, float ty);
+	void buildSkySlice(float top, float bottom, float alpha_top, float alpha_bottom, float size, float tx, float ty)
+		const;
 	void buildVertexBuffer();
 };
 } // namespace slade::mapeditor

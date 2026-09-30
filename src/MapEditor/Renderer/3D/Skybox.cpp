@@ -38,6 +38,7 @@
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/Shader.h"
 #include "OpenGL/VertexBuffer3D.h"
+#include "Utility/MathStuff.h"
 #include <glm/ext/matrix_transform.hpp>
 
 using namespace slade;
@@ -64,7 +65,7 @@ Skybox::Skybox()
 	{
 		pos.x = sin(rot);
 		pos.y = -cos(rot);
-		rot -= (3.1415926535897932384626433832795 * 2) / 32.0;
+		rot -= (math::PI * 2) / 32.0;
 	}
 }
 
@@ -151,6 +152,7 @@ void Skybox::render(const gl::Camera& camera)
 // values, size and texture coordinates
 // -----------------------------------------------------------------------------
 void Skybox::buildSkySlice(float top, float bottom, float alpha_top, float alpha_bottom, float size, float tx, float ty)
+	const
 {
 	auto tc_x  = 0.0f;
 	auto tc_y1 = (-top + 1.0f) * (ty * 0.5f);
