@@ -35,6 +35,7 @@
 #include "Game/Configuration.h"
 #include "Utility/Colour.h"
 #include "Utility/Parser.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -434,29 +435,29 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	}
 
 	// Other props
-	if (auto val = props.getIf<int>("radius"))
-		radius_ = *val;
-	if (auto val = props.getIf<int>("height"))
-		height_ = *val;
-	if (auto val = props.getIf<double>("scalex"))
-		scale_.x = *val;
-	if (auto val = props.getIf<double>("scaley"))
-		scale_.y = *val;
-	if (auto val = props.getIf<bool>("hanging"))
-		hanging_ = *val;
-	if (auto val = props.getIf<bool>("angled"))
-		angled_ = *val;
-	if (auto val = props.getIf<bool>("bright"))
-		fullbright_ = *val;
-	if (auto val = props.getIf<bool>("decoration"))
-		decoration_ = *val;
+	if (auto val = props.getIf("radius"))
+		radius_ = property::asInt(*val);
+	if (auto val = props.getIf("height"))
+		height_ = property::asInt(*val);
+	if (auto val = props.getIf("xscale"))
+		scale_.x = property::asFloat(*val);
+	if (auto val = props.getIf("yscale"))
+		scale_.y = property::asFloat(*val);
+	if (auto val = props.getIf("hanging"))
+		hanging_ = property::asBool(*val);
+	if (auto val = props.getIf("angled"))
+		angled_ = property::asBool(*val);
+	if (auto val = props.getIf("bright"))
+		fullbright_ = property::asBool(*val);
+	if (auto val = props.getIf("decoration"))
+		decoration_ = property::asBool(*val);
 	if (auto val = props.getIf<string>("icon"))
 		icon_ = *val;
 	if (auto val = props.getIf<string>("translation"))
 		translation_ = *val;
-	if (auto val = props.getIf<bool>("solid"))
-		solid_ = *val;
-	if (props.getIf<bool>("obsolete"))
+	if (auto val = props.getIf("solid"))
+		solid_ = property::asBool(*val);
+	if (props.getIf("obsolete"))
 		flags_ |= Obsolete;
 	if (auto val = props.getIf<string>("light_name"))
 		light_name_ = *val;
@@ -464,14 +465,14 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 	// ZScript-only props
 	if (zscript)
 	{
-		if (auto val = props.getIf<double>("scale"))
-			scale_.x = scale_.y = *val;
-		if (auto val = props.getIf<double>("scale.x"))
-			scale_.x = *val;
-		if (auto val = props.getIf<double>("scale.y"))
-			scale_.y = *val;
-		if (auto val = props.getIf<bool>("spawnceiling"))
-			hanging_ = *val;
+		if (auto val = props.getIf("scale"))
+			scale_.x = scale_.y = property::asFloat(*val);
+		if (auto val = props.getIf("scale.x"))
+			scale_.x = property::asFloat(*val);
+		if (auto val = props.getIf("scale.y"))
+			scale_.y = property::asFloat(*val);
+		if (auto val = props.getIf("spawnceiling"))
+			hanging_ = property::asBool(*val);
 	}
 }
 

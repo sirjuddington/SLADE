@@ -314,7 +314,8 @@ ThingRenderer3D::ThingGroup::ThingGroup(int type_id, const game::ThingType& type
 	else
 	{
 		const auto& tex_info = gl::Texture::info(tex);
-		sprite_size          = { static_cast<float>(tex_info.size.x), static_cast<float>(tex_info.size.y) };
+		sprite_size          = { static_cast<float>(tex_info.size.x) * type_info.scaleX(),
+                                 static_cast<float>(tex_info.size.y) * type_info.scaleY() };
 	}
 }
 

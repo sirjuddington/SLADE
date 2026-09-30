@@ -129,11 +129,8 @@ string parseType(const vector<string>& tokens, unsigned& index)
 	type += tokens[index];
 
 	// Check for ...
-	if (index + 2 < tokens.size() && tokens[index] == '.' && tokens[index + 1] == '.' && tokens[index + 2] == '.')
-	{
+	if (tokens[index] == "...")
 		type = "...";
-		index += 2;
-	}
 
 	// Check for <>
 	if (index + 1 < tokens.size() && tokens[index + 1] == '<')
@@ -216,7 +213,7 @@ bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, st
 void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<ArchiveEntry*>& entry_stack)
 {
 	Tokenizer tz;
-	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.<>");
+	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?<>");
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
 	tz.enableEditorComments();
 	tz.openMem(entry->data(), "ZScript");
@@ -999,11 +996,6 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 
 		// Name
 		auto name = statement.tokens[t];
-		if (t + 2 < count && statement.tokens[t + 1] == '.')
-		{
-			name.append(".").append(statement.tokens[t + 2]);
-			t += 2;
-		}
 
 		// Value
 		// For now ignore anything after the first whitespace/special character
