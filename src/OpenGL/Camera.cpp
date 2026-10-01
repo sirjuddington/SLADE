@@ -86,6 +86,7 @@ void Camera::setPitch(double pitch)
 void Camera::setPosition(const Vec3d& position)
 {
 	position_ = position;
+	updateView();
 }
 
 // -----------------------------------------------------------------------------
