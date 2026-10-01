@@ -339,6 +339,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 
 	// Blank panel to show when no texture is open
 	panel_blank_ = new wxPanel(splitter_left_);
+	panel_blank_->Hide();
 
 	// Bind Events
 	textures_tree_view_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onTextureSelectionChanged, this);
@@ -564,7 +565,7 @@ wxPanel* TextureEditorPanel::createTextureListPanel(wxWindow* parent)
 	// Toolbar
 	toolbar_texlist_ = new SAuiToolBar(panel, true);
 	toolbar_texlist_->loadLayoutFromResource("texturex_list");
-	sizer->Add(toolbar_texlist_, lh.sfWithSmallBorder(0).Expand());
+	sizer->Add(toolbar_texlist_, lh.sfWithSmallBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Texture tree
 	textures_tree_view_ = new TextureTreeView(panel, *editor_);
@@ -585,7 +586,7 @@ wxPanel* TextureEditorPanel::createTextureListPanel(wxWindow* parent)
 
 	// Layout texture tree + filter controls
 	auto* vbox = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(vbox, lh.sfWithSmallBorder(1, wxRIGHT | wxTOP | wxBOTTOM).Expand());
+	sizer->Add(vbox, lh.sfWithSmallBorder(1, wxRIGHT | wxBOTTOM).Expand());
 	vbox->Add(textures_tree_view_, wxSizerFlags(1).Expand());
 	vbox->Add(panel_filter_, lh.sfWithBorder(0, wxTOP).Expand());
 
