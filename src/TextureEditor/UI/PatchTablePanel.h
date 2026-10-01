@@ -24,6 +24,8 @@ public:
 
 	const string& draggingPatch() const { return dragging_patch_; }
 
+	void updatePatchTablePreview() const;
+
 private:
 	TextureEditor*  editor_           = nullptr;
 	PatchTableList* patch_list_       = nullptr;
@@ -32,8 +34,6 @@ private:
 	wxStaticText*   info_text_        = nullptr;
 	wxListBox*      list_in_textures_ = nullptr;
 	string          dragging_patch_;
-
-	void updatePatchTablePreview() const;
 
 	bool handleAction(string_view id) override;
 

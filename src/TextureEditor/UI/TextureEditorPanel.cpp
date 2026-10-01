@@ -46,6 +46,7 @@
 #include "Graphics/SImage/SImage.h"
 #include "Lists/TextureTreeView.h"
 #include "MainEditor/MainEditor.h"
+#include "MainEditor/UI/MainWindow.h"
 #include "MainEditor/UI/TextureXEditor/PatchBrowser.h"
 #include "OpenGL/GLTexture.h"
 #include "OpenGL/View.h"
@@ -54,6 +55,7 @@
 #include "TexturePropGrid.h"
 #include "UI/Browser/BrowserCanvas.h"
 #include "UI/Browser/BrowserItem.h"
+#include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/Splitter.h"
 #include "UI/Controls/ZoomControl.h"
@@ -397,6 +399,18 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 				populateTextureBrowser(*list);
 		});
 
+	// Update palette when the global palette changes
+	theMainWindow->paletteChooser()->signals().palette_changed.connect(
+		[this]
+		{
+			tex_canvas_->setPalette(maineditor::currentPalette());
+			tex_canvas_->redraw(true);
+			tex_browser_canvas_->setPalette(maineditor::currentPalette());
+			if (tex_list_browsing_)
+				populateTextureBrowser(*tex_list_browsing_);
+			patch_table_panel_->updatePatchTablePreview();
+		});
+
 	// Init UI
 	CallAfter(
 		[this, tx_entry]()
@@ -640,7 +654,7 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 
 	// Canvas and left toolbar
 	tex_canvas_ = CTextureCanvasBase::createCanvas(panel, *editor_);
-	tex_canvas_->setPalette(maineditor::currentPalette()); // TODO: Update when main palette is changed
+	tex_canvas_->setPalette(maineditor::currentPalette());
 
 	toolbar_left_ = new SAuiToolBar(panel, true);
 	toolbar_left_->loadLayoutFromResource("texturex_left");
@@ -656,7 +670,7 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	auto browser_hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(browser_hbox, lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
 	tex_browser_canvas_ = new BrowserCanvas(panel);
-	tex_browser_canvas_->setPalette(maineditor::currentPalette()); // TODO: Update when main palette is changed
+	tex_browser_canvas_->setPalette(maineditor::currentPalette());
 	browser_hbox->Add(tex_browser_canvas_, wxSizerFlags(1).Expand());
 	tex_browser_scrollbar_ = new wxScrollBar(panel, -1, wxDefaultPosition, wxDefaultSize, wxSB_VERTICAL);
 	browser_hbox->Add(tex_browser_scrollbar_, wxSizerFlags().Expand());
