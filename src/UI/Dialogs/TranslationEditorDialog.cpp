@@ -100,7 +100,13 @@ TranslationEditorDialog::TranslationEditorDialog(
 	const Palette& pal,
 	const string&  title,
 	const SImage*  preview_image) :
-	wxDialog(parent, -1, wxString::FromUTF8(title)),
+	wxDialog(
+		parent,
+		-1,
+		wxString::FromUTF8(title),
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 	palette_{ new Palette(pal) },
 	translation_{ new Translation },
 	image_preview_{ new SImage }
@@ -335,6 +341,10 @@ TranslationEditorDialog::TranslationEditorDialog(
 	// Palette translation only
 	cb_paletteonly_ = new wxCheckBox(this, -1, wxS("Palette Translation Only"));
 	buttonsizer->Insert(3, cb_paletteonly_, wxSizerFlags().CenterVertical());
+
+	// Expand preview on resize
+	sizer->AddGrowableCol(1);
+	sizer->AddGrowableRow(2);
 
 	// Bind events
 	Bind(wxEVT_SIZE, &TranslationEditorDialog::onSize, this);
@@ -712,8 +722,6 @@ void TranslationEditorDialog::showPaletteTarget()
 	// Update UI
 	panel_target_palette_->Show(true);
 	Layout();
-	SetInitialSize(wxSize(-1, -1));
-	SetMinSize(GetSize());
 }
 
 // -----------------------------------------------------------------------------
@@ -741,8 +749,6 @@ void TranslationEditorDialog::showGradientTarget()
 	// Update UI
 	panel_target_gradient_->Show(true);
 	Layout();
-	SetInitialSize(wxSize(-1, -1));
-	SetMinSize(GetSize());
 }
 
 // -----------------------------------------------------------------------------
@@ -775,8 +781,6 @@ void TranslationEditorDialog::showTintTarget(bool tint)
 	// Update UI
 	panel_target_tint_->Show(true);
 	Layout();
-	SetInitialSize(wxSize(-1, -1));
-	SetMinSize(GetSize());
 }
 
 // -----------------------------------------------------------------------------
