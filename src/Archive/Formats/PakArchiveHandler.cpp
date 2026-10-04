@@ -170,11 +170,9 @@ bool PakArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	// Annoyingly, the only real difference is there's two ints after each entry
 	// that are effectively unused (so entries are 72 bytes, not 64).
 	bool is_daikatana = pak_enable_daikatana && remainder(dir_size, 64) != 0;
-	if (dir_size % 576 == 0)
+	if (is_daikatana && dir_size % 576 == 0)
 	{
 		// try loading it as DK just to see
-		is_daikatana = true;
-
 		size_t num_entries = dir_size / 72;
 		mc.seek(dir_offset, SEEK_SET);
 
