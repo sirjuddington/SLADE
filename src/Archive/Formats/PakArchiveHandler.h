@@ -14,6 +14,8 @@ public:
 	bool open(Archive& archive, const MemChunk& mc) override; // Open from MemChunk
 	bool write(Archive& archive, MemChunk& mc) override;      // Write to MemChunk
 
+	bool loadEntryData(Archive& archive, const ArchiveEntry* entry, MemChunk& out) override;
+
 	// Format detection
 	bool isThisFormat(const MemChunk& mc) override;
 	bool isThisFormat(const string& filename) override;
