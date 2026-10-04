@@ -284,6 +284,22 @@
       }
     ]
   },
+  "sinr": {
+    "name": "SiN Reloaded File",
+    "supports_dirs": true,
+    "names_extensions": true,
+    "max_name_length": 120,
+    "entry_format": "archive_sinr",
+    "prefer_uppercase": false,
+    "create": false,
+    "allow_duplicate_names": true,
+    "extensions": [
+      {
+        "extension": "sin",
+        "name": "SiN Reloaded"
+      }
+    ]
+  },
   "tar": {
     "name": "Tar",
     "supports_dirs": true,

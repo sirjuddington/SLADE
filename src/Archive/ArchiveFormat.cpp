@@ -46,19 +46,22 @@ using namespace archive;
 // -----------------------------------------------------------------------------
 namespace slade::archive
 {
-vector<Named<ArchiveFormat>> formats = { { "adat", ArchiveFormat::ADat }, { "bsp", ArchiveFormat::Bsp },
-										 { "bz2", ArchiveFormat::Bz2 },   { "chasm_bin", ArchiveFormat::ChasmBin },
-										 { "dat", ArchiveFormat::Dat },   { "folder", ArchiveFormat::Dir },
-										 { "disk", ArchiveFormat::Disk }, { "gob", ArchiveFormat::Gob },
-										 { "grp", ArchiveFormat::Grp },   { "gzip", ArchiveFormat::GZip },
-										 { "lab", ArchiveFormat::Lab },   { "hog", ArchiveFormat::Hog },
-										 { "lfd", ArchiveFormat::Lfd },   { "lib", ArchiveFormat::Lib },
-										 { "pak", ArchiveFormat::Pak },   { "pod", ArchiveFormat::Pod },
-										 { "res", ArchiveFormat::Res },   { "rff", ArchiveFormat::Rff },
-										 { "sin", ArchiveFormat::SiN },   { "tar", ArchiveFormat::Tar },
-										 { "wad", ArchiveFormat::Wad },   { "wadj", ArchiveFormat::WadJ },
-										 { "wad2", ArchiveFormat::Wad2 }, { "wolf", ArchiveFormat::Wolf },
-										 { "zip", ArchiveFormat::Zip },   { "7z", ArchiveFormat::Zip7 } };
+vector<Named<ArchiveFormat>> formats = {
+	{ "adat", ArchiveFormat::ADat },       { "bsp", ArchiveFormat::Bsp },
+	{ "bz2", ArchiveFormat::Bz2 },         { "chasm_bin", ArchiveFormat::ChasmBin },
+	{ "dat", ArchiveFormat::Dat },         { "folder", ArchiveFormat::Dir },
+	{ "disk", ArchiveFormat::Disk },       { "gob", ArchiveFormat::Gob },
+	{ "grp", ArchiveFormat::Grp },         { "gzip", ArchiveFormat::GZip },
+	{ "lab", ArchiveFormat::Lab },         { "hog", ArchiveFormat::Hog },
+	{ "lfd", ArchiveFormat::Lfd },         { "lib", ArchiveFormat::Lib },
+	{ "pak", ArchiveFormat::Pak },         { "pod", ArchiveFormat::Pod },
+	{ "res", ArchiveFormat::Res },         { "rff", ArchiveFormat::Rff },
+	{ "sin", ArchiveFormat::SiN },         { "tar", ArchiveFormat::Tar },
+	{ "wad", ArchiveFormat::Wad },         { "wadj", ArchiveFormat::WadJ },
+	{ "wad2", ArchiveFormat::Wad2 },       { "wolf", ArchiveFormat::Wolf },
+	{ "zip", ArchiveFormat::Zip },         { "7z", ArchiveFormat::Zip7 },
+	{ "sinr", ArchiveFormat::SiNReloaded }
+};
 
 std::map<ArchiveFormat, ArchiveFormatInfo> format_info;
 } // namespace slade::archive
