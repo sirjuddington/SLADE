@@ -61,7 +61,7 @@ namespace
 // -----------------------------------------------------------------------------
 bool dkDecompress(MemChunk& input, MemChunk& output)
 {
-	while (input.currentPos() != input.size())
+	while (input.currentPos() < input.size())
 	{
 		uint8_t c;
 
@@ -72,6 +72,9 @@ bool dkDecompress(MemChunk& input, MemChunk& output)
 		{
 			// x+1 bytes of uncompressed data follow (just read+write them as they are)
 			size_t len = c + 1;
+
+			if (len > input.size() - input.currentPos() || len > output.size() - output.currentPos())
+				return false;
 
 			if (!output.write(input.data() + input.currentPos(), len))
 				return false;
@@ -84,6 +87,9 @@ bool dkDecompress(MemChunk& input, MemChunk& output)
 			// run-length encoded zeros, write (x - 62) zero-bytes to output
 			size_t len = c - 62;
 
+			if (len > output.size() - output.currentPos())
+				return false;
+
 			memset(output.data() + output.currentPos(), 0, len);
 
 			if (!output.seek(len))
@@ -94,6 +100,9 @@ bool dkDecompress(MemChunk& input, MemChunk& output)
 			// run-length encoded data, read one byte, write it (x-126) times to output
 			size_t  len = c - 126;
 			uint8_t val;
+
+			if (len > output.size() - output.currentPos())
+				return false;
 
 			if (!input.read(&val, sizeof(val)))
 				return false;
@@ -116,15 +125,20 @@ bool dkDecompress(MemChunk& input, MemChunk& output)
 			if (!input.read(&offset, sizeof(offset)))
 				return false;
 
-			if (!output.write(output.data() + output.currentPos() - (offset + 2), len))
+			const size_t distance = offset + 2;
+			const size_t out_pos  = output.currentPos();
+			if (distance > out_pos || len > output.size() - out_pos)
+				return false;
+
+			for (size_t i = 0; i < len; ++i)
+				output.data()[out_pos + i] = output.data()[out_pos + i - distance];
+
+			if (!output.seek(len))
 				return false;
 		}
 	}
 
-	if (input.currentPos() != input.size() && output.currentPos() != output.size())
-		return false;
-
-	return true;
+	return input.currentPos() == input.size() && output.currentPos() == output.size();
 }
 } // namespace
 
@@ -312,6 +326,13 @@ bool PakArchiveHandler::open(Archive& archive, const MemChunk& mc)
 			// Check if entry is compressed (Daikatana)
 			if (is_daikatana && comptype)
 			{
+				if (size < 0)
+				{
+					log::error("PakArchiveHandler::open: Pak archive has an invalid decompressed entry size");
+					global::error = "Archive is invalid and/or corrupt";
+					return false;
+				}
+
 				// Decompress entry data
 				MemChunk compressed;
 				mc.exportMemChunk(compressed, offset, complen);
@@ -472,7 +493,14 @@ bool PakArchiveHandler::loadEntryData(Archive& archive, const ArchiveEntry* entr
 			return false;
 
 		int decompress_len = entry->exProps().getIf<int>("DecompressLen").value_or(0);
-		out.reSize(decompress_len);
+		if (decompress_len < 0)
+			return false;
+		if (decompress_len == 0)
+			out.clear();
+		else if (!out.reSize(decompress_len))
+			return false;
+		out.seekFromStart(0);
+
 		if (!dkDecompress(compressed, out))
 			return false;
 
