@@ -217,9 +217,9 @@ bool SiNReloadedArchiveHandler::write(Archive& archive, string_view filename)
 		return false;
 	}
 
-	constexpr u64 header_size   = 32;
-	const auto    max_file_size = static_cast<u64>(std::numeric_limits<unsigned>::max());
-	u64           dir_offset    = header_size;
+	constexpr u64  header_size   = 32;
+	constexpr auto max_file_size = std::numeric_limits<u64>::max();
+	u64            dir_offset    = header_size;
 	for (auto& info : file_entries)
 	{
 		info.offset = dir_offset;

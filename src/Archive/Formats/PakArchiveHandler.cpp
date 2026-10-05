@@ -236,7 +236,7 @@ bool PakArchiveHandler::open(Archive& archive, const MemChunk& mc)
 			}
 
 			// Check offset+size
-			if ((unsigned)(offset + size) > mc.size())
+			if (static_cast<unsigned>(offset + size) > mc.size())
 			{
 				is_daikatana = false;
 				break;
@@ -299,7 +299,7 @@ bool PakArchiveHandler::open(Archive& archive, const MemChunk& mc)
 		}
 
 		// Check offset+size
-		if ((unsigned)(offset + complen) > mc.size())
+		if (static_cast<unsigned>(offset + complen) > mc.size())
 		{
 			log::error("PakArchiveHandler::open: Pak archive is invalid or corrupt (entry goes past end of file)");
 			global::error = "Archive is invalid and/or corrupt";
