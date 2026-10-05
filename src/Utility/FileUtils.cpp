@@ -498,6 +498,9 @@ bool SFile::read(string& str, unsigned count) const
 // -----------------------------------------------------------------------------
 bool SFile::write(const void* buffer, unsigned count)
 {
+	if (count == 0)
+		return true;
+
 	if (handle_)
 		return fwrite(buffer, count, 1, handle_) > 0;
 
@@ -505,12 +508,83 @@ bool SFile::write(const void* buffer, unsigned count)
 }
 
 // -----------------------------------------------------------------------------
+// Writes a 32-bit integer [value] to the file in either big-endian or
+// little-endian format
+// -----------------------------------------------------------------------------
+bool SFile::writeI32(i32 value, bool big_endian) const
+{
+	if (!handle_)
+		return false;
+
+	if (big_endian)
+		value = wxINT32_SWAP_ON_LE(value);
+	else
+		value = wxINT32_SWAP_ON_BE(value);
+
+	return fwrite(&value, sizeof(i32), 1, handle_) > 0;
+}
+
+// -----------------------------------------------------------------------------
+// Writes a 32-bit unsigned integer [value] to the file in either big-endian or
+// little-endian format
+// -----------------------------------------------------------------------------
+bool SFile::writeU32(u32 value, bool big_endian) const
+{
+	if (!handle_)
+		return false;
+
+	if (big_endian)
+		value = wxUINT32_SWAP_ON_LE(value);
+	else
+		value = wxUINT32_SWAP_ON_BE(value);
+
+	return fwrite(&value, sizeof(u32), 1, handle_) > 0;
+}
+
+// -----------------------------------------------------------------------------
+// Writes a 64-bit integer [value] to the file in either big-endian or
+// little-endian format
+// -----------------------------------------------------------------------------
+bool SFile::writeI64(i64 value, bool big_endian) const
+{
+	if (!handle_)
+		return false;
+
+	if (big_endian)
+		value = wxINT64_SWAP_ON_LE(value);
+	else
+		value = wxINT64_SWAP_ON_BE(value);
+
+	return fwrite(&value, sizeof(i64), 1, handle_) > 0;
+}
+
+// -----------------------------------------------------------------------------
+// Writes a 64-bit unsigned integer [value] to the file in either big-endian or
+// little-endian format
+// -----------------------------------------------------------------------------
+bool SFile::writeU64(u64 value, bool big_endian) const
+{
+	if (!handle_)
+		return false;
+
+	if (big_endian)
+		value = wxUINT64_SWAP_ON_LE(value);
+	else
+		value = wxUINT64_SWAP_ON_BE(value);
+
+	return fwrite(&value, sizeof(u64), 1, handle_) > 0;
+}
+
+// -----------------------------------------------------------------------------
 // Writes [str] to the file
 // -----------------------------------------------------------------------------
 bool SFile::writeStr(string_view str) const
 {
+	if (str.empty())
+		return true;
+
 	if (handle_)
-		return fwrite(str.data(), 1, str.size(), handle_);
+		return fwrite(str.data(), 1, str.size(), handle_) > 0;
 
 	return false;
 }

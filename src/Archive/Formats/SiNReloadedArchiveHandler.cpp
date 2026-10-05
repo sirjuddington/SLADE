@@ -37,6 +37,7 @@
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
 #include "UI/UI.h"
+#include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -163,94 +164,127 @@ bool SiNReloadedArchiveHandler::open(Archive& archive, const MemChunk& mc)
 }
 
 // -----------------------------------------------------------------------------
-// Writes the SiN Reloaded archive to a MemChunk
+// Writes the SiN Reloaded archive to a file
 // Returns true if successful, false otherwise
 // -----------------------------------------------------------------------------
-bool SiNReloadedArchiveHandler::write(Archive& archive, MemChunk& mc)
+bool SiNReloadedArchiveHandler::write(Archive& archive, string_view filename)
 {
-	// Clear current data
-	mc.clear();
+	// Open file for writing
+	SFile file(filename, SFile::Mode::Write);
+	if (!file.isOpen())
+	{
+		global::error = "Unable to open file for writing";
+		return false;
+	}
 
 	// Get archive tree as a list
 	vector<ArchiveEntry*> entries;
 	archive.putEntryTreeAsList(entries);
 
-	// Process entry list
-	uint32_t dir_offset = 12;
-	uint32_t dir_size   = 0;
-	for (auto& entry : entries)
+	struct EntryInfo
 	{
-		// Ignore folder entries
+		ArchiveEntry* entry;
+		string        name;
+		u64           offset;
+		u32           name_offset;
+	};
+
+	vector<EntryInfo> file_entries;
+	string            name_chunk;
+	for (auto* entry : entries)
+	{
 		if (entry->type() == EntryType::folderType())
 			continue;
 
-		// Increment directory offset and size
-		dir_offset += entry->size();
-		dir_size += 128;
-	}
-
-	// Init data size
-	mc.reSize(dir_offset + dir_size, false);
-
-	// Write header
-	char pack[4] = { 'S', 'R', 'P', 'K' };
-	mc.seek(0, SEEK_SET);
-	mc.write(pack, 4);
-	mc.write(&dir_offset, 4);
-	mc.write(&dir_size, 4);
-
-	// Write directory
-	mc.seek(dir_offset, SEEK_SET);
-	uint32_t offset = 12;
-	for (auto& entry : entries)
-	{
-		// Skip folders
-		if (entry->type() == EntryType::folderType())
-			continue;
-
-		// Update entry
-		entry->setState(EntryState::Unmodified);
-		entry->setOffsetOnDisk(offset);
-		entry->setSizeOnDisk();
-
-		// Check entry name
 		auto name = entry->path(true);
-		name.erase(name.begin()); // Remove leading /
-		if (name.size() > 120)
+		if (!name.empty() && name.front() == '/')
+			name.erase(name.begin());
+
+		if (name_chunk.size() + name.size() + 1 > std::numeric_limits<u32>::max())
 		{
-			log::warning("Entry {} path is too long (> 120 characters), putting it in the root directory", name);
-			name = strutil::Path::fileNameOf(name);
-			if (name.size() > 120)
-				strutil::truncateIP(name, 120);
+			global::error = "Archive has too many or too-long entry names";
+			return false;
 		}
 
-		// Write entry name
-		char name_data[120];
-		memset(name_data, 0, 120);
-		memcpy(name_data, name.data(), name.size());
-		mc.write(name_data, 120);
-
-		// Write entry offset
-		mc.write(&offset, 4);
-
-		// Write entry size
-		uint32_t size = entry->size();
-		mc.write(&size, 4);
-
-		// Increment/update offset
-		offset += size;
+		file_entries.push_back({ entry, std::move(name), 0, static_cast<u32>(name_chunk.size()) });
+		name_chunk += file_entries.back().name;
+		name_chunk.push_back('\0');
 	}
 
-	// Write entry data
-	mc.seek(12, SEEK_SET);
-	for (auto& entry : entries)
+	if (file_entries.size() > std::numeric_limits<u32>::max())
 	{
-		// Skip folders
-		if (entry->type() == EntryType::folderType())
-			continue;
+		global::error = "Archive has too many entries";
+		return false;
+	}
 
-		// Write data
-		mc.write(entry->rawData(), entry->size());
+	constexpr u64 header_size   = 32;
+	const auto    max_file_size = static_cast<u64>(std::numeric_limits<unsigned>::max());
+	u64           dir_offset    = header_size;
+	for (auto& info : file_entries)
+	{
+		info.offset = dir_offset;
+		dir_offset += info.entry->size();
+		if (dir_offset > max_file_size)
+		{
+			global::error = "Archive is too large to write";
+			return false;
+		}
+	}
+
+	const auto dir_size = file_entries.size() * 16;
+	if (dir_offset + dir_size > max_file_size)
+	{
+		global::error = "Archive is too large to write";
+		return false;
+	}
+	const auto name_offset = dir_offset + dir_size;
+	if (name_offset + name_chunk.size() > max_file_size)
+	{
+		global::error = "Archive is too large to write";
+		return false;
+	}
+
+	// Write the header
+	char pack[4]     = { 'S', 'R', 'P', 'K' };
+	char reserved[4] = {};
+	file.write(pack, 4);
+	file.write(reserved, 4);
+	file.writeU64(dir_offset);
+	file.writeU64(name_offset);
+	file.writeU32(file_entries.size());
+	file.writeU32(name_chunk.size());
+
+	// Write entry data
+	for (auto& info : file_entries)
+	{
+		auto size = info.entry->size();
+		if (!file.write(info.entry->rawData(), size))
+		{
+			global::error = "Unable to write archive";
+			return false;
+		}
+	}
+
+	// Write directory
+	for (auto& info : file_entries)
+	{
+		file.writeU64(info.offset);
+		file.writeU32(info.entry->size());
+		file.writeU32(info.name_offset);
+	}
+
+	// Write entry names
+	if (!file.write(name_chunk.data(), name_chunk.size()))
+	{
+		global::error = "Unable to write archive";
+		return false;
+	}
+
+	for (auto& info : file_entries)
+	{
+		info.entry->setState(EntryState::Unmodified);
+		info.entry->setOffsetOnDisk(info.offset);
+		info.entry->setSizeOnDisk();
 	}
 
 	return true;
@@ -304,7 +338,7 @@ bool SiNReloadedArchiveHandler::isThisFormat(const MemChunk& mc)
 bool SiNReloadedArchiveHandler::isThisFormat(const string& filename)
 {
 	// Open file for reading
-	wxFFile file(wxString::FromUTF8(filename), "rb");
+	wxFFile file(wxString::FromUTF8(filename), wxString::FromUTF8("rb"));
 
 	// Check it opened ok
 	if (!file.IsOpened() || file.Length() < 24)

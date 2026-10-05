@@ -57,6 +57,10 @@ public:
 	bool read(string& str, unsigned count) const;
 
 	bool write(const void* buffer, unsigned count) override;
+	bool writeI32(i32 value, bool big_endian = false) const;
+	bool writeU32(u32 value, bool big_endian = false) const;
+	bool writeI64(i64 value, bool big_endian = false) const;
+	bool writeU64(u64 value, bool big_endian = false) const;
 	bool writeStr(string_view str) const;
 
 	string calculateHash() const;
