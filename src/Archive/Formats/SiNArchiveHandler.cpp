@@ -118,14 +118,18 @@ bool SiNArchiveHandler::open(Archive& archive, const MemChunk& mc)
 		if (entry->size() > 0)
 			entry->importMemChunk(mc, offset, size);
 
-		entry->setState(EntryState::Unmodified);
-
 		// Add to directory
 		dir->addEntry(entry);
 	}
 
 	// Detect all entry types
 	detectAllEntryTypes(archive);
+
+	// Set all entries/directories to unmodified
+	vector<ArchiveEntry*> entry_list;
+	archive.putEntryTreeAsList(entry_list);
+	for (auto& entry : entry_list)
+		entry->setState(EntryState::Unmodified);
 
 	// Setup variables
 	sig_blocker.unblock();

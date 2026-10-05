@@ -170,7 +170,7 @@ public:
 class SinReloadedArchiveDataFormat : public ArchiveDataFormat
 {
 public:
-	SinReloadedArchiveDataFormat() : ArchiveDataFormat("archive_sinr", ArchiveFormat::SiN) {}
+	SinReloadedArchiveDataFormat() : ArchiveDataFormat("archive_sinr", ArchiveFormat::SiNReloaded) {}
 };
 
 class LabDataFormat : public ArchiveDataFormat

@@ -83,6 +83,11 @@ bool SiNReloadedArchiveHandler::open(Archive& archive, const MemChunk& mc)
 	mc.read(&num_files, sizeof(num_files));
 	mc.read(&name_len, sizeof(name_len));
 
+	dir_ofs   = wxUINT64_SWAP_ON_BE(dir_ofs);
+	name_ofs  = wxUINT64_SWAP_ON_BE(name_ofs);
+	num_files = wxUINT32_SWAP_ON_BE(num_files);
+	name_len  = wxUINT32_SWAP_ON_BE(name_len);
+
 	std::string name_chunk;
 	name_chunk.resize(name_len);
 	mc.seek(name_ofs, SEEK_SET);
@@ -108,8 +113,9 @@ bool SiNReloadedArchiveHandler::open(Archive& archive, const MemChunk& mc)
 		mc.read(&name_ofs, sizeof(name_ofs));
 
 		// Byteswap if needed
-		offset = wxUINT64_SWAP_ON_BE(offset);
-		size   = wxUINT32_SWAP_ON_BE(size);
+		offset   = wxUINT64_SWAP_ON_BE(offset);
+		size     = wxUINT32_SWAP_ON_BE(size);
+		name_ofs = wxUINT32_SWAP_ON_BE(name_ofs);
 
 		// Check offset+size
 		if ((offset + size) > mc.size() || name_ofs >= mc.size())
@@ -134,14 +140,18 @@ bool SiNReloadedArchiveHandler::open(Archive& archive, const MemChunk& mc)
 		if (entry->size() > 0)
 			entry->importMemChunk(mc, offset, size);
 
-		entry->setState(EntryState::Unmodified);
-
 		// Add to directory
 		dir->addEntry(entry);
 	}
 
 	// Detect all entry types
 	detectAllEntryTypes(archive);
+
+	// Set all entries/directories to unmodified
+	vector<ArchiveEntry*> entry_list;
+	archive.putEntryTreeAsList(entry_list);
+	for (auto& entry : entry_list)
+		entry->setState(EntryState::Unmodified);
 
 	// Setup variables
 	sig_blocker.unblock();
