@@ -173,7 +173,7 @@ void ArchiveFile::remove()
 		return;
 	}
 
-	auto ps = context().preparedStatement("delete_archive_file", delete_archive_file);
+	auto ps = context().preparedStatement("delete_archive_file", delete_archive_file, true);
 
 	ps.bind(1, id);
 
@@ -304,7 +304,19 @@ i64 database::writeArchiveFile(const Archive& archive)
 	if (archive_file.id < 0)
 		archive_file.insert();
 	else
+	{
+		// Path must be unique, so remove any other row already using the new
+		// path (eg. when saving over a previously opened file)
+		auto existing_id = archiveFileId(archive_file.path, archive_file.parent_id);
+		if (existing_id >= 0 && existing_id != archive_file.id)
+		{
+			ArchiveFile existing;
+			existing.id = existing_id;
+			existing.remove();
+		}
+
 		archive_file.update();
+	}
 
 	signals().archive_file_updated();
 
