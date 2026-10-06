@@ -53,12 +53,7 @@ int      img_width  = 300;
 int      img_height = 204;
 bool     init_done  = false;
 } // namespace
-
-//#ifdef __WXGTK__
-//CVAR(Int, splash_refresh_ms, 100, CVar::Flag::Save)
-//#else
 CVAR(Int, splash_refresh_ms, 20, CVar::Flag::Save)
-//#endif
 
 
 // -----------------------------------------------------------------------------
@@ -176,8 +171,11 @@ void SplashWindow::show(string_view message, bool progress)
 #else
 	SetInitialSize({ img_width + FromDIP(6), rheight + FromDIP(6) });
 #endif
-	setMessage(message);
+
+	message_ = message;
+	CentreOnParent();
 	Show();
+	Raise();
 	CentreOnParent();
 	forceRedraw();
 }

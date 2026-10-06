@@ -40,6 +40,7 @@
 #include "UI/State.h"
 #include "Utility/StringUtils.h"
 #include <SQLiteCpp/Column.h>
+#include <wx/windowptr.h>
 
 using namespace slade;
 
@@ -51,8 +52,8 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-unique_ptr<SplashWindow> splash_window;
-bool                     splash_enabled = true;
+wxWindowPtr<SplashWindow> splash_window;
+bool                      splash_enabled = true;
 
 // Pixel sizes/scale
 int px_pad          = 8;
@@ -87,7 +88,7 @@ bool isMainThread()
 // -----------------------------------------------------------------------------
 void ui::init()
 {
-	splash_window = std::make_unique<SplashWindow>();
+	splash_window = new SplashWindow();
 
 	if (app::platform() == app::Platform::Linux)
 		px_spin_width = -1;
@@ -117,17 +118,23 @@ void ui::showSplash(string_view message, bool progress, wxWindow* parent)
 	if (!splash_enabled || !isMainThread())
 		return;
 
-	// The splash window uses wxFRAME_FLOAT_ON_PARENT, which can't be added or removed dynamically
-	// on all platforms, so if the parent changes the splash window must be recreated
+	// A parent that isn't shown yet (eg. main window during startup) would
+	// position the splash incorrectly
+	if (parent && !parent->IsShownOnScreen())
+		parent = nullptr;
+
+	// The splash window uses wxFRAME_FLOAT_ON_PARENT, which can't be added or
+	// removed dynamically on all platforms, so if the parent changes the splash
+	// window must be recreated
 	if (splash_window && splash_window->GetParent() != parent)
 	{
-		splash_window->Destroy();
-		splash_window = nullptr;
+		splash_window->Hide();
+		splash_window.reset();
 	}
 
 	if (!splash_window)
 	{
-		splash_window = std::make_unique<SplashWindow>(parent);
+		splash_window = new SplashWindow(parent);
 		splash_window->init();
 	}
 
