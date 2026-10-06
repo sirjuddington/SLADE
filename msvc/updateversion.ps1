@@ -2,7 +2,7 @@
 $version_major =    "3"
 $version_minor =    "3"
 $version_revision = "0"
-$version_beta =     "2"
+$version_beta =     "3"
 
 # Prompt for new version numbers
 Write-Host "Major version number: $version_major (locked)"
