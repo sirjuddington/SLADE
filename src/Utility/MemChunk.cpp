@@ -34,7 +34,6 @@
 #include "FileUtils.h"
 #include "General/Misc.h"
 #include "StringUtils.h"
-#include "UI/WxUtils.h"
 #include "thirdparty/xxhash/xxhash.h"
 #include <algorithm>
 
@@ -51,7 +50,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // MemChunk class constructor
 // -----------------------------------------------------------------------------
-MemChunk::MemChunk(u32 size)
+MemChunk::MemChunk(u64 size)
 {
 	// If a size is specified, allocate that much memory
 	if (size > 0)
@@ -61,7 +60,7 @@ MemChunk::MemChunk(u32 size)
 // -----------------------------------------------------------------------------
 // MemChunk class constructor taking initial data
 // -----------------------------------------------------------------------------
-MemChunk::MemChunk(const u8* data, u32 size)
+MemChunk::MemChunk(const u8* data, u64 size)
 {
 	// Load given data
 	if (data && size > 0)
@@ -97,7 +96,7 @@ bool MemChunk::clear()
 // Resizes the memory chunk, preserving existing data if specified.
 // Returns false if new size is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::reSize(u32 new_size, bool preserve_data)
+bool MemChunk::reSize(u64 new_size, bool preserve_data)
 {
 	// Check for invalid new size
 	if (new_size == 0)
@@ -124,7 +123,7 @@ bool MemChunk::reSize(u32 new_size, bool preserve_data)
 
 	// Check position
 	if (cur_ptr_ > data_.size())
-		cur_ptr_ = static_cast<u32>(data_.size());
+		cur_ptr_ = data_.size();
 
 	return true;
 }
@@ -133,13 +132,13 @@ bool MemChunk::reSize(u32 new_size, bool preserve_data)
 // Loads a file (or part of it) into the MemChunk.
 // Returns false if file couldn't be opened, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::importFile(string_view filename, u32 offset, u32 len)
+bool MemChunk::importFile(string_view filename, u64 offset, u64 len)
 {
 	// Open the file
-	wxFile file(wxutil::strFromView(filename));
+	SFile file(filename);
 
 	// Return false if file open failed
-	if (!file.IsOpened())
+	if (!file.isOpen())
 	{
 		log::error("MemChunk::importFile: Unable to open file {}", filename);
 		global::error = fmt::format("Unable to open file {}", filename);
@@ -151,8 +150,8 @@ bool MemChunk::importFile(string_view filename, u32 offset, u32 len)
 
 	// If length isn't specified or exceeds the file length,
 	// only read to the end of the file
-	if (offset + len > file.Length() || len == 0)
-		len = file.Length() - offset;
+	if (offset + len > file.size() || len == 0)
+		len = file.size() - offset;
 
 	// Read the file
 	if (len > 0)
@@ -166,18 +165,17 @@ bool MemChunk::importFile(string_view filename, u32 offset, u32 len)
 			log::error("MemChunk::importFile: Allocation of {} bytes failed: {}", len, ba.what());
 			global::error = fmt::format("Unable to allocate memory for file {}", filename);
 			clear();
-			file.Close();
 			return false;
 		}
 
 		// Read the file in chunks to support large (>2gb) files
-		file.Seek(offset, wxFromStart);
-		constexpr u32 CHUNK_SIZE = 256 * 1024 * 1024; // 256mb chunks
-		u32           total_read = 0;
+		file.seekFromStart(offset);
+		constexpr u64 CHUNK_SIZE = 256 * 1024 * 1024; // 256mb chunks
+		u64           total_read = 0;
 		while (total_read < len)
 		{
-			u32 to_read = std::min<u32>(CHUNK_SIZE, len - total_read);
-			u32 count   = file.Read(data_.data() + total_read, to_read);
+			u64 to_read = std::min<u64>(CHUNK_SIZE, len - total_read);
+			u64 count   = file.read(data_.data() + total_read, to_read) ? file.lastReadCount() : 0;
 			if (count != to_read)
 			{
 				log::error(
@@ -187,13 +185,10 @@ bool MemChunk::importFile(string_view filename, u32 offset, u32 len)
 					len);
 				global::error = fmt::format("Unable to read file {}", filename);
 				clear();
-				file.Close();
 				return false;
 			}
 			total_read += count;
 		}
-
-		file.Close();
 	}
 
 	return true;
@@ -203,7 +198,7 @@ bool MemChunk::importFile(string_view filename, u32 offset, u32 len)
 // Loads a file (or part of it) from a currently open file stream into memory.
 // Returns false if file couldn't be opened, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::importFileStreamWx(wxFile& file, u32 len)
+bool MemChunk::importFileStreamWx(wxFile& file, u64 len)
 {
 	// Check file
 	if (!file.IsOpened())
@@ -213,7 +208,7 @@ bool MemChunk::importFileStreamWx(wxFile& file, u32 len)
 	clear();
 
 	// Get current file position
-	u32 offset = file.Tell();
+	u64 offset = file.Tell();
 
 	// If length isn't specified or exceeds the file length,
 	// only read to the end of the file
@@ -239,7 +234,7 @@ bool MemChunk::importFileStreamWx(wxFile& file, u32 len)
 	return true;
 }
 
-bool MemChunk::importFileStream(const SFile& file, unsigned len)
+bool MemChunk::importFileStream(const SFile& file, u64 len)
 {
 	// Check file
 	if (!file.isOpen())
@@ -249,7 +244,7 @@ bool MemChunk::importFileStream(const SFile& file, unsigned len)
 	clear();
 
 	// Get current file position
-	u32 offset = file.currentPos();
+	u64 offset = file.currentPos();
 
 	// If length isn't specified or exceeds the file length,
 	// only read to the end of the file
@@ -279,7 +274,7 @@ bool MemChunk::importFileStream(const SFile& file, unsigned len)
 // Loads a chunk of memory into the MemChunk.
 // Returns false if size or data pointer is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::importMem(const u8* start, u32 len)
+bool MemChunk::importMem(const u8* start, u64 len)
 {
 	// Check that data to be loaded is valid
 	if (!start)
@@ -310,7 +305,7 @@ bool MemChunk::importMem(const u8* start, u32 len)
 // to [start+size].
 // If [size] is 0, writes from [start] to the end of the data
 // -----------------------------------------------------------------------------
-bool MemChunk::exportFile(string_view filename, u32 start, u32 size) const
+bool MemChunk::exportFile(string_view filename, u64 start, u64 size) const
 {
 	// Check data exists
 	if (!hasData())
@@ -322,7 +317,7 @@ bool MemChunk::exportFile(string_view filename, u32 start, u32 size) const
 
 	// Check size
 	if (size == 0)
-		size = static_cast<u32>(data_.size()) - start;
+		size = data_.size() - start;
 
 	// Sanitize filename
 #ifdef __WXMSW__
@@ -354,7 +349,7 @@ bool MemChunk::exportFile(string_view filename, u32 start, u32 size) const
 // [start+size].
 // If [size] is 0, writes from [start] to the end of the data
 // -----------------------------------------------------------------------------
-bool MemChunk::exportMemChunk(MemChunk& mc, u32 start, u32 size) const
+bool MemChunk::exportMemChunk(MemChunk& mc, u64 start, u64 size) const
 {
 	// Check data exists
 	if (!hasData())
@@ -366,7 +361,7 @@ bool MemChunk::exportMemChunk(MemChunk& mc, u32 start, u32 size) const
 
 	// Check size
 	if (size == 0)
-		size = static_cast<u32>(data_.size()) - start;
+		size = data_.size() - start;
 
 	// Write data to MemChunk
 	mc.reSize(size, false);
@@ -377,7 +372,7 @@ bool MemChunk::exportMemChunk(MemChunk& mc, u32 start, u32 size) const
 // Writes the given data at [offset].
 // If [expand] is true, expands the memory chunk if necessary
 // -----------------------------------------------------------------------------
-bool MemChunk::write(unsigned offset, const void* data, unsigned size, bool expand)
+bool MemChunk::write(u64 offset, const void* data, u64 size, bool expand)
 {
 	// Check pointers
 	if (!data)
@@ -386,11 +381,11 @@ bool MemChunk::write(unsigned offset, const void* data, unsigned size, bool expa
 	// If we're trying to write past the end of the memory chunk,
 	// resize it so we can write at this point
 	// (or return false if expanding is disallowed).
-	auto required = static_cast<size_t>(offset) + size;
+	auto required = offset + size;
 	if (required > data_.size())
 	{
 		if (expand)
-			reSize(static_cast<u32>(required), true);
+			reSize(required, true);
 		else
 			return false;
 	}
@@ -406,7 +401,7 @@ bool MemChunk::write(unsigned offset, const void* data, unsigned size, bool expa
 // Reads data from [offset] to [offset]+[size] into [buf].
 // Returns false if attempting to read data outside of the chunk, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::read(unsigned offset, void* buf, unsigned size) const
+bool MemChunk::read(u64 offset, void* buf, u64 size) const
 {
 	// Check pointers
 	if (data_.empty() || !buf)
@@ -425,7 +420,7 @@ bool MemChunk::read(unsigned offset, void* buf, unsigned size) const
 // Writes [count] bytes from the given data [buffer] at the current position.
 // Expands the memory chunk if necessary
 // -----------------------------------------------------------------------------
-bool MemChunk::write(const void* buffer, u32 count)
+bool MemChunk::write(const void* buffer, u64 count)
 {
 	// Check pointers
 	if (!buffer)
@@ -433,9 +428,9 @@ bool MemChunk::write(const void* buffer, u32 count)
 
 	// If we're trying to write past the end of the memory chunk,
 	// resize it so we can write at this point.
-	auto required = static_cast<size_t>(cur_ptr_) + count;
+	auto required = cur_ptr_ + count;
 	if (required > data_.size())
-		reSize(static_cast<u32>(required), true);
+		reSize(required, true);
 
 	// Write the data and move to the byte after what was written
 	memcpy(data_.data() + cur_ptr_, buffer, count);
@@ -449,7 +444,7 @@ bool MemChunk::write(const void* buffer, u32 count)
 // Writes the given data at the [start] position.
 // Expands the memory chunk if necessary
 // -----------------------------------------------------------------------------
-bool MemChunk::write(const void* data, u32 size, u32 start)
+bool MemChunk::write(const void* data, u64 size, u64 start)
 {
 	seek(start, SEEK_SET);
 	return write(data, size);
@@ -459,7 +454,7 @@ bool MemChunk::write(const void* data, u32 size, u32 start)
 // Reads [count] bytes of data from the current position into [buffer].
 // Returns false if attempting to read data outside of the chunk, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::read(void* buffer, unsigned count) const
+bool MemChunk::read(void* buffer, u64 count) const
 {
 	// Check pointers
 	if (data_.empty() || !buffer)
@@ -479,7 +474,7 @@ bool MemChunk::read(void* buffer, unsigned count) const
 // Reads [size] bytes of data from [start] into [buf].
 // Returns false if attempting to read data outside of the chunk, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::read(void* buf, u32 size, u32 start) const
+bool MemChunk::read(void* buf, u64 size, u64 start) const
 {
 	if (start > data_.size() || size > data_.size() - start)
 		return false;
@@ -492,9 +487,9 @@ bool MemChunk::read(void* buf, u32 size, u32 start) const
 // -----------------------------------------------------------------------------
 // Moves the current position, works the same as fseek() etc.
 // -----------------------------------------------------------------------------
-bool MemChunk::seek(u32 offset, u32 start) const
+bool MemChunk::seek(u64 offset, u64 start) const
 {
-	auto size = static_cast<u32>(data_.size());
+	auto size = data_.size();
 
 	if (start == SEEK_CUR)
 	{
@@ -525,7 +520,7 @@ bool MemChunk::seek(u32 offset, u32 start) const
 // Reads [size] bytes of data into [mc].
 // Returns false if attempting to read outside the chunk, true otherwise
 // -----------------------------------------------------------------------------
-bool MemChunk::readMC(MemChunk& mc, u32 size) const
+bool MemChunk::readMC(MemChunk& mc, u64 size) const
 {
 	if (cur_ptr_ > data_.size() || size > data_.size() - cur_ptr_)
 		return false;
@@ -562,7 +557,7 @@ bool MemChunk::fillData(u8 val)
 // -----------------------------------------------------------------------------
 u32 MemChunk::crc() const
 {
-	return hasData() ? misc::crc(data_.data(), static_cast<u32>(data_.size())) : 0;
+	return hasData() ? misc::crc(data_.data(), data_.size()) : 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -581,12 +576,12 @@ string MemChunk::hash() const
 // -----------------------------------------------------------------------------
 // Returns the data as a string
 // -----------------------------------------------------------------------------
-string MemChunk::asString(u32 offset, u32 length) const
+string MemChunk::asString(u64 offset, u64 length) const
 {
 	if (offset >= data_.size())
 		offset = 0;
 	if (length == 0 || offset + length > data_.size())
-		length = static_cast<u32>(data_.size()) - offset;
+		length = data_.size() - offset;
 
 	string s;
 	s.assign(reinterpret_cast<const char*>(data_.data()) + offset, length);

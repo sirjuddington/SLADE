@@ -500,21 +500,21 @@ void make_crc_table()
 should be initialized to all 1's, and the transmitted value
 is the 1's complement of the final running CRC (see the
 crc() routine below)). */
-uint32_t update_crc(uint32_t crc, const uint8_t* buf, uint32_t len)
+uint32_t update_crc(uint32_t crc, const uint8_t* buf, u64 len)
 {
 	uint32_t c = crc;
 
 	if (!crc_table_computed)
 		make_crc_table();
 
-	for (uint32_t n = 0; n < len; n++)
+	for (u64 n = 0; n < len; n++)
 		c = crc_table[(c ^ buf[n]) & 0xff] ^ (c >> 8);
 
 	return c;
 }
 
 /* Return the CRC of the bytes buf[0..len-1]. */
-uint32_t misc::crc(const uint8_t* buf, uint32_t len)
+uint32_t misc::crc(const uint8_t* buf, u64 len)
 {
 	return update_crc(0xffffffffL, buf, len) ^ 0xffffffffL;
 }
