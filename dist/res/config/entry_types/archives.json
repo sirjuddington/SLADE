@@ -175,6 +175,13 @@
     "icon": "e_archive",
     "category": "Archives"
   },
+  "sinr": {
+    "name": "SiN Reloaded Archive",
+    "format": "archive_sinr",
+    "export_ext": "sin",
+    "icon": "e_archive",
+    "category": "Archives"
+  },
   "7z": {
     "name": "7-Zip Archive",
     "format": "archive_7z",

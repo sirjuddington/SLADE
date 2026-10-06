@@ -39,6 +39,7 @@
 #include "EntryType/EntryType.h"
 #include "Formats/7zArchiveHandler.h"
 #include "Formats/All.h"
+#include "Formats/SiNReloadedArchiveHandler.h"
 #include "General/UndoRedo.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
@@ -1104,33 +1105,34 @@ unique_ptr<ArchiveFormatHandler> archive::formatHandler(ArchiveFormat format)
 {
 	switch (format)
 	{
-	case ArchiveFormat::ADat:     return std::make_unique<ADatArchiveHandler>();
-	case ArchiveFormat::Bsp:      return std::make_unique<BSPArchiveHandler>();
-	case ArchiveFormat::Bz2:      return std::make_unique<BZip2ArchiveHandler>();
-	case ArchiveFormat::ChasmBin: return std::make_unique<ChasmBinArchiveHandler>();
-	case ArchiveFormat::Dat:      return std::make_unique<DatArchiveHandler>();
-	case ArchiveFormat::Dir:      return std::make_unique<DirArchiveHandler>();
-	case ArchiveFormat::Disk:     return std::make_unique<DiskArchiveHandler>();
-	case ArchiveFormat::Gob:      return std::make_unique<GobArchiveHandler>();
-	case ArchiveFormat::Grp:      return std::make_unique<GrpArchiveHandler>();
-	case ArchiveFormat::GZip:     return std::make_unique<GZipArchiveHandler>();
-	case ArchiveFormat::Hog:      return std::make_unique<HogArchiveHandler>();
-	case ArchiveFormat::Lab:      return std::make_unique<LabArchiveHandler>();
-	case ArchiveFormat::Lfd:      return std::make_unique<LfdArchiveHandler>();
-	case ArchiveFormat::Lib:      return std::make_unique<LibArchiveHandler>();
-	case ArchiveFormat::Pak:      return std::make_unique<PakArchiveHandler>();
-	case ArchiveFormat::Pod:      return std::make_unique<PodArchiveHandler>();
-	case ArchiveFormat::Res:      return std::make_unique<ResArchiveHandler>();
-	case ArchiveFormat::Rff:      return std::make_unique<RffArchiveHandler>();
-	case ArchiveFormat::SiN:      return std::make_unique<SiNArchiveHandler>();
-	case ArchiveFormat::Tar:      return std::make_unique<TarArchiveHandler>();
-	case ArchiveFormat::Wad:      return std::make_unique<WadArchiveHandler>();
-	case ArchiveFormat::WadJ:     return std::make_unique<WadJArchiveHandler>();
-	case ArchiveFormat::Wad2:     return std::make_unique<Wad2ArchiveHandler>();
-	case ArchiveFormat::Wolf:     return std::make_unique<WolfArchiveHandler>();
-	case ArchiveFormat::Zip:      return std::make_unique<ZipArchiveHandler>();
-	case ArchiveFormat::Zip7:     return std::make_unique<Zip7ArchiveHandler>();
-	default:                      break;
+	case ArchiveFormat::ADat:        return std::make_unique<ADatArchiveHandler>();
+	case ArchiveFormat::Bsp:         return std::make_unique<BSPArchiveHandler>();
+	case ArchiveFormat::Bz2:         return std::make_unique<BZip2ArchiveHandler>();
+	case ArchiveFormat::ChasmBin:    return std::make_unique<ChasmBinArchiveHandler>();
+	case ArchiveFormat::Dat:         return std::make_unique<DatArchiveHandler>();
+	case ArchiveFormat::Dir:         return std::make_unique<DirArchiveHandler>();
+	case ArchiveFormat::Disk:        return std::make_unique<DiskArchiveHandler>();
+	case ArchiveFormat::Gob:         return std::make_unique<GobArchiveHandler>();
+	case ArchiveFormat::Grp:         return std::make_unique<GrpArchiveHandler>();
+	case ArchiveFormat::GZip:        return std::make_unique<GZipArchiveHandler>();
+	case ArchiveFormat::Hog:         return std::make_unique<HogArchiveHandler>();
+	case ArchiveFormat::Lab:         return std::make_unique<LabArchiveHandler>();
+	case ArchiveFormat::Lfd:         return std::make_unique<LfdArchiveHandler>();
+	case ArchiveFormat::Lib:         return std::make_unique<LibArchiveHandler>();
+	case ArchiveFormat::Pak:         return std::make_unique<PakArchiveHandler>();
+	case ArchiveFormat::Pod:         return std::make_unique<PodArchiveHandler>();
+	case ArchiveFormat::Res:         return std::make_unique<ResArchiveHandler>();
+	case ArchiveFormat::Rff:         return std::make_unique<RffArchiveHandler>();
+	case ArchiveFormat::SiN:         return std::make_unique<SiNArchiveHandler>();
+	case ArchiveFormat::SiNReloaded: return std::make_unique<SiNReloadedArchiveHandler>();
+	case ArchiveFormat::Tar:         return std::make_unique<TarArchiveHandler>();
+	case ArchiveFormat::Wad:         return std::make_unique<WadArchiveHandler>();
+	case ArchiveFormat::WadJ:        return std::make_unique<WadJArchiveHandler>();
+	case ArchiveFormat::Wad2:        return std::make_unique<Wad2ArchiveHandler>();
+	case ArchiveFormat::Wolf:        return std::make_unique<WolfArchiveHandler>();
+	case ArchiveFormat::Zip:         return std::make_unique<ZipArchiveHandler>();
+	case ArchiveFormat::Zip7:        return std::make_unique<Zip7ArchiveHandler>();
+	default:                         break;
 	}
 
 	// Unknown format

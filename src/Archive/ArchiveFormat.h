@@ -32,6 +32,7 @@ enum class ArchiveFormat
 	Wolf,
 	Zip,
 	Zip7, // 7zip
+	SiNReloaded,
 
 	Unknown
 };

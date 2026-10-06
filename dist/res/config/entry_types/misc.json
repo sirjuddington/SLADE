@@ -102,7 +102,7 @@
     "name": "ANSI Text",
     "size": [ 4000 ],
     "match_name": [ "endoom", "endtext", "endstrf", "loading", "endboom", "doomerr", "duke3d" ],
-    "match_ext": [ "ans" ],
+    "match_ext": [ "ans", "bin" ],
     "match_extorname": true,
     "export_ext": "ans",
     "icon": "gfx",
