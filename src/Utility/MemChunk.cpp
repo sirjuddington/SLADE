@@ -489,19 +489,19 @@ bool MemChunk::read(void* buf, u64 size, u64 start) const
 // -----------------------------------------------------------------------------
 bool MemChunk::seek(u64 offset, u64 start) const
 {
-	auto size = data_.size();
+	auto size = this->size();
 
 	if (start == SEEK_CUR)
 	{
 		// Move forward from the current position
 		cur_ptr_ += offset;
-		cur_ptr_ = std::min(cur_ptr_, size);
+		cur_ptr_ = std::min<u64>(cur_ptr_, size);
 	}
 	else if (start == SEEK_SET)
 	{
 		// Move to the specified offset
 		cur_ptr_ = offset;
-		cur_ptr_ = std::min(cur_ptr_, size);
+		cur_ptr_ = std::min<u64>(cur_ptr_, size);
 	}
 	else if (start == SEEK_END)
 	{
