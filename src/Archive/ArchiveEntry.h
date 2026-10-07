@@ -97,7 +97,7 @@ public:
 	// Data on disk
 	int  sizeOnDisk() const { return ex_props_.getOr("SizeOnDisk", -1); }
 	void setSizeOnDisk(int size) { ex_props_["SizeOnDisk"] = size; }
-	void setSizeOnDisk() { ex_props_["SizeOnDisk"] = data_.size(); } // Parameterless version, use data size
+	void setSizeOnDisk() { ex_props_["SizeOnDisk"] = static_cast<int>(data_.size()); }
 	int  offsetOnDisk() const { return ex_props_.getOr("OffsetOnDisk", -1); }
 	void setOffsetOnDisk(int offset) { ex_props_["OffsetOnDisk"] = offset; }
 

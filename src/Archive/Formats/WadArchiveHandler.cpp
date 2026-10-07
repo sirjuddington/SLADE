@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "WadArchiveHandler.h"
-
 #include "Archive/Archive.h"
 #include "Archive/ArchiveDir.h"
 #include "Archive/ArchiveEntry.h"
@@ -432,7 +431,20 @@ bool WadArchiveHandler::open(Archive& archive, const MemChunk& mc)
 		{
 			log::error("WadArchiveHandler::open: Wad archive is invalid or corrupt");
 			global::error = fmt::format(
-				"Archive is invalid and/or corrupt (lump {}: {} data goes past end of file)", d, name);
+				"Archive is invalid and/or corrupt (entry {}: {} data goes past end of file)", d, name);
+			return false;
+		}
+
+		// Entries over the maximum entry size can't be imported
+		auto max_entry_size_mb = static_cast<uint64_t>(CVar::getInt("max_entry_size_mb"));
+		if (std::max<uint64_t>(size, actualsize) > max_entry_size_mb * 1024 * 1024)
+		{
+			log::error("WadArchiveHandler::open: Entry {}: {} is larger than the maximum entry size", d, name);
+			global::error = fmt::format(
+				"Entry too large: {} is {}mb (max_entry_size_mb is {})",
+				name,
+				std::max<uint64_t>(size, actualsize) / (1 << 20),
+				max_entry_size_mb);
 			return false;
 		}
 

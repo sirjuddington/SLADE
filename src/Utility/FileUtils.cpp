@@ -365,7 +365,7 @@ SFile::SFile(string_view path, Mode mode)
 // -----------------------------------------------------------------------------
 // Returns the current read/write position in the file
 // -----------------------------------------------------------------------------
-unsigned SFile::currentPos() const
+u64 SFile::currentPos() const
 {
 	return handle_ ? ftell(handle_) : 0;
 }
@@ -384,18 +384,18 @@ bool SFile::open(const string& path, Mode mode)
 	auto wpath = wxString::FromUTF8(path);
 	switch (mode)
 	{
-	case Mode::ReadOnly: handle_ = _wfopen(wpath.wc_str(), L"rb"); break;
-	case Mode::Write:    handle_ = _wfopen(wpath.wc_str(), L"wb"); break;
-	case Mode::ReadWite: handle_ = _wfopen(wpath.wc_str(), L"r+b"); break;
-	case Mode::Append:   handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
+	case Mode::ReadOnly:  handle_ = _wfopen(wpath.wc_str(), L"rb"); break;
+	case Mode::Write:     handle_ = _wfopen(wpath.wc_str(), L"wb"); break;
+	case Mode::ReadWrite: handle_ = _wfopen(wpath.wc_str(), L"r+b"); break;
+	case Mode::Append:    handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
 	}
 #else
 	switch (mode)
 	{
-	case Mode::ReadOnly: handle_ = fopen(path.c_str(), "rb"); break;
-	case Mode::Write:    handle_ = fopen(path.c_str(), "wb"); break;
-	case Mode::ReadWite: handle_ = fopen(path.c_str(), "r+b"); break;
-	case Mode::Append:   handle_ = fopen(path.c_str(), "ab"); break;
+	case Mode::ReadOnly:  handle_ = fopen(path.c_str(), "rb"); break;
+	case Mode::Write:     handle_ = fopen(path.c_str(), "wb"); break;
+	case Mode::ReadWrite: handle_ = fopen(path.c_str(), "r+b"); break;
+	case Mode::Append:    handle_ = fopen(path.c_str(), "ab"); break;
 	}
 #endif
 
@@ -409,9 +409,11 @@ bool SFile::open(const string& path, Mode mode)
 		struct stat st;
 		stat(path.c_str(), &st);
 #endif
-		size_ = st.st_size;
 
-		path_ = path;
+		// Update member variables
+		size_            = st.st_size;
+		path_            = path;
+		last_read_count_ = 0;
 
 		return true;
 	}
@@ -427,8 +429,9 @@ void SFile::close()
 	if (handle_)
 	{
 		fclose(handle_);
-		handle_ = nullptr;
-		size_   = 0;
+		handle_          = nullptr;
+		size_            = 0;
+		last_read_count_ = 0;
 		path_.clear();
 	}
 }
@@ -436,7 +439,7 @@ void SFile::close()
 // -----------------------------------------------------------------------------
 // Seeks ahead by [offset] bytes from the current position
 // -----------------------------------------------------------------------------
-bool SFile::seek(unsigned offset) const
+bool SFile::seek(u64 offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_CUR) == 0 : false;
 }
@@ -444,7 +447,7 @@ bool SFile::seek(unsigned offset) const
 // -----------------------------------------------------------------------------
 // Seeks to [offset] bytes from the beginning of the file
 // -----------------------------------------------------------------------------
-bool SFile::seekFromStart(unsigned offset) const
+bool SFile::seekFromStart(u64 offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_SET) == 0 : false;
 }
@@ -452,7 +455,7 @@ bool SFile::seekFromStart(unsigned offset) const
 // -----------------------------------------------------------------------------
 // Seeks to [offset] bytes back from the end of the file
 // -----------------------------------------------------------------------------
-bool SFile::seekFromEnd(unsigned offset) const
+bool SFile::seekFromEnd(u64 offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_END) == 0 : false;
 }
@@ -460,10 +463,13 @@ bool SFile::seekFromEnd(unsigned offset) const
 // -----------------------------------------------------------------------------
 // Reads [count] bytes from the file into [buffer]
 // -----------------------------------------------------------------------------
-bool SFile::read(void* buffer, unsigned count) const
+bool SFile::read(void* buffer, u64 count) const
 {
 	if (handle_)
-		return fread(buffer, count, 1, handle_) > 0;
+	{
+		last_read_count_ = fread(buffer, 1, count, handle_);
+		return last_read_count_ > 0;
+	}
 
 	return false;
 }
@@ -472,7 +478,7 @@ bool SFile::read(void* buffer, unsigned count) const
 // Reads [count] bytes from the file into a MemChunk [mc]
 // (replaces the existing contents of the MemChunk)
 // -----------------------------------------------------------------------------
-bool SFile::read(MemChunk& mc, unsigned count) const
+bool SFile::read(MemChunk& mc, u64 count) const
 {
 	return mc.importFileStream(*this, count);
 }
@@ -481,13 +487,13 @@ bool SFile::read(MemChunk& mc, unsigned count) const
 // Reads [count] characters from the file into a string [str]
 // (replaces the existing contents of the string)
 // -----------------------------------------------------------------------------
-bool SFile::read(string& str, unsigned count) const
+bool SFile::read(string& str, u64 count) const
 {
 	if (handle_)
 	{
 		str.resize(count);
-		auto c = fread(str.data(), 1, count, handle_);
-		return c > 0;
+		last_read_count_ = fread(str.data(), 1, count, handle_);
+		return last_read_count_ > 0;
 	}
 
 	return false;
@@ -496,7 +502,7 @@ bool SFile::read(string& str, unsigned count) const
 // -----------------------------------------------------------------------------
 // Writes [count] bytes from [buffer] to the file
 // -----------------------------------------------------------------------------
-bool SFile::write(const void* buffer, unsigned count)
+bool SFile::write(const void* buffer, u64 count)
 {
 	if (count == 0)
 		return true;
