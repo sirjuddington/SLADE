@@ -48,14 +48,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // MapThing class constructor
 // -----------------------------------------------------------------------------
-MapThing::MapThing(
-	const Vec3d&       pos,
-	short              type,
-	short              angle,
-	short              flags,
-	const map::ArgSet& args,
-	int                id,
-	int                special) :
+MapThing::MapThing(const Vec3d& pos, u16 type, i16 angle, int flags, const map::ArgSet& args, int id, int special) :
 	MapObject(Type::Thing),
 	type_{ type },
 	position_{ pos.x, pos.y },
@@ -71,7 +64,7 @@ MapThing::MapThing(
 // -----------------------------------------------------------------------------
 // MapThing class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapThing::MapThing(const Vec3d& pos, short type, const ParseTreeNode* def) :
+MapThing::MapThing(const Vec3d& pos, u16 type, const ParseTreeNode* def) :
 	MapObject(Type::Thing),
 	type_{ type },
 	position_{ pos.x, pos.y },
@@ -291,7 +284,7 @@ void MapThing::setType(int type)
 
 	beginModify();
 	auto prev_type = type_;
-	type_ = type;
+	type_          = type;
 	endModify();
 
 	if (parent_map_)

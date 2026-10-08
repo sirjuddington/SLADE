@@ -25,7 +25,7 @@ public:
 		i16 y;
 		i16 z;
 		i16 angle;
-		i16 type;
+		u16 type;
 		u16 flags;
 		u8  special;
 		u8  args[5];

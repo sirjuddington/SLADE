@@ -27,13 +27,13 @@ public:
 
 	MapThing(
 		const Vec3d&       pos     = { 0., 0., 0. },
-		short              type    = -1,
-		short              angle   = 0,
-		short              flags   = 0,
+		u16                type    = -1,
+		i16                angle   = 0,
+		int                flags   = 0,
 		const map::ArgSet& args    = {},
 		int                id      = 0,
 		int                special = 0);
-	MapThing(const Vec3d& pos, short type, const ParseTreeNode* def);
+	MapThing(const Vec3d& pos, u16 type, const ParseTreeNode* def);
 	~MapThing() override = default;
 
 	double             xPos() const { return position_.x; }
@@ -41,8 +41,8 @@ public:
 	double             zPos() const { return z_; }
 	Vec2d              position() const { return position_; }
 	double             height() const { return z_; }
-	short              type() const { return type_; }
-	short              angle() const { return angle_; }
+	u16                type() const { return type_; }
+	i16                angle() const { return angle_; }
 	int                flags() const { return flags_; }
 	bool               flagSet(int flag) const { return (flags_ & flag) != 0; }
 	int                arg(unsigned index) const { return index < 5 ? args_[index] : 0; }
@@ -80,10 +80,10 @@ public:
 
 private:
 	// Basic data
-	short       type_ = 1;
+	u16         type_ = 1;
 	Vec2d       position_;
 	double      z_       = 0.;
-	short       angle_   = 0;
+	i16         angle_   = 0;
 	int         flags_   = 0;
 	map::ArgSet args_    = {};
 	int         id_      = 0;

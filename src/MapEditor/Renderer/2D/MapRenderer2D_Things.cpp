@@ -177,8 +177,8 @@ void MapRenderer2D::renderThings(const vector<MapThing*>& things, float alpha, c
 	gl::setBlend(gl::Blend::Normal);
 
 	// Render given things (by type)
-	vector<short> types_rendered;
-	unsigned      index = 0;
+	vector<u16> types_rendered;
+	unsigned    index = 0;
 	while (index < things.size())
 	{
 		// Ignore if things of this type were already rendered
