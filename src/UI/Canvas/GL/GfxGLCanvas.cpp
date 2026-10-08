@@ -67,7 +67,7 @@ CVAR(Bool, gfx_arc, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 GfxGLCanvas::GfxGLCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
 {
-	view_.setCentered(true);
+	setViewType(View::Default);
 	resetViewOffsets();
 
 	// Update texture when the image changes

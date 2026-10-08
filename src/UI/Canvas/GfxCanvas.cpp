@@ -61,7 +61,7 @@ EXTERN_CVAR(Bool, gfx_show_border)
 // -----------------------------------------------------------------------------
 GfxCanvas::GfxCanvas(wxWindow* parent) : Canvas(parent)
 {
-	view_.setCentered(true);
+	setViewType(View::Default);
 	resetViewOffsets();
 
 	// Bind Events

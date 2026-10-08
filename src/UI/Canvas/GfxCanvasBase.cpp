@@ -46,6 +46,7 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
+CVAR(Bool, gfx_default_centered, true, CVar::Flag::Save)
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_OFFSET_CHANGED)
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_PIXELS_CHANGED)
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_COLOUR_PICKED)
@@ -85,11 +86,22 @@ void GfxCanvasBase::setViewType(View type)
 {
 	bool changed = view_type_ != type;
 	view_type_   = type;
-	if (changed)
+
+	// Set view centering based on view type
+	bool centered = true;
+	if (type == View::Tiled)
+		centered = false;
+	else if (type == View::Default)
+		centered = gfx_default_centered;
+	if (centered != view().centered())
 	{
-		view().setCentered(type != View::Tiled);
-		resetViewOffsets();
+		view().setCentered(centered);
+		changed = true;
 	}
+
+	// Reset view offsets if view type or centering changed
+	if (changed)
+		resetViewOffsets();
 }
 
 // -----------------------------------------------------------------------------
@@ -130,7 +142,7 @@ void GfxCanvasBase::resetViewOffsets()
 {
 	if (view_type_ == View::HUD)
 		view().setOffset(160, 100);
-	else if (view_type_ == View::Default || view_type_ == View::Centered)
+	else if ((view_type_ == View::Default && gfx_default_centered) || view_type_ == View::Centered)
 		view().setOffset(image_->width() / 2., image_->height() / 2.);
 	else
 		view().setOffset(0, 0);

@@ -198,6 +198,7 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 	// General
 	settings_table_->addCheckBox("Show outline around graphics and textures", "gfx_show_border");
 	settings_table_->addCheckBox("Highlight graphics on mouse hover", "gfx_hilight_mouseover");
+	settings_table_->addCheckBox("Centered default graphics view", "gfx_default_centered");
 	settings_table_->addCheckBox("Offer additional conversion options", "gfx_extraconv");
 	settings_table_->addCheckBox(
 		"Condensed Translation Editor layout|"
