@@ -1,0 +1,177 @@
+// ID24 thing types
+{
+    "groups": [
+    {
+      "name": "Sounds/Ambient Sounds",
+      "defaults": {
+        "colour": "rgb(200, 0, 200)",
+        "angle": false,
+        "icon": "sound",
+        "shrink": true,
+        "zeth": 27
+      },
+      "things": [
+        { "type": 36910, "name": "Ambient Klaxon" },
+        { "type": 36911, "name": "Ambient Portal Open" },
+        { "type": 36912, "name": "Ambient Portal Loop" },
+        { "type": 36913, "name": "Ambient Portal Close" }
+      ]
+    },
+
+    {
+      "name": "Monsters",
+      "things": [
+        {
+          "type": 36864,
+          "name": "Ghoul",
+          "radius": 16,
+          "height": 40,
+          "sprite": "GHULA1"
+        },
+        {
+          "type": 36865,
+          "name": "Banshee",
+          "radius": 20,
+          "height": 56,
+          "sprite": "BSHEA?"
+        },
+        {
+          "type": 36866,
+          "name": "Mindweaver",
+          "radius": 64,
+          "height": 64,
+          "sprite": "CSPIA?"
+        },
+        {
+          "type": 36867,
+          "name": "Shocktrooper",
+          "radius": 20,
+          "height": 56,
+          "sprite": "PPOSA1"
+        },
+        {
+          "type": 36868,
+          "name": "Vassago",
+          "radius": 24,
+          "height": 64,
+          "sprite": "VASSA1"
+        },
+        {
+          "type": 36869,
+          "name": "Tyrant",
+          "radius": 40,
+          "height": 110,
+          "sprite": "CYB2A1"
+        },
+        {
+          "type": 36870,
+          "name": "Tyrant (Boss 1)",
+          "radius": 40,
+          "height": 110,
+          "sprite": "CYB2B1"
+        },
+        {
+          "type": 36871,
+          "name": "Tyrant (Boss 2)",
+          "radius": 40,
+          "height": 110,
+          "sprite": "CYB2D1"
+        }
+      ]
+    },
+  
+    {
+      "name": "Weapons",
+      "things": [
+        { "type": 36916, "name": "Calamity Blade", "sprite": "CBLDA?" },
+        { "type": 36917, "name": "Incinerator", "sprite": "INCNA?" }
+      ]
+    },
+
+    {
+      "name": "Ammunition",
+      "things": [
+        { "type": 36914, "name": "Fuel Can", "sprite": "FCPUA?" },
+        { "type": 36915, "name": "Fuel Tank", "sprite": "FTNKA?" }
+      ]
+	},
+    {
+      "name": "Lighting",
+	  "things": [
+        { "type": 36907, "name": "Office Lamp", "radius": 12, "height": 52, "sprite": "LAMPA?" },
+        { "type": 36908, "name": "Ceiling Lamp", "radius": 12, "height": 32, "sprite": "TLP6A?", "hanging": true },
+        { "type": 36909, "name": "Candlestick", "radius": 16, "height": 16, "sprite": "CBR2A?" }
+	  ]
+	},
+    {
+      "name": "Decorations/Tech",
+	  "things": [
+        { "type": 36906, "name": "Office Chair", "radius": 12, "height": 16, "sprite": "CHR1A?" }
+	  ]
+	},
+    {
+      "name": "Decorations/Rocks",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "height": 16,
+        "angle": false,
+        "decoration": true,
+		"hanging": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 36872, "name": "Stalagmite", "radius": 16, "height": 48, "sprite": "SMT2A?", "hanging": false },
+        { "type": 36896, "name": "Rock Column", "radius": 24, "height": 16, "sprite": "STMIA?", "hanging": false },
+        { "type": 36897, "name": "Stalagmite, Large", "radius": 16, "height": 16, "sprite": "STG1A?", "hanging": false },
+        { "type": 36898, "name": "Stalagmite, Medium", "radius": 12, "height": 16, "sprite": "STG2A?", "hanging": false },
+        { "type": 36899, "name": "Stalagmite, Small", "radius": 8, "height": 16, "sprite": "STG3A?", "hanging": false },
+        { "type": 36900, "name": "Stalactite, Large", "radius": 16, "height": 112, "sprite": "STC1A?", "solid":false },
+        { "type": 36901, "name": "Stalactite, Large (Blocking)", "radius": 16, "height": 112, "sprite": "STC1A?" },
+        { "type": 36902, "name": "Stalactite, Medium", "radius": 16, "height": 64, "sprite": "STC2A?", "solid":false },
+        { "type": 36903, "name": "Stalactite, Medium (Blocking)", "radius": 16, "height": 64, "sprite": "STC2A?" },
+        { "type": 36904, "name": "Stalactite, Small", "radius": 16, "height": 32, "sprite": "STC3A?", "solid":false },
+        { "type": 36905, "name": "Stalactite, Small (Blocking)", "radius": 16, "height": 32, "sprite": "STC3A?" }
+      ]
+    },
+    {
+      "name": "Gore/Hanging & Impaled Bodies",
+      "things": [
+        { "type": 36876, "name": "Hanging Body", "radius": 16, "height": 80, "sprite": "GOR6A?", "solid":false },
+        { "type": 36877, "name": "Hanging Body (Blocking)", "radius": 16, "height": 80, "sprite": "GOR6A?" },
+        { "type": 36878, "name": "Hanging Crucified Body", "radius": 16, "height": 64, "sprite": "GOR7A?" },
+        { "type": 36879, "name": "Hanging Crucified Body (Blocking)", "radius": 16, "height": 64, "sprite": "GOR7A?" },
+        { "type": 36880, "name": "Hanging Bound Body", "radius": 16, "height": 72, "sprite": "GOR8A?", "solid":false },
+        { "type": 36881, "name": "Hanging Bound Body (Blocking)", "radius": 16, "height": 72, "sprite": "GOR8A?" },
+        { "type": 36882, "name": "Hanging Baron", "radius": 16, "height": 80, "sprite": "GORAA?", "solid":false },
+        { "type": 36883, "name": "Hanging Baron (Blocking)", "radius": 16, "height": 80, "sprite": "GORAA?" },
+        { "type": 36884, "name": "Hanging Chained Body", "radius": 16, "height": 84, "sprite": "HDB7A?", "solid":false },
+        { "type": 36885, "name": "Hanging Chained Body (Blocking)", "radius": 16, "height": 84, "sprite": "HDB7A?" },
+        { "type": 36886, "name": "Hanging Torso", "radius": 16, "height": 52, "sprite": "HDB8A?", "solid":false },
+        { "type": 36887, "name": "Hanging Torso (Blocking)", "radius": 16, "height": 52, "sprite": "HDB8A?" }
+      ]
+    },
+    {
+      "name": "Gore/Blood & Stuff",
+      "things": [
+        { "type": 36873, "name": "Skewered Corpse Pile", "radius": 40, "height": 16, "sprite": "POL7A?" },
+        { "type": 36874, "name": "Burning Torso", "radius": 16, "height": 16, "sprite": "HBBQA?" },
+        { "type": 36875, "name": "Burning Body", "radius": 16, "height": 16, "sprite": "HBB2A?" },
+        { "type": 36888, "name": "Skull Pole Trio", "radius": 16, "height": 16, "sprite": "POLAA?" },
+        { "type": 36889, "name": "Skull Gibs", "radius": 16, "height": 16, "sprite": "POB6A?" }
+      ]
+    },
+    {
+      "name": "Decorations/Plants",
+	  "things":[
+        { "type": 36890, "name": "Short Bush", "radius": 12, "height": 16, "sprite": "BSH1A?" },
+        { "type": 36891, "name": "Short Bush (Burnt)", "radius": 12, "height": 16, "sprite": "BSH1B?" },
+        { "type": 36892, "name": "Short Bush (Charred)", "radius": 12, "height": 16, "sprite": "BSH1C?" },
+        { "type": 36893, "name": "Tall Bush", "radius": 12, "height": 16, "sprite": "BSH2A?" },
+        { "type": 36894, "name": "Tall Bush (Charred)", "radius": 12, "height": 16, "sprite": "BSH2B?" },
+        { "type": 36895, "name": "Tall Bush (Burnt)", "radius": 12, "height": 16, "sprite": "BSH2C?" }
+	  ]
+	}
+  ]
+}
+
