@@ -85,6 +85,8 @@ using namespace gl;
 CVAR(Bool, map_renderinfo, false, CVar::Flag::Save)
 CVAR(Bool, map_show_help, true, CVar::Flag::Save)
 CVAR(Bool, map_showfps, false, CVar::Flag::Save)
+CVAR(Bool, map_fade_unfocused, false, CVar::Flag::Save)
+CVAR(Float, map_fade_unfocused_amount, 0.25f, CVar::Flag::Save)
 CVAR(Int, map2d_64grid_style, 1, CVar::Flag::Save)
 CVAR(Int, map2d_crosshair, 0, CVar::Flag::Save)
 CVAR(Bool, map2d_flat_fade, 1, CVar::Flag::Save)
@@ -1378,10 +1380,10 @@ void Renderer::draw(bool focused) const
 	}
 
 	// Fade screen if not focused
-	if (!focused)
+	if (!focused && map_fade_unfocused)
 	{
 		dc.setColourFromConfig("map_background");
-		dc.colour.a *= 0.5f;
+		dc.colour.a *= map_fade_unfocused_amount;
 		dc.drawRect({ 0.0f, 0.0f, static_cast<float>(view_->size().x), static_cast<float>(view_->size().y) });
 	}
 }

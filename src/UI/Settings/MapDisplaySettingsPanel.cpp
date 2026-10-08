@@ -89,6 +89,7 @@ wxPanel* MapDisplaySettingsPanel::createGeneralPanel(wxWindow* parent, const Lay
 		"map2d_action_lines");
 	st_general_->addCheckBox("Show help text", "map_show_help");
 	st_general_->addCheckBox("Show FPS counter", "map_showfps");
+	st_general_->addCheckBox("Fade when not focused", "map_fade_unfocused");
 
 	// Grid
 	st_general_->addSectionSeparator("Grid");
