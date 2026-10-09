@@ -528,8 +528,11 @@ void GfxCanvasBase::onMouseWheel(wxMouseEvent& e)
 
 	if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 	{
-		// Zoom towards cursor
-		zoom_point_ = { window()->ToPhys(e.GetPosition().x), window()->ToPhys(e.GetPosition().y) };
+		// Zoom towards cursor if the view is centered, otherwise just zoom towards origin
+		if (view().centered())
+			zoom_point_ = { window()->ToPhys(e.GetPosition().x), window()->ToPhys(e.GetPosition().y) };
+		else
+			zoom_point_ = { 0, 0 };
 
 		if (e.GetWheelRotation() > 0)
 			linked_zoom_control_->zoomIn(true);
