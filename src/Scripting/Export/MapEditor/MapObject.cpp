@@ -66,6 +66,50 @@ static void objectSetStringProperty(MapObject& self, string_view key, string_vie
 }
 
 // -----------------------------------------------------------------------------
+// Sets UDMF plane properties from [plane], using SLADE's internal plane sign
+// convention, then updates the live sector plane.
+// -----------------------------------------------------------------------------
+static void setSectorPlane(
+	MapSector&   self,
+	const Plane& plane,
+	string_view  prop_a,
+	string_view  prop_b,
+	string_view  prop_c,
+	string_view  prop_d,
+	void (MapSector::*setter)(const Plane&))
+{
+	self.setFloatProperty(prop_a, -plane.a);
+	self.setFloatProperty(prop_b, -plane.b);
+	self.setFloatProperty(prop_c, -plane.c);
+	self.setFloatProperty(prop_d, plane.d);
+	(self.*setter)(plane);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the authored floor plane for sector [self]
+// -----------------------------------------------------------------------------
+static void setSectorFloorPlane(MapSector& self, const Plane& plane)
+{
+	setSectorPlane(
+		self, plane, "floorplane_a", "floorplane_b", "floorplane_c", "floorplane_d", &MapSector::setFloorPlane);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the authored ceiling plane for sector [self]
+// -----------------------------------------------------------------------------
+static void setSectorCeilingPlane(MapSector& self, const Plane& plane)
+{
+	setSectorPlane(
+		self,
+		plane,
+		"ceilingplane_a",
+		"ceilingplane_b",
+		"ceilingplane_c",
+		"ceilingplane_d",
+		&MapSector::setCeilingPlane);
+}
+
+// -----------------------------------------------------------------------------
 // Registers the MapVertex type with lua
 // -----------------------------------------------------------------------------
 void registerMapVertex(lua_State* lua)
@@ -128,6 +172,7 @@ void registerMapLine(lua_State* lua)
 	lua_line.addProperty("side1", &MapLine::s1);
 	lua_line.addProperty("side2", &MapLine::s2);
 	lua_line.addProperty("special", &MapLine::special);
+	lua_line.addProperty("id", &MapLine::id);
 	lua_line.addProperty("length", [](MapLine& self) { return self.length(); });
 
 	// Functions
@@ -147,7 +192,7 @@ void registerMapSide(lua_State* lua)
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_side.addProperty("sector", &MapSide::sector);
+	lua_side.addProperty("sector", &MapSide::sector, &MapSide::setSector);
 	lua_side.addProperty("line", &MapSide::parentLine);
 	lua_side.addProperty("textureBottom", &MapSide::texLower);
 	lua_side.addProperty("textureMiddle", &MapSide::texMiddle);
@@ -178,8 +223,9 @@ void registerMapSector(lua_State* lua)
 		"colour",
 		[](MapSector& self) { return self.parentMap()->mapSpecials().sectorColour(self, map::SectorPart::Interior); });
 	lua_sector.addProperty("fogColour", [](MapSector& self) { return self.fogColour(); });
-	lua_sector.addProperty("planeFloor", [](MapSector& self) { return self.floor().plane; });
-	lua_sector.addProperty("planeCeiling", [](MapSector& self) { return self.ceiling().plane; });
+	lua_sector.addProperty("planeFloor", [](MapSector& self) { return self.floor().plane; }, &setSectorFloorPlane);
+	lua_sector.addProperty(
+		"planeCeiling", [](MapSector& self) { return self.ceiling().plane; }, &setSectorCeilingPlane);
 	// TODO: bbox (need to export BBox struct first)
 
 	// Functions
