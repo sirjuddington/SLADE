@@ -36,7 +36,11 @@
 #include "MapEditor/Item.h"
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
+#include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapObjectList/SideList.h"
@@ -59,6 +63,32 @@ using namespace mapeditor;
 namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
+// Attempts to correct the sectors for [line] in [self]
+// -----------------------------------------------------------------------------
+static bool correctLineSectors(SLADEMap& self, MapLine* line)
+{
+	return line && self.correctLineSectors(line);
+}
+
+// -----------------------------------------------------------------------------
+// Sets [side] on [line] in [self], ignoring invalid pointers from lua
+// -----------------------------------------------------------------------------
+static void setLineSide(SLADEMap& self, MapLine* line, MapSide* side, bool front)
+{
+	if (line && side)
+		self.setLineSide(line, side, front);
+}
+
+// -----------------------------------------------------------------------------
+// Corrects sectors for [lines] in [self], ignoring invalid pointers from lua
+// -----------------------------------------------------------------------------
+static void correctSectors(SLADEMap& self, vector<MapLine*>& lines, bool existing_only)
+{
+	lines.erase(std::remove(lines.begin(), lines.end(), nullptr), lines.end());
+	self.correctSectors(lines, existing_only);
+}
+
+// -----------------------------------------------------------------------------
 // Registers the Map type with lua
 // -----------------------------------------------------------------------------
 static void registerSLADEMap(lua_State* lua)
@@ -75,6 +105,78 @@ static void registerSLADEMap(lua_State* lua)
 	lua_map.addProperty("sidedefs", [](SLADEMap& self) { return self.sides().all(); });
 	lua_map.addProperty("sectors", [](SLADEMap& self) { return self.sectors().all(); });
 	lua_map.addProperty("things", [](SLADEMap& self) { return self.things().all(); });
+
+	// Creation Functions
+	// -------------------------------------------------------------------------
+	lua_map.addFunction(
+		"CreateVertex",
+		[](SLADEMap& self, Vec2d pos) { return self.createVertex(pos); },
+		[](SLADEMap& self, Vec2d pos, double split_dist) { return self.createVertex(pos, split_dist); });
+	lua_map.addFunction(
+		"CreateLine",
+		[](SLADEMap& self, Vec2d p1, Vec2d p2) { return self.createLine(p1, p2); },
+		[](SLADEMap& self, Vec2d p1, Vec2d p2, double split_dist)
+		{ return self.createLine(p1, p2, split_dist); },
+		[](SLADEMap& self, MapVertex* v1, MapVertex* v2) { return self.createLine(v1, v2); },
+		[](SLADEMap& self, MapVertex* v1, MapVertex* v2, bool force) { return self.createLine(v1, v2, force); });
+	lua_map.addFunction(
+		"CreateThing",
+		[](SLADEMap& self, Vec2d pos) { return self.createThing(pos); },
+		[](SLADEMap& self, Vec2d pos, int type) { return self.createThing(pos, type); });
+	lua_map.addFunction("CreateSector", &SLADEMap::createSector);
+	lua_map.addFunction("CreateSide", &SLADEMap::createSide);
+
+	// Removal Functions
+	// -------------------------------------------------------------------------
+	lua_map.addFunction(
+		"RemoveVertex",
+		[](SLADEMap& self, MapVertex* vertex) { return self.removeVertex(vertex); },
+		[](SLADEMap& self, MapVertex* vertex, bool merge_lines) { return self.removeVertex(vertex, merge_lines); },
+		[](SLADEMap& self, unsigned index) { return self.removeVertex(index); },
+		[](SLADEMap& self, unsigned index, bool merge_lines) { return self.removeVertex(index, merge_lines); });
+	lua_map.addFunction(
+		"RemoveLine",
+		[](SLADEMap& self, MapLine* line) { return self.removeLine(line); },
+		[](SLADEMap& self, unsigned index) { return self.removeLine(index); });
+	lua_map.addFunction(
+		"RemoveSide",
+		[](SLADEMap& self, MapSide* side) { return self.removeSide(side); },
+		[](SLADEMap& self, MapSide* side, bool remove_from_line) { return self.removeSide(side, remove_from_line); },
+		[](SLADEMap& self, unsigned index) { return self.removeSide(index); },
+		[](SLADEMap& self, unsigned index, bool remove_from_line) { return self.removeSide(index, remove_from_line); });
+	lua_map.addFunction(
+		"RemoveSector",
+		[](SLADEMap& self, MapSector* sector) { return self.removeSector(sector); },
+		[](SLADEMap& self, unsigned index) { return self.removeSector(index); });
+	lua_map.addFunction(
+		"RemoveThing",
+		[](SLADEMap& self, MapThing* thing) { return self.removeThing(thing); },
+		[](SLADEMap& self, unsigned index) { return self.removeThing(index); });
+	lua_map.addFunction("RemoveDetachedVertices", &SLADEMap::removeDetachedVertices);
+
+	// Editing Functions
+	// -------------------------------------------------------------------------
+	lua_map.addFunction("MergeVertices", &SLADEMap::mergeVertices);
+	lua_map.addFunction("MergeVerticesPoint", &SLADEMap::mergeVerticesPoint);
+	lua_map.addFunction("SplitLine", &SLADEMap::splitLine);
+	lua_map.addFunction(
+		"SplitLinesAt",
+		[](SLADEMap& self, MapVertex* vertex) { self.splitLinesAt(vertex); },
+		[](SLADEMap& self, MapVertex* vertex, double split_dist) { self.splitLinesAt(vertex, split_dist); });
+	lua_map.addFunction(
+		"SetLineSector",
+		[](SLADEMap& self, unsigned line_index, unsigned sector_index)
+		{ return self.setLineSector(line_index, sector_index); },
+		[](SLADEMap& self, unsigned line_index, unsigned sector_index, bool front)
+		{ return self.setLineSector(line_index, sector_index, front); });
+	lua_map.addFunction("MergeLine", &SLADEMap::mergeLine);
+	lua_map.addFunction("CorrectLineSectors", &correctLineSectors);
+	lua_map.addFunction("SetLineSide", &setLineSide);
+	lua_map.addFunction(
+		"CorrectSectors",
+		[](SLADEMap& self, vector<MapLine*> lines) { correctSectors(self, lines, false); },
+		[](SLADEMap& self, vector<MapLine*> lines, bool existing_only)
+		{ correctSectors(self, lines, existing_only); });
 }
 
 // -----------------------------------------------------------------------------
