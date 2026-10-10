@@ -61,6 +61,7 @@ using namespace mapeditor;
 // -----------------------------------------------------------------------------
 CVAR(Int, map_maxfps_bg, 30, CVar::Flag::Save)
 CVAR(Int, map_maxfps_fg, 0, CVar::Flag::Save)
+CVAR(Bool, map_focus_click, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -493,7 +494,7 @@ void MapCanvas::onMouseDown(wxMouseEvent& e)
 {
 	using namespace mapeditor;
 
-	if (!HasFocus())
+	if (!HasFocus() && map_focus_click)
 	{
 		e.Skip();
 		return;

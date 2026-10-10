@@ -278,6 +278,12 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 		// 3d mode
 		if (context_->editMode() == Mode::Visual)
 		{
+			// Make sure the hilight matches the click position (it may be stale
+			// if the canvas wasn't focused and no mouse movement was processed)
+			if (mouse_state_ == MouseState::Normal && !context_->selection().hilightLocked())
+				context_->selection().setHilight(context_->renderer().renderer3D().findHighlightedItem(
+					context_->renderer().camera(), context_->renderer().view(), mouse_pos_));
+
 			// Double-click, change texture or thing type depending on current
 			// highlight (but not if locked mouselook)
 			if (double_click && !map3d_mlook_always)
