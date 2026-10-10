@@ -564,9 +564,13 @@ std::tuple<vector<Quad3D>, vector<MGVertex>> generateLineQuads(const MapLine& li
 		return { {}, {} };
 
 	// Setup context for generating line quads
-	auto             map        = line.parentMap();
-	auto             map_format = map->currentFormat();
-	auto&            game_cfg   = game::configuration();
+	auto map        = line.parentMap();
+	auto map_format = map->currentFormat();
+
+	// Process any pending special updates
+	map->mapSpecials().updateSpecials();
+
+	auto&            game_cfg = game::configuration();
 	LineQuadsContext context{ .line           = &line,
 							  .vertex_index   = vertex_index,
 							  .mix_tex_flats  = game_cfg.featureSupported(game::Feature::MixTexFlats),

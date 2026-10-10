@@ -280,6 +280,9 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 	glDepthMask(GL_TRUE);
 	gl::setBlend(gl::Blend::Normal);
 
+	// Process any pending special updates
+	map_->mapSpecials().updateSpecials();
+
 	// Build and upload the point lights UBO
 	auto num_lights = 0;
 	if (map3d_lights_enabled)
@@ -325,7 +328,8 @@ void MapRenderer3D::render(const gl::Camera& camera, const gl::View& view)
 		context_->closeLoadingOverlay();
 	else
 	{
-		auto total_progress = (flat_renderer_->updateProgress() + wall_renderer_->updateProgress()
+		auto total_progress = (flat_renderer_->updateProgress()
+							   + wall_renderer_->updateProgress()
 							   + thing_renderer_->updateProgress())
 							  / 3.0f;
 		int progress_percent = static_cast<int>(total_progress * 100.0f);
