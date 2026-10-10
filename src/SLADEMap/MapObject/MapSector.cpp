@@ -165,6 +165,8 @@ void MapSector::copy(MapObject* obj)
 void MapSector::setRenderInfoUpdated() const
 {
 	renderinfo_updated_ = app::runTimer();
+	if (parent_map_)
+		parent_map_->setSectorRenderInfoUpdated();
 }
 
 // -----------------------------------------------------------------------------

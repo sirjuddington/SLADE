@@ -219,8 +219,18 @@ SectorLighting MapSpecials::sectorLightingAt(
 	if (where == SectorPart::Floor)
 	{
 		// Check if ExtraFloor lighting affects the floor
-		if (!extrafloors.empty() && extrafloors.back().lighting_below.has_value())
-			return extrafloors.back().lighting_below.value();
+		// (only those with their top at or above the floor)
+		const auto floor_height = sector.floor().plane.heightAt(sector.getPoint(MapObject::Point::Mid));
+		const ExtraFloor* lowest_above = nullptr;
+		for (auto& ef : extrafloors)
+		{
+			if (ef.height >= floor_height)
+				lowest_above = &ef;
+			else
+				break;
+		}
+		if (lowest_above && lowest_above->lighting_below.has_value())
+			return lowest_above->lighting_below.value();
 
 		// No ExtraFloor lighting, return sector floor lighting
 		return { .brightness = sector.lightAt(where),
@@ -421,7 +431,7 @@ void MapSpecials::updateSpecials() const
 			auto line = dynamic_cast<MapLine*>(obj);
 			updated |= slope_specials_->lineUpdated(*line, false);
 			render_specials_->lineUpdated(*line);
-			updated |= extrafloor_specials_->lineUpdated(*line);
+			updated |= extrafloor_specials_->lineUpdated(*line, false);
 			break;
 		}
 
@@ -429,7 +439,7 @@ void MapSpecials::updateSpecials() const
 		{
 			auto sector = dynamic_cast<MapSector*>(obj);
 			updated |= slope_specials_->sectorUpdated(*sector, false);
-			updated |= extrafloor_specials_->sectorUpdated(*sector);
+			updated |= extrafloor_specials_->sectorUpdated(*sector, false);
 			break;
 		}
 
@@ -445,6 +455,9 @@ void MapSpecials::updateSpecials() const
 
 	// Update planes for sectors that need updating
 	slope_specials_->updateOutdatedSectorPlanes();
+
+	// Update ExtraFloors after planes, since they depend on control sector planes
+	extrafloor_specials_->updateOutdatedSectorExtraFloors();
 
 	if (updated)
 		specials_updated_ = app::runTimer();

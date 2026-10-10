@@ -86,6 +86,8 @@ bool operator==(const Item& item, const Flat3D& flat)
 bool flatsNeedUpdate(long last_updated, const SLADEMap* map)
 {
 	return last_updated < map->typeLastUpdated(map::ObjectType::Sector)
+		   || last_updated < map->typeLastUpdated(map::ObjectType::Line)
+		   || last_updated < map->typeLastUpdated(map::ObjectType::Side)
 		   || last_updated < map->mapSpecials().specialsLastUpdated() || last_updated < map->sectorRenderInfoUpdated();
 }
 } // namespace

@@ -176,15 +176,31 @@ bool ExtraFloorSpecials::sideUpdated(const MapSide& side, bool update_outdated)
 
 bool ExtraFloorSpecials::sectorUpdated(const MapSector& sector, bool update_outdated)
 {
-	// Sector_Set3dFloor - if [sector] is a control sector, update all target sectors' ExtraFloors
+	// Sector_Set3dFloor
+	vector<const MapLine*> specials_to_refresh;
 	for (const auto& special : set_3d_floor_specials_)
+	{
+		// If [sector] is a control sector, refresh the special
 		if (special.control_sector == &sector)
-			vectorAddUnique(sectors_to_update_, special.target);
+			vectorAddUnique(specials_to_refresh, special.line);
+
+		// If [sector] is a target sector (or its id was updated to make it a
+		// target sector), refresh the special
+		if (special.target == &sector || sector.hasId(special.line->arg(0)))
+			vectorAddUnique(specials_to_refresh, special.line);
+	}
+
+	// Refresh all specials that need it
+	for (const auto line : specials_to_refresh)
+	{
+		removeSet3dFloorSpecial(*line);
+		addSet3dFloorSpecial(*line);
+	}
 
 	if (update_outdated)
 		updateOutdatedSectorExtraFloors();
 
-	return false;
+	return specials_updated_;
 }
 
 void ExtraFloorSpecials::sectorDeleted(const MapSector& sector)
