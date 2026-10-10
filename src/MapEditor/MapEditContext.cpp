@@ -102,6 +102,7 @@ double grid_sizes[] = { 0.05, 0.1, 0.25, 0.5,  1,    2,    4,    8,     16,    3
 						128,  256, 512,  1024, 2048, 4096, 8192, 16384, 32768, 65536 };
 }
 CVAR(Bool, map3d_info_overlay, true, CVar::Flag::Save)
+CVAR(Bool, map_selection_migrate, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -403,7 +404,8 @@ void MapEditContext::setEditMode(Mode mode)
 	last_undo_level_ = "";
 
 	// Transfer selection to the new mode, if possible
-	selection_->migrate(edit_mode_prev_, edit_mode_);
+	if (map_selection_migrate)
+		selection_->migrate(edit_mode_prev_, edit_mode_);
 
 	// Add editor message
 	switch (edit_mode_)

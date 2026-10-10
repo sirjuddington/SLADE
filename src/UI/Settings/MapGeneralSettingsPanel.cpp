@@ -108,6 +108,11 @@ wxPanel* MapGeneralSettingsPanel::createGeneralPanel(wxWindow* parent)
 	st_general_->addSectionSeparator("Selection");
 	st_general_->addCheckBox("Clear selection when nothing is clicked", "selection_clear_click");
 	st_general_->addCheckBox("Clear selection after moving (dragging) map elements", "selection_clear_move");
+	st_general_->addCheckBox(
+		"Migrate selection when switching edit modes|"
+		"Migrates the selection between edit modes, eg. switching from sectors to lines mode will select all lines of "
+		"the previously selected sectors",
+		"map_selection_migrate");
 
 	// Controls
 	st_general_->addSectionSeparator("Controls");
