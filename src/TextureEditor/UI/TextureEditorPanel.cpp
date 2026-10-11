@@ -401,7 +401,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 		});
 
 	// Update palette when the global palette changes
-	theMainWindow->paletteChooser()->signals().palette_changed.connect(
+	connections_ += theMainWindow->paletteChooser()->signals().palette_changed.connect(
 		[this]
 		{
 			tex_canvas_->setPalette(maineditor::currentPalette());
