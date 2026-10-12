@@ -19,7 +19,13 @@
     "libxmp",
     "lua",
     "mpg123",
-    "sfml",
-    "wxwidgets"
-  ]
+    "sfml"
+  ],
+  "default-features": [ "system-wx" ],
+  "features": {
+    "system-wx": {
+      "description": "Use the vcpkg-provided wxWidgets (disabled when BUILD_WX is ON)",
+      "dependencies": [ "wxwidgets" ]
+    }
+  }
 }
