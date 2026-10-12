@@ -646,6 +646,7 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 		editContext().renderer().viewFitToMap(true);
 		editContext().forceRefreshRenderer(true, true);
 		map_canvas_->Refresh();
+		map_canvas_->SetFocus();
 
 		// Set window title
 		if (archive)
