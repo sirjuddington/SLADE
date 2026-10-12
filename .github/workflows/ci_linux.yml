@@ -54,7 +54,7 @@ jobs:
       - name: Build wxWidgets 3.3
         if: ${{ matrix.config.build_wx33 }}
         run: |
-          git clone https://github.com/wxWidgets/wxWidgets --branch v3.3.2
+          git clone https://github.com/wxWidgets/wxWidgets --branch v3.3.4
           cd wxWidgets
           git submodule update --init --recursive
           mkdir build-cmake
