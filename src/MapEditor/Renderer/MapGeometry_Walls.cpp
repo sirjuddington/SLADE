@@ -177,6 +177,9 @@ static void addQuad(
 	SidePart          part,
 	const MapSector*  sector = nullptr)
 {
+	if (!side || !side->parentMap() || (!sector && !side->sector()))
+		return;
+
 	// Determine lighting
 	auto& map_specials = side->parentMap()->mapSpecials();
 	auto  lighting     = map_specials.sectorLightingAt(
@@ -328,6 +331,8 @@ void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, b
 		};
 
 	auto side = front ? context.line->s2() : context.line->s1();
+	if (!side || !side->sector() || !ef.control_line->s1()->sector())
+		return;
 
 	// Skip if the quad is completely below the floor
 	if (quad_info.plane_top.heightAt(context.line->start())

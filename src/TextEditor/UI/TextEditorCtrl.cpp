@@ -271,6 +271,7 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 // -----------------------------------------------------------------------------
 TextEditorCtrl::~TextEditorCtrl()
 {
+	timer_update_.Stop();
 	StyleSet::removeEditor(this);
 }
 
@@ -284,8 +285,9 @@ void TextEditorCtrl::setup()
 	SetDoubleBuffered(true);
 	SetBufferedDraw(true);
 	SetUseAntiAliasing(true);
-	if (txed_use_directwrite)
-		SetTechnology(wxSTC_TECHNOLOGY_DIRECTWRITE);
+	const int technology = txed_use_directwrite ? wxSTC_TECHNOLOGY_DIRECTWRITE : wxSTC_TECHNOLOGY_DEFAULT;
+	if (GetTechnology() != technology)
+		SetTechnology(technology);
 	SetFontQuality(txed_font_quality);
 	SetMultipleSelection(true);
 	SetAdditionalSelectionTyping(true);

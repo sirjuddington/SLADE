@@ -126,10 +126,7 @@ public:
 	~FluidSynthMIDIPlayer() override
 	{
 		FluidSynthMIDIPlayer::stop();
-		delete_fluid_player(fs_player_);
-		delete_fluid_audio_driver(fs_adriver_);
-		delete_fluid_synth(fs_synth_);
-		delete_fluid_settings(fs_settings_);
+		cleanupFluidsynth();
 	}
 
 	// -------------------------------------------------------------------------
@@ -385,6 +382,26 @@ private:
 	int              time_division_ = 0; // MIDI time division (PPQN)
 
 	// -------------------------------------------------------------------------
+	// Deletes all fluidsynth objects in dependency order and resets pointers
+	// -------------------------------------------------------------------------
+	void cleanupFluidsynth()
+	{
+		if (fs_adriver_)
+			delete_fluid_audio_driver(fs_adriver_);
+		if (fs_player_)
+			delete_fluid_player(fs_player_);
+		if (fs_synth_)
+			delete_fluid_synth(fs_synth_);
+		if (fs_settings_)
+			delete_fluid_settings(fs_settings_);
+
+		fs_adriver_  = nullptr;
+		fs_player_   = nullptr;
+		fs_synth_    = nullptr;
+		fs_settings_ = nullptr;
+	}
+
+	// -------------------------------------------------------------------------
 	// Initialises fluidsynth
 	// -------------------------------------------------------------------------
 	bool initFluidsynth()
@@ -420,14 +437,12 @@ private:
 			}
 
 			// Driver creation unsuccessful
-			delete_fluid_player(fs_player_);
-			fs_player_ = nullptr;
-			delete_fluid_synth(fs_synth_);
-			fs_synth_ = nullptr;
+			cleanupFluidsynth();
 			return false;
 		}
 
 		// Init unsuccessful
+		cleanupFluidsynth();
 		return false;
 	}
 
