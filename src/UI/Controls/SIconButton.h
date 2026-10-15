@@ -24,5 +24,8 @@ public:
 	{
 	}
 	~SIconButton() override = default;
+
+protected:
+	void DoSetSize(int x, int y, int width, int height, int sizeFlags = wxSIZE_AUTO) override;
 };
 } // namespace slade

@@ -145,7 +145,7 @@ GfxEntryPanel::GfxEntryPanel(wxWindow* parent) :
 
 	// Auto offset
 	btn_auto_offset_ = new SIconButton(this, "offset", "Modify Offsets...");
-	sizer_bottom_->Add(btn_auto_offset_, wxSizerFlags().CenterVertical());
+	sizer_bottom_->Add(btn_auto_offset_, wxSizerFlags().Expand());
 
 	sizer_bottom_->AddStretchSpacer();
 

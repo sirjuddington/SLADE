@@ -272,9 +272,9 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 		wxALIGN_CENTER_VERTICAL);
 	choice_game_exes_ = new wxChoice(this, -1);
 	gb_sizer->Add(choice_game_exes_, wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND | wxALIGN_CENTER_VERTICAL);
-	btn_add_game_ = new SIconButton(this, icons::General, "plus");
+	btn_add_game_ = new SIconButton(this, icons::General, "plus", "", 16, choice_game_exes_->GetSize().y);
 	gb_sizer->Add(btn_add_game_, wxGBPosition(0, 3));
-	btn_remove_game_ = new SIconButton(this, icons::General, "minus");
+	btn_remove_game_ = new SIconButton(this, icons::General, "minus", "", 16, choice_game_exes_->GetSize().y);
 	gb_sizer->Add(btn_remove_game_, wxGBPosition(0, 4));
 
 	// Executable path
@@ -282,7 +282,7 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	text_exe_path_ = new wxTextCtrl(this, -1, wxEmptyString);
 	// text_exe_path_->Enable(false);
 	gb_sizer->Add(text_exe_path_, wxGBPosition(1, 1), wxGBSpan(1, 3), wxEXPAND | wxALIGN_CENTER_VERTICAL);
-	btn_browse_exe_ = new SIconButton(this, icons::General, "open");
+	btn_browse_exe_ = new SIconButton(this, icons::General, "open", "", 16, text_exe_path_->GetSize().y);
 	btn_browse_exe_->SetToolTip(wxS("Browse..."));
 	gb_sizer->Add(btn_browse_exe_, wxGBPosition(1, 4));
 
@@ -294,12 +294,12 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 		wxALIGN_CENTER_VERTICAL);
 	choice_config_ = new wxChoice(this, -1);
 	gb_sizer->Add(choice_config_, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND | wxALIGN_CENTER_VERTICAL);
-	btn_edit_config_ = new SIconButton(this, icons::General, "settings");
+	btn_edit_config_ = new SIconButton(this, icons::General, "settings", "", 16, choice_config_->GetSize().y);
 	btn_edit_config_->SetToolTip(wxS("Edit command line"));
 	gb_sizer->Add(btn_edit_config_, wxGBPosition(2, 2));
-	btn_add_config_ = new SIconButton(this, icons::General, "plus");
+	btn_add_config_ = new SIconButton(this, icons::General, "plus", "", 16, choice_config_->GetSize().y);
 	gb_sizer->Add(btn_add_config_, wxGBPosition(2, 3));
-	btn_remove_config_ = new SIconButton(this, icons::General, "minus");
+	btn_remove_config_ = new SIconButton(this, icons::General, "minus", "", 16, choice_config_->GetSize().y);
 	btn_remove_config_->Enable(false);
 	gb_sizer->Add(btn_remove_config_, wxGBPosition(2, 4));
 
@@ -436,7 +436,7 @@ string RunDialog::selectedCommandLine(const Config& cfg) const
 			// If the path is wrapped in quotes, treat it as a command instead
 			// (so we can support commands with multiple parts eg. "distrobox-exec-host <path_to_executable>")
 			exe_path = exe_path.substr(1, exe_path.size() - 2);
-			path = exe_path;
+			path     = exe_path;
 		}
 		else
 			path = fmt::format("\"{}\"", exe_path);

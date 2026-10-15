@@ -840,7 +840,7 @@ wxPanel* TextureEditorPanel::createOffsetsPanel(wxWindow* parent)
 
 	// Auto offset
 	btn_auto_offset_ = new SIconButton(panel, "offset", "Modify Offsets...");
-	sizer->Add(btn_auto_offset_, wxSizerFlags().CenterVertical());
+	sizer->Add(btn_auto_offset_, wxSizerFlags().Expand());
 
 	return panel;
 }
