@@ -575,8 +575,8 @@ public:
 		hbox->Add(cp_startcolour_, wxSizerFlags().Expand());
 
 		// swap color button
-		cp_swapcolours_ = new wxButton(this, -1, wxS("↔"), wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-		hbox->Add(cp_swapcolours_, 0, wxEXPAND);
+		cp_swapcolours_ = new SIconButton(this, icons::Any, "swap", "Swap colours");
+		hbox->Add(cp_swapcolours_, lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
 
 		cp_endcolour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 255, 255));
 		hbox->Add(new wxStaticText(this, -1, wxS("End Colour:")), lh.sfWithBorder(1, wxRIGHT).CenterVertical());

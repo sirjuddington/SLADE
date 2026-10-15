@@ -502,6 +502,10 @@
     "stop": {
       "svg": "icons/general/stop.svg"
     },
+    "swap": {
+      "svg_light": "icons/general/swap.svg",
+      "svg_dark": "icons/general/dark/swap.svg"
+    },
     "tex_delete": {
       "svg": "icons/general/delete.svg"
     },
