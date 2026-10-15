@@ -99,7 +99,9 @@ private:
 // -----------------------------------------------------------------------------
 // ActionSpecialTreeView class constructor
 // -----------------------------------------------------------------------------
-ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) : wxDataViewTreeCtrl{ parent, -1 }, root_{ nullptr }
+ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) :
+	wxDataViewTreeCtrl{ parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_NO_HEADER },
+	root_{ nullptr }
 {
 	// Add 'None'
 	item_none_ = AppendItem(root_, wxS("0: None"));

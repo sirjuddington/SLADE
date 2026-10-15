@@ -68,7 +68,9 @@ private:
 class SpecialPresetTreeView : public wxDataViewTreeCtrl
 {
 public:
-	SpecialPresetTreeView(wxWindow* parent) : wxDataViewTreeCtrl{ parent, -1 }, root_{ wxDataViewItem(nullptr) }
+	SpecialPresetTreeView(wxWindow* parent) :
+		wxDataViewTreeCtrl{ parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_NO_HEADER },
+		root_{ wxDataViewItem(nullptr) }
 	{
 		// Computing the minimum width of the tree is slightly complicated, since
 		// wx doesn't expose it to us directly
@@ -106,8 +108,7 @@ public:
 	game::SpecialPreset selectedPreset() const
 	{
 		// Get data from selected item
-		auto sel_data = dynamic_cast<SpecialPresetData*>(GetItemData(GetSelection()));
-		if (sel_data)
+		if (auto sel_data = dynamic_cast<SpecialPresetData*>(GetItemData(GetSelection())))
 			return sel_data->preset();
 
 		return {};
@@ -203,11 +204,11 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "S
 	tree_presets_->setParentDialog(this);
 	sizer->Add(tree_presets_, lh.sfWithLargeBorder(1).Expand());
 
-	// OK button
+	// Apply Preset button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	sizer->Add(hbox, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	hbox->AddStretchSpacer(1);
-	auto btn_ok = new wxButton(this, -1, wxS("OK"));
+	auto btn_ok = new wxButton(this, -1, wxS("Apply Preset"));
 	hbox->Add(btn_ok, lh.sfWithBorder(0, wxRIGHT).Expand());
 	btn_ok->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_OK); });
 
@@ -215,6 +216,12 @@ SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "S
 	auto btn_cancel = new wxButton(this, -1, wxS("Cancel"));
 	hbox->Add(btn_cancel, wxSizerFlags().Expand());
 	btn_cancel->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_CANCEL); });
+
+	// Only enable Apply Preset button when a preset is selected
+	btn_ok->Enable(false);
+	Bind(
+		wxEVT_DATAVIEW_SELECTION_CHANGED,
+		[&, btn_ok](wxDataViewEvent& e) { btn_ok->Enable(tree_presets_->selectedPreset().special >= 0); });
 
 	wxWindowBase::SetMinClientSize(sizer->GetMinSize());
 	CenterOnParent();
