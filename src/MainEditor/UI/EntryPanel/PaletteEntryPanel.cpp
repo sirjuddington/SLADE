@@ -552,6 +552,11 @@ public:
 		hbox->Add(new wxStaticText(this, -1, wxS("Start Colour:")), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 		hbox->Add(cp_startcolour_, 0, wxEXPAND);
 
+		// swap color button
+		cp_swapcolours_ = new wxButton(this, -1, wxS("↔"),
+			wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
+		hbox->Add(cp_swapcolours_, 0, wxEXPAND);
+
 		cp_endcolour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 255, 255));
 		hbox->Add(new wxStaticText(this, -1, wxS("End Colour:")), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
 		hbox->Add(cp_endcolour_, 0, wxEXPAND);
@@ -565,7 +570,7 @@ public:
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
+		pal_preview_->SetInitialSize(wxSize(ui::scalePx(26*16), ui::scalePx(26*16)));
 		redraw();
 
 		// Init layout
@@ -574,6 +579,12 @@ public:
 		// Bind events
 		cp_startcolour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
 		cp_endcolour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
+		cp_swapcolours_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
+			auto tmp = cp_startcolour_->GetColour();
+			cp_startcolour_->SetColour(cp_endcolour_->GetColour());
+			cp_endcolour_->SetColour(tmp);
+			redraw();
+		});
 		pal_preview_->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent&) { redraw(); });
 
 		// Setup dialog size
@@ -601,6 +612,7 @@ private:
 	PaletteCanvas*      pal_preview_    = nullptr;
 	Palette*            palette_        = nullptr;
 	wxColourPickerCtrl* cp_startcolour_ = nullptr;
+	wxButton* cp_swapcolours_           = nullptr;
 	wxColourPickerCtrl* cp_endcolour_   = nullptr;
 };
 
