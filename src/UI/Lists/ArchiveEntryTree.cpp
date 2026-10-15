@@ -917,7 +917,9 @@ ArchiveEntryTree::ArchiveEntryTree(
 	prop_sort_descending_ = ENTRYLIST_SORT_DESCENDING;
 
 	// Init settings
+#ifdef __WXMSW__
 	SetRowHeight(FromDIP(elist_icon_size + (elist_icon_padding * 2) + 2));
+#endif
 	if (list_font_monospace)
 		SetFont(wxutil::monospaceFont(GetFont()));
 
