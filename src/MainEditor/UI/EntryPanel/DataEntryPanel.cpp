@@ -957,11 +957,16 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), t
 // -----------------------------------------------------------------------------
 bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 {
+	// Clear existing data
+	grid_data_->ClearGrid();
+	grid_data_->ClearSelection();
+	grid_data_->SetGridCursor(0, 0);
+	grid_data_->Scroll(0, 0);
+	combo_cell_value_->Clear();
+
 	// Load data table
 	table_data_->setupDataStructure(entry);
-	grid_data_->ClearGrid();
 	grid_data_->SetTable(table_data_);
-	combo_cell_value_->Clear();
 
 	// Set column widths
 	grid_data_->SetColMinimalAcceptableWidth(FromDIP(64));
@@ -1307,6 +1312,10 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 void DataEntryPanel::onGridCursorChanged(wxGridEvent& e)
 {
 	combo_cell_value_->Clear();
+
+	if (table_data_->data().empty())
+		return;
+
 	auto col = table_data_->columnInfo(e.GetCol());
 	for (auto& custom_value : col.custom_values)
 		combo_cell_value_->AppendString(WX_FMT("{}: {}", custom_value.first, custom_value.second.utf8_string()));
