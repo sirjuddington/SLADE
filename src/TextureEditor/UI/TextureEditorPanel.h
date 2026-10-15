@@ -10,7 +10,6 @@ class wxScrollBar;
 namespace slade
 {
 class UndoManager;
-class PatchBrowser;
 class SIconButton;
 class CTexture;
 class SAuiToolBar;
@@ -28,6 +27,7 @@ class CTextureCanvasBase;
 class TexturePropGrid;
 class TextureEditor;
 class TextureTreeView;
+class PatchBrowser;
 class PatchTablePanel;
 } // namespace slade::texeditor
 

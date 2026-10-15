@@ -2,12 +2,10 @@
 
 #include "UI/SDialog.h"
 
-namespace slade
-{
-class PatchBrowser;
-}
 namespace slade::texeditor
 {
+class PatchBrowser;
+
 class NewTextureDialog : public SDialog
 {
 public:

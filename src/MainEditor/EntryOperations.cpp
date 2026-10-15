@@ -55,6 +55,7 @@
 #include "Graphics/Translation.h"
 #include "MainEditor/MainEditor.h"
 #include "SLADEWxApp.h"
+#include "TextureEditor/TextureEditor.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/Dialogs/GfxColouriseDialog.h"
@@ -66,7 +67,6 @@
 #include "UI/EntryPanel/EntryPanel.h"
 #include "UI/MainWindow.h"
 #include "UI/State.h"
-#include "UI/TextureXEditor/TextureXEditor.h"
 #include "UI/UI.h"
 #include "Utility/Colour.h"
 #include "Utility/FileMonitor.h"
@@ -778,7 +778,7 @@ bool entryoperations::addToPatchTable(const vector<ArchiveEntry*>& entries)
 	if (!pnames)
 	{
 		// Create texture entries
-		if (!TextureXEditor::setupTextureEntries(parent))
+		if (!texeditor::TextureEditor::setupTextureEntries(parent->shared_from_this()))
 			return false;
 
 		pnames = parent->findLast(opt);
@@ -855,7 +855,7 @@ bool entryoperations::createTexture(const vector<ArchiveEntry*>& entries)
 	auto parent = entries[0]->parent();
 
 	// Create texture entries if needed
-	if (!TextureXEditor::setupTextureEntries(parent))
+	if (!texeditor::TextureEditor::setupTextureEntries(parent->shared_from_this()))
 		return false;
 
 	// Find texturex entry to add to

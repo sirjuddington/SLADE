@@ -6,7 +6,10 @@ namespace slade
 {
 class TextureXList;
 class PatchTable;
+} // namespace slade
 
+namespace slade::texeditor
+{
 class PatchBrowser : public BrowserWindow
 {
 public:
@@ -28,4 +31,4 @@ private:
 	// Signal connections
 	sigslot::scoped_connection sc_palette_changed_;
 };
-} // namespace slade
+} // namespace slade::texeditor

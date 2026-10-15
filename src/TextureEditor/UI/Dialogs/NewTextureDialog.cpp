@@ -32,7 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "NewTextureDialog.h"
-#include "MainEditor/UI/TextureXEditor/PatchBrowser.h"
+#include "PatchBrowser.h"
 #include "UI/Browser/BrowserItem.h"
 #include "UI/Layout.h"
 #include "UI/WxUtils.h"

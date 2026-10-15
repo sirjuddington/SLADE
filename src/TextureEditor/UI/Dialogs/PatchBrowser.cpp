@@ -53,6 +53,7 @@
 #include "Utility/StringUtils.h"
 
 using namespace slade;
+using namespace texeditor;
 
 
 // -----------------------------------------------------------------------------
