@@ -1,15 +1,5 @@
 {
   "colours": {
-    "error": {
-      "colour": "rgb(230, 30, 0)",
-      "group": "General",
-      "name": "Error"
-    },
-    "locked": {
-      "colour": "rgb(180, 50, 0)",
-      "group": "General",
-      "name": "Locked"
-    },
     "map_3d_crosshair": {
       "blend_additive": true,
       "colour": "rgb(180, 190, 255)",
@@ -209,16 +199,6 @@
       "colour": "rgb(200, 200, 200)",
       "group": "Map Preview",
       "name": "Thing"
-    },
-    "modified": {
-      "colour": "rgb(0, 80, 180)",
-      "group": "General",
-      "name": "Modified"
-    },
-    "new": {
-      "colour": "rgb(0, 150, 0)",
-      "group": "General",
-      "name": "New"
     }
   },
   "theme": {
