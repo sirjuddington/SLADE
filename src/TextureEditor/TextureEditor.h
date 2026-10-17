@@ -147,6 +147,7 @@ private:
 	{
 		weak_ptr<ArchiveEntry>   entry;
 		unique_ptr<TextureXList> texturex;
+		mutable bool             modified = false;
 
 		std::unordered_map<const CTexture*, unique_ptr<CTexture>> backup_textures; // For revert
 	};
@@ -159,5 +160,6 @@ private:
 	void      setupTextureBackup(const CTexture& texture);
 	CTexture* getTextureBackup(const CTexture& texture) const;
 	void      updateAllPatchUsage() const;
+	void      setTextureListModified(const TextureXList& list, bool modified = true) const;
 };
 } // namespace slade::texeditor
