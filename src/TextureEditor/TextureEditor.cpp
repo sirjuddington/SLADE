@@ -177,13 +177,35 @@ TextureEditor::~TextureEditor()
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if there are any unsaved changes in the texture editor
+// -----------------------------------------------------------------------------
+bool TextureEditor::hasUnsavedChanges() const
+{
+	// Check patch table
+	if (patch_table_modified_)
+		return true;
+
+	// Check texture lists
+	for (auto& entry : texturex_entries_)
+		if (entry.modified)
+			return true;
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Saves all texture lists and the patch table (if modified) back to their
 // respective entries
 // -----------------------------------------------------------------------------
 void TextureEditor::saveAll() const
 {
 	for (unsigned i = 0; i < texturex_entries_.size(); ++i)
-		saveTextureList(i);
+	{
+		// If the patch table is modified, force save any TEXTURE1/2 list as
+		// patch indices may have changed
+		if (textureListModified(i) || patch_table_modified_ && textureList(i)->format() != TextureXFormat::Textures)
+			saveTextureList(i);
+	}
 
 	savePatchTable();
 }
@@ -193,9 +215,6 @@ void TextureEditor::saveAll() const
 // -----------------------------------------------------------------------------
 bool TextureEditor::saveTextureList(unsigned index) const
 {
-	if (!textureListModified(index))
-		return false;
-
 	auto entry = textureListEntry(index);
 	auto list  = textureList(index);
 	if (!entry || !list)
@@ -213,10 +232,13 @@ bool TextureEditor::saveTextureList(unsigned index) const
 	EntryType::detectEntryType(*entry);
 	entry->lock();
 
-	// Set all textures to unmodified
-	for (unsigned a = 0; a < list->size(); a++)
-		list->texture(a)->setState(CTexture::State::Unmodified);
-	setTextureListModified(*list, false);
+	// Set all textures to unmodified if save was successful
+	if (ok)
+	{
+		for (unsigned a = 0; a < list->size(); a++)
+			list->texture(a)->setState(CTexture::State::Unmodified);
+		setTextureListModified(*list, false);
+	}
 
 	return ok;
 }

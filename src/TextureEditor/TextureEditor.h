@@ -23,6 +23,8 @@ public:
 	PatchTable*  patchTable() const { return patch_table_.get(); }
 	UndoManager* undoManager() const { return undo_manager_.get(); }
 
+	bool hasUnsavedChanges() const;
+
 	void saveAll() const;
 	bool saveTextureList(unsigned index) const;
 	bool savePatchTable() const;
@@ -97,8 +99,6 @@ public:
 
 	// Patch Table
 	bool hasPatchTable() const;
-	bool patchTableModified() const { return patch_table_modified_; }
-	void setPatchTableModified(bool modified = true) { patch_table_modified_ = modified; }
 
 	// Patch Table Editing
 	int  addPatchToTable(string_view patch) const;

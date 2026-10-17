@@ -491,62 +491,21 @@ void TextureEditorPanel::saveAll() const
 // -----------------------------------------------------------------------------
 bool TextureEditorPanel::close()
 {
-	// Check for any modified texture lists
-	bool apply_all = false;
-	for (unsigned i = 0; i < editor_->nTextureLists(); ++i)
+	// Check for unsaved changes
+	if (editor_->hasUnsavedChanges())
 	{
-		if (editor_->textureListModified(i))
-		{
-			// If user has already selected "Yes to All", save without asking
-			if (apply_all)
-			{
-				editor_->saveTextureList(i);
-				continue;
-			}
+		// Ask user if they want to save changes
+		auto result = wxMessageBox(
+			editor_->hasPatchTable() ? wxS("Save changes to TEXTUREx entries and the patch table?")
+									 : wxS("Save changes to TEXTUREx entries?"),
+			wxS("Unsaved Changes"),
+			wxYES_NO | wxCANCEL | wxICON_QUESTION,
+			this);
 
-			// Ask user if they want to save changes
-			wxRichMessageDialog md(
-				this,
-				WX_FMT("Save changes to {}?", editor_->textureListName(i)),
-				wxS("Unsaved Changes"),
-				wxYES_NO | wxCANCEL | wxICON_QUESTION);
-
-			md.ShowCheckBox(wxS("Apply to All"), apply_all);
-
-			int result = md.ShowModal();
-			apply_all  = md.IsCheckBoxChecked();
-			if (result == wxID_YES)
-				editor_->saveTextureList(i); // User selected to save
-			else if (result == wxID_CANCEL)
-				return false; // User selected cancel, don't close the editor
-			else if (result == wxID_NO && apply_all)
-				return true; // User selected "No to All", don't save any more changes
-		}
-	}
-
-	// Check for modified patch table
-	if (editor_->hasPatchTable() && editor_->patchTableModified())
-	{
-		if (!apply_all)
-		{
-			// Ask user if they want to save changes
-			wxMessageDialog md(
-				this,
-				wxS("Save changes to the patch table (PNAMES)?"),
-				wxS("Unsaved Changes"),
-				wxYES_NO | wxCANCEL | wxICON_QUESTION);
-
-			int result = md.ShowModal();
-			if (result == wxID_YES)
-				editor_->savePatchTable(); // User selected to save
-			else if (result == wxID_CANCEL)
-				return false; // User selected cancel, don't close the editor
-		}
-		else
-		{
-			// User previously selected "Yes to All", save without asking
-			editor_->savePatchTable();
-		}
+		if (result == wxID_YES)
+			saveAll(); // User selected to save
+		else if (result == wxID_CANCEL)
+			return false; // User selected cancel, don't close the editor
 	}
 
 	return true;
