@@ -230,6 +230,15 @@ void GfxCanvasBase::endOffsetDrag()
 }
 
 // -----------------------------------------------------------------------------
+// Clears the drawing mask, resizing it to match the current image
+// -----------------------------------------------------------------------------
+void GfxCanvasBase::resetDrawingMask()
+{
+	const auto size = image_ ? static_cast<size_t>(image_->width()) * image_->height() : 0;
+	drawing_mask_.assign(size, 0);
+}
+
+// -----------------------------------------------------------------------------
 // Paints a pixel from the image at the given image coordinates.
 // -----------------------------------------------------------------------------
 void GfxCanvasBase::paintPixel(int x, int y)
@@ -238,6 +247,10 @@ void GfxCanvasBase::paintPixel(int x, int y)
 	// are out of the image area; so don't process them.
 	if (x < 0 || y < 0 || x >= image_->width() || y >= image_->height())
 		return;
+
+	// The image may have been resized since the mask was last updated
+	if (drawing_mask_.size() != static_cast<size_t>(image_->width()) * image_->height())
+		resetDrawingMask();
 
 	// Do not process pixels that were already modified in the
 	// current drawing operation. This mechanism is needed to
@@ -268,7 +281,7 @@ void GfxCanvasBase::paintPixel(int x, int y)
 		painted = image_->setPixel(x, y, paint_colour_);
 
 	// Mark the modification, if any, and announce the modification
-	drawing_mask_[pos] = painted;
+	drawing_mask_[pos] = painted ? 1 : 0;
 	if (painted)
 	{
 		// Generate event
@@ -397,7 +410,7 @@ void GfxCanvasBase::onMouseLeftUp(wxMouseEvent& e)
 	if (drawing_)
 	{
 		drawing_ = false;
-		memset(drawing_mask_, false, image_->width() * image_->height());
+		resetDrawingMask();
 	}
 	// Stop dragging
 	if (drag_origin_.x >= 0)

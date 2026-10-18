@@ -361,6 +361,12 @@ int SLADEWxApp::OnExit()
 	auto retcode = wxApp::OnExit();
 	database::close();
 
+#if defined(_DEBUG) && defined(_MSC_VER)
+	// Disable the CRT leak dump on exit since it's completely useless in our
+	// case and just makes debug builds take ages to exit
+	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) & ~_CRTDBG_LEAK_CHECK_DF);
+#endif
+
 	return retcode;
 }
 

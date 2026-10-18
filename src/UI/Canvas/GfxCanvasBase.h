@@ -104,11 +104,11 @@ protected:
 	Vec2i              drag_pos_     = { 0, 0 };
 	Vec2i              drag_origin_  = { -1, -1 };
 	Vec2i              mouse_prev_;
-	EditMode           editing_mode_        = EditMode::None;
-	ColRGBA            paint_colour_        = ColRGBA::BLACK; // The colour to apply to pixels in editing mode 1
-	Translation*       translation_         = nullptr;        // The translation to apply to pixels in editing mode 3
-	bool               drawing_             = false;          // True if a drawing operation is ongoing
-	bool*              drawing_mask_        = nullptr; // Keeps track of which pixels were already modified in this pass
+	EditMode           editing_mode_ = EditMode::None;
+	ColRGBA            paint_colour_ = ColRGBA::BLACK; // The colour to apply to pixels in editing mode 1
+	Translation*       translation_  = nullptr;        // The translation to apply to pixels in editing mode 3
+	bool               drawing_      = false;          // True if a drawing operation is ongoing
+	vector<u8>         drawing_mask_;                  // Keeps track of which pixels were already modified in this pass
 	SBrush*            brush_               = nullptr; // The brush used to paint the image
 	Vec2i              cursor_pos_          = { -1, -1 }; // Position of cursor, relative to image
 	Vec2i              prev_pos_            = { -1, -1 }; // Previous position of cursor
@@ -121,6 +121,7 @@ protected:
 	sigslot::scoped_connection sc_image_changed_;
 
 	void endOffsetDrag();
+	void resetDrawingMask();
 	void paintPixel(int x, int y);
 	void brushCanvas(int x, int y);
 	void pickColour(int x, int y);
