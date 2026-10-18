@@ -168,7 +168,7 @@ bool GfxCanvasBase::onImage(int x, int y) const
 // Returns the image coordinates at [x,y] in screen coordinates, or [-1, -1] if
 // not on the image
 // -----------------------------------------------------------------------------
-Vec2i GfxCanvasBase::imageCoords(int x, int y) const
+Vec2i GfxCanvasBase::imageCoords(int x, int y, bool allow_outside) const
 {
 	auto canvas_pos = view().canvasPos({ x, y });
 	auto image_pos  = canvas_pos;
@@ -179,7 +179,8 @@ Vec2i GfxCanvasBase::imageCoords(int x, int y) const
 		image_pos.y += image_->offset().y;
 	}
 
-	if (image_pos.x < 0 || image_pos.y < 0 || image_pos.x >= image_->width() || image_pos.y >= image_->height())
+	if (!allow_outside
+		&& (image_pos.x < 0 || image_pos.y < 0 || image_pos.x >= image_->width() || image_pos.y >= image_->height()))
 		return { -1, -1 }; // Not on image
 
 	return { static_cast<int>(image_pos.x), static_cast<int>(image_pos.y) };
@@ -298,7 +299,7 @@ void GfxCanvasBase::brushCanvas(int x, int y)
 {
 	if (brush_ == nullptr)
 		return;
-	const auto coord = imageCoords(x, y);
+	const auto coord = imageCoords(x, y, true);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
 			if (brush_->pixel(i, j))
@@ -433,7 +434,7 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 	const int  x        = window()->ToPhys(e.GetPosition().x);
 	const int  y        = window()->ToPhys(e.GetPosition().y);
 	const bool on_image = onImage(x, y);
-	cursor_pos_         = imageCoords(x, y);
+	cursor_pos_         = imageCoords(x, y, true);
 	if (on_image && editing_mode_ != EditMode::None)
 	{
 		if (cursor_pos_ != prev_pos_)

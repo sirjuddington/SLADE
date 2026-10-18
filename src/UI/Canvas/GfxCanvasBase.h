@@ -80,7 +80,7 @@ public:
 	void resetViewOffsets();
 
 	bool  onImage(int x, int y) const;
-	Vec2i imageCoords(int x, int y) const;
+	Vec2i imageCoords(int x, int y, bool allow_outside = false) const;
 
 	void setCropRect(const Recti& rect);
 	void clearCropRect();
