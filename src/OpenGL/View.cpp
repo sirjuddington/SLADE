@@ -178,8 +178,10 @@ void View::fitTo(const BBox& bbox, double scale_inc)
 		// Update screen limits
 		updateVisibleRegion();
 
-		if (bbox.min.x >= visibleRegion().tl.x && bbox.max.x <= visibleRegion().br.x
-			&& bbox.min.y >= visibleRegion().tl.y && bbox.max.y <= visibleRegion().br.y)
+		if (bbox.min.x >= visibleRegion().tl.x
+			&& bbox.max.x <= visibleRegion().br.x
+			&& bbox.min.y >= visibleRegion().tl.y
+			&& bbox.max.y <= visibleRegion().br.y)
 			done = true;
 		else
 			scale_ = scale_ * 1.0 / scale_inc;
@@ -312,6 +314,9 @@ int View::screenY(double canvas_y) const
 	return y_flipped_ ? size_.y - y : y;
 }
 
+// -----------------------------------------------------------------------------
+// Sets up the given [shader] with the current view matrices and [model] matrix
+// -----------------------------------------------------------------------------
 void View::setupShader(const Shader& shader, const glm::mat4& model) const
 {
 	shader.bind();
@@ -340,6 +345,9 @@ void View::updateVisibleRegion()
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Updates the view and projection matrices for the current view
+// -----------------------------------------------------------------------------
 void View::updateMatrices()
 {
 	auto size_x = static_cast<float>(size_.x);
@@ -369,11 +377,19 @@ void View::updateMatrices()
 	view_matrix_ = glm::translate(view_matrix_, { -offset_inter_.x, -offset_inter_.y, 0. });
 }
 
+// -----------------------------------------------------------------------------
+// Translates an x position on the screen to the corresponding x position on the
+// canvas itself, without using the interpolated scale/offset values
+// -----------------------------------------------------------------------------
 double View::canvasXUninterpolated(int screen_x) const
 {
 	return centered_ ? screen_x / scale_.x + offset_.x - size_.x * 0.5 / scale_.x : screen_x / scale_.x + offset_.x;
 }
 
+// -----------------------------------------------------------------------------
+// Translates a y position on the screen to the corresponding y position on the
+// canvas itself, without using the interpolated scale/offset values
+// -----------------------------------------------------------------------------
 double View::canvasYUninterpolated(int screen_y) const
 {
 	if (y_flipped_)
@@ -382,6 +398,10 @@ double View::canvasYUninterpolated(int screen_y) const
 	return centered_ ? screen_y / scale_.y + offset_.y - size_.y * 0.5 / scale_.y : screen_y / scale_.y + offset_.y;
 }
 
+// -----------------------------------------------------------------------------
+// Translates a screen position to the corresponding position on the canvas
+// itself, without using the interpolated scale/offset values
+// -----------------------------------------------------------------------------
 Vec2d View::canvasPosUninterpolated(const Vec2i& screen_pos) const
 {
 	return { canvasXUninterpolated(screen_pos.x), canvasYUninterpolated(screen_pos.y) };

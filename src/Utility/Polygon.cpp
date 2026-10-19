@@ -148,6 +148,10 @@ private:
 // -----------------------------------------------------------------------------
 namespace slade::polygon
 {
+// -----------------------------------------------------------------------------
+// Adds a vertex to the triangulator, returning its index.
+// If the vertex already exists, returns the existing index
+// -----------------------------------------------------------------------------
 int Triangulator::addVertex(double x, double y)
 {
 	// Check vertex doesn't exist
@@ -163,6 +167,10 @@ int Triangulator::addVertex(double x, double y)
 	return vertices_.size() - 1;
 }
 
+// -----------------------------------------------------------------------------
+// Adds an edge to the triangulator, returning its index.
+// If the edge already exists, returns the existing index
+// -----------------------------------------------------------------------------
 int Triangulator::addEdge(int v1, int v2)
 {
 	// Check for duplicate edge
@@ -184,6 +192,9 @@ int Triangulator::addEdge(int v1, int v2)
 	return index;
 }
 
+// -----------------------------------------------------------------------------
+// Finds the next edge connected to the given [edge].
+// -----------------------------------------------------------------------------
 int Triangulator::findNextEdge(int edge, bool ignore_done, bool only_convex, bool ignore_inpoly)
 {
 	auto& e  = edges_[edge];
@@ -227,6 +238,9 @@ int Triangulator::findNextEdge(int edge, bool ignore_done, bool only_convex, boo
 	return only_convex && min_angle > math::PI ? -1 : next;
 }
 
+// -----------------------------------------------------------------------------
+// Traces the outline of a polygon starting from [edge_start].
+// -----------------------------------------------------------------------------
 bool Triangulator::tracePolyOutline(int edge_start)
 {
 	polygon_outlines_.emplace_back();
@@ -311,6 +325,9 @@ bool Triangulator::tracePolyOutline(int edge_start)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Detects concave edges in the polygon
+// -----------------------------------------------------------------------------
 void Triangulator::detectConcavity()
 {
 	concave_edges_.clear();
@@ -331,6 +348,10 @@ void Triangulator::detectConcavity()
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Attempts to split the polygon from the given [splitter_edge] to a vertex on
+// the front side of the edge.
+// -----------------------------------------------------------------------------
 bool Triangulator::splitFromEdge(int splitter_edge)
 {
 	// Get vertices
@@ -439,6 +460,10 @@ bool Triangulator::splitFromEdge(int splitter_edge)
 	return false;
 }
 
+// -----------------------------------------------------------------------------
+// Tests if the polygon outline can be traced from the given [edge_start]
+// without running into any issues (e.g. infinite loops)
+// -----------------------------------------------------------------------------
 bool Triangulator::testTracePolyOutline(int edge_start)
 {
 	int      edge = edge_start;
@@ -474,6 +499,10 @@ bool Triangulator::testTracePolyOutline(int edge_start)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Builds a convex polygon starting from the given [edge_start].
+// Returns the polygon vertices if successful, or an empty vector if not
+// -----------------------------------------------------------------------------
 vector<glm::vec2> Triangulator::buildConvexPolygon(int edge_start)
 {
 	// Loop of death
@@ -538,6 +567,9 @@ vector<glm::vec2> Triangulator::buildConvexPolygon(int edge_start)
 	return {};
 }
 
+// -----------------------------------------------------------------------------
+// Triangulates the polygon, returning a list of triangles (as vertex positions)
+// -----------------------------------------------------------------------------
 vector<glm::vec2> Triangulator::triangulate()
 {
 	// Init
@@ -687,6 +719,10 @@ vector<glm::vec2> Triangulator::triangulate()
 // -----------------------------------------------------------------------------
 namespace slade::polygon
 {
+// -----------------------------------------------------------------------------
+// Calculates the texture coordinates for a vertex at [x, y] with the given
+// texture dimensions, scale, offset and rotation
+// -----------------------------------------------------------------------------
 glm::vec2 calculateTexCoords(
 	float x,
 	float y,
@@ -731,6 +767,9 @@ glm::vec2 calculateTexCoords(glm::vec2 vertex, glm::vec2 tex_size, const mapedit
 	return calculateTexCoords(vertex.x, vertex.y, tex_size.x, tex_size.y, tti.sx, tti.sy, tti.ox, tti.oy, tti.rot);
 }
 
+// -----------------------------------------------------------------------------
+// Generates a list of triangles for the given [sector]
+// -----------------------------------------------------------------------------
 vector<glm::vec2> generateSectorTriangles(const MapSector& sector)
 {
 	Triangulator triangulator;
@@ -758,6 +797,9 @@ vector<glm::vec2> generateSectorTriangles(const MapSector& sector)
 	return triangulator.triangulate();
 }
 
+// -----------------------------------------------------------------------------
+// Generates texture coordinates for the given vertices and texture
+// -----------------------------------------------------------------------------
 bool generateTextureCoords(
 	vector<gl::Vertex2D>& vertices,
 	unsigned              texture,

@@ -230,6 +230,11 @@ void LineBuffer::addArrow(
 		add2d(l.x1(), l.y1(), l.x2(), l.y2(), colour, width);
 }
 
+// -----------------------------------------------------------------------------
+// Adds a 3D line from [start] to [end] with [colour]
+// and [width], with an arrowhead at the end of the line, or both ends if
+// [arrowhead_both] is true
+// -----------------------------------------------------------------------------
 void LineBuffer::addArrow3d(
 	glm::vec3 start,
 	glm::vec3 end,
@@ -291,6 +296,10 @@ void LineBuffer::addArrow3d(
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Uploads the current lines to the GPU buffer, and optionally clears the
+// CPU-side buffer
+// -----------------------------------------------------------------------------
 void LineBuffer::push(bool clear)
 {
 	if (!getContext())
@@ -306,6 +315,9 @@ void LineBuffer::push(bool clear)
 		lines_.clear();
 }
 
+// -----------------------------------------------------------------------------
+// Downloads the current lines from the GPU buffer to the CPU-side buffer
+// -----------------------------------------------------------------------------
 bool LineBuffer::pull()
 {
 	if (!getContext() || buffer_.empty())

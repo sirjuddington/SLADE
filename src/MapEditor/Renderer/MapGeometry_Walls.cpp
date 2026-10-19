@@ -112,6 +112,11 @@ struct QuadInfo
 // -----------------------------------------------------------------------------
 namespace slade::mapeditor
 {
+// -----------------------------------------------------------------------------
+// Checks if a plane intersects a quad defined by [quad_top] and [quad_bottom]
+// at the given [line_start] and [line_end] positions. Returns true if the
+// plane intersects the quad, false otherwise
+// -----------------------------------------------------------------------------
 static bool planeIntersectsQuad(
 	const Plane& plane,
 	const Plane& quad_top,
@@ -141,6 +146,9 @@ static bool planeIntersectsQuad(
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Sets up the texture coordinates for a quad
+// -----------------------------------------------------------------------------
 static void setupQuadTexCoords(QuadInfo& info)
 {
 	// Calculate texture coordinates
@@ -170,6 +178,9 @@ static void setupQuadTexCoords(QuadInfo& info)
 	info.br.uv.y = (y2 + br_diff) / tex_size.y;
 }
 
+// -----------------------------------------------------------------------------
+// Adds a quad to the given [context]
+// -----------------------------------------------------------------------------
 static void addQuad(
 	LineQuadsContext& context,
 	QuadInfo&         info,
@@ -287,6 +298,9 @@ static void addQuad(
 	context.vertex_index += 6;
 }
 
+// -----------------------------------------------------------------------------
+// Builds wall quads for an ExtraFloor on the given [context]
+// -----------------------------------------------------------------------------
 void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, bool front)
 {
 	// TODO: 'Use upper/lower texture' flags
@@ -353,6 +367,9 @@ void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, b
 	addQuad(context, quad_info, control_side, SidePart::Middle, side->sector());
 }
 
+// -----------------------------------------------------------------------------
+// Builds wall quads for a given [part] of the line on the given [context]
+// -----------------------------------------------------------------------------
 void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 {
 	// TODO:
@@ -562,6 +579,9 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Generates quads for a given [line] and returns them along with the vertices
+// -----------------------------------------------------------------------------
 std::tuple<vector<Quad3D>, vector<MGVertex>> generateLineQuads(const MapLine& line, unsigned vertex_index)
 {
 	// Check line is valid

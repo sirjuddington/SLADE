@@ -6,7 +6,7 @@
 // Email:       sirjuddington@gmail.com
 // Web:         http://slade.mancubus.net
 // Filename:    SpriteBuffer3D.cpp
-// Description:
+// Description: Buffer for rendering sprites in the map editor 3d mode
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free
@@ -36,22 +36,40 @@ using namespace slade;
 using namespace mapeditor;
 
 
+// -----------------------------------------------------------------------------
+//
+// SpriteBuffer3D Class Functions
+//
+// -----------------------------------------------------------------------------
 
+
+// -----------------------------------------------------------------------------
+// SpriteBuffer3D class constructor
+// -----------------------------------------------------------------------------
 SpriteBuffer3D::SpriteBuffer3D()
 {
 	buffer_sprites_ = std::make_unique<gl::Buffer<Instance>>();
 }
 
+// -----------------------------------------------------------------------------
+// SpriteBuffer3D class destructor
+// -----------------------------------------------------------------------------
 SpriteBuffer3D::~SpriteBuffer3D()
 {
 	gl::deleteVAO(vao_);
 }
 
+// -----------------------------------------------------------------------------
+// Adds a sprite instance to the buffer
+// -----------------------------------------------------------------------------
 void SpriteBuffer3D::add(const glm::vec3& position, float brightness, const glm::vec4& colour)
 {
 	sprites_.emplace_back(position, brightness, colour);
 }
 
+// -----------------------------------------------------------------------------
+// Pushes the sprite instances to the GPU buffer
+// -----------------------------------------------------------------------------
 void SpriteBuffer3D::push(bool clear)
 {
 	if (!vao_)
@@ -63,6 +81,9 @@ void SpriteBuffer3D::push(bool clear)
 		sprites_.clear();
 }
 
+// -----------------------------------------------------------------------------
+// Draws the sprite instances
+// -----------------------------------------------------------------------------
 void SpriteBuffer3D::draw() const
 {
 	if (!vao_ || buffer_sprites_->empty())
@@ -73,6 +94,9 @@ void SpriteBuffer3D::draw() const
 	gl::bindVAO(0);
 }
 
+// -----------------------------------------------------------------------------
+// Initializes the VAO
+// -----------------------------------------------------------------------------
 void SpriteBuffer3D::initVAO()
 {
 	vao_ = gl::createVAO();

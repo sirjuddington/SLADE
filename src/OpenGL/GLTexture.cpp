@@ -304,6 +304,9 @@ bool gl::Texture::loadData(unsigned id, const uint8_t* data, unsigned width, uns
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Loads alpha [data] of [width]x[height] to the OpenGL texture
+// -----------------------------------------------------------------------------
 bool gl::Texture::loadAlphaData(unsigned id, const uint8_t* data, unsigned width, unsigned height)
 {
 	// Check OpenGL is initialised

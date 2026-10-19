@@ -118,6 +118,9 @@ bool jsonutil::writeFile(const Json& j, string_view path, int indent)
 	return file.writeStr(j.dump(indent));
 }
 
+// -----------------------------------------------------------------------------
+// Converts a Property [prop] to a JSON object
+// -----------------------------------------------------------------------------
 Json jsonutil::fromProp(const Property& prop)
 {
 	switch (prop.index())
@@ -131,6 +134,9 @@ Json jsonutil::fromProp(const Property& prop)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Converts a JSON object [j] to a Property
+// -----------------------------------------------------------------------------
 Property jsonutil::toProp(const Json& j)
 {
 	switch (j.type())
