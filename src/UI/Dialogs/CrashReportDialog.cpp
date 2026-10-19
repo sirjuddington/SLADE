@@ -39,6 +39,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
 #include "OpenGL/OpenGL.h"
+#include "Utility/FileUtils.h"
 #include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include <cpptrace/formatting.hpp>
@@ -221,6 +222,34 @@ CrashReportDialog::CrashReportDialog(wxWindow* parent) :
 	btn_send_exit_->Bind(wxEVT_COMMAND_BUTTON_CLICKED, &CrashReportDialog::onBtnSendAndExit, this);
 
 	Bind(wxEVT_WEBREQUEST_STATE, &CrashReportDialog::onWebRequestUpdate, this);
+
+#ifdef __WXMSW__
+	// Check for SLADE.pdb on Windows builds, popup a warning if it isn't found
+	// (as the stack trace will be useless without it)
+	Bind(
+		wxEVT_SHOW,
+		[&](wxShowEvent& e)
+		{
+			if (!e.IsShown())
+			{
+				e.Skip();
+				return;
+			}
+
+			CallAfter(
+				[]
+				{
+					if (!fileutil::fileExists(app::path("SLADE.pdb", app::Dir::Executable)))
+					{
+						wxMessageBox(
+							wxS("SLADE.pdb was not found alongside the SLADE executable. The crash report is unlikely "
+								"to be useful without it.\n\nPlease redownload and/or reinstall SLADE to restore it."),
+							wxS("Missing Debug Symbols"),
+							wxOK | wxICON_WARNING);
+					}
+				});
+		});
+#endif
 
 	// Setup layout
 	wxDialog::Layout();
