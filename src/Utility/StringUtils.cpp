@@ -201,27 +201,6 @@ bool strutil::equalCI(string_view left, string_view right)
 	return true;
 }
 
-// This one is a bit tricky - the string_view == string_view one above should be sufficient
-// bool strutil::equalCI(string_view left, const char* right)
-//{
-//	if (!right)
-//		return false;
-//	if (left.empty())
-//		return right[0] == 0;
-//
-//	auto a = 0u;
-//	auto sz = left.size();
-//	while (a < sz && right[a] != 0)
-//	{
-//		if (tolower(left[a]) != tolower(right[a]))
-//			return false;
-//		++a;
-//	}
-//
-//	return true;
-//}
-
-
 // -----------------------------------------------------------------------------
 // Returns true if [str] begins with [check]
 // -----------------------------------------------------------------------------
@@ -510,18 +489,27 @@ string strutil::replaceFirst(string_view str, string_view from, string_view to)
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// Converts all characters in [str] to lowercase
+// -----------------------------------------------------------------------------
 string& strutil::lowerIP(string& str)
 {
 	std::ranges::transform(str, str.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Converts all characters in [str] to uppercase
+// -----------------------------------------------------------------------------
 string& strutil::upperIP(string& str)
 {
 	std::ranges::transform(str, str.begin(), [](unsigned char c) { return static_cast<char>(std::toupper(c)); });
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with all characters converted to lowercase
+// -----------------------------------------------------------------------------
 string strutil::lower(string_view str)
 {
 	auto s = string{ str };
@@ -529,6 +517,9 @@ string strutil::lower(string_view str)
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with all characters converted to uppercase
+// -----------------------------------------------------------------------------
 string strutil::upper(string_view str)
 {
 	auto s = string{ str };
@@ -536,6 +527,9 @@ string strutil::upper(string_view str)
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// Trims whitespace from the left of [str]
+// -----------------------------------------------------------------------------
 string& strutil::ltrimIP(string& str)
 {
 	const auto p = str.find_first_not_of(WHITESPACE_CHARACTERS);
@@ -548,6 +542,9 @@ string& strutil::ltrimIP(string& str)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Trims whitespace from the right of [str]
+// -----------------------------------------------------------------------------
 string& strutil::rtrimIP(string& str)
 {
 	const auto p = str.find_last_not_of(WHITESPACE_CHARACTERS);
@@ -560,6 +557,9 @@ string& strutil::rtrimIP(string& str)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Trims whitespace from both ends of [str]
+// -----------------------------------------------------------------------------
 string& strutil::trimIP(string& str)
 {
 	const auto l = str.find_first_not_of(WHITESPACE_CHARACTERS);
@@ -575,6 +575,9 @@ string& strutil::trimIP(string& str)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with whitespace trimmed from the left
+// -----------------------------------------------------------------------------
 string strutil::ltrim(string_view str)
 {
 	const auto p = str.find_first_not_of(WHITESPACE_CHARACTERS);
@@ -585,6 +588,9 @@ string strutil::ltrim(string_view str)
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with whitespace trimmed from the right
+// -----------------------------------------------------------------------------
 string strutil::rtrim(string_view str)
 {
 	const auto p = str.find_last_not_of(WHITESPACE_CHARACTERS);
@@ -595,6 +601,9 @@ string strutil::rtrim(string_view str)
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with whitespace trimmed from both ends
+// -----------------------------------------------------------------------------
 string strutil::trim(string_view str)
 {
 	const auto l = str.find_first_not_of(WHITESPACE_CHARACTERS);
@@ -608,18 +617,27 @@ string strutil::trim(string_view str)
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] with whitespace trimmed from the left
+// -----------------------------------------------------------------------------
 string_view strutil::ltrimV(string_view str)
 {
 	const auto p = str.find_first_not_of(WHITESPACE_CHARACTERS);
 	return p == string_view::npos ? string_view{} : str.substr(p);
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] with whitespace trimmed from the right
+// -----------------------------------------------------------------------------
 string_view strutil::rtrimV(string_view str)
 {
 	const auto p = str.find_last_not_of(WHITESPACE_CHARACTERS);
 	return p == string_view::npos ? string_view{} : str.substr(0, p + 1);
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] with whitespace trimmed from both ends
+// -----------------------------------------------------------------------------
 string_view strutil::trimV(string_view str)
 {
 	const auto l = str.find_first_not_of(WHITESPACE_CHARACTERS);
@@ -630,6 +648,9 @@ string_view strutil::trimV(string_view str)
 	return r == string_view::npos ? string_view{} : str.substr(0, r + 1); // right
 }
 
+// -----------------------------------------------------------------------------
+// Capitalizes the first character of [str] and lowercases the rest
+// -----------------------------------------------------------------------------
 string& strutil::capitalizeIP(string& str)
 {
 	if (str.empty())
@@ -641,6 +662,10 @@ string& strutil::capitalizeIP(string& str)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with the first character capitalized and the rest
+// lowercased
+// -----------------------------------------------------------------------------
 string strutil::capitalize(string_view str)
 {
 	if (str.empty())
@@ -652,6 +677,9 @@ string strutil::capitalize(string_view str)
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// Converts a wildcard string to a regex string
+// -----------------------------------------------------------------------------
 string strutil::wildcardToRegex(string_view str)
 {
 	// Process [str] to be a valid regex string
@@ -672,6 +700,9 @@ string strutil::wildcardToRegex(string_view str)
 	return regex;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with [prefix] prepended
+// -----------------------------------------------------------------------------
 string strutil::prepend(string_view str, string_view prefix)
 {
 	string s{ str.data(), str.size() };
@@ -679,12 +710,19 @@ string strutil::prepend(string_view str, string_view prefix)
 	return s;
 }
 
+// -----------------------------------------------------------------------------
+// Prepends [prefix] to [str] in-place
+// -----------------------------------------------------------------------------
 string& strutil::prependIP(string& str, string_view prefix)
 {
 	str.insert(str.begin(), prefix.begin(), prefix.end());
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] surrounded by [with]
+// (includes brackets as a special case eg. "str" with "(" becomes "(str)")
+// -----------------------------------------------------------------------------
 string strutil::surround(string_view str, string_view with)
 {
 	if (with.empty())
@@ -706,16 +744,25 @@ string strutil::surround(string_view str, string_view with)
 	return fmt::format("{0}{1}{0}", with, str);
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of the first [n] characters of [str]
+// -----------------------------------------------------------------------------
 string strutil::left(string_view str, unsigned n)
 {
 	return string{ str.substr(0, n) };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of the first [n] characters of [str]
+// -----------------------------------------------------------------------------
 string_view strutil::leftV(string_view str, unsigned n)
 {
 	return str.substr(0, n);
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of the last [n] characters of [str]
+// -----------------------------------------------------------------------------
 string strutil::right(string_view str, unsigned n)
 {
 	if (str.size() <= n)
@@ -724,6 +771,9 @@ string strutil::right(string_view str, unsigned n)
 	return string{ str.substr(str.size() - n, n) };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of the last [n] characters of [str]
+// -----------------------------------------------------------------------------
 string_view strutil::rightV(string_view str, unsigned n)
 {
 	if (str.size() <= n)
@@ -732,6 +782,9 @@ string_view strutil::rightV(string_view str, unsigned n)
 	return str.substr(str.size() - n, n);
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] after the last occurrence of [chr]
+// -----------------------------------------------------------------------------
 string strutil::afterLast(string_view str, char chr)
 {
 	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
@@ -741,6 +794,9 @@ string strutil::afterLast(string_view str, char chr)
 	return string{ str };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] after the last occurrence of [token]
+// -----------------------------------------------------------------------------
 string strutil::afterLast(string_view str, string_view token)
 {
 	auto pos = str.rfind(token);
@@ -749,6 +805,9 @@ string strutil::afterLast(string_view str, string_view token)
 	return string{ str.substr(pos + token.size()) };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] after the last occurrence of [chr]
+// -----------------------------------------------------------------------------
 string_view strutil::afterLastV(string_view str, char chr)
 {
 	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
@@ -758,6 +817,9 @@ string_view strutil::afterLastV(string_view str, char chr)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] after the last occurrence of [token]
+// -----------------------------------------------------------------------------
 string_view strutil::afterLastV(string_view str, string_view token)
 {
 	auto pos = str.rfind(token);
@@ -766,6 +828,9 @@ string_view strutil::afterLastV(string_view str, string_view token)
 	return str.substr(pos + token.size());
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] after the first occurrence of [chr]
+// -----------------------------------------------------------------------------
 string strutil::afterFirst(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); ++i)
@@ -775,6 +840,9 @@ string strutil::afterFirst(string_view str, char chr)
 	return string{ str };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] after the first occurrence of [token]
+// -----------------------------------------------------------------------------
 string strutil::afterFirst(string_view str, string_view token)
 {
 	auto pos = str.find(token);
@@ -783,6 +851,9 @@ string strutil::afterFirst(string_view str, string_view token)
 	return string{ str.substr(pos + token.size()) };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] after the first occurrence of [chr]
+// -----------------------------------------------------------------------------
 string_view strutil::afterFirstV(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); ++i)
@@ -792,6 +863,9 @@ string_view strutil::afterFirstV(string_view str, char chr)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] after the first occurrence of [token]
+// -----------------------------------------------------------------------------
 string_view strutil::afterFirstV(string_view str, string_view token)
 {
 	auto pos = str.find(token);
@@ -800,6 +874,9 @@ string_view strutil::afterFirstV(string_view str, string_view token)
 	return str.substr(pos + token.size());
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] before the last occurrence of [chr]
+// -----------------------------------------------------------------------------
 string strutil::beforeLast(string_view str, char chr)
 {
 	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
@@ -809,6 +886,9 @@ string strutil::beforeLast(string_view str, char chr)
 	return string{ str };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] before the last occurrence of [token]
+// -----------------------------------------------------------------------------
 string strutil::beforeLast(string_view str, string_view token)
 {
 	auto pos = str.rfind(token);
@@ -817,6 +897,9 @@ string strutil::beforeLast(string_view str, string_view token)
 	return string{ str.substr(0, pos) };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] before the last occurrence of [chr]
+// -----------------------------------------------------------------------------
 string_view strutil::beforeLastV(string_view str, char chr)
 {
 	for (int i = static_cast<int>(str.size()) - 1; i >= 0; --i)
@@ -826,6 +909,9 @@ string_view strutil::beforeLastV(string_view str, char chr)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] before the last occurrence of [token]
+// -----------------------------------------------------------------------------
 string_view strutil::beforeLastV(string_view str, string_view token)
 {
 	auto pos = str.rfind(token);
@@ -834,6 +920,9 @@ string_view strutil::beforeLastV(string_view str, string_view token)
 	return str.substr(0, pos);
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] before the first occurrence of [chr]
+// -----------------------------------------------------------------------------
 string strutil::beforeFirst(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); i++)
@@ -843,6 +932,9 @@ string strutil::beforeFirst(string_view str, char chr)
 	return string{ str };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] before the first occurrence of [token]
+// -----------------------------------------------------------------------------
 string strutil::beforeFirst(string_view str, string_view token)
 {
 	auto pos = str.find(token);
@@ -851,6 +943,9 @@ string strutil::beforeFirst(string_view str, string_view token)
 	return string{ str.substr(0, pos) };
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] before the first occurrence of [chr]
+// -----------------------------------------------------------------------------
 string_view strutil::beforeFirstV(string_view str, char chr)
 {
 	for (unsigned i = 0; i < str.size(); i++)
@@ -860,6 +955,9 @@ string_view strutil::beforeFirstV(string_view str, char chr)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a string_view of [str] before the first occurrence of [token]
+// -----------------------------------------------------------------------------
 string_view strutil::beforeFirstV(string_view str, string_view token)
 {
 	auto pos = str.find(token);
@@ -868,6 +966,10 @@ string_view strutil::beforeFirstV(string_view str, string_view token)
 	return str.substr(0, pos);
 }
 
+// -----------------------------------------------------------------------------
+// Splits [str] into a vector of strings using [separator] as the delimiter
+// If [skip_duplicates] is true, consecutive separators are treated as one
+// -----------------------------------------------------------------------------
 vector<string> strutil::split(string_view str, char separator, bool skip_duplicates)
 {
 	unsigned       start = 0;
@@ -888,6 +990,10 @@ vector<string> strutil::split(string_view str, char separator, bool skip_duplica
 	return split;
 }
 
+// -----------------------------------------------------------------------------
+// Splits [str] into a vector of string_view using [separator] as the delimiter.
+// If [skip_duplicates] is true, consecutive separators are treated as one
+// -----------------------------------------------------------------------------
 vector<string_view> strutil::splitV(string_view str, char separator, bool skip_duplicates)
 {
 	unsigned            start = 0;
@@ -908,6 +1014,9 @@ vector<string_view> strutil::splitV(string_view str, char separator, bool skip_d
 	return split;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] truncated to [length] characters
+// -----------------------------------------------------------------------------
 string strutil::truncate(string_view str, unsigned length)
 {
 	if (str.size() > length)
@@ -916,6 +1025,9 @@ string strutil::truncate(string_view str, unsigned length)
 		return { str.data(), str.size() };
 }
 
+// -----------------------------------------------------------------------------
+// Truncates [str] in-place to [length] characters
+// -----------------------------------------------------------------------------
 string& strutil::truncateIP(string& str, unsigned length)
 {
 	if (str.size() > length)
@@ -923,6 +1035,9 @@ string& strutil::truncateIP(string& str, unsigned length)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with the last [n] characters removed
+// -----------------------------------------------------------------------------
 string strutil::removeLast(string_view str, unsigned n)
 {
 	if (str.size() <= n)
@@ -931,6 +1046,9 @@ string strutil::removeLast(string_view str, unsigned n)
 	return { str.data(), str.size() - n };
 }
 
+// -----------------------------------------------------------------------------
+// Removes the last [n] characters from [str] in-place
+// -----------------------------------------------------------------------------
 string& strutil::removeLastIP(string& str, unsigned n)
 {
 	if (str.size() <= n)
@@ -941,6 +1059,10 @@ string& strutil::removeLastIP(string& str, unsigned n)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with the first character removed if it matches
+// [prefix]
+// -----------------------------------------------------------------------------
 string strutil::removePrefix(string_view str, char prefix)
 {
 	if (!str.empty() && str[0] == prefix)
@@ -948,6 +1070,9 @@ string strutil::removePrefix(string_view str, char prefix)
 	return { str.data(), str.size() };
 }
 
+// -----------------------------------------------------------------------------
+// Removes the first character from [str] in-place if it matches [prefix]
+// -----------------------------------------------------------------------------
 string& strutil::removePrefixIP(string& str, char prefix)
 {
 	if (!str.empty() && str[0] == prefix)
@@ -955,6 +1080,10 @@ string& strutil::removePrefixIP(string& str, char prefix)
 	return str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a copy of [str] with the last character removed if it matches
+// [suffix]
+// -----------------------------------------------------------------------------
 string strutil::removeSuffix(string_view str, char suffix)
 {
 	if (!str.empty() && str.back() == suffix)
@@ -962,6 +1091,9 @@ string strutil::removeSuffix(string_view str, char suffix)
 	return { str.data(), str.size() };
 }
 
+// -----------------------------------------------------------------------------
+// Removes the last character from [str] in-place if it matches [suffix]
+// -----------------------------------------------------------------------------
 string& strutil::removeSuffixIP(string& str, char suffix)
 {
 	if (!str.empty() && str.back() == suffix)
@@ -969,6 +1101,17 @@ string& strutil::removeSuffixIP(string& str, char suffix)
 	return str;
 }
 
+
+// -----------------------------------------------------------------------------
+//
+// Path class functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Path Constructor
+// -----------------------------------------------------------------------------
 strutil::Path::Path(string_view full_path) : full_path_{ full_path.data(), full_path.size() }
 {
 	// Enforce / as separators
@@ -985,6 +1128,9 @@ strutil::Path::Path(string_view full_path) : full_path_{ full_path.data(), full_
 	filename_end_ = (ext_pos == string::npos || ext_pos < filename_start_) ? full_path_.size() : ext_pos;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the path part of the full path
+// -----------------------------------------------------------------------------
 string_view strutil::Path::path(bool include_end_sep) const
 {
 	if (filename_start_ == 0 || filename_start_ == string::npos)
@@ -994,6 +1140,9 @@ string_view strutil::Path::path(bool include_end_sep) const
 						   : string_view{ full_path_.data(), filename_start_ - 1 };
 }
 
+// -----------------------------------------------------------------------------
+// Returns the filename part of the full path
+// -----------------------------------------------------------------------------
 string_view strutil::Path::fileName(bool include_extension) const
 {
 	if (filename_start_ == string::npos)
@@ -1003,6 +1152,9 @@ string_view strutil::Path::fileName(bool include_extension) const
 							 : string_view{ full_path_.data() + filename_start_, filename_end_ - filename_start_ };
 }
 
+// -----------------------------------------------------------------------------
+// Returns the extension part of the filename
+// -----------------------------------------------------------------------------
 string_view strutil::Path::extension() const
 {
 	if (filename_start_ == string::npos || filename_end_ >= full_path_.size())
@@ -1011,6 +1163,9 @@ string_view strutil::Path::extension() const
 	return string_view{ full_path_.data() + filename_end_ + 1 };
 }
 
+// -----------------------------------------------------------------------------
+// Returns the path part of the full path as a vector of string_views
+// -----------------------------------------------------------------------------
 vector<string_view> strutil::Path::pathParts() const
 {
 	if (filename_start_ == 0 || filename_start_ == string::npos)
@@ -1019,16 +1174,26 @@ vector<string_view> strutil::Path::pathParts() const
 	return splitV({ full_path_.data(), filename_start_ - 1 }, '/');
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if the filename has an extension, false otherwise
+// -----------------------------------------------------------------------------
 bool strutil::Path::hasExtension() const
 {
 	return filename_start_ != string::npos && filename_end_ < full_path_.size();
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if the extension matches [ext], false otherwise
+// -----------------------------------------------------------------------------
 bool strutil::Path::extensionIs(string_view ext) const
 {
 	return equalCI(extension(), ext);
 }
 
+// -----------------------------------------------------------------------------
+// Sets the full path to [full_path] and updates the path, filename, and
+// extension parts accordingly
+// -----------------------------------------------------------------------------
 void strutil::Path::set(string_view full_path)
 {
 	full_path_ = full_path;
@@ -1042,6 +1207,9 @@ void strutil::Path::set(string_view full_path)
 	filename_end_           = (ext_pos == string::npos || ext_pos < filename_start_) ? full_path_.size() : ext_pos;
 }
 
+// -----------------------------------------------------------------------------
+// Sets the path part of the full path to [path]
+// -----------------------------------------------------------------------------
 void strutil::Path::setPath(string_view path)
 {
 	if (filename_start_ == string::npos)
@@ -1068,10 +1236,9 @@ void strutil::Path::setPath(string_view path)
 	}
 }
 
-void strutil::Path::setPath(const vector<string_view>& parts) {}
-
-void strutil::Path::setPath(const vector<string>& parts) {}
-
+// -----------------------------------------------------------------------------
+// Sets the filename part of the full path to [file_name]
+// -----------------------------------------------------------------------------
 void strutil::Path::setFileName(string_view file_name)
 {
 	if (filename_start_ == string::npos)
@@ -1095,6 +1262,9 @@ void strutil::Path::setFileName(string_view file_name)
 	std::replace(full_path_.begin() + filename_start_, full_path_.begin() + filename_end_, '.', '_');
 }
 
+// -----------------------------------------------------------------------------
+// Sets the extension part of the full path to [extension]
+// -----------------------------------------------------------------------------
 void strutil::Path::setExtension(string_view extension)
 {
 	if (extension.empty())
@@ -1115,6 +1285,9 @@ void strutil::Path::setExtension(string_view extension)
 	std::replace(full_path_.begin() + filename_end_, full_path_.end(), '\\', '_');
 }
 
+// -----------------------------------------------------------------------------
+// Returns the filename part of [full_path]
+// -----------------------------------------------------------------------------
 string_view strutil::Path::fileNameOf(string_view full_path, bool include_extension)
 {
 	int pos;
@@ -1132,12 +1305,18 @@ string_view strutil::Path::fileNameOf(string_view full_path, bool include_extens
 	return pos > 0 ? full_path.substr(pos) : full_path;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the extension part of [full_path]
+// -----------------------------------------------------------------------------
 string_view strutil::Path::extensionOf(string_view full_path)
 {
 	const auto ext_pos = full_path.find_last_of('.');
 	return ext_pos == string_view::npos ? string_view{} : full_path.substr(ext_pos + 1);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the path part of [full_path]
+// -----------------------------------------------------------------------------
 string_view strutil::Path::pathOf(string_view full_path, bool include_end_sep)
 {
 	const auto last_sep_pos = full_path.find_last_of("/\\");
@@ -1145,6 +1324,9 @@ string_view strutil::Path::pathOf(string_view full_path, bool include_end_sep)
 											 : full_path.substr(0, include_end_sep ? last_sep_pos + 1 : last_sep_pos);
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if [left] and [right] are the same file path, false otherwise
+// -----------------------------------------------------------------------------
 bool strutil::Path::filePathsMatch(string_view left, string_view right)
 {
 	const auto sz = left.size();
@@ -1182,8 +1364,6 @@ bool strutil::Path::filePathsMatch(string_view left, string_view right)
 }
 
 // -----------------------------------------------------------------------------
-// StringUtils::processIncludes
-//
 // Reads the text file at [filename], processing any #include statements in the
 // file recursively. The resulting 'expanded' text is written to [out]
 // -----------------------------------------------------------------------------
@@ -1223,8 +1403,6 @@ void strutil::processIncludes(const string& filename, string& out)
 }
 
 // -----------------------------------------------------------------------------
-// StringUtils::processIncludes
-//
 // Reads the text entry [entry], processing any #include statements in the
 // entry text recursively. This will search in the resource folder and archive
 // as well as in the parent archive. The resulting 'expanded' text is written
@@ -1299,6 +1477,9 @@ void strutil::processIncludes(const ArchiveEntry* entry, string& out, bool use_r
 	wxRemoveFile(wxString::FromUTF8(filename));
 }
 
+// -----------------------------------------------------------------------------
+// Joins the given [strings] into a single string, separated by [separator]
+// -----------------------------------------------------------------------------
 string strutil::join(const vector<string>& strings, string_view separator)
 {
 	string out;
@@ -1311,6 +1492,9 @@ string strutil::join(const vector<string>& strings, string_view separator)
 	return out;
 }
 
+// -----------------------------------------------------------------------------
+// Converts the given [str] to an integer, using the specified [base]
+// -----------------------------------------------------------------------------
 int strutil::asInt(string_view str, int base)
 {
 	int        val    = 0;
@@ -1323,6 +1507,9 @@ int strutil::asInt(string_view str, int base)
 	return val;
 }
 
+// -----------------------------------------------------------------------------
+// Converts the given [str] to an unsigned integer, using the specified [base]
+// -----------------------------------------------------------------------------
 unsigned strutil::asUInt(string_view str, int base)
 {
 	unsigned   val    = 0;
@@ -1335,6 +1522,9 @@ unsigned strutil::asUInt(string_view str, int base)
 	return val;
 }
 
+// -----------------------------------------------------------------------------
+// Converts the given [str] to a float
+// -----------------------------------------------------------------------------
 float strutil::asFloat(string_view str)
 {
 	float val = 0;
@@ -1361,6 +1551,9 @@ float strutil::asFloat(string_view str)
 	return val;
 }
 
+// -----------------------------------------------------------------------------
+// Converts the given [str] to a double
+// -----------------------------------------------------------------------------
 double strutil::asDouble(string_view str)
 {
 	double val = 0;
@@ -1387,12 +1580,19 @@ double strutil::asDouble(string_view str)
 	return val;
 }
 
+// -----------------------------------------------------------------------------
+// Converts the given [str] to a boolean.
+// Empty, 0 or "false" are false, everything else true
+// -----------------------------------------------------------------------------
 bool strutil::asBoolean(string_view str)
 {
-	// Empty, 0 or "false" are false, everything else true
 	return !(str.empty() || str == "0" || equalCI(str, "false"));
 }
 
+// -----------------------------------------------------------------------------
+// Converts the given [str] to an integer, using the specified [base].
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool strutil::toInt(string_view str, int& target, int base)
 {
 	const auto result = std::from_chars(str.data(), str.data() + str.size(), target, base);
@@ -1411,6 +1611,10 @@ bool strutil::toInt(string_view str, int& target, int base)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Converts the given [str] to an unsigned integer, using the specified [base].
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool strutil::toUInt(string_view str, unsigned& target, int base)
 {
 	const auto result = std::from_chars(str.data(), str.data() + str.size(), target, base);
@@ -1429,6 +1633,10 @@ bool strutil::toUInt(string_view str, unsigned& target, int base)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Converts the given [str] to a float.
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool strutil::toFloat(string_view str, float& target)
 {
 #ifdef _MSC_VER
@@ -1460,6 +1668,10 @@ bool strutil::toFloat(string_view str, float& target)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Converts the given [str] to a double.
+// Returns true if successful, false otherwise
+// -----------------------------------------------------------------------------
 bool strutil::toDouble(string_view str, double& target)
 {
 #ifdef _MSC_VER
@@ -1519,22 +1731,6 @@ string_view strutil::viewFromChars(const char* chars, unsigned max_length)
 
 	return { chars, size };
 }
-
-// // -----------------------------------------------------------------------------
-// // Encodes [str] to UTF8
-// // -----------------------------------------------------------------------------
-// string strutil::toUTF8(string_view str)
-// {
-// 	return wxString(str.data(), str.size()).utf8_string();
-// }
-//
-// // -----------------------------------------------------------------------------
-// // Decodes [str] from UTF8
-// // -----------------------------------------------------------------------------
-// string strutil::fromUTF8(string_view str)
-// {
-// 	return wxString::FromUTF8(str.data(), str.length()).utf8_string();
-// }
 
 // -----------------------------------------------------------------------------
 // Splits [str] into tokens, using given [options]

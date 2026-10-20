@@ -39,6 +39,7 @@
 #include "Archive/ArchiveManager.h"
 #include "General/SAction.h"
 #include "OpenGL/OpenGL.h"
+#include "Utility/FileUtils.h"
 #include "Utility/JsonUtils.h"
 #include "Utility/StringUtils.h"
 #include <cpptrace/formatting.hpp>
@@ -222,6 +223,34 @@ CrashReportDialog::CrashReportDialog(wxWindow* parent) :
 
 	Bind(wxEVT_WEBREQUEST_STATE, &CrashReportDialog::onWebRequestUpdate, this);
 
+#ifdef __WXMSW__
+	// Check for SLADE.pdb on Windows builds, popup a warning if it isn't found
+	// (as the stack trace will be useless without it)
+	Bind(
+		wxEVT_SHOW,
+		[&](wxShowEvent& e)
+		{
+			if (!e.IsShown())
+			{
+				e.Skip();
+				return;
+			}
+
+			CallAfter(
+				[]
+				{
+					if (!fileutil::fileExists(app::path("SLADE.pdb", app::Dir::Executable)))
+					{
+						wxMessageBox(
+							wxS("SLADE.pdb was not found alongside the SLADE executable. The crash report is unlikely "
+								"to be useful without it.\n\nPlease redownload and/or reinstall SLADE to restore it."),
+							wxS("Missing Debug Symbols"),
+							wxOK | wxICON_WARNING);
+					}
+				});
+		});
+#endif
+
 	// Setup layout
 	wxDialog::Layout();
 	auto width = hbox->CalcMin().GetWidth() + FromDIP(30);
@@ -234,7 +263,7 @@ CrashReportDialog::CrashReportDialog(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 // Loads crash report data from a cpptrace stacktrace
 // -----------------------------------------------------------------------------
-void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace)
+void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace, const string& exception_info)
 {
 	// SLADE info
 	if (global::sc_rev.empty())
@@ -251,6 +280,8 @@ void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace)
 	else
 		trace_ += fmt::format("Current action: {}", current_action);
 	trace_ += "\n";
+	if (!exception_info.empty())
+		trace_ += exception_info + "\n";
 
 	auto& j_info            = *j_info_;
 	j_info["type"]          = 0;
@@ -294,7 +325,7 @@ void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace)
 								  .symbols(cpptrace::formatter::symbol_mode::pretty)
 								  .snippets(true)
 								  .snippet_context(2);
-	j_info["stack-trace"] = formatter_detailed.format(trace);
+	j_info["stack-trace"] = (exception_info.empty() ? "" : exception_info + "\n") + formatter_detailed.format(trace);
 
 	// Last 10 log lines
 	trace_ += "\nLast Log Messages:\n";

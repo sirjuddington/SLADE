@@ -142,6 +142,9 @@ void PointSpriteBuffer::add(const vector<glm::vec2>& positions, float radius)
 // -----------------------------------------------------------------------------
 void PointSpriteBuffer::push()
 {
+	if (!getContext())
+		return;
+
 	if (!vao_)
 		initVAO();
 

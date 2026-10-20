@@ -110,11 +110,7 @@ void GfxGLCanvas::draw()
 	{
 		// If the image change isn't caused by drawing, resize drawing mask
 		if (!drawing_)
-		{
-			delete[] drawing_mask_;
-			drawing_mask_ = new bool[image_->width() * image_->height()];
-			memset(drawing_mask_, false, image_->width() * image_->height());
-		}
+			resetDrawingMask();
 
 		gl::Texture::clear(tex_image_);
 		tex_image_ = gl::Texture::createFromImage(*image_, palette_.get());

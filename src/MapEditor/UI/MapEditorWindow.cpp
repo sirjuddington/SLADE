@@ -595,6 +595,15 @@ bool MapEditorWindow::openMap(const MapDesc& map)
 	Update();
 	Refresh();
 
+	// Check OpenGL can be initialized (the map editor can't work without it)
+	if (!map_canvas_->activateContext())
+	{
+		log::error("Unable to open map: OpenGL context could not be created");
+		global::error =
+			"OpenGL could not be initialized. Please check that your graphics drivers are installed and up to date.";
+		return false;
+	}
+
 	// Get map parent archive
 	Archive* archive = nullptr;
 	if (auto head = map.head.lock())

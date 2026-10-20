@@ -177,13 +177,35 @@ TextureEditor::~TextureEditor()
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if there are any unsaved changes in the texture editor
+// -----------------------------------------------------------------------------
+bool TextureEditor::hasUnsavedChanges() const
+{
+	// Check patch table
+	if (patch_table_modified_)
+		return true;
+
+	// Check texture lists
+	for (auto& entry : texturex_entries_)
+		if (entry.modified)
+			return true;
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Saves all texture lists and the patch table (if modified) back to their
 // respective entries
 // -----------------------------------------------------------------------------
 void TextureEditor::saveAll() const
 {
 	for (unsigned i = 0; i < texturex_entries_.size(); ++i)
-		saveTextureList(i);
+	{
+		// If the patch table is modified, force save any TEXTURE1/2 list as
+		// patch indices may have changed
+		if (textureListModified(i) || patch_table_modified_ && textureList(i)->format() != TextureXFormat::Textures)
+			saveTextureList(i);
+	}
 
 	savePatchTable();
 }
@@ -193,9 +215,6 @@ void TextureEditor::saveAll() const
 // -----------------------------------------------------------------------------
 bool TextureEditor::saveTextureList(unsigned index) const
 {
-	if (!textureListModified(index))
-		return false;
-
 	auto entry = textureListEntry(index);
 	auto list  = textureList(index);
 	if (!entry || !list)
@@ -213,9 +232,13 @@ bool TextureEditor::saveTextureList(unsigned index) const
 	EntryType::detectEntryType(*entry);
 	entry->lock();
 
-	// Set all textures to unmodified
-	for (unsigned a = 0; a < list->size(); a++)
-		list->texture(a)->setState(CTexture::State::Unmodified);
+	// Set all textures to unmodified if save was successful
+	if (ok)
+	{
+		for (unsigned a = 0; a < list->size(); a++)
+			list->texture(a)->setState(CTexture::State::Unmodified);
+		setTextureListModified(*list, false);
+	}
 
 	return ok;
 }
@@ -225,16 +248,17 @@ bool TextureEditor::saveTextureList(unsigned index) const
 // -----------------------------------------------------------------------------
 bool TextureEditor::savePatchTable() const
 {
-	if (!patch_table_ || !patch_table_modified_ || !pnames_.lock())
+	auto pnames = pnames_.lock().get();
+	if (!patch_table_ || !patch_table_modified_ || !pnames)
 		return true;
 
-	if (patch_table_->writePNAMES(pnames_.lock().get()))
-	{
+	pnames->unlock();
+	const auto ok = patch_table_->writePNAMES(pnames);
+	if (ok)
 		patch_table_modified_ = false;
-		return true;
-	}
+	pnames->lock();
 
-	return false;
+	return ok;
 }
 
 // -----------------------------------------------------------------------------
@@ -305,7 +329,7 @@ bool TextureEditor::textureListModified(unsigned index) const
 		if (list->texture(i)->state() != CTexture::State::Unmodified)
 			return true;
 
-	return false;
+	return texturex_entries_[index].modified;
 }
 
 // -----------------------------------------------------------------------------
@@ -443,7 +467,7 @@ string TextureEditor::importPatchFile(string_view filename, bool add_to_patch_ta
 	// Add patch to patch table if needed
 	// TODO: Abort if patch already exists in table
 	if (add_to_patch_table)
-		patch_table_->addPatch(name);
+		addPatchToTable(name);
 
 	return name;
 }
@@ -539,8 +563,12 @@ void TextureEditor::deleteTextures(const vector<CTexture*>& textures) const
 			continue;
 
 		auto removed = list->removeTexture(index);
+
+		if (hasPatchTable())
+			patch_table_->clearPatchUsage(removed->name());
 		signals_.texture_deleted(list, removed.get());
 		undo_manager_->recordUndoStep<TextureCreateDeleteUS>(*this, list, std::move(removed), index);
+		setTextureListModified(*list);
 		any_deleted = true;
 	}
 
@@ -608,8 +636,8 @@ bool TextureEditor::pasteTextures(TextureXList* list, int index) const
 		for (unsigned patch_index = 0; patch_index < texture_ptr->nPatches(); ++patch_index)
 		{
 			auto patch = texture_ptr->patch(patch_index);
-			if (list->format() != TextureXFormat::Textures)
-				patch_table_->addPatch(patch->name());
+			if (list->format() != TextureXFormat::Textures && hasPatchTable())
+				addPatchToTable(patch->name());
 
 			auto entry = patch->patchEntry(archive_.get());
 			if (!entry)
@@ -659,6 +687,7 @@ void TextureEditor::moveTextures(const vector<CTexture*>& textures, Direction di
 			return;
 
 		list->swapTextures(index, new_index);
+		setTextureListModified(*list);
 
 		signals_.textures_swapped(list, index, new_index);
 
@@ -734,6 +763,7 @@ void TextureEditor::sortTextures(const vector<CTexture*>& textures) const
 	if (!undo_recording)
 		undo_manager_->endRecord(any_swaps);
 
+	setTextureListModified(*list);
 	signals_.textures_modified(textures);
 }
 
@@ -1824,4 +1854,19 @@ void TextureEditor::updateAllPatchUsage() const
 	for (auto& tx : texturex_entries_)
 		for (unsigned i = 0; i < tx.texturex->size(); ++i)
 			patch_table_->updatePatchUsage(tx.texturex->texture(i));
+}
+
+// -----------------------------------------------------------------------------
+// Sets the [modified] state of a texture [list]
+// -----------------------------------------------------------------------------
+void TextureEditor::setTextureListModified(const TextureXList& list, bool modified) const
+{
+	for (auto& tx : texturex_entries_)
+	{
+		if (tx.texturex.get() == &list)
+		{
+			tx.modified = modified;
+			return;
+		}
+	}
 }

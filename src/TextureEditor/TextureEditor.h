@@ -23,6 +23,8 @@ public:
 	PatchTable*  patchTable() const { return patch_table_.get(); }
 	UndoManager* undoManager() const { return undo_manager_.get(); }
 
+	bool hasUnsavedChanges() const;
+
 	void saveAll() const;
 	bool saveTextureList(unsigned index) const;
 	bool savePatchTable() const;
@@ -97,8 +99,6 @@ public:
 
 	// Patch Table
 	bool hasPatchTable() const;
-	bool patchTableModified() const { return patch_table_modified_; }
-	void setPatchTableModified(bool modified = true) { patch_table_modified_ = modified; }
 
 	// Patch Table Editing
 	int  addPatchToTable(string_view patch) const;
@@ -147,6 +147,7 @@ private:
 	{
 		weak_ptr<ArchiveEntry>   entry;
 		unique_ptr<TextureXList> texturex;
+		mutable bool             modified = false;
 
 		std::unordered_map<const CTexture*, unique_ptr<CTexture>> backup_textures; // For revert
 	};
@@ -159,5 +160,6 @@ private:
 	void      setupTextureBackup(const CTexture& texture);
 	CTexture* getTextureBackup(const CTexture& texture) const;
 	void      updateAllPatchUsage() const;
+	void      setTextureListModified(const TextureXList& list, bool modified = true) const;
 };
 } // namespace slade::texeditor

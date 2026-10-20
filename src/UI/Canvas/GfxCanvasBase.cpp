@@ -168,7 +168,7 @@ bool GfxCanvasBase::onImage(int x, int y) const
 // Returns the image coordinates at [x,y] in screen coordinates, or [-1, -1] if
 // not on the image
 // -----------------------------------------------------------------------------
-Vec2i GfxCanvasBase::imageCoords(int x, int y) const
+Vec2i GfxCanvasBase::imageCoords(int x, int y, bool allow_outside) const
 {
 	auto canvas_pos = view().canvasPos({ x, y });
 	auto image_pos  = canvas_pos;
@@ -179,7 +179,8 @@ Vec2i GfxCanvasBase::imageCoords(int x, int y) const
 		image_pos.y += image_->offset().y;
 	}
 
-	if (image_pos.x < 0 || image_pos.y < 0 || image_pos.x >= image_->width() || image_pos.y >= image_->height())
+	if (!allow_outside
+		&& (image_pos.x < 0 || image_pos.y < 0 || image_pos.x >= image_->width() || image_pos.y >= image_->height()))
 		return { -1, -1 }; // Not on image
 
 	return { static_cast<int>(image_pos.x), static_cast<int>(image_pos.y) };
@@ -230,6 +231,15 @@ void GfxCanvasBase::endOffsetDrag()
 }
 
 // -----------------------------------------------------------------------------
+// Clears the drawing mask, resizing it to match the current image
+// -----------------------------------------------------------------------------
+void GfxCanvasBase::resetDrawingMask()
+{
+	const auto size = image_ ? static_cast<size_t>(image_->width()) * image_->height() : 0;
+	drawing_mask_.assign(size, 0);
+}
+
+// -----------------------------------------------------------------------------
 // Paints a pixel from the image at the given image coordinates.
 // -----------------------------------------------------------------------------
 void GfxCanvasBase::paintPixel(int x, int y)
@@ -238,6 +248,10 @@ void GfxCanvasBase::paintPixel(int x, int y)
 	// are out of the image area; so don't process them.
 	if (x < 0 || y < 0 || x >= image_->width() || y >= image_->height())
 		return;
+
+	// The image may have been resized since the mask was last updated
+	if (drawing_mask_.size() != static_cast<size_t>(image_->width()) * image_->height())
+		resetDrawingMask();
 
 	// Do not process pixels that were already modified in the
 	// current drawing operation. This mechanism is needed to
@@ -268,7 +282,7 @@ void GfxCanvasBase::paintPixel(int x, int y)
 		painted = image_->setPixel(x, y, paint_colour_);
 
 	// Mark the modification, if any, and announce the modification
-	drawing_mask_[pos] = painted;
+	drawing_mask_[pos] = painted ? 1 : 0;
 	if (painted)
 	{
 		// Generate event
@@ -285,7 +299,7 @@ void GfxCanvasBase::brushCanvas(int x, int y)
 {
 	if (brush_ == nullptr)
 		return;
-	const auto coord = imageCoords(x, y);
+	const auto coord = imageCoords(x, y, true);
 	for (int i = -4; i < 5; ++i)
 		for (int j = -4; j < 5; ++j)
 			if (brush_->pixel(i, j))
@@ -397,7 +411,7 @@ void GfxCanvasBase::onMouseLeftUp(wxMouseEvent& e)
 	if (drawing_)
 	{
 		drawing_ = false;
-		memset(drawing_mask_, false, image_->width() * image_->height());
+		resetDrawingMask();
 	}
 	// Stop dragging
 	if (drag_origin_.x >= 0)
@@ -420,7 +434,7 @@ void GfxCanvasBase::onMouseMovement(wxMouseEvent& e)
 	const int  x        = window()->ToPhys(e.GetPosition().x);
 	const int  y        = window()->ToPhys(e.GetPosition().y);
 	const bool on_image = onImage(x, y);
-	cursor_pos_         = imageCoords(x, y);
+	cursor_pos_         = imageCoords(x, y, true);
 	if (on_image && editing_mode_ != EditMode::None)
 	{
 		if (cursor_pos_ != prev_pos_)

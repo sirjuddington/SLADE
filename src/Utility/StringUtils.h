@@ -34,7 +34,6 @@ bool isInteger(const string& str, bool allow_hex = true);
 bool isHex(const string& str);
 bool isFloat(const string& str);
 bool equalCI(string_view left, string_view right);
-// bool equalCI(string_view left, const char* right);
 bool startsWith(string_view str, string_view check);
 bool startsWith(string_view str, char check);
 bool startsWithCI(string_view str, string_view check);
@@ -127,10 +126,6 @@ bool        toDouble(string_view str, double& target);
 string      toString(string_view str);
 string_view viewFromChars(const char* chars, unsigned max_length);
 
-// Encoding
-// string toUTF8(string_view str);
-// string fromUTF8(string_view str);
-
 // Path class
 class Path
 {
@@ -148,8 +143,6 @@ public:
 
 	void set(string_view full_path);
 	void setPath(string_view path);
-	void setPath(const vector<string_view>& parts);
-	void setPath(const vector<string>& parts);
 	void setFileName(string_view file_name);
 	void setExtension(string_view extension);
 

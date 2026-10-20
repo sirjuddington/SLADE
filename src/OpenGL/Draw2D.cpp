@@ -103,6 +103,9 @@ CVAR(Bool, hud_bob, 0, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 namespace slade::gl::draw2d
 {
+// -----------------------------------------------------------------------------
+// Loads a [font] from the program resource archive
+// -----------------------------------------------------------------------------
 bool loadFont(FontDef& font)
 {
 	auto entry = app::archiveManager().programResourceArchive()->entryAtPath(fmt::format("fonts/{}.gm", font.face));
@@ -123,6 +126,9 @@ bool loadFont(FontDef& font)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the font definition for the specified [font]
+// -----------------------------------------------------------------------------
 FontDef* getFont(Font font)
 {
 	auto* fdef = &fonts[static_cast<int>(font)];
@@ -136,12 +142,18 @@ FontDef* getFont(Font font)
 	return fdef;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the scale factor for a font of the given [size]
+// -----------------------------------------------------------------------------
 inline float fontScale(int size)
 {
 	constexpr auto font_size_base = static_cast<float>(FONT_SIZE_BASE);
 	return static_cast<float>(size) / font_size_base;
 }
 
+// -----------------------------------------------------------------------------
+// Custom callback for rendering text via libdrawtext
+// -----------------------------------------------------------------------------
 void drawTextCustomCallback(dtx_vertex* v, int vcount, dtx_pixmap* pixmap, void* cls)
 {
 	// Generate texture if needed
@@ -169,6 +181,9 @@ void drawTextCustomCallback(dtx_vertex* v, int vcount, dtx_pixmap* pixmap, void*
 	vb_text.draw();
 }
 
+// -----------------------------------------------------------------------------
+// Initializes text drawing
+// -----------------------------------------------------------------------------
 void initTextDrawing()
 {
 	dtx_set(DTX_PADDING, 64);
@@ -179,6 +194,9 @@ void initTextDrawing()
 	text_draw_init = true;
 }
 
+// -----------------------------------------------------------------------------
+// Sets up the shader for text drawing
+// -----------------------------------------------------------------------------
 void setupTextShader(const Shader& shader, const Context& dc, const ColRGBA& colour, float softness)
 {
 	shader.bind();
@@ -191,6 +209,9 @@ void setupTextShader(const Shader& shader, const Context& dc, const ColRGBA& col
 		shader.setUniform("outline_colour", dc.outline_colour);
 }
 
+// -----------------------------------------------------------------------------
+// Helper function to draw point sprites with the given context [dc]
+// -----------------------------------------------------------------------------
 void drawPointSprites(const Context& dc)
 {
 	// Blending
@@ -213,21 +234,40 @@ void drawPointSprites(const Context& dc)
 } // namespace slade::gl::draw2d
 
 
+// -----------------------------------------------------------------------------
+//
+// draw2d::Context Class Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Returns the size of the current view, or 0,0 if no view is set
+// -----------------------------------------------------------------------------
 Vec2f draw2d::Context::viewSize() const
 {
 	return view ? Vec2f{ static_cast<float>(view->size().x), static_cast<float>(view->size().y) } : Vec2f{};
 }
 
+// -----------------------------------------------------------------------------
+// Translates the model matrix by [x, y]
+// -----------------------------------------------------------------------------
 void draw2d::Context::translate(float x, float y)
 {
 	model_matrix = glm::translate(model_matrix, { x, y, 0.0f });
 }
 
+// -----------------------------------------------------------------------------
+// Scales the model matrix by [x, y]
+// -----------------------------------------------------------------------------
 void draw2d::Context::scale(float x, float y)
 {
 	model_matrix = glm::scale(model_matrix, { x, y, 1.0f });
 }
 
+// -----------------------------------------------------------------------------
+// Sets the colour from a colourconfig definition
+// -----------------------------------------------------------------------------
 void draw2d::Context::setColourFromConfig(const string& def_name, float alpha, bool blend)
 {
 	auto def = colourconfig::colDef(def_name);
@@ -237,16 +277,25 @@ void draw2d::Context::setColourFromConfig(const string& def_name, float alpha, b
 		this->blend = def.blendMode();
 }
 
+// -----------------------------------------------------------------------------
+// Returns the height of a line of text with the current font and size
+// -----------------------------------------------------------------------------
 float draw2d::Context::textLineHeight() const
 {
-	return draw2d::lineHeight(font, text_size);
+	return lineHeight(font, text_size);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the extents of the given [text] with the current font and size
+// -----------------------------------------------------------------------------
 Vec2f draw2d::Context::textExtents(const string& text) const
 {
 	return draw2d::textExtents(text, font, text_size);
 }
 
+// -----------------------------------------------------------------------------
+// Sets up the shader for drawing with the current context settings
+// -----------------------------------------------------------------------------
 void draw2d::Context::setupToDraw(const Shader& shader, bool mvp) const
 {
 	shader.bind();
@@ -266,6 +315,9 @@ void draw2d::Context::setupToDraw(const Shader& shader, bool mvp) const
 		shader.setUniform("mvp", view ? view->mvpMatrix(model_matrix) : model_matrix);
 }
 
+// -----------------------------------------------------------------------------
+// Draws a filled rectangle with the current context settings
+// -----------------------------------------------------------------------------
 void draw2d::Context::drawRect(const Rectf& rect) const
 {
 	const auto& shader = defaultShader(texture > 0);
@@ -289,6 +341,9 @@ void draw2d::Context::drawRect(const Rectf& rect) const
 	VertexBuffer2D::unitSquare().draw(Primitive::TriangleFan);
 }
 
+// -----------------------------------------------------------------------------
+// Draws the outline of a rectangle with the current context settings
+// -----------------------------------------------------------------------------
 void draw2d::Context::drawRectOutline(const Rectf& rect) const
 {
 	static LineBuffer lb_rect;
@@ -343,6 +398,9 @@ void draw2d::Context::drawLines(const vector<Rectf>& lines, bool gradient_to_out
 	line_buffer->draw(view, glm::vec4{ 1.0f }, model_matrix);
 }
 
+// -----------------------------------------------------------------------------
+// Draws the given [points] as point sprites with the current context settings
+// -----------------------------------------------------------------------------
 void draw2d::Context::drawPointSprites(const vector<Vec2f>& points) const
 {
 	// Create buffer if needed
@@ -371,6 +429,9 @@ void draw2d::Context::drawPointSprites(const vector<Vec2d>& points) const
 	draw2d::drawPointSprites(*this);
 }
 
+// -----------------------------------------------------------------------------
+// Draws the given [text] at the given [pos] with the current context settings
+// -----------------------------------------------------------------------------
 void draw2d::Context::drawText(const string& text, const Vec2f& pos) const
 {
 	if (!text_draw_init)
@@ -449,6 +510,9 @@ void draw2d::Context::drawText(const string& text, const Vec2f& pos) const
 	dtx_string(text.c_str());
 }
 
+// -----------------------------------------------------------------------------
+// Draws the current texture tiled to fill the given [rect]
+// -----------------------------------------------------------------------------
 void draw2d::Context::drawTextureTiled(const Rectf& rect) const
 {
 	// Ignore empty texture
@@ -488,6 +552,10 @@ void draw2d::Context::drawTextureTiled(const Rectf& rect) const
 	vertex_buffer->draw(Primitive::TriangleFan);
 }
 
+// -----------------------------------------------------------------------------
+// Draws the current texture within the given [rect], with optional [pad]ding
+// and [max_scale]
+// -----------------------------------------------------------------------------
 void draw2d::Context::drawTextureWithin(const Rectf& rect, float pad, float max_scale) const
 {
 	// Ignore empty texture
@@ -517,6 +585,9 @@ void draw2d::Context::drawTextureWithin(const Rectf& rect, float pad, float max_
 	drawRect({ rect.x1() + width * 0.5f, rect.y1() + height * 0.5f, x_dim * scale, y_dim * scale, true });
 }
 
+// -----------------------------------------------------------------------------
+// Draws HUD guide lines for the current view, based on the hud drawing options
+// -----------------------------------------------------------------------------
 void draw2d::Context::drawHud() const
 {
 	static unique_ptr<LineBuffer> lb_hud;
@@ -789,11 +860,16 @@ void draw2d::TextBox::draw(const Vec2f& pos, Context& dc)
 #endif
 }
 
+// -----------------------------------------------------------------------------
+//
+// draw2d Namespace Functions
+//
+// -----------------------------------------------------------------------------
 
 
-
-
-
+// -----------------------------------------------------------------------------
+// Returns the height of a line of text with the given [font] and [size]
+// -----------------------------------------------------------------------------
 float draw2d::lineHeight(Font font, int size)
 {
 	auto fdef = getFont(font);
@@ -806,6 +882,10 @@ float draw2d::lineHeight(Font font, int size)
 	return 0.0f;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the width and height of the given [text] with the given [font] and
+// [size]
+// -----------------------------------------------------------------------------
 Vec2f draw2d::textExtents(const string& text, Font font, int size)
 {
 	auto fdef = getFont(font);
@@ -822,6 +902,9 @@ Vec2f draw2d::textExtents(const string& text, Font font, int size)
 	return {};
 }
 
+// -----------------------------------------------------------------------------
+// Returns the default 2D shader, with or without [texture] support
+// -----------------------------------------------------------------------------
 const Shader& draw2d::defaultShader(bool textured)
 {
 	if (!shader_2d)
@@ -837,6 +920,10 @@ const Shader& draw2d::defaultShader(bool textured)
 	return textured ? *shader_2d : *shader_2d_notex;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a shader for drawing stippled lines, with the given [pattern] and
+// [factor]
+// -----------------------------------------------------------------------------
 const Shader& draw2d::lineStippleShader(uint16_t pattern, float factor)
 {
 	if (!shader_line_stipple)

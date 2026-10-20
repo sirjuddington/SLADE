@@ -390,6 +390,9 @@ gl::Info gl::sysInfo()
 	return info;
 }
 
+// -----------------------------------------------------------------------------
+// Creates a new OpenGL buffer and returns its ID
+// -----------------------------------------------------------------------------
 unsigned gl::createBuffer()
 {
 	if (!initialised)
@@ -400,17 +403,26 @@ unsigned gl::createBuffer()
 	return vbo;
 }
 
+// -----------------------------------------------------------------------------
+// Deletes the OpenGL buffer with the given [id]
+// -----------------------------------------------------------------------------
 void gl::deleteBuffer(unsigned id)
 {
 	if (initialised && id > 0)
 		glDeleteBuffers(1, &id);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the currently bound VBO ID
+// -----------------------------------------------------------------------------
 unsigned gl::currentVBO()
 {
 	return vbo_current;
 }
 
+// -----------------------------------------------------------------------------
+// Binds the VBO with the given [id]
+// -----------------------------------------------------------------------------
 void gl::bindVBO(unsigned id)
 {
 	if (!initialised)
@@ -420,6 +432,9 @@ void gl::bindVBO(unsigned id)
 	vbo_current = id;
 }
 
+// -----------------------------------------------------------------------------
+// Deletes the VBO with the given [id]
+// -----------------------------------------------------------------------------
 void gl::deleteVBO(unsigned id)
 {
 	if (!initialised || app::isExiting())
@@ -437,11 +452,17 @@ void gl::deleteVBO(unsigned id)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Returns the currently bound EBO ID
+// -----------------------------------------------------------------------------
 unsigned gl::currentEBO()
 {
 	return ebo_current;
 }
 
+// -----------------------------------------------------------------------------
+// Binds the EBO with the given [id]
+// -----------------------------------------------------------------------------
 void gl::bindEBO(unsigned id)
 {
 	if (!initialised)
@@ -451,6 +472,9 @@ void gl::bindEBO(unsigned id)
 	ebo_current = id;
 }
 
+// -----------------------------------------------------------------------------
+// Deletes the EBO with the given [id]
+// -----------------------------------------------------------------------------
 void gl::deleteEBO(unsigned id)
 {
 	if (!initialised || id == 0 || app::isExiting())
@@ -465,11 +489,17 @@ void gl::deleteEBO(unsigned id)
 	glDeleteBuffers(1, &id);
 }
 
+// -----------------------------------------------------------------------------
+// Returns the currently bound VAO ID
+// -----------------------------------------------------------------------------
 unsigned gl::currentVAO()
 {
 	return vao_current;
 }
 
+// -----------------------------------------------------------------------------
+// Creates a new VAO and returns its ID
+// -----------------------------------------------------------------------------
 unsigned gl::createVAO()
 {
 	if (!initialised)
@@ -480,6 +510,9 @@ unsigned gl::createVAO()
 	return vao;
 }
 
+// -----------------------------------------------------------------------------
+// Binds the VAO with the given [id]
+// -----------------------------------------------------------------------------
 void gl::bindVAO(unsigned id)
 {
 	if (!initialised || vao_current == id)
@@ -489,6 +522,9 @@ void gl::bindVAO(unsigned id)
 	vao_current = id;
 }
 
+// -----------------------------------------------------------------------------
+// Deletes the VAO with the given [id]
+// -----------------------------------------------------------------------------
 void gl::deleteVAO(unsigned id)
 {
 	if (!initialised || app::isExiting())
@@ -506,34 +542,57 @@ void gl::deleteVAO(unsigned id)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Resets the draw call count
+// -----------------------------------------------------------------------------
 void gl::resetDrawCallCount()
 {
 	drawcall_count = 0;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the current draw call count
+// -----------------------------------------------------------------------------
 unsigned gl::drawCallCount()
 {
 	return drawcall_count;
 }
 
+// -----------------------------------------------------------------------------
+// Calls glDrawArrays with the given [primitive], starting at [first] and
+// drawing [count] vertices
+// -----------------------------------------------------------------------------
 void gl::drawArrays(Primitive primitive, unsigned first, unsigned count)
 {
 	drawcall_count++;
 	glDrawArrays(static_cast<GLenum>(primitive), first, count);
 }
 
+// -----------------------------------------------------------------------------
+// Calls glDrawArraysInstanced with the given [primitive], starting at [first]
+// and drawing [count] vertices, [instance_count] times
+// -----------------------------------------------------------------------------
 void gl::drawArraysInstanced(Primitive primitive, unsigned first, unsigned count, unsigned instance_count)
 {
 	drawcall_count++;
 	glDrawArraysInstanced(static_cast<GLenum>(primitive), first, count, instance_count);
 }
 
+// -----------------------------------------------------------------------------
+// Calls glDrawElements with the given [primitive], drawing [count] elements of
+// the given [type], using the provided [indices]
+// -----------------------------------------------------------------------------
 void gl::drawElements(Primitive primitive, unsigned count, GLenum type, const void* indices)
 {
 	drawcall_count++;
 	glDrawElements(static_cast<GLenum>(primitive), count, type, indices);
 }
 
+// -----------------------------------------------------------------------------
+// Calls glDrawElementsInstanced with the given [primitive], drawing [count]
+// elements of the given [type], [instance_count] times, using the provided
+// [indices]
+// -----------------------------------------------------------------------------
 void gl::drawElementsInstanced(
 	Primitive   primitive,
 	unsigned    count,

@@ -155,11 +155,7 @@ void GfxCanvas::updateImage(bool hilight)
 
 	// If the image change isn't caused by drawing, resize drawing mask
 	if (!drawing_)
-	{
-		delete[] drawing_mask_;
-		drawing_mask_ = new bool[image_->width() * image_->height()];
-		memset(drawing_mask_, false, image_->width() * image_->height());
-	}
+		resetDrawingMask();
 
 	// Create wx image
 	auto img = wxgfx::createImageFromSImage(*image_, palette_.get());

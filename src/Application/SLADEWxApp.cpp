@@ -88,6 +88,11 @@ const string update_check_url{
 };
 } // namespace
 
+#ifdef __WXMSW__
+// Exception info for the current fatal exception (defined in wxWidgets, only valid inside OnFatalException)
+extern EXCEPTION_POINTERS* wxGlobalSEInformation;
+#endif
+
 CVAR(Bool, update_check, true, CVar::Flag::Save)
 CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
 
@@ -191,6 +196,49 @@ public:
 
 	wxConnectionBase* OnMakeConnection() override { return new MainAppFLConnection(); }
 };
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Returns a description of the current fatal exception (code + fault address).
+// Currently Windows only, returns an empty string on other platforms
+// -----------------------------------------------------------------------------
+string currentExceptionInfo()
+{
+#ifdef __WXMSW__
+	if (!wxGlobalSEInformation || !wxGlobalSEInformation->ExceptionRecord)
+		return {};
+
+	const auto rec  = wxGlobalSEInformation->ExceptionRecord;
+	auto       info = fmt::format(
+        "Exception: 0x{:08X} at address {:p}", static_cast<unsigned>(rec->ExceptionCode), rec->ExceptionAddress);
+
+	if (rec->ExceptionCode == EXCEPTION_ACCESS_VIOLATION || rec->ExceptionCode == EXCEPTION_IN_PAGE_ERROR)
+	{
+		if (rec->NumberParameters >= 2)
+		{
+			const char* op = rec->ExceptionInformation[0] == 0   ? "reading"
+							 : rec->ExceptionInformation[0] == 1 ? "writing"
+																 : "executing";
+			info += fmt::format(
+				" (access violation {} address 0x{:X})",
+				op,
+				static_cast<unsigned long long>(rec->ExceptionInformation[1]));
+		}
+	}
+
+	return info;
+#else
+	return {};
+#endif
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -361,6 +409,12 @@ int SLADEWxApp::OnExit()
 	auto retcode = wxApp::OnExit();
 	database::close();
 
+#if defined(_DEBUG) && defined(_MSC_VER)
+	// Disable the CRT leak dump on exit since it's completely useless in our
+	// case and just makes debug builds take ages to exit
+	_CrtSetDbgFlag(_CrtSetDbgFlag(_CRTDBG_REPORT_FLAG) & ~_CRTDBG_LEAK_CHECK_DF);
+#endif
+
 	return retcode;
 }
 
@@ -371,7 +425,8 @@ int SLADEWxApp::OnExit()
 void SLADEWxApp::OnFatalException()
 {
 #ifndef _DEBUG
-	dynamic_cast<ui::CrashReportDialog*>(crash_dialog_)->loadFromCpptrace(cpptrace::generate_trace());
+	dynamic_cast<ui::CrashReportDialog*>(crash_dialog_)
+		->loadFromCpptrace(cpptrace::generate_trace(), currentExceptionInfo());
 	crash_dialog_->CenterOnParent();
 	crash_dialog_->ShowModal();
 #endif //_DEBUG

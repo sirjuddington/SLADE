@@ -325,12 +325,21 @@ bool PatchTable::writePNAMES(ArchiveEntry* pnames) const
 }
 
 // -----------------------------------------------------------------------------
-// Clears all patch use count data
+// Clears patch usage data for [texture]. If [texture] is empty, clears all
+// usage data
 // -----------------------------------------------------------------------------
-void PatchTable::clearPatchUsage()
+void PatchTable::clearPatchUsage(string_view texture)
 {
-	for (auto& patch : patches_)
-		patch.used_in.clear();
+	if (texture.empty())
+	{
+		for (auto& patch : patches_)
+			patch.used_in.clear();
+	}
+	else
+	{
+		for (auto& patch : patches_)
+			patch.removeTextureUsage(texture);
+	}
 
 	// Announce
 	signals_.modified();

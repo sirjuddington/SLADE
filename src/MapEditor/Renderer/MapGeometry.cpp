@@ -55,6 +55,11 @@ using SurfaceType = map::SectorSurfaceType;
 using SectorPart  = map::SectorPart;
 
 
+// -----------------------------------------------------------------------------
+//
+// Structs
+//
+// -----------------------------------------------------------------------------
 namespace
 {
 struct SectorFlatsContext
@@ -81,6 +86,11 @@ struct FlatInfo
 } // namespace
 
 
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
 namespace slade::mapeditor
 {
 // -----------------------------------------------------------------------------
@@ -141,6 +151,9 @@ TexTransformInfo getSectorTextureTransformInfo(const MapSector& sector, bool cei
 	return info;
 }
 
+// -----------------------------------------------------------------------------
+// Adds the vertices for a [flat] to the given [context]
+// -----------------------------------------------------------------------------
 static void addFlatVertices(
 	SectorFlatsContext&               context,
 	const FlatInfo&                   flat,
@@ -188,6 +201,9 @@ static void addFlatVertices(
 	context.vertex_offset += context.sector_vertex_count;
 }
 
+// -----------------------------------------------------------------------------
+// Adds a flat to the given [context]
+// -----------------------------------------------------------------------------
 static void addFlat(SectorFlatsContext& context, FlatInfo& flat)
 {
 	// Get texture & info
@@ -230,6 +246,9 @@ static void addFlat(SectorFlatsContext& context, FlatInfo& flat)
 	context.flats.push_back(flat_3d);
 }
 
+// -----------------------------------------------------------------------------
+// Generates flats for the given [extrafloor]
+// -----------------------------------------------------------------------------
 static void generateExtraFloorFlats(SectorFlatsContext& context, FlatInfo& flat, const map::ExtraFloor& extrafloor)
 {
 	using EFFlags = map::ExtraFloor::Flags;

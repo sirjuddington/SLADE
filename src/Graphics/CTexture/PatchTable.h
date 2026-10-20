@@ -52,7 +52,7 @@ public:
 	bool loadPNAMES(const ArchiveEntry* pnames, Archive* parent = nullptr);
 	bool writePNAMES(ArchiveEntry* pnames) const;
 
-	void clearPatchUsage();
+	void clearPatchUsage(string_view texture = {});
 	void updatePatchUsage(const CTexture* tex);
 
 	// Signals

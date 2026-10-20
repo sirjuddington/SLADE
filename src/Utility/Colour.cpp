@@ -136,6 +136,9 @@ void rgbToLab(double red, double green, double blue, double& l, double& a, doubl
 #undef NORMALIZERGB
 #undef NORMALIZEXYZ
 
+// -----------------------------------------------------------------------------
+// Converts an HSL colour [h,s,l] to RGB colourspace [r,g,b]
+// -----------------------------------------------------------------------------
 void hslToRgb(double h, double s, double l, double& r, double& g, double& b)
 {
 	// No saturation means grey
@@ -248,6 +251,7 @@ void hslToRgb(double h, double s, double l, double& r, double& g, double& b)
 // ColRGBA Struct Functions
 //
 // -----------------------------------------------------------------------------
+
 
 // -----------------------------------------------------------------------------
 // Set the colour values
@@ -380,6 +384,7 @@ void ColRGBA::write(uint8_t* ptr) const
 //
 // -----------------------------------------------------------------------------
 
+
 // -----------------------------------------------------------------------------
 // Converts the colour from HSL to RGB colourspace
 // -----------------------------------------------------------------------------
@@ -404,6 +409,7 @@ ColRGBA ColHSL::asRGB() const
 // Colour Namespace Functions
 //
 // -----------------------------------------------------------------------------
+
 
 // -----------------------------------------------------------------------------
 // Returns a copy of [colour] as greyscale
@@ -437,6 +443,9 @@ ColLAB colour::rgbToLab(const ColRGBA& rgb)
 	return ret;
 }
 
+// -----------------------------------------------------------------------------
+// Returns [hsl] in RGB colourspace
+// -----------------------------------------------------------------------------
 ColRGBA colour::hslToRgb(const ColHSL& hsl)
 {
 	double dr, dg, db;
@@ -447,7 +456,6 @@ ColRGBA colour::hslToRgb(const ColHSL& hsl)
 			 static_cast<uint8_t>(dg * 255. + 0.499999999),
 			 static_cast<uint8_t>(db * 255. + 0.499999999) };
 }
-
 
 // -----------------------------------------------------------------------------
 // Returns a string representation of [colour], in the requested [format]
