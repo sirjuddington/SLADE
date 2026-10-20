@@ -6,7 +6,7 @@ class FileMonitor : public wxTimer
 {
 public:
 	FileMonitor(string_view filename, bool start = true);
-	~FileMonitor() override = default;
+	~FileMonitor() override;
 
 	wxProcess*    process() const { return process_.get(); }
 	const string& filename() const { return filename_; }

@@ -70,6 +70,21 @@ FileMonitor::FileMonitor(string_view filename, bool start) : filename_{ filename
 }
 
 // -----------------------------------------------------------------------------
+// FileMonitor class destructor
+// -----------------------------------------------------------------------------
+FileMonitor::~FileMonitor()
+{
+	// If the process is still running, wx will access the wxProcess when it
+	// exits, so stop it sending events to this monitor and let wx delete it
+	// instead
+	if (process_)
+	{
+		process_->Detach();
+		process_.release();
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Override of wxTimer::Notify, called each time the timer updates
 // -----------------------------------------------------------------------------
 void FileMonitor::Notify()
@@ -100,6 +115,11 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 		file_modified_ = modified;
 		fileModified();
 	}
+
+	// wx owns (and deletes) the wxProcess after OnTerminate returns, so it must
+	// not be destroyed along with this FileMonitor from within its own
+	// termination callback
+	process_.release();
 
 	// Delete this FileMonitor (its job is done)
 	delete this;
