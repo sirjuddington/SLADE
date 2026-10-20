@@ -12,7 +12,7 @@ public:
 	CrashReportDialog(wxWindow* parent);
 	~CrashReportDialog() override = default;
 
-	void loadFromCpptrace(const cpptrace::stacktrace& trace);
+	void loadFromCpptrace(const cpptrace::stacktrace& trace, const string& exception_info = {});
 
 private:
 	wxTextCtrl*      text_stack_;

@@ -263,7 +263,7 @@ CrashReportDialog::CrashReportDialog(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 // Loads crash report data from a cpptrace stacktrace
 // -----------------------------------------------------------------------------
-void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace)
+void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace, const string& exception_info)
 {
 	// SLADE info
 	if (global::sc_rev.empty())
@@ -280,6 +280,8 @@ void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace)
 	else
 		trace_ += fmt::format("Current action: {}", current_action);
 	trace_ += "\n";
+	if (!exception_info.empty())
+		trace_ += exception_info + "\n";
 
 	auto& j_info            = *j_info_;
 	j_info["type"]          = 0;
@@ -323,7 +325,7 @@ void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace)
 								  .symbols(cpptrace::formatter::symbol_mode::pretty)
 								  .snippets(true)
 								  .snippet_context(2);
-	j_info["stack-trace"] = formatter_detailed.format(trace);
+	j_info["stack-trace"] = (exception_info.empty() ? "" : exception_info + "\n") + formatter_detailed.format(trace);
 
 	// Last 10 log lines
 	trace_ += "\nLast Log Messages:\n";
