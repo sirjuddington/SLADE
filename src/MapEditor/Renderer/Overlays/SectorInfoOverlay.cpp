@@ -34,6 +34,7 @@
 #include "Main.h"
 #include "SectorInfoOverlay.h"
 #include "Game/Configuration.h"
+#include "General/ColourConfiguration.h"
 #include "Geometry/Rect.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
@@ -124,12 +125,12 @@ void SectorInfoOverlay::draw(gl::draw2d::Context& dc, float alpha)
 	auto  bottom    = dc.viewSize().y + height * alpha_inv * alpha_inv;
 
 	// Draw overlay background
-	dc.setColourFromConfig("map_overlay_background");
+	dc.setColourFromConfig(ccfg::ColourId::MapOverlayBackground);
 	dc.colour.a *= alpha;
 	dc.drawRect({ 0.0f, bottom - height, right, bottom });
 
 	// Draw info text lines
-	dc.setColourFromConfig("map_overlay_foreground");
+	dc.setColourFromConfig(ccfg::ColourId::MapOverlayForeground);
 	dc.colour.a *= alpha;
 	text_box_->draw({ 4.0f, bottom - height + 4.0f }, dc);
 
@@ -173,14 +174,14 @@ void SectorInfoOverlay::drawTexture(
 		dc.drawTextureWithin({ x, y - tex_box_size - line_height, x + tex_box_size, y - line_height }, 0.0f);
 
 		// Draw outline
-		dc.setColourFromConfig("map_overlay_foreground");
+		dc.setColourFromConfig(ccfg::ColourId::MapOverlayForeground);
 		dc.colour.a *= alpha;
 		dc.texture        = 0;
 		dc.line_thickness = 1.0f;
 		dc.drawRectOutline({ x, y - tex_box_size - line_height, x + tex_box_size, y - line_height });
 
 		// Set text colour
-		dc.setColourFromConfig("map_overlay_foreground");
+		dc.setColourFromConfig(ccfg::ColourId::MapOverlayForeground);
 		dc.colour.a *= alpha;
 	}
 
@@ -193,7 +194,7 @@ void SectorInfoOverlay::drawTexture(
 		dc.drawTextureWithin({ x, y - tex_box_size - line_height, x + tex_box_size, y - line_height }, 0.0f, 0.2f);
 
 		// Set colour to red (for text)
-		dc.setColourFromConfig("map_overlay_foreground");
+		dc.setColourFromConfig(ccfg::ColourId::MapOverlayForeground);
 		dc.colour.a *= alpha;
 		dc.colour = dc.colour.ampf(1.0f, 0.0f, 0.0f, 1.0f);
 	}

@@ -150,7 +150,7 @@ MapCanvas::MapCanvas(wxWindow* parent, MapEditContext* context) :
 // -----------------------------------------------------------------------------
 void MapCanvas::draw()
 {
-	setBackground(BGStyle::Colour, colourconfig::colour("map_background"));
+	setBackground(BGStyle::Colour, ccfg::colour(ccfg::ColourId::MapBackground));
 
 	context_->renderer().setUIScale(GetDPIScaleFactor());
 	context_->renderer().draw(HasFocus());

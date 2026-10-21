@@ -268,9 +268,9 @@ void draw2d::Context::scale(float x, float y)
 // -----------------------------------------------------------------------------
 // Sets the colour from a colourconfig definition
 // -----------------------------------------------------------------------------
-void draw2d::Context::setColourFromConfig(const string& def_name, float alpha, bool blend)
+void draw2d::Context::setColourFromConfig(ccfg::ColourId colour_id, float alpha, bool blend)
 {
-	auto def = colourconfig::colDef(def_name);
+	auto def = colourconfig::colDef(colour_id);
 	colour   = def.colour;
 	colour.a *= alpha;
 	if (blend)

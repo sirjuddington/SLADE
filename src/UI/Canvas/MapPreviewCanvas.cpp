@@ -66,6 +66,8 @@ MapPreviewCanvas::MapPreviewCanvas(wxWindow* parent, MapPreviewData* data) : Can
 // -----------------------------------------------------------------------------
 void MapPreviewCanvas::updateBuffer()
 {
+	using namespace colourconfig;
+
 	if (!data_)
 		return;
 
@@ -89,7 +91,7 @@ void MapPreviewCanvas::updateBuffer()
 	auto       gc = wxGraphicsContext::Create(dc);
 
 	// Background
-	gc->SetBrush(wxBrush(colourconfig::colour("map_view_background")));
+	gc->SetBrush(wxBrush(mapPreviewColour(ColourId::MapPreviewBackground)));
 	gc->DrawRectangle(0, 0, width, height);
 
 	// Build lines to draw via wxGraphicsContext
@@ -142,28 +144,28 @@ void MapPreviewCanvas::updateBuffer()
 	// 2-Sided lines
 	if (!lines_2s_v1.empty())
 	{
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(colourconfig::colour("map_view_line_2s"), line_width)));
+		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(mapPreviewColour(ColourId::MapPreviewLine2S), line_width)));
 		gc->StrokeLines(lines_2s_v1.size(), lines_2s_v1.data(), lines_2s_v2.data());
 	}
 
 	// 1-Sided lines
 	if (!lines_1s_v1.empty())
 	{
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(colourconfig::colour("map_view_line_1s"), line_width)));
+		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(mapPreviewColour(ColourId::MapPreviewLine1S), line_width)));
 		gc->StrokeLines(lines_1s_v1.size(), lines_1s_v1.data(), lines_1s_v2.data());
 	}
 
 	// Special lines
 	if (!lines_special_v1.empty())
 	{
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(colourconfig::colour("map_view_line_special"), line_width)));
+		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(mapPreviewColour(ColourId::MapPreviewLineSpecial), line_width)));
 		gc->StrokeLines(lines_special_v1.size(), lines_special_v1.data(), lines_special_v2.data());
 	}
 
 	// Macro lines
 	if (!lines_macro_v1.empty())
 	{
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(colourconfig::colour("map_view_line_macro"), line_width)));
+		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(mapPreviewColour(ColourId::MapPreviewLineMacro), line_width)));
 		gc->StrokeLines(lines_macro_v1.size(), lines_macro_v1.data(), lines_macro_v2.data());
 	}
 
@@ -173,8 +175,8 @@ void MapPreviewCanvas::updateBuffer()
 		auto thing_size     = glm::clamp(32.0 * scale, 6.0, 32.0);
 		auto thing_halfsize = thing_size * 0.5;
 
-		gc->SetBrush(wxBrush(colourconfig::colour("map_view_thing")));
-		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(colourconfig::colour("map_view_background"), 1)));
+		gc->SetBrush(wxBrush(mapPreviewColour(ColourId::MapPreviewThing)));
+		gc->SetPen(gc->CreatePen(wxGraphicsPenInfo(mapPreviewColour(ColourId::MapPreviewBackground), 1)));
 		for (const auto& thing : data_->things)
 		{
 			auto x = mid_x + (thing.x - map_mid.x) * scale;
@@ -219,7 +221,7 @@ void MapPreviewCanvas::onPaint(wxPaintEvent& e)
 		dc.DrawBitmap(buffer_, 0, 0);
 	else
 	{
-		dc.SetBrush(wxBrush(colourconfig::colour("map_view_background")));
+		dc.SetBrush(wxBrush(ccfg::mapPreviewColour(ccfg::ColourId::MapPreviewBackground)));
 		dc.DrawRectangle({ 0, 0 }, GetSize());
 	}
 }

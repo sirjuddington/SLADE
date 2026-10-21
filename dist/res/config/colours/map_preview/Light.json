@@ -1,0 +1,22 @@
+{
+  "colours": {
+    "background": {
+      "colour": "rgb(150, 150, 150)"
+    },
+    "line_1s": {
+      "colour": "rgb(0, 0, 0)"
+    },
+    "line_2s": {
+      "colour": "rgb(90, 90, 90)"
+    },
+    "line_macro": {
+      "colour": "rgb(145, 47, 0)"
+    },
+    "line_special": {
+      "colour": "rgb(180, 0, 180)"
+    },
+    "thing": {
+      "colour": "rgb(200, 200, 200)"
+    }
+  }
+}

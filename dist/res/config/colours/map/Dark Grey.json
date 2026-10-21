@@ -1,0 +1,100 @@
+{
+  "colours": {
+    "3d_crosshair": {
+      "blend_additive": true,
+      "colour": "rgb(180, 190, 255)"
+    },
+    "3d_highlight": {
+      "colour": "rgba(0, 180, 255, 180)"
+    },
+    "3d_overlay_bg": {
+      "colour": "rgba(40, 40, 40, 180)"
+    },
+    "3d_overlay_fg": {
+      "colour": "rgb(255, 200, 100)"
+    },
+    "3d_selection": {
+      "colour": "rgba(50, 200, 100, 180)"
+    },
+    "grid_64": {
+      "blend_additive": true,
+      "colour": "rgba(255, 255, 255, 10)"
+    },
+    "background": {
+      "colour": "rgb(25, 25, 25)"
+    },
+    "editor_message": {
+      "colour": "rgb(255, 200, 100)"
+    },
+    "editor_message_outline": {
+      "colour": "rgb(0, 0, 0)"
+    },
+    "grid": {
+      "colour": "rgba(70, 70, 70, 60)"
+    },
+    "highlight": {
+      "blend_additive": true,
+      "colour": "rgba(0, 180, 255, 180)"
+    },
+    "line_invalid": {
+      "colour": "rgb(255, 0, 0)"
+    },
+    "line_normal": {
+      "colour": "rgb(255, 255, 255)"
+    },
+    "line_special": {
+      "colour": "rgb(180, 255, 30)"
+    },
+    "linedraw": {
+      "colour": "rgb(0, 150, 50)"
+    },
+    "moving": {
+      "blend_additive": true,
+      "colour": "rgba(200, 50, 50, 180)"
+    },
+    "object_edit": {
+      "blend_additive": true,
+      "colour": "rgba(220, 140, 0, 170)"
+    },
+    "overlay_bg": {
+      "colour": "rgba(40, 40, 40, 180)"
+    },
+    "overlay_fg": {
+      "colour": "rgb(255, 200, 100)"
+    },
+    "selbox_fill": {
+      "blend_additive": true,
+      "colour": "rgba(50, 200, 100, 80)"
+    },
+    "selbox_outline": {
+      "blend_additive": true,
+      "colour": "rgba(50, 200, 100, 200)"
+    },
+    "selection": {
+      "blend_additive": true,
+      "colour": "rgba(50, 200, 100, 180)"
+    },
+    "tagged": {
+      "blend_additive": true,
+      "colour": "rgba(180, 255, 30, 80)"
+    },
+    "tagging": {
+      "blend_additive": true,
+      "colour": "rgba(180, 255, 30, 80)"
+    },
+    "thing_path": {
+      "colour": "rgb(34, 255, 255)"
+    },
+    "thing_path_dragon": {
+      "colour": "rgb(255, 34, 34)"
+    },
+    "vertex": {
+      "colour": "rgb(220, 160, 80)"
+    }
+  },
+  "theme": {
+    "flat_alpha": 1.0,
+    "line_hilight_width": 3.0,
+    "line_selection_width": 3.0
+  }
+}

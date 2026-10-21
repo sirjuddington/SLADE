@@ -27,6 +27,7 @@ struct ColLAB
 namespace colour
 {
 	ColRGBA greyscale(const ColRGBA& colour);
+	ColRGBA blend(const ColRGBA& c1, const ColRGBA& c2, double factor);
 
 	// Colourspace conversion
 	ColHSL  rgbToHsl(const ColRGBA& rgb);

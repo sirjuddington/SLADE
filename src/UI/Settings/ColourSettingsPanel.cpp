@@ -61,7 +61,7 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 
 	// Configurations list
 	vector<string> cnames;
-	colourconfig::putConfigurationNames(cnames);
+	colourconfig::putConfigurationNames(cnames, "map");
 	choice_configs_ = new wxChoice(this, -1);
 	for (const auto& cname : cnames)
 		choice_configs_->Append(wxString::FromUTF8(cname));
@@ -86,7 +86,7 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 		[&](wxCommandEvent&)
 		{
 			auto config = choice_configs_->GetStringSelection().utf8_string();
-			colourconfig::readConfiguration(config);
+			colourconfig::readConfiguration(config, "map");
 			refreshPropGrid();
 			mapeditor::forceRefresh(true);
 		});
@@ -111,35 +111,30 @@ void ColourSettingsPanel::refreshPropGrid() const
 	pg_colours_->Clear();
 
 	// Get (sorted) list of colours
-	vector<string> colours;
-	colourconfig::putColourNames(colours);
-	std::sort(colours.begin(), colours.end());
+	auto colours = ccfg::allColours();
 
 	// Add colours to property grid
-	for (const auto& name : colours)
-	{
-		// Get colour definition
-		auto cdef = colourconfig::colDef(name);
-
-		// Get/create group
-		auto group = pg_colours_->GetProperty(wxString::FromUTF8(cdef.group));
-		if (!group)
-			group = pg_colours_->Append(new wxPropertyCategory(wxString::FromUTF8(cdef.group)));
-
-		// Add colour
-		auto colour = pg_colours_->AppendIn(
-			group, new wxColourProperty(wxString::FromUTF8(cdef.name), wxString::FromUTF8(name), cdef.colour));
-
-		// Add extra colour properties
-		auto opacity = pg_colours_->AppendIn(
-			colour, new wxIntProperty(wxS("Opacity (0-255)"), wxS("alpha"), cdef.colour.a));
-		pg_colours_->AppendIn(colour, new wxBoolProperty(wxS("Additive"), wxS("additive"), cdef.blend_additive));
-		pg_colours_->Collapse(colour);
-
-		// Set opacity limits
-		opacity->SetAttribute(wxS("Max"), 255);
-		opacity->SetAttribute(wxS("Min"), 0);
-	}
+	// for (const auto& cdef : colours)
+	// {
+	// 	// Get/create group
+	// 	auto group = pg_colours_->GetProperty(wxString::FromUTF8(cdef.group));
+	// 	if (!group)
+	// 		group = pg_colours_->Append(new wxPropertyCategory(wxString::FromUTF8(cdef.group)));
+	//
+	// 	// Add colour
+	// 	auto colour = pg_colours_->AppendIn(
+	// 		group, new wxColourProperty(wxString::FromUTF8(cdef.name), wxString::FromUTF8(cdef.name), cdef.colour));
+	//
+	// 	// Add extra colour properties
+	// 	auto opacity = pg_colours_->AppendIn(
+	// 		colour, new wxIntProperty(wxS("Opacity (0-255)"), wxS("alpha"), cdef.colour.a));
+	// 	pg_colours_->AppendIn(colour, new wxBoolProperty(wxS("Additive"), wxS("additive"), cdef.blend_additive));
+	// 	pg_colours_->Collapse(colour);
+	//
+	// 	// Set opacity limits
+	// 	opacity->SetAttribute(wxS("Max"), 255);
+	// 	opacity->SetAttribute(wxS("Min"), 0);
+	// }
 
 	// Add theme options to property grid
 	auto g_theme = pg_colours_->Append(new wxPropertyCategory(wxS("Map Editor Theme")));
@@ -163,50 +158,49 @@ void ColourSettingsPanel::refreshPropGrid() const
 void ColourSettingsPanel::applySettings()
 {
 	// Get list of all colours
-	vector<string> colours;
-	colourconfig::putColourNames(colours);
+	auto colours = ccfg::allColours();
 
 	for (unsigned a = 0; a < colours.size(); a++)
 	{
 		// Get colour definition
-		auto cdef = colourconfig::colDef(colours[a]);
+		auto cdef = colours[a];
 
-		auto cdef_path = cdef.group;
-		cdef_path += ".";
-		cdef_path += colours[a];
-
-		// Get properties from grid
-		auto p_alpha = dynamic_cast<wxIntProperty*>(pg_colours_->GetProperty(wxString::FromUTF8(cdef_path + ".alpha")));
-		auto p_add   = dynamic_cast<wxBoolProperty*>(
-            pg_colours_->GetProperty(wxString::FromUTF8(cdef_path + ".additive")));
-
-		if (p_alpha && p_add)
-		{
-			// Getting the colour out of a wxColourProperty is retarded
-			auto     v = pg_colours_->GetPropertyValue(wxString::FromUTF8(cdef_path));
-			wxColour col;
-			col << v; // wut?
-
-			// Get alpha
-			int alpha = p_alpha->GetValue().GetInteger();
-			if (alpha > 255)
-				a = 255;
-			if (alpha < 0)
-				a = 0;
-
-			// Get blend
-			int blend = 0;
-			if (p_add->GetValue().GetBool())
-				blend = 1;
-
-			// Set the colour
-			colourconfig::setColour(colours[a], col.Red(), col.Green(), col.Blue(), alpha, blend);
-
-			// Clear modified status
-			pg_colours_->GetProperty(wxString::FromUTF8(cdef_path))->SetModifiedStatus(false);
-			p_alpha->SetModifiedStatus(false);
-			p_add->SetModifiedStatus(false);
-		}
+		// auto cdef_path = cdef.group;
+		// cdef_path += ".";
+		// cdef_path += cdef.name;
+		//
+		// // Get properties from grid
+		// auto p_alpha = dynamic_cast<wxIntProperty*>(pg_colours_->GetProperty(wxString::FromUTF8(cdef_path +
+		// ".alpha"))); auto p_add   = dynamic_cast<wxBoolProperty*>(
+		//           pg_colours_->GetProperty(wxString::FromUTF8(cdef_path + ".additive")));
+		//
+		// if (p_alpha && p_add)
+		// {
+		// 	// Getting the colour out of a wxColourProperty is retarded
+		// 	auto     v = pg_colours_->GetPropertyValue(wxString::FromUTF8(cdef_path));
+		// 	wxColour col;
+		// 	col << v; // wut?
+		//
+		// 	// Get alpha
+		// 	int alpha = p_alpha->GetValue().GetInteger();
+		// 	if (alpha > 255)
+		// 		a = 255;
+		// 	if (alpha < 0)
+		// 		a = 0;
+		//
+		// 	// Get blend
+		// 	int blend = 0;
+		// 	if (p_add->GetValue().GetBool())
+		// 		blend = 1;
+		//
+		// 	// TODO: Set the colour
+		// 	// colourconfig::setColour(colours[a], {}, col.Red(), col.Green(), col.Blue(), alpha, blend);
+		//
+		// 	// Clear modified status
+		// 	pg_colours_->GetProperty(wxString::FromUTF8(cdef_path))->SetModifiedStatus(false);
+		// 	p_alpha->SetModifiedStatus(false);
+		// 	p_add->SetModifiedStatus(false);
+		// }
 	}
 
 	colourconfig::setLineHilightWidth(pg_colours_->GetProperty(wxS("line_hilight_width"))->GetValue());

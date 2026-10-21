@@ -42,6 +42,8 @@
 #include "SLADEMap/MapFormat/Doom32XMapFormat.h"
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
+#include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 #include "Utility/Tokenizer.h"
 
 using namespace slade;
@@ -320,6 +322,7 @@ bool readThings(MapPreviewData& data, ArchiveEntry* map_head, const ArchiveEntry
 // MapPreviewData struct functions
 //
 // -----------------------------------------------------------------------------
+
 
 // -----------------------------------------------------------------------------
 // Opens a map from a MapDesc
@@ -659,11 +662,11 @@ bool slade::createMapImage(const MapPreviewData& data, const string& filename, i
 		height = data.bounds.height() / abs(height);
 
 	// Setup colours
-	auto col_save_background   = colourconfig::colour("map_image_background");
-	auto col_save_line_1s      = colourconfig::colour("map_image_line_1s");
-	auto col_save_line_2s      = colourconfig::colour("map_image_line_2s");
-	auto col_save_line_special = colourconfig::colour("map_image_line_special");
-	auto col_save_line_macro   = colourconfig::colour("map_image_line_macro");
+	auto col_save_background   = ccfg::colour(ccfg::ColourId::MapImageBackground);
+	auto col_save_line_1s      = ccfg::colour(ccfg::ColourId::MapImageLine1S);
+	auto col_save_line_2s      = ccfg::colour(ccfg::ColourId::MapImageLine2S);
+	auto col_save_line_special = ccfg::colour(ccfg::ColourId::MapImageLineSpecial);
+	auto col_save_line_macro   = ccfg::colour(ccfg::ColourId::MapImageLineMacro);
 
 	// Determine mid / scale
 	auto mid_x   = width / 2;
