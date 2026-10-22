@@ -299,6 +299,10 @@ void SLADEMap::clearMap()
 	// Clear map objects
 	data_.clear();
 
+	// Discard any pending bulk operation
+	current_bulk_operation_.reset();
+	bulk_operation_depth_ = 0;
+
 	// Clear MapSpecials
 	map_specials_ = std::make_unique<map::MapSpecials>(*this);
 
@@ -1744,11 +1748,15 @@ void SLADEMap::endBulkOperation()
 
 	if (bulk_operation_depth_ == 0)
 	{
-		// If this is the end of the outermost bulk operation, finish it
-		signals_.object_created(current_bulk_operation_->created);
-		signals_.object_modified(current_bulk_operation_->modified);
-		signals_.object_deleted(current_bulk_operation_->deleted);
+		// Detach the operation before emitting so that handlers which modify
+		// objects or start/end bulk operations don't touch the vectors being
+		// emitted here
+		auto op = std::move(current_bulk_operation_);
 		current_bulk_operation_.reset();
+
+		signals_.object_created(op->created);
+		signals_.object_modified(op->modified);
+		signals_.object_deleted(op->deleted);
 	}
 }
 

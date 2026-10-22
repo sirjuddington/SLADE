@@ -197,6 +197,7 @@ private:
 	// Undo/Redo stuff
 	unique_ptr<UndoManager> undo_manager_;
 	unique_ptr<UndoStep>    us_create_delete_;
+	UndoManager*            undo_record_manager_ = nullptr; // Manager that began the current undo record
 
 	// Editor state
 	Mode                      edit_mode_;
