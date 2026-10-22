@@ -838,7 +838,7 @@ void Edit3D::toggleUnpegged(bool lower) const
 
 	// Begin undo level
 	string undo_type = lower ? "Toggle Lower Unpegged" : "Toggle Upper Unpegged";
-	undo_manager_->beginRecord(undo_type);
+	context_->beginUndoRecord(undo_type);
 
 	// Go through items
 	vector<MapLine*> processed_lines;
@@ -872,7 +872,7 @@ void Edit3D::toggleUnpegged(bool lower) const
 	}
 
 	// End undo level
-	undo_manager_->endRecord(true);
+	context_->endUndoRecord(true);
 
 	// Editor message
 	if (lower)
@@ -965,7 +965,7 @@ void Edit3D::paste(CopyType type) const
 	string ptype = "Paste Properties";
 	if (type == CopyType::TexType)
 		ptype = "Paste Texture/Type";
-	undo_manager_->beginRecord(ptype);
+	context_->beginUndoRecord(ptype);
 
 	// Go through items
 	auto& selection = context_->selection();
@@ -974,8 +974,6 @@ void Edit3D::paste(CopyType type) const
 		// Wall
 		if (auto side = item.asSide(context_->map()))
 		{
-			undo_manager_->recordUndoStep(std::make_unique<PropertyChangeUS>(side));
-
 			// Upper wall
 			if (item.type == ItemType::WallTop)
 			{
@@ -1004,8 +1002,6 @@ void Edit3D::paste(CopyType type) const
 		// Flat
 		else if (auto sector = item.asSector(context_->map()))
 		{
-			undo_manager_->recordUndoStep(std::make_unique<PropertyChangeUS>(sector));
-
 			// Floor
 			if (item.type == ItemType::Floor)
 			{
@@ -1028,8 +1024,6 @@ void Edit3D::paste(CopyType type) const
 		{
 			if (auto thing = item.asThing(context_->map()))
 			{
-				undo_manager_->recordUndoStep(std::make_unique<PropertyChangeUS>(thing));
-
 				// Type
 				if (type == CopyType::TexType)
 					thing->setType(copy_thing_->type());
@@ -1046,11 +1040,12 @@ void Edit3D::paste(CopyType type) const
 			context_->addEditorMessage("Pasted Texture");
 	}
 
-	undo_manager_->endRecord(true);
+	context_->endUndoRecord(true);
 }
 
 // -----------------------------------------------------------------------------
-// Pastes previously copied wall/flat/thing info to selection and ad
+// Pastes previously copied wall/flat info to selection and all adjacent
+// walls/flats
 // -----------------------------------------------------------------------------
 void Edit3D::floodFill(CopyType type) const
 {
@@ -1082,7 +1077,7 @@ void Edit3D::floodFill(CopyType type) const
 
 	// Begin undo step
 	string ptype = "Floodfill textures";
-	undo_manager_->beginRecord(ptype);
+	context_->beginUndoRecord(ptype);
 
 	// Go through items
 	for (auto& item : items)
@@ -1090,8 +1085,6 @@ void Edit3D::floodFill(CopyType type) const
 		// Wall
 		if (auto side = item.asSide(context_->map()))
 		{
-			undo_manager_->recordUndoStep(std::make_unique<PropertyChangeUS>(side));
-
 			// Upper wall
 			if (item.type == ItemType::WallTop)
 			{
@@ -1120,8 +1113,6 @@ void Edit3D::floodFill(CopyType type) const
 		// Flat
 		else if (auto sector = item.asSector(context_->map()))
 		{
-			undo_manager_->recordUndoStep(std::make_unique<PropertyChangeUS>(sector));
-
 			// Floor
 			if (item.type == ItemType::Floor)
 			{
@@ -1146,7 +1137,7 @@ void Edit3D::floodFill(CopyType type) const
 		context_->addEditorMessage("Floodfilled Texture");
 	}
 
-	undo_manager_->endRecord(true);
+	context_->endUndoRecord(true);
 }
 
 // -----------------------------------------------------------------------------

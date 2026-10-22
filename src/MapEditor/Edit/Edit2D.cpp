@@ -257,13 +257,10 @@ void Edit2D::flipLines(bool sides) const
 		return;
 
 	// Go through list
-	context_->undoManager()->beginRecord("Flip Line");
+	context_->beginUndoRecord("Flip Line", true, false, false);
 	for (auto& line : lines)
-	{
-		context_->undoManager()->recordUndoStep(std::make_unique<PropertyChangeUS>(line));
 		line->flip(sides);
-	}
-	context_->undoManager()->endRecord(true);
+	context_->endUndoRecord(true);
 
 	// Update display
 	context_->updateDisplay();

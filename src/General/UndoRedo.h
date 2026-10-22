@@ -49,7 +49,7 @@ public:
 	unsigned   nUndoLevels() const { return undo_levels_.size(); }
 	UndoLevel* undoLevel(unsigned index) const { return undo_levels_[index].get(); }
 
-	void   beginRecord(string_view name);
+	bool   beginRecord(string_view name);
 	void   endRecord(bool success);
 	bool   currentlyRecording() const;
 	bool   recordUndoStep(unique_ptr<UndoStep> step) const;

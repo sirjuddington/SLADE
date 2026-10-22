@@ -672,7 +672,8 @@ void MapEditContext::clearMap()
 
 	// Clear undo manager
 	undo_manager_->clear();
-	last_undo_level_ = "";
+	undo_record_manager_ = nullptr;
+	last_undo_level_     = "";
 
 	// Clear other data
 	updateTagged();
@@ -1679,12 +1680,15 @@ void MapEditContext::beginUndoRecord(string_view name, bool mod, bool create, bo
 	UndoManager* manager = (edit_mode_ == Mode::Visual) ? edit_3d_->undoManager() : undo_manager_.get();
 	if (manager->currentlyRecording())
 		return;
-	undo_modified_ = mod;
-	undo_deleted_  = del;
-	undo_created_  = create;
 
 	// Begin recording
-	manager->beginRecord(name);
+	if (!manager->beginRecord(name))
+		return; // Abort if the manager didn't begin recording
+
+	undo_modified_       = mod;
+	undo_deleted_        = del;
+	undo_created_        = create;
+	undo_record_manager_ = manager;
 
 	// Init map/objects for recording
 	map_->beginBulkOperation();
@@ -1720,27 +1724,35 @@ void MapEditContext::beginUndoRecordLocked(string_view name, bool mod, bool crea
 // -----------------------------------------------------------------------------
 bool MapEditContext::endUndoRecord(bool success)
 {
-	auto manager = (edit_mode_ == Mode::Visual) ? edit_3d_->undoManager() : undo_manager_.get();
+	// Use the manager that began the recording
+	auto manager = undo_record_manager_;
 
 	bool recorded = false;
-	if (manager->currentlyRecording())
+	if (manager)
 	{
-		// Record necessary undo steps
-		MapObject::endPropBackup();
-		bool modified        = false;
-		bool created_deleted = false;
-		if (undo_modified_)
-			modified = manager->recordUndoStep(std::make_unique<MultiMapObjectPropertyChangeUS>());
-		if (undo_created_ || undo_deleted_)
+		undo_record_manager_ = nullptr;
+
+		if (manager->currentlyRecording())
 		{
-			auto ustep = dynamic_cast<MapObjectCreateDeleteUS*>(us_create_delete_.get());
-			ustep->checkChanges();
-			created_deleted = manager->recordUndoStep(std::move(us_create_delete_));
+			// Record necessary undo steps
+			MapObject::endPropBackup();
+			bool modified        = false;
+			bool created_deleted = false;
+			if (undo_modified_)
+				modified = manager->recordUndoStep(std::make_unique<MultiMapObjectPropertyChangeUS>());
+			if (undo_created_ || undo_deleted_)
+			{
+				auto ustep = dynamic_cast<MapObjectCreateDeleteUS*>(us_create_delete_.get());
+				ustep->checkChanges();
+				created_deleted = manager->recordUndoStep(std::move(us_create_delete_));
+			}
+
+			// End recording
+			recorded = success && (modified || created_deleted);
+			manager->endRecord(success && (modified || created_deleted));
 		}
 
-		// End recording
-		recorded = success && (modified || created_deleted);
-		manager->endRecord(success && (modified || created_deleted));
+		// Always end the bulk operation started in beginUndoRecord
 		map_->endBulkOperation();
 	}
 	updateThingLists();

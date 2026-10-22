@@ -147,11 +147,11 @@ void UndoLevel::createMerged(const vector<unique_ptr<UndoLevel>>& levels)
 // -----------------------------------------------------------------------------
 // Begins 'recording' a new undo level
 // -----------------------------------------------------------------------------
-void UndoManager::beginRecord(string_view name)
+bool UndoManager::beginRecord(string_view name)
 {
 	// Can't if currently in an undo/redo operation
 	if (undo_running_)
-		return;
+		return false;
 
 	// Set this as the current undo manager
 	current_undo_manager = this;
@@ -163,6 +163,8 @@ void UndoManager::beginRecord(string_view name)
 	// Begin new UndoLevel
 	// log::info(1, "Recording undo level \"%s\"", name);
 	current_level_ = std::make_unique<UndoLevel>(name);
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
