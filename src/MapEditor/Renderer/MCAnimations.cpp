@@ -103,11 +103,11 @@ void MCASelboxFader::draw(gl::draw2d::Context& dc)
 	// Outline
 	dc.texture        = 0;
 	dc.line_thickness = 2.0f;
-	dc.setColourFromConfig(ccfg::ColourId::MapSelBoxOutline, fade_);
+	dc.setColourFromConfig(ccfg::MapEditor::SelBoxOutline, fade_);
 	dc.drawRectOutline({ tl_, br_ });
 
 	// Fill
-	dc.setColourFromConfig(ccfg::ColourId::MapSelBoxFill, fade_);
+	dc.setColourFromConfig(ccfg::MapEditor::SelBoxFill, fade_);
 	dc.drawRect({ tl_, br_ });
 }
 
@@ -181,7 +181,7 @@ void MCAThingSelection::draw(gl::draw2d::Context& dc)
 	}
 	else
 	{
-		const auto& cdef = colourconfig::colDef(ccfg::ColourId::MapSelection);
+		const auto& cdef = colourconfig::colDef(ccfg::MapEditor::Selection);
 		buffer_->setColour(cdef.colour.ampf(1.0f, 1.0f, 1.0f, map2d_thing_overlay_square ? fade_ * 0.5f : fade_));
 		gl::setBlend(cdef.blendMode());
 	}
@@ -267,7 +267,7 @@ void MCALineSelection::draw(gl::draw2d::Context& dc)
 		dc.blend = gl::Blend::Additive;
 	}
 	else
-		dc.setColourFromConfig(ccfg::ColourId::MapSelection, fade_);
+		dc.setColourFromConfig(ccfg::MapEditor::Selection, fade_);
 
 	// Draw lines
 	dc.drawLines(lines_);
@@ -325,7 +325,7 @@ void MCAVertexSelection::draw(gl::draw2d::Context& dc)
 		dc.blend = gl::Blend::Additive;
 	}
 	else
-		dc.setColourFromConfig(ccfg::ColourId::MapSelection, fade_);
+		dc.setColourFromConfig(ccfg::MapEditor::Selection, fade_);
 
 	dc.texture            = MapRenderer2D::vertexTexture(!select_);
 	dc.pointsprite_type   = gl::PointSpriteType::Textured;
@@ -364,7 +364,7 @@ MCASectorSelection::MCASectorSelection(long start, const vector<MapSector*>& sec
 	}
 	else
 	{
-		const auto& cdef = colourconfig::colDef(ccfg::ColourId::MapSelection);
+		const auto& cdef = colourconfig::colDef(ccfg::MapEditor::Selection);
 		colour_          = cdef.colour.ampf(1.0f, 1.0f, 1.0f, 0.2f);
 		blend_           = cdef.blendMode();
 	}
@@ -432,7 +432,7 @@ MCA3dSelection::MCA3dSelection(const vector<Item>& items, const MapRenderer3D& r
 	}
 	else
 	{
-		const auto& def = colourconfig::colDef(ccfg::ColourId::MapSelection);
+		const auto& def = colourconfig::colDef(ccfg::MapEditor::Selection);
 		additive_       = def.blendMode() == gl::Blend::Additive;
 		colour_         = def.colour;
 	}

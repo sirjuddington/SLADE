@@ -128,7 +128,7 @@ void MapRenderer2D::renderLineHilight(gl::draw2d::Context& dc, int index, float 
 	// Render line hilight (+ direction tab)
 	auto mid = line->getPoint(MapObject::Point::Mid);
 	auto tab = line->dirTabPoint();
-	dc.setColourFromConfig(ccfg::ColourId::MapHighlight, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Highlight, fade);
 	dc.line_thickness = map2d_line_width * (colourconfig::lineHilightWidth() * fade);
 	dc.drawLines({ { line->start(), line->end() }, { mid, tab } });
 }
@@ -160,7 +160,7 @@ void MapRenderer2D::renderLineSelection(gl::draw2d::Context& dc, const ItemSelec
 	}
 
 	// Render lines
-	dc.setColourFromConfig(ccfg::ColourId::MapSelection, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Selection, fade);
 	dc.line_thickness = map2d_line_width * colourconfig::lineSelectionWidth();
 	dc.drawLines(lines);
 }
@@ -196,7 +196,7 @@ void MapRenderer2D::renderTaggedLines(gl::draw2d::Context& dc, const vector<MapL
 	}
 
 	// Render tagged lines
-	dc.setColourFromConfig(ccfg::ColourId::MapTagged, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Tagged, fade);
 	dc.line_thickness = map2d_line_width * colourconfig::lineHilightWidth();
 	dc.drawLines(r_lines);
 
@@ -238,7 +238,7 @@ void MapRenderer2D::renderTaggingLines(gl::draw2d::Context& dc, const vector<Map
 	}
 
 	// Render tagging lines
-	dc.setColourFromConfig(ccfg::ColourId::MapTagged, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Tagged, fade);
 	dc.line_thickness = map2d_line_width * colourconfig::lineHilightWidth();
 	dc.drawLines(r_lines);
 
@@ -310,11 +310,11 @@ ColRGBA MapRenderer2D::lineColour(const MapLine* line, bool ignore_filter) const
 	{
 		// Check for special line
 		if (line->special() > 0)
-			col.set(ccfg::colour(ccfg::ColourId::MapLineSpecial));
+			col.set(ccfg::colour(ccfg::MapEditor::LineSpecial));
 		else if (line->s1())
-			col.set(ccfg::colour(ccfg::ColourId::MapLineNormal));
+			col.set(ccfg::colour(ccfg::MapEditor::LineNormal));
 		else
-			col.set(ccfg::colour(ccfg::ColourId::MapLineInvalid));
+			col.set(ccfg::colour(ccfg::MapEditor::LineInvalid));
 
 		// Check for two-sided line
 		if (line->s2())

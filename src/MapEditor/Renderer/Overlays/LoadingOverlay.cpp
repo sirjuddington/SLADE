@@ -81,7 +81,7 @@ void LoadingOverlay::draw(gl::draw2d::Context& dc, float fade)
 	auto view_size = dc.viewSize();
 
 	// Background
-	dc.setColourFromConfig(ccfg::ColourId::MapOverlayBackground, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayBackground, fade);
 	dc.drawRect({ 0.0f, 0.0f, view_size.x, view_size.y });
 
 	// Message
@@ -89,7 +89,7 @@ void LoadingOverlay::draw(gl::draw2d::Context& dc, float fade)
 	dc.text_size      = 36;
 	dc.text_alignment = gl::draw2d::Align::Center;
 	dc.text_style     = gl::draw2d::TextStyle::DropShadow;
-	dc.setColourFromConfig(ccfg::ColourId::MapOverlayForeground, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground, fade);
 
 	auto line_height = dc.textLineHeight();
 	dc.drawText(message_, { view_size.x * 0.5f, view_size.y * 0.5f - line_height * 0.5f });

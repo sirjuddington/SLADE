@@ -99,12 +99,12 @@ InterfaceSettingsPanel::InterfaceSettingsPanel(wxWindow* parent) : SettingsPanel
 
 	auto tabs       = STabCtrl::createControl(this);
 	settings_table_ = new SettingsTable(tabs, true, "Appearance");
-	colour_panel_   = new ColourSettingsPanel(this);
+	colour_panel_   = new ColourSettingsPanel(tabs);
 
 	setupInterfaceSettingsTable();
 
 	tabs->AddPage(settings_table_, wxS("Interface"));
-	tabs->AddPage(wxutil::createPadPanel(tabs, colour_panel_, padLarge()), wxS("Colours && Theme"));
+	tabs->AddPage(colour_panel_, wxS("Colours && Theme"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 

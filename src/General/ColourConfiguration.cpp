@@ -56,9 +56,13 @@ typedef std::map<string, Colour> ColourHashMap;
 double         line_hilight_width   = 3.0;
 double         line_selection_width = 4.0;
 double         flat_alpha           = 1.0;
-vector<Colour> cc_colours;
+vector<Colour> cols_map_preview;
+vector<Colour> cols_map_image;
+vector<Colour> cols_map_editor;
 } // namespace slade::colourconfig
-CVAR(Bool, map_view_sys_theme, true, CVar::Flag::Save)
+CVAR(String, ccfg_map_preview, "", CVar::Flag::Save)
+CVAR(String, ccfg_map_image, "", CVar::Flag::Save)
+CVAR(String, ccfg_map_editor, "", CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -99,9 +103,20 @@ void from_json(const json& j, Colour& c)
 		j.at("blend_additive").get_to(c.blend_additive);
 }
 
-Colour* colourFromId(string_view id)
+string groupSubdir(Group group)
 {
-	for (auto& c : cc_colours)
+	switch (group)
+	{
+	case Group::MapPreview: return "map_preview";
+	case Group::MapImage:   return "map_image";
+	case Group::MapEditor:  return "map_editor";
+	default:                return "";
+	}
+}
+
+Colour* colourFromId(string_view id, vector<Colour>& colours)
+{
+	for (auto& c : colours)
 	{
 		if (c.id == id)
 			return &c;
@@ -113,21 +128,17 @@ Colour* colourFromId(string_view id)
 // -----------------------------------------------------------------------------
 // Reads a colour configuration from JSON [j]
 // -----------------------------------------------------------------------------
-void readConfiguration(Json& j, string_view group)
+bool readConfiguration(Json& j, vector<Colour>& colours, string_view source)
 {
 	// Colours
 	if (j.contains("colours"))
 	{
 		for (auto& [id, colour] : j["colours"].items())
 		{
-			auto col = colourFromId(group.empty() ? id : fmt::format("{}.{}", group, id));
-			if (!col)
-			{
-				log::warning(fmt::format("Unknown colour id \"{}.{}\"", group, id));
-				continue;
-			}
-
-			from_json(colour, *col);
+			if (const auto col = colourFromId(id, colours); col)
+				from_json(colour, *col);
+			else
+				log::warning(fmt::format(R"(Unknown colour id "{}" in configuration "{}")", id, source));
 		}
 	}
 
@@ -141,10 +152,367 @@ void readConfiguration(Json& j, string_view group)
 		if (j["theme"].contains("flat_alpha"))
 			j["theme"]["flat_alpha"].get_to(flat_alpha);
 	}
+
+	return true;
+}
+
+bool readConfiguration(string_view name, string_view subdir, vector<Colour>& colours)
+{
+	// Search resource pk3
+	auto res = app::programResource();
+	auto dir = res->dirAtPath(fmt::format("config/colours/{}", subdir));
+	if (!dir)
+		return false;
+
+	for (unsigned a = 0; a < dir->numEntries(); a++)
+	{
+		if (strutil::equalCI(dir->entryAt(a)->nameNoExt(), name))
+		{
+			if (auto j = jsonutil::parse(dir->entryAt(a)->data()); !j.is_discarded())
+				readConfiguration(j, colours, name);
+			return true;
+		}
+	}
+
+	return false;
 }
 } // namespace slade::colourconfig
 
 
+// -----------------------------------------------------------------------------
+//
+// colourconfig Namespace Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade::colourconfig
+{
+
+}
+
+colourconfig::Colour::Colour(string_view id, string_view name, ColRGBA colour, bool blend_additive) :
+	name{ name },
+	colour{ colour },
+	blend_additive{ blend_additive },
+	id{ id }
+{
+}
+
+gl::Blend colourconfig::Colour::blendMode() const
+{
+	return blend_additive ? gl::Blend::Additive : gl::Blend::Normal;
+}
+
+void colourconfig::Colour::set(u8 r, u8 g, u8 b, u8 a, bool blend_additive)
+{
+	colour.set(r, g, b, a);
+	this->blend_additive = blend_additive;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the line hilight width multiplier
+// -----------------------------------------------------------------------------
+double colourconfig::lineHilightWidth()
+{
+	return line_hilight_width;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the line selection width multiplier
+// -----------------------------------------------------------------------------
+double colourconfig::lineSelectionWidth()
+{
+	return line_selection_width;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the flat alpha multiplier
+// -----------------------------------------------------------------------------
+double colourconfig::flatAlpha()
+{
+	return flat_alpha;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the line hilight width multiplier
+// -----------------------------------------------------------------------------
+void colourconfig::setLineHilightWidth(double mult)
+{
+	line_hilight_width = mult;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the line selection width multiplier
+// -----------------------------------------------------------------------------
+void colourconfig::setLineSelectionWidth(double mult)
+{
+	line_selection_width = mult;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the flat alpha multiplier
+// -----------------------------------------------------------------------------
+void colourconfig::setFlatAlpha(double alpha)
+{
+	flat_alpha = alpha;
+}
+
+const vector<colourconfig::Colour>& colourconfig::allColours(Group group)
+{
+	switch (group)
+	{
+	case Group::MapPreview: return cols_map_preview;
+	case Group::MapImage:   return cols_map_image;
+	case Group::MapEditor:  return cols_map_editor;
+	default:                return cols_map_preview;
+	}
+}
+
+ColRGBA colourconfig::colour(MapPreview preview)
+{
+	if (ccfg_map_preview.empty())
+	{
+		ColRGBA fg(wxSystemSettings().GetColour(wxSYS_COLOUR_WINDOWTEXT));
+		ColRGBA bg(wxutil::systemPanelBGColour());
+
+		static double factor_line2s = app::isDarkTheme() ? 0.5 : 0.6;
+
+		// Default map preview colours (based on system theme)
+		switch (preview)
+		{
+		case MapPreview::Background:  return bg;
+		case MapPreview::Line1S:      return fg;
+		case MapPreview::Line2S:      return colour::blend(fg, bg, factor_line2s);
+		case MapPreview::LineSpecial: return ColRGBA{ 130, 140, 255 };
+		case MapPreview::LineMacro:   return ColRGBA{ 255, 170, 130 };
+		case MapPreview::Thing:       return ColRGBA{ 211, 168, 86 };
+		default:                      return cols_map_preview[static_cast<size_t>(preview)].colour;
+		}
+	}
+
+	return cols_map_preview[static_cast<size_t>(preview)].colour;
+}
+
+ColRGBA colourconfig::colour(MapImage image)
+{
+	return cols_map_image[static_cast<size_t>(image)].colour;
+}
+
+ColRGBA colourconfig::colour(MapEditor editor)
+{
+	return cols_map_editor[static_cast<size_t>(editor)].colour;
+}
+
+const colourconfig::Colour& colourconfig::colDef(MapPreview preview)
+{
+	return cols_map_preview[static_cast<size_t>(preview)];
+}
+
+const colourconfig::Colour& colourconfig::colDef(MapImage image)
+{
+	return cols_map_image[static_cast<size_t>(image)];
+}
+
+const colourconfig::Colour& colourconfig::colDef(MapEditor editor)
+{
+	return cols_map_editor[static_cast<size_t>(editor)];
+}
+
+bool colourconfig::init()
+{
+	// Init map preview colours
+	cols_map_preview = {
+		{ "background", "Background" },       { "line_1s", "Line (1-Sided)" },  { "line_2s", "Line (2-Sided)" },
+		{ "line_special", "Line (Special)" }, { "line_macro", "Line (Macro)" }, { "thing", "Thing" },
+	};
+
+	// Init map image colours
+	cols_map_image = {
+		{ "background", "Background" },       { "line_1s", "Line (1-Sided)" },  { "line_2s", "Line (2-Sided)" },
+		{ "line_special", "Line (Special)" }, { "line_macro", "Line (Macro)" },
+	};
+
+	// Init map editor colours
+	cols_map_editor = {
+		{ "background", "Background" },
+		{ "grid", "Grid" },
+		{ "grid_64", "Grid (64)" },
+		{ "line_normal", "Line (Normal)" },
+		{ "line_special", "Line (Special)" },
+		{ "line_invalid", "Line (Invalid)" },
+		{ "vertex", "Vertex" },
+		{ "highlight", "Highlighted Item" },
+		{ "selection", "Selected Item(s)" },
+		{ "tagged", "Tagged Item(s)" },
+		{ "tagging", "Tagging Item(s)" },
+		{ "thing_path", "Pathed Thing Line" },
+		{ "thing_path_dragon", "Pathed Thing Line (Dragon)" },
+		{ "line_draw", "Line Drawing" },
+		{ "moving", "Moving Item(s)" },
+		{ "object_edit", "Object Edit" },
+		{ "sel_box_fill", "Selection Box Fill" },
+		{ "sel_box_outline", "Selection Box Outline" },
+		{ "overlay_background", "Info Overlay Background" },
+		{ "overlay_foreground", "Info Overlay Text" },
+		{ "editor_message", "Editor Message Text" },
+		{ "editor_message_outline", "Editor Message Outline" },
+		{ "3d_crosshair", "3D Crosshair" },
+		{ "3d_highlight", "3D Highlight" },
+		{ "3d_selection", "3D Selection" },
+		{ "3d_overlay_background", "3D Info Overlay Background" },
+		{ "3d_overlay_foreground", "3D Info Overlay Text" },
+	};
+
+	// Load default configurations
+	loadDefaults(Group::MapPreview, cols_map_preview);
+	loadDefaults(Group::MapImage, cols_map_image);
+	loadDefaults(Group::MapEditor, cols_map_editor);
+
+	// Load selected configurations
+	if (!ccfg_map_preview.empty())
+	{
+		if (ccfg_map_preview.value != "custom")
+			readConfiguration(Group::MapPreview, ccfg_map_preview, cols_map_preview);
+		// TODO: Custom
+	}
+	if (!ccfg_map_image.empty())
+	{
+		if (ccfg_map_image.value != "custom")
+			readConfiguration(Group::MapImage, ccfg_map_image, cols_map_image);
+		// TODO: Custom
+	}
+	if (!ccfg_map_editor.empty())
+	{
+		if (ccfg_map_editor.value != "custom")
+			readConfiguration(Group::MapEditor, ccfg_map_editor, cols_map_editor);
+		// TODO: Custom
+	}
+
+	return true;
+}
+
+void colourconfig::loadDefaults(Group group)
+{
+	switch (group)
+	{
+	case Group::MapPreview: loadDefaults(group, cols_map_preview); break;
+	case Group::MapImage:   loadDefaults(group, cols_map_image); break;
+	case Group::MapEditor:  loadDefaults(group, cols_map_editor); break;
+	}
+
+	signals().colour_config_changed(group);
+}
+
+#define ID(id) static_cast<size_t>(id)
+void colourconfig::loadDefaults(Group group, vector<Colour>& colours)
+{
+	switch (group)
+	{
+	case Group::MapPreview:
+		if (colours.size() <= ID(MapPreview::Thing))
+			return;
+
+		colours[ID(MapPreview::Background)].set(0, 0, 0);
+		colours[ID(MapPreview::Line1S)].set(255, 255, 255);
+		colours[ID(MapPreview::Line2S)].set(170, 170, 170);
+		colours[ID(MapPreview::LineSpecial)].set(130, 140, 255);
+		colours[ID(MapPreview::LineMacro)].set(255, 170, 130);
+		colours[ID(MapPreview::Thing)].set(211, 168, 86);
+		break;
+
+	case Group::MapImage:
+		if (colours.size() <= ID(MapImage::LineMacro))
+			return;
+
+		colours[ID(MapImage::Background)].set(255, 255, 255, 0);
+		colours[ID(MapImage::Line1S)].set(0, 0, 0);
+		colours[ID(MapImage::Line2S)].set(144, 144, 144);
+		colours[ID(MapImage::LineSpecial)].set(220, 130, 50);
+		colours[ID(MapImage::LineMacro)].set(50, 130, 220);
+		break;
+
+	case Group::MapEditor:
+		if (colours.size() <= ID(MapEditor::OverlayForeground3D))
+			return;
+
+		colours[ID(MapEditor::Background)].set(0, 0, 0);
+		colours[ID(MapEditor::Grid)].set(50, 80, 170, 60);
+		colours[ID(MapEditor::Grid64)].set(255, 255, 255, 20, true);
+		colours[ID(MapEditor::LineNormal)].set(255, 255, 255);
+		colours[ID(MapEditor::LineSpecial)].set(90, 130, 255);
+		colours[ID(MapEditor::LineInvalid)].set(255, 0, 0);
+		colours[ID(MapEditor::Vertex)].set(80, 220, 130);
+		colours[ID(MapEditor::Highlight)].set(255, 255, 0, 255, true);
+		colours[ID(MapEditor::Selection)].set(0, 100, 255, 180, true);
+		colours[ID(MapEditor::Tagged)].set(0, 255, 100, 120, true);
+		colours[ID(MapEditor::Tagging)].set(255, 0, 100, 220, true);
+		colours[ID(MapEditor::ThingPath)].set(34, 255, 255);
+		colours[ID(MapEditor::ThingPathDragon)].set(255, 34, 34);
+		colours[ID(MapEditor::LineDraw)].set(0, 150, 50);
+		colours[ID(MapEditor::Moving)].set(255, 100, 0, 255, true);
+		colours[ID(MapEditor::ObjectEdit)].set(220, 140, 0, 170, true);
+		colours[ID(MapEditor::SelBoxFill)].set(0, 100, 255, 100, true);
+		colours[ID(MapEditor::SelBoxOutline)].set(0, 100, 255, 255, true);
+		colours[ID(MapEditor::OverlayBackground)].set(0, 0, 0, 180);
+		colours[ID(MapEditor::OverlayForeground)].set(255, 255, 255);
+		colours[ID(MapEditor::EditorMessage)].set(255, 200, 100);
+		colours[ID(MapEditor::EditorMessageOutline)].set(0, 0, 0);
+		colours[ID(MapEditor::Crosshair3D)].set(180, 190, 255, 255, true);
+		colours[ID(MapEditor::Highlight3D)].set(255, 255, 140, 170);
+		colours[ID(MapEditor::Selection3D)].set(30, 100, 255, 180);
+		colours[ID(MapEditor::OverlayBackground3D)].set(0, 0, 0, 180);
+		colours[ID(MapEditor::OverlayForeground3D)].set(255, 255, 255);
+		break;
+	}
+}
+#undef ID
+
+// -----------------------------------------------------------------------------
+// Adds all available [group] colour configuration names to [names]
+// -----------------------------------------------------------------------------
+void colourconfig::putConfigurationNames(Group group, vector<string>& names)
+{
+	// Search resource pk3
+	auto res = app::programResource();
+	auto dir = res->dirAtPath(fmt::format("config/colours/{}", groupSubdir(group)));
+	if (!dir)
+		return;
+
+	for (unsigned a = 0; a < dir->numEntries(); a++)
+		names.emplace_back(dir->entryAt(a)->nameNoExt());
+}
+
+bool colourconfig::readConfiguration(Group group, string_view name, vector<Colour>& colours)
+{
+	return readConfiguration(name, groupSubdir(group), colours);
+}
+
+bool colourconfig::loadConfiguration(Group group, string_view name)
+{
+	bool ok = false;
+	switch (group)
+	{
+	case Group::MapPreview: ok = readConfiguration(group, name, cols_map_preview); break;
+	case Group::MapImage:   ok = readConfiguration(group, name, cols_map_image); break;
+	case Group::MapEditor:  ok = readConfiguration(group, name, cols_map_editor); break;
+	default:                break;
+	}
+
+	if (ok)
+		signals().colour_config_changed(group);
+
+	return ok;
+}
+
+colourconfig::CCfgSignals& colourconfig::signals()
+{
+	static CCfgSignals s;
+	return s;
+};
+
+
+
+
+#if 0
 // -----------------------------------------------------------------------------
 //
 // colourconfig Namespace Functions
@@ -326,7 +694,7 @@ void colourconfig::writeConfiguration(string_view json_file)
 // -----------------------------------------------------------------------------
 bool colourconfig::init()
 {
-	cc_colours.resize(static_cast<size_t>(ColourId::_Count));
+	cc_colours.resize(static_cast<size_t>(ColourId::Count));
 
 	// Load default configuration
 	loadDefaults();
@@ -416,6 +784,14 @@ void colourconfig::loadDefaults(string_view group)
 // -----------------------------------------------------------------------------
 bool colourconfig::readConfiguration(string_view name, string_view group)
 {
+	return readConfiguration(name, group, cc_colours);
+}
+
+// -----------------------------------------------------------------------------
+// Reads saved [group] colour configuration [name] into [colours]
+// -----------------------------------------------------------------------------
+bool colourconfig::readConfiguration(string_view name, string_view group, vector<Colour>& colours)
+{
 	// Search resource pk3
 	auto res = app::programResource();
 	auto dir = res->dirAtPath(fmt::format("config/colours/{}", group));
@@ -427,7 +803,7 @@ bool colourconfig::readConfiguration(string_view name, string_view group)
 		if (strutil::equalCI(dir->entryAt(a)->nameNoExt(), name))
 		{
 			if (auto j = jsonutil::parse(dir->entryAt(a)->data()); !j.is_discarded())
-				readConfiguration(j, group);
+				readConfiguration(j, group, colours);
 			return true;
 		}
 	}
@@ -455,6 +831,42 @@ const vector<colourconfig::Colour>& colourconfig::allColours()
 	return cc_colours;
 }
 
+vector<const colourconfig::Colour*> colourconfig::mapPreviewColours()
+{
+	vector<const Colour*> ret;
+
+	constexpr auto first = static_cast<size_t>(ColourId::MapPreview_Start);
+	constexpr auto last  = static_cast<size_t>(ColourId::MapPreview_End);
+	for (auto i = first; i <= last; ++i)
+		ret.emplace_back(&cc_colours[i]);
+
+	return ret;
+}
+
+vector<const colourconfig::Colour*> colourconfig::mapImageColours()
+{
+	vector<const Colour*> ret;
+
+	constexpr auto first = static_cast<size_t>(ColourId::MapImage_Start);
+	constexpr auto last  = static_cast<size_t>(ColourId::MapImage_End);
+	for (auto i = first; i <= last; ++i)
+		ret.emplace_back(&cc_colours[i]);
+
+	return ret;
+}
+
+vector<const colourconfig::Colour*> colourconfig::mapEditorColours()
+{
+	vector<const Colour*> ret;
+
+	constexpr auto first = static_cast<size_t>(ColourId::MapBackground);
+	constexpr auto last  = static_cast<size_t>(ColourId::Map3DOverlayForeground);
+	for (auto i = first; i <= last; ++i)
+		ret.emplace_back(&cc_colours[i]);
+
+	return ret;
+}
+
 ColRGBA colourconfig::colour(ColourId id)
 {
 	return cc_colours[static_cast<size_t>(id)].colour;
@@ -472,20 +884,22 @@ ColRGBA colourconfig::mapPreviewColour(ColourId id)
 
 	static double factor_line2s = app::isDarkTheme() ? 0.5 : 0.6;
 
-	switch (id)
+	if (strutil::equalCI(ccfg_map_preview, "default") || ccfg_map_preview.empty())
 	{
-	case ColourId::MapPreviewLine1S: return map_view_sys_theme ? fg : colour(ColourId::MapPreviewLine1S);
-	case ColourId::MapPreviewLine2S:
-		return map_view_sys_theme ? colour::blend(fg, bg, factor_line2s) : colour(ColourId::MapPreviewLine2S);
-	case ColourId::MapPreviewLineSpecial:
-		return map_view_sys_theme ? ColRGBA{ 130, 140, 255 } : colour(ColourId::MapPreviewLineSpecial);
-	case ColourId::MapPreviewLineMacro:
-		return map_view_sys_theme ? ColRGBA{ 255, 170, 130 } : colour(ColourId::MapPreviewLineMacro);
-	case ColourId::MapPreviewThing:
-		return map_view_sys_theme ? ColRGBA{ 211, 168, 86 } : colour(ColourId::MapPreviewThing);
-	case ColourId::MapPreviewBackground: return map_view_sys_theme ? bg : colour(ColourId::MapPreviewBackground);
-	default:                             return colour(id);
+		// Default map preview colours (based on system theme)
+		switch (id)
+		{
+		case ColourId::MapPreviewLine1S:      return fg;
+		case ColourId::MapPreviewLine2S:      return colour::blend(fg, bg, factor_line2s);
+		case ColourId::MapPreviewLineSpecial: return ColRGBA{ 130, 140, 255 };
+		case ColourId::MapPreviewLineMacro:   return ColRGBA{ 255, 170, 130 };
+		case ColourId::MapPreviewThing:       return ColRGBA{ 211, 168, 86 };
+		case ColourId::MapPreviewBackground:  return bg;
+		default:                              return colour(id);
+		}
 	}
+
+	return colour(id);
 }
 
 void colourconfig::setColour(ColourId id, int red, int green, int blue, int alpha, optional<bool> blend_additive)
@@ -574,3 +988,4 @@ void           cc_ccfg(const vector<string>& args)
 // {
 // 	colourconfig::readConfiguration(args[0]);
 // }
+#endif

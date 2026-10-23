@@ -5,6 +5,69 @@
 
 namespace slade::colourconfig
 {
+enum class Group
+{
+	MapPreview,
+	MapImage,
+	MapEditor
+};
+
+enum class MapPreview
+{
+	Background,
+	Line1S,
+	Line2S,
+	LineSpecial,
+	LineMacro,
+	Thing,
+
+	Count
+};
+
+enum class MapImage
+{
+	Background,
+	Line1S,
+	Line2S,
+	LineSpecial,
+	LineMacro,
+
+	Count
+};
+
+enum class MapEditor
+{
+	Background,
+	Grid,
+	Grid64,
+	LineNormal,
+	LineSpecial,
+	LineInvalid,
+	Vertex,
+	Highlight,
+	Selection,
+	Tagged,
+	Tagging,
+	ThingPath,
+	ThingPathDragon,
+	LineDraw,
+	Moving,
+	ObjectEdit,
+	SelBoxFill,
+	SelBoxOutline,
+	OverlayBackground,
+	OverlayForeground,
+	EditorMessage,
+	EditorMessageOutline,
+	Crosshair3D,
+	Highlight3D,
+	Selection3D,
+	OverlayBackground3D,
+	OverlayForeground3D,
+
+	Count
+};
+
 struct Colour
 {
 	string  name;
@@ -13,17 +76,15 @@ struct Colour
 	string  id;
 
 	Colour() = default;
-	Colour(string_view id, string_view name, ColRGBA colour, bool blend_additive = false) :
-		name{ name },
-		colour{ colour },
-		blend_additive{ blend_additive },
-		id{ id }
-	{
-	}
+	Colour(string_view id, string_view name, ColRGBA colour = ColRGBA::WHITE, bool blend_additive = false);
 
-	gl::Blend blendMode() const { return blend_additive ? gl::Blend::Additive : gl::Blend::Normal; }
+	gl::Blend blendMode() const;
+
+	void set(u8 r, u8 g, u8 b, u8 a = 255, bool blend_additive = false);
 };
 
+// TODO: Figure out what to do with this stuff, maybe move map editor stuff out
+//       to a separate 'map editor theme' system
 double lineHilightWidth();
 double lineSelectionWidth();
 double flatAlpha();
@@ -31,70 +92,29 @@ void   setLineHilightWidth(double mult);
 void   setLineSelectionWidth(double mult);
 void   setFlatAlpha(double alpha);
 
-void writeConfiguration(string_view json_file);
+const vector<Colour>& allColours(Group group);
+
+ColRGBA colour(MapPreview preview);
+ColRGBA colour(MapImage image);
+ColRGBA colour(MapEditor editor);
+
+const Colour& colDef(MapPreview preview);
+const Colour& colDef(MapImage image);
+const Colour& colDef(MapEditor editor);
+
 bool init();
-void loadDefaults(string_view group = {});
+void loadDefaults(Group group);
+void loadDefaults(Group group, vector<Colour>& colours);
 
-bool readConfiguration(string_view name, string_view group);
-void putConfigurationNames(vector<string>& names, string_view group);
+void putConfigurationNames(Group group, vector<string>& names);
+bool readConfiguration(Group group, string_view name, vector<Colour>& colours);
+bool loadConfiguration(Group group, string_view name);
 
-const vector<Colour>& allColours();
-
-enum class ColourId
+struct CCfgSignals
 {
-	MapPreviewBackground,
-	MapPreviewLine1S,
-	MapPreviewLine2S,
-	MapPreviewLineSpecial,
-	MapPreviewLineMacro,
-	MapPreviewThing,
-
-	MapImageBackground,
-	MapImageLine1S,
-	MapImageLine2S,
-	MapImageLineSpecial,
-	MapImageLineMacro,
-
-	MapBackground,
-	MapGrid,
-	MapGrid64,
-	MapLineNormal,
-	MapLineSpecial,
-	MapLineInvalid,
-	MapVertex,
-	MapHighlight,
-	MapSelection,
-	MapTagged,
-	MapTagging,
-	MapThingPath,
-	MapThingPathDragon,
-	MapLineDraw,
-	MapMoving,
-	MapObjectEdit,
-	MapSelBoxFill,
-	MapSelBoxOutline,
-	MapOverlayBackground,
-	MapOverlayForeground,
-	MapEditorMessage,
-	MapEditorMessageOutline,
-	Map3DCrosshair,
-	Map3DHighlight,
-	Map3DSelection,
-	Map3DOverlayBackground,
-	Map3DOverlayForeground,
-
-	_Count
+	sigslot::signal<Group> colour_config_changed;
 };
-ColRGBA       colour(ColourId id);
-const Colour& colDef(ColourId id);
-ColRGBA       mapPreviewColour(ColourId id);
-void          setColour(
-			 ColourId       id,
-			 int            red            = -1,
-			 int            green          = -1,
-			 int            blue           = -1,
-			 int            alpha          = -1,
-			 optional<bool> blend_additive = {});
+CCfgSignals& signals();
 } // namespace slade::colourconfig
 
 // Convenience namespace alias

@@ -78,7 +78,7 @@ void SectorTextureOverlay::update(long frametime)
 void SectorTextureOverlay::draw(gl::draw2d::Context& dc, float fade)
 {
 	// Get colours
-	auto& col_fg      = ccfg::colDef(ccfg::ColourId::MapOverlayForeground);
+	auto& col_fg      = ccfg::colDef(ccfg::MapEditor::OverlayForeground);
 	auto  col_fg_rgba = col_fg.colour;
 	col_fg_rgba.a *= fade;
 
@@ -86,7 +86,7 @@ void SectorTextureOverlay::draw(gl::draw2d::Context& dc, float fade)
 	auto width  = dc.viewSize().x;
 	auto height = dc.viewSize().y;
 	dc.texture  = 0;
-	dc.setColourFromConfig(ccfg::ColourId::MapOverlayBackground, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayBackground, fade);
 	dc.drawRect({ 0.0f, 0.0f, width, height, false });
 
 	// Check if any sectors are open
@@ -171,8 +171,8 @@ void SectorTextureOverlay::drawTexture(
 	bool                  hover) const
 {
 	// Get colours
-	auto col_fg  = colourconfig::colour(ccfg::ColourId::MapOverlayForeground);
-	auto col_sel = colourconfig::colour(ccfg::ColourId::MapHighlight);
+	auto col_fg  = colourconfig::colour(ccfg::MapEditor::OverlayForeground);
+	auto col_sel = colourconfig::colour(ccfg::MapEditor::Highlight);
 
 	// Draw background
 	dc.colour.set(255, 255, 255, 255 * alpha);

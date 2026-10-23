@@ -254,7 +254,7 @@ void LineTextureOverlay::draw(gl::draw2d::Context& dc, float fade)
 		updateLayout(width, height);
 
 	// Draw background
-	dc.setColourFromConfig(ccfg::ColourId::MapOverlayBackground, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayBackground, fade);
 	dc.texture = 0;
 	dc.drawRect({ { 0.0f, 0.0f }, dc.viewSize() });
 
@@ -287,8 +287,8 @@ void LineTextureOverlay::drawTexture(
 	string_view          position) const
 {
 	// Get colours
-	ColRGBA col_fg  = colourconfig::colour(ccfg::ColourId::MapOverlayForeground);
-	ColRGBA col_sel = colourconfig::colour(ccfg::ColourId::MapHighlight);
+	ColRGBA col_fg  = colourconfig::colour(ccfg::MapEditor::OverlayForeground);
+	ColRGBA col_sel = colourconfig::colour(ccfg::MapEditor::Highlight);
 	col_fg.a        = col_fg.a * alpha;
 
 	// Draw background

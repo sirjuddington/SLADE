@@ -36,6 +36,8 @@
 #include "MapEditor/MapEditor.h"
 #include "UI/Layout.h"
 #include "UI/WxUtils.h"
+#include "Utility/PropertyList.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace ui;
@@ -55,41 +57,58 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 {
 	auto lh = LayoutHelper(this);
 
-	// Create sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	// Configurations list
-	vector<string> cnames;
-	colourconfig::putConfigurationNames(cnames, "map");
-	choice_configs_ = new wxChoice(this, -1);
-	for (const auto& cname : cnames)
-		choice_configs_->Append(wxString::FromUTF8(cname));
-	sizer->Add(wxutil::createLabelHBox(this, "Preset:", choice_configs_), wxSizerFlags().Expand());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
 	sizer->AddSpacer(lh.pad());
+	sizer->Add(gb_sizer, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
-	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
+	gb_sizer->Add(new wxStaticText(this, -1, wxS("Map Preview")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 
-	// Create property grid
-	pg_colours_ = new wxPropertyGrid(
-		this, -1, wxDefaultPosition, wxDefaultSize, wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS);
-	pg_colours_->SetCaptionTextColour(inactiveTextColour);
-	pg_colours_->SetCellDisabledTextColour(inactiveTextColour);
-	sizer->Add(pg_colours_, wxSizerFlags(1).Expand());
+	// Map preview configurations
+	vector<string> map_preview_configs = { "Default (System)" };
+	colourconfig::putConfigurationNames(colourconfig::Group::MapPreview, map_preview_configs);
+	map_preview_configs.push_back("Custom");
+	choice_map_preview_cfg_ = new wxChoice(this, -1);
+	for (const auto& cname : map_preview_configs)
+		choice_map_preview_cfg_->Append(wxString::FromUTF8(cname));
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox->Add(choice_map_preview_cfg_, wxSizerFlags(1).Expand());
+	btn_map_preview_customize_ = new wxButton(this, -1, wxS("Customize"));
+	hbox->Add(btn_map_preview_customize_, lh.sfWithBorder(0, wxLEFT).Expand());
+	gb_sizer->Add(hbox, { 0, 1 }, { 1, 1 }, wxEXPAND);
 
-	// Load colour config into grid
-	refreshPropGrid();
+	// Map preview property grid
+	pg_map_preview_ = new wxPropertyGrid(this, -1, wxDefaultPosition, wxDefaultSize, wxPG_SPLITTER_AUTO_CENTER);
+	gb_sizer->Add(pg_map_preview_, { 1, 1 }, { 1, 1 }, wxEXPAND);
+
+	gb_sizer->Add(new wxStaticText(this, -1, wxS("Map Image Export")), { 2, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
+
+	// Map image configurations
+	vector<string> map_image_configs = { "Default" };
+	colourconfig::putConfigurationNames(colourconfig::Group::MapImage, map_image_configs);
+	map_image_configs.push_back("Custom");
+	choice_map_image_cfg_ = new wxChoice(this, -1);
+	for (const auto& cname : map_image_configs)
+		choice_map_image_cfg_->Append(wxString::FromUTF8(cname));
+	hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox->Add(choice_map_image_cfg_, wxSizerFlags(1).Expand());
+	btn_map_image_customize_ = new wxButton(this, -1, wxS("Customize"));
+	hbox->Add(btn_map_image_customize_, lh.sfWithBorder(0, wxLEFT).Expand());
+	gb_sizer->Add(hbox, { 2, 1 }, { 1, 1 }, wxEXPAND);
+
+	// Map image property grid
+	pg_map_image_ = new wxPropertyGrid(this, -1, wxDefaultPosition, wxDefaultSize, wxPG_SPLITTER_AUTO_CENTER);
+	gb_sizer->Add(pg_map_image_, { 3, 1 }, { 1, 1 }, wxEXPAND);
+
+	gb_sizer->AddGrowableCol(1, 1);
+	gb_sizer->AddGrowableRow(1, 1);
+	gb_sizer->AddGrowableRow(3, 1);
 
 	// Bind events
-	choice_configs_->Bind(
-		wxEVT_CHOICE,
-		[&](wxCommandEvent&)
-		{
-			auto config = choice_configs_->GetStringSelection().utf8_string();
-			colourconfig::readConfiguration(config, "map");
-			refreshPropGrid();
-			mapeditor::forceRefresh(true);
-		});
+	choice_map_preview_cfg_->Bind(wxEVT_CHOICE, &ColourSettingsPanel::onMapPreviewConfigChanged, this);
+	choice_map_image_cfg_->Bind(wxEVT_CHOICE, &ColourSettingsPanel::onMapImageConfigChanged, this);
 
 	wxWindowBase::Layout();
 }
@@ -99,57 +118,146 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 // -----------------------------------------------------------------------------
 void ColourSettingsPanel::loadSettings()
 {
-	refreshPropGrid();
+	// Map preview configuration
+	auto map_preview_cfg = CVar::getString("ccfg_map_preview");
+	if (map_preview_cfg.empty() || strutil::equalCI(map_preview_cfg, "default"))
+		choice_map_preview_cfg_->SetSelection(0); // Default
+	else if (strutil::equalCI(map_preview_cfg, "custom"))
+		choice_map_preview_cfg_->SetSelection(choice_map_preview_cfg_->GetCount() - 1); // Custom
+	else
+	{
+		// Built-in configuration (revert to default if not found)
+		if (!choice_map_preview_cfg_->SetStringSelection(wxString::FromUTF8(map_preview_cfg)))
+			choice_map_preview_cfg_->SetSelection(0);
+	}
+
+	// Map image configuration
+	auto map_image_cfg = CVar::getString("ccfg_map_image");
+	if (map_image_cfg.empty() || strutil::equalCI(map_image_cfg, "default"))
+		choice_map_image_cfg_->SetSelection(0); // Default
+	else if (strutil::equalCI(map_image_cfg, "custom"))
+		choice_map_image_cfg_->SetSelection(choice_map_image_cfg_->GetCount() - 1); // Custom
+	else
+	{
+		// Built-in configuration (revert to default if not found)
+		if (!choice_map_image_cfg_->SetStringSelection(wxString::FromUTF8(map_image_cfg)))
+			choice_map_image_cfg_->SetSelection(0);
+	}
+
+	// Load colours
+	colours_map_preview_ = ccfg::allColours(ccfg::Group::MapPreview);
+	colours_map_image_   = ccfg::allColours(ccfg::Group::MapImage);
+	refreshPropGrids();
 }
 
 // -----------------------------------------------------------------------------
 // Refreshes the colour configuration wxPropertyGrid
 // -----------------------------------------------------------------------------
-void ColourSettingsPanel::refreshPropGrid() const
+void ColourSettingsPanel::refreshPropGrids(bool map_preview, bool map_image, bool readonly) const
 {
-	// Clear grid
-	pg_colours_->Clear();
+	// Clear grids
+	if (map_preview)
+		pg_map_preview_->Clear();
+	if (map_image)
+		pg_map_image_->Clear();
 
-	// Get (sorted) list of colours
-	auto colours = ccfg::allColours();
+	static auto add_to_pg = [&](wxPropertyGrid* pg, const colourconfig::Colour& cdef)
+	{
+		// Add colour
+		auto colour = pg->Append(
+			new wxColourProperty(wxString::FromUTF8(cdef.name), wxString::FromUTF8(cdef.id), cdef.colour));
 
-	// Add colours to property grid
-	// for (const auto& cdef : colours)
-	// {
-	// 	// Get/create group
-	// 	auto group = pg_colours_->GetProperty(wxString::FromUTF8(cdef.group));
-	// 	if (!group)
-	// 		group = pg_colours_->Append(new wxPropertyCategory(wxString::FromUTF8(cdef.group)));
+		// Add opacity
+		auto opacity = pg->AppendIn(colour, new wxIntProperty(wxS("Opacity (0-255)"), wxS("alpha"), cdef.colour.a));
+
+		// Set opacity limits
+		opacity->SetAttribute(wxS("Max"), 255);
+		opacity->SetAttribute(wxS("Min"), 0);
+
+		pg->SetPropertyReadOnly(colour, readonly);
+		pg->SetPropertyReadOnly(opacity, readonly);
+		pg->Collapse(colour);
+	};
+
+	// Load colours to grids
+	if (map_preview)
+		for (auto cdef : colours_map_preview_)
+			add_to_pg(pg_map_preview_, cdef);
+	if (map_image)
+		for (auto cdef : colours_map_image_)
+			add_to_pg(pg_map_image_, cdef);
+
+	// // Add theme options to property grid
+	// auto g_theme = pg_colours_->Append(new wxPropertyCategory(wxS("Map Editor Theme")));
+	// pg_colours_->AppendIn(
+	// 	g_theme,
+	// 	new wxFloatProperty(
+	// 		wxS("Line Highlight Width Multiplier"), wxS("line_hilight_width"), colourconfig::lineHilightWidth()));
+	// pg_colours_->AppendIn(
+	// 	g_theme,
+	// 	new wxFloatProperty(
+	// 		wxS("Line Selection Width Multiplier"), wxS("line_selection_width"), colourconfig::lineSelectionWidth()));
+	// pg_colours_->AppendIn(g_theme, new wxFloatProperty(wxS("Flat Fade"), wxS("flat_alpha"),
+	// colourconfig::flatAlpha()));
 	//
-	// 	// Add colour
-	// 	auto colour = pg_colours_->AppendIn(
-	// 		group, new wxColourProperty(wxString::FromUTF8(cdef.name), wxString::FromUTF8(cdef.name), cdef.colour));
-	//
-	// 	// Add extra colour properties
-	// 	auto opacity = pg_colours_->AppendIn(
-	// 		colour, new wxIntProperty(wxS("Opacity (0-255)"), wxS("alpha"), cdef.colour.a));
-	// 	pg_colours_->AppendIn(colour, new wxBoolProperty(wxS("Additive"), wxS("additive"), cdef.blend_additive));
-	// 	pg_colours_->Collapse(colour);
-	//
-	// 	// Set opacity limits
-	// 	opacity->SetAttribute(wxS("Max"), 255);
-	// 	opacity->SetAttribute(wxS("Min"), 0);
-	// }
+	// // Set all bool properties to use checkboxes
+	// pg_colours_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
+}
 
-	// Add theme options to property grid
-	auto g_theme = pg_colours_->Append(new wxPropertyCategory(wxS("Map Editor Theme")));
-	pg_colours_->AppendIn(
-		g_theme,
-		new wxFloatProperty(
-			wxS("Line Highlight Width Multiplier"), wxS("line_hilight_width"), colourconfig::lineHilightWidth()));
-	pg_colours_->AppendIn(
-		g_theme,
-		new wxFloatProperty(
-			wxS("Line Selection Width Multiplier"), wxS("line_selection_width"), colourconfig::lineSelectionWidth()));
-	pg_colours_->AppendIn(g_theme, new wxFloatProperty(wxS("Flat Fade"), wxS("flat_alpha"), colourconfig::flatAlpha()));
+void ColourSettingsPanel::onMapPreviewConfigChanged(wxCommandEvent& e)
+{
+	if (choice_map_preview_cfg_->GetSelection() == 0)
+	{
+		// Default configuration selected
+		btn_map_preview_customize_->Show();
+		ccfg::loadDefaults(ccfg::Group::MapPreview, colours_map_preview_);
+		refreshPropGrids(true, false);
+	}
+	else if (choice_map_preview_cfg_->GetSelection() == choice_map_preview_cfg_->GetCount() - 1)
+	{
+		// TODO: Custom config
+		btn_map_preview_customize_->Hide();
+		refreshPropGrids(false, true, false);
+	}
+	else
+	{
+		// Built-in configuration selected
+		btn_map_preview_customize_->Show();
+		auto config = choice_map_preview_cfg_->GetStringSelection().utf8_string();
+		ccfg::readConfiguration(ccfg::Group::MapPreview, config, colours_map_preview_);
+		refreshPropGrids(true, false);
+		pg_map_preview_->Enable(false);
+	}
 
-	// Set all bool properties to use checkboxes
-	pg_colours_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
+	btn_map_preview_customize_->GetContainingSizer()->Layout();
+}
+
+void ColourSettingsPanel::onMapImageConfigChanged(wxCommandEvent& e)
+{
+	if (choice_map_image_cfg_->GetSelection() == 0)
+	{
+		// Default configuration selected
+		btn_map_image_customize_->Show();
+		ccfg::loadDefaults(ccfg::Group::MapImage, colours_map_image_);
+		refreshPropGrids(false, true);
+	}
+	else if (choice_map_image_cfg_->GetSelection() == choice_map_image_cfg_->GetCount() - 1)
+	{
+		// TODO: Custom config
+		btn_map_image_customize_->Hide();
+		refreshPropGrids(false, true, false);
+	}
+	else
+	{
+		// Built-in configuration selected
+		btn_map_image_customize_->Show();
+		auto config = choice_map_image_cfg_->GetStringSelection().utf8_string();
+		ccfg::readConfiguration(ccfg::Group::MapImage, config, colours_map_image_);
+		refreshPropGrids(false, true);
+		pg_map_image_->Enable(false);
+	}
+
+	btn_map_image_customize_->GetContainingSizer()->Layout();
 }
 
 // -----------------------------------------------------------------------------
@@ -157,13 +265,49 @@ void ColourSettingsPanel::refreshPropGrid() const
 // -----------------------------------------------------------------------------
 void ColourSettingsPanel::applySettings()
 {
-	// Get list of all colours
-	auto colours = ccfg::allColours();
+	// Map Preview configuration
+	if (choice_map_preview_cfg_->GetSelection() == 0)
+	{
+		CVar::set("ccfg_map_preview", "");
+		ccfg::loadDefaults(ccfg::Group::MapPreview);
+	}
+	else if (choice_map_preview_cfg_->GetSelection() == choice_map_preview_cfg_->GetCount() - 1)
+	{
+		// TODO: Custom
+		CVar::set("ccfg_map_preview", "custom");
+	}
+	else
+	{
+		auto config = choice_map_preview_cfg_->GetStringSelection().utf8_string();
+		CVar::set("ccfg_map_preview", config);
+		ccfg::loadConfiguration(ccfg::Group::MapPreview, config);
+	}
 
-	for (unsigned a = 0; a < colours.size(); a++)
+	// Map Image configuration
+	if (choice_map_image_cfg_->GetSelection() == 0)
+	{
+		CVar::set("ccfg_map_image", "");
+		ccfg::loadDefaults(ccfg::Group::MapImage);
+	}
+	else if (choice_map_image_cfg_->GetSelection() == choice_map_image_cfg_->GetCount() - 1)
+	{
+		// TODO: Custom
+		CVar::set("ccfg_map_image", "custom");
+	}
+	else
+	{
+		auto config = choice_map_image_cfg_->GetStringSelection().utf8_string();
+		CVar::set("ccfg_map_image", config);
+		ccfg::loadConfiguration(ccfg::Group::MapImage, config);
+	}
+
+	// Get list of all colours
+	// auto colours = ccfg::allColours();
+
+	// for (unsigned a = 0; a < colours.size(); a++)
 	{
 		// Get colour definition
-		auto cdef = colours[a];
+		// auto cdef = colours[a];
 
 		// auto cdef_path = cdef.group;
 		// cdef_path += ".";
@@ -203,15 +347,15 @@ void ColourSettingsPanel::applySettings()
 		// }
 	}
 
-	colourconfig::setLineHilightWidth(pg_colours_->GetProperty(wxS("line_hilight_width"))->GetValue());
-	pg_colours_->GetProperty(wxS("line_hilight_width"))->SetModifiedStatus(false);
-	colourconfig::setLineSelectionWidth(pg_colours_->GetProperty(wxS("line_selection_width"))->GetValue());
-	pg_colours_->GetProperty(wxS("line_selection_width"))->SetModifiedStatus(false);
-	colourconfig::setFlatAlpha(pg_colours_->GetProperty(wxS("flat_alpha"))->GetValue());
-	pg_colours_->GetProperty(wxS("flat_alpha"))->SetModifiedStatus(false);
-
-	pg_colours_->Refresh();
-	pg_colours_->RefreshEditor();
+	// colourconfig::setLineHilightWidth(pg_colours_->GetProperty(wxS("line_hilight_width"))->GetValue());
+	// pg_colours_->GetProperty(wxS("line_hilight_width"))->SetModifiedStatus(false);
+	// colourconfig::setLineSelectionWidth(pg_colours_->GetProperty(wxS("line_selection_width"))->GetValue());
+	// pg_colours_->GetProperty(wxS("line_selection_width"))->SetModifiedStatus(false);
+	// colourconfig::setFlatAlpha(pg_colours_->GetProperty(wxS("flat_alpha"))->GetValue());
+	// pg_colours_->GetProperty(wxS("flat_alpha"))->SetModifiedStatus(false);
+	//
+	// pg_colours_->Refresh();
+	// pg_colours_->RefreshEditor();
 	maineditor::windowWx()->Refresh();
 	mapeditor::forceRefresh(true);
 }

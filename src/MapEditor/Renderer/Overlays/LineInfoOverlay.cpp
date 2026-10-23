@@ -204,8 +204,8 @@ void LineInfoOverlay::draw(draw2d::Context& dc, float alpha)
 	auto height = text_box_->height() + 4.0f;
 
 	// Get colours
-	ColRGBA col_bg = ccfg::colour(ccfg::ColourId::MapOverlayBackground);
-	ColRGBA col_fg = ccfg::colour(ccfg::ColourId::MapOverlayForeground);
+	ColRGBA col_bg = ccfg::colour(ccfg::MapEditor::OverlayBackground);
+	ColRGBA col_fg = ccfg::colour(ccfg::MapEditor::OverlayForeground);
 	col_fg.a       = col_fg.a * alpha;
 	col_bg.a       = col_bg.a * alpha;
 
@@ -256,7 +256,7 @@ void LineInfoOverlay::draw(draw2d::Context& dc, float alpha)
 void LineInfoOverlay::drawSide(draw2d::Context& dc, float bottom, float alpha, const Side& side, float xstart) const
 {
 	// Get colours
-	dc.colour = ccfg::colour(ccfg::ColourId::MapOverlayForeground);
+	dc.colour = ccfg::colour(ccfg::MapEditor::OverlayForeground);
 	dc.colour.a *= alpha;
 
 	// Texture offsets
@@ -297,7 +297,7 @@ void LineInfoOverlay::drawTexture(
 				   .texture(texture, game::configuration().featureSupported(game::Feature::MixTexFlats))
 				   .gl_id;
 
-	dc.setColourFromConfig(ccfg::ColourId::MapOverlayForeground);
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground);
 	dc.colour.a *= alpha;
 
 	// Valid texture
@@ -313,7 +313,7 @@ void LineInfoOverlay::drawTexture(
 		dc.drawTextureWithin({ x, y - tex_box_size - line_height, x + tex_box_size, y - line_height }, 0.0f);
 
 		// Draw outline
-		dc.setColourFromConfig(ccfg::ColourId::MapOverlayForeground);
+		dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground);
 		dc.colour.a *= alpha;
 		dc.texture        = 0;
 		dc.line_thickness = 1.0f;
@@ -329,7 +329,7 @@ void LineInfoOverlay::drawTexture(
 		dc.drawTextureWithin({ x, y - tex_box_size - line_height, x + tex_box_size, y - line_height }, 0.0f, 0.2f);
 
 		// Set colour to red (for text)
-		dc.setColourFromConfig(ccfg::ColourId::MapOverlayForeground);
+		dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground);
 		dc.colour.a *= alpha;
 		dc.colour = dc.colour.ampf(1.0f, 0.0f, 0.0f, 1.0f);
 	}
@@ -343,7 +343,7 @@ void LineInfoOverlay::drawTexture(
 		dc.drawTextureWithin({ x, y - tex_box_size - line_height, x + tex_box_size, y - line_height }, 0.0f, 0.2f);
 
 		// Set colour to red (for text)
-		dc.setColourFromConfig(ccfg::ColourId::MapOverlayForeground);
+		dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground);
 		dc.colour.a *= alpha;
 		dc.colour = dc.colour.ampf(1.0f, 0.0f, 0.0f, 1.0f);
 	}

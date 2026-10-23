@@ -662,11 +662,11 @@ bool slade::createMapImage(const MapPreviewData& data, const string& filename, i
 		height = data.bounds.height() / abs(height);
 
 	// Setup colours
-	auto col_save_background   = ccfg::colour(ccfg::ColourId::MapImageBackground);
-	auto col_save_line_1s      = ccfg::colour(ccfg::ColourId::MapImageLine1S);
-	auto col_save_line_2s      = ccfg::colour(ccfg::ColourId::MapImageLine2S);
-	auto col_save_line_special = ccfg::colour(ccfg::ColourId::MapImageLineSpecial);
-	auto col_save_line_macro   = ccfg::colour(ccfg::ColourId::MapImageLineMacro);
+	auto col_save_background   = ccfg::colour(ccfg::MapImage::Background);
+	auto col_save_line_1s      = ccfg::colour(ccfg::MapImage::Line1S);
+	auto col_save_line_2s      = ccfg::colour(ccfg::MapImage::Line2S);
+	auto col_save_line_special = ccfg::colour(ccfg::MapImage::LineSpecial);
+	auto col_save_line_macro   = ccfg::colour(ccfg::MapImage::LineMacro);
 
 	// Determine mid / scale
 	auto mid_x   = width / 2;

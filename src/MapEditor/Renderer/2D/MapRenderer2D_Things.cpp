@@ -247,7 +247,7 @@ void MapRenderer2D::renderThingHilight(gl::draw2d::Context& dc, int index, float
 		fade = 1.0f;
 
 	// Set hilight colour
-	dc.setColourFromConfig(ccfg::ColourId::MapHighlight, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Highlight, fade);
 
 	// Check if we want square overlays
 	if (map2d_thing_overlay_square)
@@ -295,7 +295,7 @@ void MapRenderer2D::renderThingSelection(gl::draw2d::Context& dc, const ItemSele
 			things.push_back(thing);
 
 	// Render overlays
-	dc.setColourFromConfig(ccfg::ColourId::MapSelection, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Selection, fade);
 	renderThingOverlays(dc, things);
 }
 
@@ -309,7 +309,7 @@ void MapRenderer2D::renderTaggedThings(gl::draw2d::Context& dc, const vector<Map
 		fade = 1.0f;
 
 	// Render overlays
-	dc.setColourFromConfig(ccfg::ColourId::MapTagged, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Tagged, fade);
 	renderThingOverlays(dc, things);
 
 	// Action lines
@@ -340,7 +340,7 @@ void MapRenderer2D::renderTaggingThings(gl::draw2d::Context& dc, const vector<Ma
 		fade = 1.0f;
 
 	// Render overlays
-	dc.setColourFromConfig(ccfg::ColourId::MapTagged, fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Tagged, fade);
 	renderThingOverlays(dc, things);
 
 	// Action lines
@@ -418,14 +418,14 @@ void MapRenderer2D::renderPathedThings(gl::draw2d::Context& dc, const vector<Map
 	dc.line_arrow_length = 24.0f / dc.view->scale(true).x;
 	if (!lines_path.empty())
 	{
-		dc.setColourFromConfig(ccfg::ColourId::MapThingPath);
+		dc.setColourFromConfig(ccfg::MapEditor::ThingPath);
 		dc.drawLines(lines_path);
 	}
 
 	// Draw dragon path lines
 	if (!lines_dragon.empty())
 	{
-		dc.setColourFromConfig(ccfg::ColourId::MapThingPathDragon);
+		dc.setColourFromConfig(ccfg::MapEditor::ThingPathDragon);
 		dc.drawLines(lines_dragon);
 	}
 

@@ -575,7 +575,7 @@ void InfoOverlay3D::draw(gl::draw2d::Context& dc, float alpha)
 	auto  bottom    = dc.viewSize().y + height * alpha_inv * alpha_inv;
 
 	// Draw overlay background
-	dc.setColourFromConfig(ccfg::ColourId::Map3DOverlayBackground, alpha);
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayBackground3D, alpha);
 	dc.drawRect({ 0.0f, bottom - height, dc.viewSize().x, bottom });
 
 	// Draw info text lines (left)
@@ -583,7 +583,7 @@ void InfoOverlay3D::draw(gl::draw2d::Context& dc, float alpha)
 	auto middle       = dc.viewSize().x / 2;
 	dc.font           = gl::draw2d::Font::Condensed;
 	dc.text_alignment = gl::draw2d::Align::Right;
-	dc.setColourFromConfig(ccfg::ColourId::Map3DOverlayForeground, alpha);
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground3D, alpha);
 	for (const auto& text : info_)
 	{
 		dc.drawText(text, { middle - (40 * scale) - 4, bottom - y });
@@ -628,14 +628,14 @@ void InfoOverlay3D::drawTexture(gl::draw2d::Context& dc, float alpha, float x, f
 			dc.drawTextureWithin({ x, y - tex_box_size - line_height, x + tex_box_size, y - line_height }, 0.0f);
 
 			// Draw outline
-			dc.setColourFromConfig(ccfg::ColourId::Map3DOverlayForeground);
+			dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground3D);
 			dc.colour.a *= alpha;
 			dc.texture        = 0;
 			dc.line_thickness = 1.0f;
 			dc.drawRectOutline({ x, y - tex_box_size - line_height, x + tex_box_size, y - line_height });
 
 			// Set text colour
-			dc.setColourFromConfig(ccfg::ColourId::Map3DOverlayForeground);
+			dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground3D);
 			dc.colour.a *= alpha;
 		}
 
@@ -648,7 +648,7 @@ void InfoOverlay3D::drawTexture(gl::draw2d::Context& dc, float alpha, float x, f
 			dc.drawTextureWithin({ x, y - tex_box_size - line_height, x + tex_box_size, y - line_height }, 0.0f, 0.2f);
 
 			// Set colour to red (for text)
-			dc.setColourFromConfig(ccfg::ColourId::Map3DOverlayForeground);
+			dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground3D);
 			dc.colour.a *= alpha;
 			dc.colour = dc.colour.ampf(1.0f, 0.0f, 0.0f, 1.0f);
 		}
@@ -662,7 +662,7 @@ void InfoOverlay3D::drawTexture(gl::draw2d::Context& dc, float alpha, float x, f
 			dc.drawTextureWithin({ x, y - tex_box_size - line_height, x + tex_box_size, y - line_height }, 0.0f, 0.2f);
 
 			// Set colour to red (for text)
-			dc.setColourFromConfig(ccfg::ColourId::Map3DOverlayForeground);
+			dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground3D);
 			dc.colour.a *= alpha;
 			dc.colour = dc.colour.ampf(1.0f, 0.0f, 0.0f, 1.0f);
 		}

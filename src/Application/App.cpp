@@ -764,7 +764,7 @@ void app::exit(bool save_config)
 		StyleSet::saveCurrent();
 
 		// Save colour configuration
-		colourconfig::writeConfiguration(path("colours.json", Dir::User));
+		// colourconfig::writeConfiguration(path("colours.json", Dir::User));
 
 		// Save game exes
 		executables::writeExecutables(path("executables.json", Dir::User));

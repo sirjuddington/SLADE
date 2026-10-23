@@ -402,7 +402,7 @@ void MapRenderer3D::renderHighlight(const Item& item, const gl::Camera& camera, 
 		return;
 
 	// Determine item type and highlight colour
-	auto& def       = ccfg::colDef(ccfg::ColourId::Map3DHighlight);
+	auto& def       = ccfg::colDef(ccfg::MapEditor::Highlight3D);
 	auto  hl_colour = def.colour.ampf(1.0f, 1.0f, 1.0f, alpha);
 	auto  base_type = baseItemType(item.type);
 
@@ -628,7 +628,7 @@ void MapRenderer3D::renderSelection(const gl::Camera& camera, const gl::View& vi
 		updateSelection(context_->selection());
 
 	// Render selection overlay in selection colour
-	auto& def = ccfg::colDef(ccfg::ColourId::Map3DSelection);
+	auto& def = ccfg::colDef(ccfg::MapEditor::Selection3D);
 	gl::setBlend(def.blendMode());
 	renderSelectionOverlay(camera, view, selection_overlay_, def.colour);
 	gl::setBlend(gl::Blend::Normal);

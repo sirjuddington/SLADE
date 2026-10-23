@@ -158,7 +158,7 @@ void MapRenderer2D::renderMovingVertices(gl::draw2d::Context& dc, const vector<I
 			points.emplace_back(v->xPos() + move_vec.x, v->yPos() + move_vec.y);
 
 	// Draw moving vertices
-	dc.setColourFromConfig(ccfg::ColourId::MapMoving);
+	dc.setColourFromConfig(ccfg::MapEditor::Moving);
 	dc.pointsprite_type   = gl::PointSpriteType::Textured;
 	dc.pointsprite_radius = vertexRadius(1.5f);
 	dc.texture            = vertexTexture();
@@ -239,7 +239,7 @@ void MapRenderer2D::renderMovingLines(gl::draw2d::Context& dc, const vector<Item
 			line_overlays.emplace_back(line->start() + move_vec, line->end() + move_vec);
 
 	// Draw moving line overlays
-	dc.setColourFromConfig(ccfg::ColourId::MapMoving);
+	dc.setColourFromConfig(ccfg::MapEditor::Moving);
 	dc.line_thickness = map2d_line_width * 3;
 	dc.drawLines(line_overlays);
 }
@@ -291,7 +291,7 @@ void MapRenderer2D::renderMovingThings(gl::draw2d::Context& dc, const vector<Ite
 	renderThings(moving_things, 1.0f, move_vec);
 
 	// Render overlays
-	dc.setColourFromConfig(ccfg::ColourId::MapMoving);
+	dc.setColourFromConfig(ccfg::MapEditor::Moving);
 	renderThingOverlays(dc, moving_things, 0.0f, move_vec);
 }
 
@@ -304,7 +304,7 @@ void MapRenderer2D::renderPasteThings(gl::draw2d::Context& dc, const vector<MapT
 	renderThings(things, 1.0f, pos);
 
 	// Render overlays
-	dc.setColourFromConfig(ccfg::ColourId::MapLineDraw);
+	dc.setColourFromConfig(ccfg::MapEditor::LineDraw);
 	renderThingOverlays(dc, things, 0.0f, pos);
 }
 
@@ -341,7 +341,7 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, const ObjectE
 		if (!line.isExtra())
 			overlay_lines.emplace_back(
 				line.v1->position.x, line.v1->position.y, line.v2->position.x, line.v2->position.y);
-	dc.setColourFromConfig(ccfg::ColourId::MapObjectEdit);
+	dc.setColourFromConfig(ccfg::MapEditor::ObjectEdit);
 	dc.line_thickness = map2d_line_width * 3;
 	dc.drawLines(overlay_lines);
 
@@ -394,7 +394,7 @@ void MapRenderer2D::renderObjectEditGroup(gl::draw2d::Context& dc, const ObjectE
 			thing_overlay_buffer_->add({ item.position.x, item.position.y }, radius);
 		}
 		thing_overlay_buffer_->push();
-		thing_overlay_buffer_->setColour(colourconfig::colour(ccfg::ColourId::MapObjectEdit));
+		thing_overlay_buffer_->setColour(colourconfig::colour(ccfg::MapEditor::ObjectEdit));
 		thing_overlay_buffer_->setFillOpacity(0.25f);
 		thing_overlay_buffer_->setOutlineWidth(std::min(3.0f / static_cast<float>(view_->scale().x), 4.0f));
 		thing_overlay_buffer_->draw(
