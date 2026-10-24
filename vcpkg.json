@@ -21,6 +21,7 @@
     "mpg123",
     "sfml"
   ],
+  "builtin-baseline": "23b8a8e7409c2d6346114a88e834165bde79a51c",
   "default-features": [ "system-wx" ],
   "features": {
     "system-wx": {
