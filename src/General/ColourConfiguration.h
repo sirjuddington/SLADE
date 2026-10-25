@@ -1,6 +1,5 @@
 #pragma once
 
-#include "JsonFwd.h"
 #include "OpenGL/OpenGL.h"
 
 namespace slade::colourconfig
@@ -103,12 +102,18 @@ const Colour& colDef(MapImage image);
 const Colour& colDef(MapEditor editor);
 
 bool init();
-void loadDefaults(Group group);
-void loadDefaults(Group group, vector<Colour>& colours);
+
+void loadDefaultConfiguration(Group group, vector<Colour>& colours);
+void applyDefaultConfiguration(Group group);
 
 void putConfigurationNames(Group group, vector<string>& names);
-bool readConfiguration(Group group, string_view name, vector<Colour>& colours);
-bool loadConfiguration(Group group, string_view name);
+bool loadConfiguration(Group group, string_view name, vector<Colour>& colours);
+bool applyConfiguration(Group group, string_view name);
+
+bool loadCustomConfiguration(Group group, vector<Colour>& colours);
+bool applyCustomConfiguration(Group group);
+bool setCustomConfiguration(Group group, vector<Colour>& colours, bool apply = true);
+void saveCustomConfiguration();
 
 struct CCfgSignals
 {

@@ -35,12 +35,41 @@
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/MapEditor.h"
 #include "UI/Layout.h"
-#include "UI/WxUtils.h"
 #include "Utility/PropertyList.h"
-#include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace ui;
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+void populatePropGrid(wxPropertyGrid* pg, const vector<colourconfig::Colour>& colours, bool read_only = true)
+{
+	// Add colour properties to the property grid
+	for (const auto& cdef : colours)
+	{
+		// Add colour
+		auto colour = pg->Append(
+			new wxColourProperty(wxString::FromUTF8(cdef.name), wxString::FromUTF8(cdef.id), cdef.colour));
+
+		// Add opacity
+		auto opacity = pg->AppendIn(colour, new wxIntProperty(wxS("Opacity (0-255)"), wxS("alpha"), cdef.colour.a));
+
+		// Set opacity limits
+		opacity->SetAttribute(wxS("Max"), 255);
+		opacity->SetAttribute(wxS("Min"), 0);
+
+		pg->SetPropertyReadOnly(colour, read_only);
+		pg->SetPropertyReadOnly(opacity, read_only);
+		pg->Collapse(colour);
+	}
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -110,6 +139,24 @@ ColourSettingsPanel::ColourSettingsPanel(wxWindow* parent) : SettingsPanel(paren
 	choice_map_preview_cfg_->Bind(wxEVT_CHOICE, &ColourSettingsPanel::onMapPreviewConfigChanged, this);
 	choice_map_image_cfg_->Bind(wxEVT_CHOICE, &ColourSettingsPanel::onMapImageConfigChanged, this);
 
+	// 'Customize' buttons select the custom configuration but keep the current colours
+	btn_map_preview_customize_->Bind(
+		wxEVT_BUTTON,
+		[this](wxCommandEvent&)
+		{
+			choice_map_preview_cfg_->SetSelection(choice_map_preview_cfg_->GetCount() - 1);
+			btn_map_preview_customize_->Hide();
+			btn_map_preview_customize_->GetContainingSizer()->Layout();
+		});
+	btn_map_image_customize_->Bind(
+		wxEVT_BUTTON,
+		[this](wxCommandEvent&)
+		{
+			choice_map_image_cfg_->SetSelection(choice_map_image_cfg_->GetCount() - 1);
+			btn_map_image_customize_->Hide();
+			btn_map_image_customize_->GetContainingSizer()->Layout();
+		});
+
 	wxWindowBase::Layout();
 }
 
@@ -120,6 +167,7 @@ void ColourSettingsPanel::loadSettings()
 {
 	// Map preview configuration
 	auto map_preview_cfg = CVar::getString("ccfg_map_preview");
+	btn_map_preview_customize_->Hide();
 	if (map_preview_cfg.empty() || strutil::equalCI(map_preview_cfg, "default"))
 		choice_map_preview_cfg_->SetSelection(0); // Default
 	else if (strutil::equalCI(map_preview_cfg, "custom"))
@@ -129,14 +177,21 @@ void ColourSettingsPanel::loadSettings()
 		// Built-in configuration (revert to default if not found)
 		if (!choice_map_preview_cfg_->SetStringSelection(wxString::FromUTF8(map_preview_cfg)))
 			choice_map_preview_cfg_->SetSelection(0);
+		else
+			btn_map_preview_customize_->Show();
 	}
 
 	// Map image configuration
 	auto map_image_cfg = CVar::getString("ccfg_map_image");
+	btn_map_image_customize_->Show();
 	if (map_image_cfg.empty() || strutil::equalCI(map_image_cfg, "default"))
 		choice_map_image_cfg_->SetSelection(0); // Default
 	else if (strutil::equalCI(map_image_cfg, "custom"))
-		choice_map_image_cfg_->SetSelection(choice_map_image_cfg_->GetCount() - 1); // Custom
+	{
+		// Custom
+		choice_map_image_cfg_->SetSelection(choice_map_image_cfg_->GetCount() - 1);
+		btn_map_image_customize_->Hide();
+	}
 	else
 	{
 		// Built-in configuration (revert to default if not found)
@@ -147,11 +202,102 @@ void ColourSettingsPanel::loadSettings()
 	// Load colours
 	colours_map_preview_ = ccfg::allColours(ccfg::Group::MapPreview);
 	colours_map_image_   = ccfg::allColours(ccfg::Group::MapImage);
-	refreshPropGrids();
+	populatePropGrid(
+		pg_map_preview_,
+		colours_map_preview_,
+		choice_map_preview_cfg_->GetSelection() < choice_map_preview_cfg_->GetCount() - 1);
+	populatePropGrid(
+		pg_map_image_,
+		colours_map_image_,
+		choice_map_image_cfg_->GetSelection() < choice_map_image_cfg_->GetCount() - 1);
 }
 
 // -----------------------------------------------------------------------------
-// Refreshes the colour configuration wxPropertyGrid
+// Applies settings from the panel controls to cvars
+// -----------------------------------------------------------------------------
+void ColourSettingsPanel::applySettings()
+{
+	auto read_custom_colours = [&](wxPropertyGrid* pg, vector<colourconfig::Colour>& colours)
+	{
+		for (auto& cdef : colours)
+		{
+			// Get properties from grid
+			auto p_alpha = dynamic_cast<wxIntProperty*>(pg->GetProperty(wxString::FromUTF8(cdef.id + ".alpha")));
+			if (!p_alpha)
+				continue;
+
+			// Colour
+			auto     v = pg->GetPropertyValue(wxString::FromUTF8(cdef.id));
+			wxColour col;
+			col << v;
+
+			// Alpha
+			int alpha = p_alpha->GetValue().GetInteger();
+			if (alpha > 255)
+				alpha = 255;
+			if (alpha < 0)
+				alpha = 0;
+
+			cdef.colour = { col.Red(), col.Green(), col.Blue(), static_cast<u8>(alpha) };
+		}
+	};
+
+	// Map Preview configuration
+	if (choice_map_preview_cfg_->GetSelection() == 0)
+	{
+		// Default
+		CVar::set("ccfg_map_preview", "");
+		ccfg::applyDefaultConfiguration(ccfg::Group::MapPreview);
+	}
+	else if (choice_map_preview_cfg_->GetSelection() == choice_map_preview_cfg_->GetCount() - 1)
+	{
+		// Custom
+		CVar::set("ccfg_map_preview", "custom");
+		auto custom_colours = ccfg::allColours(ccfg::Group::MapPreview);
+		read_custom_colours(pg_map_preview_, custom_colours);
+		ccfg::setCustomConfiguration(ccfg::Group::MapPreview, custom_colours, true);
+	}
+	else
+	{
+		// Built-in configuration
+		auto config = choice_map_preview_cfg_->GetStringSelection().utf8_string();
+		CVar::set("ccfg_map_preview", config);
+		ccfg::applyConfiguration(ccfg::Group::MapPreview, config);
+	}
+
+	// Map Image configuration
+	if (choice_map_image_cfg_->GetSelection() == 0)
+	{
+		// Default
+		CVar::set("ccfg_map_image", "");
+		ccfg::applyDefaultConfiguration(ccfg::Group::MapImage);
+	}
+	else if (choice_map_image_cfg_->GetSelection() == choice_map_image_cfg_->GetCount() - 1)
+	{
+		// Custom
+		CVar::set("ccfg_map_image", "custom");
+		auto custom_colours = ccfg::allColours(ccfg::Group::MapImage);
+		read_custom_colours(pg_map_image_, custom_colours);
+		ccfg::setCustomConfiguration(ccfg::Group::MapImage, custom_colours, true);
+	}
+	else
+	{
+		// Built-in configuration
+		auto config = choice_map_image_cfg_->GetStringSelection().utf8_string();
+		CVar::set("ccfg_map_image", config);
+		ccfg::applyConfiguration(ccfg::Group::MapImage, config);
+	}
+
+	pg_map_image_->Refresh();
+	pg_map_preview_->Refresh();
+	pg_map_image_->RefreshEditor();
+	pg_map_preview_->RefreshEditor();
+	maineditor::windowWx()->Refresh();
+	mapeditor::forceRefresh(true);
+}
+
+// -----------------------------------------------------------------------------
+// Refreshes the colour configuration wxPropertyGrids
 // -----------------------------------------------------------------------------
 void ColourSettingsPanel::refreshPropGrids(bool map_preview, bool map_image, bool readonly) const
 {
@@ -161,31 +307,11 @@ void ColourSettingsPanel::refreshPropGrids(bool map_preview, bool map_image, boo
 	if (map_image)
 		pg_map_image_->Clear();
 
-	static auto add_to_pg = [&](wxPropertyGrid* pg, const colourconfig::Colour& cdef)
-	{
-		// Add colour
-		auto colour = pg->Append(
-			new wxColourProperty(wxString::FromUTF8(cdef.name), wxString::FromUTF8(cdef.id), cdef.colour));
-
-		// Add opacity
-		auto opacity = pg->AppendIn(colour, new wxIntProperty(wxS("Opacity (0-255)"), wxS("alpha"), cdef.colour.a));
-
-		// Set opacity limits
-		opacity->SetAttribute(wxS("Max"), 255);
-		opacity->SetAttribute(wxS("Min"), 0);
-
-		pg->SetPropertyReadOnly(colour, readonly);
-		pg->SetPropertyReadOnly(opacity, readonly);
-		pg->Collapse(colour);
-	};
-
 	// Load colours to grids
 	if (map_preview)
-		for (auto cdef : colours_map_preview_)
-			add_to_pg(pg_map_preview_, cdef);
+		populatePropGrid(pg_map_preview_, colours_map_preview_, readonly);
 	if (map_image)
-		for (auto cdef : colours_map_image_)
-			add_to_pg(pg_map_image_, cdef);
+		populatePropGrid(pg_map_image_, colours_map_image_, readonly);
 
 	// // Add theme options to property grid
 	// auto g_theme = pg_colours_->Append(new wxPropertyCategory(wxS("Map Editor Theme")));
@@ -204,27 +330,39 @@ void ColourSettingsPanel::refreshPropGrids(bool map_preview, bool map_image, boo
 	// pg_colours_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
 }
 
+
+// -----------------------------------------------------------------------------
+//
+// ColourSettingsPanel Class Event Handlers
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Called when the map preview configuration choice is changed
+// -----------------------------------------------------------------------------
 void ColourSettingsPanel::onMapPreviewConfigChanged(wxCommandEvent& e)
 {
 	if (choice_map_preview_cfg_->GetSelection() == 0)
 	{
 		// Default configuration selected
-		btn_map_preview_customize_->Show();
-		ccfg::loadDefaults(ccfg::Group::MapPreview, colours_map_preview_);
+		btn_map_preview_customize_->Hide();
+		ccfg::loadDefaultConfiguration(ccfg::Group::MapPreview, colours_map_preview_);
 		refreshPropGrids(true, false);
 	}
 	else if (choice_map_preview_cfg_->GetSelection() == choice_map_preview_cfg_->GetCount() - 1)
 	{
-		// TODO: Custom config
+		// Custom config
 		btn_map_preview_customize_->Hide();
-		refreshPropGrids(false, true, false);
+		ccfg::loadCustomConfiguration(ccfg::Group::MapPreview, colours_map_preview_);
+		refreshPropGrids(true, false, false);
 	}
 	else
 	{
 		// Built-in configuration selected
 		btn_map_preview_customize_->Show();
 		auto config = choice_map_preview_cfg_->GetStringSelection().utf8_string();
-		ccfg::readConfiguration(ccfg::Group::MapPreview, config, colours_map_preview_);
+		ccfg::loadConfiguration(ccfg::Group::MapPreview, config, colours_map_preview_);
 		refreshPropGrids(true, false);
 		pg_map_preview_->Enable(false);
 	}
@@ -232,19 +370,23 @@ void ColourSettingsPanel::onMapPreviewConfigChanged(wxCommandEvent& e)
 	btn_map_preview_customize_->GetContainingSizer()->Layout();
 }
 
+// -----------------------------------------------------------------------------
+// Called when the map image configuration choice is changed
+// -----------------------------------------------------------------------------
 void ColourSettingsPanel::onMapImageConfigChanged(wxCommandEvent& e)
 {
 	if (choice_map_image_cfg_->GetSelection() == 0)
 	{
 		// Default configuration selected
 		btn_map_image_customize_->Show();
-		ccfg::loadDefaults(ccfg::Group::MapImage, colours_map_image_);
+		ccfg::loadDefaultConfiguration(ccfg::Group::MapImage, colours_map_image_);
 		refreshPropGrids(false, true);
 	}
 	else if (choice_map_image_cfg_->GetSelection() == choice_map_image_cfg_->GetCount() - 1)
 	{
 		// TODO: Custom config
 		btn_map_image_customize_->Hide();
+		ccfg::loadCustomConfiguration(ccfg::Group::MapImage, colours_map_image_);
 		refreshPropGrids(false, true, false);
 	}
 	else
@@ -252,110 +394,10 @@ void ColourSettingsPanel::onMapImageConfigChanged(wxCommandEvent& e)
 		// Built-in configuration selected
 		btn_map_image_customize_->Show();
 		auto config = choice_map_image_cfg_->GetStringSelection().utf8_string();
-		ccfg::readConfiguration(ccfg::Group::MapImage, config, colours_map_image_);
+		ccfg::loadConfiguration(ccfg::Group::MapImage, config, colours_map_image_);
 		refreshPropGrids(false, true);
 		pg_map_image_->Enable(false);
 	}
 
 	btn_map_image_customize_->GetContainingSizer()->Layout();
-}
-
-// -----------------------------------------------------------------------------
-// Applies settings from the panel controls to cvars
-// -----------------------------------------------------------------------------
-void ColourSettingsPanel::applySettings()
-{
-	// Map Preview configuration
-	if (choice_map_preview_cfg_->GetSelection() == 0)
-	{
-		CVar::set("ccfg_map_preview", "");
-		ccfg::loadDefaults(ccfg::Group::MapPreview);
-	}
-	else if (choice_map_preview_cfg_->GetSelection() == choice_map_preview_cfg_->GetCount() - 1)
-	{
-		// TODO: Custom
-		CVar::set("ccfg_map_preview", "custom");
-	}
-	else
-	{
-		auto config = choice_map_preview_cfg_->GetStringSelection().utf8_string();
-		CVar::set("ccfg_map_preview", config);
-		ccfg::loadConfiguration(ccfg::Group::MapPreview, config);
-	}
-
-	// Map Image configuration
-	if (choice_map_image_cfg_->GetSelection() == 0)
-	{
-		CVar::set("ccfg_map_image", "");
-		ccfg::loadDefaults(ccfg::Group::MapImage);
-	}
-	else if (choice_map_image_cfg_->GetSelection() == choice_map_image_cfg_->GetCount() - 1)
-	{
-		// TODO: Custom
-		CVar::set("ccfg_map_image", "custom");
-	}
-	else
-	{
-		auto config = choice_map_image_cfg_->GetStringSelection().utf8_string();
-		CVar::set("ccfg_map_image", config);
-		ccfg::loadConfiguration(ccfg::Group::MapImage, config);
-	}
-
-	// Get list of all colours
-	// auto colours = ccfg::allColours();
-
-	// for (unsigned a = 0; a < colours.size(); a++)
-	{
-		// Get colour definition
-		// auto cdef = colours[a];
-
-		// auto cdef_path = cdef.group;
-		// cdef_path += ".";
-		// cdef_path += cdef.name;
-		//
-		// // Get properties from grid
-		// auto p_alpha = dynamic_cast<wxIntProperty*>(pg_colours_->GetProperty(wxString::FromUTF8(cdef_path +
-		// ".alpha"))); auto p_add   = dynamic_cast<wxBoolProperty*>(
-		//           pg_colours_->GetProperty(wxString::FromUTF8(cdef_path + ".additive")));
-		//
-		// if (p_alpha && p_add)
-		// {
-		// 	// Getting the colour out of a wxColourProperty is retarded
-		// 	auto     v = pg_colours_->GetPropertyValue(wxString::FromUTF8(cdef_path));
-		// 	wxColour col;
-		// 	col << v; // wut?
-		//
-		// 	// Get alpha
-		// 	int alpha = p_alpha->GetValue().GetInteger();
-		// 	if (alpha > 255)
-		// 		a = 255;
-		// 	if (alpha < 0)
-		// 		a = 0;
-		//
-		// 	// Get blend
-		// 	int blend = 0;
-		// 	if (p_add->GetValue().GetBool())
-		// 		blend = 1;
-		//
-		// 	// TODO: Set the colour
-		// 	// colourconfig::setColour(colours[a], {}, col.Red(), col.Green(), col.Blue(), alpha, blend);
-		//
-		// 	// Clear modified status
-		// 	pg_colours_->GetProperty(wxString::FromUTF8(cdef_path))->SetModifiedStatus(false);
-		// 	p_alpha->SetModifiedStatus(false);
-		// 	p_add->SetModifiedStatus(false);
-		// }
-	}
-
-	// colourconfig::setLineHilightWidth(pg_colours_->GetProperty(wxS("line_hilight_width"))->GetValue());
-	// pg_colours_->GetProperty(wxS("line_hilight_width"))->SetModifiedStatus(false);
-	// colourconfig::setLineSelectionWidth(pg_colours_->GetProperty(wxS("line_selection_width"))->GetValue());
-	// pg_colours_->GetProperty(wxS("line_selection_width"))->SetModifiedStatus(false);
-	// colourconfig::setFlatAlpha(pg_colours_->GetProperty(wxS("flat_alpha"))->GetValue());
-	// pg_colours_->GetProperty(wxS("flat_alpha"))->SetModifiedStatus(false);
-	//
-	// pg_colours_->Refresh();
-	// pg_colours_->RefreshEditor();
-	maineditor::windowWx()->Refresh();
-	mapeditor::forceRefresh(true);
 }
