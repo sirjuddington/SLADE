@@ -45,23 +45,24 @@ public:
 	bool propHidden(const string& property) { return VECTOR_EXISTS(hide_props_, property); }
 
 private:
-	TabControl*           stc_sections_   = nullptr;
-	wxPropertyGrid*       pg_properties_  = nullptr;
-	wxPropertyGrid*       pg_props_side1_ = nullptr;
-	wxPropertyGrid*       pg_props_side2_ = nullptr;
-	map::ObjectType       last_type_;
-	string                last_config_;
-	vector<MOPGProperty*> properties_;
-	wxPGProperty*         args_[5]      = {};
-	wxButton*             btn_reset_    = nullptr;
-	wxButton*             btn_apply_    = nullptr;
-	wxCheckBox*           cb_show_all_  = nullptr;
-	wxButton*             btn_add_      = nullptr;
-	wxPGProperty*         group_custom_ = nullptr;
-	bool                  no_apply_     = false;
-	bool                  udmf_         = false;
-	vector<wxPGProperty*> groups_;
-	wxStaticText*         label_no_object_ = nullptr;
+	TabControl*                stc_sections_   = nullptr;
+	wxPropertyGrid*            pg_properties_  = nullptr;
+	wxPropertyGrid*            pg_props_side1_ = nullptr;
+	wxPropertyGrid*            pg_props_side2_ = nullptr;
+	map::ObjectType            last_type_;
+	string                     last_config_;
+	vector<MOPGProperty*>      properties_;
+	wxPGProperty*              args_[5]      = {};
+	wxButton*                  btn_reset_    = nullptr;
+	wxButton*                  btn_apply_    = nullptr;
+	wxCheckBox*                cb_show_all_  = nullptr;
+	wxButton*                  btn_add_      = nullptr;
+	wxPGProperty*              group_custom_ = nullptr;
+	bool                       no_apply_     = false;
+	bool                       udmf_         = false;
+	vector<wxPGProperty*>      groups_;
+	wxStaticText*              label_no_object_ = nullptr;
+	sigslot::scoped_connection sc_config_changed_;
 
 	// Hide properties
 	bool           hide_flags_    = false;

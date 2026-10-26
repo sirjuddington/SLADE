@@ -216,6 +216,13 @@ public:
 	void dumpValidMapNames() const;
 	void dumpUDMFProperties();
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<> config_changed;
+	};
+	Signals& signals() { return signals_; }
+
 private:
 	string                    current_game_;           // Current game name
 	string                    current_port_;           // Current port name (empty if none)
@@ -226,6 +233,8 @@ private:
 	string                    script_language_;        // Scripting language (should be extended to allow multiple)
 	vector<int>               light_levels_;           // Light levels for up/down light in editor
 	int                       player_eye_height_;      // Player eye height for 3d mode camera
+
+	Signals signals_;
 
 	// Action specials
 	std::map<int, ActionSpecial> action_specials_;

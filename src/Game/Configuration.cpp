@@ -346,6 +346,13 @@ bool Configuration::openConfig(const string& game, const string& port, MapFormat
 	udmf_thing_props_.clear();
 	tt_group_defaults_.clear();
 
+	// Send config_changed signal when this function exits (even if it fails)
+	struct ChangedNotifier
+	{
+		sigslot::signal<>& signal;
+		~ChangedNotifier() { signal(); }
+	} changed_notifier{ signals_.config_changed };
+
 	// Load base game configuration
 	bool game_ok = false;
 	if (game_config.user)
