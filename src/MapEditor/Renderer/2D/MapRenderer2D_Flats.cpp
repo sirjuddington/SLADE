@@ -105,9 +105,14 @@ const MapTextureManager::Texture& sectorTexture(const MapSector* sector, bool ce
 glm::vec4 sectorColour(const MapSector& sector, bool ceiling)
 {
 	auto& map_specials = sector.parentMap()->mapSpecials();
-	return map_specials.sectorColour(sector, ceiling ? map::SectorPart::Ceiling : map::SectorPart::Floor)
-		.ampf(map2d_flat_brightness, map2d_flat_brightness, map2d_flat_brightness, 1.0f);
-	// return sector->colourAt(ceiling ? 2 : 1).ampf(flat_brightness, flat_brightness, flat_brightness, 1.0f);
+	auto part          = ceiling ? map::SectorPart::Ceiling : map::SectorPart::Floor;
+
+	// Apply sector light level (unless ignored)
+	float mult = 1.0f;
+	if (!map2d_flat_ignore_light)
+		mult *= static_cast<float>(sector.lightAt(part)) / 255.0f;
+
+	return map_specials.sectorColour(sector, part).ampf(mult, mult, mult, 1.0f);
 }
 
 // -----------------------------------------------------------------------------
