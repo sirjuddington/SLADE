@@ -138,6 +138,10 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	pg_props_side2_->Show(false);
 
 	wxWindowBase::Layout();
+
+	// Properties hold pointers to UDMF properties in game config, so we need to
+	// clear the grid when the config changes to avoid dangling pointers
+	sc_config_changed_ = game::configuration().signals().config_changed.connect([this] { clearGrid(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -1044,7 +1048,8 @@ void MapObjectPropsPanel::updateArgs(MOPGIntWithArgsProperty* source)
 		{
 			prop_with_args = dynamic_cast<MOPGIntWithArgsProperty*>(prop);
 
-			if (!prop_with_args->IsValueUnspecified() && prop_with_args->GetValue().GetInteger() != 0
+			if (!prop_with_args->IsValueUnspecified()
+				&& prop_with_args->GetValue().GetInteger() != 0
 				&& prop_with_args->hasArgs())
 			{
 				owner_prop = prop_with_args;
