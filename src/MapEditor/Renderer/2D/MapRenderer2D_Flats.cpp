@@ -243,7 +243,7 @@ void MapRenderer2D::renderFlatHilight(gl::draw2d::Context& dc, int index, float 
 		fade = 1.0f;
 
 	// Set render options
-	dc.setColourFromConfig("map_hilight", fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Highlight, fade);
 	dc.line_thickness = map2d_line_width * (colourconfig::lineHilightWidth() * fade);
 
 	// Fill if cvar is set
@@ -344,7 +344,7 @@ void MapRenderer2D::renderFlatSelection(gl::draw2d::Context& dc, const ItemSelec
 		fade = 1.0f;
 
 	// Set render options
-	dc.setColourFromConfig("map_selection", fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Selection, fade);
 	dc.line_thickness = map2d_line_width * 2.0f;
 
 	// Render flat overlays for selection
@@ -365,7 +365,7 @@ void MapRenderer2D::renderTaggedFlats(gl::draw2d::Context& dc, const vector<MapS
 		fade = 1.0f;
 
 	// Setup render options
-	dc.setColourFromConfig("map_tagged", fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Tagged, fade);
 	dc.line_thickness = map2d_line_width * 2.0f;
 
 	// Render overlays for tagged sectors

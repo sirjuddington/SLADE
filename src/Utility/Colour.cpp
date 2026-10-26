@@ -422,6 +422,18 @@ ColRGBA colour::greyscale(const ColRGBA& colour)
 }
 
 // -----------------------------------------------------------------------------
+// Returns a blend of [c1] and [c2] by [factor] (0.0 = c1, 1.0 = c2)
+// -----------------------------------------------------------------------------
+ColRGBA colour::blend(const ColRGBA& c1, const ColRGBA& c2, double factor)
+{
+	uint8_t r = static_cast<uint8_t>(c1.r + (c2.r - c1.r) * factor);
+	uint8_t g = static_cast<uint8_t>(c1.g + (c2.g - c1.g) * factor);
+	uint8_t b = static_cast<uint8_t>(c1.b + (c2.b - c1.b) * factor);
+	uint8_t a = static_cast<uint8_t>(c1.a + (c2.a - c1.a) * factor);
+	return { r, g, b, a };
+}
+
+// -----------------------------------------------------------------------------
 // Returns [rgb] in HSL colourspace
 // -----------------------------------------------------------------------------
 ColHSL colour::rgbToHsl(const ColRGBA& rgb)

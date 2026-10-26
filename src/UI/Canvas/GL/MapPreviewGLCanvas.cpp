@@ -36,6 +36,7 @@
 #include "General/MapPreviewData.h"
 #include "OpenGL/LineBuffer.h"
 #include "OpenGL/PointSpriteBuffer.h"
+#include "UI/WxUtils.h"
 #include <glm/ext/matrix_transform.hpp>
 
 using namespace slade;
@@ -62,7 +63,7 @@ MapPreviewGLCanvas::MapPreviewGLCanvas(wxWindow* parent, MapPreviewData* data, b
 	GLCanvas(parent),
 	data_{ data }
 {
-	setBackground(BGStyle::Colour, colourconfig::colour("map_view_background"));
+	setBackground(BGStyle::Colour, ccfg::colour(ccfg::MapPreview::Background));
 
 	// Centered view
 	setView({ true, true, false });
@@ -74,6 +75,15 @@ MapPreviewGLCanvas::MapPreviewGLCanvas(wxWindow* parent, MapPreviewData* data, b
 	// View Panning
 	if (allow_pan)
 		setupMousePanning();
+
+	// Refresh buffer when colour config changes
+	sc_ccfg_changed_ = ccfg::signals().colour_config_changed.connect(
+		[this](ccfg::Group)
+		{
+			setBackground(BGStyle::Colour, ccfg::colour(ccfg::MapPreview::Background));
+			buffer_updated_time_ = 0;
+			Refresh();
+		});
 }
 
 // -----------------------------------------------------------------------------
@@ -81,7 +91,7 @@ MapPreviewGLCanvas::MapPreviewGLCanvas(wxWindow* parent, MapPreviewData* data, b
 // -----------------------------------------------------------------------------
 void MapPreviewGLCanvas::draw()
 {
-	setBackground(BGStyle::Colour, colourconfig::colour("map_view_background"));
+	setBackground(BGStyle::Colour, ccfg::colour(ccfg::MapPreview::Background));
 
 	// Reset buffers if data is updated since last draw
 	if (buffer_updated_time_ < data_->updated_time)
@@ -122,7 +132,7 @@ void MapPreviewGLCanvas::draw()
 
 		// Draw things
 		things_buffer_->setPointRadius(20.0f);
-		things_buffer_->setColour(colourconfig::colour("map_view_thing"));
+		things_buffer_->setColour(ccfg::colour(ccfg::MapPreview::Thing));
 		things_buffer_->draw(gl::PointSpriteType::Circle, &view_);
 	}
 }
@@ -136,10 +146,10 @@ void MapPreviewGLCanvas::updateLinesBuffer()
 		return;
 
 	// Setup colours
-	glm::vec4 col_view_line_1s      = colourconfig::colour("map_view_line_1s");
-	glm::vec4 col_view_line_2s      = colourconfig::colour("map_view_line_2s");
-	glm::vec4 col_view_line_special = colourconfig::colour("map_view_line_special");
-	glm::vec4 col_view_line_macro   = colourconfig::colour("map_view_line_macro");
+	glm::vec4 col_view_line_1s      = ccfg::colour(ccfg::MapPreview::Line1S);
+	glm::vec4 col_view_line_2s      = ccfg::colour(ccfg::MapPreview::Line2S);
+	glm::vec4 col_view_line_special = ccfg::colour(ccfg::MapPreview::LineSpecial);
+	glm::vec4 col_view_line_macro   = ccfg::colour(ccfg::MapPreview::LineMacro);
 
 	if (!lines_buffer_)
 		lines_buffer_ = std::make_unique<gl::LineBuffer>();

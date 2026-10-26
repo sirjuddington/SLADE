@@ -198,12 +198,12 @@ void ThingInfoOverlay::draw(gl::draw2d::Context& dc, float alpha)
 	auto  bottom    = dc.viewSize().y + height * alpha_inv * alpha_inv;
 
 	// Draw overlay background
-	dc.setColourFromConfig("map_overlay_background");
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayBackground);
 	dc.colour.a *= alpha;
 	dc.drawRect({ 0.0f, bottom - height, right, bottom });
 
 	// Draw info text lines
-	dc.setColourFromConfig("map_overlay_foreground");
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground);
 	dc.colour.a *= alpha;
 	text_box_->draw({ 4.0f, bottom - height + 4.0f }, dc);
 

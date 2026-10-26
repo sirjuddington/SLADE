@@ -34,12 +34,12 @@
 #include "DataEntryPanel.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
-#include "General/ColourConfiguration.h"
 #include "General/SAction.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainEditor.h"
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -427,7 +427,7 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 	{
 		if (i == row)
 		{
-			attr->SetTextColour(colourconfig::colour("new"));
+			attr->SetTextColour(ui::textColour(ui::TextColour::New));
 			new_row = true;
 			break;
 		}
@@ -440,7 +440,7 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 		{
 			if (cell.x == row && cell.y == col)
 			{
-				attr->SetTextColour(colourconfig::colour("modified"));
+				attr->SetTextColour(ui::textColour(ui::TextColour::Modified));
 				break;
 			}
 		}

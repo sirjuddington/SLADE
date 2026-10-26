@@ -35,7 +35,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ListView.h"
-#include "General/ColourConfiguration.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -186,10 +186,10 @@ bool ListView::setItemStatus(int item, ItemStatus status)
 	switch (status)
 	{
 	case ItemStatus::Normal:   SetItemTextColour(item, wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
-	case ItemStatus::Modified: SetItemTextColour(item, colourconfig::colour("modified")); break;
-	case ItemStatus::New:      SetItemTextColour(item, colourconfig::colour("new")); break;
-	case ItemStatus::Locked:   SetItemTextColour(item, colourconfig::colour("locked")); break;
-	case ItemStatus::Error:    SetItemTextColour(item, colourconfig::colour("error")); break;
+	case ItemStatus::Modified: SetItemTextColour(item, ui::textColour(ui::TextColour::Modified)); break;
+	case ItemStatus::New:      SetItemTextColour(item, ui::textColour(ui::TextColour::New)); break;
+	case ItemStatus::Locked:   SetItemTextColour(item, ui::textColour(ui::TextColour::Locked)); break;
+	case ItemStatus::Error:    SetItemTextColour(item, ui::textColour(ui::TextColour::Error)); break;
 	case ItemStatus::Disabled: SetItemTextColour(item, disabledColour());
 	}
 

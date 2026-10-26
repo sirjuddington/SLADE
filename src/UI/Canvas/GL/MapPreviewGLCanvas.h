@@ -26,6 +26,8 @@ private:
 	unique_ptr<gl::PointSpriteBuffer> things_buffer_;
 	long                              buffer_updated_time_ = 0;
 
+	sigslot::scoped_connection sc_ccfg_changed_;
+
 	void updateLinesBuffer();
 	void updateThingsBuffer();
 };

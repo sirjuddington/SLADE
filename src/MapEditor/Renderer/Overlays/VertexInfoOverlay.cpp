@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "VertexInfoOverlay.h"
+#include "General/ColourConfiguration.h"
 #include "General/MapFormat.h"
 #include "Geometry/Rect.h"
 #include "OpenGL/Draw2D.h"
@@ -103,14 +104,14 @@ void VertexInfoOverlay::draw(gl::draw2d::Context& dc, float alpha) const
 	auto bottom    = dc.viewSize().y + height * alpha_inv * alpha_inv;
 
 	// Draw overlay background
-	dc.setColourFromConfig("map_overlay_background");
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayBackground);
 	dc.colour.a *= alpha;
 	dc.texture = 0;
 	dc.drawRect({ 0.0f, bottom - height, dc.viewSize().x, bottom });
 
 	// Draw text
 	auto y = bottom - height + 4.0f;
-	dc.setColourFromConfig("map_overlay_foreground");
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayForeground);
 	dc.colour.a *= alpha;
 	for (const auto& line : info_)
 	{

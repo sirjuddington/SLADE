@@ -32,10 +32,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapDisplaySettingsPanel.h"
+#include "General/ColourConfiguration.h"
+#include "UI/Controls/ColourConfigPanel.h"
 #include "UI/Controls/RadioButtonPanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Controls/SettingsTable.h"
 #include "UI/Layout.h"
+#include "UI/UI.h"
 
 using namespace slade;
 using namespace ui;
@@ -64,6 +67,7 @@ MapDisplaySettingsPanel::MapDisplaySettingsPanel(wxWindow* parent) : SettingsPan
 	// Setup tabs
 	auto lh = LayoutHelper(this);
 	tabs->AddPage(createGeneralPanel(tabs, lh), wxS("General"));
+	tabs->AddPage(ccp_colours_ = new ColourConfigPanel(tabs, ccfg::Group::MapEditor, true, padLarge()), wxS("Colours"));
 	tabs->AddPage(createVerticesPanel(tabs, lh), wxS("Vertices"));
 	tabs->AddPage(createLinesPanel(tabs, lh), wxS("Lines"));
 	tabs->AddPage(createThingsPanel(tabs, lh), wxS("Things"));
@@ -208,6 +212,7 @@ void MapDisplaySettingsPanel::loadSettings()
 	st_things_->loadSettings();
 	st_sectors_->loadSettings();
 	st_3d_->loadSettings();
+	ccp_colours_->loadConfig();
 }
 
 // -----------------------------------------------------------------------------
@@ -238,4 +243,5 @@ void MapDisplaySettingsPanel::applySettings()
 	st_things_->applySettings();
 	st_sectors_->applySettings();
 	st_3d_->applySettings();
+	ccp_colours_->apply();
 }

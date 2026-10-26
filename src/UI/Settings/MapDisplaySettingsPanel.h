@@ -4,6 +4,7 @@
 
 namespace slade::ui
 {
+class ColourConfigPanel;
 class SettingsTable;
 struct LayoutHelper;
 class RadioButtonPanel;
@@ -20,13 +21,14 @@ public:
 	void applySettings() override;
 
 private:
-	SettingsTable*    st_general_       = nullptr;
-	SettingsTable*    st_vertices_      = nullptr;
-	SettingsTable*    st_lines_         = nullptr;
-	SettingsTable*    st_things_        = nullptr;
-	SettingsTable*    st_sectors_       = nullptr;
-	SettingsTable*    st_3d_            = nullptr;
-	RadioButtonPanel* rbp_3d_highlight_ = nullptr;
+	SettingsTable*     st_general_       = nullptr;
+	SettingsTable*     st_vertices_      = nullptr;
+	SettingsTable*     st_lines_         = nullptr;
+	SettingsTable*     st_things_        = nullptr;
+	SettingsTable*     st_sectors_       = nullptr;
+	SettingsTable*     st_3d_            = nullptr;
+	RadioButtonPanel*  rbp_3d_highlight_ = nullptr;
+	ColourConfigPanel* ccp_colours_      = nullptr;
 
 	wxPanel* createGeneralPanel(wxWindow* parent, const LayoutHelper& lh);
 	wxPanel* createVerticesPanel(wxWindow* parent, const LayoutHelper& lh);

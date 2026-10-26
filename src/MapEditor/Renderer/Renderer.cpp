@@ -432,7 +432,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	if (map2d_grid_show_origin)
 	{
 		dc.line_thickness = 3.0f;
-		dc.setColourFromConfig("map_grid");
+		dc.setColourFromConfig(ccfg::MapEditor::Grid);
 		dc.drawLines({ Rectf(0, start_y, 0, end_y), Rectf(start_x, 0, end_x, 0) });
 	}
 
@@ -441,7 +441,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	auto gridsize = static_cast<int>(context_->gridSize());
 	if (gridsize > grid_hidelevel)
 	{
-		glm::vec4 col_grid = colourconfig::colour("map_grid");
+		glm::vec4 col_grid = colourconfig::colour(ccfg::MapEditor::Grid);
 
 		// Vertical
 		int ofs = static_cast<int>(start_x) % gridsize;
@@ -461,7 +461,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 
 		vb_grid_->push();
 
-		gl::setBlend(colourconfig::colDef("map_grid").blendMode());
+		gl::setBlend(colourconfig::colDef(ccfg::MapEditor::Grid).blendMode());
 		shader->setUniform("colour", glm::vec4{ 1.0f });
 		vb_grid_->draw(Primitive::Lines, shader, view_.get());
 	}
@@ -469,7 +469,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 	// Setup 64 grid if it's not too small and we're not on a larger grid size
 	if (64 > grid_hidelevel && gridsize < 64 && map2d_64grid_style > 0)
 	{
-		glm::vec4 col_64grid = colourconfig::colour("map_64grid");
+		glm::vec4 col_64grid = colourconfig::colour(ccfg::MapEditor::Grid64);
 		int       cross_size = 8;
 		cross_size           = std::min(gridsize, cross_size);
 
@@ -525,7 +525,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 
 		vb_grid_->push();
 
-		gl::setBlend(colourconfig::colDef("map_64grid").blendMode());
+		gl::setBlend(colourconfig::colDef(ccfg::MapEditor::Grid64).blendMode());
 		shader->setUniform("colour", glm::vec4{ 1.0f });
 		vb_grid_->draw(Primitive::Lines, shader, view_.get());
 	}
@@ -536,7 +536,7 @@ void Renderer::drawGrid(gl::draw2d::Context& dc) const
 		auto   mouse_pos = context_->input().mousePos();
 		double x         = context_->snapToGrid(view_->canvasX(mouse_pos.x), false);
 		double y         = context_->snapToGrid(view_->canvasY(mouse_pos.y), false);
-		auto&  def       = colourconfig::colDef("map_64grid");
+		auto&  def       = colourconfig::colDef(ccfg::MapEditor::Grid64);
 		auto   col       = def.colour;
 
 		// Small
@@ -591,8 +591,8 @@ void Renderer::drawEditorMessages(draw2d::Context& dc) const
 	float yoff = 4.0f;
 	if (map_showfps)
 		yoff = 32.0f;
-	auto col_fg = colourconfig::colour("map_editor_message");
-	auto col_bg = colourconfig::colour("map_editor_message_outline");
+	auto col_fg = colourconfig::colour(ccfg::MapEditor::EditorMessage);
+	auto col_bg = colourconfig::colour(ccfg::MapEditor::EditorMessageOutline);
 
 	dc.font           = draw2d::Font::Bold;
 	dc.text_size      = 20 * ui_scale_;
@@ -648,10 +648,11 @@ void Renderer::drawFeatureHelpText(draw2d::Context& dc) const
 	dc.text_size      = 20 * ui_scale_;
 	dc.text_style     = draw2d::TextStyle::Outline;
 	dc.text_alignment = draw2d::Align::Right;
-	dc.colour         = colourconfig::colour("map_editor_message").ampf(1.0f, 1.0f, 1.0f, anim_help_fade_);
-	dc.outline_colour = colourconfig::colour("map_editor_message_outline").ampf(1.0f, 1.0f, 1.0f, anim_help_fade_);
-	auto x            = static_cast<float>(view_->size().x) - 4.0f;
-	auto underline_y  = 6.0f + dc.textLineHeight();
+	dc.colour         = colourconfig::colour(ccfg::MapEditor::EditorMessage).ampf(1.0f, 1.0f, 1.0f, anim_help_fade_);
+	dc.outline_colour = colourconfig::colour(ccfg::MapEditor::EditorMessageOutline)
+							.ampf(1.0f, 1.0f, 1.0f, anim_help_fade_);
+	auto x           = static_cast<float>(view_->size().x) - 4.0f;
+	auto underline_y = 6.0f + dc.textLineHeight();
 	dc.drawText(help_lines[0], { x, 4.0f });
 
 	// Help Text
@@ -684,7 +685,7 @@ void Renderer::drawSelectionNumbers(draw2d::Context& dc) const
 	// Setup drawing options
 	dc.font       = draw2d::Font::Bold;
 	dc.text_style = draw2d::TextStyle::Outline;
-	dc.colour     = colourconfig::colour("map_editor_message");
+	dc.colour     = colourconfig::colour(ccfg::MapEditor::EditorMessage);
 	dc.view       = view_screen_.get();
 
 	// Go through selection
@@ -730,7 +731,7 @@ void Renderer::drawThingQuickAngleLines(draw2d::Context& dc) const
 		return;
 
 	// Setup drawing options
-	dc.setColourFromConfig("map_moving");
+	dc.setColourFromConfig(ccfg::MapEditor::Moving);
 	dc.line_thickness = 2.0f;
 
 	// Build lines list
@@ -794,7 +795,7 @@ void Renderer::drawLineDrawLines(draw2d::Context& dc, bool snap_nearest_vertex) 
 	// Draw lines
 	auto& line_draw = context_->lineDraw();
 	int   npoints   = line_draw.nPoints();
-	dc.setColourFromConfig("map_linedraw");
+	dc.setColourFromConfig(ccfg::MapEditor::LineDraw);
 	dc.line_thickness = 2.0f;
 	vector<Rectf> lines;
 	if (npoints > 1)
@@ -865,7 +866,7 @@ void Renderer::drawPasteLines(draw2d::Context& dc) const
 		lines.emplace_back(pos.x + line->x1(), pos.y + line->y1(), pos.x + line->x2(), pos.y + line->y2());
 
 	// Draw
-	dc.setColourFromConfig("map_linedraw");
+	dc.setColourFromConfig(ccfg::MapEditor::LineDraw);
 	dc.line_thickness = 2.0f;
 	dc.drawLines(lines);
 }
@@ -891,7 +892,7 @@ void Renderer::drawObjectEdit(draw2d::Context& dc) const
 	bbox.max.y += 4 / view_->scale(true).x;
 
 	// Setup draw options
-	dc.colour         = colourconfig::colour("map_object_edit");
+	dc.colour         = colourconfig::colour(ccfg::MapEditor::ObjectEdit);
 	dc.colour.a       = 255;
 	dc.blend          = Blend::Normal;
 	dc.line_thickness = 2.0f;
@@ -1161,13 +1162,13 @@ void Renderer::drawMap2d(draw2d::Context& dc, bool focused) const
 	if (mouse_state == Input::MouseState::Selection)
 	{
 		// Outline
-		dc.setColourFromConfig("map_selbox_outline");
+		dc.setColourFromConfig(ccfg::MapEditor::SelBoxOutline);
 		dc.texture        = 0;
 		dc.line_thickness = 2.0f;
 		dc.drawRectOutline(sel_rect);
 
 		// Fill
-		dc.setColourFromConfig("map_selbox_fill");
+		dc.setColourFromConfig(ccfg::MapEditor::SelBoxFill);
 		dc.drawRect(sel_rect);
 	}
 
@@ -1280,7 +1281,7 @@ void Renderer::draw(bool focused) const
 	// Draw crosshair if in 3d mode + locked mouselook
 	if (focused && context_->editMode() == Mode::Visual && map3d_mlook_always)
 	{
-		dc.setColourFromConfig("map_3d_crosshair");
+		dc.setColourFromConfig(ccfg::MapEditor::Crosshair3D);
 		dc.line_thickness = 2.0f;
 		auto center       = Vec2f(view_->size().x * 0.5f, view_->size().y * 0.5f);
 		auto inner        = 3.0f * ui_scale_;
@@ -1320,8 +1321,8 @@ void Renderer::draw(bool focused) const
 		dc.text_size      = 20 * ui_scale_;
 		dc.text_style     = draw2d::TextStyle::Outline;
 		dc.text_alignment = draw2d::Align::Left;
-		dc.colour         = colourconfig::colour("map_editor_message");
-		dc.outline_colour = colourconfig::colour("map_editor_message_outline");
+		dc.colour         = colourconfig::colour(ccfg::MapEditor::EditorMessage);
+		dc.outline_colour = colourconfig::colour(ccfg::MapEditor::EditorMessageOutline);
 		dc.drawText(fmt::format("{} FPS", fps_counter.currentFPS()), { 4.0f, 4.0f });
 	}
 
@@ -1382,7 +1383,7 @@ void Renderer::draw(bool focused) const
 	// Fade screen if not focused
 	if (!focused && map_fade_unfocused)
 	{
-		dc.setColourFromConfig("map_background");
+		dc.setColourFromConfig(ccfg::MapEditor::Background);
 		dc.colour.a *= map_fade_unfocused_amount;
 		dc.drawRect({ 0.0f, 0.0f, static_cast<float>(view_->size().x), static_cast<float>(view_->size().y) });
 	}

@@ -6,6 +6,12 @@
 
 namespace slade
 {
+namespace colourconfig
+{
+	enum class MapPreview;
+	enum class MapImage;
+	enum class MapEditor;
+} // namespace colourconfig
 class GLCanvas;
 
 namespace gl
@@ -85,7 +91,7 @@ namespace gl
 			void resetModel() { model_matrix = glm::mat4{ 1.0f }; }
 			void translate(float x, float y);
 			void scale(float x, float y);
-			void setColourFromConfig(const string& def_name, float alpha = 1.0f, bool blend = true);
+			void setColourFromConfig(colourconfig::MapEditor colour_id, float alpha = 1.0f, bool blend = true);
 
 			float textLineHeight() const;
 			Vec2f textExtents(const string& text) const;

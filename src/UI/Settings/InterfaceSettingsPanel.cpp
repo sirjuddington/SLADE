@@ -31,8 +31,9 @@
 // ----------------------------------------------------------------------------
 #include "Main.h"
 #include "InterfaceSettingsPanel.h"
-#include "ColourSettingsPanel.h"
+#include "General/ColourConfiguration.h"
 #include "Graphics/Icons.h"
+#include "UI/Controls/ColourConfigPanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Controls/SettingsTable.h"
 #include "UI/Layout.h"
@@ -97,14 +98,16 @@ InterfaceSettingsPanel::InterfaceSettingsPanel(wxWindow* parent) : SettingsPanel
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	auto tabs       = STabCtrl::createControl(this);
-	settings_table_ = new SettingsTable(tabs, true, "Appearance");
-	colour_panel_   = new ColourSettingsPanel(this);
+	auto tabs        = STabCtrl::createControl(this);
+	settings_table_  = new SettingsTable(tabs, true, "Appearance");
+	ccp_map_preview_ = new ColourConfigPanel(tabs, colourconfig::Group::MapPreview, false, padLarge());
+	ccp_map_image_   = new ColourConfigPanel(tabs, colourconfig::Group::MapImage, true, padLarge());
 
 	setupInterfaceSettingsTable();
 
 	tabs->AddPage(settings_table_, wxS("Interface"));
-	tabs->AddPage(wxutil::createPadPanel(tabs, colour_panel_, padLarge()), wxS("Colours && Theme"));
+	tabs->AddPage(ccp_map_preview_, wxS("Map Preview Colours"));
+	tabs->AddPage(ccp_map_image_, wxS("Map Image Export Colours"));
 	sizer->Add(tabs, wxSizerFlags(1).Expand());
 }
 
@@ -150,7 +153,8 @@ void InterfaceSettingsPanel::loadSettings()
 		choice_elist_icon_size_->Select(2);
 
 	settings_table_->loadSettings();
-	colour_panel_->loadSettings();
+	ccp_map_preview_->loadConfig();
+	ccp_map_image_->loadConfig();
 }
 
 // ----------------------------------------------------------------------------
@@ -169,7 +173,8 @@ void InterfaceSettingsPanel::applySettings()
 	elist_icon_size = iconSize(elist_icon_size, choice_elist_icon_size_->GetSelection());
 
 	settings_table_->applySettings();
-	colour_panel_->applySettings();
+	ccp_map_preview_->apply();
+	ccp_map_image_->apply();
 }
 
 // ----------------------------------------------------------------------------

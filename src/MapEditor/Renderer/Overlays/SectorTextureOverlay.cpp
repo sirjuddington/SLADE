@@ -78,7 +78,7 @@ void SectorTextureOverlay::update(long frametime)
 void SectorTextureOverlay::draw(gl::draw2d::Context& dc, float fade)
 {
 	// Get colours
-	auto& col_fg      = colourconfig::colDef("map_overlay_foreground");
+	auto& col_fg      = ccfg::colDef(ccfg::MapEditor::OverlayForeground);
 	auto  col_fg_rgba = col_fg.colour;
 	col_fg_rgba.a *= fade;
 
@@ -86,7 +86,7 @@ void SectorTextureOverlay::draw(gl::draw2d::Context& dc, float fade)
 	auto width  = dc.viewSize().x;
 	auto height = dc.viewSize().y;
 	dc.texture  = 0;
-	dc.setColourFromConfig("map_overlay_background", fade);
+	dc.setColourFromConfig(ccfg::MapEditor::OverlayBackground, fade);
 	dc.drawRect({ 0.0f, 0.0f, width, height, false });
 
 	// Check if any sectors are open
@@ -171,8 +171,8 @@ void SectorTextureOverlay::drawTexture(
 	bool                  hover) const
 {
 	// Get colours
-	auto col_fg  = colourconfig::colour("map_overlay_foreground");
-	auto col_sel = colourconfig::colour("map_hilight");
+	auto col_fg  = colourconfig::colour(ccfg::MapEditor::OverlayForeground);
+	auto col_sel = colourconfig::colour(ccfg::MapEditor::Highlight);
 
 	// Draw background
 	dc.colour.set(255, 255, 255, 255 * alpha);
@@ -285,14 +285,18 @@ void SectorTextureOverlay::close(bool cancel)
 void SectorTextureOverlay::mouseMotion(int x, int y)
 {
 	// Check if the mouse is over the floor texture
-	if (x >= middlex_ - border_ - tex_size_ && x <= middlex_ - border_ && y >= middley_ - tex_size_ * 0.5
+	if (x >= middlex_ - border_ - tex_size_
+		&& x <= middlex_ - border_
+		&& y >= middley_ - tex_size_ * 0.5
 		&& y <= middley_ + tex_size_ * 0.5)
 		hover_floor_ = true;
 	else
 		hover_floor_ = false;
 
 	// Check if the mouse is over the ceiling texture
-	if (x >= middlex_ + border_ && x <= middlex_ + border_ + tex_size_ && y >= middley_ - tex_size_ * 0.5
+	if (x >= middlex_ + border_
+		&& x <= middlex_ + border_ + tex_size_
+		&& y >= middley_ - tex_size_ * 0.5
 		&& y <= middley_ + tex_size_ * 0.5)
 		hover_ceil_ = true;
 	else

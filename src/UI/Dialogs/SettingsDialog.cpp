@@ -39,7 +39,6 @@
 #include "UI/Settings/AudioSettingsPanel.h"
 #include "UI/Settings/BaseResourceArchiveSettingsPanel.h"
 #include "UI/Settings/ColorimetrySettingsPanel.h"
-#include "UI/Settings/ColourSettingsPanel.h"
 #include "UI/Settings/EditingSettingsPanel.h"
 #include "UI/Settings/ExternalEditorsSettingsPanel.h"
 #include "UI/Settings/GeneralSettingsPanel.h"
@@ -221,7 +220,6 @@ bool SettingsDialog::popupSettingsPage(wxWindow* parent, SettingsPage page)
 	case SettingsPage::MapDisplay:      settings_panel = new MapDisplaySettingsPanel(&dlg); break;
 	case SettingsPage::Advanced:        settings_panel = new AdvancedSettingsPanel(&dlg); break;
 	case SettingsPage::BaseResource:    settings_panel = new BaseResourceArchiveSettingsPanel(&dlg); break;
-	case SettingsPage::Colour:          settings_panel = new ColourSettingsPanel(&dlg); break;
 	case SettingsPage::Colorimetry:     settings_panel = new ColorimetrySettingsPanel(&dlg); break;
 	case SettingsPage::TextStyle:       settings_panel = new TextEditorStyleSettingsPanel(&dlg); break;
 	case SettingsPage::NodeBuilders:    settings_panel = new NodeBuildersSettingsPanel(&dlg); break;
@@ -343,7 +341,6 @@ string SettingsDialog::pageId(SettingsPage page)
 	case SettingsPage::MapDisplay:      return "map_display";
 	case SettingsPage::Advanced:        return "advanced";
 	case SettingsPage::BaseResource:    return "base_resource";
-	case SettingsPage::Colour:          return "colour_theme";
 	case SettingsPage::Colorimetry:     return "colorimetry";
 	case SettingsPage::TextStyle:       return "text_style";
 	case SettingsPage::Map3d:           return "map_3d";

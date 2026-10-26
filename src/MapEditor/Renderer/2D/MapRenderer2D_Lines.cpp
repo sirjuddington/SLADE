@@ -91,7 +91,9 @@ void MapRenderer2D::renderLines(bool show_direction, float alpha)
 	// Update lines buffer if needed
 	auto buffer_empty = map2d_line_smooth ? !lines_buffer_ || lines_buffer_->buffer().empty()
 										  : !lines_buffer_basic_ || lines_buffer_basic_->buffer().empty();
-	if (buffer_empty || show_direction != lines_dirs_ || map_->nLines() != n_lines_
+	if (buffer_empty
+		|| show_direction != lines_dirs_
+		|| map_->nLines() != n_lines_
 		|| map_->geometryUpdated() > lines_updated_
 		|| map_->mapData().modifiedSince(lines_updated_, MapObject::Type::Line))
 		updateLinesBuffer(show_direction);
@@ -126,7 +128,7 @@ void MapRenderer2D::renderLineHilight(gl::draw2d::Context& dc, int index, float 
 	// Render line hilight (+ direction tab)
 	auto mid = line->getPoint(MapObject::Point::Mid);
 	auto tab = line->dirTabPoint();
-	dc.setColourFromConfig("map_hilight", fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Highlight, fade);
 	dc.line_thickness = map2d_line_width * (colourconfig::lineHilightWidth() * fade);
 	dc.drawLines({ { line->start(), line->end() }, { mid, tab } });
 }
@@ -158,7 +160,7 @@ void MapRenderer2D::renderLineSelection(gl::draw2d::Context& dc, const ItemSelec
 	}
 
 	// Render lines
-	dc.setColourFromConfig("map_selection", fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Selection, fade);
 	dc.line_thickness = map2d_line_width * colourconfig::lineSelectionWidth();
 	dc.drawLines(lines);
 }
@@ -194,7 +196,7 @@ void MapRenderer2D::renderTaggedLines(gl::draw2d::Context& dc, const vector<MapL
 	}
 
 	// Render tagged lines
-	dc.setColourFromConfig("map_tagged", fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Tagged, fade);
 	dc.line_thickness = map2d_line_width * colourconfig::lineHilightWidth();
 	dc.drawLines(r_lines);
 
@@ -236,7 +238,7 @@ void MapRenderer2D::renderTaggingLines(gl::draw2d::Context& dc, const vector<Map
 	}
 
 	// Render tagging lines
-	dc.setColourFromConfig("map_tagged", fade);
+	dc.setColourFromConfig(ccfg::MapEditor::Tagged, fade);
 	dc.line_thickness = map2d_line_width * colourconfig::lineHilightWidth();
 	dc.drawLines(r_lines);
 
@@ -308,11 +310,11 @@ ColRGBA MapRenderer2D::lineColour(const MapLine* line, bool ignore_filter) const
 	{
 		// Check for special line
 		if (line->special() > 0)
-			col.set(colourconfig::colour("map_line_special"));
+			col.set(ccfg::colour(ccfg::MapEditor::LineSpecial));
 		else if (line->s1())
-			col.set(colourconfig::colour("map_line_normal"));
+			col.set(ccfg::colour(ccfg::MapEditor::LineNormal));
 		else
-			col.set(colourconfig::colour("map_line_invalid"));
+			col.set(ccfg::colour(ccfg::MapEditor::LineInvalid));
 
 		// Check for two-sided line
 		if (line->s2())

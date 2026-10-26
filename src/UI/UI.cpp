@@ -397,6 +397,62 @@ void ui::setWindowLayout(string_view id, const vector<StringPair>& layout)
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Returns an appropriate text colour for the given [colour] type
+// -----------------------------------------------------------------------------
+wxColour ui::textColour(TextColour colour)
+{
+	static wxColour col_text_modified(0, 0, 0, 0);
+	static wxColour col_text_new(0, 0, 0, 0);
+	static wxColour col_text_locked(0, 0, 0, 0);
+	static wxColour col_text_error(0, 0, 0, 0);
+
+	// Init precalculated text colours if necessary
+	if (col_text_modified.Alpha() == 0)
+	{
+		const auto     col_modified = ColRGBA(0, 85, 255);
+		const auto     col_new      = ColRGBA(0, 255, 0);
+		const auto     col_locked   = ColRGBA(255, 60, 0);
+		const auto     col_error    = ColRGBA(255, 0, 0);
+		const auto     col_text     = wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
+		constexpr auto intensity    = 0.65;
+
+		col_text_modified.Set(
+			static_cast<uint8_t>(col_modified.r * intensity + col_text.Red() * (1.0 - intensity)),
+			static_cast<uint8_t>(col_modified.g * intensity + col_text.Green() * (1.0 - intensity)),
+			static_cast<uint8_t>(col_modified.b * intensity + col_text.Blue() * (1.0 - intensity)),
+			255);
+
+		col_text_new.Set(
+			static_cast<uint8_t>(col_new.r * intensity + col_text.Red() * (1.0 - intensity)),
+			static_cast<uint8_t>(col_new.g * intensity + col_text.Green() * (1.0 - intensity)),
+			static_cast<uint8_t>(col_new.b * intensity + col_text.Blue() * (1.0 - intensity)),
+			255);
+
+		col_text_locked.Set(
+			static_cast<uint8_t>(col_locked.r * intensity + col_text.Red() * (1.0 - intensity)),
+			static_cast<uint8_t>(col_locked.g * intensity + col_text.Green() * (1.0 - intensity)),
+			static_cast<uint8_t>(col_locked.b * intensity + col_text.Blue() * (1.0 - intensity)),
+			255);
+
+		col_text_error.Set(
+			static_cast<uint8_t>(col_error.r * intensity + col_text.Red() * (1.0 - intensity)),
+			static_cast<uint8_t>(col_error.g * intensity + col_text.Green() * (1.0 - intensity)),
+			static_cast<uint8_t>(col_error.b * intensity + col_text.Blue() * (1.0 - intensity)),
+			255);
+	}
+
+	switch (colour)
+	{
+	case TextColour::Modified: return col_text_modified;
+	case TextColour::New:      return col_text_new;
+	case TextColour::Locked:   return col_text_locked;
+	case TextColour::Error:    return col_text_error;
+	}
+
+	return wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT);
+}
+
 
 // -----------------------------------------------------------------------------
 //

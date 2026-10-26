@@ -60,4 +60,14 @@ void               setWindowInfo(const wxWindow* window, string_view id, int wid
 vector<StringPair> getWindowLayout(string_view id);
 void               setWindowLayout(string_view id, const vector<StringPair>& layout);
 
+// Text colours
+enum class TextColour : u8
+{
+	Modified,
+	Error,
+	Locked,
+	New
+};
+wxColour textColour(TextColour colour);
+
 } // namespace slade::ui

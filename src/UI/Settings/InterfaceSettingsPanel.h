@@ -4,7 +4,7 @@
 
 namespace slade::ui
 {
-class ColourSettingsPanel;
+class ColourConfigPanel;
 class SettingsTable;
 
 class InterfaceSettingsPanel : public SettingsPanel
@@ -18,12 +18,13 @@ public:
 	void applySettings() override;
 
 private:
-	wxChoice*            choice_toolbar_iconset_ = nullptr;
-	wxChoice*            choice_toolbar_size_    = nullptr;
-	wxChoice*            choice_iconset_entry_   = nullptr;
-	wxChoice*            choice_elist_icon_size_ = nullptr;
-	SettingsTable*       settings_table_         = nullptr;
-	ColourSettingsPanel* colour_panel_           = nullptr;
+	wxChoice*          choice_toolbar_iconset_ = nullptr;
+	wxChoice*          choice_toolbar_size_    = nullptr;
+	wxChoice*          choice_iconset_entry_   = nullptr;
+	wxChoice*          choice_elist_icon_size_ = nullptr;
+	SettingsTable*     settings_table_         = nullptr;
+	ColourConfigPanel* ccp_map_preview_        = nullptr;
+	ColourConfigPanel* ccp_map_image_          = nullptr;
 
 	void setupInterfaceSettingsTable();
 };
