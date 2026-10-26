@@ -128,6 +128,7 @@ ColourConfigPanel::ColourConfigPanel(
 		[this](wxCommandEvent&)
 		{
 			choice_config_->SetSelection(choice_config_->GetCount() - 1);
+			refreshPropGrid(false);
 			btn_customize_->Hide();
 			btn_customize_->GetContainingSizer()->Layout();
 		});
@@ -162,6 +163,8 @@ void ColourConfigPanel::loadConfig()
 	}
 
 	colours_ = ccfg::allColours(group_);
+	if (group_ == ccfg::Group::MapEditor)
+		map_editor_theme_ = std::make_unique<ccfg::MapEditorTheme>(ccfg::mapEditorTheme());
 	refreshPropGrid(choice_config_->GetSelection() < choice_config_->GetCount() - 1);
 }
 
@@ -182,7 +185,7 @@ bool ColourConfigPanel::apply()
 		// Custom
 		CVar::set(configCvar(group_), "custom");
 		applyCustomColours();
-		return ccfg::setCustomConfiguration(group_, colours_, true);
+		return ccfg::setCustomConfiguration(group_, colours_, map_editor_theme_.get(), true);
 	}
 	else
 	{
@@ -205,9 +208,18 @@ void ColourConfigPanel::refreshPropGrid(bool readonly) const
 	// Add colour properties to the property grid
 	for (const auto& cdef : colours_)
 	{
+		// Get or create group (if any)
+		wxPGProperty* group = nullptr;
+		if (!cdef.group.empty())
+		{
+			group = pg_colours_->GetProperty(wxString::FromUTF8(cdef.group));
+			if (!group)
+				group = pg_colours_->Append(new wxPropertyCategory(wxString::FromUTF8(cdef.group)));
+		}
+
 		// Add colour
-		auto colour = pg_colours_->Append(
-			new wxColourProperty(wxString::FromUTF8(cdef.name), wxString::FromUTF8(cdef.id), cdef.colour));
+		auto col_prop = new wxColourProperty(wxString::FromUTF8(cdef.name), wxString::FromUTF8(cdef.id), cdef.colour);
+		auto colour   = group ? pg_colours_->AppendIn(group, col_prop) : pg_colours_->Append(col_prop);
 
 		// Add opacity
 		auto opacity = pg_colours_->AppendIn(
@@ -230,11 +242,31 @@ void ColourConfigPanel::refreshPropGrid(bool readonly) const
 		pg_colours_->SetPropertyReadOnly(opacity, readonly);
 		pg_colours_->Collapse(colour);
 	}
+
+	// Add map 'theme' properties if map editor config
+	if (group_ == ccfg::Group::MapEditor && map_editor_theme_)
+	{
+		auto theme_group        = pg_colours_->Append(new wxPropertyCategory(wxS("Theme")));
+		auto line_hilight_width = pg_colours_->AppendIn(
+			theme_group,
+			new wxFloatProperty(
+				wxS("Line Highlight Width"), wxS("line_hilight_width"), map_editor_theme_->line_hilight_width));
+		auto line_selection_width = pg_colours_->AppendIn(
+			theme_group,
+			new wxFloatProperty(
+				wxS("Line Selection Width"), wxS("line_selection_width"), map_editor_theme_->line_selection_width));
+		auto flat_alpha = pg_colours_->AppendIn(
+			theme_group, new wxFloatProperty(wxS("Flat Alpha"), wxS("flat_alpha"), map_editor_theme_->flat_alpha));
+
+		pg_colours_->SetPropertyReadOnly(line_hilight_width, readonly);
+		pg_colours_->SetPropertyReadOnly(line_selection_width, readonly);
+		pg_colours_->SetPropertyReadOnly(flat_alpha, readonly);
+	}
 }
 
 // -----------------------------------------------------------------------------
-// Applies the current colours from the property grid to the internal colour
-// definitions
+// Applies the current colours (and map editor theme values, if any) from the
+// property grid to member variables
 // -----------------------------------------------------------------------------
 void ColourConfigPanel::applyCustomColours()
 {
@@ -268,6 +300,22 @@ void ColourConfigPanel::applyCustomColours()
 				cdef.blend_additive = p_additive->GetValue().GetBool();
 		}
 	}
+
+	if (group_ == ccfg::Group::MapEditor && map_editor_theme_)
+	{
+		auto p_line_hilight_width = dynamic_cast<wxFloatProperty*>(pg_colours_->GetProperty(wxS("line_hilight_width")));
+		if (p_line_hilight_width)
+			map_editor_theme_->line_hilight_width = p_line_hilight_width->GetValue().GetDouble();
+
+		auto p_line_selection_width = dynamic_cast<wxFloatProperty*>(
+			pg_colours_->GetProperty(wxS("line_selection_width")));
+		if (p_line_selection_width)
+			map_editor_theme_->line_selection_width = p_line_selection_width->GetValue().GetDouble();
+
+		auto p_flat_alpha = dynamic_cast<wxFloatProperty*>(pg_colours_->GetProperty(wxS("flat_alpha")));
+		if (p_flat_alpha)
+			map_editor_theme_->flat_alpha = p_flat_alpha->GetValue().GetDouble();
+	}
 }
 
 
@@ -287,14 +335,14 @@ void ColourConfigPanel::onConfigChanged(wxCommandEvent& e)
 	{
 		// Default configuration selected
 		btn_customize_->Show(allow_customize_default_);
-		ccfg::loadDefaultConfiguration(group_, colours_);
-		refreshPropGrid(!allow_customize_default_);
+		ccfg::loadDefaultConfiguration(group_, colours_, map_editor_theme_.get());
+		refreshPropGrid(true);
 	}
 	else if (choice_config_->GetSelection() == choice_config_->GetCount() - 1)
 	{
 		// Custom config
 		btn_customize_->Hide();
-		ccfg::loadCustomConfiguration(group_, colours_);
+		ccfg::loadCustomConfiguration(group_, colours_, map_editor_theme_.get());
 		refreshPropGrid(false);
 	}
 	else
@@ -302,7 +350,7 @@ void ColourConfigPanel::onConfigChanged(wxCommandEvent& e)
 		// Built-in configuration selected
 		btn_customize_->Show();
 		auto config = choice_config_->GetStringSelection().utf8_string();
-		ccfg::loadConfiguration(group_, config, colours_);
+		ccfg::loadConfiguration(group_, config, colours_, map_editor_theme_.get());
 		refreshPropGrid(true);
 	}
 

@@ -73,23 +73,26 @@ struct Colour
 	ColRGBA colour;
 	bool    blend_additive;
 	string  id;
+	string  group;
 
 	Colour() = default;
-	Colour(string_view id, string_view name, ColRGBA colour = ColRGBA::WHITE, bool blend_additive = false);
+	Colour(string_view id, string_view name, string_view group = {});
 
 	gl::Blend blendMode() const;
 
 	void set(u8 r, u8 g, u8 b, u8 a = 255, bool blend_additive = false);
 };
 
-// TODO: Figure out what to do with this stuff, maybe move map editor stuff out
-//       to a separate 'map editor theme' system
-double lineHilightWidth();
-double lineSelectionWidth();
-double flatAlpha();
-void   setLineHilightWidth(double mult);
-void   setLineSelectionWidth(double mult);
-void   setFlatAlpha(double alpha);
+struct MapEditorTheme
+{
+	double line_hilight_width;
+	double line_selection_width;
+	double flat_alpha;
+};
+const MapEditorTheme& mapEditorTheme();
+double                lineHilightWidth();
+double                lineSelectionWidth();
+double                flatAlpha();
 
 const vector<Colour>& allColours(Group group);
 
@@ -103,16 +106,16 @@ const Colour& colDef(MapEditor editor);
 
 bool init();
 
-void loadDefaultConfiguration(Group group, vector<Colour>& colours);
+void loadDefaultConfiguration(Group group, vector<Colour>& colours, MapEditorTheme* theme = nullptr);
 void applyDefaultConfiguration(Group group);
 
 void putConfigurationNames(Group group, vector<string>& names);
-bool loadConfiguration(Group group, string_view name, vector<Colour>& colours);
+bool loadConfiguration(Group group, string_view name, vector<Colour>& colours, MapEditorTheme* theme = nullptr);
 bool applyConfiguration(Group group, string_view name);
 
-bool loadCustomConfiguration(Group group, vector<Colour>& colours);
+bool loadCustomConfiguration(Group group, vector<Colour>& colours, MapEditorTheme* theme = nullptr);
 bool applyCustomConfiguration(Group group);
-bool setCustomConfiguration(Group group, vector<Colour>& colours, bool apply = true);
+bool setCustomConfiguration(Group group, vector<Colour>& colours, MapEditorTheme* theme = nullptr, bool apply = true);
 void saveCustomConfiguration();
 
 struct CCfgSignals

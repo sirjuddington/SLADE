@@ -53,9 +53,7 @@ namespace slade::colourconfig
 {
 typedef std::map<string, Colour> ColourHashMap;
 
-double         line_hilight_width   = 3.0;
-double         line_selection_width = 4.0;
-double         flat_alpha           = 1.0;
+MapEditorTheme map_editor_theme{ 3.0, 4.0, 1.0 };
 vector<Colour> cols_map_preview;
 vector<Colour> cols_map_image;
 vector<Colour> cols_map_editor;
@@ -135,7 +133,7 @@ Colour* colourFromId(string_view id, vector<Colour>& colours)
 // -----------------------------------------------------------------------------
 // Reads a colour configuration from JSON [j]
 // -----------------------------------------------------------------------------
-bool readConfiguration(Json& j, vector<Colour>& colours, string_view source)
+bool readConfiguration(Json& j, vector<Colour>& colours, MapEditorTheme* theme = nullptr, string_view source = {})
 {
 	// Colours
 	if (j.contains("colours"))
@@ -150,14 +148,14 @@ bool readConfiguration(Json& j, vector<Colour>& colours, string_view source)
 	}
 
 	// Theme
-	if (j.contains("theme"))
+	if (theme && j.contains("theme"))
 	{
 		if (j["theme"].contains("line_hilight_width"))
-			j["theme"]["line_hilight_width"].get_to(line_hilight_width);
+			j["theme"]["line_hilight_width"].get_to(theme->line_hilight_width);
 		if (j["theme"].contains("line_selection_width"))
-			j["theme"]["line_selection_width"].get_to(line_selection_width);
+			j["theme"]["line_selection_width"].get_to(theme->line_selection_width);
 		if (j["theme"].contains("flat_alpha"))
-			j["theme"]["flat_alpha"].get_to(flat_alpha);
+			j["theme"]["flat_alpha"].get_to(theme->flat_alpha);
 	}
 
 	return true;
@@ -167,7 +165,7 @@ bool readConfiguration(Json& j, vector<Colour>& colours, string_view source)
 // Reads a built-in colour configuration [name] within [subdir] in the program
 // resource, and applies it to [colours]
 // -----------------------------------------------------------------------------
-bool readConfiguration(string_view name, string_view subdir, vector<Colour>& colours)
+bool readConfiguration(string_view name, string_view subdir, vector<Colour>& colours, MapEditorTheme* theme = nullptr)
 {
 	// Search resource pk3
 	auto res = app::programResource();
@@ -180,7 +178,7 @@ bool readConfiguration(string_view name, string_view subdir, vector<Colour>& col
 		if (strutil::equalCI(dir->entryAt(a)->nameNoExt(), name))
 		{
 			if (auto j = jsonutil::parse(dir->entryAt(a)->data()); !j.is_discarded())
-				readConfiguration(j, colours, name);
+				readConfiguration(j, colours, theme, name);
 			return true;
 		}
 	}
@@ -191,7 +189,7 @@ bool readConfiguration(string_view name, string_view subdir, vector<Colour>& col
 // -----------------------------------------------------------------------------
 // Reads the custom colour configuration for [group] and applies it to [colours]
 // -----------------------------------------------------------------------------
-bool readCustomConfiguration(Group group, vector<Colour>& colours)
+bool readCustomConfiguration(Group group, vector<Colour>& colours, MapEditorTheme* theme = nullptr)
 {
 	if (j_custom_colours.is_discarded())
 		return false;
@@ -200,13 +198,13 @@ bool readCustomConfiguration(Group group, vector<Colour>& colours)
 	{
 	case Group::MapPreview:
 		if (j_custom_colours.contains("map_preview"))
-			return readConfiguration(j_custom_colours["map_preview"], colours, "custom");
+			return readConfiguration(j_custom_colours["map_preview"], colours, theme, "custom");
 	case Group::MapImage:
 		if (j_custom_colours.contains("map_image"))
-			return readConfiguration(j_custom_colours["map_image"], colours, "custom");
+			return readConfiguration(j_custom_colours["map_image"], colours, theme, "custom");
 	case Group::MapEditor:
 		if (j_custom_colours.contains("map_editor"))
-			return readConfiguration(j_custom_colours["map_editor"], colours, "custom");
+			return readConfiguration(j_custom_colours["map_editor"], colours, theme, "custom");
 	}
 
 	return false;
@@ -224,11 +222,12 @@ bool readCustomConfiguration(Group group, vector<Colour>& colours)
 // -----------------------------------------------------------------------------
 // Colour struct constructor
 // -----------------------------------------------------------------------------
-colourconfig::Colour::Colour(string_view id, string_view name, ColRGBA colour, bool blend_additive) :
+colourconfig::Colour::Colour(string_view id, string_view name, string_view group) :
 	name{ name },
-	colour{ colour },
-	blend_additive{ blend_additive },
-	id{ id }
+	colour{ ColRGBA::WHITE },
+	blend_additive{ false },
+	id{ id },
+	group{ group }
 {
 }
 
@@ -250,51 +249,35 @@ void colourconfig::Colour::set(u8 r, u8 g, u8 b, u8 a, bool blend_additive)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the line hilight width multiplier
+// Returns the current map editor theme configuration
+// -----------------------------------------------------------------------------
+const colourconfig::MapEditorTheme& colourconfig::mapEditorTheme()
+{
+	return map_editor_theme;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the current line highlight width multiplier for the map editor
 // -----------------------------------------------------------------------------
 double colourconfig::lineHilightWidth()
 {
-	return line_hilight_width;
+	return map_editor_theme.line_hilight_width;
 }
 
 // -----------------------------------------------------------------------------
-// Returns the line selection width multiplier
+// Returns the current line selection width multiplier for the map editor
 // -----------------------------------------------------------------------------
 double colourconfig::lineSelectionWidth()
 {
-	return line_selection_width;
+	return map_editor_theme.line_selection_width;
 }
 
 // -----------------------------------------------------------------------------
-// Returns the flat alpha multiplier
+// Returns the current flat alpha multiplier for the map editor
 // -----------------------------------------------------------------------------
 double colourconfig::flatAlpha()
 {
-	return flat_alpha;
-}
-
-// -----------------------------------------------------------------------------
-// Sets the line hilight width multiplier
-// -----------------------------------------------------------------------------
-void colourconfig::setLineHilightWidth(double mult)
-{
-	line_hilight_width = mult;
-}
-
-// -----------------------------------------------------------------------------
-// Sets the line selection width multiplier
-// -----------------------------------------------------------------------------
-void colourconfig::setLineSelectionWidth(double mult)
-{
-	line_selection_width = mult;
-}
-
-// -----------------------------------------------------------------------------
-// Sets the flat alpha multiplier
-// -----------------------------------------------------------------------------
-void colourconfig::setFlatAlpha(double alpha)
-{
-	flat_alpha = alpha;
+	return map_editor_theme.flat_alpha;
 }
 
 // -----------------------------------------------------------------------------
@@ -399,33 +382,33 @@ bool colourconfig::init()
 
 	// Init map editor colours
 	cols_map_editor = {
-		{ "background", "Background" },
-		{ "grid", "Grid" },
-		{ "grid_64", "Grid (64)" },
-		{ "line_normal", "Line (Normal)" },
-		{ "line_special", "Line (Special)" },
-		{ "line_invalid", "Line (Invalid)" },
-		{ "vertex", "Vertex" },
-		{ "highlight", "Highlighted Item" },
-		{ "selection", "Selected Item(s)" },
-		{ "tagged", "Tagged Item(s)" },
-		{ "tagging", "Tagging Item(s)" },
-		{ "thing_path", "Pathed Thing Line" },
-		{ "thing_path_dragon", "Pathed Thing Line (Dragon)" },
-		{ "linedraw", "Line Drawing" },
-		{ "moving", "Moving Item(s)" },
-		{ "object_edit", "Object Edit" },
-		{ "selbox_fill", "Selection Box Fill" },
-		{ "selbox_outline", "Selection Box Outline" },
-		{ "overlay_bg", "Info Overlay Background" },
-		{ "overlay_fg", "Info Overlay Text" },
-		{ "editor_message", "Editor Message Text" },
-		{ "editor_message_outline", "Editor Message Outline" },
-		{ "3d_crosshair", "3D Crosshair" },
-		{ "3d_highlight", "3D Highlight" },
-		{ "3d_selection", "3D Selection" },
-		{ "3d_overlay_bg", "3D Info Overlay Background" },
-		{ "3d_overlay_fg", "3D Info Overlay Text" },
+		{ "background", "Background", "2D Mode Map" },
+		{ "grid", "Grid", "2D Mode Map" },
+		{ "grid_64", "Grid (64)", "2D Mode Map" },
+		{ "line_normal", "Line (Normal)", "2D Mode Map" },
+		{ "line_special", "Line (Special)", "2D Mode Map" },
+		{ "line_invalid", "Line (Invalid)", "2D Mode Map" },
+		{ "vertex", "Vertex", "2D Mode Map" },
+		{ "highlight", "Highlighted Item", "2D Mode Map" },
+		{ "selection", "Selected Item(s)", "2D Mode Map" },
+		{ "tagged", "Tagged Item(s)", "2D Mode Map" },
+		{ "tagging", "Tagging Item(s)", "2D Mode Map" },
+		{ "thing_path", "Pathed Thing Line", "2D Mode Map" },
+		{ "thing_path_dragon", "Pathed Thing Line (Dragon)", "2D Mode Map" },
+		{ "linedraw", "Line Drawing", "2D Mode Map" },
+		{ "moving", "Moving Item(s)", "2D Mode Map" },
+		{ "object_edit", "Object Edit", "2D Mode Map" },
+		{ "selbox_fill", "Selection Box Fill", "2D Mode Interface" },
+		{ "selbox_outline", "Selection Box Outline", "2D Mode Interface" },
+		{ "overlay_bg", "Info Overlay Background", "2D Mode Interface" },
+		{ "overlay_fg", "Info Overlay Text", "2D Mode Interface" },
+		{ "editor_message", "Editor Message Text", "2D Mode Interface" },
+		{ "editor_message_outline", "Editor Message Outline", "2D Mode Interface" },
+		{ "3d_crosshair", "3D Crosshair", "3D Mode" },
+		{ "3d_highlight", "3D Highlight", "3D Mode" },
+		{ "3d_selection", "3D Selection", "3D Mode" },
+		{ "3d_overlay_bg", "3D Info Overlay Background", "3D Mode" },
+		{ "3d_overlay_fg", "3D Info Overlay Text", "3D Mode" },
 	};
 
 	// Load default configurations
@@ -466,7 +449,7 @@ bool colourconfig::init()
 // -----------------------------------------------------------------------------
 // Loads the default colour configuration for [group] into [colours]
 // -----------------------------------------------------------------------------
-void colourconfig::loadDefaultConfiguration(Group group, vector<Colour>& colours)
+void colourconfig::loadDefaultConfiguration(Group group, vector<Colour>& colours, MapEditorTheme* theme)
 {
 	switch (group)
 	{
@@ -524,6 +507,14 @@ void colourconfig::loadDefaultConfiguration(Group group, vector<Colour>& colours
 		colours[ID(MapEditor::Selection3D)].set(30, 100, 255, 180);
 		colours[ID(MapEditor::OverlayBackground3D)].set(0, 0, 0, 180);
 		colours[ID(MapEditor::OverlayForeground3D)].set(255, 255, 255);
+
+		if (theme)
+		{
+			theme->line_hilight_width   = 3.0;
+			theme->line_selection_width = 4.0;
+			theme->flat_alpha           = 1.0;
+		}
+
 		break;
 	}
 }
@@ -538,7 +529,7 @@ void colourconfig::applyDefaultConfiguration(Group group)
 	{
 	case Group::MapPreview: loadDefaultConfiguration(group, cols_map_preview); break;
 	case Group::MapImage:   loadDefaultConfiguration(group, cols_map_image); break;
-	case Group::MapEditor:  loadDefaultConfiguration(group, cols_map_editor); break;
+	case Group::MapEditor:  loadDefaultConfiguration(group, cols_map_editor, &map_editor_theme); break;
 	default:                return;
 	}
 
@@ -563,9 +554,9 @@ void colourconfig::putConfigurationNames(Group group, vector<string>& names)
 // -----------------------------------------------------------------------------
 // Loads the built-in colour configuration [name] for [group] into [colours]
 // -----------------------------------------------------------------------------
-bool colourconfig::loadConfiguration(Group group, string_view name, vector<Colour>& colours)
+bool colourconfig::loadConfiguration(Group group, string_view name, vector<Colour>& colours, MapEditorTheme* theme)
 {
-	return readConfiguration(name, groupSubdir(group), colours);
+	return readConfiguration(name, groupSubdir(group), colours, theme);
 }
 
 // -----------------------------------------------------------------------------
@@ -578,7 +569,7 @@ bool colourconfig::applyConfiguration(Group group, string_view name)
 	{
 	case Group::MapPreview: ok = loadConfiguration(group, name, cols_map_preview); break;
 	case Group::MapImage:   ok = loadConfiguration(group, name, cols_map_image); break;
-	case Group::MapEditor:  ok = loadConfiguration(group, name, cols_map_editor); break;
+	case Group::MapEditor:  ok = loadConfiguration(group, name, cols_map_editor, &map_editor_theme); break;
 	default:                return false;
 	}
 
@@ -591,9 +582,9 @@ bool colourconfig::applyConfiguration(Group group, string_view name)
 // -----------------------------------------------------------------------------
 // Loads the custom colour configuration for [group] into [colours]
 // -----------------------------------------------------------------------------
-bool colourconfig::loadCustomConfiguration(Group group, vector<Colour>& colours)
+bool colourconfig::loadCustomConfiguration(Group group, vector<Colour>& colours, MapEditorTheme* theme)
 {
-	return readCustomConfiguration(group, colours);
+	return readCustomConfiguration(group, colours, theme);
 }
 
 // -----------------------------------------------------------------------------
@@ -606,7 +597,7 @@ bool colourconfig::applyCustomConfiguration(Group group)
 	{
 	case Group::MapPreview: ok = loadCustomConfiguration(group, cols_map_preview); break;
 	case Group::MapImage:   ok = loadCustomConfiguration(group, cols_map_image); break;
-	case Group::MapEditor:  ok = loadCustomConfiguration(group, cols_map_editor); break;
+	case Group::MapEditor:  ok = loadCustomConfiguration(group, cols_map_editor, &map_editor_theme); break;
 	default:                return false;
 	}
 
@@ -619,7 +610,7 @@ bool colourconfig::applyCustomConfiguration(Group group)
 // -----------------------------------------------------------------------------
 // Sets the custom colour configuration for [group] to [colours]
 // -----------------------------------------------------------------------------
-bool colourconfig::setCustomConfiguration(Group group, vector<Colour>& colours, bool apply)
+bool colourconfig::setCustomConfiguration(Group group, vector<Colour>& colours, MapEditorTheme* theme, bool apply)
 {
 	// Create custom colours JSON if needed
 	if (j_custom_colours.is_discarded())
@@ -637,6 +628,16 @@ bool colourconfig::setCustomConfiguration(Group group, vector<Colour>& colours, 
 	case Group::MapImage:   j_custom_colours["map_image"] = j; break;
 	case Group::MapEditor:  j_custom_colours["map_editor"] = j; break;
 	default:                return false;
+	}
+
+	// Build+store JSON for the map editor theme if provided
+	if (theme && group == Group::MapEditor)
+	{
+		json j_theme;
+		j_theme["line_hilight_width"]           = theme->line_hilight_width;
+		j_theme["line_selection_width"]         = theme->line_selection_width;
+		j_theme["flat_alpha"]                   = theme->flat_alpha;
+		j_custom_colours["map_editor"]["theme"] = j_theme;
 	}
 
 	// Apply the custom configuration if requested
