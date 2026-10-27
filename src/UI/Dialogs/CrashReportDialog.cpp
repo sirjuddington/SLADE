@@ -47,6 +47,10 @@
 #include <wx/url.h>
 #include <wx/webrequest.h>
 
+#ifdef __WXMSW__
+#include <tlhelp32.h>
+#endif
+
 using namespace slade;
 using namespace ui;
 
@@ -142,6 +146,41 @@ string stripBeginningStackTrace(string_view formatted_trace)
 	}
 
 	return filtered;
+}
+
+// -----------------------------------------------------------------------------
+// Returns a list of all modules loaded in the current process (base address,
+// size, path), useful for identifying frames outside the SLADE executable.
+// Currently only implemented on Windows
+// -----------------------------------------------------------------------------
+string loadedModules()
+{
+#ifdef __WXMSW__
+	string result;
+
+	HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPMODULE | TH32CS_SNAPMODULE32, GetCurrentProcessId());
+	if (snapshot == INVALID_HANDLE_VALUE)
+		return result;
+
+	MODULEENTRY32W entry;
+	entry.dwSize = sizeof(entry);
+	if (Module32FirstW(snapshot, &entry))
+	{
+		do
+		{
+			result += fmt::format(
+				"0x{:016X} - 0x{:016X} {}\n",
+				reinterpret_cast<uintptr_t>(entry.modBaseAddr),
+				reinterpret_cast<uintptr_t>(entry.modBaseAddr) + entry.modBaseSize,
+				wxString(entry.szExePath).utf8_string());
+		} while (Module32NextW(snapshot, &entry));
+	}
+
+	CloseHandle(snapshot);
+	return result;
+#else
+	return {};
+#endif
 }
 } // namespace
 
@@ -327,6 +366,12 @@ void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace, cons
 								  .snippet_context(2);
 	j_info["stack-trace"] = (exception_info.empty() ? "" : exception_info + "\n") + formatter_detailed.format(trace);
 
+	// Loaded modules
+	// (for report and crash log file only, too long for the dialog)
+	auto modules = loadedModules();
+	if (!modules.empty())
+		j_info["modules"] = modules;
+
 	// Last 10 log lines
 	trace_ += "\nLast Log Messages:\n";
 	for (auto l : log::last(10))
@@ -359,6 +404,8 @@ void CrashReportDialog::loadFromCpptrace(const cpptrace::stacktrace& trace, cons
 	// Dump crash details to a file (just in case)
 	wxFile file(wxString::FromUTF8(app::path("slade3_crash.log", app::Dir::User)), wxFile::write);
 	file.Write(wxString::FromUTF8(trace_));
+	if (!modules.empty())
+		file.Write(wxString::FromUTF8("\nLoaded Modules:\n" + modules));
 	file.Close();
 
 	// Print trace to console
