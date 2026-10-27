@@ -152,10 +152,30 @@ void MapPreviewGLCanvas::updateLinesBuffer()
 	glm::vec4 col_view_line_macro   = ccfg::colour(ccfg::MapPreview::LineMacro);
 
 	if (!lines_buffer_)
+	{
 		lines_buffer_ = std::make_unique<gl::LineBuffer>();
+		lines_buffer_->setAaRadius(1.5f, 1.5f);
+	}
+
+	// Sort lines by two-sided > one-sided > special for drawing
+	auto lines_sorted = data_->lines;
+	std::ranges::sort(
+		lines_sorted,
+		[](const MapPreviewData::Line& a, const MapPreviewData::Line& b)
+		{
+			if (a.twosided && !b.twosided)
+				return true;
+			if (!a.twosided && b.twosided)
+				return false;
+			if (!a.special && b.special)
+				return true;
+			if (a.special && !b.special)
+				return false;
+			return false;
+		});
 
 	gl::LineBuffer::Line lb_line;
-	for (auto& line : data_->lines)
+	for (auto& line : lines_sorted)
 	{
 		// Check ends
 		if (line.v1 >= data_->vertices.size() || line.v2 >= data_->vertices.size())
@@ -173,10 +193,10 @@ void MapPreviewGLCanvas::updateLinesBuffer()
 
 		// Add to buffer
 		lb_line.v1_pos_width = {
-			data_->vertices[line.v1].x, data_->vertices[line.v1].y, 0.0f, line.twosided ? 1.5f : 2.0f
+			data_->vertices[line.v1].x, data_->vertices[line.v1].y, 0.0f, line.twosided ? 1.25f : 1.5f
 		};
 		lb_line.v2_pos_width = {
-			data_->vertices[line.v2].x, data_->vertices[line.v2].y, 0.0f, line.twosided ? 1.5f : 2.0f
+			data_->vertices[line.v2].x, data_->vertices[line.v2].y, 0.0f, line.twosided ? 1.25f : 1.5f
 		};
 		lines_buffer_->add(lb_line);
 	}
