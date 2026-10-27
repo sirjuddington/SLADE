@@ -49,6 +49,7 @@
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Controls/UndoManagerHistoryPanel.h"
+#include "UI/Dialogs/AboutDialog.h"
 #include "UI/Dialogs/SettingsDialog.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SAuiToolBar.h"
@@ -530,24 +531,8 @@ bool MainWindow::handleAction(string_view id)
 	// Help->About
 	if (id == "main_about")
 	{
-		wxAboutDialogInfo info;
-		info.SetName(wxS("SLADE"));
-		string version = "v" + app::version().toString();
-		if (!global::sc_rev.empty())
-			version = version + " (Git Rev " + global::sc_rev + ")";
-		info.SetVersion(wxString::FromUTF8(version));
-		info.SetWebSite(wxS("https://slade.mancubus.net"));
-		info.SetDescription(wxS("It's a Doom Editor"));
-		// Set icon
-		auto icon_filename = app::path(app::iconFile(), app::Dir::Temp);
-		app::archiveManager().programResourceArchive()->entry(app::iconFile())->exportFile(icon_filename);
-		info.SetIcon(wxIcon(wxString::FromUTF8(icon_filename), wxBITMAP_TYPE_ICO));
-		fileutil::removeFile(icon_filename);
-
-		auto year = wxNow().Right(4);
-		info.SetCopyright(WX_FMT("\xC2\xA9 2008-{} Simon Judd <sirjuddington@gmail.com>", year.utf8_string()));
-
-		wxAboutBox(info);
+		ui::AboutDialog dlg(this);
+		dlg.ShowModal();
 
 		return true;
 	}

@@ -35,6 +35,10 @@ Write-Host "`nCreate directory $releasedir" -foregroundcolor blue
 New-Item -ItemType directory -Force -Path "$releasedir32" | out-null
 New-Item -ItemType directory -Force -Path "$releasedir64" | out-null
 
+# Update contributors list
+Write-Host "`nUpdating contributors list..." -foregroundcolor blue
+& "$PSScriptRoot\updatecontributors.ps1"
+
 # Remove existing pk3 if it exists
 $pk3path = "..\dist\slade.pk3"
 if (Test-Path "$pk3path")

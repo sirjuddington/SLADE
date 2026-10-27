@@ -919,8 +919,8 @@ bool app::isWin64Build()
 // -----------------------------------------------------------------------------
 string app::osDescription()
 {
-#if defined(__WXGTK__)
-	// On Linux, return the distribution name and version instead of just the linux kernel version
+#if defined(__WXGTK__) && !wxCHECK_VERSION(3, 3, 3)
+	// On Linux (pre-wx3.3.3), return the distribution name and version instead of just the linux kernel version
 	auto dist_info = wxGetLinuxDistributionInfo();
 	auto linux_ver = wxGetOsDescription().utf8_string();
 

@@ -47,6 +47,7 @@
 !/msvc/slade.ico
 !/msvc/SLADE.manifest
 !/msvc/SLADE.rc
+!/msvc/updatecontributors.ps1
 
 /unix/*
 !/unix/build-appimage.sh

@@ -337,11 +337,7 @@ void SAuiTabArt::DrawTab(
 		// highlight top of tab
 		if (!bluetab)
 		{
-#ifdef __WXMSW__
-			auto col_hilight = wxColour(app::isDarkTheme() ? wxS("#6696FF") : wxS("#476DBD"));
-#else
 			wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
-#endif
 			dc.SetPen(*wxTRANSPARENT_PEN);
 			dc.SetBrush(wxBrush(col_hilight));
 			dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, px3);
