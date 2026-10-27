@@ -16,10 +16,6 @@
 * libxmp
 * fluidsynth
 
-### Optional build-time requirements
-
-* Lua (deactivate with `-DNO_LUA=ON`)
-
 ## Windows
 
 SLADE can be built on Windows using [Visual Studio](https://visualstudio.microsoft.com/) 2022+ (a free 'community' edition is available which works fine) and [vcpkg](https://docs.microsoft.com/en-us/cpp/build/vcpkg?view=vs-2019) for handling the required external libraries.

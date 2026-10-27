@@ -22,11 +22,6 @@ if (NOT BUILD_WX)
 endif ()
 set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net)
 
-# Lua
-if (NOT NO_LUA)
-	find_package(Lua REQUIRED)
-endif ()
-
 # WebP/Png
 if (NOT BUILD_WX)
 	find_package(WebP CONFIG REQUIRED)
@@ -121,10 +116,6 @@ target_link_libraries(slade
 	LibArchive::LibArchive
 	FluidSynth::libfluidsynth
 )
-
-if (NOT NO_LUA)
-	target_link_libraries(slade ${LUA_LIBRARIES})
-endif ()
 
 if (NOT BUILD_WX)
 	target_link_libraries(slade

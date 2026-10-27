@@ -30,9 +30,6 @@ endif (CMAKE_INSTALL_PREFIX)
 
 find_package(FluidSynth REQUIRED)
 find_package(OpenGL REQUIRED)
-if (NOT NO_LUA)
-	find_package(Lua REQUIRED)
-endif ()
 find_package(MPG123 REQUIRED)
 find_package(WebP REQUIRED)
 find_package(PNG REQUIRED)
@@ -52,7 +49,6 @@ FetchContent_MakeAvailable(cpptrace)
 
 include_directories(
 	${FREETYPE_INCLUDE_DIRS}
-	${LUA_INCLUDE_DIR}
 	${MPG123_INCLUDE_DIR}
 	${WebP_INCLUDE_DIRS}
 	${FLUIDSYNTH_INCLUDE_DIR}
@@ -110,7 +106,6 @@ target_link_libraries(slade
 	${SFML_LIBRARIES}
 	${FREETYPE_LIBRARIES}
 	${OPENGL_LIBRARIES}
-	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
 	${WebP_LIBRARIES}
 	${FLUIDSYNTH_LIBRARIES}

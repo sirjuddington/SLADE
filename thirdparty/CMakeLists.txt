@@ -43,6 +43,15 @@ FetchContent_Declare(json
 )
 FetchContent_MakeAvailable(json)
 
+# Add Lua (via marovira/lua which provides the lua::lua target)
+if (NOT NO_LUA)
+	FetchContent_Declare(lua
+		GIT_REPOSITORY https://github.com/marovira/lua.git
+		GIT_TAG 5.5.1
+	)
+	FetchContent_MakeAvailable(lua)
+endif ()
+
 add_library(external STATIC ${EXTERNAL_SOURCES})
 target_link_libraries(external
 	${ZLIB_LIBRARY}
@@ -52,4 +61,7 @@ target_link_libraries(external
 	sqlite3
 	nlohmann_json::nlohmann_json
 )
+if (NOT NO_LUA)
+	target_link_libraries(external lua::lua)
+endif ()
 set(EXTERNAL_LIBRARIES external PARENT_SCOPE)
