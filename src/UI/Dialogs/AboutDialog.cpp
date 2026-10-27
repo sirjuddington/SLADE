@@ -105,7 +105,7 @@ AboutDialog::AboutDialog(wxWindow* parent) : SDialog(parent, "About SLADE", "abo
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	hbox->Add(vbox, wxSizerFlags(1).Expand());
 
-	auto tabs = new TabControl(this);
+	auto tabs = STabCtrl::createControl(this);
 	tabs->AddPage(createTextTab(tabs, wxString::FromUTF8(systemInfo()), false), wxS("System Info"), true);
 	tabs->AddPage(createTextTab(tabs, wxString::FromUTF8(contributors()), true), wxS("Additional Credits"));
 	vbox->Add(tabs, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
