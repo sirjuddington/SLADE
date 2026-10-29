@@ -34,6 +34,8 @@ namespace app
 		unsigned long revision = 0;
 		unsigned long beta     = 0;
 
+		unsigned long sub_revision = 0; // Some older versions of SLADE had a 4th version number
+
 		Version(unsigned long major = 0, unsigned long minor = 0, unsigned long revision = 0, unsigned long beta = 0) :
 			major{ major },
 			minor{ minor },
@@ -41,6 +43,7 @@ namespace app
 			beta{ beta }
 		{
 		}
+		Version(const string& version);
 
 		int    cmp(const Version& rhs) const;
 		string toString() const;

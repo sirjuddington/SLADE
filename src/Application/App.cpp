@@ -121,11 +121,11 @@ CVAR(Int, win_darkmode, 1, CVar::Flag::Save)
 #if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
 namespace slade::app
 {
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // SLADEDarkModeSettings Class
 //
 // Custom wxDarkModeSettings class to tweak some colours in dark mode
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 class SLADEDarkModeSettings : public wxDarkModeSettings
 {
 public:
@@ -142,17 +142,46 @@ public:
 #endif
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // app::Version Struct Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Constructs a version from a string (eg. "3.2.1-beta4")
+// -----------------------------------------------------------------------------
+app::Version::Version(const string& version)
+{
+	auto parts = strutil::splitV(version, '.');
+	if (parts.size() != 3 && parts.size() != 4)
+	{
+		log::warning("Invalid version string \"{}\" (must be in the format \"major.minor.revision(-betaX)\")", version);
+		return;
+	}
+
+	major = strutil::asInt(parts[0]);
+	minor = strutil::asInt(parts[1]);
+	if (strutil::contains(parts[2], "-beta"))
+	{
+		auto pos = parts[2].find("-beta");
+		revision = strutil::asInt(parts[2].substr(0, pos));
+		beta     = strutil::asInt(parts[2].substr(pos + 5));
+	}
+	else
+	{
+		revision = strutil::asInt(parts[2]);
+		beta     = 0;
+	}
+	if (parts.size() == 4)
+		sub_revision = strutil::asInt(parts[3]);
+}
+
+// -----------------------------------------------------------------------------
 // Compares with another version [rhs].
 // Returns 0 if equal, 1 if this is newer or -1 if this is older
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int app::Version::cmp(const Version& rhs) const
 {
 	if (major == rhs.major)
@@ -161,14 +190,19 @@ int app::Version::cmp(const Version& rhs) const
 		{
 			if (revision == rhs.revision)
 			{
-				if (beta == rhs.beta)
-					return 0;
-				if (beta == 0 && rhs.beta > 0)
-					return 1;
-				if (beta > 0 && rhs.beta == 0)
-					return -1;
+				if (sub_revision == rhs.sub_revision)
+				{
+					if (beta == rhs.beta)
+						return 0;
+					if (beta == 0 && rhs.beta > 0)
+						return 1;
+					if (beta > 0 && rhs.beta == 0)
+						return -1;
 
-				return beta > rhs.beta ? 1 : -1;
+					return beta > rhs.beta ? 1 : -1;
+				}
+
+				return sub_revision > rhs.sub_revision ? 1 : -1;
 			}
 
 			return revision > rhs.revision ? 1 : -1;
@@ -180,9 +214,9 @@ int app::Version::cmp(const Version& rhs) const
 	return major > rhs.major ? 1 : -1;
 }
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Returns a string representation of the version (eg. "3.2.1 beta 4")
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 string app::Version::toString() const
 {
 	auto vers = fmt::format("{}.{}.{}", major, minor, revision);
@@ -194,7 +228,7 @@ string app::Version::toString() const
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // App Namespace Functions
 //

@@ -20,7 +20,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSLADE_DEBUG")
 if (NOT BUILD_WX)
 	find_package(wxWidgets CONFIG REQUIRED)
 endif ()
-set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net)
+set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net wx::html)
 
 # WebP/Png
 if (NOT BUILD_WX)
