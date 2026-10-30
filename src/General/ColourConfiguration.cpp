@@ -38,6 +38,7 @@
 #include "Console.h"
 #include "UI/WxUtils.h"
 #include "Utility/Colour.h"
+#include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -57,7 +58,7 @@ MapEditorTheme map_editor_theme{ 3.0, 4.0, 1.0 };
 vector<Colour> cols_map_preview;
 vector<Colour> cols_map_image;
 vector<Colour> cols_map_editor;
-Json           j_custom_colours;
+Json           j_custom_colours = nlohmann::detail::value_t::discarded;
 } // namespace slade::colourconfig
 CVAR(String, ccfg_map_preview, "", CVar::Flag::Save)
 CVAR(String, ccfg_map_image, "", CVar::Flag::Save)
@@ -416,8 +417,10 @@ bool colourconfig::init()
 	applyDefaultConfiguration(Group::MapImage);
 	applyDefaultConfiguration(Group::MapEditor);
 
-	// Load custom colours from user configuration
-	j_custom_colours = jsonutil::parseFile(app::path("custom_colours.json", app::Dir::User));
+	// Load custom colours from user configuration (if it exists)
+	auto custom_colours_path = app::path("custom_colours.json", app::Dir::User);
+	if (fileutil::fileExists(custom_colours_path))
+		j_custom_colours = jsonutil::parseFile(custom_colours_path);
 
 	// Load selected configurations
 	if (!ccfg_map_preview.empty())
