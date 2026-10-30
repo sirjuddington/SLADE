@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE archive_run_config
 (
     archive_id    INTEGER PRIMARY KEY
@@ -9,5 +7,3 @@ CREATE TABLE archive_run_config
     run_extra     TEXT,
     iwad_path     TEXT
 );
-
-COMMIT;

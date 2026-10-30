@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE window_layout
 (
     window_id TEXT,
@@ -7,5 +5,3 @@ CREATE TABLE window_layout
     layout    TEXT,
     UNIQUE (window_id, component)
 );
-
-COMMIT;

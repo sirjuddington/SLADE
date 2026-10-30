@@ -17,11 +17,11 @@ class Database;
 namespace slade::database
 {
 // General database functions
-bool   fileExists();
-string programDatabasePath();
-bool   init();
-void   close();
-void   migrateConfigs();
+bool             fileExists();
+string           programDatabasePath();
+optional<string> init();
+void             close();
+void             migrateConfigs();
 
 // Signals
 struct Signals

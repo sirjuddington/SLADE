@@ -11,7 +11,7 @@ class NoFocusHtmlWindow;
 class ReleaseNotesPanel : public wxPanel
 {
 public:
-	ReleaseNotesPanel(wxWindow* parent);
+	ReleaseNotesPanel(wxWindow* parent, string_view version = "");
 	~ReleaseNotesPanel() override = default;
 
 private:
@@ -22,4 +22,6 @@ private:
 
 	void loadSelectedVersion() const;
 };
+
+void popupWhatsNewDialog(wxWindow* parent, string_view version);
 } // namespace slade::ui

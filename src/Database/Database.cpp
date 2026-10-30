@@ -39,6 +39,7 @@
 #include "Context.h"
 #include "General/Console.h"
 #include "Tables/ArchiveFile.h"
+#include "Transaction.h"
 #include "UI/State.h"
 #include "UI/UI.h"
 #include "Utility/DateTime.h"
@@ -46,6 +47,8 @@
 #include "Utility/StringPair.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
+#include "sqlite3.h"
+#include <SQLiteCpp/Backup.h>
 #include <SQLiteCpp/Database.h>
 
 using namespace slade;
@@ -58,7 +61,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace slade::database
 {
-int db_version = 1;
+int db_version = 2; // Current version of the program database
 } // namespace slade::database
 
 
@@ -117,7 +120,9 @@ void createMissingTables(Context& db)
 		string sql{ reinterpret_cast<const char*>(entry->data().data()), entry->data().size() };
 		try
 		{
+			Transaction tx(db.connectionRW());
 			db.exec(sql);
+			tx.commit();
 			log::info("Created database table {}", table_name);
 		}
 		catch (const std::exception& ex)
@@ -140,7 +145,9 @@ void createMissingTables(Context& db)
 			string sql{ reinterpret_cast<const char*>(entry->data().data()), entry->data().size() };
 			try
 			{
+				Transaction tx(db.connectionRW());
 				db.exec(sql);
+				tx.commit();
 				log::info("Created database view {}", view_name);
 			}
 			catch (const std::exception& ex)
@@ -175,21 +182,134 @@ void createDatabase(const string& file_path)
 }
 
 // -----------------------------------------------------------------------------
-// Updates the program database tables
+// Creates a backup of the database [db] at db_backup/<version>/slade.sqlite in
+// the user dir, using the SQLite backup API
+// -----------------------------------------------------------------------------
+bool createBackup(Context& db, int version)
+{
+	try
+	{
+		auto backup_dir = app::path(fmt::format("db_backup/{:04d}", version), app::Dir::User);
+		if (!fileutil::dirExists(backup_dir) && !fileutil::createDir(backup_dir))
+		{
+			log::error("Failed to create database backup directory \"{}\"", backup_dir);
+			return false;
+		}
+
+		// Replace any existing backup for this version
+		auto backup_path = fmt::format("{}/slade.sqlite", backup_dir);
+		if (fileutil::fileExists(backup_path) && !fileutil::removeFile(backup_path))
+		{
+			log::error("Failed to remove existing database backup \"{}\"", backup_path);
+			return false;
+		}
+
+		SQLite::Database backup_db(backup_path, SQLite::OPEN_READWRITE | SQLite::OPEN_CREATE);
+		SQLite::Backup   backup(backup_db, *db.connectionRO());
+
+		// Copy all pages in one step (retry while the source is busy/locked)
+		int res;
+		do
+		{
+			res = backup.executeStep(-1);
+			if (res == SQLITE_BUSY || res == SQLITE_LOCKED)
+				wxMilliSleep(25);
+		} while (res == SQLITE_BUSY || res == SQLITE_LOCKED || res == SQLITE_OK);
+
+		if (res != SQLITE_DONE)
+		{
+			log::error("Database backup failed with result code {}", res);
+			return false;
+		}
+
+		return true;
+	}
+	catch (const std::exception& ex)
+	{
+		log::error("Failed to create database backup: {}", ex.what());
+		return false;
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Updates the program database schema from [prev_version] to the current
+// version
 // -----------------------------------------------------------------------------
 void updateDatabase(int prev_version)
 {
 	log::info("Updating database from v{} to v{}...", prev_version, db_version);
 
-	// Create missing tables
 	auto& db = context();
-	createMissingTables(db);
 
-	// Update db_info.version
-	db.exec(fmt::format("UPDATE db_info SET version = {}", db_version));
+	// Create a backup of the database before updating, don't update without one
+	if (!createBackup(db, prev_version))
+		throw std::runtime_error("Failed to create backup of database before update");
+
+	// Run update scripts. Scripts must not contain their own BEGIN/COMMIT or
+	// update db_info.version as we do that here
+	for (int v = prev_version + 1; v <= db_version; v++)
+	{
+		auto update_entry = app::programResource()->entryAtPath(fmt::format("database/update/{:04d}.sql", v));
+		if (!update_entry)
+			throw std::runtime_error(fmt::format("Database update script for v{} not found", v));
+
+		string sql{ reinterpret_cast<const char*>(update_entry->data().data()), update_entry->data().size() };
+		try
+		{
+			Transaction tx(db.connectionRW());
+			db.exec(sql);
+			db.exec(fmt::format("UPDATE db_info SET version = {}", v));
+			tx.commit();
+			log::info("Applied database update v{}", v);
+		}
+		catch (const std::exception& ex)
+		{
+			throw std::runtime_error(fmt::format("Failed to apply database update to v{}: {}", v, ex.what()));
+		}
+	}
 
 	// Done
 	log::info("Database updated to v{} successfully", db_version);
+}
+
+// -----------------------------------------------------------------------------
+// Backs up, closes and deletes the open database [db] (which has the version
+// [backup_version]) and creates a new empty one in its place
+// -----------------------------------------------------------------------------
+bool recreateDatabase(Context& db, int backup_version)
+{
+	auto db_path = programDatabasePath();
+
+	// Create a backup of the database before recreating
+	if (!createBackup(db, backup_version))
+	{
+		if (auto res = wxMessageBox(
+				wxS("Failed to create a backup of the existing database before recreating it. "
+					"Do you want to continue and recreate the database anyway? Note that this will result "
+					"in loss of various saved info."),
+				wxS("Database Backup Failed"),
+				wxYES_NO | wxICON_WARNING);
+			res != wxYES)
+			return false;
+	}
+
+	// Close and delete the existing database
+	db.close();
+	if (!fileutil::removeFile(db_path))
+	{
+		log::error("Failed to delete existing database before recreating");
+		wxMessageBox(
+			wxS("Failed to delete the existing program database before recreating it, SLADE will now exit."),
+			wxS("Database Error"),
+			wxICON_ERROR);
+		return false;
+	}
+
+	// Create a new database
+	createDatabase(db_path);
+	db.open(db_path);
+
+	return true;
 }
 } // namespace slade::database
 
@@ -212,11 +332,15 @@ string database::programDatabasePath()
 // -----------------------------------------------------------------------------
 // Initialises the program database, creating it if it doesn't exist and opening
 // the 'global' connection context.
-// Returns false if the database couldn't be created or the global context
-// failed to open, true otherwise
+//
+// Returns the previous version of SLADE that created/updated the database, or
+// nullopt if the database couldn't be created or the global context failed to
+// open
 // -----------------------------------------------------------------------------
-bool database::init()
+optional<string> database::init()
 {
+	string prev_version;
+
 	try
 	{
 		auto db_path = programDatabasePath();
@@ -238,17 +362,58 @@ bool database::init()
 			migrateConfigs();
 
 		// Update the database if needed
-		auto existing_version = db.connectionRO()->execAndGet("SELECT version FROM db_info").getInt();
-		if (existing_version < db_version)
-			updateDatabase(existing_version);
+		if (!created)
+		{
+			auto existing_version = db.connectionRO()->execAndGet("SELECT version FROM db_info").getInt();
+			if (existing_version < db_version)
+				updateDatabase(existing_version); // Update database to current version
+			else if (existing_version > db_version)
+			{
+				// Database is from a newer version of SLADE, ask user if they
+				// want to recreate it
+				// TODO: Maybe offer to restore a backup of the database for the
+				//       current version if one exists
+				if (auto res = wxMessageBox(
+						wxS("The program database is from a newer version of SLADE than the current version. "
+							"Do you want to recreate the database for the current version? Note that this will result "
+							"in loss of various saved info. A backup of the existing database will be created."),
+						wxS("Database Version Mismatch"),
+						wxYES_NO | wxICON_WARNING);
+					res == wxYES)
+				{
+					if (!recreateDatabase(db, existing_version))
+					{
+						wxMessageBox(
+							wxS("Failed to recreate the program database, SLADE will now exit."),
+							wxS("Database Error"),
+							wxICON_ERROR);
+						return {};
+					}
+				}
+				else
+					return {};
+			}
+		}
+
+		// Get previous version of SLADE that created/updated the database
+		prev_version = db.connectionRO()->execAndGet("SELECT slade_version FROM db_info").getString();
+
+		// A freshly created database will have an empty slade_version if no
+		// migration from pre-3.3.0 config was performed, so just pretend it
+		// was the current version
+		if (prev_version.empty())
+			prev_version = app::version().toString(false);
+
+		// Update the slade_version in db_info to the current version of SLADE
+		db.exec(fmt::format("UPDATE db_info SET slade_version = '{}'", app::version().toString(false)));
 	}
 	catch (const std::exception& ex)
 	{
 		log::error("Failed to initialize database: {}", ex.what());
-		return false;
+		return {};
 	}
 
-	return true;
+	return prev_version;
 }
 
 // -----------------------------------------------------------------------------
@@ -413,6 +578,19 @@ void database::migrateConfigs()
 		// Next token
 		tz.adv();
 	}
+
+	// We've migrated from pre-3.3.0 SLADE, set the slade_version in db_info to
+	// 3.2.0 so that release notes will be shown on startup
+	auto& db = context();
+	try
+	{
+		db.exec(fmt::format("UPDATE db_info SET slade_version = '{}'", "3.2.0"));
+	}
+	catch (const std::exception& ex)
+	{
+		log::error("Failed to set slade_version in database: {}", ex.what());
+	}
+
 #undef MIGRATE_CVAR_BOOL
 #undef MIGRATE_CVAR_INT
 #undef MIGRATE_CVAR_INT_DIP

@@ -220,3 +220,17 @@ else
 	(Get-Content $file) -replace $version_revision_line, $new_version_revision_line | Set-Content $file
 	(Get-Content $file) -replace $version_beta_line, $new_version_beta_line | Set-Content $file
 }
+
+# contributors.txt -------------------------------------------------------------
+Write-Host "`nUpdating contributors list..." -foregroundcolor blue
+& "$PSScriptRoot\updatecontributors.ps1"
+
+# Release Notes ----------------------------------------------------------------
+# Create release notes file if it doesn't exist then open it in notepad
+$releasenotes = "..\dist\res\release_notes\$version.md"
+if (-not (Test-Path $releasenotes))
+{
+	Write-Host "`nCreating release notes file $releasenotes" -foregroundcolor blue
+	New-Item -ItemType file -Force -Path $releasenotes | out-null
+}
+Start-Process notepad.exe $releasenotes

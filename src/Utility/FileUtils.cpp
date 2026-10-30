@@ -189,7 +189,7 @@ bool fileutil::writeStringToFile(const string& str, const string& path)
 // -----------------------------------------------------------------------------
 bool fileutil::createDir(string_view path)
 {
-	return !path.empty() && wxMkdir(fromUtf8(path));
+	return !path.empty() && wxFileName::Mkdir(fromUtf8(path), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 }
 
 // -----------------------------------------------------------------------------

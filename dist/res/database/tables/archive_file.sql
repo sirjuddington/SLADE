@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE archive_file
 (
     id            INTEGER PRIMARY KEY,
@@ -11,5 +9,3 @@ CREATE TABLE archive_file
     last_modified DATETIME,                                              -- Modified time of the file on disk
     parent_id     INTEGER REFERENCES archive_file (id) ON DELETE CASCADE -- For archives within archives, the id of this archive's parent
 );
-
-COMMIT;

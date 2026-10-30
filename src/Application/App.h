@@ -46,7 +46,7 @@ namespace app
 		Version(const string& version);
 
 		int    cmp(const Version& rhs) const;
-		string toString() const;
+		string toString(bool display = true) const;
 	};
 	const Version& version();
 

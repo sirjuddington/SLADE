@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE window_info
 (
     window_id TEXT PRIMARY KEY NOT NULL,
@@ -8,5 +6,3 @@ CREATE TABLE window_info
     width     INTEGER,
     height    INTEGER
 );
-
-COMMIT;

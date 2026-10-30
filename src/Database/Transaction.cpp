@@ -7,7 +7,9 @@
 // Web:         http://slade.mancubus.net
 // Filename:    Transaction.cpp
 // Description: Encapsulates a single SQL transaction, ensuring it's closed off
-//              properly etc. via RAII
+//              properly etc. via RAII. If the transaction is not committed or
+//              rolled back before the Transaction is destroyed, it will
+//              automatically roll back the transaction.
 //
 // This program is free software; you can redistribute it and/or modify it
 // under the terms of the GNU General Public License as published by the Free

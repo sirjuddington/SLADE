@@ -278,7 +278,7 @@ bool SLADEWxApp::singleInstanceCheck()
 		wxMkdir(dir_user);
 
 	single_instance_checker_ = new wxSingleInstanceChecker;
-	single_instance_checker_->Create(WX_FMT("SLADE-{}", app::version().toString()), dir_user);
+	single_instance_checker_->Create(WX_FMT("SLADE-{}", app::version().toString(false)), dir_user);
 
 	if (argc == 1)
 		return true;

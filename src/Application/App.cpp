@@ -57,6 +57,7 @@
 #include "Scripting/Scripting.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
+#include "UI/Controls/ReleaseNotesPanel.h"
 #include "UI/Dialogs/ExceptionDialog.h"
 #include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "UI/SBrush.h"
@@ -217,13 +218,13 @@ int app::Version::cmp(const Version& rhs) const
 // -----------------------------------------------------------------------------
 // Returns a string representation of the version (eg. "3.2.1 beta 4")
 // -----------------------------------------------------------------------------
-string app::Version::toString() const
+string app::Version::toString(bool display) const
 {
 	auto vers = fmt::format("{}.{}.{}", major, minor, revision);
-	if (beta > 999)
+	if (beta > 999 && display)
 		vers += " alpha";
 	else if (beta > 0)
-		vers += fmt::format(" beta {}", beta);
+		vers += display ? fmt::format(" beta {}", beta) : fmt::format("-beta{}", beta);
 	return vers;
 }
 
@@ -593,7 +594,8 @@ bool app::init(const vector<string>& args)
 	}
 
 	// Init database
-	if (!database::init())
+	auto prev_version = database::init();
+	if (!prev_version.has_value())
 		return false;
 
 	// Init SActions
@@ -714,6 +716,10 @@ bool app::init(const vector<string>& args)
 	if (AXIsProcessTrustedWithOptions(options))
 		CFRelease(options);
 #endif
+
+	// Show release notes if this is a new version
+	if (Version(prev_version.value()).cmp(version()) < 0)
+		ui::popupWhatsNewDialog(maineditor::windowWx(), version().toString(false));
 
 	return true;
 }

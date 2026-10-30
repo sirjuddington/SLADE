@@ -93,7 +93,7 @@ string releaseNotesHtml(string_view version)
 // -----------------------------------------------------------------------------
 // ReleaseNotesPanel class constructor
 // -----------------------------------------------------------------------------
-ReleaseNotesPanel::ReleaseNotesPanel(wxWindow* parent) : wxPanel(parent)
+ReleaseNotesPanel::ReleaseNotesPanel(wxWindow* parent, string_view version) : wxPanel(parent)
 {
 	SetDoubleBuffered(true);
 
@@ -153,10 +153,15 @@ ReleaseNotesPanel::ReleaseNotesPanel(wxWindow* parent) : wxPanel(parent)
 
 		versions[0] = fmt::format("{} (current)", versions[0]);
 
-		for (const auto& version : versions)
-			choice_version_->Append(wxString::FromUTF8(strutil::replace(version, "-beta", " Beta ")));
+		for (const auto& v : versions)
+		{
+			auto i = choice_version_->Append(wxString::FromUTF8(strutil::replace(v, "-beta", " Beta ")));
+			if (v == version)
+				choice_version_->SetSelection(i);
+		}
 
-		choice_version_->SetSelection(0);
+		if (choice_version_->GetSelection() == wxNOT_FOUND)
+			choice_version_->SetSelection(0);
 	}
 
 	// Show the release notes for the selected version when the dropdown selection changes
@@ -185,6 +190,9 @@ ReleaseNotesPanel::ReleaseNotesPanel(wxWindow* parent) : wxPanel(parent)
 		});
 
 	loadSelectedVersion();
+
+	if (!version.empty())
+		sizer->Hide(hbox, true);
 }
 
 // -----------------------------------------------------------------------------
@@ -200,4 +208,49 @@ void ReleaseNotesPanel::loadSelectedVersion() const
 
 	btn_next_->Enable(choice_version_->GetSelection() > 0);
 	btn_prev_->Enable(choice_version_->GetSelection() < choice_version_->GetCount() - 1);
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// Helper Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Pops up a dialog showing the release notes for the given [version]
+// -----------------------------------------------------------------------------
+void ui::popupWhatsNewDialog(wxWindow* parent, string_view version)
+{
+	auto dlg = new wxDialog(
+		parent,
+		wxID_ANY,
+		wxS("SLADE Updated"),
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER);
+	LayoutHelper lh(dlg);
+
+	auto sizer = new wxBoxSizer(wxVERTICAL);
+	dlg->SetSizer(sizer);
+
+	auto updated_label = new wxStaticText(
+		dlg, -1, WX_FMT("SLADE has been updated to version {}! See what's new below:", version));
+	updated_label->SetFont(updated_label->GetFont().MakeLarger());
+	sizer->Add(updated_label, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
+	sizer->AddSpacer(lh.padSmall());
+
+	// Release notes panel
+	auto notes = new ReleaseNotesPanel(dlg, version);
+	sizer->Add(notes, lh.sfWithSmallBorder(1, wxLEFT | wxRIGHT).Expand());
+
+	// Button sizer
+	auto btn_close = new wxButton(dlg, wxID_OK, wxS("OK"));
+	sizer->Add(btn_close, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Right());
+
+	dlg->SetInitialSize(lh.size(720, 540));
+	dlg->Layout();
+	dlg->Centre();
+	dlg->Show();
 }

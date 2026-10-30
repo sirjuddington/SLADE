@@ -1,5 +1,3 @@
-BEGIN;
-
 CREATE TABLE ui_state
 (
     name       TEXT,
@@ -10,5 +8,3 @@ CREATE TABLE ui_state
             archive_id
         )
 );
-
-COMMIT;
