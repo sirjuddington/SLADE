@@ -335,10 +335,12 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<ZNodesDataFormat>();
 	registerDataFormat<ZGLNodesDataFormat>();
 	registerDataFormat<ZGLNodes2DataFormat>();
+	registerDataFormat<ZGLNodes3DataFormat>();
 	registerDataFormat<XNodesDataFormat>();
 	registerDataFormat<XGLNodesDataFormat>();
 	registerDataFormat<XGLNodes2DataFormat>();
 	registerDataFormat<XGLNodes3DataFormat>();
+	registerDataFormat<DeePBSPV4NodesDataFormat>();
 	registerDataFormat<DMDModelDataFormat>();
 	registerDataFormat<MDLModelDataFormat>();
 	registerDataFormat<MD2ModelDataFormat>();
