@@ -405,6 +405,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 		[this]
 		{
 			tex_canvas_->setPalette(maineditor::currentPalette());
+			tex_canvas_->refreshAllPatches();
 			tex_canvas_->redraw(true);
 			tex_browser_canvas_->setPalette(maineditor::currentPalette());
 			if (tex_list_browsing_)

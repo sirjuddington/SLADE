@@ -56,6 +56,9 @@ using namespace texeditor;
 wxDEFINE_EVENT(EVT_DRAG_END, wxCommandEvent);
 CVAR(Bool, tx_arc, false, CVar::Flag::Save)
 CVAR(Bool, tx_hover_info, true, CVar::Flag::Save)
+CVAR(Bool, tx_apply_scale, true, CVar::Flag::Save)
+CVAR(Bool, tx_show_outside, true, CVar::Flag::Save)
+CVAR(Bool, tx_truecolour, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -71,9 +74,9 @@ CVAR(Bool, tx_hover_info, true, CVar::Flag::Save)
 CTextureCanvasBase::CTextureCanvasBase(TextureEditor& editor) : editor_{ &editor }
 {
 	// Init settings from cvars
-	tex_scale_    = CVar::getBool("tx_apply_scale");
-	draw_outside_ = CVar::getBool("tx_show_outside");
-	blend_rgba_   = CVar::getBool("tx_truecolour");
+	tex_scale_    = tx_apply_scale;
+	draw_outside_ = tx_show_outside;
+	blend_rgba_   = tx_truecolour;
 
 	// Update when current editor texture is modified
 	connections_ += editor.signals().current_texture_modified.connect(
@@ -228,10 +231,10 @@ Vec2i CTextureCanvasBase::dragOffset(bool grid_snap) const
 // -----------------------------------------------------------------------------
 void CTextureCanvasBase::cancelDrag()
 {
-	dragging_        = false;
-	drag_on_texture_ = false;
-	drag_origin_     = { -1, -1 };
-	mouse_pos_       = { -1, -1 };
+	dragging_         = false;
+	drag_on_texture_  = false;
+	drag_origin_      = { -1, -1 };
+	mouse_pos_        = { -1, -1 };
 	last_drag_offset_ = { 0, 0 };
 	refreshTexturePreview();
 	window()->Refresh();
@@ -273,6 +276,15 @@ void CTextureCanvasBase::refreshPatch(unsigned index)
 		return;
 
 	patch_images_[index].reset();
+}
+
+// -----------------------------------------------------------------------------
+// Refreshes all patch images so they are reloaded next draw
+// -----------------------------------------------------------------------------
+void CTextureCanvasBase::refreshAllPatches()
+{
+	for (unsigned a = 0; a < patch_images_.size(); a++)
+		refreshPatch(a);
 }
 
 // -----------------------------------------------------------------------------
@@ -729,8 +741,8 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 	// LEFT BUTTON DOWN
 	else if (e.LeftDown())
 	{
-		drag_origin_     = { p_x, p_y };
-		drag_on_texture_ = onTexture(p_x, p_y);
+		drag_origin_      = { p_x, p_y };
+		drag_on_texture_  = onTexture(p_x, p_y);
 		last_drag_offset_ = { 0, 0 };
 		e.Skip();
 	}
@@ -742,8 +754,8 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 		if (dragging_ && drag_origin_.x >= 0 && drag_origin_.y >= 0 && mouse_pos_.x >= 0 && mouse_pos_.y >= 0)
 		{
 			last_drag_offset_ = dragOffset(false);
-			dragging_        = false;
-			drag_on_texture_ = false;
+			dragging_         = false;
+			drag_on_texture_  = false;
 			refreshTexturePreview();
 			refresh = true;
 			wxCommandEvent evt(EVT_DRAG_END, window()->GetId());

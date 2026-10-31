@@ -65,7 +65,7 @@ SIconButton::SIconButton(
 		SetMinSize(wxSize(button_size, button_size));
 	else
 	{
-		auto default_height = GetDefaultSize().y;
+		auto default_height = GetDefaultSize(parent).y;
 		SetMinSize(wxSize(default_height, default_height));
 	}
 }

@@ -2188,6 +2188,8 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 {
 	// Page has changed, update custom menus and toolbars
 	int selection = stc_archives_->GetSelection();
+	if (selection < 0 || selection >= static_cast<int>(stc_archives_->GetPageCount()))
+		return;
 
 	// Remove any current custom menus/toolbars
 	theMainWindow->Freeze();
