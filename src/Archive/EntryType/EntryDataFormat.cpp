@@ -335,6 +335,7 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<ZNodesDataFormat>();
 	registerDataFormat<ZGLNodesDataFormat>();
 	registerDataFormat<ZGLNodes2DataFormat>();
+	registerDataFormat<ZGLNodes3DataFormat>();
 	registerDataFormat<XNodesDataFormat>();
 	registerDataFormat<XGLNodesDataFormat>();
 	registerDataFormat<XGLNodes2DataFormat>();

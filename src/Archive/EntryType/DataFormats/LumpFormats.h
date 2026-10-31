@@ -97,7 +97,7 @@ public:
 		if (mc.size() > 4)
 		{
 			// Check for ZNOD header
-			if (mc[0] == 'Z' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
+			if (mc[0] == 'Z' && mc[1] == 'N' && mc[2] == 'O' && mc[3] == 'D')
 				return MATCH_TRUE;
 		}
 		return MATCH_FALSE;
@@ -142,6 +142,25 @@ public:
 	}
 };
 
+class ZGLNodes3DataFormat : public EntryDataFormat
+{
+public:
+	ZGLNodes3DataFormat() : EntryDataFormat("zgl3") {}
+	~ZGLNodes3DataFormat() override = default;
+
+	int isThisFormat(const MemChunk& mc) override
+	{
+		// Check size
+		if (mc.size() > 4)
+		{
+			// Check for ZGL3 header
+			if (mc[0] == 'Z' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == '3')
+				return MATCH_TRUE;
+		}
+		return MATCH_FALSE;
+	}
+};
+
 class XNodesDataFormat : public EntryDataFormat
 {
 public:
@@ -154,7 +173,7 @@ public:
 		if (mc.size() > 4)
 		{
 			// Check for XNOD header
-			if (mc[0] == 'X' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
+			if (mc[0] == 'X' && mc[1] == 'N' && mc[2] == 'O' && mc[3] == 'D')
 				return MATCH_TRUE;
 		}
 		return MATCH_FALSE;
