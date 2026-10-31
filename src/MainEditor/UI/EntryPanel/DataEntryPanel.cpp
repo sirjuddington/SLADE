@@ -718,6 +718,27 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		}
 	}
 
+	// NODES (DeePBSPV4)
+	else if (type == "map_deepv4nodes")
+	{
+		columns_.emplace_back(wxS("Partition X"), ColType::IntSigned, 2, 0);
+		columns_.emplace_back(wxS("Partition Y"), ColType::IntSigned, 2, 2);
+		columns_.emplace_back(wxS("Partition X Diff"), ColType::IntSigned, 2, 4);
+		columns_.emplace_back(wxS("Partition Y Diff"), ColType::IntSigned, 2, 6);
+		columns_.emplace_back(wxS("Right Box Top"), ColType::IntSigned, 2, 8);
+		columns_.emplace_back(wxS("Right Box Bottom"), ColType::IntSigned, 2, 10);
+		columns_.emplace_back(wxS("Right Box Left"), ColType::IntSigned, 2, 12);
+		columns_.emplace_back(wxS("Right Box Right"), ColType::IntSigned, 2, 14);
+		columns_.emplace_back(wxS("Left Box Top"), ColType::IntSigned, 2, 16);
+		columns_.emplace_back(wxS("Left Box Bottom"), ColType::IntSigned, 2, 18);
+		columns_.emplace_back(wxS("Left Box Left"), ColType::IntSigned, 2, 20);
+		columns_.emplace_back(wxS("Left Box Right"), ColType::IntSigned, 2, 22);
+		columns_.emplace_back(wxS("Right Child"), ColType::IntUnsigned, 4, 24);
+		columns_.emplace_back(wxS("Left Child"), ColType::IntUnsigned, 4, 28);
+		row_stride_ = 32;
+		data_start_ = 8;
+	}
+
 	// LIGHTS
 	else if (type == "map_lights")
 	{
