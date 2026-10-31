@@ -142,6 +142,15 @@
     "export_ext": "lmp",
     "category": "Maps"
   },
+  "map_deepv4nodes": {
+    "inherits": "map_base",
+    "name": "Map Nodes (DeePBSPV4)",
+    "match_name": [ "NODES" ],
+    "format": "xNd4",
+    "icon": "e_map_data",
+    "export_ext": "lmp",
+    "category": "Maps"
+  },
   "map_nodes": {
     "inherits": "map_base",
     "name": "Map Nodes",

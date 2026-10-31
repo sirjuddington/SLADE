@@ -237,6 +237,26 @@ public:
 	}
 };
 
+class DeePBSPV4NodesDataFormat : public EntryDataFormat
+{
+public:
+	DeePBSPV4NodesDataFormat() : EntryDataFormat("xNd4") {}
+	~DeePBSPV4NodesDataFormat() override = default;
+
+	int isThisFormat(const MemChunk& mc) override
+	{
+		// Check size
+		if (mc.size() > 8)
+		{
+			// Check for xNd4 header
+			if (mc[0] == 'x' && mc[1] == 'N' && mc[2] == 'd' && mc[3] == '4' &&
+			    mc[4] == '\0' && mc[5] == '\0' && mc[6] == '\0' && mc[7] == '\0')
+				return MATCH_TRUE;
+		}
+		return MATCH_FALSE;
+	}
+};
+
 class ACS0DataFormat : public EntryDataFormat
 {
 public:
