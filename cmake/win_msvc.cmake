@@ -22,12 +22,6 @@ if (NOT BUILD_WX)
 endif ()
 set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net wx::html)
 
-# WebP/Png
-if (NOT BUILD_WX)
-	find_package(WebP CONFIG REQUIRED)
-	find_package(PNG REQUIRED)
-endif ()
-
 # Other
 find_package(Freetype REQUIRED)
 find_package(FluidSynth CONFIG REQUIRED)
@@ -116,12 +110,3 @@ target_link_libraries(slade
 	LibArchive::LibArchive
 	FluidSynth::libfluidsynth
 )
-
-if (NOT BUILD_WX)
-	target_link_libraries(slade
-		WebP::webp
-		WebP::webpdecoder
-		WebP::webpdemux
-		PNG::PNG
-	)
-endif ()

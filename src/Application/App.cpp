@@ -70,7 +70,7 @@
 #ifdef __WXOSX__
 #include <ApplicationServices/ApplicationServices.h>
 #endif
-#if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
+#if defined(__WXMSW__)
 #include <wx/msw/darkmode.h>
 #endif
 
@@ -119,7 +119,7 @@ CVAR(String, temp_location_custom, "", CVar::Flag::Save)
 CVAR(Int, win_darkmode, 1, CVar::Flag::Save)
 
 
-#if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
+#if defined(__WXMSW__)
 namespace slade::app
 {
 // -----------------------------------------------------------------------------
@@ -608,7 +608,7 @@ bool app::init(const vector<string>& args)
 #endif
 
 	// Enable dark mode in Windows if requested and supported
-#if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
+#if defined(__WXMSW__)
 	if (win_darkmode > 0)
 		wxTheApp->MSWEnableDarkMode(
 			win_darkmode > 1 ? wxApp::DarkMode_Always : wxApp::DarkMode_Auto, new SLADEDarkModeSettings());
@@ -959,26 +959,7 @@ bool app::isWin64Build()
 // -----------------------------------------------------------------------------
 string app::osDescription()
 {
-#if defined(__WXGTK__) && !wxCHECK_VERSION(3, 3, 3)
-	// On Linux (pre-wx3.3.3), return the distribution name and version instead of just the linux kernel version
-	auto dist_info = wxGetLinuxDistributionInfo();
-	auto linux_ver = wxGetOsDescription().utf8_string();
-
-	if (strutil::startsWithCI(linux_ver, "Linux "))
-		linux_ver = linux_ver.substr(6); // Remove "Linux " from the start of the version string
-
-	// If the distribution code name is available, include it in the description
-	if (!dist_info.CodeName.empty())
-		return fmt::format(
-			"{} \"{}\" ({})",
-			dist_info.Description.utf8_string(),
-			dist_info.CodeName.Capitalize().utf8_string(),
-			linux_ver);
-
-	return fmt::format("{} ({})", dist_info.Description.utf8_string(), linux_ver);
-#else
 	return wxGetOsDescription().utf8_string();
-#endif
 }
 
 // ----------------------------------------------------------------------------

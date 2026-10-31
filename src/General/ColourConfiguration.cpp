@@ -43,6 +43,7 @@
 #include "Utility/StringUtils.h"
 
 using namespace slade;
+using namespace colourconfig;
 
 
 // -----------------------------------------------------------------------------
@@ -50,16 +51,14 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-namespace slade::colourconfig
+namespace
 {
-typedef std::map<string, Colour> ColourHashMap;
-
 MapEditorTheme map_editor_theme{ 3.0, 4.0, 1.0 };
 vector<Colour> cols_map_preview;
 vector<Colour> cols_map_image;
 vector<Colour> cols_map_editor;
 Json           j_custom_colours = nlohmann::detail::value_t::discarded;
-} // namespace slade::colourconfig
+} // namespace
 CVAR(String, ccfg_map_preview, "", CVar::Flag::Save)
 CVAR(String, ccfg_map_image, "", CVar::Flag::Save)
 CVAR(String, ccfg_map_editor, "", CVar::Flag::Save)
@@ -223,7 +222,7 @@ bool readCustomConfiguration(Group group, vector<Colour>& colours, MapEditorThem
 // -----------------------------------------------------------------------------
 // Colour struct constructor
 // -----------------------------------------------------------------------------
-colourconfig::Colour::Colour(string_view id, string_view name, string_view group) :
+Colour::Colour(string_view id, string_view name, string_view group) :
 	name{ name },
 	colour{ ColRGBA::WHITE },
 	blend_additive{ false },
@@ -235,7 +234,7 @@ colourconfig::Colour::Colour(string_view id, string_view name, string_view group
 // -----------------------------------------------------------------------------
 // Returns the OpenGL blend mode for this colour
 // -----------------------------------------------------------------------------
-gl::Blend colourconfig::Colour::blendMode() const
+gl::Blend Colour::blendMode() const
 {
 	return blend_additive ? gl::Blend::Additive : gl::Blend::Normal;
 }
@@ -243,7 +242,7 @@ gl::Blend colourconfig::Colour::blendMode() const
 // -----------------------------------------------------------------------------
 // Sets the colour and blend mode for this Colour
 // -----------------------------------------------------------------------------
-void colourconfig::Colour::set(u8 r, u8 g, u8 b, u8 a, bool blend_additive)
+void Colour::set(u8 r, u8 g, u8 b, u8 a, bool blend_additive)
 {
 	colour.set(r, g, b, a);
 	this->blend_additive = blend_additive;
@@ -252,7 +251,7 @@ void colourconfig::Colour::set(u8 r, u8 g, u8 b, u8 a, bool blend_additive)
 // -----------------------------------------------------------------------------
 // Returns the current map editor theme configuration
 // -----------------------------------------------------------------------------
-const colourconfig::MapEditorTheme& colourconfig::mapEditorTheme()
+const MapEditorTheme& colourconfig::mapEditorTheme()
 {
 	return map_editor_theme;
 }
@@ -284,7 +283,7 @@ double colourconfig::flatAlpha()
 // -----------------------------------------------------------------------------
 // Returns the vector of all colours for the given [group]
 // -----------------------------------------------------------------------------
-const vector<colourconfig::Colour>& colourconfig::allColours(Group group)
+const vector<Colour>& colourconfig::allColours(Group group)
 {
 	switch (group)
 	{
@@ -343,7 +342,7 @@ ColRGBA colourconfig::colour(MapEditor editor)
 // -----------------------------------------------------------------------------
 // Returns the Colour definition for the given map [preview] element
 // -----------------------------------------------------------------------------
-const colourconfig::Colour& colourconfig::colDef(MapPreview preview)
+const Colour& colourconfig::colDef(MapPreview preview)
 {
 	return cols_map_preview[static_cast<size_t>(preview)];
 }
@@ -351,7 +350,7 @@ const colourconfig::Colour& colourconfig::colDef(MapPreview preview)
 // -----------------------------------------------------------------------------
 // Returns the Colour definition for the given map [image] element
 // -----------------------------------------------------------------------------
-const colourconfig::Colour& colourconfig::colDef(MapImage image)
+const Colour& colourconfig::colDef(MapImage image)
 {
 	return cols_map_image[static_cast<size_t>(image)];
 }
@@ -359,7 +358,7 @@ const colourconfig::Colour& colourconfig::colDef(MapImage image)
 // -----------------------------------------------------------------------------
 // Returns the Colour definition for the given map [editor] element
 // -----------------------------------------------------------------------------
-const colourconfig::Colour& colourconfig::colDef(MapEditor editor)
+const Colour& colourconfig::colDef(MapEditor editor)
 {
 	return cols_map_editor[static_cast<size_t>(editor)];
 }
@@ -665,7 +664,7 @@ void colourconfig::saveCustomConfiguration()
 // -----------------------------------------------------------------------------
 // Returns the colour configuration signals object
 // -----------------------------------------------------------------------------
-colourconfig::CCfgSignals& colourconfig::signals()
+CCfgSignals& colourconfig::signals()
 {
 	static CCfgSignals s;
 	return s;

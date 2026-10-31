@@ -31,7 +31,6 @@ endif (CMAKE_INSTALL_PREFIX)
 find_package(FluidSynth REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(MPG123 REQUIRED)
-find_package(WebP REQUIRED)
 find_package(PNG REQUIRED)
 find_package(glm REQUIRED)
 find_package(Freetype REQUIRED)
@@ -107,7 +106,6 @@ target_link_libraries(slade
 	${FREETYPE_LIBRARIES}
 	${OPENGL_LIBRARIES}
 	${MPG123_LIBRARIES}
-	${WebP_LIBRARIES}
 	${FLUIDSYNTH_LIBRARIES}
 	glm::glm
 	cpptrace::cpptrace

@@ -37,16 +37,13 @@
 #include "MainEditor/EntryOperations.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
-#include "SLADEMap/OldMapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
-#if wxCHECK_VERSION(3, 3, 2)
 #include <wx/stc/minimap.h>
-#endif
 
 using namespace slade;
 
@@ -110,7 +107,6 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	tx_hbox->Add(text_editor_, wxSizerFlags(1).Expand());
 
 	// Create the minimap if enabled (and supported)
-#if wxCHECK_VERSION(3, 3, 2)
 	if (txed_minimap_width > 0)
 	{
 		auto minimap = new wxStyledTextCtrlMiniMap(this, text_editor_);
@@ -119,7 +115,6 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
 		tx_hbox->Add(minimap, wxSizerFlags().Expand());
 	}
-#endif
 
 	// Set language
 	auto lang = game::configuration().scriptLanguage();

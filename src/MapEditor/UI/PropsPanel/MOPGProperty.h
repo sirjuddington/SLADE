@@ -134,12 +134,8 @@ public:
 	Type type() override { return Type::ActionSpecial; }
 
 	// wxPGProperty overrides
-#if wxCHECK_VERSION(3, 3, 0)
 	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
-#else
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
-#endif
-	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
+	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 
 class MOPGThingTypeProperty : public MOPGIntWithArgsProperty
@@ -156,12 +152,8 @@ public:
 	Type type() override { return Type::ThingType; }
 
 	// wxPGProperty overrides
-#if wxCHECK_VERSION(3, 3, 0)
 	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
-#else
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
-#endif
-	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
+	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 
 class MOPGLineFlagProperty : public MOPGBoolProperty
@@ -202,11 +194,7 @@ public:
 	void clearValue() override;
 
 	// wxPGProperty overrides
-#if wxCHECK_VERSION(3, 3, 0)
 	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
-#else
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
-#endif
 };
 
 class MOPGColourProperty : public MOPGProperty, public wxColourProperty
@@ -282,11 +270,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 
 	// wxPGProperty overrides
-#if wxCHECK_VERSION(3, 3, 0)
 	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
-#else
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
-#endif
-	bool OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
+	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 } // namespace slade

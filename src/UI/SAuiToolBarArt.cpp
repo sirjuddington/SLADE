@@ -53,11 +53,7 @@ namespace
 // -----------------------------------------------------------------------------
 wxBitmap disabledBitmap(const wxBitmap& bmp, const wxColour& background)
 {
-#if wxCHECK_VERSION(3, 3, 0)
 	return bmp.ConvertToDisabled(255 * background.GetLuminance());
-#else
-	return bmp.CreateDisabled();
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -85,7 +81,7 @@ optional<wxBrush> buttonBackgroundBrush(bool pressed, bool hover, bool checked)
 		auto c     = highlightColour();
 		if (hover || pressed)
 			alpha *= 2;
-		
+
 		return { wxColour(c.Red(), c.Green(), c.Blue(), alpha) };
 	}
 
@@ -172,11 +168,7 @@ wxSize SAuiToolBarArt::GetToolSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiT
 		// and add some extra space in front of the drop down button
 		if (item.HasDropDown())
 		{
-#if wxCHECK_VERSION(3, 3, 0)
 			int dropdownWidth = GetElementSizeForWindow(wxAUI_TBART_DROPDOWN_SIZE, wnd);
-#else
-			int dropdownWidth = GetElementSize(wxAUI_TBART_DROPDOWN_SIZE);
-#endif
 			width += dropdownWidth + wnd->FromDIP(4);
 		}
 
@@ -192,11 +184,7 @@ wxSize SAuiToolBarArt::GetToolSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiT
 // -----------------------------------------------------------------------------
 void SAuiToolBarArt::DrawPlainBackground(wxDC& dc, wxWindow* wnd, const wxRect& rect)
 {
-#if wxCHECK_VERSION(3, 3, 0)
 	dc.SetBrush(wnd->GetBackgroundColour());
-#else
-	dc.SetBrush(*wxTRANSPARENT_BRUSH);
-#endif
 	dc.SetPen(*wxTRANSPARENT_PEN);
 
 	dc.DrawRectangle(rect);
@@ -328,11 +316,7 @@ void SAuiToolBarArt::DrawDropDownButton(wxDC& dc, wxWindow* wnd, const wxAuiTool
 	}
 
 	// Get dropdown size
-#if wxCHECK_VERSION(3, 3, 0)
 	int dropdown_size = GetElementSizeForWindow(wxAUI_TBART_DROPDOWN_SIZE, wnd) + wnd->FromDIP(4);
-#else
-	int dropdown_size = GetElementSize(wxAUI_TBART_DROPDOWN_SIZE) + wnd->FromDIP(4);
-#endif
 
 	// For split buttons, calculate separate rectangles for button and dropdown
 	wxRect button_rect = rect;

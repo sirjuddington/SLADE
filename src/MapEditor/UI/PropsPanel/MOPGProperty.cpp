@@ -136,7 +136,10 @@ void MOPGBoolProperty::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 void MOPGBoolProperty::updateVisibility()
 {
-	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
+	if (!parent_->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop_
+		&& !udmf_prop_->showAlways()
 		&& property::asBool(udmf_prop_->defaultValue()) == GetValue().GetBool())
 		Hide(true);
 	else
@@ -234,7 +237,10 @@ void MOPGIntProperty::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 void MOPGIntProperty::updateVisibility()
 {
-	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
+	if (!parent_->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop_
+		&& !udmf_prop_->showAlways()
 		&& property::asInt(udmf_prop_->defaultValue()) == GetValue().GetInteger())
 		Hide(true);
 	else
@@ -332,7 +338,10 @@ void MOPGFloatProperty::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 void MOPGFloatProperty::updateVisibility()
 {
-	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
+	if (!parent_->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop_
+		&& !udmf_prop_->showAlways()
 		&& property::asFloat(udmf_prop_->defaultValue()) == GetValue().GetDouble())
 		Hide(true);
 	else
@@ -452,7 +461,10 @@ void MOPGStringProperty::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 void MOPGStringProperty::updateVisibility()
 {
-	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
+	if (!parent_->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop_
+		&& !udmf_prop_->showAlways()
 		&& property::asString(udmf_prop_->defaultValue()) == GetValue().GetString().utf8_string())
 		Hide(true);
 	else
@@ -623,11 +635,8 @@ const game::ArgSpec& MOPGActionSpecialProperty::argSpec()
 // -----------------------------------------------------------------------------
 // Returns the action special value as a string (contains the special name)
 // -----------------------------------------------------------------------------
-#if wxCHECK_VERSION(3, 3, 0)
+
 wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
-#else
-wxString MOPGActionSpecialProperty::ValueToString(wxVariant& value, int argFlags) const
-#endif
 {
 	// Get value as integer
 	int special = value.GetInteger();
@@ -678,11 +687,8 @@ const game::ArgSpec& MOPGThingTypeProperty::argSpec()
 // -----------------------------------------------------------------------------
 // Returns the thing type value as a string (contains the thing type name)
 // -----------------------------------------------------------------------------
-#if wxCHECK_VERSION(3, 3, 0)
+
 wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
-#else
-wxString MOPGThingTypeProperty::ValueToString(wxVariant& value, int argFlags) const
-#endif
 {
 	// Get value as integer
 	int type = value.GetInteger();
@@ -939,7 +945,10 @@ void MOPGAngleProperty::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 void MOPGAngleProperty::updateVisibility()
 {
-	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
+	if (!parent_->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop_
+		&& !udmf_prop_->showAlways()
 		&& property::asInt(udmf_prop_->defaultValue()) == GetValue().GetInteger())
 		Hide(true);
 	else
@@ -984,11 +993,7 @@ void MOPGAngleProperty::clearValue()
 // -----------------------------------------------------------------------------
 // Returns the angle value as a string
 // -----------------------------------------------------------------------------
-#if wxCHECK_VERSION(3, 3, 0)
 wxString MOPGAngleProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
-#else
-wxString MOPGAngleProperty::ValueToString(wxVariant& value, int argFlags) const
-#endif
 {
 	int angle = value.GetInteger();
 
@@ -1260,7 +1265,10 @@ void MOPGSPACTriggerProperty::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 void MOPGSPACTriggerProperty::updateVisibility()
 {
-	if (!parent_->showAll() && !IsValueUnspecified() && udmf_prop_ && !udmf_prop_->showAlways()
+	if (!parent_->showAll()
+		&& !IsValueUnspecified()
+		&& udmf_prop_
+		&& !udmf_prop_->showAlways()
 		&& property::asInt(udmf_prop_->defaultValue()) == GetValue().GetInteger())
 		Hide(true);
 	else
@@ -1438,11 +1446,7 @@ void MOPGSectorSpecialProperty::openObjects(vector<MapObject*>& objects)
 // -----------------------------------------------------------------------------
 // Returns the sector special value as a string
 // -----------------------------------------------------------------------------
-#if wxCHECK_VERSION(3, 3, 0)
 wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const
-#else
-wxString MOPGSectorSpecialProperty::ValueToString(wxVariant& value, int argFlags) const
-#endif
 {
 	int type = value.GetInteger();
 

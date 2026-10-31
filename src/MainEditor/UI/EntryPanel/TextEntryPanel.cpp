@@ -46,10 +46,7 @@
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
 #include "UI/WxUtils.h"
-#include "Utility/StringUtils.h"
-#if wxCHECK_VERSION(3, 3, 2)
 #include <wx/stc/minimap.h>
-#endif
 
 using namespace slade;
 
@@ -81,8 +78,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	text_area_ = new TextEditorCtrl(this, -1);
 	hbox->Add(text_area_, wxSizerFlags(1).Expand());
 
-	// Create the minimap if enabled (and supported)
-#if wxCHECK_VERSION(3, 3, 2)
+	// Create the minimap if enabled
 	if (txed_minimap_width > 0)
 	{
 		auto minimap = new wxStyledTextCtrlMiniMap(this, text_area_);
@@ -92,7 +88,6 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 		minimap->SetDoubleBuffered(true);
 		hbox->Add(minimap, wxSizerFlags().Expand());
 	}
-#endif
 
 	// Create the find+replace panel
 	panel_fr_ = new FindReplacePanel(this, *text_area_);

@@ -69,10 +69,8 @@ bool dump_parsed_functions = false;
 // Only documentation seems to be: https://zdoom.org/wiki/Editor_keys
 const string editor_comment_prefix = "//$";
 
-#if wxCHECK_VERSION(3, 3, 0)
 //  Not sure why wx3.3 confuses the compiler about string <-> char comparisons,
 //  but we'll just do this for now
-//  TODO: Try removing this once wx 3.3 is released and on vcpkg
 bool operator==(const string& str, char c)
 {
 	return str.size() == 1 && str[0] == c;
@@ -81,7 +79,6 @@ bool operator!=(const string& str, char c)
 {
 	return str.size() != 1 || str[0] != c;
 }
-#endif
 } // namespace slade::zscript
 
 

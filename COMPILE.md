@@ -8,8 +8,7 @@
 * mpg123 >= 1.28.1
 * OpenGL
 * SFML
-* wxWidgets >= 3.3.2 (it may build with earlier versions, but that is not recommended due
-  to known bugs)
+* wxWidgets >= 3.3.2
 * zlib
 * libwebp
 * libarchive

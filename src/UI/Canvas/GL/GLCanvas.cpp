@@ -51,7 +51,7 @@ void GLCanvas::setPalette(const Palette* pal)
 
 void GLCanvas::setBackground(BGStyle style, const ColRGBA& colour)
 {
-	bg_style_  = style;
+	bg_style_ = style;
 
 	if (bg_style_ == BGStyle::Colour)
 		bg_colour_ = colour;
@@ -259,9 +259,7 @@ void GLCanvas::onPaint(wxPaintEvent& e)
 	if (!init_done_)
 		init();
 
-#if wxCHECK_VERSION(3, 3, 2)
 	SetSwapInterval(glcanvas_vsync ? DefaultSwapInterval : 0);
-#endif
 
 	// Set viewport
 	glViewport(0, 0, GetSize().x * wxWindow::GetContentScaleFactor(), GetSize().y * wxWindow::GetContentScaleFactor());

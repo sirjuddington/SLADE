@@ -41,7 +41,6 @@
 #include "MainEditor/UI/ArchiveManagerPanel.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Dialogs/CrashReportDialog.h"
-#include "UI/WxWebpHandler.h"
 #include "Utility/Parser.h"
 #include <cpptrace/from_current.hpp>
 #include <wx/filefn.h>
@@ -96,6 +95,11 @@ extern EXCEPTION_POINTERS* wxGlobalSEInformation;
 CVAR(Bool, update_check, true, CVar::Flag::Save)
 CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
 
+// Enforce wxWidgets version 3.3.2 or higher
+#if !(wxCHECK_VERSION(3, 3, 2))
+#error SLADE will not compile with wxWidgets older than 3.3.2
+#endif
+
 
 // -----------------------------------------------------------------------------
 //
@@ -113,10 +117,6 @@ CVAR(Bool, update_check_beta, false, CVar::Flag::Save)
 class SLADELog : public wxLog
 {
 protected:
-	// wx < 3.1.0 is no longer supported.
-#if !(wxCHECK_VERSION(3, 1, 0))
-#error This will not compile with wxWidgets older than 3.1.0 !
-#endif
 	void DoLogText(const wxString& msg) override
 	{
 		static const string wx_prefix = "[wxWidgets] ";
@@ -340,9 +340,6 @@ bool SLADEWxApp::OnInit()
 
 	// Load image handlers
 	wxInitAllImageHandlers();
-#if !wxCHECK_VERSION(3, 3, 0)
-	wxImage::AddHandler(new WxWebpHandler);
-#endif
 
 	// Get Windows version
 #ifdef __WXMSW__

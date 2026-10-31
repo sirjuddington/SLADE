@@ -435,7 +435,6 @@ void SAuiTabArt::DrawTab(
 	dc.DestroyClippingRegion();
 }
 
-#if wxCHECK_VERSION(3, 3, 0)
 int SAuiTabArt::DrawPageTab(wxDC& dc, wxWindow* wnd, wxAuiNotebookPage& page, const wxRect& rect)
 {
 	wxCoord normal_textx, normal_texty;
@@ -695,55 +694,6 @@ wxSize SAuiTabArt::GetPageTabSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiNo
 
 	return { tab_width, tab_height };
 }
-#else
-wxSize SAuiTabArt::GetTabSize(
-	wxDC&                 dc,
-	wxWindow*             wnd,
-	const wxString&       caption,
-	const wxBitmapBundle& bitmap,
-	bool                  WXUNUSED(active),
-	int                   close_button_state,
-	int*                  x_extent)
-{
-	wxCoord measured_textx, measured_texty, tmp;
-
-	dc.SetFont(m_measuringFont);
-	dc.GetTextExtent(caption, &measured_textx, &measured_texty);
-
-	dc.GetTextExtent(wxT("ABCDEFXj"), &tmp, &measured_texty);
-
-	// add padding around the text
-	wxCoord tab_width  = measured_textx;
-	wxCoord tab_height = measured_texty;
-
-	// if close buttons are enabled, add space for one
-	if (close_buttons_)
-		tab_width += wnd->FromPhys(m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).x) + padding_;
-
-	// if there's a bitmap, add space for it
-	if (bitmap.IsOk())
-	{
-		tab_width += wnd->FromPhys(bitmap.GetPreferredBitmapSizeFor(wnd).x);
-		tab_width += padding_; // right side bitmap padding
-		tab_height = wxMax(tab_height, wnd->FromPhys(bitmap.GetPreferredBitmapSizeFor(wnd).y));
-	}
-	else if (tabs_condensed)
-		tab_width += padding_ * 2; // a bit extra padding if there isn't an icon in condensed mode
-
-	// add padding
-	tab_width += padding_ * 2;
-	tab_height += 10;
-
-	// minimum width
-	int min_width = tabs_condensed ? 48 : 64;
-	if (tab_width < min_width)
-		tab_width = min_width;
-
-	*x_extent = tab_width;
-
-	return { tab_width, tab_height };
-}
-#endif
 
 void SAuiTabArt::SetSelectedFont(const wxFont& font)
 {

@@ -25,21 +25,10 @@ public:
 		wxRect*                  outButtonRect,
 		int*                     xExtent) override;
 
-#if wxCHECK_VERSION(3, 3, 0)
 	int DrawPageTab(wxDC& dc, wxWindow* wnd, wxAuiNotebookPage& page, const wxRect& rect) override;
 
 	wxSize GetPageTabSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiNotebookPage& page, int* xExtent = nullptr)
 		override;
-#else
-	wxSize GetTabSize(
-		wxDC&                 dc,
-		wxWindow*             wnd,
-		const wxString&       caption,
-		const wxBitmapBundle& bitmap,
-		bool                  active,
-		int                   closeButtonState,
-		int*                  xExtent) override;
-#endif
 
 	int GetIndentSize() override { return -1; }
 

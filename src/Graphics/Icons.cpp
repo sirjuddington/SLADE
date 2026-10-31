@@ -325,24 +325,7 @@ IconSet readIconSet(const Json& j, const Archive& res_archive)
 bool icons::loadIcons()
 {
 	// Check for dark mode
-#if defined(__WXMSW__) && !wxCHECK_VERSION(3, 3, 0)
-	ui_icons_dark = false; // Force light theme icons in windows
-#elif wxCHECK_VERSION(3, 1, 3)
 	ui_icons_dark = wxSystemSettings::GetAppearance().IsDark();
-#else
-	auto fg   = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
-	auto fg_r = fg.Red();
-	auto fg_g = fg.Green();
-	auto fg_b = fg.Blue();
-	auto bg   = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
-	auto bg_r = bg.Red();
-	auto bg_g = bg.Green();
-	auto bg_b = bg.Blue();
-	wxColour::MakeGrey(&fg_r, &fg_g, &fg_b);
-	wxColour::MakeGrey(&bg_r, &bg_g, &bg_b);
-	log::info("DARK MODE CHECK: FG {} BG {}", fg_r, bg_r);
-	ui_icons_dark = fg_r > bg_r;
-#endif
 
 	// Get slade.pk3
 	auto* res_archive = app::programResource();

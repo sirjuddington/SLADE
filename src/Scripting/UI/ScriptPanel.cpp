@@ -40,9 +40,7 @@
 #include "TextEditor/UI/TextEditorCtrl.h"
 #include "UI/Layout.h"
 #include "UI/SAuiToolBar.h"
-#if wxCHECK_VERSION(3, 3, 2)
 #include <wx/stc/minimap.h>
-#endif
 
 using namespace slade;
 
@@ -89,7 +87,6 @@ ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPa
 	hbox->Add(text_editor_, wxSizerFlags(1).Expand());
 
 	// Create the minimap if enabled (and supported)
-#if wxCHECK_VERSION(3, 3, 2)
 	if (txed_minimap_width > 0)
 	{
 		auto minimap = new wxStyledTextCtrlMiniMap(this, text_editor_);
@@ -98,7 +95,6 @@ ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPa
 		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
 		hbox->Add(minimap, wxSizerFlags().Expand());
 	}
-#endif
 
 	// Find+Replace panel
 	find_replace_panel_ = new FindReplacePanel(this, *text_editor_);

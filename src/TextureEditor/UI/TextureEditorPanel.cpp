@@ -994,22 +994,11 @@ void TextureEditorPanel::populatePatchesList() const
 
 	// Add patches to list
 	int patch_index = 0;
-#if wxCHECK_VERSION(3, 3, 0)
 	for (auto& p : ctex->patches())
 		list_patches_->AppendItem(
 			{ WX_FMT("{}", patch_index++),
 			  wxString::FromUTF8(p->name()),
 			  WX_FMT("{}, {}", p->xOffset(), p->yOffset()) });
-#else
-	for (auto& p : ctex->patches())
-	{
-		wxVector<wxVariant> data;
-		data.push_back(WX_FMT("{}", patch_index++));
-		data.push_back(wxString::FromUTF8(p->name()));
-		data.push_back(WX_FMT("{}, {}", p->xOffset(), p->yOffset()));
-		list_patches_->AppendItem(data);
-	}
-#endif
 
 	// Just set # column to a fixed width
 	list_patches_->GetColumn(0)->SetWidth(FromDIP(30));

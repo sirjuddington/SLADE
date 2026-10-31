@@ -49,18 +49,6 @@ using namespace slade;
 namespace slade::fileutil
 {
 // -----------------------------------------------------------------------------
-// Converts a string_view to wxString using UTF-8 encoding
-// -----------------------------------------------------------------------------
-inline wxString fromUtf8(string_view str)
-{
-#if wxCHECK_VERSION(3, 3, 0)
-	return wxString::FromUTF8(str);
-#else
-	return wxString::FromUTF8(str.data(), str.size());
-#endif
-}
-
-// -----------------------------------------------------------------------------
 // Returns the platform-specific path separator
 // -----------------------------------------------------------------------------
 inline string pathSeparator()
@@ -79,7 +67,7 @@ inline string pathSeparator()
 // -----------------------------------------------------------------------------
 bool fileutil::fileExists(string_view path)
 {
-	return !path.empty() && wxFileExists(fromUtf8(path));
+	return !path.empty() && wxFileExists(wxString::FromUTF8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -87,7 +75,7 @@ bool fileutil::fileExists(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::dirExists(string_view path)
 {
-	return !path.empty() && wxDirExists(fromUtf8(path));
+	return !path.empty() && wxDirExists(wxString::FromUTF8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -128,7 +116,7 @@ bool fileutil::validExecutable(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::removeFile(string_view path)
 {
-	return !path.empty() && wxRemoveFile(fromUtf8(path));
+	return !path.empty() && wxRemoveFile(wxString::FromUTF8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -140,7 +128,7 @@ bool fileutil::copyFile(string_view from, string_view to, bool overwrite)
 	if (from.empty() || to.empty())
 		return false;
 
-	return wxCopyFile(fromUtf8(from), fromUtf8(to), overwrite);
+	return wxCopyFile(wxString::FromUTF8(from), wxString::FromUTF8(to), overwrite);
 }
 
 // -----------------------------------------------------------------------------
@@ -189,7 +177,7 @@ bool fileutil::writeStringToFile(const string& str, const string& path)
 // -----------------------------------------------------------------------------
 bool fileutil::createDir(string_view path)
 {
-	return !path.empty() && wxFileName::Mkdir(fromUtf8(path), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
+	return !path.empty() && wxFileName::Mkdir(wxString::FromUTF8(path), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 }
 
 // -----------------------------------------------------------------------------
@@ -198,7 +186,7 @@ bool fileutil::createDir(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::removeDir(string_view path)
 {
-	return !path.empty() && wxDir::Remove(fromUtf8(path), wxPATH_RMDIR_RECURSIVE);
+	return !path.empty() && wxDir::Remove(wxString::FromUTF8(path), wxPATH_RMDIR_RECURSIVE);
 }
 
 // -----------------------------------------------------------------------------
@@ -245,7 +233,7 @@ time_t fileutil::fileModifiedTime(string_view path)
 	if (path.empty())
 		return 0;
 
-	return wxFileModificationTime(fromUtf8(path));
+	return wxFileModificationTime(wxString::FromUTF8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -307,7 +295,7 @@ string fileutil::findExecutable(string_view exe_name, string_view bundle_dir)
 			path += ".exe";
 
 		// Check if file exists and is executable
-		if (wxFileName::IsFileExecutable(fromUtf8(path)))
+		if (wxFileName::IsFileExecutable(wxString::FromUTF8(path)))
 			return path;
 	}
 

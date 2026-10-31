@@ -110,10 +110,8 @@ wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 		"Current line highlight", "txed_hilight_current_line", { "Off", "Background", "Background+Underline" });
 	settings_general_->addRadioButtons(
 		"Show whitespace", "txed_show_whitespace", { "Off", "After indentation only", "Always" });
-#if wxCHECK_VERSION(3, 3, 2)
 	rbp_minimap_ = new RadioButtonPanel(settings_general_, { "Off", "Small", "Medium", "Large" });
 	settings_general_->addCustomControl("Minimap", rbp_minimap_);
-#endif
 
 	return settings_general_;
 }
@@ -157,7 +155,6 @@ wxPanel* TextEditorSettingsPanel::createCodePanel(wxWindow* parent)
 // -----------------------------------------------------------------------------
 void TextEditorSettingsPanel::loadSettings()
 {
-#if wxCHECK_VERSION(3, 3, 2)
 	if (txed_minimap_width <= 0)
 		rbp_minimap_->setSelection(0);
 	else if (txed_minimap_width <= MINIMAP_SMALL)
@@ -166,7 +163,6 @@ void TextEditorSettingsPanel::loadSettings()
 		rbp_minimap_->setSelection(2);
 	else
 		rbp_minimap_->setSelection(3);
-#endif
 
 	settings_general_->loadSettings();
 	settings_code_->loadSettings();
@@ -178,7 +174,6 @@ void TextEditorSettingsPanel::loadSettings()
 // -----------------------------------------------------------------------------
 void TextEditorSettingsPanel::applySettings()
 {
-#if wxCHECK_VERSION(3, 3, 2)
 	// Apply minimap width (allowing for custom width values)
 	if (rbp_minimap_->getSelection() == 0)
 		txed_minimap_width = 0;
@@ -190,7 +185,6 @@ void TextEditorSettingsPanel::applySettings()
 		txed_minimap_width = MINIMAP_MEDIUM;
 	else if (rbp_minimap_->getSelection() == 3 && txed_minimap_width <= MINIMAP_MEDIUM)
 		txed_minimap_width = MINIMAP_LARGE;
-#endif
 
 	settings_general_->applySettings();
 	settings_code_->applySettings();
