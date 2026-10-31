@@ -1,6 +1,6 @@
 {
   "elfbsp" : {
-    "name": "ELFBSP",
+    "name": "ELFBSP v1.3",
     "command": "$o $f",
     "executable": "elfbsp",
     "options": [
@@ -15,18 +15,6 @@
       {
         "parameter": "--bmap 1",
         "description": "Build XBM1 BLOCKMAP"
-      },
-      {
-        "parameter": "--skip-bmap",
-        "description": "Don't build BLOCKMAP"
-      },
-      {
-        "parameter": "--skip-reject",
-        "description": "Don't build REJECT"
-      },
-      {
-        "parameter": "--skip-bsp",
-        "description": "Don't build BSP lumps (BLOCKMAP/REJECT only)"
       },
       {
         "parameter": "--polyobj",
