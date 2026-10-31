@@ -753,7 +753,7 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		return;
 
 	// Switch to ZDBSP if UDMF
-	if (editContext().mapDesc().format == MapFormat::UDMF && nodebuilder_id.value != "zdbsp")
+	if (editContext().mapDesc().format == MapFormat::UDMF && !(nodebuilder_id.value == "zdbsp" || nodebuilder_id.value == "elfbsp"))
 	{
 		wxMessageBox(wxS("Nodebuilder switched to ZDBSP for UDMF format"), wxS("Save Map"), wxICON_INFORMATION);
 		builder = nodebuilders::builder("zdbsp");
