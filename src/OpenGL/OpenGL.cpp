@@ -248,7 +248,7 @@ bool gl::init()
 
 	// Test extensions
 	log::info("Checking extensions...");
-	if (GLAD_GL_ARB_framebuffer_object)
+	if (fboSupport())
 		log::info("Framebuffer Objects supported");
 	else
 		log::info("Framebuffer Objects not supported");
@@ -278,7 +278,10 @@ bool gl::contextCreationFailed()
 // -----------------------------------------------------------------------------
 bool gl::np2TexSupport()
 {
-	return GLAD_GL_ARB_texture_non_power_of_two;
+	// Non-power-of-two textures are core since GL 2.0. Some core profile
+	// contexts (eg. macOS) don't advertise the ARB extension, so the extension
+	// flag alone isn't reliable
+	return GLAD_GL_VERSION_2_0 || GLAD_GL_ARB_texture_non_power_of_two;
 }
 
 // -----------------------------------------------------------------------------
@@ -287,7 +290,9 @@ bool gl::np2TexSupport()
 // -----------------------------------------------------------------------------
 bool gl::fboSupport()
 {
-	return GLAD_GL_ARB_framebuffer_object;
+	// FBOs are core since GL 3.0
+	// (extension may not be advertised in core profiles)
+	return GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_framebuffer_object;
 }
 
 // -----------------------------------------------------------------------------

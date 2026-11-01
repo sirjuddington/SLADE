@@ -335,7 +335,11 @@ bool gl::Texture::loadAlphaData(unsigned id, const uint8_t* data, unsigned width
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_SWIZZLE_RGBA, swizzle_mask);
+
+	// Single-byte rows aren't necessarily 4-byte aligned for NPOT widths
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
 
 	textures[id].tiling = false;
 	textures[id].filter = TexFilter::Linear;
