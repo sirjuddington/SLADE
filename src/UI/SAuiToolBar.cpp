@@ -84,6 +84,12 @@ SAuiToolBar::SAuiToolBar(wxWindow* parent, bool vertical, bool main_toolbar, wxA
 
 	// Set background colour
 	wxWindow::SetBackgroundColour(parent->GetBackgroundColour());
+#ifdef __WXOSX__
+	// The parent's background colour can be reported incorrectly on macos
+	// (eg. black in dark mode), so juse use the same colour
+	// wxAuiGenericToolBarArt uses
+	wxWindow::SetBackgroundColour(wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE));
+#endif
 #ifdef __WXMSW__
 	if (main_toolbar)
 	{
