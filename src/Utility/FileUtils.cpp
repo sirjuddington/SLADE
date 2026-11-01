@@ -268,6 +268,13 @@ string fileutil::findExecutable(string_view exe_name, string_view bundle_dir)
 		// Check if it exists
 		if (fileExists(exe_path))
 			return exe_path;
+
+		// Try a dedicated folder for the tool (e.g. ".../zip/zip.exe" instead of ".../zip.exe")
+		exe_path = app::path(fmt::format("tools/{0}/{1}/{1}", bundle_dir, exe_name), app::Dir::Executable);
+		if (!strutil::endsWithCI(exe_path, ".exe"))
+			exe_path += ".exe";
+		if (fileExists(exe_path))
+			return exe_path;
 	}
 
 	// Get system PATH environment variable
