@@ -151,13 +151,17 @@ public:
 
 		gb_sizer->Add(wxutil::createDialogButtonBox(this), wxGBPosition(3, 0), wxGBSpan(1, 2), wxALIGN_RIGHT);
 		gb_sizer->AddGrowableCol(1);
-		gb_sizer->AddGrowableRow(2);
 
 		label_help->SetLabel(
 			wxS("%i - Base resource archive\n%r - Resource archive(s)\n%a - Current archive\n%mn - Map name\n"
 				"%mw - Map number (eg. E1M1 = 1 1, MAP02 = 02)"));
-		label_help->Wrap(FromDIP(300));
 		text_params_->SetInsertionPoint(0);
+
+		SetInitialSize(lh.size(400, -1));
+		Layout();
+		Fit();
+		SetMinSize(GetBestSize());
+		CenterOnParent();
 	}
 	~RunConfigDialog() override = default;
 
@@ -303,6 +307,10 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	btn_remove_config_->Enable(false);
 	gb_sizer->Add(btn_remove_config_, wxGBPosition(2, 4));
 
+	// Needed to prevent unwanted space between the edit/add run config buttons
+	choice_game_exes_->SetMinSize(wxSize(lh.pad() * 10, -1));
+	choice_config_->SetMinSize(wxSize(lh.pad() * 10, -1));
+
 	// Extra parameters
 	gb_sizer->Add(
 		new wxStaticText(this, -1, wxS("Extra Parameters:")),
@@ -369,7 +377,7 @@ RunDialog::RunDialog(wxWindow* parent, const Archive* archive, bool show_start_3
 	choice_game_exes_->Bind(wxEVT_CHOICE, &RunDialog::onChoiceGameExe, this);
 	choice_config_->Bind(wxEVT_CHOICE, &RunDialog::onChoiceConfig, this);
 
-	gb_sizer->AddGrowableCol(1, 1);
+	gb_sizer->AddGrowableCol(1);
 	wxTopLevelWindowBase::SetMinSize(lh.size(500, 400));
 	wxWindowBase::Layout();
 	CenterOnParent();
