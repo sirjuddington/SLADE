@@ -97,6 +97,15 @@
     "export_ext": "lmp",
     "category": "Maps"
   },
+  "map_zglnodes3": {
+    "inherits": "map_base",
+    "name": "Map GLNodes+ (Compressed)",
+    "match_name": [ "SSECTORS", "ZNODES" ],
+    "format": "zgl3",
+    "icon": "e_map_data",
+    "export_ext": "lmp",
+    "category": "Maps"
+  },
   "map_znodes_xnod": {
     "inherits": "map_base",
     "name": "Map Nodes (Compressed)",
@@ -129,6 +138,15 @@
     "name": "Map GLNodes+ (Extended)",
     "match_name": [ "SSECTORS", "ZNODES", "XGLNODES" ],
     "format": "xgl3",
+    "icon": "e_map_data",
+    "export_ext": "lmp",
+    "category": "Maps"
+  },
+  "map_deepv4nodes": {
+    "inherits": "map_base",
+    "name": "Map Nodes (DeePBSPV4)",
+    "match_name": [ "NODES" ],
+    "format": "xNd4",
     "icon": "e_map_data",
     "export_ext": "lmp",
     "category": "Maps"
