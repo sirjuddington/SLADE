@@ -1,4 +1,59 @@
 {
+  "elfbsp" : {
+    "name": "ELFBSP v1.3",
+    "command": "$o $f",
+    "executable": "elfbsp",
+    "options": [
+      {
+        "parameter": "--fast",
+        "description": "Fast node build"
+      },
+      {
+        "parameter": "--bmap-zero",
+        "description": "Don't add line 0 to all blocklists"
+      },
+      {
+        "parameter": "--bmap 1",
+        "description": "Build XBM1 BLOCKMAP"
+      },
+      {
+        "parameter": "--polyobj",
+        "description": "Use Hexen polyobject editor numbers (300x) instead of ZDoom (930x)"
+      },
+      {
+        "parameter": "--no-effects",
+        "description": "Skip special effects (see ELFBSP docs)"
+      },
+      {
+        "parameter": "--type 0",
+        "description": "Build vanilla nodes"
+      },
+      {
+        "parameter": "--type 1",
+        "description": "Build DeePBSPV4 nodes"
+      },
+      {
+        "parameter": "--type 3",
+        "description": "Build XGLN nodes"
+      },
+      {
+        "parameter": "--type 4",
+        "description": "Build XGL2 nodes"
+      },
+      {
+        "parameter": "--type 5",
+        "description": "Build XGL3 nodes"
+      },
+      {
+        "parameter": "--compress",
+        "description": "Compressed nodes"
+      },
+      {
+        "parameter": "--verbose",
+        "description": "Verbose output"
+      }
+    ]
+  },
   "zdbsp": {
     "name": "ZDBSP",
     "command": "$o $f --output=$f",
