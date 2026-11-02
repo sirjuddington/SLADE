@@ -2,6 +2,10 @@
 
 #include "SettingsPanel.h"
 
+namespace slade
+{
+class FileLocationPanel;
+}
 class wxCheckListBox;
 
 namespace slade::ui
@@ -18,14 +22,10 @@ public:
 	void applySettings() override;
 
 private:
-	wxChoice*       choice_nodebuilder_ = nullptr;
-	wxButton*       btn_browse_path_    = nullptr;
-	wxTextCtrl*     text_path_          = nullptr;
-	wxCheckListBox* clb_options_        = nullptr;
+	wxChoice*          choice_nodebuilder_   = nullptr;
+	FileLocationPanel* flp_nodebuilder_path_ = nullptr;
+	wxCheckListBox*    clb_options_          = nullptr;
 
 	void populateOptions(const string& options) const;
-
-	// Events
-	void onBtnBrowse(wxCommandEvent& e);
 };
 } // namespace slade::ui

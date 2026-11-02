@@ -1,3 +1,4 @@
+
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -31,6 +32,7 @@
 #include "Main.h"
 #include "NodeBuildersSettingsPanel.h"
 #include "MapEditor/NodeBuilders.h"
+#include "UI/Controls/FileLocationPanel.h"
 #include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
@@ -79,14 +81,11 @@ NodeBuildersSettingsPanel::NodeBuildersSettingsPanel(wxWindow* parent) : Setting
 		new wxStaticText(this, -1, wxS("Node Builder:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
 	sizer->Add(choice_nodebuilder_, { 0, 1 }, { 1, 2 }, wxEXPAND);
 
-	// Nodebuilder path text
-	text_path_ = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_READONLY);
+	// Nodebuilder path
+	flp_nodebuilder_path_ = new FileLocationPanel(
+		this, "", true, "Browse for Nodebuilder Executable", filedialog::executableExtensionString());
 	sizer->Add(new wxStaticText(this, -1, wxS("Path:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL | wxALIGN_RIGHT);
-	sizer->Add(text_path_, { 1, 1 }, { 1, 1 }, wxEXPAND);
-
-	// Browse nodebuilder path button
-	btn_browse_path_ = new wxButton(this, -1, wxS("Browse"));
-	sizer->Add(btn_browse_path_, { 1, 2 }, { 1, 1 }, wxEXPAND);
+	sizer->Add(flp_nodebuilder_path_, { 1, 1 }, { 1, 2 }, wxEXPAND);
 
 	// Nodebuilder options
 	clb_options_ = new wxCheckListBox(this, -1, wxDefaultPosition, wxDefaultSize);
@@ -97,7 +96,6 @@ NodeBuildersSettingsPanel::NodeBuildersSettingsPanel(wxWindow* parent) : Setting
 
 	// Bind events
 	choice_nodebuilder_->Bind(wxEVT_CHOICE, [&](wxCommandEvent&) { populateOptions(""); });
-	btn_browse_path_->Bind(wxEVT_BUTTON, &NodeBuildersSettingsPanel::onBtnBrowse, this);
 
 	// Init
 	choice_nodebuilder_->Select(sel);
@@ -152,10 +150,12 @@ void NodeBuildersSettingsPanel::populateOptions(const string& options) const
 {
 	// Get current builder
 	auto& builder = nodebuilders::builder(choice_nodebuilder_->GetSelection());
-	btn_browse_path_->Enable(builder.id != "none");
+	flp_nodebuilder_path_->Enable(builder.id != "none");
 
 	// Set builder path
-	text_path_->SetValue(wxString::FromUTF8(builder.path));
+	flp_nodebuilder_path_->setLocation(builder.path);
+	flp_nodebuilder_path_->setBrowseCaption(fmt::format("Browse for {} Executable", builder.name));
+	flp_nodebuilder_path_->setDefaultFilename(builder.exe);
 
 	// Clear current options
 	clb_options_->Clear();
@@ -167,36 +167,4 @@ void NodeBuildersSettingsPanel::populateOptions(const string& options) const
 		if (!options.empty() && strutil::contains(options, fmt::format(" {} ", builder.options[a])))
 			clb_options_->Check(a);
 	}
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// NodeBuildersSettingsPanel Class Events
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Called when the browse path button is clicked
-// -----------------------------------------------------------------------------
-void NodeBuildersSettingsPanel::onBtnBrowse(wxCommandEvent& e)
-{
-	auto& builder = nodebuilders::builder(choice_nodebuilder_->GetSelection());
-
-	// Setup extension
-#ifdef __WXMSW__
-	auto ext = fmt::format("{}.exe|{}.exe|All Files (*.*)|*", builder.exe, builder.exe);
-#else
-	auto ext = fmt::format("{}|{}|All Files (*.*)|*", builder.exe, builder.exe);
-#endif
-
-	// Browse for exe
-	filedialog::FDInfo info;
-	if (!filedialog::openFile(info, "Browse for Nodebuilder Executable", ext, this))
-		return;
-
-	// Set builder path
-	builder.path = info.filenames[0];
-	text_path_->SetValue(wxString::FromUTF8(info.filenames[0]));
 }
