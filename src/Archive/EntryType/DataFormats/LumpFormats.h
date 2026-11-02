@@ -6,7 +6,7 @@ public:
 	TextureXDataFormat() : EntryDataFormat("texturex") {}
 	~TextureXDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() < 4)
@@ -15,7 +15,7 @@ public:
 		// Not the best test in the world. But a text-based texture lump ought
 		// to fail it every time; as it would be interpreted as too high a number.
 		uint32_t ntex = mc.readL32(0);
-		if ((int32_t)ntex < 0)
+		if (static_cast<int32_t>(ntex) < 0)
 			return MATCH_FALSE;
 		if (mc.size() < (ntex * 24))
 			return MATCH_FALSE;
@@ -29,11 +29,11 @@ public:
 	PNamesDataFormat() : EntryDataFormat("pnames") {}
 	~PNamesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// It's a pretty simple format alright
 		uint32_t number = mc.readL32(0);
-		if ((int32_t)number < 0)
+		if (static_cast<int32_t>(number) < 0)
 			return MATCH_FALSE;
 		if (mc.size() != (4 + number * 8))
 			return MATCH_FALSE;
@@ -47,7 +47,7 @@ public:
 	BoomAnimatedDataFormat() : EntryDataFormat("animated") {}
 	~BoomAnimatedDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() > sizeof(AnimatedEntry))
 		{
@@ -71,7 +71,7 @@ public:
 	BoomSwitchesDataFormat() : EntryDataFormat("switches") {}
 	~BoomSwitchesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		if (mc.size() > sizeof(SwitchesEntry))
 		{
@@ -91,13 +91,13 @@ public:
 	ZNodesDataFormat() : EntryDataFormat("znod") {}
 	~ZNodesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
 		{
 			// Check for ZNOD header
-			if (mc[0] == 'Z' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
+			if (mc[0] == 'Z' && mc[1] == 'N' && mc[2] == 'O' && mc[3] == 'D')
 				return MATCH_TRUE;
 		}
 		return MATCH_FALSE;
@@ -110,7 +110,7 @@ public:
 	ZGLNodesDataFormat() : EntryDataFormat("zgln") {}
 	~ZGLNodesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -129,7 +129,7 @@ public:
 	ZGLNodes2DataFormat() : EntryDataFormat("zgl2") {}
 	~ZGLNodes2DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -142,19 +142,38 @@ public:
 	}
 };
 
+class ZGLNodes3DataFormat : public EntryDataFormat
+{
+public:
+	ZGLNodes3DataFormat() : EntryDataFormat("zgl3") {}
+	~ZGLNodes3DataFormat() override = default;
+
+	int isThisFormat(const MemChunk& mc) override
+	{
+		// Check size
+		if (mc.size() > 4)
+		{
+			// Check for ZGL3 header
+			if (mc[0] == 'Z' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == '3')
+				return MATCH_TRUE;
+		}
+		return MATCH_FALSE;
+	}
+};
+
 class XNodesDataFormat : public EntryDataFormat
 {
 public:
 	XNodesDataFormat() : EntryDataFormat("xnod") {}
 	~XNodesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
 		{
 			// Check for XNOD header
-			if (mc[0] == 'X' && mc[1] == 'G' && mc[2] == 'L' && mc[3] == 'N')
+			if (mc[0] == 'X' && mc[1] == 'N' && mc[2] == 'O' && mc[3] == 'D')
 				return MATCH_TRUE;
 		}
 		return MATCH_FALSE;
@@ -167,7 +186,7 @@ public:
 	XGLNodesDataFormat() : EntryDataFormat("xgln") {}
 	~XGLNodesDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -186,7 +205,7 @@ public:
 	XGLNodes2DataFormat() : EntryDataFormat("xgl2") {}
 	~XGLNodes2DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -205,7 +224,7 @@ public:
 	XGLNodes3DataFormat() : EntryDataFormat("xgl3") {}
 	~XGLNodes3DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -218,13 +237,33 @@ public:
 	}
 };
 
+class DeePBSPV4NodesDataFormat : public EntryDataFormat
+{
+public:
+	DeePBSPV4NodesDataFormat() : EntryDataFormat("xNd4") {}
+	~DeePBSPV4NodesDataFormat() override = default;
+
+	int isThisFormat(const MemChunk& mc) override
+	{
+		// Check size
+		if (mc.size() > 8)
+		{
+			// Check for xNd4 header
+			if (mc[0] == 'x' && mc[1] == 'N' && mc[2] == 'd' && mc[3] == '4' &&
+			    mc[4] == '\0' && mc[5] == '\0' && mc[6] == '\0' && mc[7] == '\0')
+				return MATCH_TRUE;
+		}
+		return MATCH_FALSE;
+	}
+};
+
 class ACS0DataFormat : public EntryDataFormat
 {
 public:
 	ACS0DataFormat() : EntryDataFormat("acs0") {}
 	~ACS0DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 15)
@@ -253,7 +292,7 @@ public:
 	ACSeDataFormat() : EntryDataFormat("acsl") {}
 	~ACSeDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 32)
@@ -290,7 +329,7 @@ public:
 	ACSEDataFormat() : EntryDataFormat("acse") {}
 	~ACSEDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 32)

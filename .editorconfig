@@ -1,4 +1,4 @@
-﻿root = true
+root = true
 
 [*]
 indent_style = tab
@@ -15,3 +15,7 @@ guidelines = 80, 120
 [*.json]
 indent_style = space
 indent_size = 2
+
+[*.lua]
+indent_style = space
+indent_size = 3

@@ -1,0 +1,364 @@
+{
+  "groups": [
+    {
+      "name": "Doors/Local",
+      "defaults": {
+        "tagged": "sector_back"
+      },
+      "specials": [
+        { "id": 1, "name": "DR Door" },
+        { "id": 26, "name": "DR Door ID Badge" },
+        { "id": 27, "name": "DR Door Passcard" },
+        { "id": 28, "name": "DR Door ID Card" },
+        { "id": 31, "name": "D1 Door Stay Open" },
+        { "id": 32, "name": "D1 Door Stay Open ID Badge" },
+        { "id": 33, "name": "D1 Door Stay Open ID Card" },
+        { "id": 34, "name": "D1 Door Stay Open Passcard" },
+        { "id": 117, "name": "DR Door Fast" },
+        { "id": 118, "name": "D1 Door Stay Open Fast" },
+        { "id": 156, "name": "D1 Door Stay Open Brass Key" },
+        { "id": 157, "name": "D1 Door Stay Open Silver Key" },
+        { "id": 158, "name": "D1 Door Stay Open Gold Key" },
+        { "id": 144, "name": "DR Door Animated" },
+        { "id": 159, "name": "DR Door Gold Key" },
+        { "id": 160, "name": "DR Door Silver Key" },
+        { "id": 161, "name": "DR Door Brass Key" },
+        { "id": 165, "name": "SR Fake Door 'Doesn't Seem To Work'" },
+        { "id": 166, "name": "DR Door Severed Hand" },
+        { "id": 169, "name": "DR Door Base Key" },
+        { "id": 170, "name": "DR Door Govs Key" },
+        { "id": 190, "name": "DR Door Order Key" },
+        { "id": 205, "name": "SR Fake Door 'Only Available In Retail'" },
+        { "id": 213, "name": "DR Door Chalice" },
+        { "id": 217, "name": "DR Door Core Key" },
+        { "id": 221, "name": "DR Door Mauler Key" },
+        { "id": 224, "name": "DR Door Chapel Key" },
+        { "id": 225, "name": "DR Door Catacomb Key" },
+        { "id": 232, "name": "DR Door Oracle Pass" }
+      ]
+    },
+
+    {
+      "name": "Doors/Remote",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 46, "name": "GR Door" },
+        { "id": 230, "name": "W1 Door Open If Quest Item Y Offset" },
+        { "id": 2, "name": "W1 Door Stay Open" },
+        { "id": 227, "name": "W1 Door Close If Quest Item Y Offset" },
+        { "id": 3, "name": "W1 Door Close" },
+        { "id": 4, "name": "W1 Door Stay Open Also Monsters" },
+        { "id": 16, "name": "W1 Door Close + Open" },
+        { "id": 108, "name": "W1 Door Fast" },
+        { "id": 109, "name": "W1 Door Stay Open Fast" },
+        { "id": 197, "name": "W1 Door Close Fast If 2+ Sigil Pieces" },
+        { "id": 110, "name": "W1 Door Close Fast" },
+        { "id": 174, "name": "W1 Door Split Open To Lowest" },
+        { "id": 183, "name": "W1 Door Split Open To Nearest" },
+        { "id": 188, "name": "W1 Door Open If Quest Item 16" },
+        { "id": 200, "name": "W1 Door Open If Sigil Owned" },
+        { "id": 216, "name": "WR Door If Quest Item Y Offset" },
+        { "id": 90, "name": "WR Door" },
+        { "id": 75, "name": "WR Door Close" },
+        { "id": 76, "name": "WR Door Close + Open" },
+        { "id": 86, "name": "WR Door Stay Open" },
+        { "id": 105, "name": "WR Door Fast" },
+        { "id": 106, "name": "WR Door Stay Open Fast" },
+        { "id": 107, "name": "WR Door Close Fast" },
+        { "id": 29, "name": "S1 Door" },
+        { "id": 40, "name": "S1 Door Split Open To Lowest" },
+        { "id": 189, "name": "S1 Door Split Open To Lowest Oracle Key" },
+        { "id": 50, "name": "S1 Door Close" },
+        { "id": 103, "name": "S1 Door Stay Open" },
+        { "id": 111, "name": "S1 Door Fast" },
+        { "id": 112, "name": "S1 Door Stay Open Fast" },
+        { "id": 113, "name": "S1 Door Close Fast" },
+        { "id": 133, "name": "S1 Door Fast ID Badge" },
+        { "id": 135, "name": "S1 Door Fast ID Card" },
+        { "id": 137, "name": "S1 Door Fast Passcard" },
+        { "id": 162, "name": "S1 Door Fast Brass Key" },
+        { "id": 163, "name": "S1 Door Fast Silver Key" },
+        { "id": 164, "name": "S1 Door Fast Gold Key" },
+        { "id": 167, "name": "S1 Door Fast Severed Hand" },
+        { "id": 171, "name": "S1 Door Fast Prison Key" },
+        { "id": 194, "name": "S1 Door Stay Open Free Prisoners" },
+        { "id": 235, "name": "S1 Door Split Open To Lowest If Sigil Complete" },
+        { "id": 42, "name": "SR Door Close" },
+        { "id": 61, "name": "SR Door Stay Open" },
+        { "id": 63, "name": "SR Door" },
+        { "id": 114, "name": "SR Door Fast" },
+        { "id": 115, "name": "SR Door Stay Open Fast" },
+        { "id": 116, "name": "SR Door Close Fast" },
+        { "id": 99, "name": "SR Door Fast ID Badge" },
+        { "id": 134, "name": "SR Door Fast ID Card" },
+        { "id": 136, "name": "SR Door Fast Passcard" },
+        { "id": 151, "name": "SR Door Fast Gold Key" },
+        { "id": 152, "name": "SR Door Fast Brass Key" },
+        { "id": 153, "name": "SR Door Fast Silver Key" },
+        { "id": 168, "name": "SR Door Fast Severed Hand" },
+        { "id": 172, "name": "SR Door Power 1 Key" },
+        { "id": 173, "name": "SR Door Power 2 Key" },
+        { "id": 176, "name": "SR Door Power 3 Key" },
+        { "id": 191, "name": "SR Door Military ID" },
+        { "id": 192, "name": "SR Door Warehouse Key" },
+        { "id": 207, "name": "SR Door Animated" },
+        { "id": 223, "name": "SR Door Mine Key" },
+        { "id": 229, "name": "SR Door Animated If Sigil Complete" },
+        { "id": 233, "name": "SR Door Split Open To Lowest Log Msg 70" },
+        { "id": 234, "name": "SR Door If Irale Unlocked" }
+      ]
+    },
+
+    {
+      "name": "Ceilings",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 25, "name": "W1 Ceiling To 8 Above Floor Continually" },
+        { "id": 179, "name": "W1 Ceiling To Floor" },
+        { "id": 41, "name": "S1 Ceiling To Floor" },
+        { "id": 49, "name": "S1 Ceiling To 8 Above Floor Continually" },
+        { "id": 199, "name": "S1 Ceiling To Floor Destroy Converter" },
+        { "id": 43, "name": "SR Ceiling To Floor" }
+      ]
+    },
+
+    {
+      "name": "Lifts",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 10, "name": "W1 Lift Also Monsters" },
+        { "id": 121, "name": "W1 Lift Fast" },
+        { "id": 88, "name": "WR Lift Also Monsters" },
+        { "id": 120, "name": "WR Lift Fast" },
+        // Investigations needed to find correct behavior for special 184
+        // ZDoom and ChocoStrife disagree -- ZDoom is probably wrong.
+        // Choco: speed 4, wait 3 seconds; ZDoom: speed 16, wait 1 second.
+        { "id": 184, "name": "WR Lift" },
+        { "id": 21, "name": "S1 Lift" },
+        { "id": 122, "name": "S1 Lift Fast" },
+        { "id": 62, "name": "SR Lift" },
+        { "id": 123, "name": "SR Lift Fast" },
+        { "id": 154, "name": "SR Lift If Gold Key" },
+        // ZDoom has type 155 slower than others; Choco and tests made in
+        // vanilla give the same speed
+        { "id": 155, "name": "SR Lift Up" },
+        { "id": 177, "name": "SR Lift If Power 3 Key" },
+        { "id": 214, "name": "SR Lift Slow" }
+      ]
+    },
+
+    {
+      "name": "Floors/Move Up",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 24, "name": "G1 Floor To Lowest Adjacent Ceil" },
+        { "id": 47, "name": "G1 Floor To Higher Floor Change Tex" },
+        { "id": 180, "name": "G1 Floor Up 512 Change Tex + Type" },
+        { "id": 5, "name": "W1 Floor To Lowest Adjacent Ceil" },
+        { "id": 22, "name": "W1 Floor To Higher Floor Change Tex" },
+        { "id": 30, "name": "W1 Floor Up Shortest Lo Tex" },
+        { "id": 56, "name": "W1 Floor To 8 Below LAC + Crush" },
+        { "id": 58, "name": "W1 Floor Up 64" },
+        { "id": 59, "name": "W1 Floor Up 24 Change Tex + Type" },
+        { "id": 119, "name": "W1 Floor To Higher Adjacent Floor" },
+        { "id": 130, "name": "W1 Floor To Higher Floor Fast" },
+        { "id": 91, "name": "WR Floor To Lowest Adjacent Ceil" },
+        { "id": 92, "name": "WR Floor Up 64" },
+        { "id": 93, "name": "WR Floor Up 24 Change Tex + Type" },
+        { "id": 94, "name": "WR Floor To 8 Below LAC + Crush" },
+        { "id": 95, "name": "WR Floor To Higher Floor Change Tex" },
+        { "id": 96, "name": "WR Floor Up Shortest Lo Tex" },
+        { "id": 128, "name": "WR Floor To Higher Adjacent Floor" },
+        { "id": 129, "name": "WR Floor To Higher Floor Fast" },
+        { "id": 14, "name": "S1 Floor Up 32 Change Texture" },
+        { "id": 15, "name": "S1 Floor Up 24 Change Texture" },
+        { "id": 18, "name": "S1 Floor To Higher Adjacent Floor" },
+        { "id": 20, "name": "S1 Floor To Higher Floor Change Texture" },
+        { "id": 55, "name": "S1 Floor To 8 Below LAC + Crush" },
+        { "id": 101, "name": "S1 Floor To Lowest Adjacent Ceil" },
+        { "id": 131, "name": "S1 Floor To Higher Floor Fast" },
+        { "id": 140, "name": "S1 Floor Up 512" },
+        { "id": 181, "name": "S1 Floor Up 512 Change Tex + Type" },
+        { "id": 64, "name": "SR Floor To Lowest Adjacent Ceil" },
+        { "id": 65, "name": "SR Floor To 8 Below LAC + Crush" },
+        { "id": 66, "name": "SR Floor Up 24 Change Texture" },
+        { "id": 67, "name": "SR Floor Up 32 Change Texture" },
+        { "id": 68, "name": "SR Floor To Higher Floor Change Texture" },
+        { "id": 69, "name": "SR Floor To Higher Adjacent Floor" },
+        { "id": 132, "name": "SR Floor To Higher Floor Fast" }
+      ]
+    },
+
+    {
+      "name": "Floors/Move Down",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 19, "name": "W1 Floor To Highest Adjacent Floor" },
+        { "id": 36, "name": "W1 Floor To Highest Adjacent Floor Fast" },
+        { "id": 37, "name": "W1 Floor To LAF Change Tex + Type" },
+        { "id": 193, "name": "W1 Floor To LAF If Quest Item Y Offset" },
+        { "id": 196, "name": "W1 Floor To LAF If 2+ Sigil Pieces" },
+        { "id": 212, "name": "W1 Floor To LAF If Flamethrower" },
+        { "id": 38, "name": "W1 Floor To Lowest Adjacent Floor" },
+        { "id": 82, "name": "WR Floor To Lowest Adjacent Floor" },
+        { "id": 83, "name": "WR Floor To Highest Adjacent Floor" },
+        { "id": 84, "name": "WR Floor To LAF Change Tex + Type" },
+        { "id": 98, "name": "WR Floor To Highest Adjacent Floor Fast" },
+        { "id": 9, "name": "S1 Floor Donut" },
+        { "id": 23, "name": "S1 Floor To Lowest Adjacent Floor" },
+        { "id": 71, "name": "S1 Floor To Highest Adjacent Floor Fast" },
+        { "id": 102, "name": "S1 Floor To Highest Adjacent Floor" },
+        { "id": 219, "name": "S1 Floor To HAF If Blue Crystal Key Owned" },
+        { "id": 220, "name": "S1 Floor To HAF If Red Crystal Key Owned" },
+        { "id": 226, "name": "S1 Floor To HAF Training Area Complete" },
+        { "id": 45, "name": "SR Floor To Highest Adjacent Floor" },
+        { "id": 60, "name": "SR Floor To Lowest Adjacent Floor" },
+        { "id": 70, "name": "SR Floor To Highest Adjacent Floor Fast" }
+      ]
+    },
+
+    {
+      "name": "Stair Builders",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 8, "name": "W1 Build Stairs 8 Up" },
+        { "id": 100, "name": "W1 Build Stairs 16 Crush" },
+        { "id": 178, "name": "W1 Build Stairs 16 Down" },
+        { "id": 7, "name": "S1 Build Stairs 8 Up" },
+        { "id": 127, "name": "S1 Build Stairs 16 Crush" },
+        { "id": 146, "name": "S1 Build Stairs 16 Down" },
+        { "id": 209, "name": "S1 Build Stairs 16 Down If Chalice Owned" }
+      ]
+    },
+
+    {
+      "name": "Moving Floors",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 53, "name": "W1 Start Moving Floor" },
+        { "id": 54, "name": "W1 Stop Moving Floor" },
+        { "id": 87, "name": "WR Start Moving Floor" },
+        { "id": 89, "name": "WR Stop Moving Floor" }
+      ]
+    },
+
+    {
+      "name": "Crushers",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 6, "name": "W1 Start Crusher, Very Fast Damage" },
+        { "id": 44, "name": "W1 Crusher To Floor And Stops" },
+        { "id": 57, "name": "W1 Stop Crusher" },
+        { "id": 141, "name": "W1 Start Crusher, Silent" },
+        { "id": 72, "name": "WR Crusher To Floor And Stops" },
+        { "id": 73, "name": "WR Start Crusher, Slow Damage" },
+        { "id": 74, "name": "WR Stop Crusher" },
+        { "id": 77, "name": "WR Start Crusher, Very Fast Damage" }
+      ]
+    },
+
+    {
+      "name": "Exits",
+      "specials": [
+        { "id": 52, "name": "W1 Exit to Map #Tag/100" },
+        { "id": 124, "name": "W1 Exit (Endgame)" },
+        // Weird behavior with MAP03/MAP30 and MAP07/MAP10 depending on
+        // the player having the Sigil for special 186.
+        { "id": 186, "name": "WR Exit To Map #Tag/100 Spot #Tag%100 (Front Side)" },
+        { "id": 145, "name": "WR Exit To Map #Tag/100 Spot #Tag%100" },
+        { "id": 51, "name": "S1 Exit (Endgame)" },
+        { "id": 11, "name": "SR Exit To Map #Tag (0 = Next)" }
+      ]
+    },
+
+    {
+      "name": "Teleports",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 39, "name": "W1 Teleport" },
+        { "id": 125, "name": "W1 Teleport Monsters Only" },
+        { "id": 97, "name": "WR Teleport" },
+        { "id": 126, "name": "WR Teleport Monsters Only" },
+        { "id": 185, "name": "WR Teleport (Silent)" },
+        { "id": 195, "name": "WR Teleport (Zombie Changer)" },
+        { "id": 231, "name": "WR Teleport (Silent Source)" }
+      ]
+    },
+
+    {
+      "name": "Light Effects",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 12, "name": "W1 Light To Highest Adjacent Level" },
+        { "id": 13, "name": "W1 Light To 255" },
+        { "id": 17, "name": "W1 Light Blink 1.0 Sec" },
+        { "id": 35, "name": "W1 Light To 35" },
+        { "id": 104, "name": "W1 Light To Lowest Adjacent Level" },
+        { "id": 79, "name": "WR Light To 35" },
+        { "id": 80, "name": "WR Light To Highest Adjacent Level" },
+        { "id": 81, "name": "WR Light To 255" },
+        { "id": 138, "name": "SR Light To 255" },
+        { "id": 139, "name": "SR Light To 35" }
+      ]
+    },
+
+    {
+      "name": "Scrollers",
+      "specials": [
+        { "id": 48, "name": "Scrolling Wall Left" },
+        { "id": 142, "name": "Scrolling Wall Up" },
+        { "id": 143, "name": "Scrolling Wall Down Triple Speed" },
+        { "id": 149, "name": "Scrolling Wall Right" }
+      ]
+    },
+
+    {
+      "name": "Communicator",
+      "specials": [
+        { "id": 201, "name": "W1 Message #Tag (Front Side Only)" },
+        { "id": 202, "name": "W1 Message #Tag" },
+        { "id": 210, "name": "W1 Message #Tag If Flamethrower (No Log)" },
+        { "id": 215, "name": "W1 Message #Tag/100 If Quest Item #Tag%100" },
+        { "id": 211, "name": "SR Message #Tag (No Log)" }
+      ]
+    },
+
+    {
+      "name": "Misc",
+      "specials": [
+        { "id": 182, "name": "G1 Break Glass" },
+        { "id": 187, "name": "W1 Clear Forcefield If Quest Item Y Offset" }, // Tagged
+        { "id": 204, "name": "W1 Set Music To Map #Tag" },
+        { "id": 228, "name": "W1 Entity Taunt If Quest Item 24" },
+        { "id": 175, "name": "WR Raise Alarm If <16 Above Floor" },
+        { "id": 198, "name": "WR Raise Alarm If No Officer's Uniform" },
+        { "id": 150, "name": "WR Raise Alarm" },
+        { "id": 208, "name": "WR Raise Alarm If Flamethrower Owned" },
+        { "id": 206, "name": "WR Raise Alarm If Chalice Owned" },
+        { "id": 203, "name": "W1 Set Music To Map #Tag" },
+        { "id": 147, "name": "S1 Clear Forcefield" }, // Tagged
+        { "id": 148, "name": "SR Forcefield" }
+      ]
+    }
+  ]
+}

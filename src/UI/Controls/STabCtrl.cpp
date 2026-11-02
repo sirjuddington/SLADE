@@ -32,7 +32,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "STabCtrl.h"
-#include "General/UI.h"
 #include "UI/SAuiTabArt.h"
 
 using namespace slade;
@@ -76,7 +75,7 @@ STabCtrl::STabCtrl(wxWindow* parent, bool close_buttons, bool window_list, int h
 
 	// Setup tabs
 	SetArtProvider(new SAuiTabArt(this, close_buttons, main_tabs));
-	wxAuiNotebook::SetTabCtrlHeight(ui::scalePx(height));
+	wxAuiNotebook::SetTabCtrlHeight(FromDIP(height));
 }
 
 // -----------------------------------------------------------------------------
@@ -125,5 +124,17 @@ TabControl* STabCtrl::createControl(
 	return new STabCtrl(parent, close_buttons, window_list, height, main_tabs, move_tabs);
 #else
 	return new wxNotebook(parent, -1);
+#endif
+}
+
+// ----------------------------------------------------------------------------
+// Returns the index of [page] in [tabs]
+// ----------------------------------------------------------------------------
+int STabCtrl::getPageIndex(TabControl* tabs, wxWindow* page)
+{
+#ifdef WIN32
+	return tabs->GetPageIndex(page);
+#else
+	return tabs->FindPage(page);
 #endif
 }

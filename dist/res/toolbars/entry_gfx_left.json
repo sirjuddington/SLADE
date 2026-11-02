@@ -1,0 +1,32 @@
+{
+  "items": [
+    {
+      "type": "button",
+      "id": "tool_drag",
+      "text": "Drag offsets",
+      "icon": "gfx_drag",
+      "help_text": "Drag image to change its offsets"
+    },
+    {
+      "type": "button",
+      "id": "tool_draw",
+      "text": "Draw pixels",
+      "icon": "gfx_draw",
+      "help_text": "Draw on the image"
+    },
+    {
+      "type": "button",
+      "id": "tool_erase",
+      "text": "Erase pixels",
+      "icon": "gfx_erase",
+      "help_text": "Erase pixels from the image"
+    },
+    {
+      "type": "button",
+      "id": "tool_translate",
+      "text": "Translate pixels",
+      "icon": "gfx_translate",
+      "help_text": "Apply a translation to pixels of the image"
+    }
+  ]
+}

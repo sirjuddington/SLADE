@@ -75,11 +75,11 @@ string UndoLevel::timeStamp(bool date, bool time) const
 // -----------------------------------------------------------------------------
 // Performs all undo steps for this level
 // -----------------------------------------------------------------------------
-bool UndoLevel::doUndo()
+bool UndoLevel::doUndo() const
 {
 	log::info(3, "Performing undo \"{}\" ({} steps)", name_, undo_steps_.size());
 	bool ok = true;
-	for (int a = (int)undo_steps_.size() - 1; a >= 0; a--)
+	for (int a = static_cast<int>(undo_steps_.size()) - 1; a >= 0; a--)
 	{
 		if (!undo_steps_[a]->doUndo())
 			ok = false;
@@ -91,7 +91,7 @@ bool UndoLevel::doUndo()
 // -----------------------------------------------------------------------------
 // Performs all redo steps for this level
 // -----------------------------------------------------------------------------
-bool UndoLevel::doRedo()
+bool UndoLevel::doRedo() const
 {
 	log::info(3, "Performing redo \"{}\" ({} steps)", name_, undo_steps_.size());
 	bool ok = true;
@@ -123,7 +123,7 @@ bool UndoLevel::writeFile(string_view filename) const
 // -----------------------------------------------------------------------------
 // Adds all undo steps from all undo levels in [levels]
 // -----------------------------------------------------------------------------
-void UndoLevel::createMerged(vector<unique_ptr<UndoLevel>>& levels)
+void UndoLevel::createMerged(const vector<unique_ptr<UndoLevel>>& levels)
 {
 	for (auto& level : levels)
 	{
@@ -147,11 +147,11 @@ void UndoLevel::createMerged(vector<unique_ptr<UndoLevel>>& levels)
 // -----------------------------------------------------------------------------
 // Begins 'recording' a new undo level
 // -----------------------------------------------------------------------------
-void UndoManager::beginRecord(string_view name)
+bool UndoManager::beginRecord(string_view name)
 {
 	// Can't if currently in an undo/redo operation
 	if (undo_running_)
-		return;
+		return false;
 
 	// Set this as the current undo manager
 	current_undo_manager = this;
@@ -163,6 +163,8 @@ void UndoManager::beginRecord(string_view name)
 	// Begin new UndoLevel
 	// log::info(1, "Recording undo level \"%s\"", name);
 	current_level_ = std::make_unique<UndoLevel>(name);
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -183,7 +185,7 @@ void UndoManager::endRecord(bool success)
 	}
 
 	// Remove any undo levels after the current
-	while ((int)undo_levels_.size() - 1 > current_level_index_)
+	while (static_cast<int>(undo_levels_.size()) - 1 > current_level_index_)
 	{
 		// log::info(1, "Removing undo level \"%s\"", undo_levels.back()->getName());
 		undo_levels_.pop_back();
@@ -266,7 +268,7 @@ string UndoManager::redo()
 		return "";
 
 	// Can't if no more levels to redo
-	if (current_level_index_ == (int)undo_levels_.size() - 1 || undo_levels_.empty())
+	if (current_level_index_ == static_cast<int>(undo_levels_.size()) - 1 || undo_levels_.empty())
 		return "";
 
 	// Perform redo level
@@ -286,7 +288,7 @@ string UndoManager::redo()
 // -----------------------------------------------------------------------------
 // Adds all undo level names to [list]
 // -----------------------------------------------------------------------------
-void UndoManager::putAllLevels(vector<string>& list)
+void UndoManager::putAllLevels(vector<string>& list) const
 {
 	for (auto& undo_level : undo_levels_)
 		list.push_back(undo_level->name());
@@ -305,6 +307,8 @@ void UndoManager::clearToResetPoint()
 
 	current_level_ = nullptr;
 	undo_running_  = false;
+
+	signals_.undo();
 }
 
 // -----------------------------------------------------------------------------
@@ -317,6 +321,7 @@ void UndoManager::clear()
 	current_level_.reset(nullptr);
 	current_level_index_ = -1;
 	undo_running_        = false;
+	signals_.cleared();
 }
 
 // -----------------------------------------------------------------------------

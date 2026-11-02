@@ -34,7 +34,9 @@
 #include "App.h"
 #include "General/Console.h"
 #include "TextEditor/TextStyle.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 
 using namespace slade;
 
@@ -68,6 +70,8 @@ ConsolePanel::ConsolePanel(wxWindow* parent, int id) : wxPanel(parent, id)
 // -----------------------------------------------------------------------------
 void ConsolePanel::initLayout()
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create and set the sizer for the panel
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(vbox);
@@ -85,12 +89,12 @@ void ConsolePanel::initLayout()
 	text_log_->SetWrapMode(wxSTC_WRAP_WORD);
 #endif
 	text_log_->SetSizeHints(wxSize(-1, 0));
-	vbox->Add(text_log_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::pad());
+	vbox->Add(text_log_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Create and add the command entry textbox
 	text_command_ = new wxTextCtrl(this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	vbox->AddSpacer(ui::px(ui::Size::PadMinimum));
-	vbox->Add(text_command_, 0, wxEXPAND | wxBOTTOM | wxLEFT | wxRIGHT, ui::pad());
+	vbox->AddSpacer(lh.padSmall());
+	vbox->Add(text_command_, lh.sfWithBorder(0, wxBOTTOM | wxLEFT | wxRIGHT).Expand());
 
 	Layout();
 
@@ -118,12 +122,12 @@ void ConsolePanel::setupTextArea() const
 	text_log_->SetMarginWidth(1, 8);
 
 	// Message type colours
-	auto hsl = StyleSet::currentSet()->styleForeground("default").asHSL();
+	auto hsl = colour::rgbToHsl(StyleSet::currentSet()->styleForeground("default"));
 	hsl.l    = std::clamp(hsl.l, 0.2, 0.8);
-	text_log_->StyleSetForeground(200, ColHSL(0.99, 1., hsl.l).asRGB().toWx());
-	text_log_->StyleSetForeground(201, ColHSL(0.1, 1., hsl.l).asRGB().toWx());
-	text_log_->StyleSetForeground(202, ColHSL(0.5, 0.8, hsl.l).asRGB().toWx());
-	text_log_->StyleSetForeground(203, ColHSL(hsl.h, hsl.s, 0.5).asRGB().toWx());
+	text_log_->StyleSetForeground(200, ColHSL(0.99, 1., hsl.l).asRGB());
+	text_log_->StyleSetForeground(201, ColHSL(0.1, 1., hsl.l).asRGB());
+	text_log_->StyleSetForeground(202, ColHSL(0.5, 0.8, hsl.l).asRGB());
+	text_log_->StyleSetForeground(203, ColHSL(hsl.h, hsl.s, 0.5).asRGB());
 }
 
 // -----------------------------------------------------------------------------
@@ -157,11 +161,11 @@ void ConsolePanel::update()
 		text_log_->StartStyling(text_log_->GetLineEndPosition(line_no) - text_log_->GetLineLength(line_no));
 		switch (log[a].type)
 		{
-		case log::MessageType::Error: text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;
+		case log::MessageType::Error:   text_log_->SetStyling(text_log_->GetLineLength(line_no), 200); break;
 		case log::MessageType::Warning: text_log_->SetStyling(text_log_->GetLineLength(line_no), 201); break;
-		case log::MessageType::Script: text_log_->SetStyling(text_log_->GetLineLength(line_no), 202); break;
-		case log::MessageType::Debug: text_log_->SetStyling(text_log_->GetLineLength(line_no), 203); break;
-		default: break;
+		case log::MessageType::Script:  text_log_->SetStyling(text_log_->GetLineLength(line_no), 202); break;
+		case log::MessageType::Debug:   text_log_->SetStyling(text_log_->GetLineLength(line_no), 203); break;
+		default:                        break;
 		}
 
 		++line_no;
@@ -191,13 +195,15 @@ void ConsolePanel::focusInput() const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the enter key is pressed in the command text box
 // -----------------------------------------------------------------------------
 void ConsolePanel::onCommandEnter(wxCommandEvent& e)
 {
-	app::console()->execute(e.GetString().utf8_string());
+	Console::instance().execute(e.GetString().utf8_string());
 	update();
 	text_command_->Clear();
 	cmd_log_index_ = 0;
@@ -210,18 +216,17 @@ void ConsolePanel::onCommandKeyDown(wxKeyEvent& e)
 {
 	if (e.GetKeyCode() == WXK_UP)
 	{
-		text_command_->SetValue(wxString::FromUTF8(app::console()->prevCommand(cmd_log_index_)));
+		text_command_->SetValue(wxString::FromUTF8(Console::instance().prevCommand(cmd_log_index_)));
 		text_command_->SetInsertionPointEnd();
-		if (cmd_log_index_ < app::console()->numPrevCommands() - 1)
+		if (cmd_log_index_ < Console::instance().numPrevCommands() - 1)
 			cmd_log_index_++;
 	}
 	else if (e.GetKeyCode() == WXK_DOWN)
 	{
 		cmd_log_index_--;
-		text_command_->SetValue(wxString::FromUTF8(app::console()->prevCommand(cmd_log_index_)));
+		text_command_->SetValue(wxString::FromUTF8(Console::instance().prevCommand(cmd_log_index_)));
 		text_command_->SetInsertionPointEnd();
-		if (cmd_log_index_ < 0)
-			cmd_log_index_ = 0;
+		cmd_log_index_ = std::max(cmd_log_index_, 0);
 	}
 	else
 		e.Skip();

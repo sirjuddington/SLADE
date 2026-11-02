@@ -1,0 +1,301 @@
+// Eternity action specials for doom map format
+{
+  "groups": [
+    {
+      "name": "ExtraData",
+      "specials":
+      [
+        { "name": "-- ExtraData Control Line", "id": 270 },
+        { "nane": "-- ExtraData Sector Control", "id": 401 }
+      ]
+    },
+
+    {
+      "name": "Scripting",
+      "specials": [
+        { "name": "WR StartScript_1S", "id": 273 },
+        { "name": "W1 StartScript", "id": 274 },
+        { "name": "W1 StartScript_1S", "id": 275 },
+        { "name": "SR StartScript", "id": 276 },
+        { "name": "S1 StartScript", "id": 277 },
+        { "name": "GR StartScript", "id": 278 },
+        { "name": "G1 StartScript", "id": 279 },
+        { "name": "WR StartScript", "id": 280 }
+      ]
+    },
+
+    {
+      "name": "3DMidTex",
+      "specials": [
+        { "name": "-- 3DMidTex_MoveWithFloor", "id": 281 },
+        { "name": "-- 3DMidTex_MoveWithCeiling", "id": 282 }
+      ]
+    },
+
+    {
+      "name": "Portals/Plane Portals",
+      "specials": [
+        { "name": "-- Portal_PlaneCeiling", "id": 283 },
+        { "name": "-- Portal_PlaneFloor", "id": 284 },
+        { "name": "-- Portal_PlaneFloorCeiling", "id": 285 },
+        { "name": "-- Portal_HorizonCeiling", "id": 286 },
+        { "name": "-- Portal_HorizonFloor", "id": 287 },
+        { "name": "-- Portal_HorizonFloorCeiling", "id": 288 },
+        { "name": "-- Portal_LineTransfer", "id": 289 }
+      ]
+    },
+
+    {
+      "name": "Portals/Skybox Portals",
+      "specials": [
+        { "name": "-- Portal_SkyboxCeiling", "id": 290 },
+        { "name": "-- Portal_SkyboxFloor", "id": 291 },
+        { "name": "-- Portal_SkyboxFloorCeiling", "id": 292 }
+      ]
+    },
+
+    {
+      "name": "Portals/Anchored Portals",
+      "specials": [
+        { "name": "-- Portal_AnchoredCeiling", "id": 295 },
+        { "name": "-- Portal_AnchoredFloor", "id": 296 },
+        { "name": "-- Portal_AnchoredFloorCeiling", "id": 297 },
+        { "name": "-- Portal_AnchorLine", "id": 298 },
+        { "name": "-- Portal_AnchorLineFloor", "id": 299 },
+        { "name": "-- Apply_PortalToFrontsector", "id": 385 }
+      ]
+    },
+
+    {
+      "name": "Portals/Two-Way Portals",
+      "specials": [
+        { "name": "-- Portal_TwowayCeiling", "id": 344 },
+        { "name": "-- Portal_TwowayFloor", "id": 345 },
+        { "name": "-- Portal_TwowayAnchorLine", "id": 346 },
+        { "name": "-- Portal_TwowayAnchorLineFloor", "id": 347 }
+      ]
+    },
+
+    {
+      "name": "Portals/Linked Portals",
+      "specials": [
+        { "name": "-- Portal_LinkedCeiling", "id": 358 },
+        { "name": "-- Portal_LinkedFloor", "id": 359 },
+        { "name": "-- Portal_LinkedAnchorLine", "id": 360 },
+        { "name": "-- Portal_LinkedAnchorLineFloor", "id": 361 },
+        { "name": "-- Portal_LinkedLineToLine", "id": 376 },
+        { "name": "-- Portal_LinkedLineToLineAnchor", "id": 377 }
+      ]
+    },
+
+    {
+      "name": "Transfers",
+      "specials": [
+        { "name": "-- TransferHereticWind", "id": 293 },
+        { "name": "-- TransferHereticCurrent", "id": 294 }
+      ]
+    },
+
+    {
+      "name": "Sectors/Attached Sectors",
+      "specials": [
+        { "name": "-- Attach_SetCeilingControl", "id": 379 },
+        { "name": "-- Attach_SetFloorControl", "id": 380 },
+        { "name": "-- Attach_FloorToControl", "id": 381 },
+        { "name": "-- Attach_CeilingToControl", "id": 382 },
+        { "name": "-- Attach_MirrorFloorToControl", "id": 383 },
+        { "name": "-- Attach_MirrorCeilingToControl", "id": 384 }
+      ]
+    },
+
+    {
+      "name": "Sectors/Slopes",
+      "specials": [
+        { "name": "-- Slope_FrontsectorFloor", "id": 386 },
+        { "name": "-- Slope_FrontsectorCeiling", "id": 387 },
+        { "name": "-- Slope_FrontsectorFloorAndCeiling", "id": 388 },
+        { "name": "-- Slope_BacksectorFloor", "id": 389 },
+        { "name": "-- Slope_BacksectorCeiling", "id": 390 },
+        { "name": "-- Slope_BacksectorFloorAndCeiling", "id": 391 },
+        { "name": "-- Slope_BackFloorAndFrontCeiling", "id": 392 },
+        { "name": "-- Slope_BackCeilingAndFrontFloor", "id": 393 },
+        { "name": "-- Slope_FrontFloorToTaggedSlope", "id": 394 },
+        { "name": "-- Slope_FrontCeilingToTaggedSlope", "id": 395 },
+        { "name": "-- Slope_FrontFloorAndCeilingToTaggedSlope", "id": 396 }
+      ]
+    },
+
+    {
+      "name": "Misc/Untagged",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        { "name": "-- Scrolling Wall (Up)", "id": 417 },
+        { "name": "-- Scrolling Wall (Down)", "id": 418 },
+        { "name": "-- Scrolling Wall (Down, Fast)", "id": 419 }
+      ]
+    },
+
+    {
+      "name": "Parameterized",
+      "specials": [
+        { "name": "Door_Raise", "id": 300 },
+        { "name": "Door_Open", "id": 301 },
+        { "name": "Door_Close", "id": 302 },
+        { "name": "Door_CloseWaitOpen", "id": 303 },
+        { "name": "Door_WaitRaise", "id": 304 },
+        { "name": "Door_WaitClose", "id": 305 },
+        { "name": "Floor_RaiseToHighest", "id": 306 },
+        { "name": "Floor_LowerToHighestEE", "id": 307 },
+        { "name": "Floor_RaiseToLowest", "id": 308 },
+        { "name": "Floor_LowerToLowest", "id": 309 },
+        { "name": "Floor_RaiseToNearest", "id": 310 },
+        { "name": "Floor_LowerToNearest", "id": 311 },
+        { "name": "Floor_RaiseToLowestCeiling", "id": 312 },
+        { "name": "Floor_LowerToLowestCeiling", "id": 313 },
+        { "name": "Floor_RaiseToCeiling", "id": 314 },
+        { "name": "Floor_RaiseByTexture", "id": 315 },
+        { "name": "Floor_LowerByTexture", "id": 316 },
+        { "name": "Floor_RaiseByValue", "id": 317 },
+        { "name": "Floor_LowerByValue", "id": 318 },
+        { "name": "Floor_MoveToValue", "id": 319 },
+        { "name": "Floor_RaiseInstant", "id": 320 },
+        { "name": "Floor_LowerInstant", "id": 321 },
+        { "name": "Floor_ToCeilingInstant", "id": 322 },
+        { "name": "Ceiling_RaiseToHighest", "id": 323 },
+        { "name": "Ceiling_ToHighestInstant", "id": 324 },
+        { "name": "Ceiling_RaiseToNearest", "id": 325 },
+        { "name": "Ceiling_LowerToNearest", "id": 326 },
+        { "name": "Ceiling_RaiseToLowest", "id": 327 },
+        { "name": "Ceiling_LowerToLowest", "id": 328 },
+        { "name": "Ceiling_RaiseToHighestFloor", "id": 329 },
+        { "name": "Ceiling_LowerToHighestFloor", "id": 330 },
+        { "name": "Ceiling_ToFloorInstant", "id": 331 },
+        { "name": "Ceiling_LowerToFloor", "id": 332 },
+        { "name": "Ceiling_RaiseByTexture", "id": 333 },
+        { "name": "Ceiling_LowerByTexture", "id": 334 },
+        { "name": "Ceiling_RaiseByValue", "id": 335 },
+        { "name": "Ceiling_LowerByValue", "id": 336 },
+        { "name": "Ceiling_MoveToValue", "id": 337 },
+        { "name": "Ceiling_RaiseInstant", "id": 338 },
+        { "name": "Ceiling_LowerInstant", "id": 339 },
+        { "name": "Stairs_BuildUpDoom", "id": 340 },
+        { "name": "Stairs_BuildDownDoom", "id": 341 },
+        { "name": "Stairs_BuildUpDoomSync", "id": 342 },
+        { "name": "Stairs_BuildDownDoomSync", "id": 343 },
+        { "name": "Polyobj_StartLine", "id": 348 },
+        { "name": "Polyobj_ExplicitLine", "id": 349 },
+        { "name": "Polyobj_DoorSlide", "id": 350 },
+        { "name": "Polyobj_DoorSwing", "id": 351 },
+        { "name": "Polyobj_Move", "id": 352 },
+        { "name": "Polyobj_OR_Move", "id": 353 },
+        { "name": "Polyobj_RotateRight", "id": 354 },
+        { "name": "Polyobj_OR_RotateRight", "id": 355 },
+        { "name": "Polyobj_RotateLeft", "id": 356 },
+        { "name": "Polyobj_OR_RotateLeft", "id": 357 },
+        { "name": "Pillar_Build", "id": 362 },
+        { "name": "Pillar_BuildAndCrush", "id": 363 },
+        { "name": "Pillar_Open", "id": 364 },
+        { "name": "ACS_Execute", "id": 365 },
+        { "name": "ACS_Suspend", "id": 366 },
+        { "name": "ACS_Terminate", "id": 367 },
+        { "name": "Light_RaiseByValue", "id": 368 },
+        { "name": "Light_LowerByValue", "id": 369 },
+        { "name": "Light_ChangeToValue", "id": 370 },
+        { "name": "Light_Fade", "id": 371 },
+        { "name": "Light_Glow", "id": 372 },
+        { "name": "Light_Flicker", "id": 373 },
+        { "name": "Light_Strobe", "id": 374 },
+        { "name": "Radius_Quake", "id": 375 },
+        { "name": "Line_SetIdentification", "id": 378 },
+        { "name": "Floor_Waggle", "id": 397 },
+        { "name": "Thing_Spawn", "id": 398 },
+        { "name": "Thing_SpawnNoFog", "id": 399 },
+        { "name": "Teleport_EndGame", "id": 400 },
+        { "name": "Thing_Projectile", "id": 402 },
+        { "name": "Thing_ProjectileGravity", "id": 403 },
+        { "name": "Thing_Activate", "id": 404 },
+        { "name": "Thing_Deactivate", "id": 405 },
+        { "name": "Scroll_Texture_Left", "id": 406 },
+        { "name": "Scroll_Texture_Right", "id": 407 },
+        { "name": "Scroll_Texture_Up", "id": 408 },
+        { "name": "Scroll_Texture_Down", "id": 409 },
+        { "name": "Plat_PerpetualRaise", "id": 410 },
+        { "name": "Plat_Stop", "id": 411 },
+        { "name": "Plat_DownWaitUpStay", "id": 412 },
+        { "name": "Plat_DownByValue", "id": 413 },
+        { "name": "Plat_UpWaitDownStay", "id": 414 },
+        { "name": "Plat_UpByValue", "id": 415 },
+        { "name": "Floor_LowerToHighest", "id": 416 },
+        { "name": "ACS_ExecuteWithResult", "id": 420 },
+        { "name": "Thing_ChangeTID", "id": 421 },
+        { "name": "Thing_Raise", "id": 422 },
+        { "name": "Thing_Stop", "id": 423 },
+        { "name": "ThrustThing", "id": 424 },
+        { "name": "ThrustThingZ", "id": 425 },
+        { "name": "DamageThing", "id": 426 },
+        { "name": "Thing_Damage", "id": 427 },
+        { "name": "Thing_Destroy", "id": 428 },
+        { "name": "Door_LockedRaise", "id": 429 },
+        { "name": "ACS_LockedExecute", "id": 430 },
+        { "name": "Floor_Donut", "id": 431 },
+        { "name": "Ceiling_CrushAndRaise", "id": 432 },
+        { "name": "Ceiling_CrushStop", "id": 433 },
+        { "name": "Ceiling_CrushAndRaiseAndStay", "id": 434 },
+        { "name": "Ceiling_LowerAndCrush", "id": 435 },
+        { "name": "Ceiling_LowerAndCrushDist", "id": 436 },
+        { "name": "Ceiling_CrushAndRaiseDist", "id": 437 },
+        { "name": "Ceiling_CrushAndRaiseAndStayA", "id": 438 },
+        { "name": "Ceiling_CrushAndRaiseA", "id": 439 },
+        { "name": "Ceiling_CrushAndRaiseSilentA", "id": 440 },
+        { "name": "Ceiling_CrushAndRaiseSilentDist", "id": 441 },
+        { "name": "Ceiling_CrushAndRaiseAndStaySilA", "id": 442 },
+        { "name": "Generic_Crusher", "id": 443 },
+        { "name": "Teleport", "id": 444 },
+        { "name": "Teleport_NoFog", "id": 445 },
+        { "name": "Teleport_Line", "id": 446 },
+        { "name": "Exit_Normal", "id": 447 },
+        { "name": "Exit_Secret", "id": 448 },
+        { "name": "Teleport_NewMap", "id": 449 },
+        { "name": "Floor_RaiseAndCrush", "id": 451 },
+        { "name": "Floor_CrushStop", "id": 452 },
+        { "name": "FloorAndCeiling_LowerByValue", "id": 453 },
+        { "name": "FloorAndCeiling_RaiseByValue", "id": 454 },
+        { "name": "Elevator_RaiseToNearest", "id": 458 },
+        { "name": "Elevator_LowerToNearest", "id": 459 },
+        { "name": "Elevator_MoveToFloor", "id": 460 },
+        { "name": "Light_MaxNeighbor", "id": 461 },
+        { "name": "ChangeSkill", "id": 462 },
+        { "name": "Light_StrobeDoom", "id": 463 },
+        { "name": "Generic_Floor", "id": 464 },
+        { "name": "Generic_Ceiling", "id": 465 },
+        { "name": "Floor_TransferTrigger", "id": 466 },
+        { "name": "Floor_TransferNumeric", "id": 467 },
+        { "name": "FloorAndCeiling_LowerRaise", "id": 468 },
+        { "name": "HealThing", "id": 469 },
+        { "name": "Sector_SetRotation", "id": 470 },
+        { "name": "Sector_SetFloorPanning", "id": 471 },
+        { "name": "Sector_SetCeilingPanning", "id": 472 },
+        { "name": "Light_MinNeighbor", "id": 473 },
+        { "name": "Polyobj_Stop", "id": 474 },
+        { "name": "Plat_RaiseAndStayTx0", "id": 475 },
+        { "name": "Plat_UpByValueStayTx", "id": 476 },
+        { "name": "ACS_ExecuteAlways", "id": 477 },
+        { "name": "Thing_Remove", "id": 478 },
+        { "name": "Sector_SetCurrent", "id": 479 },
+        { "name": "PointPush_SetForce", "id": 480 },
+        { "name": "Static_Init", "id": 481 },
+        { "name": "Sector_Attach3dMidtex", "id": 482 },
+        { "name": "Scroll_Ceiling", "id": 483 },
+        { "name": "Scroll_Floor", "id": 484 },
+        { "name": "Scroll_Texture_Model", "id": 485 },
+        { "name": "Line_SetPortal", "id": 486 },
+        { "name": "Plat_ToggleCeiling", "id": 487 },
+        { "name": "Plat_DownWaitUpStayLip", "id": 488 },
+        { "name": "Plat_PerpetualRaiseLip", "id": 489 },
+        { "name": "ACS_LockedExecuteDoor", "id": 490 },
+        { "name": "Line_QuickPortal", "id": 491 },
+        { "name": "Portal_Define", "id": 492 }
+      ]
+    }
+  ]
+}

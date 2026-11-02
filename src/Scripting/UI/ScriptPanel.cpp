@@ -35,13 +35,22 @@
 #include "App.h"
 #include "General/SAction.h"
 #include "Scripting/ScriptManager.h"
+#include "TextEditor/TextLanguage.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/SToolBar/SToolBarButton.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
+#include <wx/stc/minimap.h>
 
 using namespace slade;
+
+
+// -----------------------------------------------------------------------------
+//
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(Int, txed_minimap_width)
 
 
 // -----------------------------------------------------------------------------
@@ -57,26 +66,39 @@ using namespace slade;
 ScriptPanel::ScriptPanel(wxWindow* parent, scriptmanager::Script* script) : wxPanel(parent, -1), script_{ script }
 {
 	wxPanel::SetName(wxS("script"));
+	auto lh = ui::LayoutHelper(this);
 
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Toolbar
 	auto toolbar = setupToolbar();
-	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
-	sizer->Add(toolbar, 0, wxEXPAND | wxLEFT | wxRIGHT, ui::pad());
-	sizer->AddSpacer(ui::px(ui::Size::PadMinimum));
+	sizer->AddSpacer(lh.padSmall());
+	sizer->Add(toolbar, lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
+	sizer->AddSpacer(lh.padSmall());
 
 	// Text Editor
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer->Add(hbox, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setLanguage(TextLanguage::fromId("sladescript"));
 	if (script_)
 		text_editor_->SetText(wxString::FromUTF8(script_->text));
-	sizer->Add(text_editor_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	hbox->Add(text_editor_, wxSizerFlags(1).Expand());
+
+	// Create the minimap if enabled (and supported)
+	if (txed_minimap_width > 0)
+	{
+		auto minimap = new wxStyledTextCtrlMiniMap(this, text_editor_);
+		text_editor_->SetUseVerticalScrollBar(false);
+		minimap->SetUseVerticalScrollBar(true);
+		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
+		hbox->Add(minimap, wxSizerFlags().Expand());
+	}
 
 	// Find+Replace panel
 	find_replace_panel_ = new FindReplacePanel(this, *text_editor_);
-	sizer->Add(find_replace_panel_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(find_replace_panel_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	find_replace_panel_->Show(false);
 
 	text_editor_->setFindReplacePanel(find_replace_panel_);
@@ -180,15 +202,14 @@ bool ScriptPanel::handleAction(string_view id)
 // -----------------------------------------------------------------------------
 // Creates and returns the toolbar for this script panel
 // -----------------------------------------------------------------------------
-SToolBar* ScriptPanel::setupToolbar()
+SAuiToolBar* ScriptPanel::setupToolbar()
 {
-	auto toolbar = new SToolBar(this);
+	auto toolbar = new SAuiToolBar(this);
 
-	// Create Script toolbar
-	auto tbg_script = new SToolBarGroup(toolbar, "_Script");
-	tbg_script->addActionButton("scrm_run", "", true);
-	tbg_script->addActionButton("scrm_save", "", true)->Enable(!script_->read_only);
-	toolbar->addGroup(tbg_script);
+	toolbar->addAction("scrm_run", true);
+	toolbar->addAction("scrm_save", true);
+	toolbar->enableItem("scrm_save", !script_->read_only);
+	toolbar->Realize();
 
 	return toolbar;
 }

@@ -9,5 +9,5 @@
         fill="#476DBD"
         transform="translate(-3, 0)"
     />
-    <rect x="18" y="4" width="4" height="16" rx="1" ry="1" fill="#476DBD" />
+    <rect x="18" y="4" width="4" height="16" rx="1" ry="1" fill="#000000" />
 </svg>

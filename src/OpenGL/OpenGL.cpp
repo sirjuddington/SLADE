@@ -31,8 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "OpenGL.h"
-#include "Utility/Colour.h"
-#include "Utility/StringUtils.h"
+#include "App.h"
 
 using namespace slade;
 
@@ -42,26 +41,27 @@ using namespace slade;
 // Variables
 //
 // -----------------------------------------------------------------------------
-CVAR(Bool, gl_point_sprite, true, CVar::Flag::Save)
-CVAR(Bool, gl_tweak_accuracy, true, CVar::Flag::Save)
-CVAR(Bool, gl_vbo, true, CVar::Flag::Save)
+CVAR(Int, gl_depth_buffer_size, 24, CVar::Flag::Save)
 CVAR(Int, gl_version_major, 0, CVar::Flag::Save)
 CVAR(Int, gl_version_minor, 0, CVar::Flag::Save)
-CVAR(Int, gl_debug, 1, CVar::Flag::Save) // 0 = off, 1 = errors only, 2 = all messages
+CVAR(Int, gl_msaa, 2, CVar::Flag::Save)
+CVAR(Int, gl_debug, 1, CVar::Flag::Save)
 
 namespace slade::gl
 {
-wxGLContext*              context      = NULL;
-bool                      initialised  = false;
-double                    version      = 0;
-unsigned                  max_tex_size = 128;
-unsigned                  pow_two[] = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
-uint8_t                   n_pow_two = 16;
-float                     max_point_size = -1.0f;
-Blend                     last_blend     = Blend::Normal;
-Info                      info;
-vector<std::pair<u8, u8>> opengl_versions = { { 4, 6 }, { 4, 5 }, { 4, 4 }, { 4, 3 }, { 4, 2 }, { 4, 1 }, { 4, 0 },
-											  { 3, 3 }, { 3, 2 }, { 3, 1 }, { 3, 0 }, { 2, 1 }, { 2, 0 } };
+wxGLContext*     context        = nullptr;
+bool             initialised    = false;
+bool             context_failed = false;
+double           version        = 0;
+unsigned         max_tex_size   = 128;
+vector<unsigned> pow_two        = { 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768 };
+Blend            last_blend     = Blend::Normal;
+int              msaa           = -1;
+Info             info;
+unsigned         vbo_current;
+unsigned         vao_current;
+unsigned         ebo_current;
+unsigned         drawcall_count = 0;
 } // namespace slade::gl
 
 
@@ -78,8 +78,15 @@ namespace slade::gl
 // -----------------------------------------------------------------------------
 wxGLAttributes& buildGlAttr(wxGLAttributes& attr, int depth)
 {
+	if (msaa < 0)
+		msaa = gl_msaa;
+
 	attr.Reset();
 	attr.PlatformDefaults().MinRGBA(8, 8, 8, 8).DoubleBuffer().Depth(depth).Stencil(8);
+
+	if (msaa > 1)
+		attr.Samplers(msaa);
+
 	attr.EndList();
 	return attr;
 }
@@ -97,9 +104,14 @@ void GLAPIENTRY glMessageCallback(
 	const void*   userParam)
 {
 	if (type == GL_DEBUG_TYPE_ERROR)
-		log::error("OpenGL Error: {}", message);
-	else if (gl_debug > 1)
-		log::info("OpenGL: {}", message);
+	{
+		// Don't spam the same error multiple times
+		auto line = fmt::format("OpenGL Error: {}", message);
+		if (log::history().back().message != line)
+			log::error("OpenGL Error: {}", message);
+	}
+	// else
+	//	log::info("OpenGL: {}", message);
 }
 
 // -----------------------------------------------------------------------------
@@ -107,23 +119,30 @@ void GLAPIENTRY glMessageCallback(
 // -----------------------------------------------------------------------------
 wxGLContext* createBestContext(wxGLCanvas* canvas)
 {
-	// Try each supported OpenGL version in descending order
-	for (const auto& ver : opengl_versions)
+	// Try OpenGL 4.6 -> 4.0
+	int v_minor = 6;
+	while (v_minor >= 0)
 	{
 		wxGLContextAttrs attr;
-		attr.PlatformDefaults().CompatibilityProfile().OGLVersion(ver.first, ver.second).EndList();
-		auto ctx = new wxGLContext(canvas, nullptr, &attr);
-		if (ctx->IsOK())
+		attr.PlatformDefaults().CoreProfile().OGLVersion(4, v_minor--).EndList();
+		if (auto ctx = new wxGLContext(canvas, nullptr, &attr); ctx->IsOK())
 			return ctx;
 		else
 			delete ctx;
 	}
 
-	// Unable to create compatibility context
+	// No 4.0, try 3.3 (minimum)
+	wxGLContextAttrs attr;
+	attr.PlatformDefaults().CoreProfile().OGLVersion(3, 3).EndList();
+	auto ctx = new wxGLContext(canvas, nullptr, &attr);
+	if (ctx->IsOK())
+		return ctx;
+
+	// Unable to create core context
+	delete ctx;
 	return nullptr;
 }
 } // namespace slade::gl
-
 
 // -----------------------------------------------------------------------------
 // Returns the global OpenGL context, and creates it if needed
@@ -172,7 +191,8 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			{
 				log::error("Failed to set the global OpenGL context as current");
 				delete context;
-				context = nullptr;
+				context        = nullptr;
+				context_failed = true;
 				return nullptr;
 			}
 
@@ -181,7 +201,8 @@ wxGLContext* gl::getContext(wxGLCanvas* canvas)
 			{
 				log::error("Failed to initialize OpenGL");
 				delete context;
-				context = nullptr;
+				context        = nullptr;
+				context_failed = true;
 				return nullptr;
 			}
 		}
@@ -210,14 +231,14 @@ bool gl::init()
 	}
 
 	// Get OpenGL info
-	info.vendor   = (const char*)glGetString(GL_VENDOR);
-	info.renderer = (const char*)glGetString(GL_RENDERER);
-	info.version  = (const char*)glGetString(GL_VERSION);
+	info.vendor   = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
+	info.renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
+	info.version  = reinterpret_cast<const char*>(glGetString(GL_VERSION));
 
 	// Get OpenGL version
-	string_view temp{ info.version.data(), 3 };
-	strutil::toDouble(temp, version);
-	log::info("OpenGL Version: {:1.1f}", version);
+	// string_view temp{ info.version.data(), 3 };
+	// strutil::toDouble(temp, version);
+	log::info("OpenGL Version: {}", info.version);
 
 	// Get max texture size
 	GLint val = 0;
@@ -227,15 +248,7 @@ bool gl::init()
 
 	// Test extensions
 	log::info("Checking extensions...");
-	if (GLAD_GL_ARB_vertex_buffer_object)
-		log::info("Vertex Buffer Objects supported");
-	else
-		log::info("Vertex Buffer Objects not supported");
-	if (GLAD_GL_ARB_point_sprite)
-		log::info("Point Sprites supported");
-	else
-		log::info("Point Sprites not supported");
-	if (GLAD_GL_ARB_framebuffer_object)
+	if (fboSupport())
 		log::info("Framebuffer Objects supported");
 	else
 		log::info("Framebuffer Objects not supported");
@@ -252,30 +265,23 @@ bool gl::init()
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if creating the OpenGL context failed
+// -----------------------------------------------------------------------------
+bool gl::contextCreationFailed()
+{
+	return context_failed;
+}
+
+// -----------------------------------------------------------------------------
 // Returns true if the installed OpenGL version supports non-power-of-two
 // textures, false otherwise
 // -----------------------------------------------------------------------------
 bool gl::np2TexSupport()
 {
-	return GLAD_GL_ARB_texture_non_power_of_two;
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the installed OpenGL version supports point sprites, false
-// otherwise
-// -----------------------------------------------------------------------------
-bool gl::pointSpriteSupport()
-{
-	return GLAD_GL_ARB_point_sprite && gl_point_sprite;
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the installed OpenGL version supports vertex buffer objects,
-// false otherwise
-// -----------------------------------------------------------------------------
-bool gl::vboSupport()
-{
-	return GLAD_GL_ARB_vertex_buffer_object && gl_vbo;
+	// Non-power-of-two textures are core since GL 2.0. Some core profile
+	// contexts (eg. macOS) don't advertise the ARB extension, so the extension
+	// flag alone isn't reliable
+	return GLAD_GL_VERSION_2_0 || GLAD_GL_ARB_texture_non_power_of_two;
 }
 
 // -----------------------------------------------------------------------------
@@ -284,7 +290,9 @@ bool gl::vboSupport()
 // -----------------------------------------------------------------------------
 bool gl::fboSupport()
 {
-	return GLAD_GL_ARB_framebuffer_object;
+	// FBOs are core since GL 3.0
+	// (extension may not be advertised in core profiles)
+	return GLAD_GL_VERSION_3_0 || GLAD_GL_ARB_framebuffer_object;
 }
 
 // -----------------------------------------------------------------------------
@@ -295,33 +303,16 @@ bool gl::validTexDimension(unsigned dim)
 {
 	if (dim > max_tex_size)
 		return false;
-	else if (!np2TexSupport())
-	{
-		for (uint8_t a = 0; a < n_pow_two; a++)
-		{
-			if (dim == pow_two[a])
-				return true;
-		}
 
-		return false;
-	}
-	else
+	if (np2TexSupport())
 		return true;
-}
 
-// -----------------------------------------------------------------------------
-// Returns the implementation-dependant maximum size for GL_POINTS
-// -----------------------------------------------------------------------------
-float gl::maxPointSize()
-{
-	if (max_point_size < 0)
-	{
-		GLfloat sizes[2];
-		glGetFloatv(GL_ALIASED_POINT_SIZE_RANGE, sizes);
-		max_point_size = sizes[1];
-	}
+	// Check for power-of-two dimension
+	for (auto s : pow_two)
+		if (dim == s)
+			return true;
 
-	return max_point_size;
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -338,16 +329,6 @@ unsigned gl::maxTextureSize()
 bool gl::isInitialised()
 {
 	return initialised;
-}
-
-// -----------------------------------------------------------------------------
-// Returns true if the 'accuracy tweak' is enabled.
-// This can fix inaccuracies when rendering 2d textures, but tends to cause
-// fonts to blur when using FTGL
-// -----------------------------------------------------------------------------
-bool gl::accuracyTweak()
-{
-	return gl_tweak_accuracy;
 }
 
 // -----------------------------------------------------------------------------
@@ -369,8 +350,6 @@ wxGLAttributes gl::getWxGLAttribs()
 
 	// Then 16bit depth buffer if not supported
 	buildGlAttr(attr, 16);
-	if (wxGLCanvas::IsDisplaySupported(attr))
-		return attr;
 
 	// Last resort - try wx default attributes
 	attr.Reset();
@@ -379,48 +358,6 @@ wxGLAttributes gl::getWxGLAttribs()
 		log::error("Failed to get valid wxGLAttributes for OpenGL canvas");
 
 	return attr;
-}
-
-// -----------------------------------------------------------------------------
-// Sets the colour to [col], and changes the colour blend mode if needed and
-// [set_blend] is true
-// -----------------------------------------------------------------------------
-void gl::setColour(const ColRGBA& col, Blend blend)
-{
-	// Colour
-	glColor4ub(col.r, col.g, col.b, col.a);
-
-	// Blend
-	if (blend != Blend::Ignore && blend != last_blend)
-	{
-		if (blend == Blend::Normal)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (blend == Blend::Additive)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-		last_blend = blend;
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Sets the colour to [r,g,b,a], and changes the colour blend mode to [blend] if
-// needed
-// -----------------------------------------------------------------------------
-void gl::setColour(uint8_t r, uint8_t g, uint8_t b, uint8_t a, Blend blend)
-{
-	// Colour
-	glColor4ub(r, g, b, a);
-
-	// Blend
-	if (blend != Blend::Ignore && blend != last_blend)
-	{
-		if (blend == Blend::Normal)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		else if (blend == Blend::Additive)
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-
-		last_blend = blend;
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -434,6 +371,8 @@ void gl::setBlend(Blend blend)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		else if (blend == Blend::Additive)
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		else if (blend == Blend::Invert)
+			glBlendFunc(GL_ONE_MINUS_DST_COLOR, GL_ZERO);
 
 		last_blend = blend;
 	}
@@ -454,4 +393,218 @@ void gl::resetBlend()
 gl::Info gl::sysInfo()
 {
 	return info;
+}
+
+// -----------------------------------------------------------------------------
+// Creates a new OpenGL buffer and returns its ID
+// -----------------------------------------------------------------------------
+unsigned gl::createBuffer()
+{
+	if (!initialised)
+		return 0;
+
+	unsigned vbo;
+	glGenBuffers(1, &vbo);
+	return vbo;
+}
+
+// -----------------------------------------------------------------------------
+// Deletes the OpenGL buffer with the given [id]
+// -----------------------------------------------------------------------------
+void gl::deleteBuffer(unsigned id)
+{
+	if (initialised && id > 0)
+		glDeleteBuffers(1, &id);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the currently bound VBO ID
+// -----------------------------------------------------------------------------
+unsigned gl::currentVBO()
+{
+	return vbo_current;
+}
+
+// -----------------------------------------------------------------------------
+// Binds the VBO with the given [id]
+// -----------------------------------------------------------------------------
+void gl::bindVBO(unsigned id)
+{
+	if (!initialised)
+		return;
+
+	glBindBuffer(GL_ARRAY_BUFFER, id);
+	vbo_current = id;
+}
+
+// -----------------------------------------------------------------------------
+// Deletes the VBO with the given [id]
+// -----------------------------------------------------------------------------
+void gl::deleteVBO(unsigned id)
+{
+	if (!initialised || app::isExiting())
+		return;
+
+	if (id > 0)
+	{
+		if (vbo_current == id)
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+			vbo_current = 0;
+		}
+
+		glDeleteBuffers(1, &id);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns the currently bound EBO ID
+// -----------------------------------------------------------------------------
+unsigned gl::currentEBO()
+{
+	return ebo_current;
+}
+
+// -----------------------------------------------------------------------------
+// Binds the EBO with the given [id]
+// -----------------------------------------------------------------------------
+void gl::bindEBO(unsigned id)
+{
+	if (!initialised)
+		return;
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+	ebo_current = id;
+}
+
+// -----------------------------------------------------------------------------
+// Deletes the EBO with the given [id]
+// -----------------------------------------------------------------------------
+void gl::deleteEBO(unsigned id)
+{
+	if (!initialised || id == 0 || app::isExiting())
+		return;
+
+	if (ebo_current == id)
+	{
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		ebo_current = 0;
+	}
+
+	glDeleteBuffers(1, &id);
+}
+
+// -----------------------------------------------------------------------------
+// Returns the currently bound VAO ID
+// -----------------------------------------------------------------------------
+unsigned gl::currentVAO()
+{
+	return vao_current;
+}
+
+// -----------------------------------------------------------------------------
+// Creates a new VAO and returns its ID
+// -----------------------------------------------------------------------------
+unsigned gl::createVAO()
+{
+	if (!initialised)
+		return 0;
+
+	unsigned vao = 0;
+	glGenVertexArrays(1, &vao);
+	return vao;
+}
+
+// -----------------------------------------------------------------------------
+// Binds the VAO with the given [id]
+// -----------------------------------------------------------------------------
+void gl::bindVAO(unsigned id)
+{
+	if (!initialised || vao_current == id)
+		return;
+
+	glBindVertexArray(id);
+	vao_current = id;
+}
+
+// -----------------------------------------------------------------------------
+// Deletes the VAO with the given [id]
+// -----------------------------------------------------------------------------
+void gl::deleteVAO(unsigned id)
+{
+	if (!initialised || app::isExiting())
+		return;
+
+	if (id > 0)
+	{
+		if (vao_current == id)
+		{
+			glBindVertexArray(0);
+			vao_current = 0;
+		}
+
+		glDeleteVertexArrays(1, &id);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Resets the draw call count
+// -----------------------------------------------------------------------------
+void gl::resetDrawCallCount()
+{
+	drawcall_count = 0;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the current draw call count
+// -----------------------------------------------------------------------------
+unsigned gl::drawCallCount()
+{
+	return drawcall_count;
+}
+
+// -----------------------------------------------------------------------------
+// Calls glDrawArrays with the given [primitive], starting at [first] and
+// drawing [count] vertices
+// -----------------------------------------------------------------------------
+void gl::drawArrays(Primitive primitive, unsigned first, unsigned count)
+{
+	drawcall_count++;
+	glDrawArrays(static_cast<GLenum>(primitive), first, count);
+}
+
+// -----------------------------------------------------------------------------
+// Calls glDrawArraysInstanced with the given [primitive], starting at [first]
+// and drawing [count] vertices, [instance_count] times
+// -----------------------------------------------------------------------------
+void gl::drawArraysInstanced(Primitive primitive, unsigned first, unsigned count, unsigned instance_count)
+{
+	drawcall_count++;
+	glDrawArraysInstanced(static_cast<GLenum>(primitive), first, count, instance_count);
+}
+
+// -----------------------------------------------------------------------------
+// Calls glDrawElements with the given [primitive], drawing [count] elements of
+// the given [type], using the provided [indices]
+// -----------------------------------------------------------------------------
+void gl::drawElements(Primitive primitive, unsigned count, GLenum type, const void* indices)
+{
+	drawcall_count++;
+	glDrawElements(static_cast<GLenum>(primitive), count, type, indices);
+}
+
+// -----------------------------------------------------------------------------
+// Calls glDrawElementsInstanced with the given [primitive], drawing [count]
+// elements of the given [type], [instance_count] times, using the provided
+// [indices]
+// -----------------------------------------------------------------------------
+void gl::drawElementsInstanced(
+	Primitive   primitive,
+	unsigned    count,
+	GLenum      type,
+	unsigned    instance_count,
+	const void* indices)
+{
+	drawcall_count++;
+	glDrawElementsInstanced(static_cast<GLenum>(primitive), count, type, indices, instance_count);
 }

@@ -31,7 +31,6 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SIconButton.h"
-#include "MapEditor/UI/MapCanvas.h"
 
 using namespace slade;
 
@@ -51,27 +50,59 @@ SIconButton::SIconButton(
 	icons::Type   icon_type,
 	const string& icon,
 	const string& tooltip,
-	int           icon_size) :
-	wxBitmapButton{ parent, -1, wxNullBitmap }
+	int           icon_size,
+	int           button_size) :
+	wxBitmapButton{ parent, -1, wxNullBitmap, wxDefaultPosition, wxSize(button_size, button_size) }
 {
-#if wxCHECK_VERSION(3, 1, 6)
 	auto bmp = icons::getIcon(icon_type, icon, icon_size);
-#else
-	// Create icon
-	auto size = ui::scalePx(icon_size);
-	auto bmp  = icons::getIcon(icon_type, icon, size);
-
-	// Scale icon if required
-	if (bmp.GetWidth() != size)
-	{
-		auto img = bmp.ConvertToImage();
-		img.Rescale(size, size, wxIMAGE_QUALITY_BICUBIC);
-		bmp = wxBitmap(img);
-	}
-#endif
 
 	// Set button image and tooltip
 	SetBitmap(bmp);
 	if (!tooltip.empty())
 		SetToolTip(wxString::FromUTF8(tooltip));
+
+	if (button_size > 0)
+		SetMinSize(wxSize(button_size, button_size));
+	else
+	{
+		auto default_height = GetDefaultSize(parent).y;
+		SetMinSize(wxSize(default_height, default_height));
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Override of DoSetSize to Enforce square sizing
+// -----------------------------------------------------------------------------
+void SIconButton::DoSetSize(int x, int y, int width, int height, int sizeFlags)
+{
+	if (width != -1 || height != -1)
+	{
+		if (width == -1)
+			width = height;
+		else if (height == -1)
+			height = width;
+		else
+		{
+			auto full_size = std::max(width, height);
+			auto cur_size  = std::min(width, height);
+
+			// Ask parent sizer for a wider/taller slot on the next layout pass
+			if (full_size > cur_size)
+			{
+				auto min_size = GetMinSize();
+				if (min_size.x < full_size || min_size.y < full_size)
+				{
+					SetMinSize(wxSize(full_size, full_size));
+					if (auto parent = GetParent(); parent && parent->GetSizer())
+						parent->CallAfter([parent]() { parent->Layout(); });
+				}
+			}
+
+			// Keep this pass inside the allocated slot so we don't overlap
+			// neighbouring controls
+			width = height = cur_size;
+		}
+	}
+
+	wxBitmapButton::DoSetSize(x, y, width, height, sizeFlags);
 }

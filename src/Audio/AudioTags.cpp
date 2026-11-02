@@ -262,7 +262,7 @@ enum ID3v2Frames
 namespace
 {
 // clang-format off
-const char * const id3v1_genres[] =
+const char * const ID3_V1_GENRES[] =
 {
 	"Blues", "Classic Rock", "Country", "Dance", "Disco", "Funk",		//   0-  5
 	"Grunge", "Hip-Hop", "Jazz", "Metal", "New Age", "Oldies",			//   6- 11
@@ -304,7 +304,7 @@ const char * const id3v1_genres[] =
 	"Neue Deutsche Welle", "Podcast", "Indie Rock", "G-Funk",			// 185-188
 	"Dubstep", "Garage Rock", "Psybient"								// 188-191
 };
-const char * const speaker_pos[] =
+const char * const SPEAKER_POS[] =
 {
 	"Front Left", "Front Right", "Front Center",
 	"Low Frequency", "Back Left", "Back Right",
@@ -354,7 +354,7 @@ string buildID3v2GenreString(string content)
 				if (content[j] != ')')
 					index = 192;
 				if (index < 192)
-					genre += id3v1_genres[index];
+					genre += ID3_V1_GENRES[index];
 				i = j + 1;
 			}
 		}
@@ -369,7 +369,7 @@ string buildID3v2GenreString(string content)
 	return genre;
 }
 
-string parseID3v1Tag(MemChunk& mc, size_t start)
+string parseID3v1Tag(const MemChunk& mc, size_t start)
 {
 	ID3v1  tag;
 	string version, title, artist, album, comment, genre, year;
@@ -381,7 +381,7 @@ string parseID3v1Tag(MemChunk& mc, size_t start)
 	album   = strutil::viewFromChars(tag.album, 30);
 	comment = strutil::viewFromChars(tag.comment, 30);
 	year    = strutil::viewFromChars(tag.year, 4);
-	genre   = (tag.genre < 192) ? id3v1_genres[tag.genre] : "";
+	genre   = (tag.genre < 192) ? ID3_V1_GENRES[tag.genre] : "";
 	if (tag.comment[28] == 0 && tag.comment[29] != 0)
 	{
 		version = "ID3v1.1";
@@ -391,7 +391,10 @@ string parseID3v1Tag(MemChunk& mc, size_t start)
 		version = "ID3v1.0";
 
 	// Check for extended tag
-	if (start > 256 && mc[start - 227] == 'T' && mc[start - 226] == 'A' && mc[start - 225] == 'G'
+	if (start > 256
+		&& mc[start - 227] == 'T'
+		&& mc[start - 226] == 'A'
+		&& mc[start - 225] == 'G'
 		&& mc[start - 224] == '+')
 	{
 		ID3v1e etag;
@@ -420,7 +423,7 @@ string parseID3v1Tag(MemChunk& mc, size_t start)
 	return ret;
 }
 
-string parseID3v2Tag(MemChunk& mc, size_t start)
+string parseID3v2Tag(const MemChunk& mc, size_t start)
 {
 	string version, title, artist, composer, copyright, album, genre, year, group, subtitle, track, comments;
 	bool   artists = false;
@@ -445,69 +448,74 @@ string parseID3v2Tag(MemChunk& mc, size_t start)
 	{
 		size_t fsize = v22 ? mc.readB24(s + 3) : mc.readB32(s + 4);
 
-		// One byte for encoding
-		size_t tsize = fsize - 1;
-
-		// Process only text frames that aren't empty
+		// Process only text frames that aren't empty. fsize must be greater
+		// than 1 (1 byte for encoding + at least 1 byte of data), since
+		// computing tsize = fsize - 1 below would otherwise underflow (both are
+		// unsigned).
 		// Also skip flags, not gonna bother with encryption or compression
-		if ((mc[s] == 'T' || (mc[s] == 'C' && mc[s + 1] == 'O' && mc[s + 2] == 'M')) && tsize > 0
+		if ((mc[s] == 'T' || (mc[s] == 'C' && mc[s + 1] == 'O' && mc[s + 2] == 'M'))
+			&& fsize > 1
 			&& (v22 || (mc[s + 8] == 0 && mc[s + 9] == 0)))
 		{
+			size_t tsize = fsize - 1; // One byte for encoding
 			string content;
 
 			// First step: retrieve the text (UTF-16 massively sucks)
-			auto buffer = new char[fsize];
-			mc.read(buffer, tsize, s + step + 1);
-			size_t frame = v22 ? mc.readB24(s) : mc.readB32(s);
+			auto   buffer = new char[fsize];
+			size_t frame  = v22 ? mc.readB24(s) : mc.readB32(s);
 
-			bool   bomle = true;
-			size_t bom   = 0;
-			switch (mc[s + step])
+			// Only parse the frame content if it's actually within the chunk's bounds
+			if (mc.read(buffer, static_cast<u32>(tsize), static_cast<u32>(s + step + 1)))
 			{
-			case 0: // Plain old ASCII
-				content = strutil::viewFromChars(buffer, tsize);
-				break;
-			case 1: // UTF-16 with byte order mark
-			{
-				size_t i = 1;
-				while (i < tsize - 3)
+				bool   bomle = true;
+				size_t bom   = 0;
+				switch (mc[s + step])
 				{
-					bom = i + 1;
-					// Looks like stuffing garbage before the actual content is popular
-					if (mc[s + step + i] == 0xFF && mc[s + step + i + 1] == 0xFE && mc[s + step + i + 2] != 0)
-					{
-						bomle = true;
-						break;
-					}
-					if (mc[s + step + i] == 0xFE && mc[s + step + i + 1] == 0xFF && mc[s + step + i + 3] != 0)
-					{
-						bomle = false;
-						break;
-					}
-					++i;
-				}
-			}
-				// Fall through
-			case 2: // UTF-16 without byte order mark
-			{
-				// You're right, wxWidgets. Code like this is so much
-				// better than having something like wxString::FromUTF16()
-				size_t u16c   = (tsize - bom) / 2;
-				auto   wchars = new wchar_t[u16c];
-				for (size_t i = 0; i < u16c; ++i)
+				case 0: // Plain old ASCII
+					content = strutil::viewFromChars(buffer, tsize);
+					break;
+				case 1: // UTF-16 with byte order mark
 				{
-					if (bomle)
-						wchars[i] = (wchar_t)memory::readL16((const uint8_t*)buffer, bom + 2 * i);
-					else
-						wchars[i] = (wchar_t)memory::readB16((const uint8_t*)buffer, bom + 2 * i);
+					size_t i = 1;
+					while (tsize > 3 && i < tsize - 3)
+					{
+						bom = i + 1;
+						// Looks like stuffing garbage before the actual content is popular
+						if (mc[s + step + i] == 0xFF && mc[s + step + i + 1] == 0xFE && mc[s + step + i + 2] != 0)
+						{
+							bomle = true;
+							break;
+						}
+						if (mc[s + step + i] == 0xFE && mc[s + step + i + 1] == 0xFF && mc[s + step + i + 3] != 0)
+						{
+							bomle = false;
+							break;
+						}
+						++i;
+					}
 				}
-				content = wxString(wchars, u16c).utf8_string();
-				delete[] wchars;
-			}
-			break;
-			case 3: // UTF-8
-				content = strutil::viewFromChars(buffer, tsize);
+					// Fall through
+				case 2: // UTF-16 without byte order mark
+				{
+					// You're right, wxWidgets. Code like this is so much
+					// better than having something like wxString::FromUTF16()
+					size_t u16c   = tsize > bom ? (tsize - bom) / 2 : 0;
+					auto   wchars = new wchar_t[u16c];
+					for (size_t i = 0; i < u16c; ++i)
+					{
+						if (bomle)
+							wchars[i] = (wchar_t)memory::readL16((const uint8_t*)buffer, bom + 2 * i);
+						else
+							wchars[i] = (wchar_t)memory::readB16((const uint8_t*)buffer, bom + 2 * i);
+					}
+					content = wxString(wchars, u16c).utf8_string();
+					delete[] wchars;
+				}
 				break;
+				case 3: // UTF-8
+					content = strutil::viewFromChars(buffer, tsize);
+					break;
+				}
 			}
 			delete[] buffer;
 
@@ -615,7 +623,7 @@ string parseID3v2Tag(MemChunk& mc, size_t start)
 	return ret;
 }
 
-string parseVorbisComment(MemChunk& mc, size_t start)
+string parseVorbisComment(const MemChunk& mc, size_t start)
 {
 	string ret;
 	auto   data = (const char*)mc.data();
@@ -647,7 +655,7 @@ string parseVorbisComment(MemChunk& mc, size_t start)
 	return ret;
 }
 
-string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChunk* cue, bool bigendian = false)
+string parseIFFChunks(const MemChunk& mc, size_t s, size_t samplerate, const WavChunk* cue, bool bigendian = false)
 {
 	const WavChunk* temp  = nullptr;
 	auto            data  = (const char*)mc.data();
@@ -881,7 +889,9 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChunk*
 				}
 				// Only accept CR, LF, tabs, and printable characters
 				else if (
-					(udata[offset + i] < 0x20 && udata[offset + i] != 9 && udata[offset + i] != 10
+					(udata[offset + i] < 0x20
+					 && udata[offset + i] != 9
+					 && udata[offset + i] != 10
 					 && udata[offset + i] != 13)
 					|| udata[offset + i] > 0x7E)
 				{
@@ -918,14 +928,21 @@ string parseIFFChunks(MemChunk& mc, size_t s, size_t samplerate, const WavChunk*
 //
 // -----------------------------------------------------------------------------
 
-string audio::getID3Tag(MemChunk& mc)
+string audio::getID3Tag(const MemChunk& mc)
 {
 	// We actually identify RIFF-WAVE files as MP3 if they are encoded with
 	// the MP3 codec, but that means the metadata format is different, so
 	// call the RIFF-WAVE metadata function instead. We might end up finding
 	// an ID3 tag anyway, provided it's nicely embedded in an "id3 " chunk.
-	if (mc.size() > 64 && mc[0] == 'R' && mc[1] == 'I' && mc[2] == 'F' && mc[3] == 'F' && mc[8] == 'W' && mc[9] == 'A'
-		&& mc[10] == 'V' && mc[11] == 'E')
+	if (mc.size() > 64
+		&& mc[0] == 'R'
+		&& mc[1] == 'I'
+		&& mc[2] == 'F'
+		&& mc[3] == 'F'
+		&& mc[8] == 'W'
+		&& mc[9] == 'A'
+		&& mc[10] == 'V'
+		&& mc[11] == 'E')
 		return getWavInfo(mc);
 
 	string ret;
@@ -944,9 +961,17 @@ string audio::getID3Tag(MemChunk& mc)
 	{
 		// Check for ID3 header (ID3v2). Version and revision numbers cannot be FF.
 		// Only the four upper flags are valid.
-		while (mc.size() > s + 14 && mc[s + 0] == 'I' && mc[s + 1] == 'D' && mc[s + 2] == '3' && mc[s + 3] != 0xFF
-			   && mc[s + 4] != 0xFF && ((mc[s + 5] & 0x0F) == 0) && mc[s + 6] < 0x80 && mc[s + 7] < 0x80
-			   && mc[s + 8] < 0x80 && mc[s + 9] < 0x80)
+		while (mc.size() > s + 14
+			   && mc[s + 0] == 'I'
+			   && mc[s + 1] == 'D'
+			   && mc[s + 2] == '3'
+			   && mc[s + 3] != 0xFF
+			   && mc[s + 4] != 0xFF
+			   && ((mc[s + 5] & 0x0F) == 0)
+			   && mc[s + 6] < 0x80
+			   && mc[s + 7] < 0x80
+			   && mc[s + 8] < 0x80
+			   && mc[s + 9] < 0x80)
 		{
 			ret += parseID3v2Tag(mc, s);
 
@@ -984,7 +1009,7 @@ string audio::getID3Tag(MemChunk& mc)
 	return ret;
 }
 
-string audio::getOggComments(MemChunk& mc)
+string audio::getOggComments(const MemChunk& mc)
 {
 	OggPageHeader ogg;
 	VorbisHeader  vorb;
@@ -1011,8 +1036,13 @@ string audio::getOggComments(MemChunk& mc)
 
 				// Look if we have a vorbis comment header in that segment
 				mc.read(&vorb, 7, datastart);
-				if (vorb.packettype == 3 && vorb.tag[0] == 'v' && vorb.tag[1] == 'o' && vorb.tag[2] == 'r'
-					&& vorb.tag[3] == 'b' && vorb.tag[4] == 'i' && vorb.tag[5] == 's')
+				if (vorb.packettype == 3
+					&& vorb.tag[0] == 'v'
+					&& vorb.tag[1] == 'o'
+					&& vorb.tag[2] == 'r'
+					&& vorb.tag[3] == 'b'
+					&& vorb.tag[4] == 'i'
+					&& vorb.tag[5] == 's')
 				{
 					ret += parseVorbisComment(mc, datastart + 7);
 
@@ -1030,7 +1060,7 @@ string audio::getOggComments(MemChunk& mc)
 	return ret;
 }
 
-string audio::getFlacComments(MemChunk& mc)
+string audio::getFlacComments(const MemChunk& mc)
 {
 	string ret;
 	// FLAC files begin with identifier "fLaC"; skip them
@@ -1055,7 +1085,7 @@ string audio::getFlacComments(MemChunk& mc)
 	return ret;
 }
 
-string audio::getITComments(MemChunk& mc)
+string audio::getITComments(const MemChunk& mc)
 {
 	auto   data = (const char*)mc.data();
 	auto   head = (const ITHeader*)data;
@@ -1084,7 +1114,11 @@ string audio::getITComments(MemChunk& mc)
 	for (size_t i = 0; i < wxUINT16_SWAP_ON_BE(head->insnum); ++i)
 	{
 		size_t ofs = memory::readL32((const uint8_t*)data, (offset + (i << 2)));
-		if (ofs > offset && ofs + 60 < mc.size() && data[ofs] == 'I' && data[ofs + 1] == 'M' && data[ofs + 2] == 'P'
+		if (ofs > offset
+			&& ofs + 60 < mc.size()
+			&& data[ofs] == 'I'
+			&& data[ofs + 1] == 'M'
+			&& data[ofs + 2] == 'P'
 			&& data[ofs + 3] == 'I')
 		{
 			string instrument = strutil::trim(strutil::viewFromChars(data + ofs + 4, 12));
@@ -1108,7 +1142,11 @@ string audio::getITComments(MemChunk& mc)
 	{
 		size_t pos = offset + (i << 2);
 		size_t ofs = mc.readL32(pos);
-		if (ofs > offset && ofs + 60 < mc.size() && data[ofs] == 'I' && data[ofs + 1] == 'M' && data[ofs + 2] == 'P'
+		if (ofs > offset
+			&& ofs + 60 < mc.size()
+			&& data[ofs] == 'I'
+			&& data[ofs + 1] == 'M'
+			&& data[ofs + 2] == 'P'
 			&& data[ofs + 3] == 'S')
 		{
 			string sample  = strutil::trim(strutil::viewFromChars(data + ofs + 4, 12));
@@ -1127,7 +1165,7 @@ string audio::getITComments(MemChunk& mc)
 	return ret;
 }
 
-string audio::getModComments(MemChunk& mc)
+string audio::getModComments(const MemChunk& mc)
 {
 	auto   data = (const char*)mc.data();
 	size_t s    = 20;
@@ -1152,7 +1190,7 @@ string audio::getModComments(MemChunk& mc)
 	return ret;
 }
 
-string audio::getS3MComments(MemChunk& mc)
+string audio::getS3MComments(const MemChunk& mc)
 {
 	auto   data = (const char*)mc.data();
 	auto   head = (const S3MHeader*)data;
@@ -1185,7 +1223,7 @@ string audio::getS3MComments(MemChunk& mc)
 	return ret;
 }
 
-string audio::getXMComments(MemChunk& mc)
+string audio::getXMComments(const MemChunk& mc)
 {
 	auto   data = (const char*)mc.data();
 	auto   head = (const XMHeader*)data;
@@ -1259,7 +1297,7 @@ string audio::getXMComments(MemChunk& mc)
 	return ret;
 }
 
-string audio::getSunInfo(MemChunk& mc)
+string audio::getSunInfo(const MemChunk& mc)
 {
 	size_t datasize   = mc.readB32(8);
 	size_t codec      = mc.readB32(12);
@@ -1269,13 +1307,13 @@ string audio::getSunInfo(MemChunk& mc)
 	string format = "Format: ";
 	switch (codec)
 	{
-	case 1: format += "\xCE\xBC-Law"; break;
+	case 1:  format += "\xCE\xBC-Law"; break;
 	case 2:
 	case 3:
 	case 4:
-	case 5: format += "PCM (signed)"; break;
+	case 5:  format += "PCM (signed)"; break;
 	case 6:
-	case 7: format += "PCM (float)"; break;
+	case 7:  format += "PCM (float)"; break;
 	case 27: format += "a-Law"; break;
 	default: format += fmt::format("Unknown ({})", codec); break;
 	}
@@ -1296,7 +1334,7 @@ string audio::getSunInfo(MemChunk& mc)
 	return ret;
 }
 
-string audio::getVocInfo(MemChunk& mc)
+string audio::getVocInfo(const MemChunk& mc)
 {
 	int         codec      = -1;
 	int         blockcount = 0;
@@ -1375,15 +1413,15 @@ string audio::getVocInfo(MemChunk& mc)
 	string format = "Format: ";
 	switch (codec)
 	{
-	case 0: format += "PCM (unsigned)"; break;
-	case 1: format += "4-to-8 ADPCM"; break;
-	case 2: format += "3-to-8 ADPCM"; break;
-	case 3: format += "2-to-8 ADPCM"; break;
-	case 4: format += "PCM (signed)"; break;
-	case 6: format += "a-Law"; break;
-	case 7: format += "\xCE\xBC-Law"; break;
+	case 0:     format += "PCM (unsigned)"; break;
+	case 1:     format += "4-to-8 ADPCM"; break;
+	case 2:     format += "3-to-8 ADPCM"; break;
+	case 3:     format += "2-to-8 ADPCM"; break;
+	case 4:     format += "PCM (signed)"; break;
+	case 6:     format += "a-Law"; break;
+	case 7:     format += "\xCE\xBC-Law"; break;
 	case 0x200: format += "4to-16 ADPCM"; break;
-	default: format += fmt::format("Unknown ({})", codec); break;
+	default:    format += fmt::format("Unknown ({})", codec); break;
 	}
 	string ret = "Mono";
 	if (fmtchunk.channels == 2)
@@ -1397,7 +1435,7 @@ string audio::getVocInfo(MemChunk& mc)
 	return ret;
 }
 
-string audio::getWavInfo(MemChunk& mc)
+string audio::getWavInfo(const MemChunk& mc)
 {
 	auto               data  = (const char*)mc.data();
 	auto               udata = (const uint8_t*)data;
@@ -1456,11 +1494,11 @@ string audio::getWavInfo(MemChunk& mc)
 	}
 	switch (formnum)
 	{
-	case 1: format += "PCM"; break;
-	case 2: format += "Microsoft ADPCM"; break;
-	case 3: format += "IEEE754"; break;
-	case 6: format += "ITU G.711 a-Law"; break;
-	case 7: format += "ITU G.711 \xCE\xBC-Law"; break;
+	case 1:  format += "PCM"; break;
+	case 2:  format += "Microsoft ADPCM"; break;
+	case 3:  format += "IEEE754"; break;
+	case 6:  format += "ITU G.711 a-Law"; break;
+	case 7:  format += "ITU G.711 \xCE\xBC-Law"; break;
 	case 17: format += "IMA ADPCM"; break;
 	case 20: format += "ITU G.723 ADPCM"; break;
 	case 49: format += "GSM 6.10"; break;
@@ -1500,7 +1538,7 @@ string audio::getWavInfo(MemChunk& mc)
 			size_t mask = 1 << i;
 			if (channelmask & mask)
 			{
-				channelstr += fmt::format("{}", speaker_pos[i]);
+				channelstr += fmt::format("{}", SPEAKER_POS[i]);
 				channelmask &= ~mask;
 				if (channelmask && i < 17)
 					channelstr += ", ";
@@ -1514,7 +1552,7 @@ string audio::getWavInfo(MemChunk& mc)
 	return ret;
 }
 
-string audio::getRmidInfo(MemChunk& mc)
+string audio::getRmidInfo(const MemChunk& mc)
 {
 	auto            data  = (const char*)mc.data();
 	auto            udata = (const uint8_t*)data;
@@ -1555,7 +1593,7 @@ string audio::getRmidInfo(MemChunk& mc)
 	return ret;
 }
 
-string audio::getAiffInfo(MemChunk& mc)
+string audio::getAiffInfo(const MemChunk& mc)
 {
 	auto            data  = (const char*)mc.data();
 	auto            udata = (const uint8_t*)data;
@@ -1644,7 +1682,7 @@ string audio::getAiffInfo(MemChunk& mc)
 // returns the index at which the true audio data begins.
 // Returns 0 if there is no tag before audio data.
 // -----------------------------------------------------------------------------
-size_t audio::checkForTags(MemChunk& mc)
+size_t audio::checkForTags(const MemChunk& mc)
 {
 	// Check for empty wasted space at the beginning, since it's apparently
 	// quite popular in MP3s to start with a useless blank frame.
@@ -1661,9 +1699,17 @@ size_t audio::checkForTags(MemChunk& mc)
 	{
 		// Check for ID3 header (ID3v2). Version and revision numbers cannot be FF.
 		// Only the four upper flags are valid.
-		if (mc.size() > s + 14 && mc[s + 0] == 'I' && mc[s + 1] == 'D' && mc[s + 2] == '3' && mc[s + 3] != 0xFF
-			&& mc[s + 4] != 0xFF && ((mc[s + 5] & 0x0F) == 0) && mc[s + 6] < 0x80 && mc[s + 7] < 0x80
-			&& mc[s + 8] < 0x80 && mc[s + 9] < 0x80)
+		if (mc.size() > s + 14
+			&& mc[s + 0] == 'I'
+			&& mc[s + 1] == 'D'
+			&& mc[s + 2] == '3'
+			&& mc[s + 3] != 0xFF
+			&& mc[s + 4] != 0xFF
+			&& ((mc[s + 5] & 0x0F) == 0)
+			&& mc[s + 6] < 0x80
+			&& mc[s + 7] < 0x80
+			&& mc[s + 8] < 0x80
+			&& mc[s + 9] < 0x80)
 		{
 			// Compute size. It is stored as a "synchsafe integer", that is to say,
 			// a big-endian value where the highest bit of each byte is not used.

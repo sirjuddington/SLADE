@@ -35,6 +35,9 @@
 #include "Main.h"
 #include "ArchiveEntry.h"
 #include "Archive.h"
+#include "ArchiveDir.h"
+#include "ArchiveFormatHandler.h"
+#include "EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
@@ -76,30 +79,30 @@ unsigned maxEntrySizeBytes()
 // -----------------------------------------------------------------------------
 // ArchiveEntry class constructor
 // -----------------------------------------------------------------------------
-ArchiveEntry::ArchiveEntry(string_view name, uint32_t size) :
+ArchiveEntry::ArchiveEntry(string_view name, u32 size, const void* data) :
 	name_{ name },
 	upper_name_{ name },
-	size_{ size },
+	data_{ size },
 	type_{ EntryType::unknownType() }
 {
 	strutil::upperIP(upper_name_);
+
+	if (data)
+		this->data_.importMem(static_cast<const u8*>(data), size);
 }
 
 // -----------------------------------------------------------------------------
 // ArchiveEntry class copy constructor
 // -----------------------------------------------------------------------------
-ArchiveEntry::ArchiveEntry(ArchiveEntry& copy) :
+ArchiveEntry::ArchiveEntry(const ArchiveEntry& copy) :
 	name_{ copy.name_ },
 	upper_name_{ copy.upper_name_ },
-	size_{ copy.size_ },
+	data_{ copy.data_ },
 	type_{ copy.type_ },
 	ex_props_{ copy.ex_props_ },
 	encrypted_{ copy.encrypted_ },
 	reliability_{ copy.reliability_ }
 {
-	// Copy data
-	data_.importMem(copy.rawData(true), copy.size());
-
 	// Clear properties that shouldn't be copied
 	ex_props_.remove("ZipIndex");
 	ex_props_.remove("Offset");
@@ -119,18 +122,6 @@ string_view ArchiveEntry::nameNoExt() const
 }
 
 // -----------------------------------------------------------------------------
-// Returns the entry name in uppercase with no file extension
-// -----------------------------------------------------------------------------
-string_view ArchiveEntry::upperNameNoExt() const
-{
-	auto ext_pos = upper_name_.find('.');
-	if (ext_pos != string::npos)
-		return { upper_name_.data(), ext_pos };
-
-	return upper_name_;
-}
-
-// -----------------------------------------------------------------------------
 // Returns the entry file extension
 // -----------------------------------------------------------------------------
 string_view ArchiveEntry::ext() const
@@ -140,6 +131,18 @@ string_view ArchiveEntry::ext() const
 		return { name_.data() + ext_pos };
 
 	return {};
+}
+
+// -----------------------------------------------------------------------------
+// Returns the entry name in uppercase with no file extension
+// -----------------------------------------------------------------------------
+string_view ArchiveEntry::upperNameNoExt() const
+{
+	auto ext_pos = upper_name_.find('.');
+	if (ext_pos != string::npos)
+		return { upper_name_.data(), ext_pos };
+
+	return upper_name_;
 }
 
 // -----------------------------------------------------------------------------
@@ -189,35 +192,6 @@ string ArchiveEntry::path(bool include_name) const
 }
 
 // -----------------------------------------------------------------------------
-// Returns a pointer to the entry data. If no entry data exists and [allow_load]
-// is true, entry data will be loaded from its parent archive (if it exists)
-// -----------------------------------------------------------------------------
-const uint8_t* ArchiveEntry::rawData(bool allow_load)
-{
-	// Return entry data
-	return data(allow_load).data();
-}
-
-// -----------------------------------------------------------------------------
-// Returns the entry data MemChunk. If no entry data exists and [allow_load]
-// is true, entry data will be loaded from its parent archive (if it exists)
-// -----------------------------------------------------------------------------
-MemChunk& ArchiveEntry::data(bool allow_load)
-{
-	// Get parent archive
-	auto parent_archive = parent();
-
-	// Load the data if needed (and possible)
-	if (allow_load && !isLoaded() && parent_archive && size_ > 0 && size_ <= maxEntrySizeBytes())
-	{
-		data_loaded_ = parent_archive->loadEntryData(this);
-		setState(State::Unmodified);
-	}
-
-	return data_;
-}
-
-// -----------------------------------------------------------------------------
 // Returns the 'next' entry from this (ie. index + 1) in its parent ArchiveDir,
 // or nullptr if it is the last entry or has no parent dir
 // -----------------------------------------------------------------------------
@@ -239,7 +213,7 @@ ArchiveEntry* ArchiveEntry::prevEntry()
 // Returns the parent ArchiveDir's shared pointer to this entry, or
 // nullptr if this entry has no parent
 // -----------------------------------------------------------------------------
-shared_ptr<ArchiveEntry> ArchiveEntry::getShared()
+shared_ptr<ArchiveEntry> ArchiveEntry::getShared() const
 {
 	return parent_.expired() ? nullptr : parent_.lock()->sharedEntry(this);
 }
@@ -266,40 +240,19 @@ void ArchiveEntry::setName(string_view name)
 // Sets the entry's state. Won't change state if the change would be redundant
 // (eg new->modified, unmodified->unmodified)
 // -----------------------------------------------------------------------------
-void ArchiveEntry::setState(State state, bool silent)
+void ArchiveEntry::setState(EntryState state, bool silent)
 {
-	if (state_locked_ || (state == State::Unmodified && state_ == State::Unmodified))
+	if (state_locked_ || (state == EntryState::Unmodified && state_ == EntryState::Unmodified))
 		return;
 
-	if (state == State::Unmodified)
-		state_ = State::Unmodified;
+	if (state == EntryState::Unmodified)
+		state_ = EntryState::Unmodified;
 	else if (state > state_)
 		state_ = state;
 
 	// Notify parent archive this entry has been modified
 	if (!silent)
 		stateChanged();
-}
-
-// -----------------------------------------------------------------------------
-// 'Unloads' entry data from memory.
-// If [force] is true, data will be unloaded even if the entry is modified
-// -----------------------------------------------------------------------------
-void ArchiveEntry::unloadData(bool force)
-{
-	// Check there is any data to be 'unloaded'
-	if (!data_.hasData() || !data_loaded_)
-		return;
-
-	// Only unload if the data wasn't modified
-	if (!force && state_ != State::Unmodified)
-		return;
-
-	// Delete any data
-	data_.clear();
-
-	// Update variables etc
-	setLoaded(false);
 }
 
 // -----------------------------------------------------------------------------
@@ -329,13 +282,13 @@ void ArchiveEntry::unlock()
 // -----------------------------------------------------------------------------
 // Sanitizes the entry name so that it is valid for archive format [format]
 // -----------------------------------------------------------------------------
-void ArchiveEntry::formatName(const ArchiveFormat& format)
+void ArchiveEntry::formatName(const ArchiveFormatInfo& format)
 {
 	// Perform character substitution if needed
 	name_ = misc::fileNameToLumpName(name_, true);
 
 	// Max length
-	if (format.max_name_length > 0 && static_cast<int>(name_.size()) > format.max_name_length)
+	if (format.max_name_length > 0 && std::cmp_greater(name_.size(), format.max_name_length))
 		strutil::truncateIP(name_, format.max_name_length);
 
 	// Uppercase
@@ -369,7 +322,7 @@ bool ArchiveEntry::rename(string_view new_name)
 
 	// Update attributes
 	setName(new_name);
-	setState(State::Modified);
+	setState(EntryState::Modified);
 
 	return true;
 }
@@ -378,7 +331,7 @@ bool ArchiveEntry::rename(string_view new_name)
 // Resizes the entry to [new_size]. If [preserve_data] is true, any existing
 // data is preserved
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
+bool ArchiveEntry::resize(u32 new_size, bool preserve_data)
 {
 	// Check if locked
 	if (locked_)
@@ -395,7 +348,8 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 	}
 
 	// Update attributes
-	setState(State::Modified);
+	setState(EntryState::Modified);
+	dataChanged();
 
 	return data_.reSize(new_size, preserve_data);
 }
@@ -403,21 +357,22 @@ bool ArchiveEntry::resize(uint32_t new_size, bool preserve_data)
 // -----------------------------------------------------------------------------
 // Clears entry data and resets its size to zero
 // -----------------------------------------------------------------------------
-void ArchiveEntry::clearData()
+bool ArchiveEntry::clearData(bool silent)
 {
 	// Check if locked
 	if (locked_)
 	{
 		global::error = "Entry is locked";
-		return;
+		return false;
 	}
 
 	// Delete the data
 	data_.clear();
 
-	// Reset attributes
-	size_        = 0;
-	data_loaded_ = false;
+	if (!silent)
+		dataChanged();
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -425,7 +380,7 @@ void ArchiveEntry::clearData()
 // currently existing data.
 // Returns false if data pointer is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importMem(const void* data, uint32_t size)
+bool ArchiveEntry::importMem(const void* data, u32 size)
 {
 	// Check parameters
 	if (!data)
@@ -446,32 +401,48 @@ bool ArchiveEntry::importMem(const void* data, uint32_t size)
 	}
 
 	// Clear any current data
-	clearData();
+	clearData(true);
 
 	// Copy data into the entry
-	data_.importMem((const uint8_t*)data, size);
+	data_.importMem(static_cast<const uint8_t*>(data), size);
 
 	// Update attributes
-	size_ = size;
-	setLoaded();
 	setType(EntryType::unknownType());
-	setState(State::Modified);
+	setState(EntryState::Modified);
+	dataChanged();
 
 	return true;
 }
 
 // -----------------------------------------------------------------------------
 // Imports data from a MemChunk object into the entry, resizing it and clearing
-// any currently existing data.
+// any currently existing data. If [size] is 0 all data from [offset] to the end
+// of the MemChunk will be read.
 // Returns false if the MemChunk has no data, or true otherwise.
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importMemChunk(MemChunk& mc)
+bool ArchiveEntry::importMemChunk(const MemChunk& mc, u32 offset, u32 size)
 {
 	// Check that the given MemChunk has data
 	if (mc.hasData())
 	{
+		// If no size given read to end of MemChunk
+		if (size == 0)
+			size = mc.size() - offset;
+
+		// Check valid offset given
+		if (offset >= mc.size())
+		{
+			log::error(
+				"ArchiveEntry::importMemChunk: Invalid offset - {} is larger than MemChunk size {}", offset, size);
+			return false;
+		}
+
+		// Ensure offset+size is valid
+		if (offset + size > mc.size())
+			size = mc.size() - offset;
+
 		// Copy the data from the MemChunk into the entry
-		return importMem(mc.data(), mc.size());
+		return importMem(mc.data() + offset, size);
 	}
 
 	return false;
@@ -484,7 +455,7 @@ bool ArchiveEntry::importMemChunk(MemChunk& mc)
 // Returns false if the file does not exist or the given offset/size are out of
 // bounds, otherwise returns true.
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t size)
+bool ArchiveEntry::importFile(string_view filename, u32 offset, u32 size)
 {
 	// Check if locked
 	if (locked_)
@@ -532,7 +503,7 @@ bool ArchiveEntry::importFile(string_view filename, uint32_t offset, uint32_t si
 // -----------------------------------------------------------------------------
 // Imports [len] data from [file]
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
+bool ArchiveEntry::importFileStream(wxFile& file, u32 len)
 {
 	// Check if locked
 	if (locked_)
@@ -552,10 +523,9 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 	if (data_.importFileStreamWx(file, len))
 	{
 		// Update attributes
-		size_ = data_.size();
-		setLoaded();
 		setType(EntryType::unknownType());
-		setState(State::Modified);
+		setState(EntryState::Modified);
+		dataChanged();
 
 		return true;
 	}
@@ -568,7 +538,7 @@ bool ArchiveEntry::importFileStream(wxFile& file, uint32_t len)
 // any currently existing data.
 // Returns false if the entry is null, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::importEntry(ArchiveEntry* entry)
+bool ArchiveEntry::importEntry(const ArchiveEntry* entry)
 {
 	// Check if locked
 	if (locked_)
@@ -591,7 +561,7 @@ bool ArchiveEntry::importEntry(ArchiveEntry* entry)
 // Exports entry data to a file.
 // Returns false if file cannot be written, true otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::exportFile(string_view filename)
+bool ArchiveEntry::exportFile(string_view filename) const
 {
 	// Attempt to open file
 	wxFile file(wxutil::strFromView(filename), wxFile::write);
@@ -604,8 +574,7 @@ bool ArchiveEntry::exportFile(string_view filename)
 	}
 
 	// Write entry data to the file, if any
-	auto data = rawData();
-	if (data)
+	if (auto data = rawData())
 		file.Write(data, size());
 
 	return true;
@@ -614,7 +583,7 @@ bool ArchiveEntry::exportFile(string_view filename)
 // -----------------------------------------------------------------------------
 // Writes data to the entry MemChunk
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::write(const void* data, uint32_t size)
+bool ArchiveEntry::write(const void* data, u32 size)
 {
 	// Check if locked
 	if (locked_)
@@ -623,16 +592,12 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 		return false;
 	}
 
-	// Load data if it isn't already
-	if (isLoaded())
-		rawData(true);
-
 	// Perform the write
 	if (data_.write(data, size))
 	{
 		// Update attributes
-		size_ = data_.size();
-		setState(State::Modified);
+		setState(EntryState::Modified);
+		dataChanged();
 
 		return true;
 	}
@@ -643,12 +608,8 @@ bool ArchiveEntry::write(const void* data, uint32_t size)
 // -----------------------------------------------------------------------------
 // Reads data from the entry MemChunk
 // -----------------------------------------------------------------------------
-bool ArchiveEntry::read(void* buf, uint32_t size)
+bool ArchiveEntry::read(void* buf, u32 size) const
 {
-	// Load data if it isn't already
-	if (isLoaded())
-		rawData(true);
-
 	return data_.read(buf, size);
 }
 
@@ -661,15 +622,29 @@ string ArchiveEntry::sizeString() const
 }
 
 // -----------------------------------------------------------------------------
-// ArchiveEntry::stateChanged
-//
+// Returns the entry's type as a string
+// -----------------------------------------------------------------------------
+string ArchiveEntry::typeString() const
+{
+	return type_ ? type_->name() : "Unknown";
+}
+
+// -----------------------------------------------------------------------------
 // Notifies the entry's parent archive that the entry has been modified
 // -----------------------------------------------------------------------------
 void ArchiveEntry::stateChanged()
 {
-	auto parent_archive = parent();
-	if (parent_archive)
+	if (auto parent_archive = parent())
 		parent_archive->entryStateChanged(this);
+}
+
+// -----------------------------------------------------------------------------
+// Notifies the entry's parent archive that the entry's data has changed
+// -----------------------------------------------------------------------------
+void ArchiveEntry::dataChanged()
+{
+	if (auto parent_archive = parent())
+		parent_archive->entryDataChanged(this);
 }
 
 // -----------------------------------------------------------------------------
@@ -678,7 +653,7 @@ void ArchiveEntry::stateChanged()
 void ArchiveEntry::setExtensionByType()
 {
 	// Ignore if the parent archive doesn't support entry name extensions
-	if (parent() && !parent()->formatDesc().names_extensions)
+	if (parent() && !parent()->formatInfo().names_extensions)
 		return;
 
 	// Convert name to wxFileName for processing
@@ -697,6 +672,14 @@ void ArchiveEntry::setExtensionByType()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the detection reliability of the entry's type
+// -----------------------------------------------------------------------------
+int ArchiveEntry::typeReliability() const
+{
+	return type_ ? type()->reliability() * reliability_ / 255 : 0;
+}
+
+// -----------------------------------------------------------------------------
 // Returns true if the entry is in the [ns] namespace within its parent, false
 // otherwise
 // -----------------------------------------------------------------------------
@@ -707,7 +690,7 @@ bool ArchiveEntry::isInNamespace(string_view ns)
 		return false;
 
 	// Some special cases first
-	if (ns == "graphics" && parent()->formatId() == "wad")
+	if (ns == "graphics" && parent()->format() == ArchiveFormat::Wad)
 		ns = "global"; // Graphics namespace doesn't exist in wad files, use global instead
 
 	return parent()->detectNamespace(this) == ns;
@@ -730,4 +713,21 @@ ArchiveEntry* ArchiveEntry::relativeEntry(string_view at_path, bool allow_absolu
 		include = parent_.lock()->archive()->entryAtPath(at_path);
 
 	return include;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the entry's type is the special 'folder' type
+// -----------------------------------------------------------------------------
+bool ArchiveEntry::isFolderType() const
+{
+	return type_ == EntryType::folderType();
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the entry's type is an archive type (eg. wad)
+// -----------------------------------------------------------------------------
+bool ArchiveEntry::isArchive() const
+{
+	// TODO: Should probably add an is_archive flag to EntryType but this will do for now
+	return type()->category() == "Archives";
 }

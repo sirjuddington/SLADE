@@ -9,7 +9,7 @@ class Mp3Music : public sf::SoundStream
 {
 public:
 	Mp3Music();
-	~Mp3Music();
+	~Mp3Music() override;
 
 	bool     openFromFile(const std::string& filename);
 	bool     loadFromMemory(void* data, size_t size_in_bytes);

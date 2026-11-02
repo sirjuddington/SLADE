@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "MapEditor/UI/GenLineSpecialPanel.h"
 #include "Game/GenLineSpecial.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -49,6 +50,8 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// --- Setup layout ---
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
@@ -58,10 +61,10 @@ GenLineSpecialPanel::GenLineSpecialPanel(wxWindow* parent) : wxPanel(parent, -1)
 	choice_type_->Set(
 		wxutil::arrayStringStd({ "Floor", "Ceiling", "Door", "Locked Door", "Lift", "Stairs", "Crusher" }));
 	choice_type_->Bind(wxEVT_CHOICE, &GenLineSpecialPanel::onChoiceTypeChanged, this);
-	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type_), 0, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(wxutil::createLabelHBox(this, "Type:", choice_type_), lh.sfWithBorder(0, wxBOTTOM).Expand());
 
-	gb_sizer_ = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gb_sizer_, 1, wxEXPAND);
+	gb_sizer_ = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer->Add(gb_sizer_, wxSizerFlags(1).Expand());
 
 	// Trigger
 	label_props_[0]  = new wxStaticText(this, -1, wxS("Trigger:"), { -1, -1 }, { -1, -1 }, wxALIGN_CENTER_VERTICAL);
@@ -395,6 +398,8 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 		// Change
 		if (prop == 5)
 		{
+			auto selection = choice_props_[2]->GetSelection();
+
 			// 0 (No Change), prop 2 is monster
 			if (value == 0)
 			{
@@ -402,7 +407,7 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 				choice_props_[2]->Clear();
 				choice_props_[2]->AppendString(wxS("No"));
 				choice_props_[2]->AppendString(wxS("Yes"));
-				choice_props_[2]->Select(0);
+				choice_props_[2]->Select(selection);
 			}
 
 			// > 0, prop 2 is model
@@ -412,7 +417,7 @@ void GenLineSpecialPanel::setProp(int prop, int value)
 				choice_props_[2]->Clear();
 				choice_props_[2]->AppendString(wxS("Trigger: Front Side of Trigger Line"));
 				choice_props_[2]->AppendString(wxS("Numeric: Sector at Target Height"));
-				choice_props_[2]->Select(0);
+				choice_props_[2]->Select(selection);
 			}
 
 			Layout();
@@ -469,6 +474,8 @@ int GenLineSpecialPanel::special() const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the special type dropdown is changed

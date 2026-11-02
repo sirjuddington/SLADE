@@ -31,9 +31,12 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "UI/WxUtils.h"
-#include "General/UI.h"
+#include "App.h"
 #include "Graphics/Icons.h"
-#include "thirdparty/lunasvg/include/lunasvg.h"
+#include "Graphics/Palette/Palette.h"
+#include "UI/UI.h"
+#include "Utility/Colour.h"
+#include <algorithm>
 
 using namespace slade;
 
@@ -93,8 +96,7 @@ wxFont wxutil::monospaceFont(wxFont base)
 // -----------------------------------------------------------------------------
 wxImageList* wxutil::createSmallImageList()
 {
-	const auto icon_size = ui::scalePx(16);
-	return new wxImageList(icon_size, icon_size, false, 0);
+	return new wxImageList(16, 16, false, 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -102,11 +104,7 @@ wxImageList* wxutil::createSmallImageList()
 // -----------------------------------------------------------------------------
 int wxutil::addImageListIcon(wxImageList* list, int icon_type, string_view icon)
 {
-#if wxCHECK_VERSION(3, 1, 6)
 	return list->Add(icons::getIcon(static_cast<icons::Type>(icon_type), icon).GetBitmap(list->GetSize()));
-#else
-	return list->Add(icons::getIcon(static_cast<icons::Type>(icon_type), icon));
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -120,7 +118,7 @@ wxPanel* wxutil::createPadPanel(wxWindow* parent, wxWindow* control, int pad)
 	auto panel = new wxPanel(parent);
 	panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 	control->Reparent(panel);
-	panel->GetSizer()->Add(control, 1, wxEXPAND | wxALL, pad);
+	panel->GetSizer()->Add(control, 1, wxEXPAND | wxALL, parent->FromDIP(pad));
 
 	return panel;
 }
@@ -135,7 +133,7 @@ wxSpinCtrl* wxutil::createSpinCtrl(wxWindow* parent, int value, int min, int max
 		-1,
 		wxEmptyString,
 		wxDefaultPosition,
-		{ ui::px(ui::Size::SpinCtrlWidth), -1 },
+		parent->FromDIP(wxSize{ ui::sizePx(ui::Size::SpinCtrlWidth), -1 }),
 		wxSP_ARROW_KEYS,
 		min,
 		max,
@@ -149,7 +147,11 @@ wxSpinCtrl* wxutil::createSpinCtrl(wxWindow* parent, int value, int min, int max
 wxSizer* wxutil::createLabelHBox(wxWindow* parent, const string& label, wxWindow* widget)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(parent, -1, wxString::FromUTF8(label)), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(
+		new wxStaticText(parent, -1, wxString::FromUTF8(label)),
+		0,
+		wxALIGN_CENTER_VERTICAL | wxRIGHT,
+		parent->FromDIP(ui::pad()));
 	hbox->Add(widget, 1, wxEXPAND);
 	return hbox;
 }
@@ -157,7 +159,11 @@ wxSizer* wxutil::createLabelHBox(wxWindow* parent, const string& label, wxWindow
 wxSizer* wxutil::createLabelHBox(wxWindow* parent, const string& label, wxSizer* sizer)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	hbox->Add(new wxStaticText(parent, -1, wxString::FromUTF8(label)), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(
+		new wxStaticText(parent, -1, wxString::FromUTF8(label)),
+		0,
+		wxALIGN_CENTER_VERTICAL | wxRIGHT,
+		parent->FromDIP(ui::pad()));
 	hbox->Add(sizer, 1, wxEXPAND);
 	return hbox;
 }
@@ -166,10 +172,10 @@ wxSizer* wxutil::createLabelHBox(wxWindow* parent, const string& label, wxSizer*
 // Creates a simple vertical box sizer with a [label] on the top and [widget]
 // on the bottom
 // -----------------------------------------------------------------------------
-wxSizer* ::wxutil::createLabelVBox(wxWindow* parent, const string& label, wxWindow* widget)
+wxSizer* wxutil::createLabelVBox(wxWindow* parent, const string& label, wxWindow* widget)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(new wxStaticText(parent, -1, wxString::FromUTF8(label)), 0, wxBOTTOM, ui::px(ui::Size::PadMinimum));
+	vbox->Add(new wxStaticText(parent, -1, wxString::FromUTF8(label)), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
 	vbox->Add(widget, 1, wxEXPAND);
 	return vbox;
 }
@@ -177,7 +183,7 @@ wxSizer* ::wxutil::createLabelVBox(wxWindow* parent, const string& label, wxWind
 wxSizer* wxutil::createLabelVBox(wxWindow* parent, const string& label, wxSizer* sizer)
 {
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	vbox->Add(new wxStaticText(parent, -1, wxString::FromUTF8(label)), 0, wxBOTTOM, ui::px(ui::Size::PadMinimum));
+	vbox->Add(new wxStaticText(parent, -1, wxString::FromUTF8(label)), 0, wxBOTTOM, parent->FromDIP(ui::padSmall()));
 	vbox->Add(sizer, 1, wxEXPAND);
 	return vbox;
 }
@@ -194,10 +200,10 @@ wxSizer* wxutil::createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel)
 	hbox->AddStretchSpacer(1);
 
 #ifdef __WXMSW__
-	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad(btn_ok));
 	hbox->Add(btn_cancel, 0, wxEXPAND);
 #else
-	hbox->Add(btn_cancel, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_cancel, 0, wxEXPAND | wxRIGHT, ui::pad(btn_ok));
 	hbox->Add(btn_ok, 0, wxEXPAND);
 #endif
 
@@ -208,7 +214,7 @@ wxSizer* wxutil::createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel)
 // Shortcut function for createDialogButtonBox that creates ok/cancel buttons
 // with the given [text_ok] and [text_cancel]
 // -----------------------------------------------------------------------------
-wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const string& text_ok, const string& text_cancel)
+wxSizer* wxutil::createDialogButtonBox(wxWindow* parent, const string& text_ok, const string& text_cancel)
 {
 	auto* btn_ok = new wxButton(parent, wxID_OK, wxString::FromUTF8(text_ok));
 	btn_ok->SetDefault();
@@ -217,101 +223,38 @@ wxSizer* slade::wxutil::createDialogButtonBox(wxWindow* parent, const string& te
 }
 
 // -----------------------------------------------------------------------------
-// Returns a horizontal box sizer containing [widgets].
-// [widgets] can contain a combination of wxWindow and wxSizer objects
+// Creates a section separator (a label on the left and a line on the right)
+// with the given [text]
 // -----------------------------------------------------------------------------
-wxSizer* wxutil::layoutHorizontally(vector<wxObject*> widgets, int expand_col)
+wxSizer* wxutil::createSectionSeparator(wxWindow* parent, const string& text)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	hbox->Add(
+		new wxStaticText(parent, -1, wxString::FromUTF8(text)),
+		wxSizerFlags().CenterVertical().Border(wxRIGHT, ui::pad(parent)));
 
-	// Add widgets/sizers
-	for (auto a = 0u; a < widgets.size(); ++a)
+	wxWindow* separator = nullptr;
+	if (app::platform() == app::Windows && app::isDarkTheme())
 	{
-		const auto widget = widgets[a];
-
-		// Widget
-		if (widget->IsKindOf(&wxWindow::ms_classInfo))
-		{
-			hbox->Add(
-				dynamic_cast<wxWindow*>(widget),
-				expand_col == (int)a ? 1 : 0,
-				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
-				ui::pad());
-		}
-
-		// Sizer
-		else if (widget->IsKindOf(&wxSizer::ms_classInfo))
-		{
-			hbox->Add(
-				dynamic_cast<wxSizer*>(widget),
-				expand_col == (int)a ? 1 : 0,
-				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxLEFT,
-				ui::pad());
-		}
+		// Use a custom separator on windows dark mode as wxStaticLine is way
+		// too bright
+		auto* line = new wxPanel(parent);
+		line->SetMinSize(parent->FromDIP(wxSize{ -1, 1 }));
+		line->SetMaxSize(wxSize{ -1, parent->FromDIP(1) });
+		line->SetBackgroundColour(lightColour(systemPanelBGColour(), 5.0f));
+		separator = line;
 	}
+	else
+		separator = new wxStaticLine(parent);
 
+	hbox->Add(separator, wxSizerFlags(1).CenterVertical());
 	return hbox;
-}
-
-// -----------------------------------------------------------------------------
-// Same as above, however instead of returning a new sizer, it adds it to the
-// given [sizer] with [flags]
-// -----------------------------------------------------------------------------
-void wxutil::layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags, int expand_col)
-{
-	sizer->Add(layoutHorizontally(std::move(widgets), expand_col), flags);
-}
-
-// -----------------------------------------------------------------------------
-// Returns a vertical box sizer containing [widgets].
-// [widgets] can contain a combination of wxWindow and wxSizer objects
-// -----------------------------------------------------------------------------
-wxSizer* wxutil::layoutVertically(vector<wxObject*> widgets, int expand_row)
-{
-	auto vbox = new wxBoxSizer(wxVERTICAL);
-
-	// Add widgets/sizers
-	for (auto a = 0u; a < widgets.size(); ++a)
-	{
-		const auto widget = widgets[a];
-
-		// Widget
-		if (widget->IsKindOf(&wxWindow::ms_classInfo))
-		{
-			vbox->Add(
-				dynamic_cast<wxWindow*>(widget),
-				expand_row == (int)a ? 1 : 0,
-				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
-				ui::pad());
-		}
-
-		// Sizer
-		else if (widget->IsKindOf(&wxSizer::ms_classInfo))
-		{
-			vbox->Add(
-				dynamic_cast<wxSizer*>(widget),
-				expand_row == (int)a ? 1 : 0,
-				widget == widgets[0] ? wxEXPAND : wxEXPAND | wxTOP,
-				ui::pad());
-		}
-	}
-
-	return vbox;
-}
-
-// -----------------------------------------------------------------------------
-// Same as above, however instead of returning a new sizer, it adds it to the
-// given [sizer] with [flags]
-// -----------------------------------------------------------------------------
-void wxutil::layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags, int expand_row)
-{
-	sizer->Add(layoutVertically(std::move(widgets), expand_row), flags);
 }
 
 // -----------------------------------------------------------------------------
 // Returns a wxArrayString containing the (wx) strings in [vector]
 // -----------------------------------------------------------------------------
-wxArrayString wxutil::arrayString(vector<wxString> vector)
+wxArrayString wxutil::arrayString(const vector<wxString>& vector)
 {
 	return wxArrayString{ vector.size(), vector.data() };
 }
@@ -336,80 +279,61 @@ wxString wxutil::strFromView(string_view str)
 }
 
 // -----------------------------------------------------------------------------
-// Returns the size [x]x[y] as a wxSize, scaled by the DPI factor.
-// Will keep any -1 value
-// -----------------------------------------------------------------------------
-wxSize wxutil::scaledSize(int x, int y)
-{
-	return { x < 0 ? -1 : ui::scalePx(x), y < 0 ? -1 : ui::scalePx(y) };
-}
-
-// -----------------------------------------------------------------------------
-// Returns the position [x],[y] as a wxPoint, scaled by the DPI factor
-// -----------------------------------------------------------------------------
-wxPoint wxutil::scaledPoint(int x, int y)
-{
-	return { ui::scalePx(x), ui::scalePx(y) };
-}
-
-// -----------------------------------------------------------------------------
-// Returns the rect at [x],[y] of size [width]x[height] as a wxRect, scaled by
-// the DPI factor
-// -----------------------------------------------------------------------------
-wxRect wxutil::scaledRect(int x, int y, int width, int height)
-{
-	return { ui::scalePx(x), ui::scalePx(y), ui::scalePx(width), ui::scalePx(height) };
-}
-
-// -----------------------------------------------------------------------------
 // Sets the given [window]'s [icon]
 // -----------------------------------------------------------------------------
 void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
 {
-#if wxCHECK_VERSION(3, 1, 6)
 	auto wx_icon = icons::getIcon(icons::Any, icon).GetIconFor(window);
-#else
-	wxIcon wx_icon;
-	wx_icon.CopyFromBitmap(icons::getIcon(icons::Any, icon));
-#endif
-
 	window->SetIcon(wx_icon);
 }
 
 // -----------------------------------------------------------------------------
-// Creates a wxImage from the given [svg_text] data, sized to [width x height].
-// Returns an invalid (empty) wxImage if the SVG data was invalid
+// Returns the system background colour for panels
 // -----------------------------------------------------------------------------
-wxImage wxutil::createImageFromSVG(const string& svg_text, int width, int height)
+wxColour wxutil::systemPanelBGColour()
 {
-	// Load SVG
-	const auto svg = lunasvg::Document::loadFromData(svg_text);
-	if (!svg)
-		return {};
+	if (app::platform() == app::Windows && app::isDarkTheme())
+		return wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
+	else
+		return wxSystemSettings::GetColour(wxSYS_COLOUR_3DFACE);
+}
 
-	// Render SVG
-	const auto bmp = svg->renderToBitmap(width, height);
-	if (!bmp.valid())
-		return {};
+// -----------------------------------------------------------------------------
+// Returns a lightened version of the given [colour] by [percent]
+// -----------------------------------------------------------------------------
+wxColour wxutil::lightColour(const wxColour& colour, float percent)
+{
+	if (percent == 0)
+		return colour;
 
-	// Split image data to separate rgb + alpha channels
-	const auto bmp_data    = bmp.data();
-	const auto n_pixels    = width * height;
-	const auto rgb_data    = new uint8_t[n_pixels * 3]; // wxImage below will take ownership
-	const auto alpha_data  = new uint8_t[n_pixels];     // ^
-	auto       data_index  = 0;
-	auto       rgb_index   = 0;
-	auto       alpha_index = 0;
-	for (auto p = 0; p < n_pixels; ++p)
-	{
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		rgb_data[rgb_index++]     = bmp_data[data_index++];
-		alpha_data[alpha_index++] = bmp_data[data_index++];
-	}
+	// Convert to HSL
+	ColHSL hsl = colour::rgbToHsl(ColRGBA(colour));
 
-	// Create wxImage
-	return { width, height, rgb_data, alpha_data, false };
+	// Increase luminance
+	hsl.l += static_cast<float>((percent * 5.0) / 100.0);
+	hsl.l = std::min(hsl.l, 1.0);
+
+	ColRGBA rgb = hsl.asRGB();
+	return { rgb.r, rgb.g, rgb.b };
+}
+
+// -----------------------------------------------------------------------------
+// Returns a darkened version of the given [colour] by [percent]
+// -----------------------------------------------------------------------------
+wxColour wxutil::darkColour(const wxColour& colour, float percent)
+{
+	if (percent == 0)
+		return colour;
+
+	// Convert to HSL
+	ColHSL hsl = colour::rgbToHsl(ColRGBA(colour));
+
+	// Decrease luminance
+	hsl.l -= static_cast<float>((percent * 5.0) / 100.0);
+	hsl.l = std::max<double>(hsl.l, 0);
+
+	ColRGBA rgb = hsl.asRGB();
+	return { rgb.r, rgb.g, rgb.b };
 }
 
 // -----------------------------------------------------------------------------
@@ -448,4 +372,26 @@ wxPalette wxutil::paletteToWx(const Palette& palette)
 	}
 
 	return { size, reds.data(), greens.data(), blues.data() };
+}
+
+// -----------------------------------------------------------------------------
+// Sets the selection of a wxChoice [choice] to the index of the value in
+// [steps] that is closest to [value]
+// eg. for a sample rate choice with steps of 22050, 44100, 48000, etc. and a
+// value of 30000, this would select 44100 as it's the closest step to 30000
+// -----------------------------------------------------------------------------
+void wxutil::setNumericChoiceFromValue(wxChoice* choice, const vector<int>& steps, int value)
+{
+	int selected = 0;
+	for (auto step : steps)
+	{
+		if (value <= step)
+			break;
+		selected++;
+	}
+
+	if (selected >= choice->GetCount())
+		selected = choice->GetCount() - 1;
+
+	choice->SetSelection(selected);
 }

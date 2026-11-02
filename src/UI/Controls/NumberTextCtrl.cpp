@@ -187,7 +187,7 @@ void NumberTextCtrl::onChar(wxKeyEvent& e)
 {
 	// Don't try to validate non-printable characters
 	auto key = e.GetUnicodeKey();
-	if (key == WXK_NONE || key < 32)
+	if (key < 32)
 	{
 		e.Skip();
 		return;

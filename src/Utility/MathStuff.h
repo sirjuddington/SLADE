@@ -1,33 +1,52 @@
 #pragma once
 
-#include "Structs.h"
+#include <numbers>
+
+namespace slade
+{
+struct Plane;
+}
 
 namespace slade::math
 {
-constexpr double PI = 3.1415926535897932384;
+constexpr double PI      = std::numbers::pi;
+constexpr double EPSILON = 1.0 / 65536.0;
 
 double clamp(double val, double min, double max);
 int    floor(double val);
 int    ceil(double val);
 int    round(double val);
-double distance(Vec2d p1, Vec2d p2);
-double distance3d(Vec3d p1, Vec3d p2);
-double lineSide(Vec2d point, Seg2d line);
-Vec2d  closestPointOnLine(Vec2d point, Seg2d line);
-double distanceToLine(Vec2d point, Seg2d line);
-double distanceToLineFast(Vec2d point, Seg2d line);
-bool   linesIntersect(Seg2d line1, Seg2d line2, Vec2d& out);
-double distanceRayLine(Vec2d ray_origin, Vec2d ray_dir, Vec2d seg1, Vec2d seg2);
-double angle2DRad(Vec2d p1, Vec2d p2, Vec2d p3);
-Vec2d  rotatePoint(Vec2d origin, Vec2d point, double angle);
-Vec3d  rotateVector3D(Vec3d vector, Vec3d axis, double angle);
-double degToRad(double angle);
-double radToDeg(double angle);
-Vec2d  vectorAngle(double angle_rad);
-double distanceRayPlane(Vec3d ray_origin, Vec3d ray_dir, Plane plane);
-bool   boxLineIntersect(Rectf box, Seg2d line);
-Plane  planeFromTriangle(Vec3d p1, Vec3d p2, Vec3d p3);
-bool   colinear(double x1, double y1, double x2, double y2, double x3, double y3);
+
+// Checks if floats [a] and [b] are equal within [epsilon]
+inline bool fEqual(const float a, const float b, const float epsilon = EPSILON)
+{
+	return fabs(a - b) < epsilon;
+}
+
+// Checks if float [a] is less than or equal to [b], within [epsilon]
+inline bool fLessOrEqual(const float a, const float b, const float epsilon = EPSILON)
+{
+	return a < b || fEqual(a, b, epsilon);
+}
+
+// Checks if float [a] is less than [b], within [epsilon]
+inline bool fLess(const float a, const float b, const float epsilon = EPSILON)
+{
+	return a < b && !fEqual(a, b, epsilon);
+}
+
+// Checks if float [a] is greater than or equal to [b], within [epsilon]
+inline bool fGreaterOrEqual(const float a, const float b, const float epsilon = EPSILON)
+{
+	return a > b || fEqual(a, b, epsilon);
+}
+
+// Checks if float [a] is greater than [b], within [epsilon]
+inline bool fGreater(const float a, const float b, const float epsilon = EPSILON)
+{
+	return a > b && !fEqual(a, b, epsilon);
+}
+
 
 template<typename T> T scale(T value, double scale)
 {

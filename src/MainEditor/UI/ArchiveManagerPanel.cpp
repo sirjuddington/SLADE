@@ -34,23 +34,35 @@
 #include "Main.h"
 #include "ArchiveManagerPanel.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "Archive/Formats/DirArchive.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Archive/Formats/DirArchiveHandler.h"
 #include "ArchivePanel.h"
+#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "EntryPanel/EntryPanel.h"
-#include "General/UI.h"
+#include "General/SAction.h"
 #include "Graphics/Icons.h"
 #include "MainEditor/ArchiveOperations.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/UI/MapEditorWindow.h"
-#include "TextureXEditor/TextureXEditor.h"
+#include "TextureEditor/TextureEditor.h"
+#include "TextureEditor/UI/TextureEditorPanel.h"
 #include "UI/Controls/STabCtrl.h"
+#include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/Dialogs/DirArchiveUpdateDialog.h"
 #include "UI/Dialogs/NewArchiveDiaog.h"
+#include "UI/Layout.h"
+#include "UI/Lists/ArchiveListView.h"
+#include "UI/Lists/ListView.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
+#include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -72,27 +84,83 @@ CVAR(Int, dir_archive_change_action, 2, CVar::Flag::Save) // 0=always ignore, 1=
 // External Variables
 //
 // -----------------------------------------------------------------------------
-EXTERN_CVAR(String, dir_last)
 EXTERN_CVAR(Int, autosave_entry_changes)
 
 
 // -----------------------------------------------------------------------------
 //
-// DirArchiveCheck Class Functions
+// DirArchiveCheck Class
 //
 // -----------------------------------------------------------------------------
 wxDEFINE_EVENT(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED, wxThreadEvent);
+class DirArchiveCheck : public wxThread
+{
+public:
+	struct ChangeList
+	{
+		Archive*               archive;
+		vector<DirEntryChange> changes;
+	};
+
+	DirArchiveCheck(wxEvtHandler* handler, Archive* archive);
+	~DirArchiveCheck() override = default;
+
+	bool isValid() const { return valid_; }
+
+	ExitCode Entry() override;
+
+private:
+	struct EntryInfo
+	{
+		string entry_path;
+		string file_path;
+		bool   is_dir;
+		time_t file_modified;
+
+		EntryInfo(
+			const string& entry_path    = "",
+			const string& file_path     = "",
+			bool          is_dir        = false,
+			time_t        file_modified = 0) :
+			entry_path{ entry_path },
+			file_path{ file_path },
+			is_dir{ is_dir },
+			file_modified{ file_modified }
+		{
+		}
+	};
+
+	wxEvtHandler*     handler_;
+	string            dir_path_;
+	vector<EntryInfo> entry_info_;
+	vector<string>    removed_files_;
+	ChangeList        change_list_;
+	bool              ignore_hidden_ = true;
+	bool              valid_         = false;
+
+	void addChange(const DirEntryChange& change);
+};
 
 // -----------------------------------------------------------------------------
 // DirArchiveCheck class constructor
 // -----------------------------------------------------------------------------
-DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive) :
+DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, Archive* archive) :
 	handler_{ handler },
 	dir_path_{ archive->filename() },
-	removed_files_{ archive->removedFiles() },
-	change_list_{ archive, {} },
-	ignore_hidden_{ archive->hiddenFilesIgnored() }
+	change_list_{ archive, {} }
 {
+	if (archive->format() != ArchiveFormat::Dir)
+	{
+		log::error("DirArchiveCheck requires a directory archive!");
+		return;
+	}
+
+	// Get Directory archive specific info
+	auto& format_handler = dynamic_cast<DirArchiveHandler&>(archive->formatHandler());
+	removed_files_       = format_handler.removedFiles();
+	ignore_hidden_       = format_handler.hiddenFilesIgnored();
+	valid_               = true;
+
 	// Get flat entry list
 	vector<ArchiveEntry*> entries;
 	archive->putEntryTreeAsList(entries);
@@ -103,17 +171,17 @@ DirArchiveCheck::DirArchiveCheck(wxEvtHandler* handler, DirArchive* archive) :
 		entry_info_.emplace_back(
 			entry->path(true),
 			entry->exProps().getOr<string>("filePath", ""),
-			entry->type() == EntryType::folderType(),
-			archive->fileModificationTime(entry));
+			entry->isFolderType(),
+			format_handler.fileModificationTime(entry));
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Register a change to a file, as long as it hasn't been ignored
 // -----------------------------------------------------------------------------
-void DirArchiveCheck::addChange(DirEntryChange change)
+void DirArchiveCheck::addChange(const DirEntryChange& change)
 {
-	if (!dynamic_cast<DirArchive*>(change_list_.archive)->shouldIgnoreEntryChange(change))
+	if (!dynamic_cast<DirArchiveHandler&>(change_list_.archive->formatHandler()).shouldIgnoreEntryChange(change))
 		change_list_.changes.push_back(change);
 }
 
@@ -205,7 +273,7 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 
 	// Send changes via event
 	auto event = new wxThreadEvent(wxEVT_COMMAND_DIRARCHIVECHECK_COMPLETED);
-	event->SetPayload<DirArchiveChangeList>(change_list_);
+	event->SetPayload<ChangeList>(change_list_);
 	wxQueueEvent(handler_, event);
 
 	return nullptr;
@@ -214,43 +282,47 @@ wxThread::ExitCode DirArchiveCheck::Entry()
 
 // -----------------------------------------------------------------------------
 //
-// WMFileBrowser Class Functions
+// WMFileBrowser Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// WMFileBrowser class constructor
-// Note: wxWidgets 2.9.4 deprecated the wxDIRCTRL_SHOW_FILTERS flag; instead,
-// the filters are always shown if any are defined.
-// -----------------------------------------------------------------------------
-WMFileBrowser::WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id) :
-	wxGenericDirCtrl(parent, id, wxString::FromUTF8(wxDirDialogDefaultFolderStr)),
-	parent{ wm }
+namespace slade
 {
-	// Connect a custom event for when an item in the file tree is activated
-	auto tree_ctrl = wxGenericDirCtrl::GetTreeCtrl();
-	tree_ctrl->Connect(
-		tree_ctrl->GetId(), wxEVT_TREE_ITEM_ACTIVATED, wxTreeEventHandler(WMFileBrowser::onItemActivated));
-}
-
-// -----------------------------------------------------------------------------
-// Event called when an item in the tree is activated. Opens a file if one is
-// selected.
-// -----------------------------------------------------------------------------
-void WMFileBrowser::onItemActivated(wxTreeEvent& e)
+class WMFileBrowser : public wxGenericDirCtrl
 {
-	// Get related objects
-	auto tree    = dynamic_cast<wxTreeCtrl*>(e.GetEventObject());
-	auto browser = dynamic_cast<WMFileBrowser*>(tree->GetParent());
+public:
+	ArchiveManagerPanel* parent;
 
-	// If the selected item has no children (ie it's a file),
-	// open it in the archive manager
-	if (!tree->ItemHasChildren(e.GetItem()))
-		browser->parent->openFile(browser->GetPath().utf8_string());
+	// Note: wxWidgets 2.9.4 deprecated the wxDIRCTRL_SHOW_FILTERS flag; instead,
+	// the filters are always shown if any are defined.
+	WMFileBrowser(wxWindow* parent, ArchiveManagerPanel* wm, int id) :
+		wxGenericDirCtrl(parent, id, wxString::FromUTF8(wxDirDialogDefaultFolderStr)),
+		parent{ wm }
+	{
+		// Connect a custom event for when an item in the file tree is activated
+		auto tree_ctrl = wxGenericDirCtrl::GetTreeCtrl();
+		tree_ctrl->Connect(
+			tree_ctrl->GetId(), wxEVT_TREE_ITEM_ACTIVATED, wxTreeEventHandler(WMFileBrowser::onItemActivated));
+	}
 
-	e.Skip();
-}
+	~WMFileBrowser() override = default;
+
+	// Event called when an item in the tree is activated. Opens a file if one
+	// is selected
+	void onItemActivated(wxTreeEvent& e)
+	{
+		// Get related objects
+		auto tree    = dynamic_cast<wxTreeCtrl*>(e.GetEventObject());
+		auto browser = dynamic_cast<WMFileBrowser*>(tree->GetParent());
+
+		// If the selected item has no children (ie it's a file),
+		// open it in the archive manager
+		if (!tree->ItemHasChildren(e.GetItem()))
+			browser->parent->openFile(browser->GetPath().utf8_string());
+
+		e.Skip();
+	}
+};
+} // namespace slade
 
 
 // -----------------------------------------------------------------------------
@@ -267,26 +339,28 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	DockPanel(parent),
 	stc_archives_{ nb_archives }
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create main sizer
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(vbox);
 
 	// Create/setup tabs
-	stc_tabs_ = new STabCtrl(this, false);
-	stc_tabs_->SetInitialSize(wxSize(ui::scalePx(224), -1));
-	vbox->Add(stc_tabs_, 1, wxEXPAND | wxALL, ui::pad());
+	stc_tabs_ = new TabControl(this, false);
+	stc_tabs_->SetInitialSize(wxSize(FromDIP(224), -1));
+	vbox->Add(stc_tabs_, lh.sfWithBorder(1).Expand());
 
 	// Open archives tab
 	panel_am_ = new wxPanel(stc_tabs_);
 	stc_tabs_->AddPage(panel_am_, wxS("Archives"), true);
 
 	// Create/setup archive list
-	createArchivesPanel();
+	createArchivesPanel(lh);
 	refreshArchiveList();
 
 	// Create/setup recent files list and menu
 	menu_recent_ = new wxMenu();
-	createRecentPanel();
+	createRecentPanel(lh);
 	refreshRecentFileList();
 
 	// Create/setup bookmarks tab
@@ -304,7 +378,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 	}
 	list_bookmarks_->SetImageList(bm_image_list, wxIMAGE_LIST_SMALL);
 	menu_bookmarks_ = new wxMenu();
-	panel_bm->GetSizer()->Add(list_bookmarks_, 1, wxEXPAND | wxALL, ui::pad());
+	panel_bm->GetSizer()->Add(list_bookmarks_, lh.sfWithBorder(1).Expand());
 	refreshBookmarkList();
 	stc_tabs_->AddPage(panel_bm, wxS("Bookmarks"), true);
 
@@ -316,7 +390,7 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 		auto panel = new wxPanel(stc_tabs_);
 		panel->SetSizer(new wxBoxSizer(wxVERTICAL));
 		file_browser_ = new WMFileBrowser(panel, this, -1);
-		panel->GetSizer()->Add(file_browser_, 1, wxEXPAND | wxALL, ui::pad());
+		panel->GetSizer()->Add(file_browser_, lh.sfWithBorder(1).Expand());
 		stc_tabs_->AddPage(panel, wxS("File Browser"));
 	}
 
@@ -343,33 +417,33 @@ ArchiveManagerPanel::ArchiveManagerPanel(wxWindow* parent, STabCtrl* nb_archives
 
 	// Init layout
 	wxWindowBase::Layout();
-	SetInitialSize(wxSize(ui::scalePx(256), -1));
+	SetInitialSize(lh.size(256, -1));
 }
 
 // -----------------------------------------------------------------------------
 // Creates the 'Open Archives' panel
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::createArchivesPanel()
+void ArchiveManagerPanel::createArchivesPanel(const ui::LayoutHelper& lh)
 {
 	panel_archives_ = new wxPanel(panel_am_, -1);
 	auto vbox       = new wxBoxSizer(wxVERTICAL);
 	panel_archives_->SetSizer(vbox);
-	vbox->Add(new wxStaticText(panel_archives_, -1, wxS("Open Archives:")), 0, wxEXPAND);
-	list_archives_ = new ListView(panel_archives_, -1);
-	vbox->Add(list_archives_, 1, wxEXPAND | wxTOP, ui::px(ui::Size::PadMinimum));
+	vbox->Add(new wxStaticText(panel_archives_, -1, wxS("Open Archives:")), wxSizerFlags().Expand());
+	list_archives_ = new ui::ArchiveListView(panel_archives_);
+	vbox->Add(list_archives_, lh.sfWithSmallBorder(1, wxTOP).Expand());
 }
 
 // -----------------------------------------------------------------------------
 // Creates the 'Recent Files' panel
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::createRecentPanel()
+void ArchiveManagerPanel::createRecentPanel(const ui::LayoutHelper& lh)
 {
 	panel_rf_ = new wxPanel(panel_am_, -1);
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	panel_rf_->SetSizer(vbox);
-	vbox->Add(new wxStaticText(panel_rf_, -1, wxS("Recent Files:")), 0, wxEXPAND);
-	list_recent_ = new ListView(panel_rf_, -1);
-	vbox->Add(list_recent_, 1, wxEXPAND | wxTOP, ui::px(ui::Size::PadMinimum));
+	vbox->Add(new wxStaticText(panel_rf_, -1, wxS("Recent Files:")), wxSizerFlags().Expand());
+	list_recent_ = new ui::ArchiveListView(panel_rf_);
+	vbox->Add(list_recent_, lh.sfWithSmallBorder(1, wxTOP).Expand());
 
 	// Setup image list
 	auto list = wxutil::createSmallImageList();
@@ -389,8 +463,9 @@ void ArchiveManagerPanel::layoutNormal()
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	panel_am_->SetSizer(vbox);
 
-	vbox->Add(panel_archives_, 1, wxEXPAND | wxALL, ui::pad());
-	vbox->Add(panel_rf_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	auto lh = ui::LayoutHelper(this);
+	vbox->Add(panel_archives_, lh.sfWithBorder(1).Expand());
+	vbox->Add(panel_rf_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 }
 
 // -----------------------------------------------------------------------------
@@ -402,17 +477,18 @@ void ArchiveManagerPanel::layoutHorizontal()
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	panel_am_->SetSizer(hbox);
 
-	hbox->Add(panel_archives_, 1, wxEXPAND | wxALL, ui::pad());
-	hbox->Add(panel_rf_, 1, wxEXPAND | wxTOP | wxRIGHT | wxBOTTOM, ui::pad());
+	auto lh = ui::LayoutHelper(this);
+	hbox->Add(panel_archives_, lh.sfWithBorder(1).Expand());
+	hbox->Add(panel_rf_, lh.sfWithBorder(1, wxTOP | wxRIGHT | wxBOTTOM).Expand());
 }
 
 // -----------------------------------------------------------------------------
 // Clears and rebuilds the recent file list in the menu and the tab
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::refreshRecentFileList() const
+void ArchiveManagerPanel::refreshRecentFileList()
 {
 	// Clear the list
-	list_recent_->ClearAll();
+	list_recent_->DeleteAllItems();
 
 	// Get first recent file menu id
 	auto a_recent        = SAction::fromId("aman_recent");
@@ -423,21 +499,17 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 	for (unsigned a = menu_recent_->GetMenuItemCount(); a > 0; a--)
 		menu_recent_->Destroy(id_recent_start + a - 1);
 
-	// Add columns
-	list_recent_->InsertColumn(0, wxS("Filename"));
-	list_recent_->InsertColumn(1, wxS("Path"));
-
 	// Add each recent archive (same logic as the recent files submenu)
 	list_recent_->enableSizeUpdate(false);
-	for (unsigned a = 0; a < app::archiveManager().numRecentFiles(); a++)
+	recent_files_ = database::recentFiles();
+	for (unsigned a = 0; a < recent_files_.size(); a++)
 	{
-		list_recent_->addItem(a, "");
-		updateRecentListItem(a);
+		list_recent_->append(recent_files_[a]);
 
 		if (a < 8)
 		{
 			// Get path and determine icon
-			auto   fn   = app::archiveManager().recentFile(a);
+			auto   fn   = recent_files_[a];
 			string icon = "archive";
 			if (strutil::endsWith(fn, ".wad"))
 				icon = "wad";
@@ -448,9 +520,6 @@ void ArchiveManagerPanel::refreshRecentFileList() const
 
 			// Create and add menu item
 			a_recent->addToMenu(menu_recent_, 0, fn, icon, a);
-			// wxMenuItem* mi = new wxMenuItem(menu_recent, id_recent_start + a, fn);
-			// mi->SetBitmap(Icons::getIcon(Icons::ENTRY, icon));
-			// menu_recent->Append(mi);
 		}
 	}
 
@@ -473,19 +542,12 @@ void ArchiveManagerPanel::disableArchiveListUpdate() const
 void ArchiveManagerPanel::refreshArchiveList() const
 {
 	// Clear the list
-	list_archives_->ClearAll();
-
-	// Add columns
-	list_archives_->InsertColumn(0, wxS("Filename"));
-	list_archives_->InsertColumn(1, wxS("Path"));
+	list_archives_->DeleteAllItems();
 
 	// Add each archive that is opened in the ArchiveManager
 	list_archives_->enableSizeUpdate(false);
 	for (int a = 0; a < app::archiveManager().numArchives(); a++)
-	{
-		list_archives_->addItem(a, "");
-		updateOpenListItem(a);
-	}
+		list_archives_->append(app::archiveManager().getArchive(a).get());
 
 	// Update size
 	list_archives_->enableSizeUpdate(true);
@@ -513,30 +575,7 @@ void ArchiveManagerPanel::refreshAllTabs() const
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::updateOpenListItem(int index) const
 {
-	auto archive = app::archiveManager().getArchive(index);
-
-	if (!archive)
-		return;
-
-	// Get path as wxFileName for processing
-	strutil::Path fn(archive->filename());
-
-	// Set item name
-
-	list_archives_->setItemText(index, 0, string{ fn.fileName() });
-	list_archives_->setItemText(index, 1, string{ fn.path() });
-
-	// Set item status colour
-	using ItemStatus = ListView::ItemStatus;
-	if (archive->canSave())
-	{
-		if (archive->isModified())
-			list_archives_->setItemStatus(index, ItemStatus::Modified);
-		else
-			list_archives_->setItemStatus(index, ItemStatus::Normal);
-	}
-	else
-		list_archives_->setItemStatus(index, ItemStatus::New);
+	list_archives_->setItem(index, app::archiveManager().getArchive(index).get());
 }
 
 // -----------------------------------------------------------------------------
@@ -545,7 +584,7 @@ void ArchiveManagerPanel::updateOpenListItem(int index) const
 void ArchiveManagerPanel::updateRecentListItem(int index) const
 {
 	// Get path as wxFileName for processing
-	auto          path = app::archiveManager().recentFile(index);
+	auto          path = recent_files_[index];
 	strutil::Path fn(path);
 
 	// Set item name
@@ -557,7 +596,8 @@ void ArchiveManagerPanel::updateRecentListItem(int index) const
 	if (strutil::equalCI(fn.extension(), "wad"))
 		icon = 1;
 	else if (
-		strutil::equalCI(fn.extension(), "zip") || strutil::equalCI(fn.extension(), "pk3")
+		strutil::equalCI(fn.extension(), "zip")
+		|| strutil::equalCI(fn.extension(), "pk3")
 		|| strutil::equalCI(fn.extension(), "pke"))
 		icon = 2;
 	else if (fileutil::dirExists(path))
@@ -598,7 +638,7 @@ void ArchiveManagerPanel::updateArchiveTabTitle(int index) const
 // -----------------------------------------------------------------------------
 // Updates the title of the tab for [entry]
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::updateEntryTabTitle(ArchiveEntry* entry) const
+void ArchiveManagerPanel::updateEntryTabTitle(const ArchiveEntry* entry) const
 {
 	for (unsigned i = 0; i < stc_archives_->GetPageCount(); ++i)
 	{
@@ -625,7 +665,7 @@ void ArchiveManagerPanel::updateEntryTabTitle(ArchiveEntry* entry) const
 bool ArchiveManagerPanel::isArchiveTab(int tab_index) const
 {
 	// Check that tab index is in range
-	if ((unsigned)tab_index >= stc_archives_->GetPageCount())
+	if (static_cast<unsigned>(tab_index) >= stc_archives_->GetPageCount())
 		return false;
 
 	// Check the page's name
@@ -639,7 +679,7 @@ bool ArchiveManagerPanel::isArchiveTab(int tab_index) const
 bool ArchiveManagerPanel::isEntryTab(int tab_index) const
 {
 	// Check that tab index is in range
-	if ((unsigned)tab_index >= stc_archives_->GetPageCount())
+	if (static_cast<unsigned>(tab_index) >= stc_archives_->GetPageCount())
 		return false;
 
 	// Check the page's name
@@ -653,7 +693,7 @@ bool ArchiveManagerPanel::isEntryTab(int tab_index) const
 bool ArchiveManagerPanel::isTextureEditorTab(int tab_index) const
 {
 	// Check that tab index is in range
-	if ((unsigned)tab_index >= stc_archives_->GetPageCount())
+	if (static_cast<unsigned>(tab_index) >= stc_archives_->GetPageCount())
 		return false;
 
 	// Check the page's name
@@ -667,7 +707,7 @@ bool ArchiveManagerPanel::isTextureEditorTab(int tab_index) const
 Archive* ArchiveManagerPanel::archiveForTab(int tab_index) const
 {
 	// Check the index is valid
-	if (tab_index < 0 || (unsigned)tab_index >= stc_archives_->GetPageCount())
+	if (tab_index < 0 || static_cast<unsigned>(tab_index) >= stc_archives_->GetPageCount())
 		return nullptr;
 
 	// Check the specified tab is actually an archive tab
@@ -715,10 +755,10 @@ Archive* ArchiveManagerPanel::currentArchive() const
 		return ep->entry() ? ep->entry()->parent() : nullptr;
 	}
 
-	// TextureXEditor
+	// Texture Editor
 	else if (page->GetName() == wxS("texture"))
 	{
-		auto tx = dynamic_cast<TextureXEditor*>(page);
+		auto tx = dynamic_cast<texeditor::TextureEditorPanel*>(page);
 		return tx->archive();
 	}
 
@@ -805,7 +845,7 @@ void ArchiveManagerPanel::openTab(int archive_index) const
 // -----------------------------------------------------------------------------
 // Returns the ArchivePanel for [archive], or null if none is open
 // -----------------------------------------------------------------------------
-ArchivePanel* ArchiveManagerPanel::tabForArchive(Archive* archive) const
+ArchivePanel* ArchiveManagerPanel::tabForArchive(const Archive* archive) const
 {
 	// Check archive was given
 	if (!archive)
@@ -831,7 +871,7 @@ ArchivePanel* ArchiveManagerPanel::tabForArchive(Archive* archive) const
 // -----------------------------------------------------------------------------
 // Opens a new tab for the archive
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::openTab(Archive* archive) const
+void ArchiveManagerPanel::openTab(const Archive* archive) const
 {
 	auto sp_archive = app::archiveManager().shareArchive(archive);
 	if (sp_archive)
@@ -853,11 +893,11 @@ void ArchiveManagerPanel::openTab(Archive* archive) const
 
 		// Determine icon
 		string icon = "archive";
-		if (archive->formatId() == "wad")
+		if (archive->format() == ArchiveFormat::Wad)
 			icon = "wad";
-		else if (archive->formatId() == "zip")
+		else if (archive->format() == ArchiveFormat::Zip)
 			icon = "zip";
-		else if (archive->formatId() == "folder")
+		else if (archive->format() == ArchiveFormat::Dir)
 			icon = "folder";
 
 		wp->SetName(wxS("archive"));
@@ -890,55 +930,38 @@ void ArchiveManagerPanel::closeTab(int archive_index) const
 // Opens a new texture editor tab for the archive at [archive_index] in the
 // archive manager
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry) const
+void ArchiveManagerPanel::openTextureTab(int archive_index, const ArchiveEntry* entry) const
 {
 	auto archive = app::archiveManager().getArchive(archive_index);
 
 	if (archive)
 	{
 		// Go through all tabs
-		for (size_t a = 0; a < stc_archives_->GetPageCount(); a++)
+		for (auto i = 0; i < stc_archives_->GetPageCount(); ++i)
 		{
-			// Check page type is "texture"
-			if (stc_archives_->GetPage(a)->GetName().CmpNoCase(wxS("texture")))
+			// Ignore non-texture tabs
+			if (stc_archives_->GetPage(i)->GetName().CmpNoCase(wxS("texture")))
 				continue;
 
-			// Check for archive match
-			auto txed = dynamic_cast<TextureXEditor*>(stc_archives_->GetPage(a));
-			if (txed->archive() == archive.get())
+			if (auto txed = dynamic_cast<texeditor::TextureEditorPanel*>(stc_archives_->GetPage(i));
+				txed->archive() == archive.get())
 			{
-				// Selected archive already has its texture editor open, so show that tab
-				stc_archives_->SetSelection(a);
-				if (entry && !txed->setSelection(entry))
-				{
-					// Texture entry isn't open in the editor, open it
-					txed->openEntry(entry);
-					txed->setSelection(entry);
-				}
+				// Switch to tab
+				stc_archives_->SetSelection(i);
 				return;
 			}
 		}
 
+		// Before opening the texture editor, ensure we have valid TEXTUREx/PNAMES entries in the archive
+		if (!texeditor::TextureEditor::setupTextureEntries(archive, maineditor::windowWx()))
+			return;
+
 		// If tab isn't already open, open a new one
 		maineditor::window()->Freeze();
-		auto txed = new TextureXEditor(stc_archives_);
-		txed->Show(false);
-		bool ok = false;
-		if (entry)
-			ok = txed->openEntry(entry);
-		else
-			ok = txed->openArchive(archive.get());
-		if (!ok)
-		{
-			delete txed;
-			maineditor::window()->Thaw();
-			return;
-		}
+		auto* txed = new texeditor::TextureEditorPanel(stc_archives_, archive, entry);
+		stc_archives_->AddPage(txed, WX_FMT("Texture Editor ({})", archive->filename(false)), true);
+		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::General, "texeditor"));
 
-		stc_archives_->AddPage(txed, WX_FMT("TEXTUREx Editor ({})", archive->filename(false)), true);
-		stc_archives_->SetPageBitmap(stc_archives_->GetPageCount() - 1, icons::getIcon(icons::Entry, "texturex"));
-		txed->setSelection(entry);
-		txed->Show(true);
 		// Select the new tab
 		for (size_t a = 0; a < stc_archives_->GetPageCount(); a++)
 		{
@@ -949,8 +972,6 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 				return;
 			}
 		}
-
-		maineditor::window()->Thaw(); // Shouldn't get to this line but putting this here just in case
 	}
 }
 
@@ -958,7 +979,7 @@ void ArchiveManagerPanel::openTextureTab(int archive_index, ArchiveEntry* entry)
 // Returns the TextureXEditor for the archive at [archive_index], or null if
 // none is open for that archive
 // -----------------------------------------------------------------------------
-TextureXEditor* ArchiveManagerPanel::textureTabForArchive(int archive_index) const
+texeditor::TextureEditorPanel* ArchiveManagerPanel::textureTabForArchive(int archive_index) const
 {
 	auto archive = app::archiveManager().getArchive(archive_index);
 
@@ -972,7 +993,7 @@ TextureXEditor* ArchiveManagerPanel::textureTabForArchive(int archive_index) con
 				continue;
 
 			// Check for archive match
-			auto txed = dynamic_cast<TextureXEditor*>(stc_archives_->GetPage(a));
+			auto txed = dynamic_cast<texeditor::TextureEditorPanel*>(stc_archives_->GetPage(a));
 			if (txed->archive() == archive.get())
 				return txed;
 		}
@@ -996,7 +1017,7 @@ void ArchiveManagerPanel::closeTextureTab(int archive_index) const
 // -----------------------------------------------------------------------------
 // Redirects to the separated tab with given entry if exists
 // -----------------------------------------------------------------------------
-bool ArchiveManagerPanel::redirectToTab(ArchiveEntry* entry) const
+bool ArchiveManagerPanel::redirectToTab(const ArchiveEntry* entry) const
 {
 	for (unsigned a = 0; a < stc_archives_->GetPageCount(); a++)
 	{
@@ -1019,7 +1040,7 @@ bool ArchiveManagerPanel::redirectToTab(ArchiveEntry* entry) const
 // -----------------------------------------------------------------------------
 // Returns true if [entry] is open in a tab
 // -----------------------------------------------------------------------------
-bool ArchiveManagerPanel::entryIsOpenInTab(ArchiveEntry* entry) const
+bool ArchiveManagerPanel::entryIsOpenInTab(const ArchiveEntry* entry) const
 {
 	for (unsigned a = 0; a < stc_archives_->GetPageCount(); a++)
 	{
@@ -1079,8 +1100,8 @@ bool ArchiveManagerPanel::saveCurrentTab() const
 	// Texture Editor Tab
 	if (isTextureEditorTab(index))
 	{
-		auto* texture_editor = dynamic_cast<TextureXEditor*>(tab);
-		texture_editor->saveChanges();
+		auto* texture_editor = dynamic_cast<texeditor::TextureEditorPanel*>(tab);
+		texture_editor->saveAll();
 		return true;
 	}
 
@@ -1137,7 +1158,6 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 		if (stc_archives_->GetPage(a) == ep)
 		{
 			stc_archives_->SetSelection(a);
-			ep->updateToolbar();
 			return;
 		}
 	}
@@ -1146,7 +1166,7 @@ void ArchiveManagerPanel::openEntryTab(ArchiveEntry* entry) const
 // -----------------------------------------------------------------------------
 // Closes the EntryPanel tab for [entry]
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::closeEntryTab(ArchiveEntry* entry) const
+void ArchiveManagerPanel::closeEntryTab(const ArchiveEntry* entry) const
 {
 	// Go through tabs
 	for (unsigned a = 0; a < stc_archives_->GetPageCount(); a++)
@@ -1170,7 +1190,7 @@ void ArchiveManagerPanel::closeEntryTab(ArchiveEntry* entry) const
 // -----------------------------------------------------------------------------
 // Closes any EntryPanel tabs for entries in [parent]
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::closeEntryTabs(Archive* parent) const
+void ArchiveManagerPanel::closeEntryTabs(const Archive* parent) const
 {
 	// Check archive was given
 	if (!parent)
@@ -1285,7 +1305,7 @@ bool ArchiveManagerPanel::undo() const
 	// TEXTUREx panel
 	else if (S_CMPNOCASE(page_current->GetName(), wxS("texture")))
 	{
-		dynamic_cast<TextureXEditor*>(page_current)->undo();
+		dynamic_cast<texeditor::TextureEditorPanel*>(page_current)->undo();
 		return true;
 	}
 
@@ -1318,7 +1338,7 @@ bool ArchiveManagerPanel::redo() const
 	// TEXTUREx panel
 	else if (S_CMPNOCASE(page_current->GetName(), wxS("texture")))
 	{
-		dynamic_cast<TextureXEditor*>(page_current)->redo();
+		dynamic_cast<texeditor::TextureEditorPanel*>(page_current)->redo();
 		return true;
 	}
 
@@ -1373,28 +1393,20 @@ void ArchiveManagerPanel::saveAll() const
 			// If the archive is newly created, do Save As instead
 
 			// Popup file save dialog
-			wxString formats  = wxString::FromUTF8(archive->fileExtensionString());
-			wxString filename = wxFileSelector(
-				wxString::FromUTF8("Save Archive " + archive->filename(false) + " As"),
-				dir_last,
-				wxEmptyString,
-				wxEmptyString,
-				formats,
-				wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+			auto filename = filedialog::saveFile(
+				fmt::format("Save Archive {} As", archive->filename(false)),
+				archive->fileExtensionString(),
+				const_cast<ArchiveManagerPanel*>(this));
 
 			// Check a filename was selected
 			if (!filename.empty())
 			{
 				// Save the archive
-				if (!archive->save(filename.utf8_string()))
+				if (!archive->save(filename))
 				{
 					// If there was an error pop up a message box
 					wxMessageBox(WX_FMT("Error: {}", global::error), wxS("Error"), wxICON_ERROR);
 				}
-
-				// Save 'dir_last'
-				wxFileName fn(filename);
-				dir_last = fn.GetPath(true).utf8_string();
 			}
 		}
 	}
@@ -1412,7 +1424,7 @@ void ArchiveManagerPanel::checkDirArchives()
 	for (int a = 0; a < app::archiveManager().numArchives(); a++)
 	{
 		auto archive = app::archiveManager().getArchive(a);
-		if (archive->formatId() != "folder")
+		if (archive->format() != ArchiveFormat::Dir)
 			continue;
 
 		if (VECTOR_EXISTS(checking_archives_, archive.get()))
@@ -1420,9 +1432,14 @@ void ArchiveManagerPanel::checkDirArchives()
 
 		log::info(2, "Checking {} for external changes...", archive->filename());
 		checking_archives_.push_back(archive.get());
-		auto check = new DirArchiveCheck(this, dynamic_cast<DirArchive*>(archive.get()));
-		check->Create();
-		check->Run();
+		auto check = new DirArchiveCheck(this, archive.get());
+		if (check->isValid())
+		{
+			check->Create();
+			check->Run();
+		}
+		else
+			delete check;
 	}
 }
 
@@ -1453,7 +1470,7 @@ void ArchiveManagerPanel::createNewArchive(const string& format) const
 // If there are any unsaved entry changes in [archive]'s ArchivePanel tab,
 // saves the changes (or not, depending on user settings)
 // -----------------------------------------------------------------------------
-bool ArchiveManagerPanel::saveEntryChanges(Archive* archive) const
+bool ArchiveManagerPanel::saveEntryChanges(const Archive* archive) const
 {
 	bool changes = false;
 
@@ -1537,7 +1554,7 @@ bool ArchiveManagerPanel::saveArchiveAs(Archive* archive) const
 		return false;
 
 	// Check archive type
-	if (archive->formatId() == "folder")
+	if (archive->format() == ArchiveFormat::Dir)
 		return true; // Can't do save as for folder
 
 	// Check for unsaved entry changes
@@ -1747,7 +1764,7 @@ bool ArchiveManagerPanel::closeSelection()
 
 	// Close all selected archives, starting from the last
 	bool all_closed = true;
-	for (size_t a = selected_archives.size() - 1; (signed)a >= 0; --a)
+	for (size_t a = selected_archives.size() - 1; static_cast<signed>(a) >= 0; --a)
 	{
 		if (!closeArchive(selected_archives[a]))
 			all_closed = false;
@@ -1771,7 +1788,7 @@ void ArchiveManagerPanel::openSelection() const
 	// Get the list of selected archives
 	vector<string> selected_archives;
 	for (int index : selection)
-		selected_archives.emplace_back(app::archiveManager().recentFile(index));
+		selected_archives.emplace_back(recent_files_[index]);
 
 	// Open all selected archives
 	for (const auto& selected_archive : selected_archives)
@@ -1781,7 +1798,7 @@ void ArchiveManagerPanel::openSelection() const
 // -----------------------------------------------------------------------------
 // Remove the currently selected archive(s) from the recent file list
 // -----------------------------------------------------------------------------
-void ArchiveManagerPanel::removeSelection() const
+void ArchiveManagerPanel::removeSelection()
 {
 	// Get the list of selected list items
 	auto selection = selectedFiles();
@@ -1790,10 +1807,20 @@ void ArchiveManagerPanel::removeSelection() const
 	if (selection.empty())
 		return;
 
-	// Remove selected recent files (starting from the last and going backward,
-	// because the list reorders itself whenever an item is removed)
-	for (unsigned a = selection.size(); a > 0; --a)
-		app::archiveManager().removeRecentFile(app::archiveManager().recentFile(selection[a - 1]));
+	// Don't want to trigger this signal multiple times
+	database::signals().archive_file_updated.block();
+
+	// Reset last opened times for each selected recent file
+	for (unsigned a = 0; a < selection.size(); ++a)
+	{
+		auto path  = recent_files_[selection[a]];
+		auto db_id = database::archiveFileId(path);
+		database::setArchiveFileLastOpened(db_id, 0);
+	}
+
+	// Signal change to refresh the list
+	database::signals().archive_file_updated.unblock();
+	database::signals().archive_file_updated();
 }
 
 // -----------------------------------------------------------------------------
@@ -1831,31 +1858,14 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 
 		// Open a file browser dialog that allows multiple selection
 		// and filters by wad, zip and pk3 file extensions
-		wxFileDialog dialog_open(
-			this,
-			wxS("Choose file(s) to open"),
-			dir_last,
-			wxEmptyString,
-			wxString::FromUTF8(extensions),
-			wxFD_OPEN | wxFD_MULTIPLE | wxFD_FILE_MUST_EXIST,
-			wxDefaultPosition);
+		auto files = filedialog::openFiles("Choose file(s) to open", extensions, this);
 
-		// Run the dialog & check that the user didn't cancel
-		if (dialog_open.ShowModal() == wxID_OK)
+		// Open selected files (if any)
+		if (!files.filenames.empty())
 		{
 			wxBeginBusyCursor();
-
-			// Get an array of selected filenames
-			wxArrayString files;
-			dialog_open.GetPaths(files);
-
-			// Open them
-			openFiles(files);
-
+			openFiles(wxutil::arrayStringStd(files.filenames));
 			wxEndBusyCursor();
-
-			// Save 'dir_last'
-			dir_last = dialog_open.GetDirectory().utf8_string();
 		}
 	}
 
@@ -1863,21 +1873,14 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	else if (id == "aman_opendir")
 	{
 		// Open a directory browser dialog
-		wxDirDialog dialog_open(
-			this, wxS("Select a Directory to open"), dir_last, wxDD_DIR_MUST_EXIST | wxDD_NEW_DIR_BUTTON);
+		auto dir = filedialog::openDirectory("Select a Directory to open", this);
 
-		// Run the dialog & check the user didn't cancel
-		if (dialog_open.ShowModal() == wxID_OK)
+		// Open directory if not cancelled
+		if (!dir.empty())
 		{
 			wxBeginBusyCursor();
-
-			// Open directory
-			openDirAsArchive(dialog_open.GetPath().utf8_string());
-
+			openDirAsArchive(dir);
 			wxEndBusyCursor();
-
-			// Save 'dir_last'
-			dir_last = dialog_open.GetPath().utf8_string();
 		}
 	}
 
@@ -1885,10 +1888,10 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 	else if (id == "aman_recent")
 	{
 		// Get recent file index
-		unsigned index = wx_id_offset_;
+		unsigned index = wxIdOffset();
 
 		// Open it
-		openFile(app::archiveManager().recentFile(index));
+		openFile(recent_files_[index]);
 	}
 
 	// File->Save
@@ -1933,7 +1936,7 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 
 	// Bookmarks dropdown menu
 	else if (id == "aman_bookmark_menu")
-		goToBookmark(wx_id_offset_);
+		goToBookmark(wxIdOffset());
 	else if (id == "aman_bookmark_removeall")
 		app::archiveManager().deleteAllBookmarks();
 
@@ -1952,7 +1955,7 @@ bool ArchiveManagerPanel::handleAction(string_view id)
 void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 {
 	// Only valid indices
-	if (index < 0 || (unsigned)index >= app::archiveManager().numBookmarks())
+	if (index < 0 || static_cast<unsigned>(index) >= app::archiveManager().numBookmarks())
 		return;
 
 	auto entry = app::archiveManager().getBookmark(index);
@@ -1971,10 +1974,10 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 	else
 		switch (entry->state())
 		{
-		case ArchiveEntry::State::Unmodified: list_bookmarks_->setItemStatus(index, ItemStatus::Normal); break;
-		case ArchiveEntry::State::Modified: list_bookmarks_->setItemStatus(index, ItemStatus::Modified); break;
-		case ArchiveEntry::State::New: list_bookmarks_->setItemStatus(index, ItemStatus::New); break;
-		default: list_bookmarks_->setItemStatus(index, ItemStatus::Error); break;
+		case EntryState::Unmodified: list_bookmarks_->setItemStatus(index, ItemStatus::Normal); break;
+		case EntryState::Modified:   list_bookmarks_->setItemStatus(index, ItemStatus::Modified); break;
+		case EntryState::New:        list_bookmarks_->setItemStatus(index, ItemStatus::New); break;
+		default:                     list_bookmarks_->setItemStatus(index, ItemStatus::Error); break;
 		}
 }
 
@@ -1984,8 +1987,7 @@ void ArchiveManagerPanel::updateBookmarkListItem(int index) const
 void ArchiveManagerPanel::refreshBookmarkList() const
 {
 	// Get first bookmark menu id
-	auto a_bookmark  = SAction::fromId("aman_bookmark_menu");
-	int  id_bm_start = a_bookmark->wxId();
+	auto a_bookmark = SAction::fromId("aman_bookmark_menu");
 
 	// Clear the list
 	list_bookmarks_->ClearAll();
@@ -2092,6 +2094,8 @@ void ArchiveManagerPanel::goToBookmark(long index) const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the user selects an archive in the open files list.
@@ -2142,7 +2146,7 @@ void ArchiveManagerPanel::onListArchivesRightClick(wxListEvent& e)
 void ArchiveManagerPanel::onListRecentActivated(wxListEvent& e)
 {
 	// Open the archive
-	openFile(app::archiveManager().recentFile(e.GetIndex()));
+	openFile(recent_files_[e.GetIndex()]);
 	// Refresh the list
 	refreshRecentFileList();
 }
@@ -2184,13 +2188,13 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 {
 	// Page has changed, update custom menus and toolbars
 	int selection = stc_archives_->GetSelection();
+	if (selection < 0 || selection >= static_cast<int>(stc_archives_->GetPageCount()))
+		return;
 
 	// Remove any current custom menus/toolbars
 	theMainWindow->Freeze();
 	theMainWindow->removeAllCustomMenus();
-	theMainWindow->removeAllCustomToolBars();
-	theMainWindow->enableToolBar("_archive", false);
-	theMainWindow->enableToolBar("_entry", false);
+	theMainWindow->enableToolBarGroup("Archive", false);
 
 	// ArchivePanel
 	if (isArchiveTab(selection))
@@ -2211,8 +2215,9 @@ void ArchiveManagerPanel::onArchiveTabChanged(wxAuiNotebookEvent& e)
 	// TextureXEditor
 	if (isTextureEditorTab(selection))
 	{
-		auto te = dynamic_cast<TextureXEditor*>(stc_archives_->GetPage(selection));
-		te->updateMenuStatus();
+		auto te = dynamic_cast<texeditor::TextureEditorPanel*>(stc_archives_->GetPage(selection));
+		theMainWindow->addCustomMenu(te->textureMenu(), "&Texture");
+		theMainWindow->undoHistoryPanel()->setManager(te->undoManager());
 	}
 
 	theMainWindow->Thaw();
@@ -2253,7 +2258,7 @@ void ArchiveManagerPanel::onArchiveTabClosed(wxAuiNotebookEvent& e)
 // -----------------------------------------------------------------------------
 void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 {
-	auto change_list = e.GetPayload<DirArchiveChangeList>();
+	auto change_list = e.GetPayload<DirArchiveCheck::ChangeList>();
 
 	// Check the archive is still open
 	if (app::archiveManager().archiveIndex(change_list.archive) >= 0)
@@ -2264,11 +2269,11 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 		{
 			checked_dir_archive_changes_ = true;
 
-			auto archive = dynamic_cast<DirArchive*>(change_list.archive);
+			auto& format_handler = dynamic_cast<DirArchiveHandler&>(change_list.archive->formatHandler());
 
 			// Auto apply if option set
 			if (dir_archive_change_action == 1)
-				archive->updateChangedEntries(change_list.changes);
+				format_handler.updateChangedEntries(*change_list.archive, change_list.changes);
 
 			// Otherwise show change/update dialog
 			else
@@ -2277,14 +2282,10 @@ void ArchiveManagerPanel::onDirArchiveCheckCompleted(wxThreadEvent& e)
 				// (There's a wxGetActiveWindow, but it doesn't work on Mac.)
 				wxWindow* focused = wxWindow::FindFocus();
 				if (focused)
-				{
 					focused = wxGetTopLevelParent(focused);
-				}
 				if (!focused)
-				{
 					focused = maineditor::windowWx();
-				}
-				DirArchiveUpdateDialog dlg(focused, archive, change_list.changes);
+				DirArchiveUpdateDialog dlg(focused, change_list.archive, change_list.changes);
 				dlg.ShowModal();
 			}
 
@@ -2303,11 +2304,7 @@ void ArchiveManagerPanel::connectSignals()
 
 	// Update the archives list if an archive is added/closed/modified
 	signal_connections += signals.archive_added.connect(
-		[this](unsigned index)
-		{
-			list_archives_->addItem(index, "");
-			updateOpenListItem(index);
-		});
+		[this](unsigned index) { list_archives_->insert(index, app::archiveManager().getArchive(index).get()); });
 	signal_connections += signals.archive_closed.connect([this](unsigned index) { list_archives_->DeleteItem(index); });
 	signal_connections += signals.archive_saved.connect(
 		[this](unsigned index)
@@ -2335,7 +2332,7 @@ void ArchiveManagerPanel::connectSignals()
 	signal_connections += signals.archive_opened.connect([this](int index) { openTab(index); });
 
 	// Refresh recent files list when changed
-	signal_connections += signals.recent_files_changed.connect([this]() { refreshRecentFileList(); });
+	signal_connections += database::signals().archive_file_updated.connect([this] { refreshRecentFileList(); });
 
 	// Refresh bookmarks list when changed
 	signal_connections += signals.bookmark_added.connect([this](ArchiveEntry*) { refreshBookmarkList(); });
@@ -2409,7 +2406,7 @@ bool ArchiveManagerPanel::prepareCloseTab(int index)
 	// Check for texture editor
 	else if (page->GetName() == wxS("texture"))
 	{
-		auto txed = dynamic_cast<TextureXEditor*>(page);
+		auto txed = dynamic_cast<texeditor::TextureEditorPanel*>(page);
 		if (!txed->close())
 			return false;
 	}

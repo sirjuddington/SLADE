@@ -32,7 +32,7 @@
 #include "Main.h"
 #include "TempFolderWizardPage.h"
 #include "App.h"
-#include "General/UI.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 
@@ -60,7 +60,7 @@ EXTERN_CVAR(String, temp_location_custom)
 // -----------------------------------------------------------------------------
 TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(parent)
 {
-	auto pad_xl = ui::scalePx(16);
+	auto lh = ui::LayoutHelper(this);
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -70,20 +70,20 @@ TempFolderWizardPage::TempFolderWizardPage(wxWindow* parent) : WizardPageBase(pa
 
 	rb_use_system_ = new wxRadioButton(
 		this, -1, wxS("Use system temp folder (Recommended)"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-	sizer->Add(rb_use_system_, 0, wxEXPAND | wxBOTTOM, pad_xl);
+	sizer->Add(rb_use_system_, lh.sfWithXLargeBorder(0, wxBOTTOM).Expand());
 
 	rb_use_slade_dir_ = new wxRadioButton(this, -1, wxS("Use SLADE installation folder"));
-	sizer->Add(rb_use_slade_dir_, 0, wxEXPAND | wxBOTTOM, pad_xl);
+	sizer->Add(rb_use_slade_dir_, lh.sfWithXLargeBorder(0, wxBOTTOM).Expand());
 
 	rb_use_custom_dir_ = new wxRadioButton(this, -1, wxS("Use custom folder:"));
-	sizer->Add(rb_use_custom_dir_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	sizer->Add(rb_use_custom_dir_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND);
+	sizer->Add(hbox, wxSizerFlags().Expand());
 	text_custom_dir_ = new wxTextCtrl(this, -1, wxEmptyString);
-	hbox->Add(text_custom_dir_, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
+	hbox->Add(text_custom_dir_, lh.sfWithBorder(1, wxRIGHT).CenterVertical());
 	btn_browse_dir_ = new wxButton(this, -1, wxS("Browse..."));
-	hbox->Add(btn_browse_dir_, 0, wxEXPAND);
+	hbox->Add(btn_browse_dir_, wxSizerFlags().Expand());
 	text_custom_dir_->Enable(false);
 	btn_browse_dir_->Enable(false);
 
@@ -170,6 +170,8 @@ string TempFolderWizardPage::description()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the radio button selection changes

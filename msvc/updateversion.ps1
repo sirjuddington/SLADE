@@ -1,8 +1,8 @@
 # Current version
 $version_major =    "3"
-$version_minor =    "2"
-$version_revision = "12"
-$version_beta =     "0"
+$version_minor =    "3"
+$version_revision = "0"
+$version_beta =     "3"
 
 # Prompt for new version numbers
 Write-Host "Major version number: $version_major (locked)"
@@ -44,7 +44,7 @@ if ($version_beta -eq "0")
 }
 else
 {
-	$new_version_line = "version = `"${version_major}.${version_minor}.${version_revision}_b${version_beta}`""
+	$new_version_line = "version = `"${version_major}.${version_minor}.${version_revision}-beta${version_beta}`""
 }
 
 if ($null -eq $version_line)
@@ -118,7 +118,7 @@ if ($version_beta -eq "0")
 else
 {
 	$new_version_line = `
-		"#define MyAppVersion `"${version_major}.${version_minor}.${version_revision} Beta ${version_beta}`""
+		"#define MyAppVersion `"${version_major}.${version_minor}.${version_revision}-beta${version_beta}`""
 }
 
 if ($null -eq $version_line)
@@ -135,22 +135,29 @@ else
 
 # net.mancubus.SLADE.metainfo.xml ----------------------------------------------
 
-$file = "../net.mancubus.SLADE.metainfo.xml"
-$release = "$version_major.$version_minor.$version_revision"
-if (Get-Content $file | Select-String "version=`"$release`"")
+if (${version_beta} -eq 0)
 {
-	Write-Host "Release $release already exists in $file" -ForegroundColor Yellow
+	$file = "../unix/net.mancubus.SLADE.metainfo.xml"
+	$release = "$version_major.$version_minor.$version_revision"
+	if (Get-Content $file | Select-String "version=`"$release`"")
+	{
+		Write-Host "Release $release already exists in $file" -ForegroundColor Yellow
+	}
+	else
+	{
+		$date = Get-Date -Format "yyyy-MM-dd"
+		$new_releases_node = `
+			"<releases>`r`n`t`t<release date=`"$date`" version=`"$release`"/>"
+
+		Write-Host "Adding release in $file" -ForegroundColor Blue
+		Write-Host "Text: $new_releases_node" -ForegroundColor DarkGray
+
+		(Get-Content $file) -replace "<releases>", $new_releases_node | Set-Content $file
+	}
 }
 else
 {
-	$date = Get-Date -Format "yyyy-MM-dd"
-	$new_releases_node = `
-		"<releases>`r`n`t`t<release date=`"$date`" version=`"$release`"/>"
-
-	Write-Host "Adding release in $file" -ForegroundColor Blue
-	Write-Host "Text: $new_releases_node" -ForegroundColor DarkGray
-
-	(Get-Content $file) -replace "<releases>", $new_releases_node | Set-Content $file
+	Write-Host "Skipping net.mancubus.SLADE.metainfo.xml for beta release" -ForegroundColor Yellow
 }
 
 # Info.plist -------------------------------------------------------------------
@@ -213,3 +220,17 @@ else
 	(Get-Content $file) -replace $version_revision_line, $new_version_revision_line | Set-Content $file
 	(Get-Content $file) -replace $version_beta_line, $new_version_beta_line | Set-Content $file
 }
+
+# contributors.txt -------------------------------------------------------------
+Write-Host "`nUpdating contributors list..." -foregroundcolor blue
+& "$PSScriptRoot\updatecontributors.ps1"
+
+# Release Notes ----------------------------------------------------------------
+# Create release notes file if it doesn't exist then open it in notepad
+$releasenotes = "..\dist\res\release_notes\$version.md"
+if (-not (Test-Path $releasenotes))
+{
+	Write-Host "`nCreating release notes file $releasenotes" -foregroundcolor blue
+	New-Item -ItemType file -Force -Path $releasenotes | out-null
+}
+Start-Process notepad.exe $releasenotes

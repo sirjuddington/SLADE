@@ -1,0 +1,101 @@
+{
+  "aman_newarchive": {
+    "text": "New Archive",
+    "icon": "newarchive",
+    "help_text": "Create a new Archive",
+    "shortcut": "Ctrl+Shift+N"
+  },
+  "aman_newmap": {
+    "text": "New Map",
+    "icon": "mapeditor",
+    "help_text": "Create a new standalone map",
+    "shortcut": "Ctrl+Shift+M"
+  },
+  "aman_open": {
+    "text": "&Open",
+    "icon": "open",
+    "help_text": "Open an existing Archive",
+    "shortcut": "Ctrl+O"
+  },
+  "aman_opendir": {
+    "text": "Open &Directory",
+    "icon": "opendir",
+    "help_text": "Open a directory as an Archive"
+  },
+  "aman_save": {
+    "text": "&Save",
+    "icon": "save",
+    "help_text": "Save any changes in the current tab",
+    "shortcut": "Ctrl+S"
+  },
+  "aman_saveas": {
+    "text": "Save &As",
+    "icon": "saveas",
+    "help_text": "Save the currently open Archive to a new file"
+  },
+  "aman_saveall": {
+    "text": "Save All",
+    "icon": "saveall",
+    "help_text": "Save all open Archives",
+    "shortcut": "Ctrl+Shift+S"
+  },
+  "aman_close": {
+    "text": "&Close",
+    "icon": "close",
+    "help_text": "Close the current tab",
+    "shortcut": "Ctrl+W"
+  },
+  "aman_closeall": {
+    "text": "Close All",
+    "icon": "closeall",
+    "help_text": "Close all open Archives"
+  },
+  "aman_recent_open": {
+    "text": "Open",
+    "icon": "open",
+    "help_text": "Open the selected Archive(s)"
+  },
+  "aman_recent_remove": {
+    "text": "Remove",
+    "icon": "close",
+    "help_text": "Remove the selected Archive(s) from the recent list"
+  },
+  "aman_bookmark_go": {
+    "text": "Go To",
+    "icon": "open",
+    "help_text": "Go to the selected bookmark"
+  },
+  "aman_bookmark_remove": {
+    "text": "Remove",
+    "icon": "delete",
+    "help_text": "Remove the selected bookmark(s) from the list"
+  },
+  "aman_bookmark_removeall": {
+    "text": "Remove all Bookmarks",
+    "icon": "delete",
+    "help_text": "Remove all bookmarks"
+  },
+  "aman_save_a": {
+    "text": "&Save",
+    "icon": "save",
+    "help_text": "Save the selected Archive",
+    "shortcut": "Ctrl+S"
+  },
+  "aman_saveas_a": {
+    "text": "Save &As",
+    "icon": "saveas",
+    "help_text": "Save the selected Archive to a new file",
+    "shortcut": "Ctrl+Shift+S"
+  },
+  "aman_close_a": {
+    "text": "&Close",
+    "icon": "close",
+    "help_text": "Close the selected Archive"
+  },
+  "aman_recent": {
+    "reserved_ids": 20
+  },
+  "aman_bookmark_menu": {
+    "reserved_ids": 20
+  }
+}

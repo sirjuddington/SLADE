@@ -1,0 +1,31 @@
+{
+  "dependencies": [
+    "cpptrace",
+    "fluidsynth",
+    "freetype",
+    "glm",
+    {
+      "name": "libarchive",
+      "$comment": "We don't need en/decryption support so skip libarchive[crypto] to avoid pulling in OpenSSL",
+      "default-features": false,
+      "features": [
+        { "name": "bzip2" },
+        { "name": "lz4" },
+        { "name": "lzma" },
+        { "name": "xar" },
+        { "name": "zstd" }
+      ]
+    },
+    "libxmp",
+    "mpg123",
+    "sfml"
+  ],
+  "builtin-baseline": "23b8a8e7409c2d6346114a88e834165bde79a51c",
+  "default-features": [ "system-wx" ],
+  "features": {
+    "system-wx": {
+      "description": "Use the vcpkg-provided wxWidgets (disabled when BUILD_WX is ON)",
+      "dependencies": [ "wxwidgets" ]
+    }
+  }
+}

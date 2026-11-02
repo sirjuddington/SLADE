@@ -1,0 +1,119 @@
+{
+  "id": "edge_classic",
+  "name": "EDGE-Classic",
+
+  // Supported games
+  "games": [ "doom", "doom2", "heretic", "chex1" ],
+
+  // Supported map formats
+  "map_formats": [ "doom", "udmf" ],
+
+  "configuration": [
+    // Base configuration
+    {
+      "map_name_any": true,
+      "long_names": true,
+      "mix_tex_flats": true,
+      "tx_textures": true,
+      "light_level_interval": 8,
+
+      // Action specials
+      "action_specials": {
+        "clear_existing": true,
+        "import": [
+          "include/action_specials/edge_classic.json",
+          {
+            // Doom-only specials
+            "filter": { "game": [ "doom", "doom2", "chex1" ] },
+            "file": "include/action_specials/edge_classic.json",
+            "key": "doom"
+          },
+          {
+            // Heretic-only specials
+            "filter": { "game": [ "heretic" ] },
+            "file": "include/action_specials/edge_classic.json",
+            "key": "heretic"
+          }
+        ]
+      },
+
+      // Thing types
+      "thing_types": {
+        "import": [
+          "include/thing_types/boom.json",
+          "include/thing_types/mbf.json"
+        ]
+      },
+
+      // Thing flags
+      "thing_flags": {
+        "import": [ "include/thing_flags/mbf.json" ]
+      },
+
+      // Line flags
+      "line_flags": {
+        "import": [ "include/line_flags/edge_classic.json" ]
+      },
+
+      // Sector types
+      "sector_types": {
+        "import": [
+          "include/sector_types/edge_classic.json",
+          {
+            // Doom-only types
+            "filter": { "game": [ "doom", "doom2", "chex1" ] },
+            "file": "include/sector_types/edge_classic.json",
+            "key": "doom"
+          },
+          {
+            // Heretic-only types
+            "filter": { "game": [ "heretic" ] },
+            "file": "include/sector_types/edge_classic.json",
+            "key": "heretic"
+          }
+        ]
+      }
+    },
+
+    // Doom map format configuration
+    {
+      "filter": { "map_format": "doom" },
+
+      // Enable boom extensions
+      "boom": true,
+      "boom_sector_flag_start": 32
+    },
+
+    // UDMF map format configuration
+    {
+      "filter": { "map_format": "udmf" },
+
+      "boom_sector_flag_start": 256,
+
+      // UDMF namespace
+      "udmf_namespace": "edge-classic",
+
+      // UDMF features
+      "udmf_slopes": true,
+      "udmf_flat_lighting": false,
+      "udmf_flat_panning": true,
+      "udmf_flat_rotation": true,
+      "udmf_flat_scaling": true,
+      "udmf_line_transparency": false,
+      "udmf_sector_color": true,
+      "udmf_sector_fog": true,
+      "udmf_side_lighting": false,
+      "udmf_side_midtex_wrapping": false,
+      "udmf_side_scaling": true,
+      "udmf_texture_scaling": true,
+      "udmf_texture_offsets": true,
+      "udmf_thing_scaling": true,
+      "udmf_thing_rotation": true,
+
+      // UDMF properties
+      "udmf_properties": {
+        "import": [ "include/udmf_properties/edge_classic.json" ]
+      }
+    }
+  ]
+}

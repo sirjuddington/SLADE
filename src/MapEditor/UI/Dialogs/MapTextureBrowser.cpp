@@ -32,11 +32,16 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapTextureBrowser.h"
+#include "Archive/Archive.h"
 #include "Game/Configuration.h"
-#include "General/ResourceManager.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
+#include "OpenGL/GLTexture.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/SideList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/Browser/BrowserCanvas.h"
+#include "UI/Browser/BrowserItem.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -50,84 +55,88 @@ using namespace mapeditor;
 // -----------------------------------------------------------------------------
 CVAR(Int, map_tex_sort, 2, CVar::Flag::Save)
 CVAR(String, map_tex_treespec, "type,archive,category", CVar::Flag::Save)
-const string MapTexBrowserItem::TEXTURE = "texture";
-const string MapTexBrowserItem::FLAT    = "flat";
 
 
 // -----------------------------------------------------------------------------
 //
-// MapTexBrowserItem Class Functions
+// MapTexBrowserItem Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// MapTexBrowserItem class constructor
-// -----------------------------------------------------------------------------
-MapTexBrowserItem::MapTexBrowserItem(const string& name, const string& type, unsigned index) :
-	BrowserItem(name, index, type)
+class MapTexBrowserItem : public BrowserItem
 {
-	// Check for blank texture
-	if (name == "-" && type == TEXTURE)
-		blank_ = true;
-}
+public:
+	static inline const string TEXTURE = "texture";
+	static inline const string FLAT    = "flat";
 
-// -----------------------------------------------------------------------------
-// Loads the item image
-// -----------------------------------------------------------------------------
-bool MapTexBrowserItem::loadImage()
-{
-	const MapTextureManager::Texture* tex = nullptr;
-
-	// Get texture or flat depending on type
-	if (type_ == "texture")
-		tex = &mapeditor::textureManager().texture(name_, false);
-	else if (type_ == "flat")
-		tex = &mapeditor::textureManager().flat(name_, false);
-
-	if (tex)
+	MapTexBrowserItem(const string& name, const string& type, unsigned index = 0) : BrowserItem(name, index, type)
 	{
-		image_tex_ = tex->gl_id;
-		scale_     = tex->scale;
-		return true;
+		// Check for blank texture
+		if (name == "-" && type == TEXTURE)
+			blank_ = true;
 	}
-	else
-		return false;
-}
 
-// -----------------------------------------------------------------------------
-// Returns a string with extra information about the texture/flat
-// -----------------------------------------------------------------------------
-string MapTexBrowserItem::itemInfo()
-{
-	string info;
+	~MapTexBrowserItem() override = default;
 
-	// Check for blank texture
-	if (name_ == "-")
-		return "No Texture";
+	// Loads the item image
+	bool loadImage() override
+	{
+		const MapTextureManager::Texture* tex = nullptr;
 
-	// Add dimensions if known
-	auto& tex_info = gl::Texture::info(image_tex_);
-	if (image_tex_ || loadImage())
-		info += fmt::format("{}x{}", tex_info.size.x, tex_info.size.y);
-	else
-		info += "Unknown size";
+		// Get texture or flat depending on type
+		if (type_ == "texture")
+			tex = &mapeditor::textureManager().texture(name_, false);
+		else if (type_ == "flat")
+			tex = &mapeditor::textureManager().flat(name_, false);
 
-	// Add type
-	if (type_ == "texture")
-		info += ", Texture";
-	else
-		info += ", Flat";
+		if (tex)
+		{
+			image_tex_ = tex->gl_id;
+			scale_     = tex->scale;
+			return true;
+		}
+		else
+			return false;
+	}
 
-	// Add scaling info
-	if (scale_.x != 1. || scale_.y != 1.)
-		info += ", Scaled";
+	// Returns a string with extra information about the texture/flat
+	string itemInfo() override
+	{
+		string info;
 
-	// Add usage count
-	info += fmt::format(", Used {} times", usage_count_);
+		// Check for blank texture
+		if (name_ == "-")
+			return "No Texture";
 
-	return info;
-}
+		// Add dimensions if known
+		auto& tex_info = gl::Texture::info(image_tex_);
+		if (image_tex_ || loadImage())
+			info += fmt::format("{}x{}", tex_info.size.x, tex_info.size.y);
+		else
+			info += "Unknown size";
+
+		// Add type
+		if (type_ == "texture")
+			info += ", Texture";
+		else
+			info += ", Flat";
+
+		// Add scaling info
+		if (scale_.x != 1. || scale_.y != 1.)
+			info += ", Scaled";
+
+		// Add usage count
+		info += fmt::format(", Used {} times", usage_count_);
+
+		return info;
+	}
+
+	int  usageCount() const { return usage_count_; }
+	void setUsage(int count) { usage_count_ = count; }
+
+private:
+	int   usage_count_ = 0;
+	Vec2d scale_       = { 1., 1. };
+};
 
 
 // -----------------------------------------------------------------------------
@@ -135,7 +144,6 @@ string MapTexBrowserItem::itemInfo()
 // MapTextureBrowser Class Functions
 //
 // -----------------------------------------------------------------------------
-
 
 // -----------------------------------------------------------------------------
 // MapTextureBrowser class constructor
@@ -271,7 +279,7 @@ MapTextureBrowser::MapTextureBrowser(wxWindow* parent, TextureType type, string_
 // Builds and returns the tree item path for [info]
 // -----------------------------------------------------------------------------
 string MapTextureBrowser::determineTexturePath(
-	Archive*                    archive,
+	const Archive*              archive,
 	MapTextureManager::Category category,
 	const string&               type,
 	const string&               path) const
@@ -288,11 +296,11 @@ string MapTextureBrowser::determineTexturePath(
 		{
 			switch (category)
 			{
-			case MapTextureManager::Category::TextureX: ret += "TEXTUREx"; break;
+			case MapTextureManager::Category::TextureX:   ret += "TEXTUREx"; break;
 			case MapTextureManager::Category::ZDTextures: ret += "TEXTURES"; break;
-			case MapTextureManager::Category::HiRes: ret += "HIRESTEX"; break;
-			case MapTextureManager::Category::Tx: ret += "Single (TX)"; break;
-			default: continue;
+			case MapTextureManager::Category::HiRes:      ret += "HIRESTEX"; break;
+			case MapTextureManager::Category::Tx:         ret += "Single (TX)"; break;
+			default:                                      continue;
 			}
 		}
 

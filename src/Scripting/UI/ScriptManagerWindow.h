@@ -1,34 +1,37 @@
 #pragma once
 
-#include "General/SAction.h"
-#include "Scripting/ScriptManager.h"
+#include "General/SActionHandler.h"
 #include "UI/STopWindow.h"
 
+// Forward declarations
 namespace slade
 {
 class STabCtrl;
 class ScriptPanel;
+namespace scriptmanager
+{
+	enum class ScriptType;
+	struct Script;
+} // namespace scriptmanager
+} // namespace slade
 
+namespace slade
+{
 class ScriptManagerWindow : public STopWindow, SActionHandler
 {
 public:
 	ScriptManagerWindow();
-	virtual ~ScriptManagerWindow() = default;
+	~ScriptManagerWindow() override = default;
 
 	void                   openScriptTab(scriptmanager::Script* script) const;
 	scriptmanager::Script* currentScript() const;
 	string                 currentScriptText() const;
 
 private:
-	scriptmanager::Script  script_scratchbox_;
-	scriptmanager::Script* script_clicked_ = nullptr;
+	unique_ptr<scriptmanager::Script> script_scratchbox_;
+	scriptmanager::Script*            script_clicked_ = nullptr;
 
 	std::map<scriptmanager::ScriptType, wxTreeItemId> editor_script_nodes_;
-
-	// Documentation tab
-#if USE_WEBVIEW_STARTPAGE
-	wxWebView* webview_docs_ = nullptr;
-#endif
 
 	// Widgets
 	STabCtrl*   tabs_scripts_ = nullptr;
@@ -49,7 +52,7 @@ private:
 	void         addEditorScriptsNode(wxTreeItemId parent_node, scriptmanager::ScriptType type, const wxString& name);
 	void         populateScriptsTree();
 	ScriptPanel* currentPage() const;
-	void         closeScriptTab(scriptmanager::Script* script) const;
+	void         closeScriptTab(const scriptmanager::Script* script) const;
 	void         showDocs(const string& url = "");
 
 	// SActionHandler

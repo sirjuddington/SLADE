@@ -2,6 +2,10 @@
 
 namespace slade
 {
+namespace gl::draw2d
+{
+	struct Context;
+}
 // MCOverlay is a base class for full-screen map editor overlays
 // that take input and mouse clicks when active
 class MCOverlay
@@ -15,6 +19,7 @@ public:
 
 	virtual void update(long frametime) {}
 	virtual void draw(int width, int height, float fade = 1.0f) {}
+	virtual void draw(gl::draw2d::Context& dc, float fade = 1.0f) {}
 	virtual void close(bool cancel = false) {}
 	virtual void mouseMotion(int x, int y) {}
 	virtual void mouseLeftClick() {}

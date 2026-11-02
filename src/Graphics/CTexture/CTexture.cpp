@@ -33,9 +33,11 @@
 #include "Main.h"
 #include "CTexture.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "Graphics/SImage/SImage.h"
+#include "Graphics/Translation.h"
 #include "TextureXList.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -54,6 +56,11 @@ using namespace slade;
 // CTPatch class constructor w/initial values
 // -----------------------------------------------------------------------------
 CTPatch::CTPatch(string_view name, int16_t offset_x, int16_t offset_y) : name_{ name }, offset_{ offset_x, offset_y } {}
+
+// -----------------------------------------------------------------------------
+// CTPatch class destructor
+// -----------------------------------------------------------------------------
+CTPatch::~CTPatch() = default;
 
 // -----------------------------------------------------------------------------
 // Returns the entry (if any) associated with this patch via the resource
@@ -94,6 +101,11 @@ CTPatchEx::CTPatchEx(string_view name, int16_t offset_x, int16_t offset_y, Type 
 }
 
 // -----------------------------------------------------------------------------
+// CTPatchEx class constructor copying another CTPatch (non-extended)
+// -----------------------------------------------------------------------------
+CTPatchEx::CTPatchEx(const CTPatch& copy) : CTPatch{ copy } {}
+
+// -----------------------------------------------------------------------------
 // CTPatchEx class constructor copying another CTPatchEx
 // -----------------------------------------------------------------------------
 CTPatchEx::CTPatchEx(const CTPatchEx& copy) :
@@ -106,9 +118,83 @@ CTPatchEx::CTPatchEx(const CTPatchEx& copy) :
 	colour_{ copy.colour_ },
 	alpha_{ copy.alpha_ },
 	style_{ copy.style_ },
-	blendtype_{ copy.blendtype_ }
+	blendtype_{ copy.blendtype_ },
+	tint_amount_{ copy.tint_amount_ }
 {
-	translation_.copy(copy.translation_);
+	if (copy.translation_)
+	{
+		translation_ = std::make_unique<Translation>();
+		translation_->copy(*copy.translation_);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// CTPatchEx class destructor
+// -----------------------------------------------------------------------------
+CTPatchEx::~CTPatchEx() = default;
+
+// -----------------------------------------------------------------------------
+// Returns true if the patch has [flag] set
+// -----------------------------------------------------------------------------
+bool CTPatchEx::hasFlag(string_view flag) const
+{
+	if (strutil::equalCI(flag, "FlipX"))
+		return flip_x_;
+	else if (strutil::equalCI(flag, "FlipY"))
+		return flip_y_;
+	else if (strutil::equalCI(flag, "UseOffsets"))
+		return use_offsets_;
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the patch's [translation] (but not blend type)
+// -----------------------------------------------------------------------------
+void CTPatchEx::setTranslation(const Translation& translation)
+{
+	if (!translation_)
+		translation_ = std::make_unique<Translation>();
+
+	translation_->copy(translation);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the patch's translation from a string definition (but not blend type)
+// -----------------------------------------------------------------------------
+void CTPatchEx::setTranslation(string_view trans_str)
+{
+	if (trans_str.empty())
+	{
+		translation_.reset();
+		return;
+	}
+
+	if (!translation_)
+		translation_ = std::make_unique<Translation>();
+
+	translation_->parse(trans_str);
+}
+
+// -----------------------------------------------------------------------------
+// Sets [flag] [on] or off
+// -----------------------------------------------------------------------------
+void CTPatchEx::setFlag(string_view flag, bool on)
+{
+	if (strutil::equalCI(flag, "FlipX"))
+		flip_x_ = on;
+	else if (strutil::equalCI(flag, "FlipY"))
+		flip_y_ = on;
+	else if (strutil::equalCI(flag, "UseOffsets"))
+		use_offsets_ = on;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the patch has a translation defined
+// -----------------------------------------------------------------------------
+bool CTPatchEx::hasTranslation() const
+{
+	return translation_ && !translation_->isEmpty();
 }
 
 // -----------------------------------------------------------------------------
@@ -196,7 +282,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 					translate += temp;
 				}
 				// Parse whole string
-				translation_.parse(translate);
+				translation_ = std::make_unique<Translation>();
+				translation_->parse(translate);
 				blendtype_ = BlendType::Translation;
 			}
 
@@ -227,8 +314,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 					{
 						col.Set(wxString::FromUTF8(first));
 						colour_.set(col);
-						colour_.a  = static_cast<uint8_t>(second * 255.0);
-						blendtype_ = BlendType::Tint;
+						tint_amount_ = second;
+						blendtype_   = BlendType::Tint;
 					}
 					else
 					{
@@ -245,8 +332,8 @@ bool CTPatchEx::parse(Tokenizer& tz, Type type)
 							return false;
 						}
 						tz.adv(); // Skip ,
-						colour_.a  = static_cast<uint8_t>(tz.next().asFloat() * 255.0);
-						blendtype_ = BlendType::Tint;
+						tint_amount_ = tz.next().asFloat();
+						blendtype_   = BlendType::Tint;
 					}
 				}
 			}
@@ -279,7 +366,12 @@ string CTPatchEx::asText()
 	auto text = fmt::format("\t{} \"{}\", {}, {}\n", typestring, name_, offset_.x, offset_.y);
 
 	// Check if we need to write any extra properties
-	if (!flip_x_ && !flip_y_ && !use_offsets_ && rotation_ == 0 && blendtype_ == BlendType::None && alpha_ == 1.0f
+	if (!flip_x_
+		&& !flip_y_
+		&& !use_offsets_
+		&& rotation_ == 0
+		&& blendtype_ == BlendType::None
+		&& alpha_ == 1.0f
 		&& strutil::equalCI(style_, "Copy"))
 		return text;
 	else
@@ -294,10 +386,10 @@ string CTPatchEx::asText()
 		text += "\t\tUseOffsets\n";
 	if (rotation_ != 0)
 		text += fmt::format("\t\tRotate {}\n", rotation_);
-	if (blendtype_ == BlendType::Translation && !translation_.isEmpty())
+	if (blendtype_ == BlendType::Translation && translation_ && !translation_->isEmpty())
 	{
 		text += "\t\tTranslation ";
-		text += translation_.asText();
+		text += translation_->asText();
 		text += "\n";
 	}
 	if (blendtype_ == BlendType::Blend || blendtype_ == BlendType::Tint)
@@ -306,12 +398,12 @@ string CTPatchEx::asText()
 		text += fmt::format("\t\tBlend \"{}\"", col.GetAsString(wxC2S_HTML_SYNTAX).utf8_string());
 
 		if (blendtype_ == BlendType::Tint)
-			text += fmt::format(", {:1.1f}\n", static_cast<double>(colour_.a) / 255.0);
+			text += fmt::format(", {:1.3f}\n", tint_amount_);
 		else
 			text += "\n";
 	}
 	if (alpha_ < 1.0f)
-		text += fmt::format("\t\tAlpha {:1.2f}\n", alpha_);
+		text += fmt::format("\t\tAlpha {:1.3f}\n", alpha_);
 	if (!(strutil::equalCI(style_, "Copy")))
 		text += fmt::format("\t\tStyle {}\n", style_);
 
@@ -328,33 +420,34 @@ string CTPatchEx::asText()
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// CTexture class destructor
+// -----------------------------------------------------------------------------
+CTexture::~CTexture() = default;
 
 // -----------------------------------------------------------------------------
 // Copies the texture [tex] to this texture.
 // If [keep_type] is true, the current texture type (extended/regular) will be
 // kept, otherwise it will be converted to the type of [tex]
 // -----------------------------------------------------------------------------
-void CTexture::copyTexture(const CTexture& tex, bool keep_type)
+void CTexture::copyTexture(const CTexture& tex, bool keep_type, bool patches)
 {
 	// Clear current texture
 	clear();
 
 	// Copy texture info
-	name_          = tex.name_;
-	size_          = tex.size_;
-	def_size_      = tex.def_size_;
-	scale_         = tex.scale_;
-	world_panning_ = tex.world_panning_;
+	name_     = tex.name_;
+	size_     = tex.size_;
+	def_size_ = tex.def_size_;
+	scale_    = tex.scale_;
+	flags_    = tex.flags_;
 	if (!keep_type)
 	{
 		extended_ = tex.extended_;
 		defined_  = tex.defined_;
 	}
-	optional_     = tex.optional_;
-	no_decals_    = tex.no_decals_;
-	null_texture_ = tex.null_texture_;
-	offset_       = tex.offset_;
-	type_         = tex.type_;
+	offset_ = tex.offset_;
+	type_   = tex.type_;
 
 	// Update scaling
 	if (extended_)
@@ -372,6 +465,10 @@ void CTexture::copyTexture(const CTexture& tex, bool keep_type)
 			scale_.y = 0;
 	}
 
+	// Done if we aren't copying patches
+	if (!patches)
+		return;
+
 	// Copy patches
 	for (unsigned a = 0; a < tex.nPatches(); a++)
 	{
@@ -387,6 +484,43 @@ void CTexture::copyTexture(const CTexture& tex, bool keep_type)
 		else
 			addPatch(patch->name(), patch->xOffset(), patch->yOffset());
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Returns the texture's scale as a multiplication factor
+// -----------------------------------------------------------------------------
+Vec2d CTexture::scaleFactor() const
+{
+	Vec2d scale = scale_;
+	if (scale.x == 0.0)
+		scale.x = 1.0;
+	else
+		scale.x = 1.0 / scale.x;
+	if (scale.y == 0.0)
+		scale.y = 1.0;
+	else
+		scale.y = 1.0 / scale.y;
+
+	return scale;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the texture type as a CTexture::Type enum value
+// -----------------------------------------------------------------------------
+CTexture::Type CTexture::typeEnum() const
+{
+	if (strutil::equalCI(type_, "Sprite"))
+		return Type::Sprite;
+	if (strutil::equalCI(type_, "Graphic"))
+		return Type::Graphic;
+	if (strutil::equalCI(type_, "WallTexture"))
+		return Type::WallTexture;
+	if (strutil::equalCI(type_, "Flat"))
+		return Type::Flat;
+	if (strutil::equalCI(type_, "Define"))
+		return Type::HiRes;
+
+	return Type::Texture;
 }
 
 // -----------------------------------------------------------------------------
@@ -416,20 +550,96 @@ int CTexture::index() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the index of [patch] in this texture, or -1 if not found
+// -----------------------------------------------------------------------------
+int CTexture::patchIndex(const CTPatch* patch) const
+{
+	for (unsigned a = 0; a < patches_.size(); a++)
+		if (patches_[a].get() == patch)
+			return a;
+
+	return -1;
+}
+
+void CTexture::setWorldPanning(bool wp)
+{
+	flags_ = (flags_ & ~static_cast<u8>(Flag::WorldPanning)) | (wp ? static_cast<u8>(Flag::WorldPanning) : 0);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the texture type based on the given CTexture::Type enum value
+// -----------------------------------------------------------------------------
+void CTexture::setType(Type type)
+{
+	switch (type)
+	{
+	case Type::Sprite:      type_ = "Sprite"; break;
+	case Type::Graphic:     type_ = "Graphic"; break;
+	case Type::WallTexture: type_ = "WallTexture"; break;
+	case Type::Flat:        type_ = "Flat"; break;
+	case Type::HiRes:       type_ = "Define"; break;
+	default:                type_ = "Texture"; break;
+	}
+}
+
+void CTexture::setOptional(bool opt)
+{
+	flags_ = (flags_ & ~static_cast<u8>(Flag::Optional)) | (opt ? static_cast<u8>(Flag::Optional) : 0);
+}
+void CTexture::setNoDecals(bool nd)
+{
+	flags_ = (flags_ & ~static_cast<u8>(Flag::NoDecals)) | (nd ? static_cast<u8>(Flag::NoDecals) : 0);
+}
+void CTexture::setNullTexture(bool nt)
+{
+	flags_ = (flags_ & ~static_cast<u8>(Flag::NullTexture)) | (nt ? static_cast<u8>(Flag::NullTexture) : 0);
+}
+void CTexture::setNoTrim(bool nt)
+{
+	flags_ = (flags_ & ~static_cast<u8>(Flag::NoTrim)) | (nt ? static_cast<u8>(Flag::NoTrim) : 0);
+}
+
+// -----------------------------------------------------------------------------
+// Sets the texture edit state
+// -----------------------------------------------------------------------------
+void CTexture::setState(State state)
+{
+	// Ignore if no change
+	if (state == state_)
+		return;
+
+	// New stays new until saved (set to unmodified)
+	if (state == State::Modified && state_ == State::New)
+		return;
+
+	state_ = state;
+}
+
+// -----------------------------------------------------------------------------
+// Sets the given [flag] [on] or off, returning the previous state of the flag
+// -----------------------------------------------------------------------------
+bool CTexture::setFlag(Flag flag, bool on)
+{
+	auto flag_val = static_cast<u8>(flag);
+	auto prev_on  = (flags_ & flag_val) != 0;
+
+	flags_ = (flags_ & ~flag_val) | (on ? flag_val : 0);
+
+	return prev_on;
+}
+
+// -----------------------------------------------------------------------------
 // Clears all texture data
 // -----------------------------------------------------------------------------
 void CTexture::clear()
 {
-	name_          = "";
-	size_          = { 0, 0 };
-	def_size_      = { 0, 0 };
-	scale_         = { 1., 1. };
-	defined_       = false;
-	world_panning_ = false;
-	optional_      = false;
-	no_decals_     = false;
-	null_texture_  = false;
-	offset_        = { 0, 0 };
+	name_     = "";
+	size_     = { 0, 0 };
+	def_size_ = { 0, 0 };
+	scale_    = { 1., 1. };
+	defined_  = false;
+	flags_    = 0;
+	offset_   = { 0, 0 };
 	patches_.clear();
 }
 
@@ -455,9 +665,6 @@ bool CTexture::addPatch(string_view patch, int16_t offset_x, int16_t offset_y, i
 	// Cannot be a simple define anymore
 	defined_ = false;
 
-	// Announce
-	signals_.patches_modified(*this);
-
 	return true;
 }
 
@@ -477,10 +684,34 @@ bool CTexture::removePatch(size_t index)
 	// Cannot be a simple define anymore
 	defined_ = false;
 
-	// Announce
-	signals_.patches_modified(*this);
-
 	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Removes the patches at [indices].
+// Returns true if any were removed, false otherwise
+// -----------------------------------------------------------------------------
+bool CTexture::removePatches(const vector<unsigned>& indices)
+{
+	// Sort indices in descending order
+	auto sorted_indices = indices;
+	std::ranges::sort(sorted_indices, std::greater());
+
+	// Go through indices to remove
+	bool removed = false;
+	for (auto index : sorted_indices)
+	{
+		if (index >= patches_.size())
+			continue;
+
+		patches_.erase(patches_.begin() + index);
+		removed = true;
+	}
+
+	if (removed)
+		defined_ = false; // Cannot be a simple define anymore
+
+	return removed;
 }
 
 // -----------------------------------------------------------------------------
@@ -504,18 +735,14 @@ bool CTexture::removePatch(string_view patch)
 	// Cannot be a simple define anymore
 	defined_ = false;
 
-	if (removed)
-		signals_.patches_modified(*this);
-
 	return removed;
 }
 
 // -----------------------------------------------------------------------------
-// Replaces the patch at [index] with [newpatch], and updates its associated
-// ArchiveEntry with [newentry].
+// Replaces the patch at [index] with [newpatch].
 // Returns false if [index] is out of bounds, true otherwise
 // -----------------------------------------------------------------------------
-bool CTexture::replacePatch(size_t index, string_view newpatch)
+bool CTexture::replacePatch(size_t index, string_view newpatch) const
 {
 	// Check index
 	if (index >= patches_.size())
@@ -524,10 +751,27 @@ bool CTexture::replacePatch(size_t index, string_view newpatch)
 	// Replace patch at [index] with new
 	patches_[index]->setName(newpatch);
 
-	// Announce
-	signals_.patches_modified(*this);
-
 	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Replaces the patches at [indices] with [newpatch].
+// Returns true if any were replaced, false otherwise
+// -----------------------------------------------------------------------------
+bool CTexture::replacePatches(const vector<unsigned>& indices, string_view newpatch) const
+{
+	// Replace patches at [indices] with new
+	bool replaced = false;
+	for (auto index : indices)
+	{
+		if (index >= patches_.size())
+			continue;
+
+		patches_[index]->setName(newpatch);
+		replaced = true;
+	}
+
+	return replaced;
 }
 
 // -----------------------------------------------------------------------------
@@ -560,8 +804,23 @@ bool CTexture::duplicatePatch(size_t index, int16_t offset_x, int16_t offset_y)
 	// Cannot be a simple define anymore
 	defined_ = false;
 
-	// Announce
-	signals_.patches_modified(*this);
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Duplicates the patches at [indices], placing the duplicated patches at
+// [offset_x],[offset_y] from the originals.
+// Returns true if any were duplicated, false otherwise
+// -----------------------------------------------------------------------------
+bool CTexture::duplicatePatches(const vector<unsigned>& indices, int16_t offset_x, int16_t offset_y)
+{
+	// Sort indices in descending order
+	auto sorted_indices = indices;
+	std::ranges::sort(sorted_indices, std::greater());
+
+	// Duplicate patches
+	for (auto index : sorted_indices)
+		duplicatePatch(index, offset_x, offset_y);
 
 	return true;
 }
@@ -579,8 +838,23 @@ bool CTexture::swapPatches(size_t p1, size_t p2)
 	// Swap the patches
 	patches_[p1].swap(patches_[p2]);
 
-	// Announce
-	signals_.patches_modified(*this);
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Replaces the current patch list with [new_patches].
+// Returns false if the patch types don't match, true otherwise.
+//
+// NOTE: This will swap the lists, so [new_patches] will contain the old patches
+// after calling this
+// -----------------------------------------------------------------------------
+bool CTexture::replacePatches(vector<unique_ptr<CTPatch>>& new_patches)
+{
+	// Check patch type mismatch
+	if (!new_patches.empty() && new_patches[0]->isExtended() != patches_[0]->isExtended())
+		return false;
+
+	std::swap(patches_, new_patches);
 
 	return true;
 }
@@ -592,7 +866,7 @@ bool CTexture::parse(Tokenizer& tz, string_view type)
 {
 	// Check if optional
 	if (tz.advIfNextNC("optional"))
-		optional_ = true;
+		setOptional(true);
 
 	// Read basic info
 	type_     = type;
@@ -635,15 +909,19 @@ bool CTexture::parse(Tokenizer& tz, string_view type)
 
 			// WorldPanning
 			else if (tz.checkNC("WorldPanning"))
-				world_panning_ = true;
+				setWorldPanning(true);
 
 			// NoDecals
 			else if (tz.checkNC("NoDecals"))
-				no_decals_ = true;
+				setNoDecals(true);
 
 			// NullTexture
 			else if (tz.checkNC("NullTexture"))
-				null_texture_ = true;
+				setNullTexture(true);
+
+			// NoTrim
+			else if (tz.checkNC("NoTrim"))
+				setNoTrim(true);
 
 			// Patch
 			else if (tz.checkNC("Patch"))
@@ -712,7 +990,7 @@ string CTexture::asText()
 
 	// Init text string
 	string text;
-	if (optional_)
+	if (isOptional())
 		text = fmt::format("{} Optional \"{}\", {}, {}\n{{\n", type_, name_, size_.x, size_.y);
 	else
 		text = fmt::format("{} \"{}\", {}, {}\n{{\n", type_, name_, size_.x, size_.y);
@@ -724,12 +1002,14 @@ string CTexture::asText()
 		text += fmt::format("\tYScale {:1.3f}\n", scale_.y);
 	if (offset_.x != 0 || offset_.y != 0)
 		text += fmt::format("\tOffset {}, {}\n", offset_.x, offset_.y);
-	if (world_panning_)
+	if (worldPanning())
 		text += "\tWorldPanning\n";
-	if (no_decals_)
+	if (noDecals())
 		text += "\tNoDecals\n";
-	if (null_texture_)
+	if (nullTexture())
 		text += "\tNullTexture\n";
+	if (noTrim())
+		text += "\tNoTrim\n";
 
 	// Write patches
 	for (auto& patch : patches_)
@@ -811,7 +1091,7 @@ bool CTexture::convertRegular()
 // Generates a SImage representation of this texture, using patches from
 // [parent] primarily, and the palette [pal]
 // -----------------------------------------------------------------------------
-bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_rgba, bool offsets)
+bool CTexture::toImage(SImage& image, Archive* parent, const Palette* pal, bool force_rgba, bool offsets) const
 {
 	// Limit recursion to fix circular references causing a crash
 	static int recursion_depth = 0;
@@ -841,11 +1121,11 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 	{
 		if (!loadPatchImage(0, p_img, parent, pal, force_rgba))
 			return false;
-		size_.x = p_img.width();
-		size_.y = p_img.height();
-		image.resize(size_.x, size_.y);
-		scale_.x = static_cast<double>(size_.x) / static_cast<double>(def_size_.x);
-		scale_.y = static_cast<double>(size_.y) / static_cast<double>(def_size_.y);
+		// size_.x = p_img.width();
+		// size_.y = p_img.height();
+		image.resize(p_img.width(), p_img.height());
+		// scale_.x = static_cast<double>(size_.x) / static_cast<double>(def_size_.x);
+		// scale_.y = static_cast<double>(size_.y) / static_cast<double>(def_size_.y);
 		image.drawImage(p_img, 0, 0, dp, pal, pal);
 	}
 	else if (extended_)
@@ -875,8 +1155,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 			}
 
 			// Apply translation before anything in case we're forcing rgba (can't translate rgba images)
-			if (patch->blendType() == CTPatchEx::BlendType::Translation)
-				p_img.applyTranslation(&(patch->translation()), pal, force_rgba);
+			if (patch->blendType() == CTPatchEx::BlendType::Translation && patch->hasTranslation())
+				p_img.applyTranslation(patch->translation(), pal, force_rgba);
 
 			// Convert to RGBA if forced
 			if (force_rgba)
@@ -923,7 +1203,7 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 			if (patch->blendType() == CTPatchEx::BlendType::Blend)
 				p_img.colourise(patch->colour(), pal);
 			else if (patch->blendType() == CTPatchEx::BlendType::Tint)
-				p_img.tint(patch->colour(), patch->colour().fa(), pal);
+				p_img.tint(patch->colour(), patch->tintAmount(), pal);
 
 
 			// Add patch to texture image
@@ -953,7 +1233,8 @@ bool CTexture::toImage(SImage& image, Archive* parent, Palette* pal, bool force_
 // Loads the image for the patch at [pindex] into [image].
 // Can deal with textures-as-patches
 // -----------------------------------------------------------------------------
-bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, Palette* pal, bool force_rgba) const
+bool CTexture::loadPatchImage(unsigned pindex, SImage& image, Archive* parent, const Palette* pal, bool force_rgba)
+	const
 {
 	// Check patch index
 	if (pindex >= patches_.size())

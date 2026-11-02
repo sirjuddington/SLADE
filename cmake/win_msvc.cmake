@@ -10,10 +10,8 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 # Enable big objects and utf8
 add_compile_options(/bigobj /utf-8)
 
-# NO_FLUIDSYNTH preprocessor definition
-if (NO_FLUIDSYNTH)
-	add_definitions(-DNO_FLUIDSYNTH)
-endif ()
+# Define a SLADE_DEBUG macro
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSLADE_DEBUG")
 
 
 # Dependencies -----------------------------------------------------------------
@@ -22,38 +20,16 @@ endif ()
 if (NOT BUILD_WX)
 	find_package(wxWidgets CONFIG REQUIRED)
 endif ()
-set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net)
-if (NO_WEBVIEW)
-	SET(WX_LIBS ${WX_LIBS} wx::html)
-else (NO_WEBVIEW)
-	SET(WX_LIBS ${WX_LIBS} wx::webview)
-	ADD_DEFINITIONS(-DUSE_WEBVIEW_STARTPAGE)
-endif (NO_WEBVIEW)
-
-# FTGL
-find_package(Freetype REQUIRED)
-find_package(FTGL REQUIRED)
-
-# Lua
-if (NOT NO_LUA)
-	find_package(Lua REQUIRED)
-endif ()
-
-# FluidSynth
-if (NOT NO_FLUIDSYNTH)
-	find_package(FluidSynth CONFIG REQUIRED)
-endif ()
-
-# WebP/Png
-if (NOT BUILD_WX)
-	find_package(WebP CONFIG REQUIRED)
-	find_package(PNG REQUIRED)
-endif ()
+set(WX_LIBS wx::core wx::base wx::stc wx::aui wx::gl wx::propgrid wx::net wx::html)
 
 # Other
+find_package(Freetype REQUIRED)
+find_package(FluidSynth CONFIG REQUIRED)
+find_package(libxmp CONFIG)
 find_package(MPG123 CONFIG REQUIRED)
 find_package(OpenGL REQUIRED)
 
+# SFML
 set(SFML_FIND_COMPONENTS System Audio Window Network)
 list(TRANSFORM SFML_FIND_COMPONENTS TOLOWER OUTPUT_VARIABLE SFML2_FIND_COMPONENTS)
 find_package(SFML 2 QUIET COMPONENTS ${SFML2_FIND_COMPONENTS})
@@ -64,10 +40,18 @@ else ()
 	find_package(SFML 3 COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
 endif ()
 
+# Other
+find_package(MPG123 CONFIG REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(glm REQUIRED)
+find_package(cpptrace CONFIG REQUIRED)
+find_package(LibArchive REQUIRED)
+
 
 # Include Search Paths ---------------------------------------------------------
 
 include_directories(
+	${_VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/include
 	.
 	..
 	../thirdparty/glad/include
@@ -108,34 +92,21 @@ set_target_properties(slade
 )
 
 # Precompiled Header
-target_precompile_headers(slade PRIVATE "common.h")
+target_precompile_headers(slade PRIVATE "Application/Main.h")
 
 # Link
 target_link_libraries(slade
 	${BZIP2_LIBRARIES}
 	${EXTERNAL_LIBRARIES}
 	${FREETYPE_LIBRARIES}
-	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
 	${SFML_LIBRARIES}
 	${WX_LIBS}
 	${ZLIB_LIBRARY}
 	MPG123::libmpg123
+	glm::glm
+	cpptrace::cpptrace
+	libxmp::xmp_static
+	LibArchive::LibArchive
+	FluidSynth::libfluidsynth
 )
-
-if (NOT NO_LUA)
-	target_link_libraries(slade ${LUA_LIBRARIES})
-endif ()
-
-if (NOT NO_FLUIDSYNTH)
-	target_link_libraries(slade FluidSynth::libfluidsynth)
-endif ()
-
-if (NOT BUILD_WX)
-	target_link_libraries(slade
-		WebP::webp
-		WebP::webpdecoder
-		WebP::webpdemux
-		PNG::PNG
-	)
-endif ()

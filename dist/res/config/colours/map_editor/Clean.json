@@ -1,0 +1,100 @@
+{
+  "colours": {
+    "3d_crosshair": {
+      "blend_additive": true,
+      "colour": "rgb(180, 190, 255)"
+    },
+    "3d_highlight": {
+      "colour": "rgba(255, 255, 140, 170)"
+    },
+    "3d_overlay_bg": {
+      "colour": "rgba(0, 0, 0, 180)"
+    },
+    "3d_overlay_fg": {
+      "colour": "rgb(255, 255, 255)"
+    },
+    "3d_selection": {
+      "colour": "rgba(30, 100, 255, 180)"
+    },
+    "grid_64": {
+      "blend_additive": true,
+      "colour": "rgba(0, 0, 0, 40)"
+    },
+    "background": {
+      "colour": "rgb(150, 150, 150)"
+    },
+    "editor_message": {
+      "colour": "rgb(255, 255, 255)"
+    },
+    "editor_message_outline": {
+      "colour": "rgb(0, 0, 0)"
+    },
+    "grid": {
+      "colour": "rgba(0, 0, 0, 30)"
+    },
+    "highlight": {
+      "blend_additive": true,
+      "colour": "rgba(255, 255, 255, 220)"
+    },
+    "line_invalid": {
+      "colour": "rgb(255, 0, 0)"
+    },
+    "line_normal": {
+      "colour": "rgb(0, 0, 0)"
+    },
+    "line_special": {
+      "colour": "rgb(200, 0, 200)"
+    },
+    "linedraw": {
+      "colour": "rgba(255, 220, 0, 200)"
+    },
+    "moving": {
+      "blend_additive": true,
+      "colour": "rgb(255, 100, 0)"
+    },
+    "object_edit": {
+      "blend_additive": true,
+      "colour": "rgba(255, 220, 0, 200)"
+    },
+    "overlay_bg": {
+      "colour": "rgba(170, 170, 170, 220)"
+    },
+    "overlay_fg": {
+      "colour": "rgb(0, 0, 0)"
+    },
+    "selbox_fill": {
+      "blend_additive": true,
+      "colour": "rgba(255, 255, 255, 100)"
+    },
+    "selbox_outline": {
+      "blend_additive": true,
+      "colour": "rgb(0, 0, 0)"
+    },
+    "selection": {
+      "blend_additive": true,
+      "colour": "rgba(0, 255, 100, 150)"
+    },
+    "tagged": {
+      "blend_additive": true,
+      "colour": "rgba(0, 180, 255, 160)"
+    },
+    "tagging": {
+      "blend_additive": true,
+      "colour": "rgba(255, 0, 100, 220)"
+    },
+    "thing_path": {
+      "colour": "rgb(34, 255, 255)"
+    },
+    "thing_path_dragon": {
+      "colour": "rgb(255, 34, 34)"
+    },
+    "vertex": {
+      "colour": "rgb(60, 160, 255)"
+    }
+  },
+  "theme": {
+    "flat_alpha": 0.7,
+    "line_hilight_width": 2.0,
+    "line_selection_width": 2.0
+  }
+}

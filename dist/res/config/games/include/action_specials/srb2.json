@@ -1,0 +1,408 @@
+{
+  "groups": [
+    {
+      "name": "Miscellaneous",
+      "specials": [
+        { "id": 1, "name": "Per-Sector Gravity" },
+        { "id": 5, "name": "Camera Scanner" },
+        { "id": 7, "name": "Sector Flat Alignment" },
+        { "id": 10, "name": "Culling Plane" },
+        { "id": 13, "name": "Heat Wave Effect" },
+        { "id": 40, "name": "Visual Portal Between Tagged Linedefs" },
+        { "id": 41, "name": "Horizon Effect" },
+        { "id": 50, "name": "Instantly Lower Floor on Level Load" },
+        { "id": 51, "name": "Instantly Raise Ceiling on Level Load" },
+        { "id": 63, "name": "Fake Floor/Ceiling Planes" },
+        { "id": 540, "name": "Floor Friction" }
+      ]
+    },
+
+    {
+      "name": "Parameters",
+      "specials": [
+        { "id": 2, "name": "Custom Exit" },
+        { "id": 3, "name": "Zoom Tube Parameters" },
+        { "id": 4, "name": "Speed Pad Parameters" },
+        { "id": 8, "name": "Special Sector Properties" },
+        { "id": 9, "name": "Chain Parameters" },
+        { "id": 11, "name": "Rope Hang Parameters" },
+        { "id": 12, "name": "Rock Spawner Parameters" },
+        { "id": 14, "name": "Bustable Block Parameters" },
+        { "id": 15, "name": "Fan Particle Spawner Parameters" },
+        { "id": 16, "name": "Minecart Parameters" },
+        { "id": 64, "name": "Continuously Appearing/Disappearing FOF" }
+      ]
+    },
+
+    {
+      "name": "PolyObjects",
+      "specials": [
+        { "id": 20, "name": "First Line" },
+        { "id": 22, "name": "Parameters" },
+        { "id": 30, "name": "Waving Flag" },
+        { "id": 31, "name": "Displacement by Front Sector" },
+        { "id": 32, "name": "Angular Displacement by Front Sector" }
+      ]
+    },
+
+    {
+      "name": "Plane movement",
+      "specials": [
+        { "id": 52, "name": "Continuously Falling Sector" },
+        { "id": 53, "name": "Continuous Floor/Ceiling Mover" },
+        { "id": 54, "name": "Continuous Floor Mover" },
+        { "id": 55, "name": "Continuous Ceiling Mover" },
+        { "id": 56, "name": "Continuous Two-Speed Floor/Ceiling Mover" },
+        { "id": 57, "name": "Continuous Two-Speed Floor Mover" },
+        { "id": 58, "name": "Continuous Two-Speed Ceiling Mover" },
+        { "id": 59, "name": "Activate Moving Platform" },
+        { "id": 60, "name": "Activate Moving Platform (Adjustable Speed)" },
+        { "id": 61, "name": "Crusher (Ceiling to Floor)" },
+        { "id": 62, "name": "Crusher (Floor to Ceiling)" },
+        { "id": 66, "name": "Move Floor by Displacement" },
+        { "id": 67, "name": "Move Ceiling by Displacement" },
+        { "id": 68, "name": "Move Floor and Ceiling by Displacement" }
+      ]
+    },
+
+    {
+      "name": "Floor over floor/Solid",
+      "specials": [
+        { "id": 100, "name": "Solid, Opaque, Shadowcasting" },
+        { "id": 101, "name": "Solid, Opaque, Non-Shadowcasting" },
+        { "id": 102, "name": "Solid, Translucent" },
+        { "id": 103, "name": "Solid, Sides Only" },
+        { "id": 104, "name": "Solid, No Sides" },
+        { "id": 105, "name": "Solid, Invisible" },
+        { "id": 140, "name": "Intangible from Bottom, Opaque" },
+        { "id": 141, "name": "Intangible from Bottom, Translucent" },
+        { "id": 142, "name": "Intangible from Bottom, Translucent, No Sides" },
+        { "id": 143, "name": "Intangible from Top, Opaque" },
+        { "id": 144, "name": "Intangible from Top, Translucent" },
+        { "id": 145, "name": "Intangible from Top, Translucent, No Sides" },
+        { "id": 146, "name": "Only Tangible from Sides" }
+      ]
+    },
+
+    {
+      "name": "Floor over floor/Intangible",
+      "specials": [
+        { "id": 120, "name": "Water, Opaque" },
+        { "id": 121, "name": "Water, Translucent" },
+        { "id": 122, "name": "Water, Opaque, No Sides" },
+        { "id": 123, "name": "Water, Translucent, No Sides" },
+        { "id": 124, "name": "Goo Water, Translucent" },
+        { "id": 125, "name": "Goo Water, Translucent, No Sides" },
+        { "id": 220, "name": "Intangible, Opaque" },
+        { "id": 221, "name": "Intangible, Translucent" },
+        { "id": 222, "name": "Intangible, Sides Only" },
+        { "id": 223, "name": "Intangible, Invisible" }
+      ]
+    },
+
+    {
+      "name": "Floor over floor/Moving",
+      "specials": [
+        { "id": 150, "name": "Air Bobbing" },
+        { "id": 151, "name": "Air Bobbing (Adjustable)" },
+        { "id": 152, "name": "Reverse Air Bobbing (Adjustable)" },
+        { "id": 153, "name": "Dynamically Sinking Platform" },
+        { "id": 160, "name": "Floating, Bobbing" },
+        { "id": 190, "name": "Rising Platform, Solid, Opaque, Shadowcasting" },
+        { "id": 191, "name": "Rising Platform, Solid, Opaque, Non-Shadowcasting" },
+        { "id": 192, "name": "Rising Platform, Solid, Translucent" },
+        { "id": 193, "name": "Rising Platform, Solid, Invisible" },
+        { "id": 194, "name": "Rising Platform, Intangible from Bottom, Opaque" },
+        { "id": 195, "name": "Rising Platform, Intangible from Bottom, Translucent" }
+      ]
+    },
+
+    {
+      "name": "Floor over floor/Crumbling",
+      "specials": [
+        { "id": 170, "name": "Crumbling, Respawn" },
+        { "id": 171, "name": "Crumbling, No Respawn" },
+        { "id": 172, "name": "Crumbling, Respawn, Intangible from Bottom" },
+        { "id": 173, "name": "Crumbling, No Respawn, Intangible from Bottom" },
+        { "id": 174, "name": "Crumbling, Respawn, Intangible from Bottom, Translucent" },
+        { "id": 175, "name": "Crumbling, No Respawn, Intangible from Bottom, Translucent" },
+        { "id": 176, "name": "Crumbling, Respawn, Floating, Bobbing" },
+        { "id": 177, "name": "Crumbling, No Respawn, Floating, Bobbing" },
+        { "id": 178, "name": "Crumbling, Respawn, Floating" },
+        { "id": 179, "name": "Crumbling, No Respawn, Floating" },
+        { "id": 180, "name": "Crumbling, Respawn, Air Bobbing" }
+      ]
+    },
+
+    {
+      "name": "Floor over floor/Special",
+      "specials": [
+        { "id": 200, "name": "Light Block" },
+        { "id": 201, "name": "Half Light Block" },
+        { "id": 202, "name": "Fog Block" },
+        { "id": 250, "name": "Mario Block" },
+        { "id": 251, "name": "Thwomp Block" },
+        { "id": 252, "name": "Shatter Block" },
+        { "id": 253, "name": "Shatter Block, Translucent" },
+        { "id": 254, "name": "Bustable Block" },
+        { "id": 255, "name": "Spin-Bustable Block" },
+        { "id": 256, "name": "Spin-Bustable Block, Translucent" },
+        { "id": 257, "name": "Quicksand" },
+        { "id": 258, "name": "Laser" },
+        { "id": 259, "name": "Custom FOF" }
+      ]
+    },
+
+    {
+      "name": "Linedef executor triggers",
+      "specials": [
+        { "id": 300, "name": "Continuous" },
+        { "id": 301, "name": "Each Time" },
+        { "id": 302, "name": "Once" },
+        { "id": 303, "name": "Ring Count & Continuous" },
+        { "id": 304, "name": "Ring Count & Once" },
+        { "id": 305, "name": "Character Ability & Continuous" },
+        { "id": 306, "name": "Character Ability & Each Time" },
+        { "id": 307, "name": "Character Ability & Once" },
+        { "id": 308, "name": "Race Only & Once" },
+        { "id": 309, "name": "CTF Red Team & Continuous" },
+        { "id": 310, "name": "CTF Red Team & Each Time" },
+        { "id": 311, "name": "CTF Blue Team & Continuous" },
+        { "id": 312, "name": "CTF Blue Team & Each Time" },
+        { "id": 313, "name": "No More Enemies & Once" },
+        { "id": 314, "name": "Number of Pushables & Continuous" },
+        { "id": 315, "name": "Number of Pushables & Once" },
+        { "id": 317, "name": "Condition Set Trigger & Continuous" },
+        { "id": 318, "name": "Condition Set Trigger & Once" },
+        { "id": 319, "name": "Unlockable & Continuous" },
+        { "id": 320, "name": "Unlockable & Once" },
+        { "id": 321, "name": "Trigger After X Calls & Continuous" },
+        { "id": 322, "name": "Trigger After X Calls & Each Time" },
+        { "id": 323, "name": "NiGHTSerize & Each Time" },
+        { "id": 324, "name": "NiGHTSerize & Once" },
+        { "id": 325, "name": "De-NiGHTSerize & Each Time" },
+        { "id": 326, "name": "De-NiGHTSerize & Once" },
+        { "id": 327, "name": "NiGHTS Lap & Each Time" },
+        { "id": 328, "name": "NiGHTS Lap & Once" },
+        { "id": 329, "name": "Ideya Capture Touch & Each Time" },
+        { "id": 330, "name": "Ideya Capture Touch & Once" },
+        { "id": 331, "name": "Player Skin & Continuous" },
+        { "id": 332, "name": "Player Skin & Each Time" },
+        { "id": 333, "name": "Player Skin & Once" },
+        { "id": 334, "name": "Object Dye & Continuous" },
+        { "id": 335, "name": "Object Dye & Each Time" },
+        { "id": 336, "name": "Object Dye & Once" },
+        { "id": 399, "name": "Level Load" }
+      ]
+    },
+
+    {
+      "name": "Linedef executors/Sector",
+      "specials": [
+        { "id": 400, "name": "Set Tagged Sector's Floor Height/Texture" },
+        { "id": 401, "name": "Set Tagged Sector's Ceiling Height/Texture" },
+        { "id": 402, "name": "Set Tagged Sector's Light Level" },
+        { "id": 409, "name": "Change Tagged Sectors' Tag" },
+        { "id": 410, "name": "Change Front Sector's Tag" },
+        { "id": 416, "name": "Start Adjustable Flickering Light" },
+        { "id": 417, "name": "Start Adjustable Pulsating Light" },
+        { "id": 418, "name": "Start Adjustable Blinking Light (unsynchronized)" },
+        { "id": 419, "name": "Start Adjustable Blinking Light (synchronized)" },
+        { "id": 420, "name": "Fade Light Level" },
+        { "id": 421, "name": "Stop Lighting Effect" },
+        { "id": 435, "name": "Change Plane Scroller Direction" }
+      ]
+    },
+
+    {
+      "name": "Linedef executors/Plane movement",
+      "specials": [
+        { "id": 403, "name": "Move Tagged Sector's Floor" },
+        { "id": 404, "name": "Move Tagged Sector's Ceiling" },
+        { "id": 405, "name": "Move Floor According to Front Texture Offsets" },
+        { "id": 407, "name": "Move Ceiling According to Front Texture Offsets" },
+        { "id": 411, "name": "Stop Plane Movement" },
+        { "id": 428, "name": "Start Platform Movement" },
+        { "id": 429, "name": "Crush Ceiling Once" },
+        { "id": 430, "name": "Crush Floor Once" },
+        { "id": 431, "name": "Crush Floor and Ceiling Once" }
+      ]
+    },
+
+    {
+      "name": "Linedef executors/Player/Object",
+      "specials": [
+        { "id": 412, "name": "Teleporter" },
+        { "id": 425, "name": "Change Object State" },
+        { "id": 426, "name": "Stop Object" },
+        { "id": 427, "name": "Award Score" },
+        { "id": 432, "name": "Enable/Disable 2D Mode" },
+        { "id": 433, "name": "Enable/Disable Gravity Flip" },
+        { "id": 434, "name": "Award Power-Up" },
+        { "id": 437, "name": "Disable Player Control" },
+        { "id": 438, "name": "Change Object Size" },
+        { "id": 442, "name": "Change Object Type State" },
+        { "id": 449, "name": "Enable Bosses with Parameter" },
+        { "id": 457, "name": "Track Object's Angle" },
+        { "id": 458, "name": "Stop Tracking Object's Angle" },
+        { "id": 460, "name": "Award Rings" },
+        { "id": 461, "name": "Spawn Object" },
+        { "id": 462, "name": "Stop Timer/Exit Stage in Record Attack" },
+        { "id": 463, "name": "Dye Object" },
+        { "id": 464, "name": "Trigger Egg Capsule" }
+      ]
+    },
+
+    {
+      "name": "Linedef executors/Miscellaneous",
+      "specials": [
+        { "id": 413, "name": "Change Music" },
+        { "id": 414, "name": "Play Sound Effect" },
+        { "id": 415, "name": "Run Script" },
+        { "id": 422, "name": "Switch to Cut-Away View" },
+        { "id": 423, "name": "Change Sky" },
+        { "id": 424, "name": "Change Weather" },
+        { "id": 436, "name": "Shatter FOF" },
+        { "id": 439, "name": "Change Tagged Linedef's Textures" },
+        { "id": 440, "name": "Start Metal Sonic Race" },
+        { "id": 441, "name": "Condition Set Trigger" },
+        { "id": 443, "name": "Call Lua Function" },
+        { "id": 444, "name": "Earthquake" },
+        { "id": 445, "name": "Make FOF Disappear/Reappear" },
+        { "id": 446, "name": "Make FOF Crumble" },
+        { "id": 447, "name": "Change Tagged Sector's Colormap" },
+        { "id": 448, "name": "Change Skybox" },
+        { "id": 450, "name": "Execute Linedef Executor (from Tag)" },
+        { "id": 451, "name": "Execute Linedef Executor (Random Range)" },
+        { "id": 452, "name": "Set FOF Translucency" },
+        { "id": 453, "name": "Fade FOF" },
+        { "id": 454, "name": "Stop Fading FOF" },
+        { "id": 455, "name": "Fade Tagged Sector's Colormap" },
+        { "id": 456, "name": "Stop Fading Tagged Sector's Colormap" },
+        { "id": 459, "name": "Control Text Prompt" }
+      ]
+    },
+
+    {
+      "name": "Linedef executors/PolyObject",
+      "specials": [
+        { "id": 480, "name": "Door Slide" },
+        { "id": 481, "name": "Door Swing" },
+        { "id": 482, "name": "Move" },
+        { "id": 483, "name": "Move, Override" },
+        { "id": 484, "name": "Rotate Right" },
+        { "id": 485, "name": "Rotate Right, Override" },
+        { "id": 486, "name": "Rotate Left" },
+        { "id": 487, "name": "Rotate Left, Override" },
+        { "id": 488, "name": "Move by Waypoints" },
+        { "id": 489, "name": "Turn Invisible, Intangible" },
+        { "id": 490, "name": "Turn Visible, Tangible" },
+        { "id": 491, "name": "Set Translucency" },
+        { "id": 492, "name": "Fade Translucency" }
+      ]
+    },
+
+    {
+      "name": "Scroll effects/Wall scrolling",
+      "specials": [
+        { "id": 500, "name": "Scroll Front Wall Left" },
+        { "id": 501, "name": "Scroll Front Wall Right" },
+        { "id": 502, "name": "Scroll Tagged Wall" },
+        { "id": 503, "name": "Scroll Tagged Wall (Accelerative)" },
+        { "id": 504, "name": "Scroll Tagged Wall (Displacement)" },
+        { "id": 505, "name": "Scroll Front Wall by Front Side Offsets" },
+        { "id": 506, "name": "Scroll Front Wall by Back Side Offsets" },
+        { "id": 507, "name": "Scroll Back Wall by Front Side Offsets" },
+        { "id": 508, "name": "Scroll Back Wall by Back Side Offsets" }
+      ]
+    },
+
+    {
+      "name": "Scroll effects/Plane scrolling",
+      "specials": [
+        { "id": 510, "name": "Scroll Floor Texture" },
+        { "id": 511, "name": "Scroll Floor Texture (Accelerative)" },
+        { "id": 512, "name": "Scroll Floor Texture (Displacement)" },
+        { "id": 513, "name": "Scroll Ceiling Texture" },
+        { "id": 514, "name": "Scroll Ceiling Texture (Accelerative)" },
+        { "id": 515, "name": "Scroll Ceiling Texture (Displacement)" },
+        { "id": 520, "name": "Carry Objects on Floor" },
+        { "id": 521, "name": "Carry Objects on Floor (Accelerative)" },
+        { "id": 522, "name": "Carry Objects on Floor (Displacement)" },
+        { "id": 523, "name": "Carry Objects on Ceiling" },
+        { "id": 524, "name": "Carry Objects on Ceiling (Accelerative)" },
+        { "id": 525, "name": "Carry Objects on Ceiling (Displacement)" },
+        { "id": 530, "name": "Scroll Floor Texture and Carry Objects" },
+        { "id": 531, "name": "Scroll Floor Texture and Carry Objects (Accelerative)" },
+        { "id": 532, "name": "Scroll Floor Texture and Carry Objects (Displacement)" },
+        { "id": 533, "name": "Scroll Ceiling Texture and Carry Objects" },
+        { "id": 534, "name": "Scroll Ceiling Texture and Carry Objects (Accelerative)" },
+        { "id": 535, "name": "Scroll Ceiling Texture and Carry Objects (Displacement)" }
+      ]
+    },
+
+    {
+      "name": "Pushers",
+      "specials": [
+        { "id": 541, "name": "Wind" },
+        { "id": 542, "name": "Upwards Wind" },
+        { "id": 543, "name": "Downwards Wind" },
+        { "id": 544, "name": "Current" },
+        { "id": 545, "name": "Upwards Current" },
+        { "id": 546, "name": "Downwards Current" },
+        { "id": 547, "name": "Push/Pull" }
+      ]
+    },
+
+    {
+      "name": "Lighting",
+      "specials": [
+        { "id": 600, "name": "Floor Lighting" },
+        { "id": 601, "name": "Ceiling Lighting" },
+        { "id": 602, "name": "Adjustable Pulsating Light" },
+        { "id": 603, "name": "Adjustable Flickering Light" },
+        { "id": 604, "name": "Adjustable Blinking Light (unsynchronized)" },
+        { "id": 605, "name": "Adjustable Blinking Light (synchronized)" },
+        { "id": 606, "name": "Colormap" }
+      ]
+    },
+
+    {
+      "name": "Slopes",
+      "specials": [
+        { "id": 700, "name": "Slope Front Side Floor" },
+        { "id": 701, "name": "Slope Front Side Ceiling" },
+        { "id": 702, "name": "Slope Front Side Floor and Ceiling" },
+        { "id": 703, "name": "Slope Front Side Floor and Back Side Ceiling" },
+        { "id": 704, "name": "Slope Front Side Floor by Vertices" },
+        { "id": 705, "name": "Slope Front Side Ceiling by Vertices" },
+        { "id": 710, "name": "Slope Back Side Floor" },
+        { "id": 711, "name": "Slope Back Side Ceiling" },
+        { "id": 712, "name": "Slope Back Side Floor and Ceiling" },
+        { "id": 713, "name": "Slope Back Side Floor and Front Side Ceiling" },
+        { "id": 714, "name": "Slope Back Side Floor by Vertices" },
+        { "id": 715, "name": "Slope Back Side Ceiling by Vertices" },
+        { "id": 720, "name": "Copy Front Side Floor Slope from Line Tag" },
+        { "id": 721, "name": "Copy Front Side Ceiling Slope from Line Tag" },
+        { "id": 722, "name": "Copy Front Side Floor and Ceiling Slope from Line Tag" },
+        { "id": 799, "name": "Set Tagged Dynamic Slope Vertex to Front Sector Height" }
+      ]
+    },
+
+    {
+      "name": "Translucent walls",
+      "specials": [
+        { "id": 900, "name": "90% Opaque" },
+        { "id": 901, "name": "80% Opaque" },
+        { "id": 902, "name": "70% Opaque" },
+        { "id": 903, "name": "60% Opaque" },
+        { "id": 904, "name": "50% Opaque" },
+        { "id": 905, "name": "40% Opaque" },
+        { "id": 906, "name": "30% Opaque" },
+        { "id": 907, "name": "20% Opaque" },
+        { "id": 908, "name": "10% Opaque" },
+        { "id": 909, "name": "Fog Wall" }
+      ]
+    }
+  ]
+}

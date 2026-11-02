@@ -31,43 +31,44 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Export.h"
 #include "Game/Configuration.h"
 #include "Game/ThingType.h"
-#include "thirdparty/sol/sol.hpp"
+#include "Scripting/LuaBridge.h"
 
 
 // -----------------------------------------------------------------------------
 //
-// Lua Namespace Functions
+// Scripting Namespace Functions
 //
 // -----------------------------------------------------------------------------
-namespace slade::lua
+namespace slade::scripting
 {
 // -----------------------------------------------------------------------------
 // Registers the ThingType type with lua
 // -----------------------------------------------------------------------------
-void registerThingType(sol::state& lua)
+static void registerThingType(lua_State* lua)
 {
 	// Create ThingType type, no constructor
-	auto lua_ttype = lua.new_usertype<game::ThingType>("ThingType", "new", sol::no_constructor);
+	auto lua_ttype = luabridge::getGlobalNamespace(lua).beginClass<game::ThingType>("ThingType");
 
 	// Properties
 	// -------------------------------------------------------------------------
-	lua_ttype["name"]        = sol::property(&game::ThingType::name);
-	lua_ttype["group"]       = sol::property(&game::ThingType::group);
-	lua_ttype["radius"]      = sol::property(&game::ThingType::radius);
-	lua_ttype["height"]      = sol::property(&game::ThingType::height);
-	lua_ttype["scaleY"]      = sol::property(&game::ThingType::scaleY);
-	lua_ttype["scaleX"]      = sol::property(&game::ThingType::scaleX);
-	lua_ttype["angled"]      = sol::property(&game::ThingType::angled);
-	lua_ttype["hanging"]     = sol::property(&game::ThingType::hanging);
-	lua_ttype["fullbright"]  = sol::property(&game::ThingType::fullbright);
-	lua_ttype["decoration"]  = sol::property(&game::ThingType::decoration);
-	lua_ttype["solid"]       = sol::property(&game::ThingType::solid);
-	lua_ttype["sprite"]      = sol::property(&game::ThingType::sprite);
-	lua_ttype["icon"]        = sol::property(&game::ThingType::icon);
-	lua_ttype["translation"] = sol::property(&game::ThingType::translation);
-	lua_ttype["palette"]     = sol::property(&game::ThingType::palette);
+	lua_ttype.addProperty("name", &game::ThingType::name);
+	lua_ttype.addProperty("group", &game::ThingType::group);
+	lua_ttype.addProperty("radius", &game::ThingType::radius);
+	lua_ttype.addProperty("height", &game::ThingType::height);
+	lua_ttype.addProperty("scaleY", &game::ThingType::scaleY);
+	lua_ttype.addProperty("scaleX", &game::ThingType::scaleX);
+	lua_ttype.addProperty("angled", &game::ThingType::angled);
+	lua_ttype.addProperty("hanging", &game::ThingType::hanging);
+	lua_ttype.addProperty("fullbright", &game::ThingType::fullbright);
+	lua_ttype.addProperty("decoration", &game::ThingType::decoration);
+	lua_ttype.addProperty("solid", &game::ThingType::solid);
+	lua_ttype.addProperty("sprite", &game::ThingType::sprite);
+	lua_ttype.addProperty("icon", &game::ThingType::icon);
+	lua_ttype.addProperty("translation", &game::ThingType::translation);
+	lua_ttype.addProperty("palette", &game::ThingType::palette);
 
 	// TODO: lua_ttype["tagged"] = sol::property(&Game::ThingType::needsTag);
 }
@@ -75,18 +76,18 @@ void registerThingType(sol::state& lua)
 // -----------------------------------------------------------------------------
 // Registers the Game namespace with lua
 // -----------------------------------------------------------------------------
-void registerGameNamespace(sol::state& lua)
+void registerGameNamespace(lua_State* lua)
 {
-	auto game         = lua.create_table("Game");
-	game["ThingType"] = [](int type) { return game::configuration().thingType(type); };
+	auto game = luabridge::getGlobalNamespace(lua).beginNamespace("Game");
+	game.addFunction("ThingType", [](int type) { return game::configuration().thingType(type); });
 }
 
 // -----------------------------------------------------------------------------
 // Registers various Game-related types with lua
 // -----------------------------------------------------------------------------
-void registerGameTypes(sol::state& lua)
+void registerGameTypes(lua_State* lua)
 {
 	registerThingType(lua);
 }
 
-} // namespace slade::lua
+} // namespace slade::scripting

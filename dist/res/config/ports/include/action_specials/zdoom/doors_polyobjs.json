@@ -1,0 +1,257 @@
+// ZDoom action specials for hexen/udmf map formats
+// Door and Polyobject related specials
+{
+  "arg_presets": {
+    "door_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "slow - standard Doom door", "value": 16 },
+        { "name": "normal", "value": 32 },
+        { "name": "fast - fast Doom door", "value": 64 },
+        { "name": "turbo", "value": 128 }
+      ]
+    },
+    "delay_octics": {
+      "name": "Delay (octics)",
+      "type": "octics"
+    },
+    "delay_tics": {
+      "name": "Delay (tics)",
+      "type": "tics"
+    },
+    "delay_octics_door": {
+      "name": "Delay (octics)",
+      "type": "octics",
+      "custom_values": [
+        { "name": "brief", "value": 8 },
+        { "name": "normal - standard Doom door (approx.)", "value": 34 },
+        { "name": "slow (approx.)", "value": 69 },
+        { "name": "agonizing", "value": 240 }
+      ]
+    },
+    "delay_tics_door": {
+      "name": "Delay (tics)",
+      "type": "tics",
+      "custom_values": [
+        { "name": "brief", "value": 35 },
+        { "name": "normal - standard Doom door", "value": 150 },
+        { "name": "slow", "value": 300 },
+        { "name": "agonizing", "value": 1050 }
+      ]
+    },
+    "polyobj_speed": {
+      "name": "Speed",
+      "type": "speed"
+      // TODO are there any reasonable defaults here?
+    }
+  },
+
+  "groups": [
+    {
+      "name": "Doors",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        {
+          "name": "Generic_Door",
+          "id": 202,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": {
+            "name": "Door Kind",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Raise door, close after delay", "value": 0 },
+              { "name": "Open door", "value": 1 },
+              { "name": "Close door, open after delay", "value": 2 },
+              { "name": "Close door", "value": 3 }
+            ]
+          },
+          "arg4": "$delay_octics_door",
+          "arg5": "Lock"
+        },
+        {
+          "name": "Door_Raise",
+          "id": 12,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "$delay_tics_door",
+          "arg4": "Light Tag"
+        },
+        {
+          "name": "Door_LockedRaise",
+          "id": 13,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "$delay_tics_door",
+          "arg4": "Lock",
+          "arg5": "Light Tag"
+        },
+        {
+          "name": "Door_Open",
+          "id": 11,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "Light Tag"
+        },
+        {
+          "name": "Door_Close",
+          "id": 10,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "Light Tag"
+        },
+        {
+          "name": "Door_CloseWaitOpen",
+          "id": 249,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "$delay_octics_door",
+          "arg4": "Light Tag"
+        },
+        {
+          "name": "Door_Animated",
+          "id": 14,
+          "arg1": "Sector Tag",
+          "arg2": "$door_speed",
+          "arg3": "$delay_tics_door",
+          "arg4": "Lock"
+        }
+      ]
+    },
+
+    {
+      "name": "PolyObjects",
+      "specials": [
+        {
+          "name": "PolyObject Start Line",
+          "id": 1,
+          "arg1": "PolyObject ID",
+          "arg2": "Mirror PolyObject ID",
+          "arg3": "Sound Sequence"
+        },
+        {
+          "name": "Polyobj_ExplicitLine",
+          "id": 5,
+          "arg1": "PolyObject ID",
+          "arg2": "Rendering Order",
+          "arg3": "Mirror PolyObject ID",
+          "arg4": "Sound Sequence",
+          "arg5": "Line ID"
+        },
+        {
+          "name": "Polyobj_RotateLeft",
+          "id": 2,
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "name": "Polyobj_OR_RotateLeft",
+          "id": 90,
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "name": "Polyobj_RotateRight",
+          "id": 3,
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "name": "Polyobj_OR_RotateRight",
+          "id": 91,
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle"
+        },
+        {
+          "name": "Polyobj_Move",
+          "id": 4,
+          "arg1": "PolyObject ID",
+          "arg2": "$polyobj_speed",
+          "arg3": "Byte Angle",
+          "arg4": "Distance"
+        },
+        {
+          "name": "Polyobj_OR_Move",
+          "id": 92,
+          "arg1": "PolyObject ID",
+          "arg2": "$polyobj_speed",
+          "arg3": "Byte Angle",
+          "arg4": "Distance"
+        },
+        {
+          "name": "Polyobj_MoveTimes8",
+          "id": 6,
+          "arg1": "PolyObject ID",
+          "arg2": "$polyobj_speed",
+          "arg3": "Byte Angle",
+          "arg4": "Eighth of Distance"
+        },
+        {
+          "name": "Polyobj_OR_MoveTimes8",
+          "id": 93,
+          "arg1": "PolyObject ID",
+          "arg2": "$polyobj_speed",
+          "arg3": "Byte Angle",
+          "arg4": "Eighth of Distance"
+        },
+        {
+          "name": "Polyobj_DoorSwing",
+          "id": 7,
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Byte Angle",
+          "arg4": "$delay_tics_door"
+        },
+        {
+          "name": "Polyobj_DoorSlide",
+          "id": 8,
+          "arg1": "PolyObject ID",
+          "arg2": "$polyobj_speed",
+          "arg3": "Byte Angle",
+          "arg4": "Distance",
+          "arg5": "$delay_tics_door"
+        },
+        {
+          "name": "Polyobj_MoveToSpot",
+          "id": 86,
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Spot TID"
+        },
+        {
+          "name": "Polyobj_OR_MoveToSpot",
+          "id": 59,
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "Spot TID"
+        },
+        {
+          "name": "Polyobj_MoveTo",
+          "id": 88,
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "X Position",
+          "arg4": "Y Position"
+        },
+        {
+          "name": "Polyobj_OR_MoveTo",
+          "id": 89,
+          "arg1": "PolyObject ID",
+          "arg2": "Speed",
+          "arg3": "X Position",
+          "arg4": "Y Position"
+        },
+        {
+          "name": "Polyobj_Stop",
+          "id": 87,
+          "arg1": "PolyObject ID"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,88 @@
+{
+  "blocks": [
+    {
+      // Linedef block
+      "block": "linedef",
+      "groups": [
+        {
+          "name": "Flags",
+          "properties": [
+            {
+              "udmf": "repeatspecial",
+              "name": "Repeatable",
+              "type": "bool",
+              "default": false,
+              "flag": true,
+              "show_always": false
+            }
+          ]
+        },
+        {
+          "name": "Special Triggers",
+          "defaults": {
+            "type": "bool",
+            "default": false,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "playercross", "name": "Player Cross" },
+            { "udmf": "playeruse", "name": "Player Uses" },
+            { "udmf": "monstercross", "name": "Monster Cross" },
+            { "udmf": "monsteruse", "name": "Monster Uses" },
+            { "udmf": "impact", "name": "Attack Hit" },
+            { "udmf": "playerpush", "name": "Player Bump" },
+            { "udmf": "monsterpush", "name": "Monster Bump" },
+            { "udmf": "missilecross", "name": "Missile Cross" }
+          ]
+        }
+      ]
+    },
+
+    // Thing block
+    {
+      "block": "thing",
+      "groups": [
+        {
+          "name": "Args",
+          "defaults": {
+            "type": "int",
+            "default": 0
+          },
+          "properties": [
+            { "udmf": "arg0", "name": "Arg 0" },
+            { "udmf": "arg1", "name": "Arg 1" },
+            { "udmf": "arg2", "name": "Arg 2" },
+            { "udmf": "arg3", "name": "Arg 3" },
+            { "udmf": "arg4", "name": "Arg 4" }
+          ]
+        },
+        {
+          "name": "Flags",
+          "defaults": {
+            "type": "bool",
+            "default": false,
+            "flag": true,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "dormant", "name": "Dormant" },
+            { "udmf": "class1", "name": "Fighter" },
+            { "udmf": "class2", "name": "Cleric" },
+            { "udmf": "class3", "name": "Mage" }
+          ]
+        },
+        {
+          "name": "Scripting Special",
+          "defaults": {
+            "type": "int",
+            "default": 0,
+            "show_always": false
+          },
+          "properties": [
+            { "udmf": "special", "name": "Special" }
+          ]
+        }
+      ]
+    }
+  ]
+}

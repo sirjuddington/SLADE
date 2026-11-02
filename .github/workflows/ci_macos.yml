@@ -14,27 +14,35 @@ jobs:
       matrix:
         config:
           - name: "macOS arm64"
-            os: macos-latest
+            os: macos-15
             shell: bash
-            package_name: "mac_arm64"
+            package_name: "macos_arm64"
             artifact_path: build/*.dmg
 
           - name: "macOS x64"
             os: macos-15-intel
             shell: bash
-            package_name: "mac_x64"
+            package_name: "macos_x64"
             artifact_path: build/*.dmg
 
     steps:
       - uses: actions/checkout@v2
 
       - name: Install Dependencies
-        run: brew install fluidsynth ftgl lua mpg123 sfml wxwidgets dylibbundler create-dmg webp
+        run: brew install fluidsynth freetype glm libarchive libxmp mpg123 sfml webp wxwidgets dylibbundler create-dmg
 
       - name: Configure
         run: |
           mkdir build
-          cmake -G Ninja -B build ${{ matrix.config.extra_options }} .
+          BREW_PREFIX="$(brew --prefix)"
+          LIBARCHIVE_PREFIX="$(brew --prefix libarchive)"
+          cmake -G Ninja -B build \
+          -DCMAKE_PREFIX_PATH="$BREW_PREFIX;$LIBARCHIVE_PREFIX" \
+          -DCMAKE_INCLUDE_PATH="$BREW_PREFIX/include;$LIBARCHIVE_PREFIX/include" \
+          -DCMAKE_LIBRARY_PATH="$BREW_PREFIX/lib;$LIBARCHIVE_PREFIX/lib" \
+          -DLibArchive_INCLUDE_DIR="$LIBARCHIVE_PREFIX/include" \
+          -DLibArchive_LIBRARY="$LIBARCHIVE_PREFIX/lib/libarchive.dylib" \
+          ${{ matrix.config.extra_options }} .
 
       - name: Build
         run: |
@@ -48,9 +56,9 @@ jobs:
           
           for i in {1..10};
           do
-            if create-dmg --app-drop-link 10 10 ./slade_${{ matrix.config.package_name }}_${{ github.ref_name }}.dmg ./slade.app;
+            if create-dmg --app-drop-link 10 10 ./SLADE_${{ github.ref_name }}_${{ matrix.config.package_name }}.dmg ./slade.app;
             then
-              echo "slade_${{ matrix.config.package_name }}_${{ github.ref_name }}.dmg created"
+              echo "SLADE_${{ github.ref_name }}_${{ matrix.config.package_name }}.dmg created"
               break
             else
               echo "create-dmg failed $i"

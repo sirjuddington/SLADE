@@ -34,7 +34,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DirArchiveUpdateDialog.h"
-#include "General/UI.h"
+#include "Archive/Archive.h"
+#include "Archive/Formats/DirArchiveHandler.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -49,11 +51,16 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // DirArchiveUpdateDialog class constructor
 // -----------------------------------------------------------------------------
-DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* archive, vector<DirEntryChange>& changes) :
+DirArchiveUpdateDialog::DirArchiveUpdateDialog(
+	wxWindow*                     parent,
+	Archive*                      archive,
+	const vector<DirEntryChange>& changes) :
 	SDialog(parent, "Directory Content Changed", "dir_archive_update"),
 	archive_{ archive },
 	changes_{ changes }
 {
+	auto lh = ui::LayoutHelper(this);
+
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
@@ -61,9 +68,9 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* arc
 	wxString message = WX_FMT(
 		"Contents of the directory \"{}\" have been modified outside of SLADE,\n", archive->filename());
 	message += wxS("please tick the changes below that you wish to apply.");
-	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, ui::padLarge());
+	sizer->Add(new wxStaticText(this, -1, message), lh.sfWithLargeBorder().Expand());
 	message = wxS("Note that any unticked changes will be overwritten on disk when the directory is saved.");
-	sizer->Add(new wxStaticText(this, -1, message), 0, wxEXPAND | wxALL, ui::padLarge());
+	sizer->Add(new wxStaticText(this, -1, message), lh.sfWithLargeBorder().Expand());
 
 	// Changes list
 	list_changes_ = new wxDataViewListCtrl(this, -1);
@@ -71,43 +78,43 @@ DirArchiveUpdateDialog::DirArchiveUpdateDialog(wxWindow* parent, DirArchive* arc
 		wxEmptyString, wxDATAVIEW_CELL_ACTIVATABLE, wxDVC_DEFAULT_MINWIDTH, wxALIGN_CENTER);
 	list_changes_->AppendTextColumn(wxS("Change"));
 	list_changes_->AppendTextColumn(wxS("Filename"), wxDATAVIEW_CELL_INERT, -2);
-	list_changes_->SetMinSize(wxSize(0, ui::scalePx(200)));
-	sizer->Add(list_changes_, 1, wxEXPAND | wxLEFT | wxRIGHT, ui::padLarge());
+	list_changes_->SetMinSize(lh.size(0, 200));
+	sizer->Add(list_changes_, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT).Expand());
 
 	// OK button
 	auto btn_ok = new wxButton(this, wxID_OK, wxS("Apply Selected Changes"));
 	btn_ok->SetDefault();
-	sizer->AddSpacer(ui::pad());
-	sizer->Add(btn_ok, 0, wxALIGN_RIGHT | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	sizer->AddSpacer(lh.pad());
+	sizer->Add(btn_ok, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Right());
 	btn_ok->Bind(wxEVT_BUTTON, &DirArchiveUpdateDialog::onBtnOKClicked, this);
 
 	populateChangeList();
 
-	wxWindowBase::Layout();
+	wxTopLevelWindowBase::Layout();
 	wxWindowBase::Fit();
-	const wxSize size = GetSize() * GetContentScaleFactor();
+	const wxSize size = GetSize() * wxWindowBase::GetContentScaleFactor();
 	SetInitialSize(size);
 }
 
 // -----------------------------------------------------------------------------
 // Populates the changes list
 // -----------------------------------------------------------------------------
-void DirArchiveUpdateDialog::populateChangeList()
+void DirArchiveUpdateDialog::populateChangeList() const
 {
 	wxVector<wxVariant> row;
-	for (unsigned a = 0; a < changes_.size(); a++)
+	for (const auto& change : changes_)
 	{
 		row.push_back(wxVariant(true));
-		switch (changes_[a].action)
+		switch (change.action)
 		{
-		case DirEntryChange::Action::AddedFile: row.push_back(wxVariant("Added")); break;
-		case DirEntryChange::Action::AddedDir: row.push_back(wxVariant("Added")); break;
+		case DirEntryChange::Action::AddedFile:   row.push_back(wxVariant("Added")); break;
+		case DirEntryChange::Action::AddedDir:    row.push_back(wxVariant("Added")); break;
 		case DirEntryChange::Action::DeletedFile: row.push_back(wxVariant("Deleted")); break;
-		case DirEntryChange::Action::DeletedDir: row.push_back(wxVariant("Deleted")); break;
-		case DirEntryChange::Action::Updated: row.push_back(wxVariant("Modified")); break;
-		default: break;
+		case DirEntryChange::Action::DeletedDir:  row.push_back(wxVariant("Deleted")); break;
+		case DirEntryChange::Action::Updated:     row.push_back(wxVariant("Modified")); break;
+		default:                                  break;
 		}
-		row.push_back(wxVariant(changes_[a].file_path));
+		row.push_back(wxVariant(change.file_path));
 		list_changes_->AppendItem(row);
 		row.clear();
 	}
@@ -135,8 +142,10 @@ void DirArchiveUpdateDialog::onBtnOKClicked(wxCommandEvent& e)
 		else
 			ignore_changes.push_back(changes_[a]);
 
-	archive_->ignoreChangedEntries(ignore_changes);
-	archive_->updateChangedEntries(apply_changes);
+	auto& format_handler = dynamic_cast<DirArchiveHandler&>(archive_->formatHandler());
+
+	format_handler.ignoreChangedEntries(ignore_changes);
+	format_handler.updateChangedEntries(*archive_, apply_changes);
 
 	EndModal(wxID_OK);
 }

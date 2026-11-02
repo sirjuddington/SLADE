@@ -32,7 +32,10 @@
 #include "Main.h"
 #include "MapBackupManager.h"
 #include "App.h"
-#include "Archive/Formats/ZipArchive.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
 #include "General/Misc.h"
 #include "MapEditor.h"
 #include "UI/MapBackupPanel.h"
@@ -70,9 +73,9 @@ string mb_ignore_entries[] = { "NODES",    "SSECTORS", "ZNODES",  "SEGS",     "R
 // in [map_data]
 // -----------------------------------------------------------------------------
 bool MapBackupManager::writeBackup(
-	vector<unique_ptr<ArchiveEntry>>& map_data,
-	std::string_view                  archive_name,
-	std::string_view                  map_name) const
+	const vector<unique_ptr<ArchiveEntry>>& map_data,
+	std::string_view                        archive_name,
+	std::string_view                        map_name) const
 {
 	// Create backup directory if needed
 	auto backup_dir = app::path("backups", app::Dir::User);
@@ -80,8 +83,8 @@ bool MapBackupManager::writeBackup(
 		fileutil::createDir(backup_dir);
 
 	// Open or create backup zip
-	shared_ptr<Archive> backup = std::make_shared<ZipArchive>();
-	string              fname{ archive_name };
+	auto   backup = std::make_shared<Archive>(ArchiveFormat::Zip);
+	string fname{ archive_name };
 	std::replace(fname.begin(), fname.end(), '.', '_');
 	auto backup_file = fmt::format("{}/{}_backup.zip", backup_dir, fname);
 	if (!backup->open(backup_file))
@@ -152,7 +155,7 @@ bool MapBackupManager::writeBackup(
 
 	// Check for max backups & remove old ones if over
 	map_dir = backup->dirAtPath(map_name);
-	while ((int)map_dir->numSubdirs() > max_map_backups)
+	while (static_cast<int>(map_dir->numSubdirs()) > max_map_backups)
 		backup->removeDir(map_dir->subdirAt(0)->name(), map_dir);
 
 	// Save backup file
@@ -167,7 +170,7 @@ bool MapBackupManager::writeBackup(
 // Shows the map backups for [map_name] in [archive_name], returns the selected
 // map backup data in a WadArchive
 // -----------------------------------------------------------------------------
-Archive* MapBackupManager::openBackup(string_view archive_name, string_view map_name) const
+unique_ptr<Archive> MapBackupManager::openBackup(string_view archive_name, string_view map_name) const
 {
 	SDialog dlg(mapeditor::windowWx(), fmt::format("Restore {} backup", map_name), "map_backup", 500, 400);
 	auto    sizer = new wxBoxSizer(wxVERTICAL);
@@ -181,7 +184,7 @@ Archive* MapBackupManager::openBackup(string_view archive_name, string_view map_
 	if (panel_backup->loadBackups(string{ archive_name }, map_name))
 	{
 		if (dlg.ShowModal() == wxID_OK)
-			return panel_backup->selectedMapData();
+			return panel_backup->releaseMapData();
 	}
 	else
 		wxMessageBox(

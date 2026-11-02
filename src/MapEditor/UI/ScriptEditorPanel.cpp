@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -32,14 +32,18 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ScriptEditorPanel.h"
+#include "Archive/ArchiveEntry.h"
 #include "Game/Configuration.h"
 #include "MainEditor/EntryOperations.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
+#include "SLADEMap/SLADEMap.h"
+#include "TextEditor/TextLanguage.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
-#include "UI/SToolBar/SToolBar.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
+#include <wx/stc/minimap.h>
 
 using namespace slade;
 
@@ -59,6 +63,7 @@ CVAR(Bool, script_word_wrap, false, CVar::Flag::Save)
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, txed_trim_whitespace)
+EXTERN_CVAR(Int, txed_minimap_width)
 
 
 // -----------------------------------------------------------------------------
@@ -73,35 +78,43 @@ EXTERN_CVAR(Bool, txed_trim_whitespace)
 // -----------------------------------------------------------------------------
 ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	wxPanel(parent, -1),
-	entry_script_{ new ArchiveEntry() },
-	entry_compiled_{ new ArchiveEntry() }
+	entry_script_{ new ArchiveEntry },
+	entry_compiled_{ new ArchiveEntry }
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Toolbar
-	auto toolbar = new SToolBar(this);
-	sizer->Add(toolbar, 0, wxEXPAND);
-
-	wxArrayString actions;
-	toolbar->addActionGroup("Scripts", { "mapw_script_save", "mapw_script_compile", "mapw_script_togglelanguage" });
-
-	// Jump To toolbar group
-	auto group_jump_to = new SToolBarGroup(toolbar, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxutil::scaledSize(200, -1));
-	group_jump_to->addCustomControl(choice_jump_to_);
-	toolbar->addGroup(group_jump_to);
+	auto toolbar = new SAuiToolBar(this);
+	sizer->Add(toolbar, wxSizerFlags().Expand());
+	choice_jump_to_ = new wxChoice(toolbar, -1, wxDefaultPosition, lh.size(200, -1));
+	toolbar->registerCustomControl("jump_to", choice_jump_to_);
+	toolbar->loadLayoutFromResource("map_script_editor");
 
 	// Add text editor
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 1, wxEXPAND);
+	sizer->Add(hbox, wxSizerFlags(1).Expand());
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	hbox->Add(vbox, 1, wxEXPAND);
+	hbox->Add(vbox, wxSizerFlags(1).Expand());
 
+	auto tx_hbox = new wxBoxSizer(wxHORIZONTAL);
+	vbox->Add(tx_hbox, lh.sfWithBorder(1).Expand());
 	text_editor_ = new TextEditorCtrl(this, -1);
 	text_editor_->setJumpToControl(choice_jump_to_);
-	vbox->Add(text_editor_, 1, wxEXPAND | wxALL, ui::pad());
+	tx_hbox->Add(text_editor_, wxSizerFlags(1).Expand());
+
+	// Create the minimap if enabled (and supported)
+	if (txed_minimap_width > 0)
+	{
+		auto minimap = new wxStyledTextCtrlMiniMap(this, text_editor_);
+		text_editor_->SetUseVerticalScrollBar(false);
+		minimap->SetUseVerticalScrollBar(true);
+		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
+		tx_hbox->Add(minimap, wxSizerFlags().Expand());
+	}
 
 	// Set language
 	auto lang = game::configuration().scriptLanguage();
@@ -123,13 +136,13 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 	// Add Find+Replace panel
 	panel_fr_ = new FindReplacePanel(this, *text_editor_);
 	text_editor_->setFindReplacePanel(panel_fr_);
-	vbox->Add(panel_fr_, 0, wxEXPAND | wxALL, ui::pad());
+	vbox->Add(panel_fr_, lh.sfWithBorder().Expand());
 	panel_fr_->Hide();
 
 	// Add function/constants list
 	list_words_ = new wxTreeListCtrl(this, -1);
-	list_words_->SetInitialSize(wxutil::scaledSize(200, -10));
-	hbox->Add(list_words_, 0, wxEXPAND | wxALL, ui::pad());
+	list_words_->SetInitialSize(lh.size(200, -1));
+	hbox->Add(list_words_, lh.sfWithBorder().Expand());
 	populateWordList();
 	list_words_->Show(script_show_language_list);
 
@@ -141,7 +154,7 @@ ScriptEditorPanel::ScriptEditorPanel(wxWindow* parent) :
 // Opens script text from entry [scripts], and compiled script data from
 // [compiled]
 // -----------------------------------------------------------------------------
-bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled) const
+bool ScriptEditorPanel::openScripts(const ArchiveEntry* script, const ArchiveEntry* compiled) const
 {
 	// Clear current script data
 	entry_script_->clearData();
@@ -158,8 +171,9 @@ bool ScriptEditorPanel::openScripts(ArchiveEntry* script, ArchiveEntry* compiled
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto& map = mapeditor::editContext().map();
-		map.mapSpecials()->processACSScripts(entry_script_.get());
-		map.mapSpecials()->updateTaggedSectors(&map);
+		// TODO: MapSpecials script processing
+		// map.mapSpecials()->processACSScripts(entry_script_.get());
+		// map.mapSpecials()->updateTaggedSectors(&map);
 	}
 
 	// Load script text
@@ -218,8 +232,9 @@ void ScriptEditorPanel::saveScripts() const
 	if (entry_script_->size() > 0 && (lang == "acs_hexen" || lang == "acs_zdoom"))
 	{
 		auto map = &(mapeditor::editContext().map());
-		map->mapSpecials()->processACSScripts(entry_script_.get());
-		map->mapSpecials()->updateTaggedSectors(map);
+		// TODO: MapSpecials script processing
+		// map->mapSpecials()->processACSScripts(entry_script_.get());
+		// map->mapSpecials()->updateTaggedSectors(map);
 	}
 }
 
@@ -279,7 +294,6 @@ bool ScriptEditorPanel::handleAction(string_view name)
 //
 // -----------------------------------------------------------------------------
 
-
 // -----------------------------------------------------------------------------
 // Called when a word list entry is activated (double-clicked)
 // -----------------------------------------------------------------------------
@@ -307,8 +321,6 @@ void ScriptEditorPanel::onWordListActivate(wxCommandEvent& e)
 	int pos = text_editor_->GetCurrentPos();
 	if (language->isFunction(word))
 	{
-		auto func = language->function(word);
-
 		// Add function + ()
 		word += "()";
 		text_editor_->InsertText(pos, wxString::FromUTF8(word));

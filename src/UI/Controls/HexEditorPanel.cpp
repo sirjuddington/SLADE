@@ -33,6 +33,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HexEditorPanel.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 #include "Utility/CodePages.h"
 
@@ -75,7 +76,7 @@ int HexTable::GetNumberCols()
 // -----------------------------------------------------------------------------
 wxString HexTable::GetValue(int row, int col)
 {
-	if (unsigned(row * hex_grid_width + col) >= data_.size())
+	if (static_cast<unsigned>(row * hex_grid_width + col) >= data_.size())
 		return wxEmptyString;
 	else
 	{
@@ -91,7 +92,7 @@ wxString HexTable::GetValue(int row, int col)
 
 		// ASCII
 		else if (view_type_ == 2)
-			return wxString::FromAscii((char)val);
+			return wxString::FromAscii(static_cast<char>(val));
 
 		return wxEmptyString;
 	}
@@ -109,7 +110,7 @@ void HexTable::SetValue(int row, int col, const wxString& value)
 // -----------------------------------------------------------------------------
 // Loads in data from [mc]. Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool HexTable::loadData(MemChunk& mc)
+bool HexTable::loadData(const MemChunk& mc)
 {
 	data_.importMem(mc.data(), mc.size());
 	return true;
@@ -267,8 +268,8 @@ HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 	btn_go_to_offset_ = new wxButton(this, -1, wxS("Go to Offset..."));
 
 	// Setup hex grid
-	auto cellsize      = ui::scalePx(28);
-	auto scrollbarsize = wxSystemSettings::GetMetric(wxSystemMetric::wxSYS_VSCROLL_X);
+	auto cellsize      = FromDIP(28);
+	auto scrollbarsize = wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
 	grid_hex_->SetDefaultRowSize(cellsize, true);
 	grid_hex_->SetDefaultColSize(cellsize, true);
 	grid_hex_->HideColLabels();
@@ -295,7 +296,7 @@ HexEditorPanel::HexEditorPanel(wxWindow* parent) : wxPanel(parent, -1)
 // -----------------------------------------------------------------------------
 // Loads data from [mc] into the hex grid
 // -----------------------------------------------------------------------------
-bool HexEditorPanel::loadData(MemChunk& mc)
+bool HexEditorPanel::loadData(const MemChunk& mc)
 {
 	if (table_hex_->loadData(mc))
 	{
@@ -317,50 +318,49 @@ void HexEditorPanel::setupLayout()
 
 	// Left side
 	auto vbox = new wxBoxSizer(wxVERTICAL);
-	GetSizer()->Add(vbox, 0, wxEXPAND);
+	GetSizer()->Add(vbox, wxSizerFlags().Expand());
 
 	// View type
-	wxutil::layoutHorizontally(
+	auto lh = ui::LayoutHelper(this);
+	lh.layoutHorizontally(
 		vbox,
 		vector<wxObject*>{ new wxStaticText(this, -1, wxS("View As:")), rb_view_hex_, rb_view_dec_, rb_view_ascii_ },
-		wxSizerFlags(0).Border(wxBOTTOM, ui::px(ui::Size::PadMinimum)));
+		lh.sfWithSmallBorder(0, wxBOTTOM));
 
 	// Hex grid
-	vbox->Add(grid_hex_, 0, wxEXPAND);
+	vbox->Add(grid_hex_, wxSizerFlags().Expand());
 
 	// Right side
 	vbox = new wxBoxSizer(wxVERTICAL);
-	GetSizer()->Add(vbox, 1, wxEXPAND | wxLEFT, ui::pad());
+	GetSizer()->Add(vbox, lh.sfWithBorder(1, wxLEFT).Expand());
 
 	// Values
 	auto frame      = new wxStaticBox(this, -1, wxS("Values (General)"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	wxutil::layoutVertically(
-		framesizer,
-		{ label_offset_, label_byte_, label_ubyte_, label_ascii_ },
-		wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	lh.layoutVertically(
+		framesizer, { label_offset_, label_byte_, label_ubyte_, label_ascii_ }, lh.sfWithBorder(1).Expand());
+	vbox->Add(framesizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Little endian values
 	frame      = new wxStaticBox(this, -1, wxS("Values (Little Endian)"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		framesizer,
 		{ label_short_le_, label_ushort_le_, label_int32_le_, label_uint32_le_ },
-		wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		lh.sfWithBorder(1).Expand());
+	vbox->Add(framesizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Big endian values
 	frame      = new wxStaticBox(this, -1, wxS("Values (Big Endian)"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	wxutil::layoutVertically(
+	lh.layoutVertically(
 		framesizer,
 		{ label_short_be_, label_ushort_be_, label_int32_be_, label_uint32_be_ },
-		wxSizerFlags(1).Expand().Border(wxALL, ui::pad()));
-	vbox->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		lh.sfWithBorder(1).Expand());
+	vbox->Add(framesizer, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// 'Go to Offset' button
-	vbox->Add(btn_go_to_offset_, 0, wxBOTTOM, ui::pad());
+	vbox->Add(btn_go_to_offset_, lh.sfWithBorder(0, wxBOTTOM));
 }
 
 
@@ -370,6 +370,8 @@ void HexEditorPanel::setupLayout()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the cell selection (focus) is changed

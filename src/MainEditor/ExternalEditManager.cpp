@@ -36,10 +36,13 @@
 #include "ExternalEditManager.h"
 #include "App.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Conversions.h"
 #include "General/Executables.h"
 #include "General/Misc.h"
 #include "Graphics/Graphics.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor.h"
@@ -67,14 +70,14 @@ public:
 	{
 		// Stop monitoring if the entry is removed
 		sc_entry_removed_ = archive_->signals().entry_removed.connect(
-			[this](Archive&, ArchiveDir&, ArchiveEntry& entry)
+			[this](Archive&, ArchiveDir&, const ArchiveEntry& entry)
 			{
 				if (&entry == entry_)
 					delete this;
 			});
 	}
 
-	virtual ~ExternalEditFileMonitor() { manager_->monitorStopped(this); }
+	~ExternalEditFileMonitor() override { manager_->monitorStopped(this); }
 
 	ArchiveEntry* getEntry() const { return entry_; }
 	void          fileModified() override { updateEntry(); }
@@ -121,7 +124,7 @@ public:
 	GfxExternalFileMonitor(ArchiveEntry& entry, ExternalEditManager* manager) : ExternalEditFileMonitor(entry, manager)
 	{
 	}
-	virtual ~GfxExternalFileMonitor() = default;
+	~GfxExternalFileMonitor() override = default;
 
 	void updateEntry() override
 	{
@@ -142,8 +145,8 @@ public:
 			if (format->saveImage(image, conv_data, &palette_))
 			{
 				// Update entry data
+				gfx::setImageOffsets(conv_data, offsets_.x, offsets_.y);
 				entry_->importMemChunk(conv_data);
-				gfx::setImageOffsets(entry_->data(), offsets_.x, offsets_.y);
 			}
 			else
 			{
@@ -193,7 +196,6 @@ public:
 	}
 
 private:
-	string  gfx_format_;
 	Vec2i   offsets_;
 	Palette palette_;
 };
@@ -210,7 +212,7 @@ public:
 	MIDIExternalFileMonitor(ArchiveEntry& entry, ExternalEditManager* manager) : ExternalEditFileMonitor(entry, manager)
 	{
 	}
-	virtual ~MIDIExternalFileMonitor() = default;
+	~MIDIExternalFileMonitor() override = default;
 
 	void updateEntry() override
 	{
@@ -258,7 +260,7 @@ public:
 		return false;
 	}
 
-	static bool canHandleEntry(ArchiveEntry& entry)
+	static bool canHandleEntry(const ArchiveEntry& entry)
 	{
 		const auto& format_id = entry.type()->formatId();
 		return format_id == "midi" || format_id == "midi_mus" || format_id == "midi_xmi" || format_id == "midi_hmi"
@@ -280,7 +282,7 @@ public:
 		doom_sound_(true)
 	{
 	}
-	virtual ~SfxExternalFileMonitor() = default;
+	~SfxExternalFileMonitor() override = default;
 
 	void updateEntry() override
 	{
@@ -356,7 +358,7 @@ public:
 		return false;
 	}
 
-	static bool canHandleEntry(ArchiveEntry& entry)
+	static bool canHandleEntry(const ArchiveEntry& entry)
 	{
 		auto& format_id = entry.type()->formatId();
 		return format_id == "snd_doom" || format_id == "snd_doom_mac" || format_id == "snd_speaker"
@@ -437,7 +439,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view edi
 	}
 
 	// Run external editor
-	auto command = fmt::format("\"{}\" \"{}\"", exe_path, monitor->filename());
+	auto command = fmt::format(R"("{}" "{}")", exe_path, monitor->filename());
 	long success = wxExecute(wxString::FromUTF8(command), wxEXEC_ASYNC, monitor->process());
 	if (success == 0)
 	{
@@ -455,7 +457,7 @@ bool ExternalEditManager::openEntryExternal(ArchiveEntry& entry, string_view edi
 // -----------------------------------------------------------------------------
 // Called when a FileMonitor is stopped/deleted
 // -----------------------------------------------------------------------------
-void ExternalEditManager::monitorStopped(ExternalEditFileMonitor* monitor)
+void ExternalEditManager::monitorStopped(const ExternalEditFileMonitor* monitor)
 {
 	// Ignore if we're in the destructor, to avoid modifying file_monitors_
 	// while we're iterating through it

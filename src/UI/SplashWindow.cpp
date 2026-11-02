@@ -33,8 +33,9 @@
 #include "Main.h"
 #include "SplashWindow.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "General/UI.h"
 #include <wx/app.h>
 
 using namespace slade;
@@ -52,12 +53,7 @@ int      img_width  = 300;
 int      img_height = 204;
 bool     init_done  = false;
 } // namespace
-
-//#if __WXGTK__
-//CVAR(Int, splash_refresh_ms, 100, CVar::Flag::Save)
-//#else
 CVAR(Int, splash_refresh_ms, 20, CVar::Flag::Save)
-//#endif
 
 
 // -----------------------------------------------------------------------------
@@ -123,7 +119,7 @@ void SplashWindow::setProgress(float progress)
 // -----------------------------------------------------------------------------
 // Sets up the splash window
 // -----------------------------------------------------------------------------
-void SplashWindow::init()
+void SplashWindow::init() const
 {
 	if (init_done)
 		return;
@@ -137,14 +133,15 @@ void SplashWindow::init()
 
 		wxImage img;
 		img.LoadFile(wxString::FromUTF8(tempfile), wxBITMAP_TYPE_PNG);
-		if (ui::scaleFactor() != 1.)
-			img = img.Scale(ui::scalePx(img.GetWidth()), ui::scalePx(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
+#ifndef wxHAS_DPI_INDEPENDENT_PIXELS
+		img = img.Scale(FromDIP(img.GetWidth()), FromDIP(img.GetHeight()), wxIMAGE_QUALITY_BICUBIC);
+#endif
 
 		bm_logo = wxBitmap(img);
 	}
 
-	img_width  = ui::scalePx(300);
-	img_height = ui::scalePx(204);
+	img_width  = FromDIP(300);
+	img_height = FromDIP(204);
 
 	// Clean up
 	wxRemoveFile(wxString::FromUTF8(tempfile));
@@ -163,7 +160,7 @@ void SplashWindow::show(string_view message, bool progress)
 	{
 		show_progress_ = true;
 		setProgress(0.0f);
-		rheight += ui::scalePx(10);
+		rheight += FromDIP(10);
 	}
 	else
 		show_progress_ = false;
@@ -172,10 +169,13 @@ void SplashWindow::show(string_view message, bool progress)
 #ifndef __WXGTK__
 	SetInitialSize({ img_width, rheight });
 #else
-	SetInitialSize({ img_width + ui::scalePx(6), rheight + ui::scalePx(6) });
+	SetInitialSize({ img_width + FromDIP(6), rheight + FromDIP(6) });
 #endif
-	setMessage(message);
+
+	message_ = message;
+	CentreOnParent();
 	Show();
+	Raise();
 	CentreOnParent();
 	forceRedraw();
 }
@@ -236,8 +236,8 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	// Draw version
 	string vers      = "v" + app::version().toString();
 	auto   text_size = dc.GetTextExtent(wxString::FromUTF8(vers));
-	auto   x         = img_width - text_size.GetWidth() - ui::scalePx(8);
-	auto   y         = ui::scalePx(190) - text_size.GetHeight();
+	auto   x         = img_width - text_size.GetWidth() - FromDIP(8);
+	auto   y         = FromDIP(190) - text_size.GetHeight();
 	dc.DrawText(wxString::FromUTF8(vers), x, y);
 
 	// Draw message
@@ -245,7 +245,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	font.SetWeight(wxFONTWEIGHT_BOLD);
 	dc.SetFont(font);
 	text_size = dc.GetTextExtent(wxString::FromUTF8(message_));
-	x         = (img_width * 0.5) - int((double)text_size.GetWidth() * 0.5);
+	x         = (img_width * 0.5) - static_cast<int>(static_cast<double>(text_size.GetWidth()) * 0.5);
 	y         = (img_height - 4) - text_size.GetHeight();
 	dc.DrawText(wxString::FromUTF8(message_), x, y);
 
@@ -253,7 +253,7 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 	if (show_progress_)
 	{
 		// Setup progress bar
-		wxRect rect_pbar(0, img_height - ui::scalePx(4), img_width, ui::scalePx(14));
+		wxRect rect_pbar(0, img_height - FromDIP(4), img_width, FromDIP(14));
 
 		// Draw background
 		dc.SetBrush(wxBrush(wxColour(40, 40, 56)));
@@ -294,8 +294,8 @@ void SplashWindow::onPaint(wxPaintEvent& e)
 		font.SetPointSize(8);
 		dc.SetFont(font);
 		text_size = dc.GetTextExtent(wxString::FromUTF8(message_progress_));
-		x         = (img_width * 0.5) - int((double)text_size.GetWidth() * 0.5);
-		y         = img_height - ui::scalePx(4);
+		x         = (img_width * 0.5) - static_cast<int>(static_cast<double>(text_size.GetWidth()) * 0.5);
+		y         = img_height - FromDIP(4);
 		dc.SetTextForeground(wxColour(200, 210, 255));
 		dc.DrawText(wxString::FromUTF8(message_progress_), x, y);
 	}

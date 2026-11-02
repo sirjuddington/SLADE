@@ -1,14 +1,11 @@
-#pragma once
+﻿#pragma once
 
 namespace slade
 {
 enum class MapFormat;
-class ParseTreeNode;
 
 namespace game
 {
-	class Configuration;
-
 	// Structs
 	struct GameDef
 	{
@@ -18,13 +15,14 @@ namespace game
 		std::map<MapFormat, bool> supported_formats;
 		bool                      user;
 		vector<string>            filters;
+		string                    iwad;
 
 		GameDef(string_view def_name = "Unknown") : name{ def_name }, user{ true } {}
 
 		bool operator>(const GameDef& right) const { return title > right.title; }
 		bool operator<(const GameDef& right) const { return title < right.title; }
 
-		bool parse(MemChunk& mc);
+		bool parse(const MemChunk& mc);
 		bool supportsFilter(string_view filter) const;
 	};
 	struct PortDef
@@ -41,7 +39,7 @@ namespace game
 		bool operator>(const PortDef& right) const { return title > right.title; }
 		bool operator<(const PortDef& right) const { return title < right.title; }
 
-		bool parse(MemChunk& mc);
+		bool parse(const MemChunk& mc);
 		bool supportsGame(string_view game) const { return VECTOR_EXISTS(supported_games, game); }
 	};
 
@@ -83,23 +81,20 @@ namespace game
 
 	// General
 	void init();
+	void cleanup();
 
 	// Basic Game/Port Definitions
-	const std::map<string, GameDef>& gameDefs();
-	const GameDef&                   gameDef(const string& id);
-	const std::map<string, PortDef>& portDefs();
-	const PortDef&                   portDef(const string& id);
+	const vector<GameDef>& gameDefs();
+	const GameDef&         gameDef(const string& id);
+	const vector<PortDef>& portDefs();
+	const PortDef&         portDef(const string& id);
 
 	bool mapFormatSupported(MapFormat format, const string& game, const string& port = "");
 
-	// Full Game Configuration
-	Configuration& configuration();
-
 	// Tagging
-	TagType parseTagged(ParseTreeNode* tagged);
+	TagType parseTagged(string_view tagged);
 
 	// Custom definitions (ZScript, DECORATE, EDF, etc.)
 	void updateCustomDefinitions();
-
 } // namespace game
 } // namespace slade

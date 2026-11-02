@@ -1,0 +1,89 @@
+{
+  "groups": [
+    {
+      "name": "Flat Texture Modifiers",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 2048, "name": "-- Offset target floor texture by line direction" },
+        { "id": 2049, "name": "-- Offset target ceiling texture by line direction" },
+        { "id": 2050, "name": "-- Offset target sector textures by line direction" },
+        { "id": 2051, "name": "-- Rotate target floor texture by line angle" },
+        { "id": 2052, "name": "-- Rotate target ceiling texture by line angle" },
+        { "id": 2053, "name": "-- Rotate target sector textures by line angle" },
+        { "id": 2054, "name": "-- Offset & rotate target floor texture by line dir & angle" },
+        { "id": 2055, "name": "-- Offset & rotate target ceiling texture by line dir & angle" },
+        { "id": 2056, "name": "-- Offset & rotate target sector textures by line dir & angle" }
+      ]
+    },
+
+    {
+      "name": "Music Changers",
+      "defaults": { "tagged": "no" },
+      "specials": [
+        { "id": 2057, "name": "W1 Change music if defined" },
+        { "id": 2058, "name": "WR Change music if defined" },
+        { "id": 2059, "name": "S1 Change music if defined" },
+        { "id": 2060, "name": "SR Change music if defined" },
+        { "id": 2061, "name": "G1 Change music if defined" },
+        { "id": 2062, "name": "GR Change music if defined" },
+        { "id": 2063, "name": "W1 Change music (no looping)" },
+        { "id": 2064, "name": "WR Change music (no looping)" },
+        { "id": 2065, "name": "S1 Change music (no looping)" },
+        { "id": 2066, "name": "SR Change music (no looping)" },
+        { "id": 2067, "name": "G1 Change music (no looping)" },
+        { "id": 2068, "name": "GR Change music (no looping)" },
+        { "id": 2087, "name": "W1 Change music if defined or reset" },
+        { "id": 2088, "name": "WR Change music if defined or reset" },
+        { "id": 2089, "name": "S1 Change music if defined or reset" },
+        { "id": 2090, "name": "SR Change music if defined or reset" },
+        { "id": 2091, "name": "G1 Change music if defined or reset" },
+        { "id": 2092, "name": "GR Change music if defined or reset" },
+        { "id": 2093, "name": "W1 Change music (no looping) if defined or reset" },
+        { "id": 2094, "name": "WR Change music (no looping) if defined or reset" },
+        { "id": 2095, "name": "S1 Change music (no looping) if defined or reset" },
+        { "id": 2096, "name": "SR Change music (no looping) if defined or reset" },
+        { "id": 2097, "name": "G1 Change music (no looping) if defined or reset" },
+        { "id": 2098, "name": "GR Change music (no looping) if defined or reset" }
+		]
+    },
+
+    {
+      "name": "Exits",
+      "defaults": { "tagged": "n" },
+      "specials": [
+        { "id": 2069, "name": "W1 Exit (Normal+Reset)" },
+        { "id": 2070, "name": "S1 Exit (Normal+Reset)" },
+        { "id": 2071, "name": "G1 Exit (Normal+Reset)" },
+        { "id": 2072, "name": "W1 Exit (Secret+Reset)" },
+        { "id": 2073, "name": "S1 Exit (Secret+Reset)" },
+        { "id": 2074, "name": "G1 Exit (Secret+Reset)" }
+		]
+    },
+
+    {
+      "name": "Colormap Setters",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        { "id": 2075, "name": "-- Set sector colormap" },
+        { "id": 2076, "name": "W1 Set sector colormap" },
+        { "id": 2077, "name": "WR Set sector colormap" },
+        { "id": 2078, "name": "S1 Set sector colormap" },
+        { "id": 2079, "name": "SR Set sector colormap" },
+        { "id": 2080, "name": "G1 Set sector colormap" },
+        { "id": 2081, "name": "GR Set sector colormap" }
+      ]
+    },
+
+    {
+      "name": "Scrollers/Affecting lines",
+      "defaults": { "tagged": "line" },
+      "specials": [
+        { "id": 2082, "name": "-- Scroll Front & Back to line's left" },
+        { "id": 2083, "name": "-- Scroll Front & Back to the line's right direction" },
+        { "id": 2084, "name": "-- Scroll Front & Back to sector's scroll / 8" },
+        { "id": 2085, "name": "-- Scroll Front & Back to sector's movement / 8" },
+        { "id": 2086, "name": "-- Scroll & Accelerate Front & Back by sector's movement / 8" }
+      ]
+    }
+  ]
+}

@@ -31,9 +31,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Doom32XMapFormat.h"
-#include "General/UI.h"
+#include "Archive/ArchiveEntry.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -63,7 +65,7 @@ bool Doom32XMapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& ma
 		return true;
 	}
 
-	auto     vert_data = reinterpret_cast<const Vertex32BE*>(entry->rawData(true));
+	auto     vert_data = reinterpret_cast<const Vertex32BE*>(entry->rawData());
 	unsigned nv        = entry->size() / sizeof(Vertex32BE);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)

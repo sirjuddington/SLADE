@@ -1,59 +1,40 @@
-#pragma once
+﻿#pragma once
 
 #ifdef __clang__
 #pragma clang diagnostic ignored "-Wundefined-bool-conversion"
 #endif
 
-#include "Utility/Property.h"
-#include <array>
+#include "SLADEMap/Types.h"
+#include "Utility/PropertyList.h"
 
 namespace slade
 {
-class ParseTreeNode;
-class SLADEMap;
-
-// Forward declare map object types
-class MapVertex;
-class MapSide;
-class MapLine;
-class MapSector;
-class MapThing;
-
-class MapObject
+namespace map
 {
-	friend class SLADEMap;
-	friend class MapObjectCollection;
-
-public:
-	enum class Type
-	{
-		Object = 0,
-		Vertex,
-		Line,
-		Side,
-		Sector,
-		Thing
-	};
-
-	enum class Point
-	{
-		Mid = 0,
-		Within,
-		Text
-	};
-
-	struct Backup
+	struct ObjectBackup
 	{
 		PropertyList properties;
 		PropertyList props_internal;
 		unsigned     id   = 0;
-		Type         type = Type::Object;
+		ObjectType   type = ObjectType::Object;
 	};
+} // namespace map
 
-	typedef std::array<int, 5> ArgSet;
+class MapObject
+{
+public:
+	using Type   = map::ObjectType;
+	using Point  = map::ObjectPoint;
+	using Backup = map::ObjectBackup;
 
 	MapObject(Type type = Type::Object, SLADEMap* parent = nullptr);
 	virtual ~MapObject() = default;
+
+	void addToMap(unsigned obj_id, SLADEMap* parent)
+	{
+		obj_id_     = obj_id;
+		parent_map_ = parent;
+	}
 
 	virtual void readUDMF(ParseTreeNode* def) {}
 
@@ -66,25 +47,24 @@ public:
 	bool      isFiltered() const { return filtered_; }
 	long      modifiedTime() const { return modified_time_; }
 	unsigned  objId() const { return obj_id_; }
-	string    typeName() const;
-	void      setModified();
+	string    typeName(bool plural = false) const;
 	void      setIndex(unsigned index) { index_ = index; }
 
 	PropertyList& props() { return properties_; }
-	bool          hasProp(string_view key) const { return properties_.contains(key); }
+	virtual bool  hasProp(string_view key) const { return properties_.contains(key); }
 
 	// Generic property modification
-	virtual bool   boolProperty(string_view key);
-	virtual int    intProperty(string_view key);
-	virtual double floatProperty(string_view key);
-	virtual string stringProperty(string_view key);
+	virtual bool   boolProperty(string_view key) const;
+	virtual int    intProperty(string_view key) const;
+	virtual double floatProperty(string_view key) const;
+	virtual string stringProperty(string_view key) const;
 	virtual void   setBoolProperty(string_view key, bool value);
 	virtual void   setIntProperty(string_view key, int value);
 	virtual void   setFloatProperty(string_view key, double value);
 	virtual void   setStringProperty(string_view key, string_view value);
-	virtual bool   scriptCanModifyProp(string_view key) { return true; }
+	virtual bool   scriptCanModifyProp(string_view key) const { return true; }
 
-	virtual Vec2d getPoint(Point point) { return { 0, 0 }; }
+	virtual Vec2d getPoint(Point point) const { return { 0, 0 }; }
 
 	void filter(bool f = true) { filtered_ = f; }
 
@@ -103,10 +83,10 @@ public:
 	static void beginPropBackup(long current_time);
 	static void endPropBackup();
 
-	static bool multiBoolProperty(vector<MapObject*>& objects, string_view prop, bool& value);
-	static bool multiIntProperty(vector<MapObject*>& objects, string_view prop, int& value);
-	static bool multiFloatProperty(vector<MapObject*>& objects, string_view prop, double& value);
-	static bool multiStringProperty(vector<MapObject*>& objects, string_view prop, string& value);
+	static bool multiBoolProperty(const vector<MapObject*>& objects, string_view prop, bool& value);
+	static bool multiIntProperty(const vector<MapObject*>& objects, string_view prop, int& value);
+	static bool multiFloatProperty(const vector<MapObject*>& objects, string_view prop, double& value);
+	static bool multiStringProperty(const vector<MapObject*>& objects, string_view prop, string& value);
 
 protected:
 	unsigned           index_      = 0;
@@ -116,6 +96,9 @@ protected:
 	long               modified_time_ = 0;
 	unsigned           obj_id_        = 0;
 	unique_ptr<Backup> obj_backup_;
+
+	void beginModify();
+	void endModify();
 
 private:
 	Type type_ = Type::Object;

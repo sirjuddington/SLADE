@@ -34,29 +34,37 @@
 #include "Main.h"
 #include "ItemSelection.h"
 #include "Game/Configuration.h"
+#include "Game/ThingType.h"
 #include "MapEditContext.h"
-#include "UI/MapCanvas.h"
-#include "Utility/MathStuff.h"
+#include "MapEditor.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
+#include "SLADEMap/SLADEMap.h"
+#include "Utility/Vector.h"
 
 using namespace slade;
-
+using namespace mapeditor;
 
 // -----------------------------------------------------------------------------
 //
 // ItemSelection Class Functions
 //
 // -----------------------------------------------------------------------------
-using mapeditor::ItemType;
-using mapeditor::Mode;
-using mapeditor::SectorMode;
 
 // -----------------------------------------------------------------------------
 // Returns the currently selected items, or the currently hilighted item if
 // nothing is selected
 // -----------------------------------------------------------------------------
-vector<mapeditor::Item> ItemSelection::selectionOrHilight()
+vector<Item> ItemSelection::selectionOrHilight()
 {
-	vector<mapeditor::Item> list;
+	vector<Item> list;
 
 	if (!selection_.empty())
 		list.assign(selection_.begin(), selection_.end());
@@ -70,7 +78,7 @@ vector<mapeditor::Item> ItemSelection::selectionOrHilight()
 // Returns the first selected item, or the currently hilighted item if nothing
 // is selected
 // -----------------------------------------------------------------------------
-mapeditor::Item ItemSelection::firstSelectedOrHilight()
+Item ItemSelection::firstSelectedOrHilight() const
 {
 	if (!selection_.empty())
 		return selection_[0];
@@ -83,7 +91,7 @@ mapeditor::Item ItemSelection::firstSelectedOrHilight()
 // -----------------------------------------------------------------------------
 // Sets the current hilight to [item]. Returns true if the hilight was changed
 // -----------------------------------------------------------------------------
-bool ItemSelection::setHilight(const mapeditor::Item& item)
+bool ItemSelection::setHilight(const Item& item)
 {
 	if (item != hilight_)
 	{
@@ -119,7 +127,7 @@ bool ItemSelection::setHilight(int index)
 // Hilights the map object closest to [mouse_pos], and updates anything needed
 // if the hilight is changed
 // -----------------------------------------------------------------------------
-bool ItemSelection::updateHilight(Vec2d mouse_pos, double dist_scale)
+bool ItemSelection::updateHilight(const Vec2d& mouse_pos, double dist_scale)
 {
 	// Do nothing if hilight is locked or we have no context
 	if (hilight_lock_ || !context_)
@@ -132,17 +140,17 @@ bool ItemSelection::updateHilight(Vec2d mouse_pos, double dist_scale)
 	if (context_->editMode() == Mode::Vertices)
 	{
 		auto vertex = map.vertices().nearest(mouse_pos, 32 / dist_scale);
-		hilight_    = { vertex ? (int)vertex->index() : -1, ItemType::Vertex };
+		hilight_    = { vertex ? static_cast<int>(vertex->index()) : -1, ItemType::Vertex };
 	}
 	else if (context_->editMode() == Mode::Lines)
 	{
 		auto line = map.lines().nearest(mouse_pos, 32 / dist_scale);
-		hilight_  = { line ? (int)line->index() : -1, ItemType::Line };
+		hilight_  = { line ? static_cast<int>(line->index()) : -1, ItemType::Line };
 	}
 	else if (context_->editMode() == Mode::Sectors)
 	{
 		auto sector = map.sectors().atPos(mouse_pos);
-		hilight_    = { sector ? (int)sector->index() : -1, ItemType::Sector };
+		hilight_    = { sector ? static_cast<int>(sector->index()) : -1, ItemType::Sector };
 	}
 	else if (context_->editMode() == Mode::Things)
 	{
@@ -153,7 +161,7 @@ bool ItemSelection::updateHilight(Vec2d mouse_pos, double dist_scale)
 		if (nearest.size() == 1)
 		{
 			auto& type = game::configuration().thingType(nearest[0]->type());
-			if (math::distance(mouse_pos, nearest[0]->position()) <= type.radius() + (32 / dist_scale))
+			if (glm::distance(mouse_pos, nearest[0]->position()) <= type.radius() + (32 / dist_scale))
 				hilight_.index = nearest[0]->index();
 		}
 		else
@@ -161,7 +169,7 @@ bool ItemSelection::updateHilight(Vec2d mouse_pos, double dist_scale)
 			for (auto& t : nearest)
 			{
 				auto& type = game::configuration().thingType(t->type());
-				if (math::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
+				if (glm::distance(mouse_pos, t->position()) <= type.radius() + (32 / dist_scale))
 					hilight_.index = t->index();
 			}
 		}
@@ -177,10 +185,10 @@ bool ItemSelection::updateHilight(Vec2d mouse_pos, double dist_scale)
 		switch (context_->editMode())
 		{
 		case Mode::Vertices: mapeditor::openObjectProperties(map.vertex(hilight_.index)); break;
-		case Mode::Lines: mapeditor::openObjectProperties(map.line(hilight_.index)); break;
-		case Mode::Sectors: mapeditor::openObjectProperties(map.sector(hilight_.index)); break;
-		case Mode::Things: mapeditor::openObjectProperties(map.thing(hilight_.index)); break;
-		default: break;
+		case Mode::Lines:    mapeditor::openObjectProperties(map.line(hilight_.index)); break;
+		case Mode::Sectors:  mapeditor::openObjectProperties(map.sector(hilight_.index)); break;
+		case Mode::Things:   mapeditor::openObjectProperties(map.thing(hilight_.index)); break;
+		default:             break;
 		}
 
 		context_->resetLastUndoLevel();
@@ -190,10 +198,14 @@ bool ItemSelection::updateHilight(Vec2d mouse_pos, double dist_scale)
 }
 
 // -----------------------------------------------------------------------------
-// Clears the current selection
+// Clears the current selection. Returns true if the selection was changed
 // -----------------------------------------------------------------------------
-void ItemSelection::clear()
+bool ItemSelection::clear()
 {
+	// Ignore if no selection
+	if (selection_.empty())
+		return false;
+
 	// Update change set
 	last_change_.clear();
 	for (auto& item : selection_)
@@ -204,13 +216,15 @@ void ItemSelection::clear()
 
 	if (context_)
 		context_->selectionUpdated();
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
 // Changes the selection status of [item] to [select].
 // If [new_change] is true, a new change set is started
 // -----------------------------------------------------------------------------
-void ItemSelection::select(const mapeditor::Item& item, bool select, bool new_change)
+void ItemSelection::select(const Item& item, bool select, bool new_change)
 {
 	// Start new change set if specified
 	if (new_change)
@@ -223,7 +237,7 @@ void ItemSelection::select(const mapeditor::Item& item, bool select, bool new_ch
 // Changes the selection status of all items in [items] to [select].
 // If [new_change] is true, a new change set is started
 // -----------------------------------------------------------------------------
-void ItemSelection::select(const vector<mapeditor::Item>& items, bool select, bool new_change)
+void ItemSelection::select(const vector<Item>& items, bool select, bool new_change)
 {
 	// Start new change set if specified
 	if (new_change)
@@ -250,22 +264,22 @@ void ItemSelection::selectAll()
 	if (context_->editMode() == Mode::Vertices)
 	{
 		for (unsigned a = 0; a < map.nVertices(); a++)
-			selectItem({ (int)a, ItemType::Vertex });
+			selectItem({ static_cast<int>(a), ItemType::Vertex });
 	}
 	else if (context_->editMode() == Mode::Lines)
 	{
 		for (unsigned a = 0; a < map.nLines(); a++)
-			selectItem({ (int)a, ItemType::Line });
+			selectItem({ static_cast<int>(a), ItemType::Line });
 	}
 	else if (context_->editMode() == Mode::Sectors)
 	{
 		for (unsigned a = 0; a < map.nSectors(); a++)
-			selectItem({ (int)a, ItemType::Sector });
+			selectItem({ static_cast<int>(a), ItemType::Sector });
 	}
 	else if (context_->editMode() == Mode::Things)
 	{
 		for (unsigned a = 0; a < map.nThings(); a++)
-			selectItem({ (int)a, ItemType::Thing });
+			selectItem({ static_cast<int>(a), ItemType::Thing });
 	}
 
 	context_->addEditorMessage(fmt::format("Selected all {} {}", selection_.size(), context_->modeString()));
@@ -283,8 +297,7 @@ bool ItemSelection::toggleCurrent(bool clear_none)
 		// Clear selection if specified
 		if (clear_none)
 		{
-			clear();
-			if (context_)
+			if (clear() && context_)
 			{
 				context_->selectionUpdated();
 				context_->addEditorMessage("Selection cleared");
@@ -314,7 +327,7 @@ void ItemSelection::selectVerticesWithin(const SLADEMap& map, const Rectd& rect)
 	// Select vertices within bounds
 	for (unsigned a = 0; a < map.nVertices(); a++)
 		if (rect.contains(map.vertex(a)->position()))
-			selectItem({ (int)a, ItemType::Vertex });
+			selectItem({ static_cast<int>(a), ItemType::Vertex });
 }
 
 // -----------------------------------------------------------------------------
@@ -328,7 +341,7 @@ void ItemSelection::selectLinesWithin(const SLADEMap& map, const Rectd& rect)
 	// Select lines within bounds
 	for (unsigned a = 0; a < map.nLines(); a++)
 		if (rect.contains(map.line(a)->v1()->position()) && rect.contains(map.line(a)->v2()->position()))
-			selectItem({ (int)a, ItemType::Line });
+			selectItem({ static_cast<int>(a), ItemType::Line });
 }
 
 // -----------------------------------------------------------------------------
@@ -342,7 +355,7 @@ void ItemSelection::selectSectorsWithin(const SLADEMap& map, const Rectd& rect)
 	// Select sectors within bounds
 	for (unsigned a = 0; a < map.nSectors(); a++)
 		if (map.sector(a)->boundingBox().isWithin(rect.tl, rect.br))
-			selectItem({ (int)a, ItemType::Sector });
+			selectItem({ static_cast<int>(a), ItemType::Sector });
 }
 
 // -----------------------------------------------------------------------------
@@ -356,7 +369,7 @@ void ItemSelection::selectThingsWithin(const SLADEMap& map, const Rectd& rect)
 	// Select vertices within bounds
 	for (unsigned a = 0; a < map.nThings(); a++)
 		if (rect.contains(map.thing(a)->position()))
-			selectItem({ (int)a, ItemType::Thing });
+			selectItem({ static_cast<int>(a), ItemType::Thing });
 }
 
 // -----------------------------------------------------------------------------
@@ -377,10 +390,10 @@ bool ItemSelection::selectWithin(const Rectd& rect, bool add)
 	switch (context_->editMode())
 	{
 	case Mode::Vertices: selectVerticesWithin(context_->map(), rect); break;
-	case Mode::Lines: selectLinesWithin(context_->map(), rect); break;
-	case Mode::Sectors: selectSectorsWithin(context_->map(), rect); break;
-	case Mode::Things: selectThingsWithin(context_->map(), rect); break;
-	default: break;
+	case Mode::Lines:    selectLinesWithin(context_->map(), rect); break;
+	case Mode::Sectors:  selectSectorsWithin(context_->map(), rect); break;
+	case Mode::Things:   selectThingsWithin(context_->map(), rect); break;
+	default:             break;
 	}
 
 	context_->selectionUpdated();
@@ -448,10 +461,10 @@ MapObject* ItemSelection::hilightedObject() const
 	switch (context_->editMode())
 	{
 	case Mode::Vertices: return hilightedVertex();
-	case Mode::Lines: return hilightedLine();
-	case Mode::Sectors: return hilightedSector();
-	case Mode::Things: return hilightedThing();
-	default: return nullptr;
+	case Mode::Lines:    return hilightedLine();
+	case Mode::Sectors:  return hilightedSector();
+	case Mode::Things:   return hilightedThing();
+	default:             return nullptr;
 	}
 }
 
@@ -579,18 +592,46 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 	switch (context_->editMode())
 	{
 	case Mode::Vertices: type = MapObject::Type::Vertex; break;
-	case Mode::Lines: type = MapObject::Type::Line; break;
-	case Mode::Sectors: type = MapObject::Type::Sector; break;
-	case Mode::Things: type = MapObject::Type::Thing; break;
+	case Mode::Lines:    type = MapObject::Type::Line; break;
+	case Mode::Sectors:  type = MapObject::Type::Sector; break;
+	case Mode::Things:   type = MapObject::Type::Thing; break;
+	case Mode::Visual:
+		// In 3D mode we can have multiple types selected, so use the current
+		// highlight to determine the type
+		if (hilight_.index >= 0)
+		{
+			switch (baseItemType(hilight_.type))
+			{
+			case ItemType::Vertex: type = MapObject::Type::Vertex; break;
+			case ItemType::Side:   type = MapObject::Type::Side; break;
+			case ItemType::Sector: type = MapObject::Type::Sector; break;
+			case ItemType::Thing:  type = MapObject::Type::Thing; break;
+			default:               return {};
+			}
+		}
+		else
+			return {};
+		break;
 	default: return {};
 	}
 
 	// Get selected objects
 	vector<MapObject*> list;
 	MapObject*         o;
-	for (auto& item : selection_)
-		if ((o = context_->map().object(type, item.index)))
-			list.push_back(o);
+	if (type == MapObject::Type::Side)
+	{
+		// For sides (3d mode walls), we need to get the parent line of each
+		// selected side
+		for (auto& item : selection_)
+			if (auto side = context_->map().side(item.index))
+				vectorAddUnique(list, static_cast<MapObject*>(side->parentLine()));
+	}
+	else
+	{
+		for (auto& item : selection_)
+			if ((o = context_->map().object(type, item.index)))
+				list.push_back(o);
+	}
 
 	// If no objects were selected, try the hilight
 	if (try_hilight && list.empty() && hilight_.index >= 0)
@@ -608,7 +649,7 @@ vector<MapObject*> ItemSelection::selectedObjects(bool try_hilight) const
 // -----------------------------------------------------------------------------
 void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 {
-	std::set<mapeditor::Item> new_selection;
+	std::set<Item> new_selection;
 
 	// 3D to 2D: select anything of the right type
 	if (from_edit_mode == Mode::Visual)
@@ -629,7 +670,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 				auto side = context_->map().side(item.index);
 				if (!side)
 					continue;
-				new_selection.insert({ (int)side->parentLine()->index(), ItemType::Line });
+				new_selection.insert({ static_cast<int>(side->parentLine()->index()), ItemType::Line });
 			}
 		}
 	}
@@ -657,19 +698,19 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 				// Only select the visible areas -- i.e., the ones that need texturing
 				int textures = line->needsTexture();
 				if (front && textures & MapLine::Part::FrontUpper)
-					new_selection.insert({ (int)front->index(), ItemType::WallTop });
+					new_selection.insert({ static_cast<int>(front->index()), ItemType::WallTop });
 				if (front && textures & MapLine::Part::FrontLower)
-					new_selection.insert({ (int)front->index(), ItemType::WallBottom });
+					new_selection.insert({ static_cast<int>(front->index()), ItemType::WallBottom });
 				if (back && textures & MapLine::Part::BackUpper)
-					new_selection.insert({ (int)back->index(), ItemType::WallTop });
+					new_selection.insert({ static_cast<int>(back->index()), ItemType::WallTop });
 				if (back && textures & MapLine::Part::BackLower)
-					new_selection.insert({ (int)back->index(), ItemType::WallBottom });
+					new_selection.insert({ static_cast<int>(back->index()), ItemType::WallBottom });
 
 				// Also include any two-sided middle textures
 				if (front && (textures & MapLine::Part::FrontMiddle || front->texMiddle() != MapSide::TEX_NONE))
-					new_selection.insert({ (int)front->index(), ItemType::WallMiddle });
+					new_selection.insert({ static_cast<int>(front->index()), ItemType::WallMiddle });
 				if (back && (textures & MapLine::Part::BackMiddle || back->texMiddle() != MapSide::TEX_NONE))
-					new_selection.insert({ (int)back->index(), ItemType::WallMiddle });
+					new_selection.insert({ static_cast<int>(back->index()), ItemType::WallMiddle });
 			}
 
 			// Thing
@@ -695,7 +736,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 				vector<MapLine*> lines;
 				sector->putLines(lines);
 				for (auto line : lines)
-					new_selection.insert({ (int)line->index(), ItemType::Line });
+					new_selection.insert({ static_cast<int>(line->index()), ItemType::Line });
 			}
 
 			// To vertices mode
@@ -704,7 +745,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 				vector<MapVertex*> vertices;
 				sector->putVertices(vertices);
 				for (auto vertex : vertices)
-					new_selection.insert({ (int)vertex->index(), ItemType::Vertex });
+					new_selection.insert({ static_cast<int>(vertex->index()), ItemType::Vertex });
 			}
 
 			// To things mode
@@ -713,7 +754,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 				for (auto& thing : context_->map().things())
 				{
 					if (sector->containsPoint(thing->position()))
-						new_selection.insert({ (int)thing->index(), ItemType::Thing });
+						new_selection.insert({ static_cast<int>(thing->index()), ItemType::Thing });
 				}
 			}
 		}
@@ -727,8 +768,8 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 			auto line = context_->map().line(item.index);
 			if (!line)
 				continue;
-			new_selection.insert({ (int)line->v1()->index(), ItemType::Vertex });
-			new_selection.insert({ (int)line->v2()->index(), ItemType::Vertex });
+			new_selection.insert({ static_cast<int>(line->v1()->index()), ItemType::Vertex });
+			new_selection.insert({ static_cast<int>(line->v2()->index()), ItemType::Vertex });
 		}
 	}
 
@@ -740,7 +781,7 @@ void ItemSelection::migrate(Mode from_edit_mode, Mode to_edit_mode)
 // Selects or deselects [item] depending on the value of [select] and updates
 // the current ChangeSet
 // -----------------------------------------------------------------------------
-void ItemSelection::selectItem(const mapeditor::Item& item, bool select)
+void ItemSelection::selectItem(const Item& item, bool select)
 {
 	// Check if already selected
 	bool selected = VECTOR_EXISTS(selection_, item);

@@ -1,0 +1,16 @@
+{
+  "flags": [
+    { "value": 1, "name": "Easy" },
+    { "value": 2, "name": "Medium" },
+    { "value": 4, "name": "Hard" },
+    { "value": 8, "name": "Ambush" },
+    { "value": 16, "name": "Multiplayer Only" },
+    { "value": 32, "name": "Spawner" },
+    { "value": 64, "name": "Trigger On Touch" },
+    { "value": 128, "name": "Trigger On Death" },
+    { "value": 256, "name": "Count Secret On Pickup" },
+    { "value": 512, "name": "No Infighting" },
+    { "value": 1024, "name": "No Deathmatch" },
+    { "value": 2048, "name": "No Net Game" }
+  ]
+}

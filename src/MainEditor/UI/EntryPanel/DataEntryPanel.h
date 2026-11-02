@@ -40,7 +40,7 @@ public:
 		{
 		}
 
-		void addCustomValue(int key, wxString value) { custom_values.emplace_back(key, value); }
+		void addCustomValue(int key, const wxString& value) { custom_values.emplace_back(key, value); }
 
 		wxString customValue(int key)
 		{
@@ -54,7 +54,7 @@ public:
 	};
 
 	DataEntryTable(DataEntryPanel* parent) : parent_{ parent } {}
-	virtual ~DataEntryTable() = default;
+	~DataEntryTable() override = default;
 
 	// wxGridTableBase overrides
 	int             GetNumberRows() override;
@@ -91,7 +91,7 @@ class DataEntryPanel : public EntryPanel
 {
 public:
 	DataEntryPanel(wxWindow* parent);
-	~DataEntryPanel() = default;
+	~DataEntryPanel() override = default;
 
 	void setDataModified(bool modified) { EntryPanel::setModified(modified); }
 

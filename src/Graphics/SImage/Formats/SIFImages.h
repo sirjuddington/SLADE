@@ -9,12 +9,12 @@ public:
 	PNGChunk(string_view name = "----") { memcpy(name_, name.data(), 4); }
 	~PNGChunk() = default;
 
-	string    name() const { return string(name_, 4); }
+	string    name() const { return { name_, 4 }; }
 	uint32_t  size() const { return size_; }
 	uint32_t  crc() const { return crc_; }
 	MemChunk& data() { return data_; }
 
-	void read(MemChunk& mc)
+	void read(const MemChunk& mc)
 	{
 		// Read size and chunk name
 		mc.read(&size_, 4);
@@ -83,7 +83,7 @@ class SIFPng : public SIFormat
 public:
 	SIFPng() : SIFormat("png", "PNG", "png") {}
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		// Reset MemChunk
 		mc.seek(0, SEEK_SET);
@@ -100,7 +100,7 @@ public:
 		return false;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info inf;
 		inf.format = "png";
@@ -120,8 +120,8 @@ public:
 			chunk.data().read(&ihdr, 13, 0);
 
 			// Set info from IHDR
-			inf.width  = ihdr.width;
-			inf.height = ihdr.height;
+			inf.width  = wxINT32_SWAP_ON_LE(ihdr.width);
+			inf.height = wxINT32_SWAP_ON_LE(ihdr.height);
 			bpp        = ihdr.bpp;
 			if (ihdr.coltype == 3 && ihdr.bpp == 8)
 			{
@@ -234,7 +234,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Check for grAb (offsets) and alPh chunks
 		int32_t xoff = 0, yoff = 0;
@@ -282,7 +282,7 @@ protected:
 			return false;
 		}
 
-		PngReadContext ctx{ data.data(), data.size(), 0 };
+		PngReadContext ctx{ .data = data.data(), .size = data.size(), .offset = 0 };
 		png_set_read_fn(png_ptr, &ctx, pngReadData);
 
 		// Read header
@@ -407,7 +407,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& data, const Palette* pal, int index) override
 	{
 		// Setup libpng for writing to memory
 		png_structp png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
@@ -425,8 +425,8 @@ protected:
 			return false;
 		}
 
-		out.clear();
-		PngWriteContext wctx{ &out };
+		data.clear();
+		PngWriteContext wctx{ &data };
 		png_set_write_fn(png_ptr, &wctx, pngWriteData, pngFlush);
 
 		auto type     = image.type();
@@ -456,8 +456,8 @@ protected:
 		// Palette
 		if (type == SImage::Type::PalMask)
 		{
-			const auto used_pal = (pal && !image.hasPalette()) ? pal : image.palette();
-			png_color  palette_plte[256]{};
+			auto      used_pal = (pal && !image.hasPalette()) ? const_cast<Palette*>(pal) : image.palette();
+			png_color palette_plte[256]{};
 			for (int i = 0; i < 256; ++i)
 			{
 				const auto c    = used_pal->colour(i);

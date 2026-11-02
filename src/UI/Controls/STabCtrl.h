@@ -29,6 +29,8 @@ public:
 		bool      main_tabs     = false,
 		bool      move_tabs     = false);
 
+	static int getPageIndex(TabControl* tabs, wxWindow* page);
+
 protected:
 	wxSize DoGetBestClientSize() const override;
 };

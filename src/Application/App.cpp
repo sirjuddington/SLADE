@@ -33,37 +33,45 @@
 #include "Main.h"
 #include "App.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryDataFormat.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Audio/MIDIPlayer.h"
-#include "Game/Configuration.h"
+#include "Database/Database.h"
+#include "Game/Game.h"
+#include "Game/SpecialPreset.h"
 #include "General/Clipboard.h"
 #include "General/ColourConfiguration.h"
 #include "General/Console.h"
 #include "General/Executables.h"
 #include "General/KeyBind.h"
-#include "General/Misc.h"
 #include "General/ResourceManager.h"
 #include "General/SAction.h"
-#include "General/UI.h"
 #include "Graphics/Icons.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"
 #include "MapEditor/NodeBuilders.h"
-#include "OpenGL/Drawing.h"
 #include "OpenGL/GLTexture.h"
 #include "SLADEWxApp.h"
-#include "Scripting/Lua.h"
 #include "Scripting/ScriptManager.h"
+#include "Scripting/Scripting.h"
 #include "TextEditor/TextLanguage.h"
 #include "TextEditor/TextStyle.h"
+#include "UI/Controls/ReleaseNotesPanel.h"
+#include "UI/Dialogs/ExceptionDialog.h"
 #include "UI/Dialogs/SetupWizard/SetupWizardDialog.h"
 #include "UI/SBrush.h"
+#include "UI/State.h"
+#include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
-#include <dumb.h>
+#include <cpptrace/formatting.hpp>
 #ifdef __WXOSX__
 #include <ApplicationServices/ApplicationServices.h>
+#endif
+#if defined(__WXMSW__)
+#include <wx/msw/darkmode.h>
 #endif
 
 using namespace slade;
@@ -79,16 +87,17 @@ namespace slade::app
 wxStopWatch     timer;
 int             temp_fail_count = 0;
 bool            init_ok         = false;
-bool            exiting         = false;
+static bool     exiting         = false;
 std::thread::id main_thread_id;
-bool            win_darkmode_enabled = false;
 
 // Version
-Version version_num{ 3, 2, 12, 0 };
+Version version_num{ 3, 3, 0, 3 };
 
 // Directory paths
+bool   dirs_portable = false;
 string dir_data;
 string dir_user;
+string dir_user_old;
 string dir_app;
 string dir_res;
 string dir_temp;
@@ -99,7 +108,6 @@ string dir_separator = "/";
 #endif
 
 // App objects (managers, etc.)
-Console         console_main;
 PaletteManager  palette_manager;
 ArchiveManager  archive_manager;
 Clipboard       clip_board;
@@ -108,21 +116,73 @@ ResourceManager resource_manager;
 
 CVAR(Int, temp_location, 0, CVar::Flag::Save)
 CVAR(String, temp_location_custom, "", CVar::Flag::Save)
-CVAR(Bool, setup_wizard_run, false, CVar::Flag::Save)
 CVAR(Int, win_darkmode, 1, CVar::Flag::Save)
 
 
-// ----------------------------------------------------------------------------
+#if defined(__WXMSW__)
+namespace slade::app
+{
+// -----------------------------------------------------------------------------
+// SLADEDarkModeSettings Class
+//
+// Custom wxDarkModeSettings class to tweak some colours in dark mode
+// -----------------------------------------------------------------------------
+class SLADEDarkModeSettings : public wxDarkModeSettings
+{
+public:
+	wxColour GetColour(wxSystemColour index) override
+	{
+		switch (index)
+		{
+		case wxSYS_COLOUR_HIGHLIGHT: return { wxS("#374F80") };
+		default:                     return wxDarkModeSettings::GetColour(index);
+		}
+	}
+};
+} // namespace slade::app
+#endif
+
+
+// -----------------------------------------------------------------------------
 //
 // app::Version Struct Functions
 //
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// Constructs a version from a string (eg. "3.2.1-beta4")
+// -----------------------------------------------------------------------------
+app::Version::Version(const string& version)
+{
+	auto parts = strutil::splitV(version, '.');
+	if (parts.size() != 3 && parts.size() != 4)
+	{
+		log::warning("Invalid version string \"{}\" (must be in the format \"major.minor.revision(-betaX)\")", version);
+		return;
+	}
+
+	major = strutil::asInt(parts[0]);
+	minor = strutil::asInt(parts[1]);
+	if (strutil::contains(parts[2], "-beta"))
+	{
+		auto pos = parts[2].find("-beta");
+		revision = strutil::asInt(parts[2].substr(0, pos));
+		beta     = strutil::asInt(parts[2].substr(pos + 5));
+	}
+	else
+	{
+		revision = strutil::asInt(parts[2]);
+		beta     = 0;
+	}
+	if (parts.size() == 4)
+		sub_revision = strutil::asInt(parts[3]);
+}
+
+// -----------------------------------------------------------------------------
 // Compares with another version [rhs].
 // Returns 0 if equal, 1 if this is newer or -1 if this is older
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 int app::Version::cmp(const Version& rhs) const
 {
 	if (major == rhs.major)
@@ -131,14 +191,19 @@ int app::Version::cmp(const Version& rhs) const
 		{
 			if (revision == rhs.revision)
 			{
-				if (beta == rhs.beta)
-					return 0;
-				if (beta == 0 && rhs.beta > 0)
-					return 1;
-				if (beta > 0 && rhs.beta == 0)
-					return -1;
+				if (sub_revision == rhs.sub_revision)
+				{
+					if (beta == rhs.beta)
+						return 0;
+					if (beta == 0 && rhs.beta > 0)
+						return 1;
+					if (beta > 0 && rhs.beta == 0)
+						return -1;
 
-				return beta > rhs.beta ? 1 : -1;
+					return beta > rhs.beta ? 1 : -1;
+				}
+
+				return sub_revision > rhs.sub_revision ? 1 : -1;
 			}
 
 			return revision > rhs.revision ? 1 : -1;
@@ -150,19 +215,21 @@ int app::Version::cmp(const Version& rhs) const
 	return major > rhs.major ? 1 : -1;
 }
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 // Returns a string representation of the version (eg. "3.2.1 beta 4")
-// ----------------------------------------------------------------------------
-string app::Version::toString() const
+// -----------------------------------------------------------------------------
+string app::Version::toString(bool display) const
 {
 	auto vers = fmt::format("{}.{}.{}", major, minor, revision);
-	if (beta > 0)
-		vers += fmt::format(" beta {}", beta);
+	if (beta > 999 && display)
+		vers += " alpha";
+	else if (beta > 0)
+		vers += display ? fmt::format(" beta {}", beta) : fmt::format("-beta{}", beta);
 	return vers;
 }
 
 
-// ----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
 //
 // App Namespace Functions
 //
@@ -182,23 +249,38 @@ bool initDirectories()
 	wxStandardPaths::Get().SetInstallPrefix(INSTALL_PREFIX);
 #endif // defined(__UNIX__) && defined(INSTALL_PREFIX)
 
+#ifdef __WXGTK__
+	wxStandardPaths::Get().SetFileLayout(wxStandardPathsBase::FileLayout_XDG);
+#endif
+
 	// Setup app dir
 	dir_app = strutil::Path::pathOf(wxStandardPaths::Get().GetExecutablePath().utf8_string(), false);
 
 	// Check for portable install
-	if (fileutil::fileExists(path("portable", Dir::Executable)))
+	if (dirs_portable || fileutil::fileExists(path("portable", Dir::Executable)))
 	{
 		// Setup portable user/data dirs
-		dir_data = dir_app;
-		dir_res  = dir_app;
-		dir_user = dir_app + dir_separator + "config";
+		dir_data      = dir_app;
+		dir_res       = dir_app;
+		dir_user      = dir_app + dir_separator + "config";
+		dir_user_old  = dir_user;
+		dirs_portable = true;
 	}
 	else
 	{
 		// Setup standard user/data dirs
+#ifdef __WXGTK__
+		dir_user = wxStandardPaths::Get()
+					   .GetUserConfigDir()
+					   .Append(dir_separator)
+					   .Append(wxTheApp->GetAppName())
+					   .utf8_string();
+#else
 		dir_user = wxStandardPaths::Get().GetUserDataDir().utf8_string();
-		dir_data = wxStandardPaths::Get().GetDataDir().utf8_string();
-		dir_res  = wxStandardPaths::Get().GetResourcesDir().utf8_string();
+#endif
+		dir_user_old = wxStandardPaths::Get().GetUserDataDir().utf8_string();
+		dir_data     = wxStandardPaths::Get().GetDataDir().utf8_string();
+		dir_res      = wxStandardPaths::Get().GetResourcesDir().utf8_string();
 	}
 
 	// Create user dir if necessary
@@ -234,13 +316,12 @@ bool initDirectories()
 }
 
 // -----------------------------------------------------------------------------
-// Reads and parses the SLADE configuration file
+// Reads the pre-3.3.0 configuration file (slade3.cfg), for migration purposes
 // -----------------------------------------------------------------------------
-void readConfigFile()
+void readOldConfigFile()
 {
-	// Open SLADE.cfg
 	Tokenizer tz;
-	if (!tz.openFile(path("slade3.cfg", Dir::User)))
+	if (!tz.openFile(path("slade3.cfg", Dir::OldUser)))
 		return;
 
 	// Go through the file with the tokenizer
@@ -279,22 +360,6 @@ void readConfigFile()
 			tz.adv(); // Skip ending }
 		}
 
-		// Read recent files list
-		if (tz.advIf("recent_files", 2))
-		{
-			while (!tz.checkOrEnd("}"))
-			{
-				archive_manager.addRecentFile(tz.current().text);
-				tz.adv();
-			}
-
-			tz.adv(); // Skip ending }
-		}
-
-		// Read keybinds
-		if (tz.advIf("keys", 2))
-			KeyBind::readBinds(tz);
-
 		// Read nodebuilder paths
 		if (tz.advIf("nodebuilder_paths", 2))
 		{
@@ -319,13 +384,55 @@ void readConfigFile()
 			tz.adv(); // Skip ending }
 		}
 
-		// Read window size/position info
-		if (tz.advIf("window_info", 2))
-			misc::readWindowInfo(tz);
-
 		// Next token
 		tz.adv();
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads and parses the SLADE configuration file
+// -----------------------------------------------------------------------------
+void readConfigFile()
+{
+	// Open config JSON file
+	SFile file(path("config.json", Dir::User));
+	if (!file.isOpen())
+	{
+		// If it doesn't exist, try reading the old pre-3.3.0 config file
+		readOldConfigFile();
+		return;
+	}
+
+	auto j = jsonutil::parseFile(file);
+	if (j.is_discarded())
+		return;
+
+	// CVars
+	if (j.contains("cvars"))
+	{
+		for (auto& [key, value] : j["cvars"].items())
+		{
+			if (value.is_string())
+				CVar::set(key, value);
+			else
+				CVar::set(key, to_string(value));
+		}
+	}
+
+	// Base resource archive paths
+	if (j.contains("base_resource_paths"))
+		for (const auto& path : j["base_resource_paths"])
+			archive_manager.addBaseResourcePath(path.get<string>());
+
+	// Nodebuilder paths
+	if (j.contains("nodebuilder_paths"))
+		for (auto& [builder, path] : j["nodebuilder_paths"].items())
+			nodebuilders::addBuilderPath(builder, path.get<string>());
+
+	// Game executable paths
+	if (j.contains("executable_paths"))
+		for (const auto& [exe, path] : j["executable_paths"].items())
+			executables::setGameExePath(exe, path.get<string>());
 }
 
 // -----------------------------------------------------------------------------
@@ -338,15 +445,29 @@ vector<string> processCommandLine(const vector<string>& args)
 	// Process command line args (except the first as it is normally the executable name)
 	for (auto& arg : args)
 	{
-		// -nosplash: Disable splash window
-		if (strutil::equalCI(arg, "-nosplash"))
+		// --nosplash: Disable splash window
+		if (strutil::equalCI(arg, "--nosplash"))
 			ui::enableSplash(false);
 
-		// -debug: Enable debug mode
-		else if (strutil::equalCI(arg, "-debug"))
+		// --debug: Enable debug mode
+		else if (strutil::equalCI(arg, "--debug"))
 		{
 			global::debug = true;
 			log::info("Debugging stuff enabled");
+		}
+
+		// --portable: Enable portable mode
+		else if (strutil::equalCI(arg, "--portable"))
+		{
+			dirs_portable = true;
+			log::info("Portable mode enabled");
+		}
+
+		// --nouistate: Disable saving/restoring UI state
+		else if (strutil::equalCI(arg, "--nouistate"))
+		{
+			ui::enableSavedState(false);
+			log::info("UI state saving disabled");
 		}
 
 		// Other (no dash), open as archive
@@ -368,14 +489,6 @@ vector<string> processCommandLine(const vector<string>& args)
 bool app::isInitialised()
 {
 	return init_ok;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the global Console
-// -----------------------------------------------------------------------------
-Console* app::console()
-{
-	return &console_main;
 }
 
 // -----------------------------------------------------------------------------
@@ -411,6 +524,14 @@ ResourceManager& app::resources()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the program resource archive (ie. slade.pk3)
+// -----------------------------------------------------------------------------
+Archive* app::programResource()
+{
+	return archive_manager.programResourceArchive();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the number of ms elapsed since the application was started
 // -----------------------------------------------------------------------------
 long app::runTimer()
@@ -429,7 +550,7 @@ bool app::isExiting()
 // -----------------------------------------------------------------------------
 // Application initialisation
 // -----------------------------------------------------------------------------
-bool app::init(const vector<string>& args, double ui_scale)
+bool app::init(const vector<string>& args)
 {
 	// Get the id of the current thread (should be the main one)
 	main_thread_id = std::this_thread::get_id();
@@ -438,15 +559,15 @@ bool app::init(const vector<string>& args, double ui_scale)
 	// even in locales where the decimal separator is a comma.
 	wxSetlocale(LC_NUMERIC, "C");
 
+	// Process the command line arguments
+	auto paths_to_open = processCommandLine(args);
+
 	// Init application directories
 	if (!initDirectories())
 		return false;
 
 	// Init log
 	log::init();
-
-	// Process the command line arguments
-	auto paths_to_open = processCommandLine(args);
 
 	// Init keybinds
 	KeyBind::initBinds();
@@ -472,26 +593,29 @@ bool app::init(const vector<string>& args, double ui_scale)
 		return false;
 	}
 
+	// Init database
+	auto prev_version = database::init();
+	if (!prev_version.has_value())
+		return false;
+
 	// Init SActions
 	SAction::setBaseWxId(26000);
 	SAction::initActions();
 
 #ifndef NO_LUA
 	// Init lua
-	lua::init();
+	scripting::init();
 #endif
 
 	// Enable dark mode in Windows if requested and supported
-#if defined(__WXMSW__) && wxCHECK_VERSION(3, 3, 0)
+#if defined(__WXMSW__)
 	if (win_darkmode > 0)
-	{
-		win_darkmode_enabled = wxTheApp->MSWEnableDarkMode(
-			win_darkmode > 1 ? wxApp::DarkMode_Always : wxApp::DarkMode_Auto);
-	}
+		wxTheApp->MSWEnableDarkMode(
+			win_darkmode > 1 ? wxApp::DarkMode_Always : wxApp::DarkMode_Auto, new SLADEDarkModeSettings());
 #endif
 
 	// Init UI
-	ui::init(ui_scale);
+	ui::init();
 
 	// Show splash screen
 	ui::showSplash("Starting up...");
@@ -512,9 +636,6 @@ bool app::init(const vector<string>& args, double ui_scale)
 	// Load program icons
 	log::info("Loading icons");
 	icons::loadIcons();
-
-	// Load program fonts
-	drawing::initFonts();
 
 	// Load entry types
 	log::info("Loading entry types");
@@ -572,11 +693,11 @@ bool app::init(const vector<string>& args, double ui_scale)
 	log::info("SLADE Initialisation OK");
 
 	// Show Setup Wizard if needed
-	if (!setup_wizard_run)
+	if (!ui::getStateBool(ui::SETUP_WIZARD_RUN))
 	{
 		SetupWizardDialog dlg(maineditor::windowWx());
 		dlg.ShowModal();
-		setup_wizard_run = true;
+		ui::saveStateBool(ui::SETUP_WIZARD_RUN, true);
 		maineditor::windowWx()->Update();
 		maineditor::windowWx()->Refresh();
 	}
@@ -596,6 +717,10 @@ bool app::init(const vector<string>& args, double ui_scale)
 		CFRelease(options);
 #endif
 
+	// Show release notes if this is a new version
+	if (Version(prev_version.value()).cmp(version()) < 0)
+		ui::popupWhatsNewDialog(maineditor::windowWx(), version().toString(false));
+
 	return true;
 }
 
@@ -604,14 +729,12 @@ bool app::init(const vector<string>& args, double ui_scale)
 // -----------------------------------------------------------------------------
 void app::saveConfigFile()
 {
-	// ReSharper disable CppExpressionWithoutSideEffects
-
-	// Open SLADE.cfg for writing text
-	auto  cfg_path = app::path("slade3.cfg", app::Dir::User);
-	SFile file(cfg_path, SFile::Mode::Write);
+	// Open config file for writing
+	auto  cfg_path = path("config.json", Dir::User);
+	SFile config_json(cfg_path, SFile::Mode::Write);
 
 	// Show error message if it didn't open correctly
-	if (!file.isOpen())
+	if (!config_json.isOpen())
 	{
 		log::error("Failed to open slade3.cfg for writing");
 		wxMessageBox(
@@ -622,58 +745,43 @@ void app::saveConfigFile()
 		return;
 	}
 
-	// Write cfg header
-	file.writeStr("/*****************************************************\n");
-	file.writeStr(" * SLADE Configuration File\n");
-	file.writeStr(" * Don't edit this unless you know what you're doing\n");
-	file.writeStr(" *****************************************************/\n\n");
+	// Build JSON object
+	Json j;
 
-	// Write cvars
-	file.writeStr(CVar::writeAll());
+	// CVars
+	auto& j_cvars = j["cvars"];
+	for (auto cvar : CVar::allCvars())
+	{
+		if (cvar->flags & CVar::Flag::Save)
+		{
+			switch (cvar->type)
+			{
+			case CVar::Type::Integer: j_cvars[cvar->name] = cvar->getValue().Int; break;
+			case CVar::Type::Boolean: j_cvars[cvar->name] = cvar->getValue().Bool; break;
+			case CVar::Type::Float:   j_cvars[cvar->name] = cvar->getValue().Float; break;
+			case CVar::Type::String:  j_cvars[cvar->name] = dynamic_cast<CStringCVar*>(cvar)->value; break;
+			default:                  break;
+			}
+		}
+	}
 
-	// Write base resource archive paths
-	file.writeStr("\nbase_resource_paths\n{\n");
+	// Base resource archive paths
 	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
 	{
 		auto path = archive_manager.getBaseResourcePath(a);
 		std::replace(path.begin(), path.end(), '\\', '/');
-		file.writeStr(fmt::format("\t\"{}\"\n", path));
+		j["base_resource_paths"].push_back(path);
 	}
-	file.writeStr("}\n");
 
-	// Write recent files list (in reverse to keep proper order when reading back)
-	file.writeStr("\nrecent_files\n{\n");
-	for (int a = archive_manager.numRecentFiles() - 1; a >= 0; a--)
-	{
-		auto path = archive_manager.recentFile(a);
-		std::replace(path.begin(), path.end(), '\\', '/');
-		file.writeStr(fmt::format("\t\"{}\"\n", path));
-	}
-	file.writeStr("}\n");
+	// Nodebuilder paths
+	nodebuilders::writeBuilderPaths(j);
 
-	// Write keybinds
-	file.writeStr("\nkeys\n{\n");
-	file.writeStr(KeyBind::writeBinds());
-	file.writeStr("}\n");
+	// Game exe paths
+	executables::writePaths(j);
 
-	// Write nodebuilder paths
-	file.writeStr("\n");
-	nodebuilders::saveBuilderPaths(file);
 
-	// Write game exe paths
-	file.writeStr("\nexecutable_paths\n{\n");
-	file.writeStr(executables::writePaths());
-	file.writeStr("}\n");
-
-	// Write window info
-	file.writeStr("\nwindow_info\n{\n");
-	misc::writeWindowInfo(file);
-	file.writeStr("}\n");
-
-	// Close configuration file
-	file.writeStr("\n// End Configuration File\n\n");
-
-	// ReSharper enable CppExpressionWithoutSideEffects
+	// Write JSON to file
+	config_json.writeStr(j.dump(2));
 }
 
 // -----------------------------------------------------------------------------
@@ -689,19 +797,17 @@ void app::exit(bool save_config)
 		// Save configuration
 		saveConfigFile();
 
+		// Save keybinds
+		KeyBind::saveBinds();
+
 		// Save text style configuration
 		StyleSet::saveCurrent();
 
-		// Save colour configuration
-		MemChunk ccfg;
-		colourconfig::writeConfiguration(ccfg);
-		ccfg.exportFile(app::path("colours.cfg", app::Dir::User));
+		// Save any custom colour configuration
+		colourconfig::saveCustomConfiguration();
 
 		// Save game exes
-		SFile f;
-		if (f.open(app::path("executables.cfg", app::Dir::User), SFile::Mode::Write))
-			f.writeStr(executables::writeExecutables());
-		f.close();
+		executables::writeExecutables(path("executables.json", Dir::User));
 
 		// Save custom special presets
 		game::saveCustomSpecialPresets();
@@ -716,9 +822,9 @@ void app::exit(bool save_config)
 	archive_manager.closeAll(true);
 
 	// Clean up
-	drawing::cleanupFonts();
 	gl::Texture::clearAll();
 	audio::resetMIDIPlayer();
+	game::cleanup();
 
 	// Clear temp folder
 	auto temp_files = fileutil::allFilesInDir(path("", Dir::Temp), true, true);
@@ -730,16 +836,56 @@ void app::exit(bool save_config)
 
 #ifndef NO_LUA
 	// Close lua
-	lua::close();
+	scripting::close();
 #endif
-
-	// Close DUMB
-	dumb_exit();
 
 	// Exit wx Application
 	wxGetApp().Exit();
 }
 
+// -----------------------------------------------------------------------------
+// Handler for when an unhandled exception occurs - shows the exception dialog
+// with the current exception's stack trace and logs the error to the console
+// -----------------------------------------------------------------------------
+void app::handleException()
+{
+	static auto formatter = cpptrace::formatter{}
+								.header("")
+								.addresses(cpptrace::formatter::address_mode::none)
+								.paths(cpptrace::formatter::path_mode::basename)
+								.symbols(cpptrace::formatter::symbol_mode::pretty);
+
+	static auto formatter_full = cpptrace::formatter{}
+									 .header("")
+									 .addresses(cpptrace::formatter::address_mode::object)
+									 .paths(cpptrace::formatter::path_mode::basename)
+									 .symbols(cpptrace::formatter::symbol_mode::pretty)
+									 .snippets(true)
+									 .snippet_context(2);
+
+	CPPTRACE_TRY
+	{
+		cpptrace::rethrow();
+	}
+	CPPTRACE_CATCH(const std::exception& ex)
+	{
+		const auto& trace = cpptrace::from_current_exception();
+		string      stack_trace, stack_trace_full;
+		if (!trace.empty())
+		{
+			stack_trace      = formatter.format(trace);
+			stack_trace_full = formatter_full.format(trace);
+		}
+
+		ui::ExceptionDialog dlg(wxTheApp->GetTopWindow(), ex.what(), stack_trace, stack_trace_full);
+		dlg.CenterOnParent();
+		dlg.ShowModal();
+
+		log::error("Unhandled exception: {}", ex.what());
+		if (!stack_trace.empty())
+			log::error(stack_trace);
+	}
+}
 
 // ----------------------------------------------------------------------------
 // Returns the current version of SLADE
@@ -761,19 +907,23 @@ string app::path(string_view filename, Dir dir)
 {
 	switch (dir)
 	{
-	case Dir::User: return fmt::format("{}{}{}", dir_user, dir_separator, filename);
-	case Dir::Data: return fmt::format("{}{}{}", dir_data, dir_separator, filename);
+	case Dir::User:       return fmt::format("{}{}{}", dir_user, dir_separator, filename);
+	case Dir::Data:       return fmt::format("{}{}{}", dir_data, dir_separator, filename);
 	case Dir::Executable: return fmt::format("{}{}{}", dir_app, dir_separator, filename);
-	case Dir::Resources: return fmt::format("{}{}{}", dir_res, dir_separator, filename);
-	case Dir::Temp: return fmt::format("{}{}{}", dir_temp, dir_separator, filename);
-	default: return string{ filename };
+	case Dir::Resources:  return fmt::format("{}{}{}", dir_res, dir_separator, filename);
+	case Dir::Temp:       return fmt::format("{}{}{}", dir_temp, dir_separator, filename);
+	case Dir::OldUser:    return fmt::format("{}{}{}", dir_user_old, dir_separator, filename);
+	default:              return string{ filename };
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Returns the platform SLADE is running on
+// -----------------------------------------------------------------------------
 app::Platform app::platform()
 {
 #ifdef __WXMSW__
-	return Platform::Windows;
+	return Windows;
 #elif __WXGTK__
 	return Platform::Linux;
 #elif __WXOSX__
@@ -783,21 +933,18 @@ app::Platform app::platform()
 #endif
 }
 
-bool app::useWebView()
-{
-#ifdef USE_WEBVIEW_STARTPAGE
-	return true;
-#else
-	return false;
-#endif
-}
-
+// -----------------------------------------------------------------------------
+// Returns the filename of the application icon
+// -----------------------------------------------------------------------------
 const string& app::iconFile()
 {
 	static string icon = "slade.ico";
 	return icon;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if this is a 64-bit Windows build
+// -----------------------------------------------------------------------------
 bool app::isWin64Build()
 {
 #if defined(_WIN64)
@@ -807,14 +954,28 @@ bool app::isWin64Build()
 #endif
 }
 
-bool app::isDarkTheme()
+// -----------------------------------------------------------------------------
+// Returns a description of the operating system
+// -----------------------------------------------------------------------------
+string app::osDescription()
 {
-	return wxSystemSettings::GetAppearance().IsDark();
+	return wxGetOsDescription().utf8_string();
 }
 
+// ----------------------------------------------------------------------------
+// Returns the id of the main thread
+// -----------------------------------------------------------------------------
 std::thread::id app::mainThreadId()
 {
 	return main_thread_id;
+}
+
+// ----------------------------------------------------------------------------
+// Returns true if the system is using a dark theme
+// -----------------------------------------------------------------------------
+bool app::isDarkTheme()
+{
+	return wxSystemSettings::GetAppearance().IsDark();
 }
 
 

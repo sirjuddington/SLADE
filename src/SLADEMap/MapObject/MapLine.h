@@ -1,13 +1,15 @@
-#pragma once
+﻿#pragma once
 
+#include "Geometry/Rect.h"
 #include "MapObject.h"
+#include "SLADEMap/Types.h"
 
 namespace slade
 {
+class Debuggable;
+
 class MapLine : public MapObject
 {
-	friend class SLADEMap;
-
 public:
 	// Line parts
 	enum Part
@@ -18,6 +20,10 @@ public:
 		BackMiddle  = 0x08,
 		BackUpper   = 0x10,
 		BackLower   = 0x20,
+
+		AnyMiddle = FrontMiddle | BackMiddle,
+		AnyUpper  = FrontUpper | BackUpper,
+		AnyLower  = FrontLower | BackLower
 	};
 
 	inline static const string PROP_V1      = "v1";
@@ -34,28 +40,29 @@ public:
 	inline static const string PROP_ARG4    = "arg4";
 
 	MapLine(
-		MapVertex* v1,
-		MapVertex* v2,
-		MapSide*   s1      = nullptr,
-		MapSide*   s2      = nullptr,
-		int        special = 0,
-		int        flags   = 0,
-		ArgSet     args    = {});
-	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTreeNode* udmf_def);
-	~MapLine() = default;
+		MapVertex*         v1,
+		MapVertex*         v2,
+		MapSide*           s1      = nullptr,
+		MapSide*           s2      = nullptr,
+		int                special = 0,
+		int                flags   = 0,
+		const map::ArgSet& args    = {});
+	MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, const ParseTreeNode* udmf_def);
+	~MapLine() override = default;
 
 	bool isOk() const { return vertex1_ && vertex2_; }
 
-	MapVertex*    v1() const { return vertex1_; }
-	MapVertex*    v2() const { return vertex2_; }
-	MapSide*      s1() const { return side1_; }
-	MapSide*      s2() const { return side2_; }
-	int           special() const { return special_; }
-	int           id() const { return id_; }
-	int           flags() const { return flags_; }
-	bool          flagSet(int flag) const { return (flags_ & flag) != 0; }
-	int           arg(unsigned index) const { return index < 5 ? args_[index] : 0; }
-	const ArgSet& args() const { return args_; }
+	MapVertex*         v1() const { return vertex1_; }
+	MapVertex*         v2() const { return vertex2_; }
+	MapSide*           s1() const { return side1_; }
+	MapSide*           s2() const { return side2_; }
+	int                special() const { return special_; }
+	int                id() const { return id_; }
+	bool               hasId(int id) const;
+	int                flags() const { return flags_; }
+	bool               flagSet(int flag) const { return (flags_ & flag) != 0; }
+	int                arg(unsigned index) const { return index < 5 ? args_[index] : 0; }
+	const map::ArgSet& args() const { return args_; }
 
 	MapSector* frontSector() const;
 	MapSector* backSector() const;
@@ -70,15 +77,16 @@ public:
 	int s1Index() const;
 	int s2Index() const;
 
-	bool   boolProperty(string_view key) override;
-	int    intProperty(string_view key) override;
-	double floatProperty(string_view key) override;
-	string stringProperty(string_view key) override;
+	bool   hasProp(string_view key) const override;
+	bool   boolProperty(string_view key) const override;
+	int    intProperty(string_view key) const override;
+	double floatProperty(string_view key) const override;
+	string stringProperty(string_view key) const override;
 	void   setBoolProperty(string_view key, bool value) override;
 	void   setIntProperty(string_view key, int value) override;
 	void   setFloatProperty(string_view key, double value) override;
 	void   setStringProperty(string_view key, string_view value) override;
-	bool   scriptCanModifyProp(string_view key) override;
+	bool   scriptCanModifyProp(string_view key) const override;
 
 	void setS1(MapSide* side);
 	void setS2(MapSide* side);
@@ -91,18 +99,19 @@ public:
 	void clearFlag(int flag);
 	void setArg(unsigned index, int value);
 
-	Vec2d  getPoint(Point point) override;
+	Vec2d  getPoint(Point point) const override;
 	Vec2d  start() const;
 	Vec2d  end() const;
 	Seg2d  seg() const;
-	double length();
+	double length() const;
 	bool   doubleSector() const;
-	Vec2d  frontVector();
-	Vec2d  dirTabPoint(double tab_length = 0.);
-	double distanceTo(Vec2d point);
+	Vec2d  frontVector() const;
+	Vec2d  dirTabPoint(double tab_length = 0.) const;
+	double distanceTo(const Vec2d& point) const;
 	int    needsTexture() const;
-	bool   overlaps(MapLine* other) const;
-	bool   intersects(MapLine* other, Vec2d& intersect_point) const;
+	bool   overlaps(const MapLine* other) const;
+	bool   intersects(const MapLine* other, Vec2d& intersect_point) const;
+	void   fillMissingTextures(bool upper, bool lower, string_view texture, bool use_flat = false) const;
 
 	int lowestCeiling() const;
 	int highestCeiling() const;
@@ -110,7 +119,7 @@ public:
 	int highestFloor() const;
 
 	void clearUnneededTextures() const;
-	void resetInternals();
+	void resetInternals() const;
 	void flip(bool sides = true);
 
 	void writeBackup(Backup* backup) override;
@@ -119,29 +128,23 @@ public:
 
 	void writeUDMF(string& def) override;
 
-	operator Debuggable() const
-	{
-		if (!this)
-			return "<line NULL>";
-
-		return { fmt::format("<line {}>", index_) };
-	}
+	operator Debuggable() const;
 
 private:
 	// Basic data
-	MapVertex* vertex1_ = nullptr;
-	MapVertex* vertex2_ = nullptr;
-	MapSide*   side1_   = nullptr;
-	MapSide*   side2_   = nullptr;
-	int        special_ = 0;
-	int        id_      = 0;
-	int        flags_   = 0;
-	ArgSet     args_    = {};
+	MapVertex*  vertex1_ = nullptr;
+	MapVertex*  vertex2_ = nullptr;
+	MapSide*    side1_   = nullptr;
+	MapSide*    side2_   = nullptr;
+	int         special_ = 0;
+	int         id_      = 0;
+	int         flags_   = 0;
+	map::ArgSet args_    = {};
 
 	// Internally used info
-	double length_ = -1.;
-	double ca_     = 0.; // Used for intersection calculations
-	double sa_     = 0.; // ^^
-	Vec2d  front_vec_;
+	mutable double length_ = -1.;
+	mutable double ca_     = 0.; // Used for intersection calculations
+	mutable double sa_     = 0.; // ^^
+	mutable Vec2d  front_vec_;
 };
 } // namespace slade

@@ -41,6 +41,7 @@
 #include "Main.h"
 #include "Translation.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "MainEditor/MainEditor.h"
 #include "Palette/Palette.h"
@@ -75,7 +76,7 @@ ColRGBA IceRange[16] = {
 	ColRGBA(118, 118, 141), ColRGBA(128, 128, 151), ColRGBA(138, 138, 162), ColRGBA(148, 148, 172),
 };
 
-enum SpecialBlend
+enum SpecialBlend : u8
 {
 	Ice        = 0,
 	DesatFirst = 1,
@@ -139,7 +140,7 @@ void Translation::parse(string_view def)
 	else if (strutil::startsWith(test, "desaturate,"))
 	{
 		built_in_name_ = "Desaturate";
-		desat_amount_  = std::max<uint8_t>(std::min<uint8_t>(strutil::asInt(def.substr(11)), 31), 1);
+		desat_amount_  = std::max<u8>(std::min<u8>(strutil::asInt(def.substr(11)), 31), 1);
 		return;
 	}
 
@@ -230,8 +231,8 @@ TransRange* Translation::parseRange(string_view range)
 			return nullptr;
 
 		// Add translation
-		const ColRGBA col_start{ static_cast<uint8_t>(sr), static_cast<uint8_t>(sg), static_cast<uint8_t>(sb) };
-		const ColRGBA col_end{ static_cast<uint8_t>(er), static_cast<uint8_t>(eg), static_cast<uint8_t>(eb) };
+		const ColRGBA col_start{ static_cast<u8>(sr), static_cast<u8>(sg), static_cast<u8>(sb) };
+		const ColRGBA col_end{ static_cast<u8>(er), static_cast<u8>(eg), static_cast<u8>(eb) };
 		if (reverse)
 			translations_.emplace_back(new TransRangeColour{ { o_end, o_start }, col_end, col_start });
 		else
@@ -296,8 +297,8 @@ TransRange* Translation::parseRange(string_view range)
 		if (!tz.advIfNext(']'))
 			return nullptr;
 
-		translations_.emplace_back(new TransRangeBlend{
-			{ o_start, o_end }, { static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b) } });
+		translations_.emplace_back(
+			new TransRangeBlend{ { o_start, o_end }, { static_cast<u8>(r), static_cast<u8>(g), static_cast<u8>(b) } });
 	}
 	else if (tz.advIfNext('@'))
 	{
@@ -317,10 +318,9 @@ TransRange* Translation::parseRange(string_view range)
 		if (!tz.advIfNext(']'))
 			return nullptr;
 
-		translations_.emplace_back(
-			new TransRangeTint{ { o_start, o_end },
-								{ static_cast<uint8_t>(r), static_cast<uint8_t>(g), static_cast<uint8_t>(b) },
-								static_cast<uint8_t>(amount) });
+		translations_.emplace_back(new TransRangeTint{ { o_start, o_end },
+													   { static_cast<u8>(r), static_cast<u8>(g), static_cast<u8>(b) },
+													   static_cast<u8>(amount) });
 	}
 	else if (tz.advIfNext('$'))
 	{
@@ -357,10 +357,10 @@ TransRange* Translation::parseRange(string_view range)
 // handling any sort of palettized translations to RGB gradients. In short,
 // converting a translation string to a translation table would be lossy.
 // -----------------------------------------------------------------------------
-void Translation::read(const uint8_t* data)
+void Translation::read(const u8* data)
 {
-	int     i = 0;
-	uint8_t val, o_start, o_end, d_start, d_end;
+	int i = 0;
+	u8  val, o_start, o_end, d_start, d_end;
 	o_start = 0;
 	d_start = val = data[0];
 	while (i < 255)
@@ -451,7 +451,7 @@ void Translation::copy(const Translation& copy)
 // -----------------------------------------------------------------------------
 // Returns the translation range at [index]
 // -----------------------------------------------------------------------------
-TransRange* Translation::range(unsigned index)
+TransRange* Translation::range(unsigned index) const
 {
 	if (index >= translations_.size())
 		return nullptr;
@@ -462,12 +462,12 @@ TransRange* Translation::range(unsigned index)
 // -----------------------------------------------------------------------------
 // Apply the translation to the given color
 // -----------------------------------------------------------------------------
-ColRGBA Translation::translate(const ColRGBA& col, Palette* pal)
+ColRGBA Translation::translate(const ColRGBA& col, const Palette* pal) const
 {
 	ColRGBA colour(col);
 	if (pal == nullptr)
 		pal = maineditor::currentPalette();
-	const uint8_t i = (col.index == -1) ? pal->nearestColour(col) : col.index;
+	const u8 i = (col.index == -1) ? pal->nearestColour(col) : col.index;
 
 	// Handle ZDoom's predefined texture blending:
 	// blue, gold, green, red, ice, inverse, and desaturate
@@ -520,7 +520,7 @@ ColRGBA Translation::translate(const ColRGBA& col, Palette* pal)
 				range_frac = static_cast<double>(i - tp->start()) / static_cast<double>(tp->end() - tp->start());
 
 			// Determine destination palette index
-			const uint8_t di = tp->dStart() + range_frac * (tp->dEnd() - tp->dStart());
+			const u8 di = static_cast<u8>(std::round(tp->dStart() + range_frac * (tp->dEnd() - tp->dStart())));
 
 			// Apply new colour
 			const auto c = pal->colour(di);
@@ -576,8 +576,7 @@ ColRGBA Translation::translate(const ColRGBA& col, Palette* pal)
 
 			// Colourise
 			float grey = (col.r * col_greyscale_r + col.g * col_greyscale_g + col.b * col_greyscale_b) / 255.0f;
-			if (grey > 1.0f)
-				grey = 1.0f;
+			grey       = std::min(grey, 1.0f);
 
 			// Apply new colour
 			colour.r     = blend.r * grey;
@@ -610,7 +609,7 @@ ColRGBA Translation::translate(const ColRGBA& col, Palette* pal)
 		{
 			const auto  ts   = dynamic_cast<TransRangeSpecial*>(range.get());
 			const auto& spec = ts->special();
-			uint8_t     type = Invalid;
+			u8          type = Invalid;
 			if (strutil::equalCI(spec, "ice"))
 				type = SpecialBlend::Ice;
 			else if (strutil::equalCI(spec, "inverse"))
@@ -647,17 +646,17 @@ TransRange* Translation::addRange(TransRange::Type type, int pos, int range_star
 	TransRange::IndexRange range{ range_start, range_end };
 	switch (type)
 	{
-	case TransRange::Type::Colour: tr = std::make_unique<TransRangeColour>(range); break;
-	case TransRange::Type::Desat: tr = std::make_unique<TransRangeDesat>(range); break;
-	case TransRange::Type::Blend: tr = std::make_unique<TransRangeBlend>(range); break;
-	case TransRange::Type::Tint: tr = std::make_unique<TransRangeTint>(range); break;
+	case TransRange::Type::Colour:  tr = std::make_unique<TransRangeColour>(range); break;
+	case TransRange::Type::Desat:   tr = std::make_unique<TransRangeDesat>(range); break;
+	case TransRange::Type::Blend:   tr = std::make_unique<TransRangeBlend>(range); break;
+	case TransRange::Type::Tint:    tr = std::make_unique<TransRangeTint>(range); break;
 	case TransRange::Type::Special: tr = std::make_unique<TransRangeSpecial>(range); break;
-	default: tr = std::make_unique<TransRangePalette>(range, range); break;
+	default:                        tr = std::make_unique<TransRangePalette>(range, range); break;
 	}
 
 	// Add to list
 	const auto ptr = tr.get();
-	if (pos < 0 || pos >= static_cast<int>(translations_.size()))
+	if (pos < 0 || std::cmp_greater_equal(pos, translations_.size()))
 		translations_.push_back(std::move(tr));
 	else
 		translations_.insert(translations_.begin() + pos, std::move(tr));
@@ -671,7 +670,7 @@ TransRange* Translation::addRange(TransRange::Type type, int pos, int range_star
 void Translation::removeRange(int pos)
 {
 	// Check position
-	if (pos < 0 || pos >= static_cast<int>(translations_.size()))
+	if (pos < 0 || std::cmp_greater_equal(pos, translations_.size()))
 		return;
 
 	// Remove it
@@ -684,8 +683,10 @@ void Translation::removeRange(int pos)
 void Translation::swapRanges(int pos1, int pos2)
 {
 	// Check positions
-	if (pos1 < 0 || pos2 < 0 || pos1 >= static_cast<int>(translations_.size())
-		|| pos2 >= static_cast<int>(translations_.size()))
+	if (pos1 < 0
+		|| pos2 < 0
+		|| std::cmp_greater_equal(pos1, translations_.size())
+		|| std::cmp_greater_equal(pos2, translations_.size()))
 		return;
 
 	// Swap them
@@ -696,7 +697,7 @@ void Translation::swapRanges(int pos1, int pos2)
 // Apply one of the special colour blending modes from ZDoom:
 // Desaturate, Ice, Inverse, Blue, Gold, Green, Red.
 // -----------------------------------------------------------------------------
-ColRGBA Translation::specialBlend(const ColRGBA& col, uint8_t type, Palette* pal)
+ColRGBA Translation::specialBlend(const ColRGBA& col, u8 type, const Palette* pal)
 {
 	// Abort just in case
 	if (type == SpecialBlend::Invalid)
@@ -712,13 +713,13 @@ ColRGBA Translation::specialBlend(const ColRGBA& col, uint8_t type, Palette* pal
 	if (type == Ice)
 	{
 		// Determine destination palette index in IceRange
-		const uint8_t di = std::min((static_cast<int>(grey) >> 4), 15);
-		const auto    c  = IceRange[di];
-		colour.r         = c.r;
-		colour.g         = c.g;
-		colour.b         = c.b;
-		colour.a         = c.a;
-		colour.index     = pal->nearestColour(colour);
+		const u8   di = std::min((static_cast<int>(grey) >> 4), 15);
+		const auto c  = IceRange[di];
+		colour.r      = c.r;
+		colour.g      = c.g;
+		colour.b      = c.b;
+		colour.a      = c.a;
+		colour.index  = pal->nearestColour(colour);
 	}
 	// Desaturated blending goes from no effect to nearly fully desaturated
 	else if (type >= DesatFirst && type <= DesatLast)
@@ -765,6 +766,7 @@ ColRGBA Translation::specialBlend(const ColRGBA& col, uint8_t type, Palette* pal
 			// Hacx invulnerability
 			// starts black, ends blue
 			eb = 1.5;
+			break;
 		default: break;
 		}
 		// Apply new colour
@@ -815,19 +817,19 @@ string Translation::getPredefined(string_view def)
 	else if (def == "\"heretic8\"")
 		def = "\"225:240=95:110\"";
 	else if (def == "\"strife0\"")
-		def = "\"32:63=0:31\", \"128:143=64:79\", \"241:246=224:229\", \"247:251=241:245\"";
+		def = R"("32:63=0:31", "128:143=64:79", "241:246=224:229", "247:251=241:245")";
 	else if (def == "\"strife1\"")
-		def = "\"32:63=0:31\", \"128:143=176:191\"";
+		def = R"("32:63=0:31", "128:143=176:191")";
 	else if (def == "\"strife2\"")
-		def = "\"32:47=208:223\", \"48:63=208:223\", \"128:143=16:31\"";
+		def = R"("32:47=208:223", "48:63=208:223", "128:143=16:31")";
 	else if (def == "\"strife3\"")
-		def = "\"32:47=208:223\", \"48:63=208:223\", \"128:143=48:63\"";
+		def = R"("32:47=208:223", "48:63=208:223", "128:143=48:63")";
 	else if (def == "\"strife4\"")
-		def = "\"32:63=0:31\", \"80:95=128:143\", \"128:143=80:95\", \"192:223=160:191\"";
+		def = R"("32:63=0:31", "80:95=128:143", "128:143=80:95", "192:223=160:191")";
 	else if (def == "\"strife5\"")
-		def = "\"32:63=0:31\", \"80:95=16:31\", \"128:143=96:111\", \"192:223=32:63\"";
+		def = R"("32:63=0:31", "80:95=16:31", "128:143=96:111", "192:223=32:63")";
 	else if (def == "\"strife6\"")
-		def = "\"32:63=0:31\", \"80:95=64:79\", \"128:143=144:159\", \"192=1\", \"193:223=1:31\"";
+		def = R"("32:63=0:31", "80:95=64:79", "128:143=144:159", "192=1", "193:223=1:31")";
 	else if (def == "\"chex0\"")
 		def = "\"192:207=112:127\"";
 	else if (def == "\"chex1\"")
@@ -848,19 +850,19 @@ string Translation::getPredefined(string_view def)
 			"\"112:113=171:171\", \"114:114=172:172\", \"115:122=173:187\", \"123:124=188:189\", \"125:126=45:47\", "
 			"\"127:127=1:1\"";
 	else if (def == "\"dirt\"")
-		def = "\"112:117=128:133\", \"118:120=135:137\", \"121:123=139:143\", \"124:125=237:239\", \"126:127=1:2\"";
+		def = R"("112:117=128:133", "118:120=135:137", "121:123=139:143", "124:125=237:239", "126:127=1:2")";
 	else if (def == "\"blue\"")
-		def = "\"112:121=197:206\", \"122:127=240:245";
+		def = R"("112:121=197:206", "122:127=240:245)";
 	else if (def == "\"gold\"")
-		def = "\"112:113=160:160\", \"114:119=161:166\", \"120:123=236:239\", \"124:125=1:2\", \"126:127=7:8\"";
+		def = R"("112:113=160:160", "114:119=161:166", "120:123=236:239", "124:125=1:2", "126:127=7:8")";
 	else if (def == "\"sea\"")
-		def = "\"112:112=91:91\", \"113:114=94:95\", \"115:122=152:159\", \"123:126=9:12\", \"127:127=8:8\"";
+		def = R"("112:112=91:91", "113:114=94:95", "115:122=152:159", "123:126=9:12", "127:127=8:8")";
 	else if (def == "\"black\"")
-		def = "\"112:112=101:101\", \"113:121=103:111\", \"122:125=5:8\", \"126:127=0:0\"";
+		def = R"("112:112=101:101", "113:121=103:111", "122:125=5:8", "126:127=0:0")";
 	else if (def == "\"purple\"")
-		def = "\"112:113=4:4\", \"114:115=170:170\", \"116:125=250:254\", \"126:127=46:46\"";
+		def = R"("112:113=4:4", "114:115=170:170", "116:125=250:254", "126:127=46:46")";
 	else if (def == "\"vomit\"")
-		def = "\"112:119=209:216\", \"120:121=218:220\", \"122:124=69:75\", \"125:127=237:239\"";
+		def = R"("112:119=209:216", "120:121=218:220", "122:124=69:75", "125:127=237:239")";
 	else if (def == "\"pink\"")
 		def =
 			"\"112:113=16:17\", \"114:117=19:25\", \"118:119=27:28\", \"120:124=30:38\", \"125:126=41:43\", "
@@ -870,7 +872,7 @@ string Translation::getPredefined(string_view def)
 			"\"112:112=4:4\", \"113:118=48:63\", \"119:119=65:65\", \"120:124=68:76\", \"125:126=77:79\", "
 			"\"127:127=1:1\"";
 	else if (def == "\"white\"")
-		def = "\"112:112=4:4\", \"113:115=80:82\", \"116:117=84:86\", \"118:120=89:93\", \"121:127=96:108\"";
+		def = R"("112:112=4:4", "113:115=80:82", "116:117=84:86", "118:120=89:93", "121:127=96:108")";
 	// And why not this one too
 	else if (def == "\"stealth\"")
 		def = "\"0:255=%[0.00,0.00,0.00]:[1.31,0.84,0.84]\"";

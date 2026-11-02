@@ -6,7 +6,7 @@ class DockPanel : public wxPanel
 {
 public:
 	DockPanel(wxWindow* parent);
-	~DockPanel() = default;
+	~DockPanel() override = default;
 
 	virtual void layoutNormal() {}
 	virtual void layoutVertical() { layoutNormal(); }

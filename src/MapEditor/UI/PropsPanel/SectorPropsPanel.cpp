@@ -36,34 +36,52 @@
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
-#include "MapEditor/UI/Dialogs/SectorSpecialDialog.h"
+#include "MapEditor/UI/SectorSpecialPanel.h"
 #include "MapObjectPropsPanel.h"
-#include "OpenGL/Drawing.h"
-#include "SLADEMap/MapObject/MapObject.h"
+#include "OpenGL/Draw2D.h"
+#include "OpenGL/GLTexture.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/SLADEMap.h"
+#include "UI/Browser/BrowserItem.h"
+#include "UI/Canvas/GL/GLCanvas.h"
 #include "UI/Controls/NumberTextCtrl.h"
 #include "UI/Controls/STabCtrl.h"
-#include "UI/WxUtils.h"
+#include "UI/Layout.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
 
 
 // -----------------------------------------------------------------------------
-// FlatTexCanvas Class Functions
+// FlatTexCanvas Class
 //
 // A simple opengl canvas to display a texture
 // (will have more advanced functionality later)
 // -----------------------------------------------------------------------------
+class slade::FlatTexCanvas : public GLCanvas
+{
+public:
+	FlatTexCanvas(wxWindow* parent);
+	~FlatTexCanvas() override = default;
 
+	string texName() const { return texname_; }
+	void   setTexture(const string& texture);
+	void   draw() override;
+
+private:
+	unsigned texture_ = 0;
+	string   texname_;
+};
 
 // -----------------------------------------------------------------------------
 // FlatTexCanvas class constructor
 // -----------------------------------------------------------------------------
-FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : OGLCanvas(parent, -1)
+FlatTexCanvas::FlatTexCanvas(wxWindow* parent) : GLCanvas(parent, BGStyle::Checkered)
 {
 	// Init variables
 	wxWindow::SetWindowStyleFlag(wxBORDER_SIMPLE);
-	SetInitialSize(wxutil::scaledSize(136, 136));
+	SetInitialSize(FromDIP(wxSize(136, 136)));
 }
 
 // -----------------------------------------------------------------------------
@@ -87,135 +105,97 @@ void FlatTexCanvas::setTexture(const string& tex)
 // -----------------------------------------------------------------------------
 void FlatTexCanvas::draw()
 {
-	// Setup the viewport
-	const wxSize size = GetSize() * GetContentScaleFactor();
-	glViewport(0, 0, size.x, size.y);
-
-	// Setup the screen projection
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, size.x, size.y, 0, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// Clear
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	// Translate to inside of pixel (otherwise inaccuracies can occur on certain gl implementations)
-	if (gl::accuracyTweak())
-		glTranslatef(0.375f, 0.375f, 0);
-
-	// Draw background
-	drawCheckeredBackground();
+	gl::draw2d::Context dc(&view_);
 
 	// Draw texture
 	if (texture_ && texture_ != gl::Texture::missingTexture())
 	{
-		glEnable(GL_TEXTURE_2D);
-		drawing::drawTextureWithin(texture_, 0, 0, size.x, size.y, 0, 100.0);
+		dc.texture = texture_;
+		dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 100.0f);
 	}
 	else if (texture_ == gl::Texture::missingTexture())
 	{
 		// Draw unknown icon
-		auto tex = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
-		glEnable(GL_TEXTURE_2D);
-		gl::setColour(180, 0, 0);
-		drawing::drawTextureWithin(tex, 0, 0, size.x, size.y, 0, 0.25);
+		dc.texture = mapeditor::textureManager().editorImage("thing/unknown").gl_id;
+		dc.colour.set(180, 0, 0);
+		dc.drawTextureWithin({ 0.0f, 0.0f, dc.viewSize().x, dc.viewSize().y }, 0.0f, 0.25f);
 	}
-
-	// Swap buffers (ie show what was drawn)
-	SwapBuffers();
 }
 
 
 // -----------------------------------------------------------------------------
-// FlatComboBox Class Functions
+// FlatComboBox Class
 //
 // A custom combo box that will show a list of flats matching the current text
 // in the control (eg. 'FLAT' will list all flats beginning with FLAT)
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// FlatComboBox class constructor
-// -----------------------------------------------------------------------------
-FlatComboBox::FlatComboBox(wxWindow* parent) : wxComboBox(parent, -1)
+class slade::FlatComboBox : public wxComboBox
 {
-	// Init
-	wxArrayString list;
-	list.Add(wxS("-"));
-
-	// Bind events
-	Bind(wxEVT_COMBOBOX_DROPDOWN, &FlatComboBox::onDropDown, this);
-	Bind(wxEVT_COMBOBOX_CLOSEUP, &FlatComboBox::onCloseUp, this);
-	Bind(wxEVT_KEY_DOWN, &FlatComboBox::onKeyDown, this);
-
-	Set(list);
-}
-
-
-// -----------------------------------------------------------------------------
-//
-// FlatComboBox Class Events
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Called when the dropdown list is expanded
-// -----------------------------------------------------------------------------
-void FlatComboBox::onDropDown(wxCommandEvent& e)
-{
-	// Get current value
-	auto text = GetValue().Upper().utf8_string();
-
-	// Populate dropdown with matching flat names
-	auto&         textures = mapeditor::textureManager().allFlatsInfo();
-	wxArrayString list;
-	list.Add(wxS("-"));
-	for (auto& texture : textures)
+public:
+	FlatComboBox(wxWindow* parent) : wxComboBox(parent, -1)
 	{
-		if (strutil::startsWith(texture.short_name, text))
+		// Init
+		wxArrayString list;
+		list.Add(wxS("-"));
+
+		// Bind events
+		Bind(wxEVT_COMBOBOX_DROPDOWN, &FlatComboBox::onDropDown, this);
+		Bind(wxEVT_COMBOBOX_CLOSEUP, &FlatComboBox::onCloseUp, this);
+		Bind(wxEVT_KEY_DOWN, &FlatComboBox::onKeyDown, this);
+
+		Set(list);
+	}
+
+	~FlatComboBox() override = default;
+
+private:
+	bool list_down_ = false;
+
+	// Called when the dropdown list is expanded
+	void onDropDown(wxCommandEvent& e)
+	{
+		// Get current value
+		auto text = GetValue().Upper().utf8_string();
+
+		// Populate dropdown with matching flat names
+		auto&         textures = mapeditor::textureManager().allFlatsInfo();
+		wxArrayString list;
+		list.Add(wxS("-"));
+		for (auto& texture : textures)
 		{
-			list.Add(wxString::FromUTF8(texture.short_name));
-		}
-		if (game::configuration().featureSupported(game::Feature::LongNames))
-		{
-			if (strutil::startsWith(texture.long_name, text))
+			if (strutil::startsWith(texture.short_name, text))
 			{
-				list.Add(wxString::FromUTF8(texture.long_name));
+				list.Add(wxString::FromUTF8(texture.short_name));
+			}
+			if (game::configuration().featureSupported(game::Feature::LongNames))
+			{
+				if (strutil::startsWith(texture.long_name, text))
+				{
+					list.Add(wxString::FromUTF8(texture.long_name));
+				}
 			}
 		}
-	}
-	Set(list); // Why does this clear the text box also?
-	SetValue(wxString::FromUTF8(text));
+		Set(list); // Why does this clear the text box also?
+		SetValue(wxString::FromUTF8(text));
 
-	e.Skip();
-}
-
-// -----------------------------------------------------------------------------
-// Called when the dropdown list is closed
-// -----------------------------------------------------------------------------
-void FlatComboBox::onCloseUp(wxCommandEvent& e)
-{
-	list_down_ = false;
-}
-
-// -----------------------------------------------------------------------------
-// Called when a key is pressed within the control
-// -----------------------------------------------------------------------------
-void FlatComboBox::onKeyDown(wxKeyEvent& e)
-{
-	if (e.GetKeyCode() == WXK_DOWN && !list_down_)
-	{
-		list_down_ = true;
-		Popup();
-	}
-	else
 		e.Skip();
-}
+	}
+
+	// Called when the dropdown list is closed
+	void onCloseUp(wxCommandEvent& e) { list_down_ = false; }
+
+	// Called when a key is pressed within the control
+	void onKeyDown(wxKeyEvent& e)
+	{
+		if (e.GetKeyCode() == WXK_DOWN && !list_down_)
+		{
+			list_down_ = true;
+			Popup();
+		}
+		else
+			e.Skip();
+	}
+};
 
 
 // -----------------------------------------------------------------------------
@@ -236,7 +216,7 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 
 	// Tabs
 	stc_tabs_ = STabCtrl::createControl(this);
-	sizer->Add(stc_tabs_, 1, wxEXPAND);
+	sizer->Add(stc_tabs_, wxSizerFlags(1).Expand());
 
 	// General tab
 	stc_tabs_->AddPage(setupGeneralPanel(), wxS("General"));
@@ -274,6 +254,8 @@ SectorPropsPanel::SectorPropsPanel(wxWindow* parent) : PropsPanelBase(parent)
 // -----------------------------------------------------------------------------
 wxPanel* SectorPropsPanel::setupGeneralPanel()
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Create panel
 	auto panel = new wxPanel(stc_tabs_);
 
@@ -283,14 +265,14 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 
 	// --- Floor ---
 	auto m_hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(m_hbox, 0, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(m_hbox, lh.sfWithBorder().Expand());
 	auto frame      = new wxStaticBox(panel, -1, wxS("Floor"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	m_hbox->Add(framesizer, 1, wxALIGN_CENTER | wxRIGHT, ui::pad());
+	m_hbox->Add(framesizer, lh.sfWithBorder(1, wxRIGHT).Center());
 
 	// Texture
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 	gb_sizer->Add(gfx_floor_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
 	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Texture:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(fcb_floor_ = new FlatComboBox(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
@@ -305,11 +287,11 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	// --- Ceiling ---
 	frame      = new wxStaticBox(panel, -1, wxS("Ceiling"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	m_hbox->Add(framesizer, 1, wxALIGN_CENTER);
+	m_hbox->Add(framesizer, wxSizerFlags(1).Center());
 
 	// Texture
-	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
+	gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 	gb_sizer->Add(gfx_ceiling_ = new FlatTexCanvas(panel), { 0, 0 }, { 1, 2 }, wxALIGN_CENTER);
 	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Texture:")), { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gb_sizer->Add(fcb_ceiling_ = new FlatComboBox(panel), { 1, 1 }, { 1, 1 }, wxEXPAND);
@@ -324,9 +306,9 @@ wxPanel* SectorPropsPanel::setupGeneralPanel()
 	// -- General ---
 	frame      = new wxStaticBox(panel, -1, wxS("General"));
 	framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxALL, ui::pad());
-	gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(framesizer, lh.sfWithBorder().Expand());
+	gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 
 	// Light level
 	gb_sizer->Add(new wxStaticText(panel, -1, wxS("Light Level:")), { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -349,20 +331,19 @@ wxPanel* SectorPropsPanel::setupSpecialPanel()
 {
 	// Create panel
 	auto panel = new wxPanel(stc_tabs_);
+	auto lh    = ui::LayoutHelper(panel);
 
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	panel->SetSizer(sizer);
 
 	// Add special panel
-	sizer->Add(panel_special_ = new SectorSpecialPanel(panel), 1, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(panel_special_ = new SectorSpecialPanel(panel), lh.sfWithBorder(1).Expand());
 
 	// Add override checkbox
 	sizer->Add(
 		cb_override_special_ = new wxCheckBox(panel, -1, wxS("Override Special")),
-		0,
-		wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,
-		ui::pad());
+		lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	cb_override_special_->SetToolTip(
 		wxS("Differing specials detected, tick this to set the special for all selected sectors"));
 
@@ -469,7 +450,7 @@ void SectorPropsPanel::applyChanges()
 
 		// Tag
 		if (!text_tag_->GetValue().IsEmpty())
-			sector->setTag(text_tag_->number(sector->tag()));
+			sector->setTag(text_tag_->number(sector->id()));
 	}
 
 	if (mopp_all_props_)
@@ -483,6 +464,8 @@ void SectorPropsPanel::applyChanges()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a texture name is changed

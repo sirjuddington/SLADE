@@ -33,10 +33,15 @@
 #include "Main.h"
 #include "ResourceArchiveChooser.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveManager.h"
+#include "Database/Tables/ArchiveFile.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/SFileDialog.h"
+#include <utility>
 
 using namespace slade;
 
@@ -51,16 +56,18 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // ResourceArchiveChooser class constructor
 // -----------------------------------------------------------------------------
-ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archive) : wxPanel(parent, -1)
+ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, const Archive* archive) : wxPanel(parent, -1)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Setup sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Resource archive list
 	list_resources_ = new wxCheckListBox(this, -1);
-	sizer->Add(list_resources_, 1, wxEXPAND | wxBOTTOM, ui::pad());
-	list_resources_->SetInitialSize(wxutil::scaledSize(350, 100));
+	sizer->Add(list_resources_, lh.sfWithBorder(1, wxBOTTOM).Expand());
+	list_resources_->SetInitialSize(lh.size(350, 100));
 
 	// Populate resource archive list
 	int index = 0;
@@ -79,13 +86,13 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 
 	// 'Open Resource' button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxRIGHT, ui::pad());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxRIGHT).Expand());
 	btn_open_resource_ = new wxButton(this, -1, wxS("Open Archive"));
-	hbox->Add(btn_open_resource_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_open_resource_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// 'Open Recent' button
 	btn_recent_ = new wxButton(this, -1, wxS("Open Recent"));
-	hbox->Add(btn_recent_, 0, wxEXPAND, 0);
+	hbox->Add(btn_recent_, wxSizerFlags().Expand());
 
 	// Bind events
 	btn_open_resource_->Bind(wxEVT_BUTTON, &ResourceArchiveChooser::onBtnOpenResource, this);
@@ -98,25 +105,25 @@ ResourceArchiveChooser::ResourceArchiveChooser(wxWindow* parent, Archive* archiv
 // -----------------------------------------------------------------------------
 // Returns a list of archives that have been selected as resources
 // -----------------------------------------------------------------------------
-vector<Archive*> ResourceArchiveChooser::selectedResourceArchives()
+vector<Archive*> ResourceArchiveChooser::selectedResourceArchives() const
 {
 	wxArrayInt       checked;
 	vector<Archive*> list;
 	list_resources_->GetCheckedItems(checked);
-	for (unsigned a = 0; a < checked.size(); a++)
-		list.push_back(archives_[checked[a]]);
+	for (int a : checked)
+		list.push_back(archives_[a]);
 	return list;
 }
 
 // -----------------------------------------------------------------------------
 // Returns a string of all selected resource archive filenames
 // -----------------------------------------------------------------------------
-string ResourceArchiveChooser::selectedResourceList()
+string ResourceArchiveChooser::selectedResourceList() const
 {
 	vector<Archive*> selected = selectedResourceArchives();
 	string           ret;
-	for (unsigned a = 0; a < selected.size(); a++)
-		ret += fmt::format("\"{}\" ", selected[a]->filename());
+	for (auto a : selected)
+		ret += fmt::format("\"{}\" ", a->filename());
 	return ret;
 }
 
@@ -127,6 +134,8 @@ string ResourceArchiveChooser::selectedResourceList()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the 'Open Archive' button is clicked
@@ -154,15 +163,18 @@ void ResourceArchiveChooser::onBtnOpenResource(wxCommandEvent& e)
 void ResourceArchiveChooser::onBtnRecent(wxCommandEvent& e)
 {
 	// Build list of recent wad filename strings
-	wxArrayString recent;
-	for (unsigned a = 0; a < app::archiveManager().numRecentFiles(); a++)
-		recent.Add(wxString::FromUTF8(app::archiveManager().recentFile(a)));
+	auto recent_files = database::recentFiles();
+	auto recent_wx    = wxutil::arrayStringStd(recent_files);
 
 	// Show dialog
-	wxSingleChoiceDialog dlg(this, wxS("Select a recent Archive to open"), wxS("Open Recent"), recent);
+	wxSingleChoiceDialog dlg(this, wxS("Select a recent Archive to open"), wxS("Open Recent"), recent_wx);
 	if (dlg.ShowModal() == wxID_OK)
 	{
-		auto na = app::archiveManager().openArchive(app::archiveManager().recentFile(dlg.GetSelection()), true, true);
+		auto index = dlg.GetSelection();
+		if (index < 0 || std::cmp_greater_equal(index, recent_files.size()))
+			return;
+
+		auto na = app::archiveManager().openArchive(recent_files[index], true, true);
 		if (na)
 		{
 			list_resources_->Append(wxString::FromUTF8(na->filename(false)));

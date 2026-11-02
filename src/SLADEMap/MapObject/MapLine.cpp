@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -31,10 +31,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapLine.h"
+#include "General/MapFormat.h"
+#include "Geometry/Geometry.h"
+#include "MapSector.h"
 #include "MapSide.h"
 #include "MapVertex.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
+#include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -51,7 +54,14 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // MapLine class constructor
 // -----------------------------------------------------------------------------
-MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, int special, int flags, ArgSet args) :
+MapLine::MapLine(
+	MapVertex*         v1,
+	MapVertex*         v2,
+	MapSide*           s1,
+	MapSide*           s2,
+	int                special,
+	int                flags,
+	const map::ArgSet& args) :
 	MapObject(Type::Line),
 	vertex1_{ v1 },
 	vertex2_{ v2 },
@@ -69,15 +79,15 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, int spe
 
 	// Connect to sides
 	if (s1)
-		s1->parent_ = this;
+		s1->setParent(this);
 	if (s2)
-		s2->parent_ = this;
+		s2->setParent(this);
 }
 
 // -----------------------------------------------------------------------------
 // MapLine class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTreeNode* udmf_def) :
+MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, const ParseTreeNode* udmf_def) :
 	MapObject(Type::Line),
 	vertex1_{ v1 },
 	vertex2_{ v2 },
@@ -92,9 +102,9 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTr
 
 	// Connect to sides
 	if (s1)
-		s1->parent_ = this;
+		s1->setParent(this);
 	if (s2)
-		s2->parent_ = this;
+		s2->setParent(this);
 
 	// Set properties from UDMF definition
 	ParseTreeNode* prop;
@@ -128,11 +138,33 @@ MapLine::MapLine(MapVertex* v1, MapVertex* v2, MapSide* s1, MapSide* s2, ParseTr
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the line has the specified [id]
+// (including UDMF moreids if applicable)
+// -----------------------------------------------------------------------------
+bool MapLine::hasId(int id) const
+{
+	if (id_ == id)
+		return true;
+
+	// Check moreids property (UDMF only)
+	if (parent_map_->currentFormat() == MapFormat::UDMF && hasProp("moreids"))
+	{
+		auto moreids = stringProperty("moreids");
+		auto ids_vec = strutil::split(moreids, ' ');
+		for (const auto& extra_id : ids_vec)
+			if (strutil::asInt(extra_id) == id)
+				return true;
+	}
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the sector on the front side of the line (if any)
 // -----------------------------------------------------------------------------
 MapSector* MapLine::frontSector() const
 {
-	return side1_ ? side1_->sector_ : nullptr;
+	return side1_ ? side1_->sector() : nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -140,7 +172,7 @@ MapSector* MapLine::frontSector() const
 // -----------------------------------------------------------------------------
 MapSector* MapLine::backSector() const
 {
-	return side2_ ? side2_->sector_ : nullptr;
+	return side2_ ? side2_->sector() : nullptr;
 }
 
 // -----------------------------------------------------------------------------
@@ -208,11 +240,25 @@ int MapLine::s2Index() const
 }
 
 // -----------------------------------------------------------------------------
+// Returns true if the line has a property named [key].
+// Can be prefixed with 'side1.' or 'side2.' to check properties from the
+// front and back sides respectively
+// -----------------------------------------------------------------------------
+bool MapLine::hasProp(string_view key) const
+{
+	if (strutil::startsWith(key, "side1.") && side1_)
+		return side1_->hasProp(key.substr(6));
+	if (strutil::startsWith(key, "side2.") && side2_)
+		return side2_->hasProp(key.substr(6));
+	return MapObject::hasProp(key);
+}
+
+// -----------------------------------------------------------------------------
 // Returns the value of the boolean property matching [key].
 // Can be prefixed with 'side1.' or 'side2.' to get bool properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-bool MapLine::boolProperty(string_view key)
+bool MapLine::boolProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->boolProperty(key.substr(6));
@@ -227,7 +273,7 @@ bool MapLine::boolProperty(string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get int properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-int MapLine::intProperty(string_view key)
+int MapLine::intProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->intProperty(key.substr(6));
@@ -267,7 +313,7 @@ int MapLine::intProperty(string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get float properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-double MapLine::floatProperty(string_view key)
+double MapLine::floatProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->floatProperty(key.substr(6));
@@ -282,7 +328,7 @@ double MapLine::floatProperty(string_view key)
 // Can be prefixed with 'side1.' or 'side2.' to get string properties from the
 // front and back sides respectively
 // -----------------------------------------------------------------------------
-string MapLine::stringProperty(string_view key)
+string MapLine::stringProperty(string_view key) const
 {
 	if (strutil::startsWith(key, "side1.") && side1_)
 		return side1_->stringProperty(key.substr(6));
@@ -334,7 +380,7 @@ void MapLine::setIntProperty(string_view key, int value)
 	}
 
 	// Back side property
-	else if (strutil::startsWith(key, "side2."))
+	if (strutil::startsWith(key, "side2."))
 	{
 		if (side2_)
 			side2_->setIntProperty(key.substr(6), value);
@@ -342,7 +388,7 @@ void MapLine::setIntProperty(string_view key, int value)
 	}
 
 	// Mark as modified only if a line prop, not a side prop, is changing
-	setModified();
+	beginModify();
 
 	// Vertices
 	if (key == PROP_V1)
@@ -408,7 +454,12 @@ void MapLine::setIntProperty(string_view key, int value)
 
 	// Line property
 	else
+	{
 		MapObject::setIntProperty(key, value);
+		return;
+	}
+
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -466,33 +517,37 @@ void MapLine::setStringProperty(string_view key, string_view value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapLine::scriptCanModifyProp(string_view key)
+bool MapLine::scriptCanModifyProp(string_view key) const
 {
 	return !(key == PROP_V1 || key == PROP_V2 || key == PROP_S1 || key == PROP_S2);
 }
 
 // -----------------------------------------------------------------------------
-// Sets the front side of the line to [side]
+// Sets the front side of the line to [side].
+// This just sets the side without doing any other processing, for a safe way
+// of changing the side, use SLADEMap::setLineSide instead
 // -----------------------------------------------------------------------------
 void MapLine::setS1(MapSide* side)
 {
-	if (!side)
-		side1_ = nullptr;
-
-	else if (!side1_ && parent_map_)
-		parent_map_->setLineSide(this, side, true);
+	beginModify();
+	side1_ = side;
+	if (side1_)
+		side1_->setParent(this);
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
-// Sets the back side of the line to [side]
+// Sets the back side of the line to [side].
+// This just sets the side without doing any other processing, for a safe way
+// of changing the side, use SLADEMap::setLineSide instead
 // -----------------------------------------------------------------------------
 void MapLine::setS2(MapSide* side)
 {
-	if (!side)
-		side2_ = nullptr;
-
-	else if (!side2_ && parent_map_)
-		parent_map_->setLineSide(this, side, false);
+	beginModify();
+	side2_ = side;
+	if (side2_)
+		side2_->setParent(this);
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -500,14 +555,15 @@ void MapLine::setS2(MapSide* side)
 // -----------------------------------------------------------------------------
 void MapLine::setV1(MapVertex* vertex)
 {
-	if (!vertex)
+	if (!vertex || vertex == vertex1_)
 		return;
 
-	setModified();
+	beginModify();
 	vertex1_->disconnectLine(this);
 	vertex1_ = vertex;
 	vertex1_->connectLine(this);
 	resetInternals();
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -518,11 +574,12 @@ void MapLine::setV2(MapVertex* vertex)
 	if (!vertex)
 		return;
 
-	setModified();
+	beginModify();
 	vertex2_->disconnectLine(this);
 	vertex2_ = vertex;
 	vertex2_->connectLine(this);
 	resetInternals();
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -530,8 +587,9 @@ void MapLine::setV2(MapVertex* vertex)
 // -----------------------------------------------------------------------------
 void MapLine::setSpecial(int special)
 {
-	setModified();
+	beginModify();
 	special_ = special;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -539,8 +597,9 @@ void MapLine::setSpecial(int special)
 // -----------------------------------------------------------------------------
 void MapLine::setId(int id)
 {
-	setModified();
+	beginModify();
 	id_ = id;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -548,8 +607,9 @@ void MapLine::setId(int id)
 // -----------------------------------------------------------------------------
 void MapLine::setFlags(int flags)
 {
-	setModified();
+	beginModify();
 	flags_ = flags;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -557,8 +617,9 @@ void MapLine::setFlags(int flags)
 // -----------------------------------------------------------------------------
 void MapLine::setFlag(int flag)
 {
-	setModified();
+	beginModify();
 	flags_ |= flag;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -566,8 +627,9 @@ void MapLine::setFlag(int flag)
 // -----------------------------------------------------------------------------
 void MapLine::clearFlag(int flag)
 {
-	setModified();
+	beginModify();
 	flags_ = flags_ & ~flag;
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -577,8 +639,9 @@ void MapLine::setArg(unsigned index, int value)
 {
 	if (index < 5)
 	{
-		setModified();
+		beginModify();
 		args_[index] = value;
+		endModify();
 	}
 }
 
@@ -586,7 +649,7 @@ void MapLine::setArg(unsigned index, int value)
 // Returns the object point [point].
 // Currently for lines this is always the mid point
 // -----------------------------------------------------------------------------
-Vec2d MapLine::getPoint(Point point)
+Vec2d MapLine::getPoint(Point point) const
 {
 	// if (point == MOBJ_POINT_MID || point == MOBJ_POINT_WITHIN)
 	return start() + (end() - start()) * 0.5;
@@ -619,7 +682,7 @@ Seg2d MapLine::seg() const
 // -----------------------------------------------------------------------------
 // Returns the length of the line
 // -----------------------------------------------------------------------------
-double MapLine::length()
+double MapLine::length() const
 {
 	if (!vertex1_ || !vertex2_)
 		return -1;
@@ -649,13 +712,13 @@ bool MapLine::doubleSector() const
 // -----------------------------------------------------------------------------
 // Returns the vector perpendicular to the front side of the line
 // -----------------------------------------------------------------------------
-Vec2d MapLine::frontVector()
+Vec2d MapLine::frontVector() const
 {
 	// Check if vector needs to be recalculated
 	if (front_vec_.x == 0 && front_vec_.y == 0)
 	{
-		front_vec_.set(-(vertex2_->yPos() - vertex1_->yPos()), vertex2_->xPos() - vertex1_->xPos());
-		front_vec_.normalize();
+		front_vec_ = glm::normalize(
+			Vec2d{ -(vertex2_->yPos() - vertex1_->yPos()), vertex2_->xPos() - vertex1_->xPos() });
 	}
 
 	return front_vec_;
@@ -665,7 +728,7 @@ Vec2d MapLine::frontVector()
 // Calculates and returns the end point of the 'direction tab' for the line
 // (used as a front side indicator for 2d map display)
 // -----------------------------------------------------------------------------
-Vec2d MapLine::dirTabPoint(double tab_length)
+Vec2d MapLine::dirTabPoint(double tab_length) const
 {
 	// Calculate midpoint
 	Vec2d mid(x1() + ((x2() - x1()) * 0.5), y1() + ((y2() - y1()) * 0.5));
@@ -689,7 +752,7 @@ Vec2d MapLine::dirTabPoint(double tab_length)
 // -----------------------------------------------------------------------------
 // Returns the minimum distance from the point to the line
 // -----------------------------------------------------------------------------
-double MapLine::distanceTo(Vec2d point)
+double MapLine::distanceTo(const Vec2d& point) const
 {
 	// Update length data if needed
 	if (length_ < 0)
@@ -717,7 +780,7 @@ double MapLine::distanceTo(Vec2d point)
 }
 
 // Minimum gap between planes for a texture to be considered missing
-static const float EPSILON = 0.001f;
+static constexpr float EPSILON = 0.001f;
 
 // -----------------------------------------------------------------------------
 // Returns a flag set of any parts of the line that require a texture
@@ -783,7 +846,7 @@ int MapLine::needsTexture() const
 // Returns true if this line overlaps with [other]
 // (ie. both lines share the same vertices)
 // -----------------------------------------------------------------------------
-bool MapLine::overlaps(MapLine* other) const
+bool MapLine::overlaps(const MapLine* other) const
 {
 	return other != this
 		   && (vertex1_ == other->vertex1_ && vertex2_ == other->vertex2_
@@ -794,9 +857,55 @@ bool MapLine::overlaps(MapLine* other) const
 // Returns true if this line intersects with [other].
 // If an intersection occurs, [intersect_point] is set to the intersection point
 // -----------------------------------------------------------------------------
-bool MapLine::intersects(MapLine* other, Vec2d& intersect_point) const
+bool MapLine::intersects(const MapLine* other, Vec2d& intersect_point) const
 {
-	return math::linesIntersect(seg(), other->seg(), intersect_point);
+	return geometry::linesIntersect(seg(), other->seg(), intersect_point);
+}
+
+// -----------------------------------------------------------------------------
+// Fills any missing [upper] and/or [lower] textures on the line with [texture].
+// If [use_flat] is true, missing textures will be filled with the floor or
+// ceiling texture of the opposite sector instead of [texture]
+// -----------------------------------------------------------------------------
+void MapLine::fillMissingTextures(bool upper, bool lower, string_view texture, bool use_flat) const
+{
+	auto required = needsTexture();
+
+	// Front Upper texture
+	if (upper && side1_ && required & FrontUpper && side1_->texUpper() == MapSide::TEX_NONE)
+	{
+		if (use_flat && backSector())
+			side1_->setTexUpper(backSector()->ceiling().texture);
+		else
+			side1_->setTexUpper(texture);
+	}
+
+	// Front Lower texture
+	if (lower && side1_ && required & FrontLower && side1_->texLower() == MapSide::TEX_NONE)
+	{
+		if (use_flat && backSector())
+			side1_->setTexLower(backSector()->floor().texture);
+		else
+			side1_->setTexLower(texture);
+	}
+
+	// Back Upper texture
+	if (upper && side2_ && required & BackUpper && side2_->texUpper() == MapSide::TEX_NONE)
+	{
+		if (use_flat && frontSector())
+			side2_->setTexUpper(frontSector()->ceiling().texture);
+		else
+			side2_->setTexUpper(texture);
+	}
+
+	// Back Lower texture
+	if (lower && side2_ && required & BackLower && side2_->texLower() == MapSide::TEX_NONE)
+	{
+		if (use_flat && frontSector())
+			side2_->setTexLower(frontSector()->floor().texture);
+		else
+			side2_->setTexLower(texture);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -892,27 +1001,21 @@ void MapLine::clearUnneededTextures() const
 // -----------------------------------------------------------------------------
 // Resets all calculated internal values for the line and sectors
 // -----------------------------------------------------------------------------
-void MapLine::resetInternals()
+void MapLine::resetInternals() const
 {
 	// Reset line internals
-	length_ = -1;
-	front_vec_.set(0, 0);
+	length_    = -1;
+	front_vec_ = { 0, 0 };
 
 	// Reset front sector internals
 	auto s1 = frontSector();
 	if (s1)
-	{
-		s1->resetPolygon();
-		s1->resetBBox();
-	}
+		s1->resetGeometryInfo();
 
 	// Reset back sector internals
 	auto s2 = backSector();
 	if (s2)
-	{
-		s2->resetPolygon();
-		s2->resetBBox();
-	}
+		s2->resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------
@@ -920,7 +1023,7 @@ void MapLine::resetInternals()
 // -----------------------------------------------------------------------------
 void MapLine::flip(bool sides)
 {
-	setModified();
+	beginModify();
 
 	// Flip vertices
 	auto v   = vertex1_;
@@ -934,6 +1037,7 @@ void MapLine::flip(bool sides)
 		side1_ = side2_;
 		side2_ = s;
 	}
+	endModify();
 
 	resetInternals();
 	if (parent_map_)
@@ -953,11 +1057,11 @@ void MapLine::writeBackup(Backup* backup)
 	if (side1_)
 		backup->props_internal["s1"] = side1_->objId();
 	else
-		backup->props_internal["s1"] = (unsigned)0;
+		backup->props_internal["s1"] = static_cast<unsigned>(0);
 	if (side2_)
 		backup->props_internal["s2"] = side2_->objId();
 	else
-		backup->props_internal["s2"] = (unsigned)0;
+		backup->props_internal["s2"] = static_cast<unsigned>(0);
 
 	// Flags
 	backup->props_internal[PROP_FLAGS] = flags_;
@@ -1001,9 +1105,9 @@ void MapLine::readBackup(Backup* backup)
 	side1_  = dynamic_cast<MapSide*>(s1);
 	side2_  = dynamic_cast<MapSide*>(s2);
 	if (side1_)
-		side1_->parent_ = this;
+		side1_->setParent(this);
 	if (side2_)
-		side2_->parent_ = this;
+		side2_->setParent(this);
 
 	// Flags
 	flags_ = backup->props_internal.get<int>(PROP_FLAGS);
@@ -1026,8 +1130,7 @@ void MapLine::copy(MapObject* c)
 	if (objType() != c->objType())
 		return;
 
-	// Update modified time
-	setModified();
+	beginModify();
 
 	MapObject::copy(c);
 
@@ -1047,6 +1150,8 @@ void MapLine::copy(MapObject* c)
 	args_[2] = l->args_[2];
 	args_[3] = l->args_[3];
 	args_[4] = l->args_[4];
+
+	endModify();
 }
 
 // -----------------------------------------------------------------------------
@@ -1076,3 +1181,16 @@ void MapLine::writeUDMF(string& def)
 
 	def += "}\n\n";
 }
+
+#ifndef NDEBUG
+// -----------------------------------------------------------------------------
+// Debuggable operator
+// -----------------------------------------------------------------------------
+MapLine::operator Debuggable() const
+{
+	if (!this)
+		return "<line NULL>";
+
+	return { fmt::format("<line {}>", index_) };
+}
+#endif

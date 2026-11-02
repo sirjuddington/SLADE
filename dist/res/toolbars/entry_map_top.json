@@ -1,0 +1,13 @@
+{
+  "items": [
+    {
+      "type": "button",
+      "id": "save_image",
+      "text": "Save Map Image",
+      "icon": "export",
+      "help_text": "Save map overview to an image",
+      "show_text": true
+    },
+    { "type": "action", "id": "pmap_open_archive", "show_text": true }
+  ]
+}

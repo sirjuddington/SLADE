@@ -32,6 +32,7 @@
 #include "Main.h"
 #include "ActionSpecial.h"
 #include "Configuration.h"
+#include "Game.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -44,11 +45,13 @@ using namespace game;
 // Variables
 //
 // -----------------------------------------------------------------------------
-int ActionSpecial::next_order_ = 0;
-
 ActionSpecial ActionSpecial::unknown_;
 ActionSpecial ActionSpecial::gen_switched_;
 ActionSpecial ActionSpecial::gen_manual_;
+namespace
+{
+int next_order = 0;
+}
 
 
 // -----------------------------------------------------------------------------
@@ -62,7 +65,7 @@ ActionSpecial ActionSpecial::gen_manual_;
 // ActionSpecial class constructor
 // -----------------------------------------------------------------------------
 ActionSpecial::ActionSpecial(string_view name, string_view group) :
-	order_{ next_order_++ },
+	order_{ next_order++ },
 	name_{ name },
 	group_{ group },
 	tagged_{ TagType::None },
@@ -97,7 +100,7 @@ void ActionSpecial::reset()
 // -----------------------------------------------------------------------------
 void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 {
-	order_ = next_order_++;
+	order_ = next_order++;
 
 	// Check for simple definition
 	if (node->isLeaf())
@@ -131,7 +134,7 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 
 		// Tagged
 		else if (strutil::equalCI(name, "tagged"))
-			tagged_ = parseTagged(child);
+			tagged_ = parseTagged(child->stringValue());
 
 		// Parse arg definition if it was one
 		if (argn >= 0)
@@ -142,6 +145,52 @@ void ActionSpecial::parse(ParseTreeNode* node, Arg::SpecialMap* shared_args)
 
 			args_[argn].parse(child, shared_args);
 		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads an action special definition from JSON [j], using [shared_args] for
+// predeclared args if it is given
+// -----------------------------------------------------------------------------
+void ActionSpecial::fromJson(const Json& j, Arg::SpecialMap& shared_args)
+{
+	try
+	{
+		jsonutil::getIf(j, "name", name_);
+
+		// Args
+		if (j.contains("arg1"))
+		{
+			args_[0].fromJson(j.at("arg1"), &shared_args);
+			args_.count = 1;
+		}
+		if (j.contains("arg2"))
+		{
+			args_[1].fromJson(j.at("arg2"), &shared_args);
+			args_.count = 2;
+		}
+		if (j.contains("arg3"))
+		{
+			args_[2].fromJson(j.at("arg3"), &shared_args);
+			args_.count = 3;
+		}
+		if (j.contains("arg4"))
+		{
+			args_[3].fromJson(j.at("arg4"), &shared_args);
+			args_.count = 4;
+		}
+		if (j.contains("arg5"))
+		{
+			args_[4].fromJson(j.at("arg5"), &shared_args);
+			args_.count = 5;
+		}
+
+		if (j.contains("tagged"))
+			tagged_ = parseTagged(j.at("tagged").get<string>());
+	}
+	catch (const std::exception& e)
+	{
+		log::error("Error parsing action special '{}': {}", name_, e.what());
 	}
 }
 

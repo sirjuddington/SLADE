@@ -1,0 +1,21 @@
+// Doom 64 sector types
+{
+  "types": [
+    { "type": 0, "name": "Normal" },
+    { "type": 1, "name": "Light Blinks (randomly)" },
+    { "type": 2, "name": "Light Blinks (0.5 sec)" },
+    { "type": 3, "name": "Light Blinks (1 sec)" },
+    { "type": 8, "name": "Light Glows (1+ sec)" },
+    { "type": 9, "name": "Very Slow Pulse" },
+    { "type": 11, "name": "Very Slow Pulse??" },
+    { "type": 12, "name": "Light Blinks (0.5 sec sync)" },
+    { "type": 13, "name": "Light Blinks (1 sec sync)" },
+    { "type": 17, "name": "Light Flickers (randomly)" },
+    { "type": 202, "name": "Sequence Normal" },
+    { "type": 204, "name": "Fast Flickering" },
+    { "type": 205, "name": "Sequence Starter" },
+    { "type": 206, "name": "Sequence Very Slow" },
+    { "type": 208, "name": "Fast Bright Flicker (1.5 Seconds)" },
+    { "type": 666, "name": "Autokill in 141 crusher" }
+  ]
+}

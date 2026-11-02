@@ -1,21 +1,24 @@
-#pragma once
-
-#include "SLADEMap/MapObject/MapObject.h"
+﻿#pragma once
 
 class wxChoice;
 class wxTextCtrl;
 
 namespace slade
 {
+namespace map
+{
+	enum class ObjectType : u8;
+}
+
 class ShowItemDialog : public wxDialog
 {
 public:
 	ShowItemDialog(wxWindow* parent);
-	~ShowItemDialog() {}
+	~ShowItemDialog() override = default;
 
-	MapObject::Type type() const;
+	map::ObjectType type() const;
 	int             index() const;
-	void            setType(MapObject::Type type) const;
+	void            setType(map::ObjectType type) const;
 
 private:
 	wxChoice*   choice_type_ = nullptr;

@@ -5,12 +5,9 @@ class wxWindow;
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
 class ArchivePanel;
 class EntryPanel;
 class MainWindow;
-class Palette;
 
 namespace maineditor
 {
@@ -20,7 +17,8 @@ namespace maineditor
 		Text,
 		Palette,
 		Animated,
-		Switches
+		Switches,
+		ANSI
 	};
 
 	bool init();
@@ -34,18 +32,16 @@ namespace maineditor
 	ArchivePanel*         currentArchivePanel();
 	EntryPanel*           currentEntryPanel();
 
-	void openTextureEditor(Archive* archive, ArchiveEntry* entry = nullptr);
+	void openTextureEditor(const Archive* archive, ArchiveEntry* entry = nullptr);
 	void openMapEditor(Archive* archive);
-	void openArchiveTab(Archive* archive);
+	void openArchiveTab(const Archive* archive);
 	void openEntry(ArchiveEntry* entry);
 	bool saveArchiveAs(Archive* archive);
 
 	void setGlobalPaletteFromArchive(Archive* archive);
 
-#ifdef USE_WEBVIEW_STARTPAGE
-	void openDocs(string_view page_name = "");
-#endif
-}; // namespace maineditor
+	void setStatusText(string_view primary, string_view secondary = {});
+} // namespace maineditor
 } // namespace slade
 
 // Define for less cumbersome maineditor::window()

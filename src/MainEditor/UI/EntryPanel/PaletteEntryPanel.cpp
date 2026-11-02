@@ -34,14 +34,20 @@
 #include "PaletteEntryPanel.h"
 #include "App.h"
 #include "Archive/Archive.h"
-#include "General/UI.h"
+#include "Archive/ArchiveEntry.h"
+#include "General/SAction.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/Palette/PaletteManager.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "UI/Canvas/PaletteCanvas.h"
 #include "UI/Controls/PaletteChooser.h"
+#include "UI/Controls/SIconButton.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
 #include "UI/WxUtils.h"
+#include "Utility/Colour.h"
 #include "Utility/SFileDialog.h"
 #include "Utility/StringUtils.h"
 
@@ -93,6 +99,8 @@ public:
 			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
+		auto lh = ui::LayoutHelper(this);
+
 		// Set dialog icon
 		wxutil::setWindowIcon(this, "palette_colourise");
 
@@ -100,26 +108,26 @@ public:
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+		msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 		// Add colour chooser
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		cp_colour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, wxS("Colour:")), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-		hbox->Add(cp_colour_, 0, wxEXPAND);
+		hbox->Add(new wxStaticText(this, -1, wxS("Colour:")), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
+		hbox->Add(cp_colour_, wxSizerFlags().Expand());
 
 		// Add preview
-		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+		pal_preview_ = new PaletteCanvas(this);
+		sizer->Add(pal_preview_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Expand());
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
+		pal_preview_->SetInitialSize(lh.size(384, 384));
 		redraw();
 
 		// Init layout
@@ -135,16 +143,17 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return pal_preview_->palette(); }
 
 	ColRGBA colour() const { return ColRGBA{ cp_colour_->GetColour() }; }
 
 	// Re-apply the changes in selection and colour on a fresh palette
 	void redraw() const
 	{
-		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().colourise(colour(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->draw();
+		Palette new_palette{ *palette_ };
+		new_palette.colourise(colour(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->setPalette(&new_palette);
+		pal_preview_->Refresh();
 	}
 
 private:
@@ -167,6 +176,8 @@ public:
 		wxDialog(parent, -1, wxS("Tint"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
+		auto lh = ui::LayoutHelper(this);
+
 		// Set dialog icon
 		wxutil::setWindowIcon(this, "palette_tint");
 
@@ -174,36 +185,36 @@ public:
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+		msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 		// Add colour chooser
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		cp_colour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, wxS("Colour:")), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-		hbox->Add(cp_colour_, 0, wxALIGN_CENTER_VERTICAL);
+		hbox->Add(new wxStaticText(this, -1, wxS("Colour:")), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
+		hbox->Add(cp_colour_, wxSizerFlags().CenterVertical());
 
 		// Add 'amount' slider
 		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		slider_amount_ = new wxSlider(this, -1, 50, 0, 100);
 		label_amount_  = new wxStaticText(this, -1, wxS("100%"));
-		hbox->Add(new wxStaticText(this, -1, wxS("Amount:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-		hbox->Add(slider_amount_, 1, wxEXPAND | wxRIGHT, ui::pad());
-		hbox->Add(label_amount_, 0, wxALIGN_CENTER_VERTICAL);
+		hbox->Add(new wxStaticText(this, -1, wxS("Amount:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		hbox->Add(slider_amount_, lh.sfWithBorder(1, wxRIGHT).Expand());
+		hbox->Add(label_amount_, wxSizerFlags().CenterVertical());
 
 		// Add preview
-		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+		pal_preview_ = new PaletteCanvas(this);
+		sizer->Add(pal_preview_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Expand());
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
+		pal_preview_->SetInitialSize(lh.size(384, 384));
 		redraw();
 
 		// Init layout
@@ -229,18 +240,19 @@ public:
 		label_amount_->SetLabel(wxS("50% "));
 	}
 
-	Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return pal_preview_->palette(); }
 
 	ColRGBA colour() const { return ColRGBA{ cp_colour_->GetColour() }; }
 
-	float amount() const { return (float)slider_amount_->GetValue() * 0.01f; }
+	float amount() const { return static_cast<float>(slider_amount_->GetValue()) * 0.01f; }
 
 	// Re-apply the changes in selection, colour and amount on a fresh palette
 	void redraw() const
 	{
-		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().tint(colour(), amount(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->draw();
+		Palette new_palette{ *palette_ };
+		new_palette.tint(colour(), amount(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->setPalette(&new_palette);
+		pal_preview_->Refresh();
 	}
 
 private:
@@ -276,6 +288,8 @@ public:
 			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
+		auto lh = ui::LayoutHelper(this);
+
 		// Set dialog icon
 		wxutil::setWindowIcon(this, "palette_tweak");
 
@@ -283,48 +297,48 @@ public:
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+		msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 		// Add 'hue shift' slider
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		slider_hue_ = new wxSlider(this, -1, 0, 0, 500);
 		label_hue_  = new wxStaticText(this, -1, wxS("0.000"));
-		hbox->Add(new wxStaticText(this, -1, wxS("Hue Shift:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-		hbox->Add(slider_hue_, 1, wxEXPAND | wxRIGHT, ui::pad());
-		hbox->Add(label_hue_, 0, wxALIGN_CENTER_VERTICAL);
+		hbox->Add(new wxStaticText(this, -1, wxS("Hue Shift:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		hbox->Add(slider_hue_, lh.sfWithBorder(1, wxRIGHT).Expand());
+		hbox->Add(label_hue_, wxSizerFlags().CenterVertical());
 
 		// Add 'Saturation' slider
 		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		slider_sat_ = new wxSlider(this, -1, 100, 0, 200);
 		label_sat_  = new wxStaticText(this, -1, wxS("100%"));
-		hbox->Add(new wxStaticText(this, -1, wxS("Saturation:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-		hbox->Add(slider_sat_, 1, wxEXPAND | wxRIGHT, ui::pad());
-		hbox->Add(label_sat_, 0, wxALIGN_CENTER_VERTICAL);
+		hbox->Add(new wxStaticText(this, -1, wxS("Saturation:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		hbox->Add(slider_sat_, lh.sfWithBorder(1, wxRIGHT).Expand());
+		hbox->Add(label_sat_, wxSizerFlags().CenterVertical());
 
 		// Add 'Luminosity' slider
 		hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		slider_lum_ = new wxSlider(this, -1, 100, 0, 200);
 		label_lum_  = new wxStaticText(this, -1, wxS("100%"));
-		hbox->Add(new wxStaticText(this, -1, wxS("Luminosity:")), 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-		hbox->Add(slider_lum_, 1, wxEXPAND | wxRIGHT, ui::pad());
-		hbox->Add(label_lum_, 0, wxALIGN_CENTER_VERTICAL);
+		hbox->Add(new wxStaticText(this, -1, wxS("Luminosity:")), lh.sfWithBorder(0, wxRIGHT).CenterVertical());
+		hbox->Add(slider_lum_, lh.sfWithBorder(1, wxRIGHT).Expand());
+		hbox->Add(label_lum_, wxSizerFlags().CenterVertical());
 
 		// Add preview
-		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+		pal_preview_ = new PaletteCanvas(this);
+		sizer->Add(pal_preview_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Expand());
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
+		pal_preview_->SetInitialSize(lh.size(384, 384));
 		redraw();
 
 		// Init layout
@@ -365,20 +379,21 @@ public:
 		label_lum_->SetLabel(wxS("100% "));
 	}
 
-	Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return pal_preview_->palette(); }
 
-	float hue() const { return (float)slider_hue_->GetValue() * 0.002f; }
-	float sat() const { return (float)slider_sat_->GetValue() * 0.01f; }
-	float lum() const { return (float)slider_lum_->GetValue() * 0.01f; }
+	float hue() const { return static_cast<float>(slider_hue_->GetValue()) * 0.002f; }
+	float sat() const { return static_cast<float>(slider_sat_->GetValue()) * 0.01f; }
+	float lum() const { return static_cast<float>(slider_lum_->GetValue()) * 0.01f; }
 
 	// Re-apply the changes in selection, hue, saturation and luminosity on a fresh palette
 	void redraw() const
 	{
-		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().shift(hue(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->palette().saturate(sat(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->palette().illuminate(lum(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->draw();
+		Palette new_palette{ *palette_ };
+		new_palette.shift(hue(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		new_palette.saturate(sat(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		new_palette.illuminate(lum(), pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->setPalette(&new_palette);
+		pal_preview_->Refresh();
 	}
 
 private:
@@ -406,6 +421,8 @@ public:
 		wxDialog(parent, -1, wxS("Invert"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
+		auto lh = ui::LayoutHelper(this);
+
 		// Set dialog icon
 		wxutil::setWindowIcon(this, "palette_invert");
 
@@ -413,18 +430,18 @@ public:
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+		msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 		// Add preview
-		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+		pal_preview_ = new PaletteCanvas(this);
+		sizer->Add(pal_preview_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Expand());
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(384), ui::scalePx(384)));
+		pal_preview_->SetInitialSize(lh.size(384, 384));
 		redraw();
 
 		// Init layout
@@ -439,14 +456,15 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return pal_preview_->palette(); }
 
 	// Re-apply the changes in selection on a fresh palette
 	void redraw() const
 	{
-		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().invert(pal_preview_->selectionStart(), pal_preview_->selectionEnd());
-		pal_preview_->draw();
+		Palette new_palette{ *palette_ };
+		new_palette.invert(pal_preview_->selectionStart(), pal_preview_->selectionEnd());
+		pal_preview_->setPalette(&new_palette);
+		pal_preview_->Refresh();
 	}
 
 private:
@@ -474,6 +492,8 @@ public:
 			wxDefaultSize,
 			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 	{
+		auto lh = ui::LayoutHelper(this);
+
 		// Set dialog icon
 		wxutil::setWindowIcon(this, "palette");
 
@@ -481,15 +501,15 @@ public:
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+		msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 		// Add buttons
 		rb_doom_ = new wxRadioButton(this, -1, wxS("Doom (14 Palettes)"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-		sizer->Add(rb_doom_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		sizer->Add(rb_doom_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 		rb_hexen_ = new wxRadioButton(this, -1, wxS("Hexen (28 Palettes)"));
-		sizer->Add(rb_hexen_, 0, wxEXPAND);
+		sizer->Add(rb_hexen_, wxSizerFlags().Expand());
 
-		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Expand());
 
 		// Init layout
 		wxDialog::Layout();
@@ -535,6 +555,8 @@ public:
 			wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER),
 		palette_{ pal }
 	{
+		auto lh = ui::LayoutHelper(this);
+
 		// Set dialog icon
 		wxutil::setWindowIcon(this, "palette_gradient");
 
@@ -542,35 +564,34 @@ public:
 		auto msizer = new wxBoxSizer(wxVERTICAL);
 		SetSizer(msizer);
 		auto sizer = new wxBoxSizer(wxVERTICAL);
-		msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+		msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 		// Add colour choosers
 		auto hbox = new wxBoxSizer(wxHORIZONTAL);
-		sizer->Add(hbox, 0, wxEXPAND | wxBOTTOM, ui::pad());
+		sizer->Add(hbox, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 		cp_startcolour_ = new wxColourPickerCtrl(this, -1, wxColour(0, 0, 0));
-		hbox->Add(new wxStaticText(this, -1, wxS("Start Colour:")), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-		hbox->Add(cp_startcolour_, 0, wxEXPAND);
+		hbox->Add(new wxStaticText(this, -1, wxS("Start Colour:")), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
+		hbox->Add(cp_startcolour_, wxSizerFlags().Expand());
 
 		// swap color button
-		cp_swapcolours_ = new wxButton(this, -1, wxS("↔"),
-			wxDefaultPosition, wxDefaultSize, wxBU_EXACTFIT);
-		hbox->Add(cp_swapcolours_, 0, wxEXPAND);
+		cp_swapcolours_ = new SIconButton(this, icons::Any, "swap", "Swap colours");
+		hbox->Add(cp_swapcolours_, lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
 
 		cp_endcolour_ = new wxColourPickerCtrl(this, -1, wxColour(255, 255, 255));
-		hbox->Add(new wxStaticText(this, -1, wxS("End Colour:")), 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, ui::pad());
-		hbox->Add(cp_endcolour_, 0, wxEXPAND);
+		hbox->Add(new wxStaticText(this, -1, wxS("End Colour:")), lh.sfWithBorder(1, wxRIGHT).CenterVertical());
+		hbox->Add(cp_endcolour_, wxSizerFlags().Expand());
 
 		// Add preview
-		pal_preview_ = new PaletteCanvas(this, -1);
-		sizer->Add(pal_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+		pal_preview_ = new PaletteCanvas(this);
+		sizer->Add(pal_preview_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 		// Add buttons
-		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND);
+		sizer->Add(CreateButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Expand());
 
 		// Setup preview
 		pal_preview_->setSelectionType(PaletteCanvas::SelectionType::Range);
-		pal_preview_->SetInitialSize(wxSize(ui::scalePx(26*16), ui::scalePx(26*16)));
+		pal_preview_->SetInitialSize(lh.size(26 * 16, 26 * 16));
 		redraw();
 
 		// Init layout
@@ -579,12 +600,15 @@ public:
 		// Bind events
 		cp_startcolour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
 		cp_endcolour_->Bind(wxEVT_COLOURPICKER_CHANGED, [&](wxColourPickerEvent&) { redraw(); });
-		cp_swapcolours_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) {
-			auto tmp = cp_startcolour_->GetColour();
-			cp_startcolour_->SetColour(cp_endcolour_->GetColour());
-			cp_endcolour_->SetColour(tmp);
-			redraw();
-		});
+		cp_swapcolours_->Bind(
+			wxEVT_BUTTON,
+			[&](wxCommandEvent&)
+			{
+				auto tmp = cp_startcolour_->GetColour();
+				cp_startcolour_->SetColour(cp_endcolour_->GetColour());
+				cp_endcolour_->SetColour(tmp);
+				redraw();
+			});
 		pal_preview_->Bind(wxEVT_LEFT_UP, [&](wxMouseEvent&) { redraw(); });
 
 		// Setup dialog size
@@ -593,7 +617,7 @@ public:
 		CenterOnParent();
 	}
 
-	Palette* finalPalette() const { return &(pal_preview_->palette()); }
+	const Palette* finalPalette() const { return pal_preview_->palette(); }
 
 	ColRGBA startColour() const { return ColRGBA{ cp_startcolour_->GetColour() }; }
 
@@ -602,17 +626,18 @@ public:
 	// Re-apply the changes in selection and colour on a fresh palette
 	void redraw() const
 	{
-		pal_preview_->setPalette(palette_);
-		pal_preview_->palette().setGradient(
+		Palette new_palette{ *palette_ };
+		new_palette.setGradient(
 			pal_preview_->selectionStart(), pal_preview_->selectionEnd(), startColour(), endColour());
-		pal_preview_->draw();
+		pal_preview_->setPalette(&new_palette);
+		pal_preview_->Refresh();
 	}
 
 private:
 	PaletteCanvas*      pal_preview_    = nullptr;
 	Palette*            palette_        = nullptr;
 	wxColourPickerCtrl* cp_startcolour_ = nullptr;
-	wxButton* cp_swapcolours_           = nullptr;
+	wxButton*           cp_swapcolours_ = nullptr;
 	wxColourPickerCtrl* cp_endcolour_   = nullptr;
 };
 
@@ -634,35 +659,16 @@ PaletteEntryPanel::PaletteEntryPanel(wxWindow* parent) : EntryPanel(parent, "pal
 	PaletteEntryPanel::fillCustomMenu(menu_custom_);
 	custom_menu_name_ = "Palette";
 
-	// --- Top toolbar ---
+	// Toolbars
+	text_curpal_ = new wxStaticText(toolbar_, -1, wxS("XX/XX"));
+	toolbar_->registerCustomControl("current_palette", text_curpal_);
+	toolbar_->loadLayoutFromResource("entry_palette_top");
+	toolbar_left_->loadLayoutFromResource("entry_palette_left");
 
-	// Palette Selector
-	auto group_palette = new SToolBarGroup(toolbar_, "Palette", true);
-	group_palette->addActionButton("pal_prev", "Previous Palette", "left", "");
-	text_curpal_ = new wxStaticText(group_palette, -1, wxS("XX/XX"));
-	group_palette->addCustomControl(text_curpal_);
-	group_palette->addActionButton("pal_next", "Next Palette", "right", "");
-	toolbar_->addGroup(group_palette);
-
-	// Current Palette
-	toolbar_->addActionGroup(
-		"Palette Organisation",
-		{ "ppal_moveup", "ppal_movedown", "ppal_duplicate", "ppal_remove", "ppal_removeothers" });
-
-	// Palette Entry Operations
-	toolbar_->addActionGroup(
-		"Palette Operations", { "ppal_addcustom", "ppal_exportas", "ppal_importfrom", "ppal_test", "ppal_generate" });
-
-	// --- Left toolbar ---
-
-	// Colour Operations
-	toolbar_left_->addActionGroup(
-		"Colours", { "ppal_colourise", "ppal_tint", "ppal_invert", "ppal_tweak", "ppal_gradient" });
-
-	// --- Palette canvas ---
-	pal_canvas_ = new PaletteCanvas(this, -1);
+	// Palette canvas
+	pal_canvas_ = new PaletteCanvas(this);
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
-	sizer_main_->Add(pal_canvas_, 1, wxEXPAND, 0);
+	sizer_main_->Add(pal_canvas_, wxSizerFlags(1).Expand());
 
 	// Bind events
 	pal_canvas_->Bind(wxEVT_LEFT_DOWN, &PaletteEntryPanel::onPalCanvasMouseEvent, this);
@@ -733,7 +739,7 @@ string PaletteEntryPanel::statusString()
 {
 	// Get current colour
 	ColRGBA col  = pal_canvas_->selectedColour();
-	ColHSL  col2 = col.asHSL();
+	ColHSL  col2 = colour::rgbToHsl(col);
 
 	return fmt::format(
 		"Index {}\tR {}, G {}, B {}\tH {:1.3f}, S {:1.3f}, L {:1.3f}",
@@ -757,10 +763,10 @@ bool PaletteEntryPanel::showPalette(uint32_t index)
 		return false;
 
 	// Copy palette at index into canvas
-	pal_canvas_->palette().copyPalette(palettes_[index].get());
+	pal_canvas_->setPalette(palettes_[index].get());
 
 	// Set current palette text
-	text_curpal_->SetLabel(wxString::FromUTF8(fmt::format("{}/{}", index + 1, palettes_.size())));
+	text_curpal_->SetLabel(wxString::FromUTF8(fmt::format("{:02d}/{:02d}", index + 1, palettes_.size())));
 
 	// Refresh
 	Layout();
@@ -1107,8 +1113,9 @@ bool PaletteEntryPanel::generateColormaps() const
 			else if (l == GRAYMAP)
 			{
 				// Generate inverse map
-				grey = ((float)rgb.r / 256.0 * col_greyscale_r) + ((float)rgb.g / 256.0 * col_greyscale_g)
-					   + ((float)rgb.b / 256.0 * col_greyscale_b);
+				grey = (static_cast<float>(rgb.r) / 256.0 * col_greyscale_r)
+					   + (static_cast<float>(rgb.g) / 256.0 * col_greyscale_g)
+					   + (static_cast<float>(rgb.b) / 256.0 * col_greyscale_b);
 				grey = 1.0 - grey;
 				// Clamp value: with Id Software's values, the sum is greater than 1.0 (0.299+0.587+0.144=1.030)
 				// This means the negation above can give a negative value (for example, with RGB values of 247 or
@@ -1448,7 +1455,7 @@ void PaletteEntryPanel::onPalCanvasMouseEvent(wxMouseEvent& e)
 		{
 			ColRGBA col = pal_canvas_->selectedColour();
 			// Open a colour dialog
-			wxColour cd = wxGetColourFromUser(GetParent(), col.toWx());
+			wxColour cd = wxGetColourFromUser(GetParent(), col);
 
 			if (cd.Ok())
 			{
@@ -1512,8 +1519,8 @@ void PaletteEntryPanel::analysePalettes() const
 		{
 			ColRGBA ref1 = palettes_[0]->colour(c);
 			ColRGBA cmp1 = palettes_[i]->colour(c);
-			ColHSL  ref2 = ref1.asHSL();
-			ColHSL  cmp2 = cmp1.asHSL();
+			ColHSL  ref2 = colour::rgbToHsl(ref1);
+			ColHSL  cmp2 = colour::rgbToHsl(cmp1);
 #ifdef GPALCOMPANALYSIS
 			int    r, g, b;
 			double h, s, l;

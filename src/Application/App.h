@@ -4,8 +4,8 @@
 
 namespace slade
 {
+class Archive;
 class ArchiveManager;
-class Console;
 class PaletteManager;
 class Clipboard;
 class ResourceManager;
@@ -13,17 +13,18 @@ class ResourceManager;
 namespace app
 {
 	bool             isInitialised();
-	Console*         console();
 	PaletteManager*  paletteManager();
 	long             runTimer();
 	bool             isExiting();
 	ArchiveManager&  archiveManager();
 	Clipboard&       clipboard();
 	ResourceManager& resources();
+	Archive*         programResource();
 
-	bool init(const vector<string>& args, double ui_scale = 1.);
+	bool init(const vector<string>& args);
 	void saveConfigFile();
 	void exit(bool save_config);
+	void handleException();
 
 	// Version
 	struct Version
@@ -33,6 +34,8 @@ namespace app
 		unsigned long revision = 0;
 		unsigned long beta     = 0;
 
+		unsigned long sub_revision = 0; // Some older versions of SLADE had a 4th version number
+
 		Version(unsigned long major = 0, unsigned long minor = 0, unsigned long revision = 0, unsigned long beta = 0) :
 			major{ major },
 			minor{ minor },
@@ -40,9 +43,10 @@ namespace app
 			beta{ beta }
 		{
 		}
+		Version(const string& version);
 
 		int    cmp(const Version& rhs) const;
-		string toString() const;
+		string toString(bool display = true) const;
 	};
 	const Version& version();
 
@@ -53,7 +57,8 @@ namespace app
 		Data,
 		Executable,
 		Resources,
-		Temp
+		Temp,
+		OldUser // For migrating 3.2.x config files to 3.3.0 (the user config directory is changed on linux)
 	};
 	string path(string_view filename, Dir dir);
 
@@ -66,11 +71,11 @@ namespace app
 		Unknown
 	};
 	Platform      platform();
-	bool          useWebView();
 	const string& iconFile();
 	bool          isWin64Build();
-	bool          isDarkTheme();
+	string        osDescription();
 
 	std::thread::id mainThreadId();
+	bool            isDarkTheme();
 } // namespace app
 } // namespace slade

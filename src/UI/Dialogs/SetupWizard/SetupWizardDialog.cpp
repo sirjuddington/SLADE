@@ -33,8 +33,8 @@
 #include "Main.h"
 #include "SetupWizardDialog.h"
 #include "BaseResourceWizardPage.h"
-#include "General/UI.h"
 #include "NodeBuildersWizardPage.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -75,8 +75,8 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 	wxutil::setWindowIcon(this, "logo");
 
 	// Setup layout
-	SetInitialSize(wxSize(ui::scalePx(600), ui::scalePx(500)));
-	wxWindowBase::Layout();
+	SetInitialSize(FromDIP(wxSize(600, 500)));
+	wxTopLevelWindowBase::Layout();
 	wxWindowBase::Fit();
 	wxTopLevelWindowBase::SetMinSize(GetBestSize());
 	CenterOnParent();
@@ -93,7 +93,7 @@ SetupWizardDialog::SetupWizardDialog(wxWindow* parent) :
 // -----------------------------------------------------------------------------
 void SetupWizardDialog::setupLayout()
 {
-	auto pad_xl = ui::scalePx(16);
+	auto lh = ui::LayoutHelper(this);
 
 	// Setup main sizer
 	auto sizer = new wxBoxSizer(wxVERTICAL);
@@ -103,27 +103,27 @@ void SetupWizardDialog::setupLayout()
 	label_page_title_ = new wxStaticText(
 		this, -1, wxString::FromUTF8(pages_[0]->title()), wxDefaultPosition, wxDefaultSize, wxST_NO_AUTORESIZE);
 	label_page_title_->SetFont(label_page_title_->GetFont().MakeLarger().MakeBold());
-	sizer->Add(label_page_title_, 0, wxEXPAND | wxALL, pad_xl);
+	sizer->Add(label_page_title_, lh.sfWithXLargeBorder().Expand());
 
 	// Page description
 	label_page_description_ = new wxStaticText(this, -1, wxEmptyString);
-	sizer->Add(label_page_description_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, pad_xl);
+	sizer->Add(label_page_description_, lh.sfWithXLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Main page area
-	sizer->Add(pages_[0], 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, pad_xl);
+	sizer->Add(pages_[0], lh.sfWithXLargeBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Bottom buttons
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
 	hbox->AddStretchSpacer();
-	sizer->Add(hbox, 0, wxEXPAND | wxALL, pad_xl);
+	sizer->Add(hbox, lh.sfWithXLargeBorder().Expand());
 
 	// Previous button
 	btn_prev_ = new wxButton(this, -1, wxS("Previous"));
-	hbox->Add(btn_prev_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_prev_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Next button
 	btn_next_ = new wxButton(this, -1, wxS("Next"));
-	hbox->Add(btn_next_, 0, wxEXPAND);
+	hbox->Add(btn_next_, wxSizerFlags().Expand());
 
 	btn_prev_->Enable(false);
 }

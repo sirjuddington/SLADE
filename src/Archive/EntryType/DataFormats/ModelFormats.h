@@ -3,10 +3,10 @@
 class DMDModelDataFormat : public EntryDataFormat
 {
 public:
-	DMDModelDataFormat() : EntryDataFormat("mesh_dmd") {};
-	~DMDModelDataFormat() = default;
+	DMDModelDataFormat() : EntryDataFormat("mesh_dmd") {}
+	~DMDModelDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -22,10 +22,10 @@ public:
 class MDLModelDataFormat : public EntryDataFormat
 {
 public:
-	MDLModelDataFormat() : EntryDataFormat("mesh_mdl") {};
-	~MDLModelDataFormat() = default;
+	MDLModelDataFormat() : EntryDataFormat("mesh_mdl") {}
+	~MDLModelDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -41,10 +41,10 @@ public:
 class MD2ModelDataFormat : public EntryDataFormat
 {
 public:
-	MD2ModelDataFormat() : EntryDataFormat("mesh_md2") {};
-	~MD2ModelDataFormat() = default;
+	MD2ModelDataFormat() : EntryDataFormat("mesh_md2") {}
+	~MD2ModelDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -60,10 +60,10 @@ public:
 class MD3ModelDataFormat : public EntryDataFormat
 {
 public:
-	MD3ModelDataFormat() : EntryDataFormat("mesh_md3") {};
-	~MD3ModelDataFormat() = default;
+	MD3ModelDataFormat() : EntryDataFormat("mesh_md3") {}
+	~MD3ModelDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 4)
@@ -76,13 +76,39 @@ public:
 	}
 };
 
+class ThreeDSModelDataFormat : public EntryDataFormat
+{
+public:
+	ThreeDSModelDataFormat() : EntryDataFormat("mesh_3ds") {}
+	~ThreeDSModelDataFormat() override = default;
+
+	int isThisFormat(const MemChunk& mc) override
+	{
+		// Check size
+		if (mc.size() > 4)
+		{
+			// Check for MM header
+			if (mc[0] != 'M' || mc[1] != 'M')
+				return MATCH_FALSE;
+
+			// Check MM chunk size (should be the whole file)
+			if (mc.readL32(2) != mc.size())
+				return MATCH_FALSE;
+
+			return MATCH_TRUE;
+		}
+
+		return MATCH_FALSE;
+	}
+};
+
 class VOXVoxelDataFormat : public EntryDataFormat
 {
 public:
-	VOXVoxelDataFormat() : EntryDataFormat("voxel_vox") {};
-	~VOXVoxelDataFormat() = default;
+	VOXVoxelDataFormat() : EntryDataFormat("voxel_vox") {}
+	~VOXVoxelDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size: 12 bytes for dimensions and 768 for palette,
 		// so 780 bytes for an empty voxel object.
@@ -106,10 +132,10 @@ public:
 class KVXVoxelDataFormat : public EntryDataFormat
 {
 public:
-	KVXVoxelDataFormat() : EntryDataFormat("voxel_kvx") {};
-	~KVXVoxelDataFormat() = default;
+	KVXVoxelDataFormat() : EntryDataFormat("voxel_kvx") {}
+	~KVXVoxelDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size: 28 bytes for dimensions and pivot,
 		// 4 minimum for offset info, and 768 for palette,

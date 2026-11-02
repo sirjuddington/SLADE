@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MapObjectList.h"
-#include "SLADEMap/MapObject/MapSide.h"
 
 namespace slade
 {

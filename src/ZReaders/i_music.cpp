@@ -85,7 +85,7 @@ static MIDIStreamer *CreateMIDIStreamer(FILE *file, const uint8_t *musiccache, i
 //
 //==========================================================================
 
-static EMIDIType IdentifyMIDIType(uint32_t *id, int size)
+static EMIDIType IdentifyMIDIType(const uint32_t *id, int size)
 {
 	// Check for MUS format
 	// Tolerate sloppy wads by searching up to 32 uint8_ts for the header
@@ -135,9 +135,9 @@ static EMIDIType IdentifyMIDIType(uint32_t *id, int size)
 //
 //==========================================================================
 
-bool zmus2mid(MemChunk& musinput, MemChunk& midioutput, int subsong, int * num_tracks)
+bool zmus2mid(const MemChunk& musinput, MemChunk& midioutput, int subsong, int * num_tracks)
 {
-	EMIDIType type = IdentifyMIDIType((uint32_t*)musinput.data(), musinput.size());
+	EMIDIType type = IdentifyMIDIType(reinterpret_cast<const uint32_t*>(musinput.data()), musinput.size());
 	if (type != MIDI_NOTMIDI)
 	{
 		MIDIStreamer* streamer = CreateMIDIStreamer(NULL, musinput.data(), musinput.size(), type);

@@ -32,6 +32,8 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/MapDesc.h"
 #include "Doom32XMapFormat.h"
 #include "Doom64MapFormat.h"
 #include "DoomMapFormat.h"
@@ -49,10 +51,7 @@ using namespace slade;
 class NoMapFormat : public MapFormatHandler
 {
 public:
-	bool readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props) override
-	{
-		return false;
-	}
+	bool readMap(MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props) override { return false; }
 
 	vector<unique_ptr<ArchiveEntry>> writeMap(const MapObjectCollection& map_data, const PropertyList& map_extra_props)
 		override
@@ -76,11 +75,11 @@ unique_ptr<MapFormatHandler> MapFormatHandler::get(MapFormat format)
 {
 	switch (format)
 	{
-	case MapFormat::Doom: return std::make_unique<DoomMapFormat>();
-	case MapFormat::Hexen: return std::make_unique<HexenMapFormat>();
-	case MapFormat::UDMF: return std ::make_unique<UniversalDoomMapFormat>();
-	case MapFormat::Doom64: return std::make_unique<Doom64MapFormat>();
+	case MapFormat::Doom:    return std::make_unique<DoomMapFormat>();
+	case MapFormat::Hexen:   return std::make_unique<HexenMapFormat>();
+	case MapFormat::UDMF:    return std ::make_unique<UniversalDoomMapFormat>();
+	case MapFormat::Doom64:  return std::make_unique<Doom64MapFormat>();
 	case MapFormat::Doom32X: return std::make_unique<Doom32XMapFormat>();
-	default: return std::make_unique<NoMapFormat>();
+	default:                 return std::make_unique<NoMapFormat>();
 	}
 }

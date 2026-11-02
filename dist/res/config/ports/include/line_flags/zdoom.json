@@ -1,0 +1,57 @@
+{
+  "doom": {
+    "flags": [
+      { "name": "Impassable", "value": 1, "udmf": "blocking" },
+      { "name": "Blocks Monsters", "value": 2, "udmf": "blockmonsters" },
+      { "name": "Two Sided", "value": 4, "udmf": "twosided" },
+      { "name": "Upper Unpegged", "value": 8, "udmf": "dontpegtop" },
+      { "name": "Lower Unpegged", "value": 16, "udmf": "dontpegbottom" },
+      { "name": "Secret", "value": 32, "udmf": "secret" },
+      { "name": "Blocks Sound", "value": 64, "udmf": "blocksound" },
+      { "name": "Not On Map", "value": 128, "udmf": "dontdraw" },
+      { "name": "Starts On Map", "value": 256, "udmf": "mapped" },
+      { "name": "Pass Use", "value": 512, "udmf": "passuse" },
+      { "name": "Block Floating Monsters", "value": 1024, "udmf": "blockfloating" },
+      { "name": "Translucent", "value": 4096, "udmf": "translucent" },
+      { "name": "Monsters Can Activate", "value": 8192, "udmf": "monsteractivate" },
+      { "name": "Block Players", "value": 16384, "udmf": "blockplayers" },
+      { "name": "Block Everything", "value": 32768, "udmf": "blockeverything" }
+    ]
+  },
+
+  "strife": {
+    "flags": [
+      { "name": "Railing", "value": 512, "udmf": "jumpover" }
+    ]
+  },
+
+  "hexen_udmf": {
+    "flags": [
+      { "name": "Impassable", "value": 1, "udmf": "blocking" },
+      { "name": "Blocks Monsters", "value": 2, "udmf": "blockmonsters" },
+      { "name": "Two Sided", "value": 4, "udmf": "twosided" },
+      { "name": "Upper Unpegged", "value": 8, "udmf": "dontpegtop" },
+      { "name": "Lower Unpegged", "value": 16, "udmf": "dontpegbottom" },
+      { "name": "Secret", "value": 32, "udmf": "secret" },
+      { "name": "Blocks Sound", "value": 64, "udmf": "blocksound" },
+      { "name": "Not On Map", "value": 128, "udmf": "dontdraw" },
+      { "name": "Starts On Map", "value": 256, "udmf": "mapped" },
+      { "name": "Repeatable", "value": 512, "udmf": "repeatspecial", "activation": true },
+      { "name": "Monsters Activate", "value": 8192, "udmf": "monsteractivate", "activation": true },
+      { "name": "Block Players", "value": 16384, "udmf": "blockplayers" },
+      { "name": "Block Everything", "value": 32768, "udmf": "blockeverything" }
+    ]
+  },
+
+  "triggers": {
+    "flags": [
+      { "name": "Player Cross", "value": 0, "udmf": "playercross" },
+      { "name": "Player Use", "value": 1, "udmf": "playeruse" },
+      { "name": "Monster Cross", "value": 2, "udmf": "monstercross" },
+      { "name": "Attack Hit", "value": 3, "udmf": "impact" },
+      { "name": "Player Bump", "value": 4, "udmf": "playerpush" },
+      { "name": "Missile Cross", "value": 5, "udmf": "missilecross" },
+      { "name": "Player Use Thru", "value": 6, "udmf": "playeruseback" }
+    ]
+  }
+}

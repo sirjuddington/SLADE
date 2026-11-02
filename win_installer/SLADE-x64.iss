@@ -2,7 +2,7 @@
 
 #include "include/Setup.iss"
 ArchitecturesInstallIn64BitMode=x64
-OutputBaseFilename=Setup_{#MyAppName}_{#MyAppVersion}_x64
+OutputBaseFilename={#MyAppName}_{#MyAppVersion}_win_x64_setup
 
 #include "include/Languages.iss"
 

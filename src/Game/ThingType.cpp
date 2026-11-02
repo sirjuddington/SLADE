@@ -31,8 +31,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ThingType.h"
+#include "Game.h"
 #include "Game/Configuration.h"
+#include "Utility/Colour.h"
 #include "Utility/Parser.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -76,6 +79,7 @@ void ThingType::copy(const ThingType& copy)
 	shrink_            = copy.shrink_;
 	colour_            = copy.colour_;
 	radius_            = copy.radius_;
+	display_radius_    = copy.display_radius_;
 	height_            = copy.height_;
 	scale_             = copy.scale_;
 	fullbright_        = copy.fullbright_;
@@ -93,7 +97,8 @@ void ThingType::copy(const ThingType& copy)
 	translation_       = copy.translation_;
 	palette_           = copy.palette_;
 	z_height_absolute_ = copy.z_height_absolute_;
-	point_light_       = copy.point_light_;
+	dynamic_light_     = copy.dynamic_light_;
+	light_name_        = copy.light_name_;
 }
 
 // -----------------------------------------------------------------------------
@@ -123,6 +128,7 @@ void ThingType::reset()
 	shrink_            = false;
 	colour_            = ColRGBA::WHITE;
 	radius_            = 20;
+	display_radius_    = -1;
 	height_            = -1;
 	scale_             = { 1.0, 1.0 };
 	fullbright_        = false;
@@ -134,7 +140,8 @@ void ThingType::reset()
 	flags_             = 0;
 	tagged_            = TagType::None;
 	z_height_absolute_ = false;
-	point_light_       = "";
+	dynamic_light_     = false;
+	light_name_        = "";
 
 	// Reset args
 	args_.count = 0;
@@ -150,7 +157,7 @@ void ThingType::reset()
 // -----------------------------------------------------------------------------
 // Reads an thing type definition from a parsed tree [node]
 // -----------------------------------------------------------------------------
-void ThingType::parse(ParseTreeNode* node)
+void ThingType::parse(const ParseTreeNode* node)
 {
 	// Go through all child nodes/values
 	for (unsigned a = 0; a < node->nChildren(); a++)
@@ -242,7 +249,7 @@ void ThingType::parse(ParseTreeNode* node)
 			do
 			{
 				translation_ += child->stringValue(v++);
-			} while ((v < child->nValues()) && ((translation_ += "\", \""), true));
+			} while ((v < child->nValues()) && (translation_ += "\", \"", true));
 			translation_ += "\"";
 		}
 
@@ -282,15 +289,15 @@ void ThingType::parse(ParseTreeNode* node)
 
 		// Some things tag other things directly
 		else if (name == "tagged")
-			tagged_ = parseTagged(child);
+			tagged_ = parseTagged(child->stringValue());
 
 		// Z Height is absolute rather than relative to the floor/ceiling
 		else if (name == "z_height_absolute")
 			z_height_absolute_ = child->boolValue();
 
 		// Thing is a point light
-		else if (name == "point_light")
-			point_light_ = strutil::lower(child->stringValue());
+		else if (name == "dynamic_light")
+			dynamic_light_ = child->boolValue();
 
 		// Parse arg definition if it was one
 		if (arg >= 0)
@@ -423,47 +430,168 @@ void ThingType::loadProps(PropertyList& props, bool decorate, bool zscript)
 			{ 0xDA, 0xA5, 0x20, 0xFF }, // Goldenrod		ARGB value of #FFDAA520
 		};
 
-		if (*color < (int)db2_colours.size())
+		if (*color < static_cast<int>(db2_colours.size()))
 			colour_ = db2_colours[*color];
 	}
 
 	// Other props
-	if (auto val = props.getIf<int>("radius"))
-		radius_ = *val;
-	if (auto val = props.getIf<int>("height"))
-		height_ = *val;
-	if (auto val = props.getIf<double>("scalex"))
-		scale_.x = *val;
-	if (auto val = props.getIf<double>("scaley"))
-		scale_.y = *val;
-	if (auto val = props.getIf<bool>("hanging"))
-		hanging_ = *val;
-	if (auto val = props.getIf<bool>("angled"))
-		angled_ = *val;
-	if (auto val = props.getIf<bool>("bright"))
-		fullbright_ = *val;
-	if (auto val = props.getIf<bool>("decoration"))
-		decoration_ = *val;
+	if (auto val = props.getIf("radius"))
+		radius_ = property::asInt(*val);
+	if (auto val = props.getIf("height"))
+		height_ = property::asInt(*val);
+	if (auto val = props.getIf("xscale"))
+		scale_.x = property::asFloat(*val);
+	if (auto val = props.getIf("yscale"))
+		scale_.y = property::asFloat(*val);
+	if (auto val = props.getIf("hanging"))
+		hanging_ = property::asBool(*val);
+	if (auto val = props.getIf("angled"))
+		angled_ = property::asBool(*val);
+	if (auto val = props.getIf("bright"))
+		fullbright_ = property::asBool(*val);
+	if (auto val = props.getIf("decoration"))
+		decoration_ = property::asBool(*val);
 	if (auto val = props.getIf<string>("icon"))
 		icon_ = *val;
 	if (auto val = props.getIf<string>("translation"))
 		translation_ = *val;
-	if (auto val = props.getIf<bool>("solid"))
-		solid_ = *val;
-	if (auto val = props.getIf<bool>("obsolete"))
+	if (auto val = props.getIf("solid"))
+		solid_ = property::asBool(*val);
+	if (props.getIf("obsolete"))
 		flags_ |= Obsolete;
+	if (auto val = props.getIf<string>("light_name"))
+		light_name_ = *val;
 
 	// ZScript-only props
 	if (zscript)
 	{
-		if (auto val = props.getIf<double>("scale"))
-			scale_.x = scale_.y = *val;
-		if (auto val = props.getIf<double>("scale.x"))
-			scale_.x = *val;
-		if (auto val = props.getIf<double>("scale.y"))
-			scale_.y = *val;
-		if (auto val = props.getIf<bool>("spawnceiling"))
-			hanging_ = *val;
+		if (auto val = props.getIf("scale"))
+			scale_.x = scale_.y = property::asFloat(*val);
+		if (auto val = props.getIf("scale.x"))
+			scale_.x = property::asFloat(*val);
+		if (auto val = props.getIf("scale.y"))
+			scale_.y = property::asFloat(*val);
+		if (auto val = props.getIf("spawnceiling"))
+			hanging_ = property::asBool(*val);
+	}
+}
+
+// -----------------------------------------------------------------------------
+// Reads a thing type definition from JSON [j]
+// -----------------------------------------------------------------------------
+void ThingType::fromJson(const Json& j)
+{
+	try
+	{
+		// General properties
+		jsonutil::getIf(j, "name", name_);
+		jsonutil::getIf(j, "sprite", sprite_);
+		jsonutil::getIf(j, "icon", icon_);
+		jsonutil::getIf(j, "radius", radius_);
+		jsonutil::getIf(j, "display_radius", display_radius_);
+		jsonutil::getIf(j, "height", height_);
+		jsonutil::getIf(j, "angle", angled_);    // Show angle
+		jsonutil::getIf(j, "hanging", hanging_); // Hanging object
+		jsonutil::getIf(j, "shrink", shrink_);   // Shrink on zoom
+		jsonutil::getIf(j, "fullbright", fullbright_);
+		jsonutil::getIf(j, "decoration", decoration_);
+		jsonutil::getIf(j, "solid", solid_);
+		jsonutil::getIf(j, "palette", palette_); // Palette override
+		jsonutil::getIf(j, "zeth", zeth_icon_);
+		jsonutil::getIf(j, "class_name", class_name_);
+
+		// Scale
+		if (j.contains("scale"))
+			scale_.x = scale_.y = j["scale"].get<double>();
+		jsonutil::getIf(j, "scalex", scale_.x);
+		jsonutil::getIf(j, "scaley", scale_.y);
+
+		// Colour
+		if (j.contains("colour"))
+			colour_ = colour::fromString(j.at("colour").get<string>());
+
+		// Translation
+		if (j.contains("translation"))
+		{
+			if (j.at("translation").is_string())
+				translation_ = fmt::format("\"{}\"", j.at("translation").get<string>());
+			else if (j.at("translation").is_array())
+			{
+				auto parts = j.at("translation").get<vector<string>>();
+				for (auto& p : parts)
+					p = fmt::format("\"{}\"", p);
+				translation_ = strutil::join(parts, ", ");
+			}
+		}
+
+		// Pathed things
+		if (j.contains("nexttype"))
+		{
+			next_type_ = j.at("nexttype").get<int>();
+			flags_ |= Pathed;
+		}
+		if (j.contains("nextargs"))
+		{
+			next_args_ = j.at("nextargs").get<int>();
+			flags_ |= Pathed;
+		}
+
+		// Flags
+		if (j.contains("player_coop"))
+			flags_ |= CoOpStart;
+		if (j.contains("player_dm"))
+			flags_ |= DMStart;
+		if (j.contains("player_team"))
+			flags_ |= TeamStart;
+		if (j.contains("dragon"))
+			flags_ |= Dragon;
+		if (j.contains("script"))
+			flags_ |= Script;
+
+		// Some things tag other things directly
+		if (j.contains("tagged"))
+			tagged_ = parseTagged(j.at("tagged").get<string>());
+
+		// Z Height is absolute rather than relative to the floor/ceiling
+		if (j.contains("z_height_absolute"))
+			z_height_absolute_ = j.at("z_height_absolute").get<bool>();
+
+		// Thing is a point light
+		if (j.contains("dynamic_light"))
+			dynamic_light_ = j.at("dynamic_light").get<bool>();
+
+
+		// Args
+		if (j.contains("arg1"))
+		{
+			args_[0].fromJson(j.at("arg1"), nullptr);
+			args_.count = 1;
+		}
+		if (j.contains("arg2"))
+		{
+			args_[1].fromJson(j.at("arg2"), nullptr);
+			args_.count = 2;
+		}
+		if (j.contains("arg3"))
+		{
+			args_[2].fromJson(j.at("arg3"), nullptr);
+			args_.count = 3;
+		}
+		if (j.contains("arg4"))
+		{
+			args_[3].fromJson(j.at("arg4"), nullptr);
+			args_.count = 4;
+		}
+		if (j.contains("arg5"))
+		{
+			args_[4].fromJson(j.at("arg5"), nullptr);
+			args_.count = 5;
+		}
+	}
+	catch (const std::exception& e)
+	{
+		log::error(fmt::format("Error reading thing type from JSON: {}", e.what()));
+		log::error(fmt::format("JSON: {}", j.dump()));
 	}
 }
 

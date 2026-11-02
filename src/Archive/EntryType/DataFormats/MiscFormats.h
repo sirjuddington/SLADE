@@ -4,9 +4,9 @@ class RLE0DataFormat : public EntryDataFormat
 {
 public:
 	RLE0DataFormat() : EntryDataFormat("misc_rle0") {}
-	~RLE0DataFormat() = default;
+	~RLE0DataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override
+	int isThisFormat(const MemChunk& mc) override
 	{
 		// Check size
 		if (mc.size() > 6)

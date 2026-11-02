@@ -34,7 +34,9 @@
 #include "Main.h"
 #include "FileMonitor.h"
 #include "Archive/Archive.h"
-#include "Archive/Formats/WadArchive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
+#include "Archive/MapDesc.h"
 #include "FileUtils.h"
 #include "StringUtils.h"
 
@@ -68,6 +70,21 @@ FileMonitor::FileMonitor(string_view filename, bool start) : filename_{ filename
 }
 
 // -----------------------------------------------------------------------------
+// FileMonitor class destructor
+// -----------------------------------------------------------------------------
+FileMonitor::~FileMonitor()
+{
+	// If the process is still running, wx will access the wxProcess when it
+	// exits, so stop it sending events to this monitor and let wx delete it
+	// instead
+	if (process_)
+	{
+		process_->Detach();
+		process_.release();
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Override of wxTimer::Notify, called each time the timer updates
 // -----------------------------------------------------------------------------
 void FileMonitor::Notify()
@@ -98,6 +115,11 @@ void FileMonitor::onEndProcess(wxProcessEvent& e)
 		file_modified_ = modified;
 		fileModified();
 	}
+
+	// wx owns (and deletes) the wxProcess after OnTerminate returns, so it must
+	// not be destroyed along with this FileMonitor from within its own
+	// termination callback
+	process_.release();
 
 	// Delete this FileMonitor (its job is done)
 	delete this;
@@ -136,7 +158,7 @@ void DB2MapFileMonitor::fileModified()
 		return;
 
 	// Load file into temp archive
-	unique_ptr<Archive> wad = std::make_unique<WadArchive>();
+	auto wad = std::make_unique<Archive>(ArchiveFormat::Wad);
 	wad->open(filename_);
 
 	// Get map info for target archive

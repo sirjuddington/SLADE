@@ -1,5 +1,6 @@
 #pragma once
 
+#include "General/Sigslot.h"
 #include "UI/Lists/VirtualListView.h"
 
 namespace slade
@@ -10,7 +11,7 @@ class UndoListView : public VirtualListView
 {
 public:
 	UndoListView(wxWindow* parent, UndoManager* manager);
-	~UndoListView() {}
+	~UndoListView() override = default;
 
 	void setManager(UndoManager* manager);
 
@@ -21,12 +22,8 @@ protected:
 	void   updateItemAttr(long item, long column, long index) const override;
 
 private:
-	UndoManager* manager_ = nullptr;
-
-	// Signal connections
-	sigslot::scoped_connection sc_recorded_;
-	sigslot::scoped_connection sc_undo_;
-	sigslot::scoped_connection sc_redo_;
+	UndoManager*         manager_ = nullptr;
+	ScopedConnectionList connections_;
 
 	void updateFromManager();
 	void connectManagerSignals();
@@ -36,7 +33,7 @@ class UndoManagerHistoryPanel : public wxPanel
 {
 public:
 	UndoManagerHistoryPanel(wxWindow* parent, UndoManager* manager);
-	~UndoManagerHistoryPanel() {}
+	~UndoManagerHistoryPanel() override = default;
 
 	void setManager(UndoManager* manager);
 

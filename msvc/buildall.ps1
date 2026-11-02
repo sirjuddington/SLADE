@@ -1,17 +1,38 @@
 # Setup -----------------------------------------------------------------------
 
 # Find MSVC base path (community or professional)
-$msvcpath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional"
+$msvcpath = "${env:ProgramFiles}\Microsoft Visual Studio\18\Professional"
 if (-not (Test-Path $msvcpath))
 {
-	$msvcpath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community"
+	$msvcpath = "${env:ProgramFiles}\Microsoft Visual Studio\18\Community"
 }
 if (-not (Test-Path $msvcpath))
 {
-	Write-Host "`nCould not find Visual Studio 2022 path" -ForegroundColor Red
-	Exit-PSSession
+	Write-Host "`nCould not find Visual Studio 2026 path" -ForegroundColor Red
 }
-Write-Host "`nFound VS2022 at ${msvcpath}" -foregroundcolor blue
+else
+{
+	Write-Host "`nFound VS2026 at ${msvcpath}" -foregroundcolor blue
+}
+
+# No VS2026, try 2022
+if (-not (Test-Path $msvcpath))
+{
+	$msvcpath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Professional"
+    if (-not (Test-Path $msvcpath))
+    {
+    	$msvcpath = "${env:ProgramFiles}\Microsoft Visual Studio\2022\Community"
+    }
+    if (-not (Test-Path $msvcpath))
+    {
+    	Write-Host "`nCould not find Visual Studio 2022 path" -ForegroundColor Red
+    	Exit-PSSession
+    }
+    else
+    {
+    	Write-Host "`nFound 2022 at ${msvcpath}" -foregroundcolor blue
+    }
+}
 
 # Check VCPKG_ROOT env var
 if (-not $env:VCPKG_ROOT)

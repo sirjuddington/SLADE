@@ -2,16 +2,14 @@
 
 namespace slade
 {
-class Archive;
-
 class ResourceArchiveChooser : public wxPanel
 {
 public:
-	ResourceArchiveChooser(wxWindow* parent, Archive* archive);
-	~ResourceArchiveChooser() {}
+	ResourceArchiveChooser(wxWindow* parent, const Archive* archive);
+	~ResourceArchiveChooser() override = default;
 
-	vector<Archive*> selectedResourceArchives();
-	string           selectedResourceList();
+	vector<Archive*> selectedResourceArchives() const;
+	string           selectedResourceList() const;
 
 private:
 	wxCheckListBox*  list_resources_    = nullptr;

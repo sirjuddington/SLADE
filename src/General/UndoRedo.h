@@ -22,14 +22,14 @@ public:
 	~UndoLevel() = default;
 
 	string name() const { return name_; }
-	bool   doUndo();
-	bool   doRedo();
+	bool   doUndo() const;
+	bool   doRedo() const;
 	void   addStep(unique_ptr<UndoStep> step) { undo_steps_.push_back(std::move(step)); }
 	string timeStamp(bool date, bool time) const;
 
 	bool writeFile(string_view filename) const;
 	bool readFile(string_view filename) const;
-	void createMerged(vector<unique_ptr<UndoLevel>>& levels);
+	void createMerged(const vector<unique_ptr<UndoLevel>>& levels);
 
 private:
 	string                       name_;
@@ -37,7 +37,6 @@ private:
 	wxDateTime                   timestamp_;
 };
 
-class SLADEMap;
 class UndoManager
 {
 public:
@@ -45,19 +44,27 @@ public:
 	~UndoManager() = default;
 
 	SLADEMap*  map() const { return map_; }
-	void       putAllLevels(vector<string>& list);
+	void       putAllLevels(vector<string>& list) const;
 	int        currentIndex() const { return current_level_index_; }
 	unsigned   nUndoLevels() const { return undo_levels_.size(); }
 	UndoLevel* undoLevel(unsigned index) const { return undo_levels_[index].get(); }
 
-	void   beginRecord(string_view name);
+	bool   beginRecord(string_view name);
 	void   endRecord(bool success);
 	bool   currentlyRecording() const;
 	bool   recordUndoStep(unique_ptr<UndoStep> step) const;
 	string undo();
 	string redo();
-	void   setResetPoint() { reset_point_ = current_level_index_; }
-	void   clearToResetPoint();
+
+	int  resetPoint() const { return reset_point_; }
+	void setResetPoint() { reset_point_ = current_level_index_; }
+	void clearToResetPoint();
+
+	template<typename T, typename... Args> bool recordUndoStep(Args&&... args) const
+	{
+		static_assert(std::is_base_of_v<UndoStep, T>, "T must derive from UndoStep");
+		return recordUndoStep(std::make_unique<T>(std::forward<Args>(args)...));
+	}
 
 	void clear();
 	bool createMergedLevel(UndoManager* manager, string_view name);
@@ -68,6 +75,7 @@ public:
 		sigslot::signal<> level_recorded;
 		sigslot::signal<> undo;
 		sigslot::signal<> redo;
+		sigslot::signal<> cleared;
 	};
 	Signals& signals() { return signals_; }
 

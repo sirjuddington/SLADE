@@ -32,7 +32,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HexEntryPanel.h"
+#include "Archive/ArchiveEntry.h"
 #include "UI/Controls/HexEditorPanel.h"
+#include "UI/SAuiToolBar.h"
 
 using namespace slade;
 
@@ -51,7 +53,7 @@ HexEntryPanel::HexEntryPanel(wxWindow* parent) : EntryPanel(parent, "hex")
 {
 	// Create hex editor
 	hex_editor_ = new HexEditorPanel(this);
-	sizer_main_->Add(hex_editor_, 1, wxEXPAND);
+	sizer_main_->Add(hex_editor_, wxSizerFlags(1).Expand());
 
 	// Hide toolbar
 	toolbar_->Show(false);

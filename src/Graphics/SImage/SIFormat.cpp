@@ -31,10 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SIFormat.h"
-#include "App.h"
-#include "Archive/Archive.h"
-#include "Archive/EntryType/EntryType.h"
-#include "General/Misc.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryDataFormat.h"
+#include "Graphics/Palette/Palette.h"
 #include "Utility/Memory.h"
 #include <wx/mstream.h>
 
@@ -87,14 +86,14 @@ EXTERN_CVAR(Bool, gfx_extraconv)
 class SIFUnknown : public SIFormat
 {
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override { return false; }
+	bool readImage(SImage& image, const MemChunk& data, int index) override { return false; }
 
 public:
 	SIFUnknown() : SIFormat("unknown") { reliability_ = 0; }
-	~SIFUnknown() = default;
+	~SIFUnknown() override = default;
 
-	bool         isThisFormat(MemChunk& mc) override { return false; }
-	SImage::Info info(MemChunk& mc, int index) override { return {}; }
+	bool         isThisFormat(const MemChunk& mc) override { return false; }
+	SImage::Info info(const MemChunk& mc, int index) override { return {}; }
 };
 
 
@@ -108,15 +107,15 @@ class SIFGeneralImage : public SIFormat
 {
 public:
 	SIFGeneralImage() : SIFormat("image", "Image", "dat") {}
-	~SIFGeneralImage() = default;
+	~SIFGeneralImage() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		auto stream = wxMemoryInputStream(mc.data(), mc.size());
 		return wxImage::CanRead(stream);
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -136,7 +135,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Load to wxImage
 		wxMemoryInputStream memstream(data.data(), data.size());
@@ -199,7 +198,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override { return false; }
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override { return false; }
 };
 
 // Define valid raw flat sizes
@@ -240,15 +239,15 @@ class SIFRaw : public SIFormat
 {
 public:
 	SIFRaw(string_view id = "raw") : SIFormat(id, "Raw", "dat") {}
-	~SIFRaw() = default;
+	~SIFRaw() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		// Just check the size
 		return validSize(mc.size());
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 		unsigned     size = mc.size();
@@ -325,7 +324,7 @@ protected:
 	{
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
 		{
-			if ((int)valid_flat_size[a][0] == width && (int)valid_flat_size[a][1] == height
+			if (static_cast<int>(valid_flat_size[a][0]) == width && static_cast<int>(valid_flat_size[a][1]) == height
 				&& (valid_flat_size[a][2] == 1 || gfx_extraconv))
 				return true;
 		}
@@ -341,7 +340,7 @@ protected:
 		return false;
 	}
 
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get info
 		auto inf = info(data, index);
@@ -369,7 +368,7 @@ public:
 		name_      = "Doom Flat";
 		extension_ = "lmp";
 	}
-	~SIFRawFlat() = default;
+	~SIFRawFlat() override = default;
 
 	Writable canWrite(SImage& image) override
 	{
@@ -386,8 +385,8 @@ public:
 
 		// Otherwise, check if it can be cropped to a valid size
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
-			if (((unsigned)width >= valid_flat_size[a][0] && (unsigned)height >= valid_flat_size[a][1]
-				 && valid_flat_size[a][2] == 1)
+			if ((static_cast<unsigned>(width) >= valid_flat_size[a][0]
+				 && static_cast<unsigned>(height) >= valid_flat_size[a][1] && valid_flat_size[a][2] == 1)
 				|| gfx_extraconv)
 				return Writable::Convert;
 
@@ -420,13 +419,14 @@ public:
 			bool writable = (valid_flat_size[a][2] == 1 || gfx_extraconv);
 
 			// Check for exact match (no need to crop)
-			if (image.width() == (int)valid_flat_size[a][0] && image.height() == (int)valid_flat_size[a][1] && writable)
+			if (image.width() == static_cast<int>(valid_flat_size[a][0])
+				&& image.height() == static_cast<int>(valid_flat_size[a][1]) && writable)
 				return true;
 
 			// If the flat will fit within this size, crop to the previous size
 			// (this works because flat sizes list is in size-order)
-			if (image.width() <= (int)valid_flat_size[a][0] && image.height() <= (int)valid_flat_size[a][1] && width > 0
-				&& height > 0)
+			if (image.width() <= static_cast<int>(valid_flat_size[a][0])
+				&& image.height() <= static_cast<int>(valid_flat_size[a][1]) && width > 0 && height > 0)
 			{
 				image.crop(0, 0, width, height);
 				return true;
@@ -444,7 +444,7 @@ public:
 	}
 
 protected:
-	bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& data, const Palette* pal, int index) override
 	{
 		// Can't write if RGBA
 		if (image.type() == SImage::Type::RGBA)
@@ -582,7 +582,7 @@ SIFormat* SIFormat::getFormat(string_view id)
 // -----------------------------------------------------------------------------
 // Determines the format of the image data in [mc]
 // -----------------------------------------------------------------------------
-SIFormat* SIFormat::determineFormat(MemChunk& mc)
+SIFormat* SIFormat::determineFormat(const MemChunk& mc)
 {
 	// Go through all registered formats
 	SIFormat* format = sif_unknown;

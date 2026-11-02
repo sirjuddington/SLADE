@@ -1,0 +1,147 @@
+{
+  "id": "heretic",
+  "name": "Heretic",
+
+  // IWAD filename
+  "iwad": "heretic.wad",
+
+  // Supported map formats
+  "map_formats": [ "doom" ],
+
+  // DECORATE filters
+  "filters": [ "heretic", "raven", "any" ],
+
+  "configuration": {
+    // Sky flat for 3d mode
+    "sky_flat": "F_SKY1",
+
+    // Light levels
+    "light_level_interval": 16,
+
+    // Maps
+    "maps": [
+      // Episode 1
+      { "mapname": "E1M1", "sky": "SKY1" },
+      { "mapname": "E1M2", "sky": "SKY1" },
+      { "mapname": "E1M3", "sky": "SKY1" },
+      { "mapname": "E1M4", "sky": "SKY1" },
+      { "mapname": "E1M5", "sky": "SKY1" },
+      { "mapname": "E1M6", "sky": "SKY1" },
+      { "mapname": "E1M7", "sky": "SKY1" },
+      { "mapname": "E1M8", "sky": "SKY1" },
+      { "mapname": "E1M9", "sky": "SKY1" },
+
+      // Episode 2
+      { "mapname": "E2M1", "sky": "SKY2" },
+      { "mapname": "E2M2", "sky": "SKY2" },
+      { "mapname": "E2M3", "sky": "SKY2" },
+      { "mapname": "E2M4", "sky": "SKY2" },
+      { "mapname": "E2M5", "sky": "SKY2" },
+      { "mapname": "E2M6", "sky": "SKY2" },
+      { "mapname": "E2M7", "sky": "SKY2" },
+      { "mapname": "E2M8", "sky": "SKY2" },
+      { "mapname": "E2M9", "sky": "SKY2" },
+
+      // Episode 3
+      { "mapname": "E3M1", "sky": "SKY3" },
+      { "mapname": "E3M2", "sky": "SKY3" },
+      { "mapname": "E3M3", "sky": "SKY3" },
+      { "mapname": "E3M4", "sky": "SKY3" },
+      { "mapname": "E3M5", "sky": "SKY3" },
+      { "mapname": "E3M6", "sky": "SKY3" },
+      { "mapname": "E3M7", "sky": "SKY3" },
+      { "mapname": "E3M8", "sky": "SKY3" },
+      { "mapname": "E3M9", "sky": "SKY3" },
+
+      // Episode 4
+      { "mapname": "E4M1", "sky": "SKY1" },
+      { "mapname": "E4M2", "sky": "SKY1" },
+      { "mapname": "E4M3", "sky": "SKY1" },
+      { "mapname": "E4M4", "sky": "SKY1" },
+      { "mapname": "E4M5", "sky": "SKY1" },
+      { "mapname": "E4M6", "sky": "SKY1" },
+      { "mapname": "E4M7", "sky": "SKY1" },
+      { "mapname": "E4M8", "sky": "SKY1" },
+      { "mapname": "E4M9", "sky": "SKY1" },
+
+      // Episode 5
+      { "mapname": "E5M1", "sky": "SKY3" },
+      { "mapname": "E5M2", "sky": "SKY3" },
+      { "mapname": "E5M3", "sky": "SKY3" },
+      { "mapname": "E5M4", "sky": "SKY3" },
+      { "mapname": "E5M5", "sky": "SKY3" },
+      { "mapname": "E5M6", "sky": "SKY3" },
+      { "mapname": "E5M7", "sky": "SKY3" },
+      { "mapname": "E5M8", "sky": "SKY3" },
+      { "mapname": "E5M9", "sky": "SKY3" },
+
+      // Episode 6
+      { "mapname": "E6M1", "sky": "SKY1" },
+      { "mapname": "E6M2", "sky": "SKY1" },
+      { "mapname": "E6M3", "sky": "SKY1" }
+    ],
+
+    // Defaults
+    "defaults": {
+      "sector": {
+        "texturefloor": "FLOOR03",
+        "textureceiling": "FLOOR03",
+        "heightfloor": 0,
+        "heightceiling": 128,
+        "lightlevel": 160
+      },
+      "sidedef": {
+        "texturetop": "GRSTNPB",
+        "texturemiddle": "GRSTNPB",
+        "texturebottom": "GRSTNPB"
+      },
+      "thing": {
+        "type": 1,
+        "flags": 7,
+        "udmf": {
+          "skill1": true,
+          "skill2": true,
+          "skill3": true,
+          "skill4": true,
+          "skill5": true,
+          "single": true,
+          "dm": true,
+          "coop": true
+        }
+      }
+    },
+
+    // Action specials
+    "action_specials": {
+      "import": [ "include/action_specials/heretic.json" ]
+    },
+
+    // Thing types
+    "thing_types": {
+      "import": [
+        "include/thing_types/common.json",
+        "include/thing_types/heretic.json"
+      ]
+    },
+
+    // Thing flags
+    "thing_flags": {
+      "import": [ "include/thing_flags/doom.json" ]
+    },
+
+    // Line flags
+    "line_flags": {
+      "import": [ "include/line_flags/doom.json" ]
+    },
+
+    // Sector types
+    "sector_types": {
+      "import": [ "include/sector_types/heretic.json" ]
+    },
+
+    // UDMF properties
+    "udmf_properties": {
+      "import": [ "include/udmf_properties/base.json" ]
+    }
+  }
+}

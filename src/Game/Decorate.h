@@ -1,13 +1,11 @@
 #pragma once
 
-#include "ThingType.h"
-
 namespace slade
 {
-class Archive;
-
 namespace game
 {
+	class ThingType;
+
 	// This is used to have the same priority order as DB2
 	// Idle, See, Inactive, Spawn, first defined
 	enum StateSprites

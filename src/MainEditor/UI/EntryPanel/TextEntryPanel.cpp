@@ -31,15 +31,22 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextEntryPanel.h"
-#include "Game/Configuration.h"
-#include "General/UI.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Game/Game.h"
+#include "General/SAction.h"
 #include "MainEditor/EntryOperations.h"
 #include "MainEditor/MainEditor.h"
+#include "TextEditor/TextLanguage.h"
+#include "TextEditor/TextStyle.h"
 #include "TextEditor/UI/FindReplacePanel.h"
 #include "TextEditor/UI/TextEditorCtrl.h"
-#include "UI/Dialogs/Preferences/EditingPrefsPanel.h"
-#include "UI/Dialogs/Preferences/PreferencesDialog.h"
-#include "Utility/StringUtils.h"
+#include "UI/Controls/Splitter.h"
+#include "UI/Dialogs/SettingsDialog.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
+#include "UI/WxUtils.h"
+#include <wx/stc/minimap.h>
 
 using namespace slade;
 
@@ -50,6 +57,7 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 EXTERN_CVAR(Bool, txed_trim_whitespace)
+EXTERN_CVAR(Int, txed_minimap_width)
 
 
 // -----------------------------------------------------------------------------
@@ -65,38 +73,43 @@ EXTERN_CVAR(Bool, txed_trim_whitespace)
 TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 {
 	// Create the text area
+	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+	sizer_main_->Add(hbox, wxSizerFlags(1).Expand());
 	text_area_ = new TextEditorCtrl(this, -1);
-	sizer_main_->Add(text_area_, 1, wxEXPAND, 0);
+	hbox->Add(text_area_, wxSizerFlags(1).Expand());
+
+	// Create the minimap if enabled
+	if (txed_minimap_width > 0)
+	{
+		auto minimap = new wxStyledTextCtrlMiniMap(this, text_area_);
+		text_area_->SetUseVerticalScrollBar(false);
+		minimap->SetUseVerticalScrollBar(true);
+		minimap->SetInitialSize({ FromDIP(txed_minimap_width), -1 });
+		minimap->SetDoubleBuffered(true);
+		hbox->Add(minimap, wxSizerFlags().Expand());
+	}
 
 	// Create the find+replace panel
 	panel_fr_ = new FindReplacePanel(this, *text_area_);
 	text_area_->setFindReplacePanel(panel_fr_);
 	panel_fr_->Hide();
-	sizer_main_->Add(panel_fr_, 0, wxEXPAND | wxTOP, ui::padLarge());
-	// sizer_main_->AddSpacer(UI::pad());
+	sizer_main_->Add(panel_fr_, ui::LayoutHelper(this).sfWithLargeBorder(0, wxTOP).Expand());
 
-	// Add 'Text Language' choice to toolbar
-	auto group_language = new SToolBarGroup(toolbar_, "Text Language", true);
-	auto languages      = wxutil::arrayStringStd(TextLanguage::languageNames());
+	// Text Language dropdown
+	auto languages = wxutil::arrayStringStd(TextLanguage::languageNames());
 	languages.Sort();
 	languages.Insert(wxS("None"), 0, 1);
-	choice_text_language_ = new wxChoice(group_language, -1, wxDefaultPosition, wxDefaultSize, languages);
+	choice_text_language_ = new wxChoice(toolbar_, -1, wxDefaultPosition, wxDefaultSize, languages);
 	choice_text_language_->Select(0);
-	group_language->addCustomControl(choice_text_language_);
-	toolbar_->addGroup(group_language);
 
-	// Add 'Jump To' choice to toolbar
-	auto group_jump_to = new SToolBarGroup(toolbar_, "Jump To", true);
-	choice_jump_to_    = new wxChoice(group_jump_to, -1, wxDefaultPosition, wxSize(ui::scalePx(200), -1));
-	group_jump_to->addCustomControl(choice_jump_to_);
-	toolbar_->addGroup(group_jump_to);
+	// Jump To dropdown
+	choice_jump_to_ = new wxChoice(toolbar_, -1, wxDefaultPosition, wxSize(FromDIP(200), -1));
 	text_area_->setJumpToControl(choice_jump_to_);
 
-	// Add 'Compile ACS' to end of toolbar
-	toolbar_->addActionGroup("Compile ACS", { "arch_scripts_compileacs" }, true);
-
-	// Add 'Compile DECOHack' to end of toolbar
-	toolbar_->addActionGroup("Compile DECOHack", { "arch_scripts_compiledecohack" }, true);
+	// Setup toolbar
+	toolbar_->registerCustomControl("text_language", choice_text_language_);
+	toolbar_->registerCustomControl("jump_to", choice_jump_to_);
+	toolbar_->loadLayoutFromResource("entry_text_top");
 
 	// Bind events
 	choice_text_language_->Bind(wxEVT_CHOICE, &TextEntryPanel::onChoiceLanguageChanged, this);
@@ -132,9 +145,7 @@ TextEntryPanel::TextEntryPanel(wxWindow* parent) : EntryPanel(parent, "text")
 	menu_custom_->AppendSeparator();
 	SAction::fromId("ptxt_wrap")->addToMenu(menu_custom_);
 
-
 	custom_menu_name_ = "Text";
-
 
 	wxWindowBase::Layout();
 }
@@ -208,8 +219,8 @@ bool TextEntryPanel::writeEntry(ArchiveEntry& entry)
 	MemChunk mc;
 	text_area_->getRawText(mc);
 	entry.importMemChunk(mc);
-	if (entry.state() == ArchiveEntry::State::Unmodified)
-		entry.setState(ArchiveEntry::State::Modified);
+	if (entry.state() == EntryState::Unmodified)
+		entry.setState(EntryState::Modified);
 
 	// Re-detect entry type
 	EntryType::detectEntryType(entry);
@@ -236,7 +247,6 @@ void TextEntryPanel::refreshPanel()
 	text_area_->Refresh();
 
 	Refresh();
-	Update();
 }
 
 // -----------------------------------------------------------------------------
@@ -366,7 +376,7 @@ bool TextEntryPanel::handleEntryPanelAction(string_view id)
 
 	// Other colour scheme
 	else if (id == "ptxt_theme_other")
-		PreferencesDialog::openPreferences(maineditor::windowWx(), "Fonts & Colours");
+		ui::SettingsDialog::popupSettingsPage(maineditor::windowWx(), ui::SettingsPage::TextStyle);
 
 	// Not handled
 	else

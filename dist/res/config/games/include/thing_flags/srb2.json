@@ -1,0 +1,8 @@
+{
+  "flags": [
+    { "value": 1, "name": "Extra", "udmf": "extra" },
+    { "value": 2, "name": "Flip", "udmf": "flip" },
+    { "value": 4, "name": "Special", "udmf": "special" },
+    { "value": 8, "name": "Ambush", "udmf": "ambush" }
+  ]
+}

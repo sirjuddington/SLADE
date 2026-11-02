@@ -32,13 +32,22 @@
 #include "Main.h"
 #include "UniversalDoomMapFormat.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/MapDesc.h"
 #include "Game/Configuration.h"
-#include "General/UI.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectCollection.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/SideList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/UI.h"
 #include "Utility/FileUtils.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
@@ -56,7 +65,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // Reads the given UDMF-format [map], populating [map_data]
 // -----------------------------------------------------------------------------
-bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
+bool UniversalDoomMapFormat::readMap(MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
 {
 	auto m_head = map.head.lock();
 	if (!m_head)
@@ -90,7 +99,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	vector<ParseTreeNode*> defs_other;
 	for (unsigned a = 0; a < root->nChildren(); a++)
 	{
-		ui::setSplashProgress((float)a / root->nChildren());
+		ui::setSplashProgress(static_cast<float>(a) / root->nChildren());
 
 		auto node = root->childPTN(a);
 
@@ -129,7 +138,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	ui::setSplashProgressMessage("Reading Vertices");
 	for (unsigned a = 0; a < defs_vertices.size(); a++)
 	{
-		ui::setSplashProgress(((float)a / defs_vertices.size()) * 0.2f);
+		ui::setSplashProgress((static_cast<float>(a) / defs_vertices.size()) * 0.2f);
 
 		auto vertex = createVertex(defs_vertices[a]);
 		if (!vertex)
@@ -145,7 +154,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	ui::setSplashProgressMessage("Reading Sectors");
 	for (unsigned a = 0; a < defs_sectors.size(); a++)
 	{
-		ui::setSplashProgress(0.2f + ((float)a / defs_sectors.size()) * 0.2f);
+		ui::setSplashProgress(0.2f + (static_cast<float>(a) / defs_sectors.size()) * 0.2f);
 
 		auto sector = createSector(defs_sectors[a]);
 		if (!sector)
@@ -161,7 +170,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	ui::setSplashProgressMessage("Reading Sides");
 	for (unsigned a = 0; a < defs_sides.size(); a++)
 	{
-		ui::setSplashProgress(0.4f + ((float)a / defs_sides.size()) * 0.2f);
+		ui::setSplashProgress(0.4f + (static_cast<float>(a) / defs_sides.size()) * 0.2f);
 
 		auto side = createSide(defs_sides[a], map_data);
 		if (!side)
@@ -177,7 +186,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	ui::setSplashProgressMessage("Reading Lines");
 	for (unsigned a = 0; a < defs_lines.size(); a++)
 	{
-		ui::setSplashProgress(0.6f + ((float)a / defs_lines.size()) * 0.2f);
+		ui::setSplashProgress(0.6f + (static_cast<float>(a) / defs_lines.size()) * 0.2f);
 
 		auto line = createLine(defs_lines[a], map_data);
 		if (!line)
@@ -193,7 +202,7 @@ bool UniversalDoomMapFormat::readMap(Archive::MapDesc map, MapObjectCollection& 
 	ui::setSplashProgressMessage("Reading Things");
 	for (unsigned a = 0; a < defs_things.size(); a++)
 	{
-		ui::setSplashProgress(0.8f + ((float)a / defs_things.size()) * 0.2f);
+		ui::setSplashProgress(0.8f + (static_cast<float>(a) / defs_things.size()) * 0.2f);
 
 		auto thing = createThing(defs_things[a]);
 		if (!thing)

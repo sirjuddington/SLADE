@@ -32,9 +32,12 @@
 #include "Main.h"
 #include "Decorate.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Configuration.h"
 #include "Game.h"
 #include "ThingType.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -283,7 +286,8 @@ void parseDecorateActor(Tokenizer& tz, std::map<int, ThingType>& types, vector<T
 			if (strutil::startsWith(token, "//$"))
 			{
 				// Doom Builder magic editor comment
-				editor_properties.emplace_back(Tokenizer::parseEditorComment(tz.getLine(true)));
+				editor_properties.emplace_back(Tokenizer::parseEditorComment(token));
+				tz.adv();
 				continue;
 			}
 
@@ -509,7 +513,7 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		{
 			auto     frames = tz.next().text;
 			unsigned pos    = 0;
-			if (frames.length() > 0)
+			if (!frames.empty())
 			{
 				if ((frames[0] < 'a' || frames[0] > 'z') && (frames[0] < 'A' || frames[0] > ']'))
 				{
@@ -553,10 +557,10 @@ void parseDecorateOld(Tokenizer& tz, std::map<int, ThingType>& types)
 		// Set parsed properties
 		types[type].loadProps(found_props);
 
-		log::info(3, "Parsed {} {}: {}", group.length() ? group : "decoration", name, type);
+		log::info(3, "Parsed {} {}: {}", group.empty() ? "decoration" : group, name, type);
 	}
 	else
-		log::info(3, "Not adding {} {}, no editor number", group.length() ? group : "decoration", name);
+		log::info(3, "Not adding {} {}, no editor number", group.empty() ? "decoration" : group, name);
 }
 
 // -----------------------------------------------------------------------------
@@ -627,7 +631,7 @@ bool game::readDecorateDefs(Archive* archive, std::map<int, ThingType>& types, v
 		return false;
 
 	// Get base decorate file
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_name        = "decorate";
 	opt.ignore_ext        = true;
 	auto decorate_entries = archive->findAll(opt);

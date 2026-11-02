@@ -32,9 +32,10 @@
 #include "Main.h"
 #include "ModifyOffsetsDialog.h"
 #include "Archive/ArchiveEntry.h"
-#include "General/UI.h"
+#include "Archive/EntryType/EntryType.h"
 #include "Graphics/GameFormats.h"
 #include "Graphics/Graphics.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -53,10 +54,10 @@ using namespace slade;
 ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	wxDialog(nullptr, -1, wxS("Modify Gfx Offset(s)"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE)
 {
-	int      width      = ui::scalePx(40);
-	wxString offtypes[] = {
-		wxS("Monster"),           wxS("Monster (GL-friendly)"), wxS("Projectile"),         wxS("Hud/Weapon"),
-		wxS("Hud/Weapon (Doom)"), wxS("Hud/Weapon (Heretic)"),  wxS("Hud/Weapon (Hexen)"),
+	auto           lh       = ui::LayoutHelper(this);
+	vector<string> offtypes = {
+		"Monster",           "Monster (GL-friendly)", "Projectile",         "Hud/Weapon",
+		"Hud/Weapon (Doom)", "Hud/Weapon (Heretic)",  "Hud/Weapon (Hexen)",
 	};
 
 	// Set dialog icon
@@ -64,10 +65,10 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 
 	// Create controls
 	opt_auto_ = new wxRadioButton(this, -1, wxS("Automatic Offsets"), wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-	combo_aligntype_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, 7, offtypes);
+	combo_aligntype_ = new wxChoice(this, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(offtypes));
 	opt_set_         = new wxRadioButton(this, -1, wxS("Set Offsets"));
-	entry_xoff_      = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(width, -1));
-	entry_yoff_      = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxSize(width, -1));
+	entry_xoff_      = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, lh.size(40, -1));
+	entry_yoff_      = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, lh.size(40, -1));
 	cbox_relative_   = new wxCheckBox(this, wxID_ANY, wxS("Relative"));
 
 	// Setup controls
@@ -79,8 +80,8 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 	// Setup layout
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
-	auto* gbsizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	sizer->Add(gbsizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	auto* gbsizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	sizer->Add(gbsizer, lh.sfWithLargeBorder(1).Expand());
 	gbsizer->Add(opt_auto_, { 0, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
 	gbsizer->Add(combo_aligntype_, { 0, 1 }, { 1, 3 }, wxEXPAND);
 	gbsizer->Add(opt_set_, { 1, 0 }, { 1, 1 }, wxALIGN_CENTER_VERTICAL);
@@ -90,7 +91,8 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 
 	// Add default dialog buttons
 	sizer->Add(
-		wxutil::createDialogButtonBox(this, "OK", "Cancel"), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+		wxutil::createDialogButtonBox(this, "OK", "Cancel"),
+		lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 
 	// Bind events
@@ -99,7 +101,7 @@ ModifyOffsetsDialog::ModifyOffsetsDialog() :
 
 
 	// Apply layout and size
-	wxWindowBase::Layout();
+	wxTopLevelWindowBase::Layout();
 	SetInitialSize(wxDefaultSize);
 }
 
@@ -284,8 +286,8 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 		Vec2i offsets = calculateOffsets(header.left, header.top, header.width, header.height);
 
 		// Apply new offsets
-		header.left = wxINT16_SWAP_ON_BE((int16_t)offsets.x);
-		header.top  = wxINT16_SWAP_ON_BE((int16_t)offsets.y);
+		header.left = wxINT16_SWAP_ON_BE(static_cast<int16_t>(offsets.x));
+		header.top  = wxINT16_SWAP_ON_BE(static_cast<int16_t>(offsets.y));
 
 		// Write new header to entry
 		entry.seek(0, SEEK_SET);
@@ -304,8 +306,8 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 		Vec2i offsets = calculateOffsets(header.left, header.top, header.width, header.height);
 
 		// Apply new offsets
-		header.left = (int8_t)offsets.x;
-		header.top  = (int8_t)offsets.y;
+		header.left = static_cast<int8_t>(offsets.x);
+		header.top  = static_cast<int8_t>(offsets.y);
 
 		// Write new header to entry
 		entry.seek(0, SEEK_SET);
@@ -327,12 +329,9 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 		Vec2i offsets = calculateOffsets(xoff, yoff, size.x, size.y);
 
 		// Write offsets to PNG data
-		if (gfx::pngSetgrAb(entry.data(), offsets.x, offsets.y))
-		{
-			// Data changed, update entry state
-			entry.setState(ArchiveEntry::State::Modified);
-			entry.updateSize();
-		}
+		MemChunk data(entry.data());
+		if (gfx::pngSetgrAb(data, offsets.x, offsets.y))
+			entry.importMemChunk(data);
 	}
 	else
 		return false;
@@ -347,6 +346,8 @@ bool ModifyOffsetsDialog::apply(ArchiveEntry& entry) const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the 'Set Offsets' radio button is selected

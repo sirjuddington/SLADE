@@ -1,0 +1,24 @@
+{
+  "groups": [
+    {
+      "name": "Special Effects",
+      "defaults": {
+        "colour": "rgb(120, 120, 200)"
+      },
+      "things": [
+        {
+          "type": 5001,
+          "name": "Point Pusher",
+          "icon": "pusher",
+          "zeth": 7
+        },
+        {
+          "type": 5002,
+          "name": "Point Puller",
+          "icon": "puller",
+          "zeth": 8
+        }
+      ]
+    }
+  ]
+}

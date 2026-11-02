@@ -1,0 +1,737 @@
+{
+  "groups": [
+    {
+      "name": "PolyObjects",
+      "defaults": {
+        "icon": "spot",
+        "shrink": true
+      },
+      "things": [
+        { "type": 9300, "name": "PolyObject Anchor" },
+        { "type": 9301, "name": "PolyObject Start Spot (Harmless)" },
+        { "type": 9302, "name": "PolyObject Start Spot (Crushing)" },
+        { "type": 9303, "name": "PolyObject Start Spot (Harmful)" }
+      ]
+    },
+    {
+      "name": "Cameras",
+      "defaults": {
+        "icon": "camera",
+        "shrink": true
+      },
+      "things": [
+        { "type": 5003, "name": "Demo Camera Spot" },
+        { "type": 5006, "name": "Skybox Camera" }
+      ]
+    },
+    {
+      "name": "Monsters",
+      "defaults": {
+        "colour": "rgb(200, 0, 0)"
+      },
+      "things": [
+        {
+          "type": 889,
+          "name": "Nightmare Spectre",
+          "radius": 30,
+          "height": 56,
+          "sprite": "SARGC?",
+          "translation": [
+            "16:47=%[0.00,0.00,0.00]:[0.00,0.50,0.00]",
+            "160:167=%[0.00,0.00,0.00]:[0.00,0.00,1.01]",
+            "224:224=240:240",
+            "80:111=8:5",
+            "208:223=247:240",
+            "48:79=2:0",
+            "144:151=247:240",
+            "168:191=207:192"
+          ]
+        },
+        {
+          "type": 890,
+          "name": "PSX Spectre",
+          "radius": 30,
+          "height": 56,
+          "sprite": "SARGD?",
+          "translation": [
+            "16:47=31:16",
+            "80:111=80:95",
+            "48:79=48:63"
+          ]
+        },
+        {
+          "type": 9037,
+          "name": "Beta Lost Soul",
+          "radius": 16,
+          "sprite": "EEBSA?"
+        }
+      ]
+    },
+    {
+      "name": "Monsters/Doom Copies",
+      "things": [
+        { "type": 6304, "name": "Former Human", "radius": 20, "sprite": "POSSA?" },
+        { "type": 6009, "name": "Former Human Sergeant", "radius": 20, "sprite": "SPOSA?" },
+        { "type": 6301, "name": "Imp", "radius": 20, "sprite": "TROOA?" },
+        { "type": 6302, "name": "Demon", "radius": 30, "sprite": "SARGA?" },
+        { "type": 6058, "name": "Spectre", "radius": 30, "sprite": "SARGB?", "translation": ["0:255=%[0.22,0.22,0.22]:[0.00,0.00,0.00]"] },
+        { "type": 6306, "name": "Lost Soul", "radius": 16, "sprite": "SKULA?" },
+        { "type": 6305, "name": "Cacodemon", "radius": 32, "sprite": "HEADA?" },
+        { "type": 6303, "name": "Baron Of Hell", "radius": 24, "sprite": "BOSSA?" },
+        { "type": 6016, "name": "CyberDemon", "radius": 40, "sprite": "CYBRA?" },
+        { "type": 6007, "name": "Spider Mastermind", "radius": 128, "sprite": "SPIDA?" },
+        { "type": 6065, "name": "Chaingunner", "radius": 20, "sprite": "CPOSA?" },
+        { "type": 6069, "name": "Hell Knight", "radius": 24, "sprite": "BOS2A?" },
+        { "type": 6068, "name": "Arachnotron", "radius": 64, "sprite": "BSPIA?" },
+        { "type": 6071, "name": "Pain Elemental", "radius": 32, "sprite": "PAINA?" },
+        { "type": 6066, "name": "Revenant", "radius": 20, "sprite": "SKELB?" },
+        { "type": 6067, "name": "Mancubus", "radius": 48, "sprite": "FATTC?" },
+        { "type": 6064, "name": "Arch-Vile", "radius": 20, "sprite": "VILEB?" },
+        { "type": 6088, "name": "Boss Brain", "radius": 20, "sprite": "BBRNA?" },
+        { "type": 6089, "name": "Boss Shooter", "radius": 20, "sprite": "BOSFC?" },
+        { "type": 6087, "name": "Boss Spawn Spot", "radius": 20, "colour": "rgb(255, 255, 0)", "sprite": "BOSFB?" },
+        { "type": 6072, "name": "Hanging Keen", "colour": "rgb(200, 200, 200)", "radius": 16, "sprite": "KEENA?", "angle": false },
+        { "type": 6084, "name": "Wolfenstein 3D SS", "radius": 20, "sprite": "SSWVA?" }
+      ]
+    },
+    {
+      "name": "Health And Armour",
+      "defaults": {
+        "angle": false,
+        "colour": "rgb(100, 100, 200)"
+      },
+      "things": [
+        {
+          "type": 6211,
+          "name": "Stimpack",
+          "radius": 12,
+          "sprite": "STIMA?",
+          "icon": "health"
+        },
+        {
+          "type": 6212,
+          "name": "Medikit",
+          "radius": 12,
+          "sprite": "MEDIA?",
+          "icon": "health"
+        },
+        {
+          "type": 6214,
+          "name": "Health Potion",
+          "radius": 10,
+          "colour": "rgb(0, 0, 200)",
+          "sprite": "BON1A?",
+          "icon": "health"
+        },
+        {
+          "type": 6215,
+          "name": "Armour Helmet",
+          "radius": 10,
+          "colour": "rgb(0, 0, 200)",
+          "sprite": "BON2A?",
+          "icon": "armour"
+        },
+        {
+          "type": 6218,
+          "name": "Green Armour",
+          "radius": 14,
+          "sprite": "ARM1A?",
+          "icon": "armour"
+        },
+        {
+          "type": 6219,
+          "name": "Blue Armour",
+          "size": 14,
+          "sprite": "ARM2A?",
+          "icon": "armour"
+        }
+      ]
+    },
+    {
+      "name": "Weapons",
+      "defaults": {
+        "colour": "rgb(220, 180, 100)",
+        "radius": 20,
+        "angle": false,
+        "icon": "weapon"
+      },
+      "things": [
+        { "type": 6205, "name": "Chainsaw", "sprite": "CSAWA?" },
+        { "type": 6201, "name": "Shotgun", "sprite": "SHOTA?" },
+        { "type": 6202, "name": "Chaingun", "sprite": "MGUNA?" },
+        { "type": 6203, "name": "Rocket Launcher", "sprite": "LAUNA?" },
+        { "type": 6204, "name": "Plasma Gun", "sprite": "PLASA?" },
+        { "type": 6206, "name": "BFG9000", "sprite": "BFUGA?" },
+        { "type": 6082, "name": "Super Shotgun", "sprite": "SGN2A?" }
+      ]
+    },
+    {
+      "name": "Ammunition",
+      "defaults": {
+        "colour": "rgb(180, 150, 50)",
+        "angle": false,
+        "radius": 16,
+        "icon": "ammo"
+      },
+      "things": [
+        { "type": 6207, "name": "Ammo Clip", "radius": 10, "sprite": "CLIPA?" },
+        { "type": 6248, "name": "Box Of Ammo", "sprite": "AMMOA?" },
+        { "type": 6208, "name": "Shotgun Shells", "radius": 10, "sprite": "SHELA?" },
+        { "type": 6249, "name": "Box Of Shells", "sprite": "SBOXA?" },
+        { "type": 6210, "name": "Rocket", "radius": 10, "sprite": "ROCKA?" },
+        { "type": 6246, "name": "Box Of Rockets", "sprite": "BROKA?" },
+        { "type": 6247, "name": "Energy Cell", "radius": 10, "sprite": "CELLA?" },
+        { "type": 6017, "name": "Energy Pack", "sprite": "CELPA?" },
+        { "type": 6008, "name": "Backpack", "sprite": "BPAKA?" }
+      ]
+    },
+    {
+      "name": "Powerups",
+      "defaults": {
+        "colour": "rgb(220, 100, 220)",
+        "radius": 16,
+        "angle": false,
+        "icon": "powerup"
+      },
+      "things": [
+        { "type": 6224, "name": "Partial Invisibility Sphere", "sprite": "PINSB?" },
+        { "type": 6213, "name": "Soul Sphere", "sprite": "SOULA?" },
+        { "type": 6222, "name": "Invulnerability Sphere", "sprite": "PINVA?" },
+        { "type": 6225, "name": "Radiation Shielding Suit", "sprite": "SUITA?" },
+        { "type": 6223, "name": "Berserk Pack", "sprite": "PSTRA?" },
+        { "type": 6245, "name": "Lite-Amp Goggles", "sprite": "PVISA?" },
+        { "type": 6226, "name": "Computer Area Map", "sprite": "PMAPA?" },
+        { "type": 6083, "name": "Megasphere", "sprite": "MEGAA?" }
+      ]
+    },
+    {
+      "name": "Keys",
+      "defaults": {
+        "radius": 12,
+        "angle": false,
+        "icon": "key"
+      },
+      "things": [
+        { "type": 6013, "name": "Red Keycard", "colour": "rgb(255, 0, 0)", "sprite": "RKEYA?" },
+        { "type": 6038, "name": "Red Skull Key", "colour": "rgb(255, 0, 0)", "sprite": "RSKUA?", "radius": 14 },
+        { "type": 6005, "name": "Blue Keycard", "colour": "rgb(0, 0, 255)", "sprite": "BKEYA?" },
+        { "type": 6040, "name": "Blue Skull Key", "colour": "rgb(0, 0, 255)", "sprite": "BSKUA?", "radius": 14 },
+        { "type": 6006, "name": "Yellow Keycard", "colour": "rgb(255, 255, 0)", "sprite": "YKEYA?" },
+        { "type": 6039, "name": "Yellow Skull Key", "colour": "rgb(255, 255, 0)", "sprite": "YSKUA?", "radius": 14 }
+      ]
+    },
+    {
+      "name": "Gore",
+      "defaults": {
+        "radius": 16,
+        "angle": false,
+        "decoration": true
+      },
+      "things": [
+        {
+          "type": 6015,
+          "name": "Dead Player",
+          "sprite": "PLAYN?"
+        },
+        {
+          "type": 6018,
+          "name": "Dead Former Human",
+          "sprite": "POSSL?"
+        },
+        {
+          "type": 6019,
+          "name": "Dead Former Human Sargeant",
+          "sprite": "SPOSL?"
+        },
+        {
+          "type": 6020,
+          "name": "Dead Imp",
+          "sprite": "TROOM?"
+        },
+        {
+          "type": 6021,
+          "name": "Dead Demon",
+          "sprite": "SARGN?"
+        },
+        {
+          "type": 6023,
+          "name": "Dead Lost Soul",
+          "sprite": "SKULK?"
+        },
+        {
+          "type": 6022,
+          "name": "Dead Cacodemon",
+          "sprite": "HEADL?"
+        }
+      ]
+    },
+    {
+      "name": "Hanging & Impaled Bodies",
+      "defaults": {
+        "colour": "rgb(120, 0, 0)",
+        "radius": 16,
+        "angle": false,
+        "hanging": true,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 6025, "name": "Impaled Body", "sprite": "POL6A?", "hanging": false },
+        { "type": 6026, "name": "Impaled Body (Twitching)", "sprite": "POL6B?", "hanging": false },
+        { "type": 6063, "name": "Hanging Swaying Body", "sprite": "GOR1A?", "solid": false },
+        { "type": 6049, "name": "Hanging Swaying Body (Blocking)", "sprite": "GOR1B?" },
+        { "type": 6061, "name": "Hanging One-legged Body", "sprite": "GOR3A?", "solid": false },
+        { "type": 6051, "name": "Hanging One-legged Body (Blocking)", "sprite": "GOR3A?" },
+        { "type": 6062, "name": "Hanging Leg", "sprite": "GOR5A?", "solid": false },
+        { "type": 6053, "name": "Hanging Leg (Blocking)", "sprite": "GOR5A?" },
+        { "type": 6059, "name": "Hanging Body Arms Out", "sprite": "GOR2A?", "solid": false },
+        { "type": 6050, "name": "Hanging Body Arms Out (Blocking)", "sprite": "GOR2A?" },
+        { "type": 6060, "name": "Hanging Legs", "sprite": "GOR4A?", "solid": false },
+        { "type": 6052, "name": "Hanging Legs (Blocking)", "sprite": "GOR4A?" },
+        { "type": 6073, "name": "Hanging Body, Guts Removed", "sprite": "HDB1A?" },
+        { "type": 6074, "name": "Hanging Body, Guts & Brain Removed", "sprite": "HDB2A?" },
+        { "type": 6075, "name": "Hanging Torso, Looking Down", "sprite": "HDB3A?" },
+        { "type": 6076, "name": "Hanging Torso, Open Skull", "sprite": "HDB4A?" },
+        { "type": 6077, "name": "Hanging Torso, Looking Up", "sprite": "HDB5A?" },
+        { "type": 6078, "name": "Hanging Torso, Brain Removed", "sprite": "HDB6A?" }
+      ]
+    },
+    {
+      "name": "Blood & Stuff",
+      "defaults": {
+        "colour": "rgb(160, 0, 0)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true
+      },
+      "things": [
+        { "type": 891, "name": "Bloody Chain", "sprite": "BLCHA?", "hanging": true },
+        { "type": 6024, "name": "Pool of Blood", "sprite": "POL5A?" },
+        { "type": 6010, "name": "Guts and Bones", "sprite": "PLAYW?" },
+        { "type": 6012, "name": "Guts And Bones 2", "sprite": "PLAYW?" },
+        { "type": 6027, "name": "Skull on Pole", "sprite": "POL4A?" },
+        { "type": 6028, "name": "Heads on Pole", "sprite": "POL2A?" },
+        { "type": 6042, "name": "Flaming Skulls", "sprite": "FSKUA?" },
+        { "type": 6029, "name": "Pile of Skulls", "sprite": "POL3A?" },
+        { "type": 6079, "name": "Pool Of Blood 2", "sprite": "POB1A?" },
+        { "type": 6080, "name": "Pool Of Blood 3", "sprite": "POB2A?" },
+        { "type": 6081, "name": "Pool Of Brains", "sprite": "BRS1A?" }
+      ]
+    },
+    {
+      "name": "Lighting",
+      "defaults": {
+        "colour": "rgb(220, 220, 200)",
+        "radius": 16,
+        "angle": false,
+        "icon": "light",
+        "fullbright": true,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 6034, "name": "Candle", "sprite": "CANDA?" },
+        { "type": 6035, "name": "Candelabra", "sprite": "CBRAA?" },
+        { "type": 6228, "name": "Yellow Lamp", "sprite": "COLUA?" },
+        { "type": 6057, "name": "Short Red Torch", "sprite": "SMRTA?" },
+        { "type": 6046, "name": "Tall Red Torch", "sprite": "TREDA?" },
+        { "type": 6055, "name": "Short Blue Torch", "sprite": "SMBTA?" },
+        { "type": 6044, "name": "Tall Blue Torch", "sprite": "TBLUA?" },
+        { "type": 6056, "name": "Short Green Torch", "sprite": "SMGTA?" },
+        { "type": 6045, "name": "Tall Green Torch", "sprite": "TGRNA?" },
+        { "type": 6085, "name": "Tall Techno Lamp", "sprite": "TLMPA?" },
+        { "type": 6086, "name": "Short Techno Lamp", "sprite": "TLP2A?" },
+        { "type": 6070, "name": "Burning Barrel", "sprite": "FCANA?" }
+      ]
+    },
+    {
+      "name": "Decorations",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 6048, "name": "Tech Column", "sprite": "ELECA?" },
+        { "type": 6235, "name": "Barrel", "sprite": "BAR1A?" }
+      ]
+    },
+    {
+      "name": "Hell",
+      "defaults": {},
+      "things": [
+        { "type": 6033, "name": "Short Red Pillar", "sprite": "COL4A?" },
+        { "type": 6032, "name": "Tall Red Pillar", "sprite": "COL3A?" },
+        { "type": 6031, "name": "Short Green Pillar", "sprite": "COL2A?" },
+        { "type": 6030, "name": "Tall Green Pillar", "sprite": "COL1A?" },
+        { "type": 6037, "name": "Red Pillar + Skull", "sprite": "COL6A?" },
+        { "type": 6036, "name": "Pillar + Pumping Heart", "sprite": "COL5A?" },
+        { "type": 6041, "name": "Evil Eye", "sprite": "CEYEA?", "fullbright": true }
+      ]
+    },
+    {
+      "name": "Plants",
+      "defaults": {},
+      "things": [
+        { "type": 6054, "name": "Large Brown Tree", "sprite": "TRE2A?" },
+        { "type": 6043, "name": "Short Grey Tree", "sprite": "TRE1A?" },
+        { "type": 6047, "name": "Tree Stump", "sprite": "SMITA?" }
+      ]
+    },
+    {
+      "name": "Map Spots",
+      "defaults": {
+        "icon": "spot",
+        "shrink": true
+      },
+      "things": [
+        { "type": 9001, "name": "Map Spot" },
+        { "type": 9013, "name": "Map Spot With Gravity" }
+      ]
+    },
+    {
+      "name": "Miscellaneous",
+      "defaults": {
+        "icon": "spot",
+        "shrink": true
+      },
+      "things": [
+        { "type": 5004, "name": "ExtraData Control" },
+        { "type": 5005, "name": "Error Marker", "sprite": "UNKNA?" },
+        { "type": 5008, "name": "Aardgpl", "sprite": "EERVA?" }
+      ]
+    },
+    {
+      "name": "Particle Effects",
+      "defaults": {
+        "angle": false,
+        "icon": "particle",
+        "shrink": true
+      },
+      "things": [
+        {
+          "type": 5007,
+          "name": "Particle Drip",
+          "arg1": "Color",
+          "arg2": "Radius",
+          "arg3": "Frequency",
+          "arg4": "Splash",
+          "arg5": "Bright"
+        },
+        { "type": 9027, "name": "Red Particle Fountain", "colour": "rgb(255, 100, 100)" },
+        { "type": 9028, "name": "Green Particle Fountain", "colour": "rgb(100, 255, 100)" },
+        { "type": 9029, "name": "Blue Particle Fountain", "colour": "rgb(100, 100, 255)" },
+        { "type": 9030, "name": "Yellow Particle Fountain", "colour": "rgb(255, 255, 100)" },
+        { "type": 9031, "name": "Purple Particle Fountain", "colour": "rgb(255, 100, 255)" },
+        { "type": 9032, "name": "Black Particle Fountain", "colour": "rgb(100, 100, 100)" },
+        { "type": 9033, "name": "White Particle Fountain", "colour": "rgb(255, 255, 255)" }
+      ]
+    },
+    {
+      "name": "Sounds",
+      "defaults": {
+        "colour": "rgb(200, 0, 200)",
+        "angle": false,
+        "icon": "sound",
+        "shrink": true
+      },
+      "things": [
+        { "type": 1200, "name": "Environment Sequence (0)" },
+        { "type": 1201, "name": "Environment Sequence (1)" },
+        { "type": 1202, "name": "Environment Sequence (2)" },
+        { "type": 1203, "name": "Environment Sequence (3)" },
+        { "type": 1204, "name": "Environment Sequence (4)" },
+        { "type": 1205, "name": "Environment Sequence (5)" },
+        { "type": 1206, "name": "Environment Sequence (6)" },
+        { "type": 1207, "name": "Environment Sequence (7)" },
+        { "type": 1208, "name": "Environment Sequence (8)" },
+        { "type": 1209, "name": "Environment Sequence (9)" },
+        { "type": 1210, "name": "Environment Sequence (10)" },
+        { "type": 1211, "name": "Environment Sequence (11)" },
+        { "type": 1212, "name": "Environment Sequence (12)" },
+        { "type": 1213, "name": "Environment Sequence (13)" },
+        { "type": 1214, "name": "Environment Sequence (14)" },
+        { "type": 1215, "name": "Environment Sequence (15)" },
+        { "type": 1216, "name": "Environment Sequence (16)" },
+        { "type": 1217, "name": "Environment Sequence (17)" },
+        { "type": 1218, "name": "Environment Sequence (18)" },
+        { "type": 1219, "name": "Environment Sequence (19)" },
+        { "type": 1220, "name": "Environment Sequence (20)" },
+        { "type": 1221, "name": "Environment Sequence (21)" },
+        { "type": 1222, "name": "Environment Sequence (22)" },
+        { "type": 1223, "name": "Environment Sequence (23)" },
+        { "type": 1224, "name": "Environment Sequence (24)" },
+        { "type": 1225, "name": "Environment Sequence (25)" },
+        { "type": 1226, "name": "Environment Sequence (26)" },
+        { "type": 1227, "name": "Environment Sequence (27)" },
+        { "type": 1228, "name": "Environment Sequence (28)" },
+        { "type": 1229, "name": "Environment Sequence (29)" },
+        { "type": 1230, "name": "Environment Sequence (30)" },
+        { "type": 1231, "name": "Environment Sequence (31)" },
+        { "type": 1232, "name": "Environment Sequence (32)" },
+        { "type": 1233, "name": "Environment Sequence (33)" },
+        { "type": 1234, "name": "Environment Sequence (34)" },
+        { "type": 1235, "name": "Environment Sequence (35)" },
+        { "type": 1236, "name": "Environment Sequence (36)" },
+        { "type": 1237, "name": "Environment Sequence (37)" },
+        { "type": 1238, "name": "Environment Sequence (38)" },
+        { "type": 1239, "name": "Environment Sequence (39)" },
+        { "type": 1240, "name": "Environment Sequence (40)" },
+        { "type": 1241, "name": "Environment Sequence (41)" },
+        { "type": 1242, "name": "Environment Sequence (42)" },
+        { "type": 1243, "name": "Environment Sequence (43)" },
+        { "type": 1244, "name": "Environment Sequence (44)" },
+        { "type": 1245, "name": "Environment Sequence (45)" },
+        { "type": 1246, "name": "Environment Sequence (46)" },
+        { "type": 1247, "name": "Environment Sequence (47)" },
+        { "type": 1248, "name": "Environment Sequence (48)" },
+        { "type": 1249, "name": "Environment Sequence (49)" },
+        { "type": 1250, "name": "Environment Sequence (50)" },
+        { "type": 1251, "name": "Environment Sequence (51)" },
+        { "type": 1252, "name": "Environment Sequence (52)" },
+        { "type": 1253, "name": "Environment Sequence (53)" },
+        { "type": 1254, "name": "Environment Sequence (54)" },
+        { "type": 1255, "name": "Environment Sequence (55)" },
+        { "type": 1256, "name": "Environment Sequence (56)" },
+        { "type": 1257, "name": "Environment Sequence (57)" },
+        { "type": 1258, "name": "Environment Sequence (58)" },
+        { "type": 1259, "name": "Environment Sequence (59)" },
+        { "type": 1260, "name": "Environment Sequence (60)" },
+        { "type": 1261, "name": "Environment Sequence (61)" },
+        { "type": 1262, "name": "Environment Sequence (62)" },
+        { "type": 1263, "name": "Environment Sequence (63)" },
+        { "type": 1264, "name": "Environment Sequence (64)" },
+        { "type": 1265, "name": "Environment Sequence (65)" },
+        { "type": 1266, "name": "Environment Sequence (66)" },
+        { "type": 1267, "name": "Environment Sequence (67)" },
+        { "type": 1268, "name": "Environment Sequence (68)" },
+        { "type": 1269, "name": "Environment Sequence (69)" },
+        { "type": 1270, "name": "Environment Sequence (70)" },
+        { "type": 1271, "name": "Environment Sequence (71)" },
+        { "type": 1272, "name": "Environment Sequence (72)" },
+        { "type": 1273, "name": "Environment Sequence (73)" },
+        { "type": 1274, "name": "Environment Sequence (74)" },
+        { "type": 1275, "name": "Environment Sequence (75)" },
+        { "type": 1276, "name": "Environment Sequence (76)" },
+        { "type": 1277, "name": "Environment Sequence (77)" },
+        { "type": 1278, "name": "Environment Sequence (78)" },
+        { "type": 1279, "name": "Environment Sequence (79)" },
+        { "type": 1280, "name": "Environment Sequence (80)" },
+        { "type": 1281, "name": "Environment Sequence (81)" },
+        { "type": 1282, "name": "Environment Sequence (82)" },
+        { "type": 1283, "name": "Environment Sequence (83)" },
+        { "type": 1284, "name": "Environment Sequence (84)" },
+        { "type": 1285, "name": "Environment Sequence (85)" },
+        { "type": 1286, "name": "Environment Sequence (86)" },
+        { "type": 1287, "name": "Environment Sequence (87)" },
+        { "type": 1288, "name": "Environment Sequence (88)" },
+        { "type": 1289, "name": "Environment Sequence (89)" },
+        { "type": 1290, "name": "Environment Sequence (90)" },
+        { "type": 1291, "name": "Environment Sequence (91)" },
+        { "type": 1292, "name": "Environment Sequence (92)" },
+        { "type": 1293, "name": "Environment Sequence (93)" },
+        { "type": 1294, "name": "Environment Sequence (94)" },
+        { "type": 1295, "name": "Environment Sequence (95)" },
+        { "type": 1296, "name": "Environment Sequence (96)" },
+        { "type": 1297, "name": "Environment Sequence (97)" },
+        { "type": 1298, "name": "Environment Sequence (98)" },
+        { "type": 1299, "name": "Environment Sequence (99)" },
+        {
+          "type": 1300,
+          "name": "Environment Sequence (Arg)",
+          "arg1": "Index",
+          "arg2": "Index of sequence in ESNDSEQ"
+        }
+      ]
+    },
+    {
+      "name": "Sound Sequence Override",
+      "things": [
+        { "type": 1400, "name": "Sector Sequence (0)" },
+        { "type": 1401, "name": "Sector Sequence (1)" },
+        { "type": 1402, "name": "Sector Sequence (2)" },
+        { "type": 1403, "name": "Sector Sequence (3)" },
+        { "type": 1404, "name": "Sector Sequence (4)" },
+        { "type": 1405, "name": "Sector Sequence (5)" },
+        { "type": 1406, "name": "Sector Sequence (6)" },
+        { "type": 1407, "name": "Sector Sequence (7)" },
+        { "type": 1408, "name": "Sector Sequence (8)" },
+        { "type": 1409, "name": "Sector Sequence (9)" },
+        { "type": 1410, "name": "Sector Sequence (10)" },
+        { "type": 1411, "name": "Sector Sequence (11)" },
+        { "type": 1412, "name": "Sector Sequence (12)" },
+        { "type": 1413, "name": "Sector Sequence (13)" },
+        { "type": 1414, "name": "Sector Sequence (14)" },
+        { "type": 1415, "name": "Sector Sequence (15)" },
+        { "type": 1416, "name": "Sector Sequence (16)" },
+        { "type": 1417, "name": "Sector Sequence (17)" },
+        { "type": 1418, "name": "Sector Sequence (18)" },
+        { "type": 1419, "name": "Sector Sequence (19)" },
+        { "type": 1420, "name": "Sector Sequence (20)" },
+        { "type": 1421, "name": "Sector Sequence (21)" },
+        { "type": 1422, "name": "Sector Sequence (22)" },
+        { "type": 1423, "name": "Sector Sequence (23)" },
+        { "type": 1424, "name": "Sector Sequence (24)" },
+        { "type": 1425, "name": "Sector Sequence (25)" },
+        { "type": 1426, "name": "Sector Sequence (26)" },
+        { "type": 1427, "name": "Sector Sequence (27)" },
+        { "type": 1428, "name": "Sector Sequence (28)" },
+        { "type": 1429, "name": "Sector Sequence (29)" },
+        { "type": 1430, "name": "Sector Sequence (30)" },
+        { "type": 1431, "name": "Sector Sequence (31)" },
+        { "type": 1432, "name": "Sector Sequence (32)" },
+        { "type": 1433, "name": "Sector Sequence (33)" },
+        { "type": 1434, "name": "Sector Sequence (34)" },
+        { "type": 1435, "name": "Sector Sequence (35)" },
+        { "type": 1436, "name": "Sector Sequence (36)" },
+        { "type": 1437, "name": "Sector Sequence (37)" },
+        { "type": 1438, "name": "Sector Sequence (38)" },
+        { "type": 1439, "name": "Sector Sequence (39)" },
+        { "type": 1440, "name": "Sector Sequence (40)" },
+        { "type": 1441, "name": "Sector Sequence (41)" },
+        { "type": 1442, "name": "Sector Sequence (42)" },
+        { "type": 1443, "name": "Sector Sequence (43)" },
+        { "type": 1444, "name": "Sector Sequence (44)" },
+        { "type": 1445, "name": "Sector Sequence (45)" },
+        { "type": 1446, "name": "Sector Sequence (46)" },
+        { "type": 1447, "name": "Sector Sequence (47)" },
+        { "type": 1448, "name": "Sector Sequence (48)" },
+        { "type": 1449, "name": "Sector Sequence (49)" },
+        { "type": 1450, "name": "Sector Sequence (50)" },
+        { "type": 1451, "name": "Sector Sequence (51)" },
+        { "type": 1452, "name": "Sector Sequence (52)" },
+        { "type": 1453, "name": "Sector Sequence (53)" },
+        { "type": 1454, "name": "Sector Sequence (54)" },
+        { "type": 1455, "name": "Sector Sequence (55)" },
+        { "type": 1456, "name": "Sector Sequence (56)" },
+        { "type": 1457, "name": "Sector Sequence (57)" },
+        { "type": 1458, "name": "Sector Sequence (58)" },
+        { "type": 1459, "name": "Sector Sequence (59)" },
+        { "type": 1460, "name": "Sector Sequence (60)" },
+        { "type": 1461, "name": "Sector Sequence (61)" },
+        { "type": 1462, "name": "Sector Sequence (62)" },
+        { "type": 1463, "name": "Sector Sequence (63)" },
+        { "type": 1464, "name": "Sector Sequence (64)" },
+        { "type": 1465, "name": "Sector Sequence (65)" },
+        { "type": 1466, "name": "Sector Sequence (66)" },
+        { "type": 1467, "name": "Sector Sequence (67)" },
+        { "type": 1468, "name": "Sector Sequence (68)" },
+        { "type": 1469, "name": "Sector Sequence (69)" },
+        { "type": 1470, "name": "Sector Sequence (70)" },
+        { "type": 1471, "name": "Sector Sequence (71)" },
+        { "type": 1472, "name": "Sector Sequence (72)" },
+        { "type": 1473, "name": "Sector Sequence (73)" },
+        { "type": 1474, "name": "Sector Sequence (74)" },
+        { "type": 1475, "name": "Sector Sequence (75)" },
+        { "type": 1476, "name": "Sector Sequence (76)" },
+        { "type": 1477, "name": "Sector Sequence (77)" },
+        { "type": 1478, "name": "Sector Sequence (78)" },
+        { "type": 1479, "name": "Sector Sequence (79)" },
+        { "type": 1480, "name": "Sector Sequence (80)" },
+        { "type": 1481, "name": "Sector Sequence (81)" },
+        { "type": 1482, "name": "Sector Sequence (82)" },
+        { "type": 1483, "name": "Sector Sequence (83)" },
+        { "type": 1484, "name": "Sector Sequence (84)" },
+        { "type": 1485, "name": "Sector Sequence (85)" },
+        { "type": 1486, "name": "Sector Sequence (86)" },
+        { "type": 1487, "name": "Sector Sequence (87)" },
+        { "type": 1488, "name": "Sector Sequence (88)" },
+        { "type": 1489, "name": "Sector Sequence (89)" },
+        { "type": 1490, "name": "Sector Sequence (90)" },
+        { "type": 1491, "name": "Sector Sequence (91)" },
+        { "type": 1492, "name": "Sector Sequence (92)" },
+        { "type": 1493, "name": "Sector Sequence (93)" },
+        { "type": 1494, "name": "Sector Sequence (94)" },
+        { "type": 1495, "name": "Sector Sequence (95)" },
+        { "type": 1496, "name": "Sector Sequence (96)" },
+        { "type": 1497, "name": "Sector Sequence (97)" },
+        { "type": 1498, "name": "Sector Sequence (98)" },
+        { "type": 1499, "name": "Sector Sequence (99)" },
+        {
+          "type": 1500,
+          "name": "Sector Sequence (Arg)",
+          "arg1": "Index",
+          "arg2": "Index of sequence in ESNDSEQ"
+        }
+      ]
+    },
+    {
+      "name": "Ambient Sounds",
+      "things": [
+        { "type": 14001, "name": "Ambient Sound #1" },
+        { "type": 14002, "name": "Ambient Sound #2" },
+        { "type": 14003, "name": "Ambient Sound #3" },
+        { "type": 14004, "name": "Ambient Sound #4" },
+        { "type": 14005, "name": "Ambient Sound #5" },
+        { "type": 14006, "name": "Ambient Sound #6" },
+        { "type": 14007, "name": "Ambient Sound #7" },
+        { "type": 14008, "name": "Ambient Sound #8" },
+        { "type": 14009, "name": "Ambient Sound #9" },
+        { "type": 14010, "name": "Ambient Sound #10" },
+        { "type": 14011, "name": "Ambient Sound #11" },
+        { "type": 14012, "name": "Ambient Sound #12" },
+        { "type": 14013, "name": "Ambient Sound #13" },
+        { "type": 14014, "name": "Ambient Sound #14" },
+        { "type": 14015, "name": "Ambient Sound #15" },
+        { "type": 14016, "name": "Ambient Sound #16" },
+        { "type": 14017, "name": "Ambient Sound #17" },
+        { "type": 14018, "name": "Ambient Sound #18" },
+        { "type": 14019, "name": "Ambient Sound #19" },
+        { "type": 14020, "name": "Ambient Sound #20" },
+        { "type": 14021, "name": "Ambient Sound #21" },
+        { "type": 14022, "name": "Ambient Sound #22" },
+        { "type": 14023, "name": "Ambient Sound #23" },
+        { "type": 14024, "name": "Ambient Sound #24" },
+        { "type": 14025, "name": "Ambient Sound #25" },
+        { "type": 14026, "name": "Ambient Sound #26" },
+        { "type": 14027, "name": "Ambient Sound #27" },
+        { "type": 14028, "name": "Ambient Sound #28" },
+        { "type": 14029, "name": "Ambient Sound #29" },
+        { "type": 14020, "name": "Ambient Sound #30" },
+        { "type": 14031, "name": "Ambient Sound #31" },
+        { "type": 14032, "name": "Ambient Sound #32" },
+        { "type": 14033, "name": "Ambient Sound #33" },
+        { "type": 14034, "name": "Ambient Sound #34" },
+        { "type": 14035, "name": "Ambient Sound #35" },
+        { "type": 14036, "name": "Ambient Sound #36" },
+        { "type": 14037, "name": "Ambient Sound #37" },
+        { "type": 14038, "name": "Ambient Sound #38" },
+        { "type": 14039, "name": "Ambient Sound #39" },
+        { "type": 14040, "name": "Ambient Sound #40" },
+        { "type": 14041, "name": "Ambient Sound #41" },
+        { "type": 14042, "name": "Ambient Sound #42" },
+        { "type": 14043, "name": "Ambient Sound #43" },
+        { "type": 14044, "name": "Ambient Sound #44" },
+        { "type": 14045, "name": "Ambient Sound #45" },
+        { "type": 14046, "name": "Ambient Sound #46" },
+        { "type": 14047, "name": "Ambient Sound #47" },
+        { "type": 14048, "name": "Ambient Sound #48" },
+        { "type": 14049, "name": "Ambient Sound #49" },
+        { "type": 14050, "name": "Ambient Sound #50" },
+        { "type": 14051, "name": "Ambient Sound #51" },
+        { "type": 14052, "name": "Ambient Sound #52" },
+        { "type": 14053, "name": "Ambient Sound #53" },
+        { "type": 14054, "name": "Ambient Sound #54" },
+        { "type": 14055, "name": "Ambient Sound #55" },
+        { "type": 14056, "name": "Ambient Sound #56" },
+        { "type": 14057, "name": "Ambient Sound #57" },
+        { "type": 14058, "name": "Ambient Sound #58" },
+        { "type": 14059, "name": "Ambient Sound #59" },
+        { "type": 14060, "name": "Ambient Sound #60" },
+        { "type": 14061, "name": "Ambient Sound #61" },
+        { "type": 14062, "name": "Ambient Sound #62" },
+        { "type": 14063, "name": "Ambient Sound #63" },
+        { "type": 14064, "name": "Ambient Sound #64" },
+        { "type": 14065, "name": "Ambient Sound" }
+      ]
+    },
+    {
+      "name": "Sound Environment",
+      "things": [
+        { "type": 9048, "name": "Sound Environment" }
+      ]
+    }
+  ]
+}

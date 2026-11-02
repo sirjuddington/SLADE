@@ -33,8 +33,12 @@
 #include "Main.h"
 #include "ScriptManager.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "Lua.h"
+#include "General/SAction.h"
+#include "Scripting.h"
 #include "UI/ScriptManagerWindow.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
@@ -72,7 +76,7 @@ namespace slade::scriptmanager
 // Adds a new editor script of [type], created from [entry]. [cut_path] will be
 // removed from the start of the script's path property
 // -----------------------------------------------------------------------------
-Script* addEditorScriptFromEntry(shared_ptr<ArchiveEntry>& entry, ScriptType type, string_view cut_path)
+Script* addEditorScriptFromEntry(const shared_ptr<ArchiveEntry>& entry, ScriptType type, string_view cut_path)
 {
 	auto s          = std::make_unique<Script>();
 	s->type         = type;
@@ -83,7 +87,7 @@ Script* addEditorScriptFromEntry(shared_ptr<ArchiveEntry>& entry, ScriptType typ
 
 	auto& list = scripts_editor[type];
 	list.push_back(std::move(s));
-	list.back()->text = string((const char*)entry->rawData(), entry->size());
+	list.back()->text = string(reinterpret_cast<const char*>(entry->rawData()), entry->size());
 
 	return list.back().get();
 }
@@ -176,7 +180,7 @@ void loadEditorScripts(ScriptType type, string_view dir)
 // -----------------------------------------------------------------------------
 // Exports all scripts in [list] to .lua files at [path]
 // -----------------------------------------------------------------------------
-void exportUserScripts(string_view path, ScriptList& list)
+void exportUserScripts(string_view path, const ScriptList& list)
 {
 	// Check dir exists
 	auto scripts_dir = app::path(path, app::Dir::User);
@@ -211,7 +215,7 @@ void readResourceEntryText(string& target, string_view res_path)
 {
 	auto entry = app::archiveManager().programResourceArchive()->entryAtPath(res_path);
 	if (entry)
-		target.assign((const char*)entry->rawData(), entry->size());
+		target.assign(reinterpret_cast<const char*>(entry->rawData()), entry->size());
 }
 
 // -----------------------------------------------------------------------------
@@ -301,7 +305,7 @@ bool scriptmanager::renameScript(Script* script, string_view new_name)
 // -----------------------------------------------------------------------------
 // Deletes [script]. Returns false if the script couldn't be deleted
 // -----------------------------------------------------------------------------
-bool scriptmanager::deleteScript(Script* script)
+bool scriptmanager::deleteScript(const Script* script)
 {
 	if (script->read_only || script->type == ScriptType::NonEditor)
 		return false;
@@ -363,10 +367,10 @@ void scriptmanager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, stri
 void scriptmanager::runArchiveScript(Archive* archive, int index, wxWindow* parent)
 {
 	if (parent)
-		lua::setCurrentWindow(parent);
+		scripting::setCurrentWindow(parent);
 
-	if (!lua::runArchiveScript(scripts_editor[ScriptType::Archive][index]->text, archive))
-		lua::showErrorDialog(parent);
+	if (!scripting::runArchiveScript(scripts_editor[ScriptType::Archive][index]->text, archive))
+		scripting::showErrorDialog(parent);
 }
 
 // -----------------------------------------------------------------------------
@@ -375,10 +379,10 @@ void scriptmanager::runArchiveScript(Archive* archive, int index, wxWindow* pare
 void scriptmanager::runEntryScript(vector<ArchiveEntry*> entries, int index, wxWindow* parent)
 {
 	if (parent)
-		lua::setCurrentWindow(parent);
+		scripting::setCurrentWindow(parent);
 
-	if (!lua::runEntryScript(scripts_editor[ScriptType::Entry][index]->text, entries))
-		lua::showErrorDialog(parent);
+	if (!scripting::runEntryScript(scripts_editor[ScriptType::Entry][index]->text, entries))
+		scripting::showErrorDialog(parent);
 }
 
 // -----------------------------------------------------------------------------
@@ -387,8 +391,8 @@ void scriptmanager::runEntryScript(vector<ArchiveEntry*> entries, int index, wxW
 void scriptmanager::runMapScript(SLADEMap* map, int index, wxWindow* parent)
 {
 	if (parent)
-		lua::setCurrentWindow(parent);
+		scripting::setCurrentWindow(parent);
 
-	if (!lua::runMapScript(scripts_editor[ScriptType::Map][index]->text, map))
-		lua::showErrorDialog(parent);
+	if (!scripting::runMapScript(scripts_editor[ScriptType::Map][index]->text, map))
+		scripting::showErrorDialog(parent);
 }

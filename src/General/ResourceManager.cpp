@@ -33,10 +33,13 @@
 #include "Main.h"
 #include "ResourceManager.h"
 #include "App.h"
+#include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Console.h"
 #include "Graphics/CTexture/CTexture.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "Utility/StringUtils.h"
 
@@ -207,7 +210,7 @@ ArchiveEntry* EntryResource::getEntry(const Archive* priority, string_view nspac
 // -----------------------------------------------------------------------------
 // Adds a texture to this resource
 // -----------------------------------------------------------------------------
-void TextureResource::add(CTexture* tex, Archive* parent)
+void TextureResource::add(CTexture* tex, const Archive* parent)
 {
 	// Check args
 	auto parent_shared = app::archiveManager().shareArchive(parent);
@@ -261,7 +264,7 @@ void ResourceManager::addArchive(Archive* archive)
 	archive->signals().entry_added.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, false, true); });
 	archive->signals().entry_removed.connect([this](Archive&, ArchiveDir&, ArchiveEntry& e)
 											 { updateEntry(e, true, false); });
-	archive->signals().entry_state_changed.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, true, true); });
+	archive->signals().entry_data_changed.connect([this](Archive&, ArchiveEntry& e) { updateEntry(e, true, true); });
 
 	// Update entries from the archive when renamed
 	archive->signals().entry_renamed.connect(
@@ -443,7 +446,7 @@ void ResourceManager::addEntry(shared_ptr<ArchiveEntry>& entry)
 		PatchTable ptable;
 		if (txentry == 1)
 		{
-			Archive::SearchOptions opt;
+			ArchiveSearchOptions opt;
 			opt.match_type = EntryType::fromId("pnames");
 			auto* pnames   = entry->parent()->findLast(opt);
 			ptable.loadPNAMES(pnames, entry->parent());
@@ -804,7 +807,6 @@ CONSOLE_COMMAND(list_res_patches, 0, false)
 	app::resources().listAllPatches();
 }
 
-#include "App.h"
 CONSOLE_COMMAND(test_res_speed, 0, false)
 {
 	vector<ArchiveEntry*> list;
@@ -831,5 +833,5 @@ CONSOLE_COMMAND(test_res_speed, 0, false)
 	}
 
 	float avg = static_cast<float>(times[0] + times[1] + times[2] + times[3] + times[4]) / 5.0f;
-	log::console(fmt::format("Test took {}ms avg", (int)avg));
+	log::console(fmt::format("Test took {}ms avg", static_cast<int>(avg)));
 }

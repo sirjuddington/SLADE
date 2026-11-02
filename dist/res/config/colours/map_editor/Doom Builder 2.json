@@ -1,0 +1,100 @@
+{
+  "colours": {
+    "3d_crosshair": {
+      "blend_additive": true,
+      "colour": "rgb(180, 190, 255)"
+    },
+    "3d_highlight": {
+      "colour": "rgba(255, 255, 140, 170)"
+    },
+    "3d_overlay_bg": {
+      "colour": "rgba(0, 0, 0, 180)"
+    },
+    "3d_overlay_fg": {
+      "colour": "rgb(255, 255, 255)"
+    },
+    "3d_selection": {
+      "colour": "rgba(30, 100, 255, 180)"
+    },
+    "grid_64": {
+      "blend_additive": true,
+      "colour": "rgba(57, 89, 111, 100)"
+    },
+    "background": {
+      "colour": "rgb(0, 0, 0)"
+    },
+    "editor_message": {
+      "colour": "rgb(255, 200, 100)"
+    },
+    "editor_message_outline": {
+      "colour": "rgb(0, 0, 0)"
+    },
+    "grid": {
+      "colour": "rgb(70, 70, 70)"
+    },
+    "highlight": {
+      "blend_additive": true,
+      "colour": "rgb(255, 172, 0)"
+    },
+    "line_invalid": {
+      "colour": "rgb(255, 0, 0)"
+    },
+    "line_normal": {
+      "colour": "rgb(255, 255, 255)"
+    },
+    "line_special": {
+      "colour": "rgb(109, 255, 159)"
+    },
+    "linedraw": {
+      "colour": "rgb(255, 172, 0)"
+    },
+    "moving": {
+      "blend_additive": true,
+      "colour": "rgb(255, 100, 0)"
+    },
+    "object_edit": {
+      "blend_additive": true,
+      "colour": "rgba(220, 140, 0, 170)"
+    },
+    "overlay_bg": {
+      "colour": "rgba(0, 0, 0, 180)"
+    },
+    "overlay_fg": {
+      "colour": "rgb(255, 255, 255)"
+    },
+    "selbox_fill": {
+      "blend_additive": true,
+      "colour": "rgba(0, 0, 0, 0)"
+    },
+    "selbox_outline": {
+      "blend_additive": true,
+      "colour": "rgb(255, 172, 0)"
+    },
+    "selection": {
+      "blend_additive": true,
+      "colour": "rgb(255, 64, 0)"
+    },
+    "tagged": {
+      "blend_additive": true,
+      "colour": "rgba(255, 255, 128, 120)"
+    },
+    "tagging": {
+      "blend_additive": true,
+      "colour": "rgba(255, 255, 128, 120)"
+    },
+    "thing_path": {
+      "colour": "rgb(34, 255, 255)"
+    },
+    "thing_path_dragon": {
+      "colour": "rgb(255, 34, 34)"
+    },
+    "vertex": {
+      "colour": "rgb(81, 168, 255)"
+    }
+  },
+  "theme": {
+    "flat_alpha": 1.0,
+    "line_hilight_width": 1.0,
+    "line_selection_width": 1.0
+  }
+}

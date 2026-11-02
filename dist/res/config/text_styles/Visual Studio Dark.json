@@ -1,0 +1,83 @@
+{
+  "name": "Visual Studio Dark",
+  "default": {
+    "background": "rgb(30, 30, 30)",
+    "bold": false,
+    "font": "Courier New",
+    "foreground": "rgb(220, 220, 220)",
+    "italic": false,
+    "size": 10,
+    "underlined": false
+  },
+  "selection": {
+    "background": "rgb(40, 80, 120)"
+  },
+  "preprocessor": {
+    "foreground": "rgb(155, 155, 155)"
+  },
+  "comment": {
+    "foreground": "rgb(87, 166, 74)"
+  },
+  "comment_doc": {
+    "foreground": "rgb(87, 166, 74)"
+  },
+  "string": {
+    "foreground": "rgb(214, 157, 133)"
+  },
+  "character": {
+    "foreground": "rgb(214, 157, 133)"
+  },
+  "keyword": {
+    "foreground": "rgb(86, 156, 214)"
+  },
+  "constant": {
+    "foreground": "rgb(189, 99, 197)"
+  },
+  "type": {
+    "foreground": "rgb(86, 156, 214)"
+  },
+  "property": {
+    "foreground": "rgb(86, 156, 214)"
+  },
+  "function": {
+    "foreground": "rgb(78, 201, 176)"
+  },
+  "number": {
+    "foreground": "rgb(181, 206, 168)"
+  },
+  "operator": {
+    "foreground": "rgb(180, 180, 180)"
+  },
+  "bracematch": {
+    "background": "rgb(53, 76, 53)",
+    "bold": true,
+    "foreground": "rgb(191, 191, 191)"
+  },
+  "bracebad": {
+    "background": "rgb(133, 80, 80)",
+    "bold": true,
+    "foreground": "rgb(255, 255, 255)"
+  },
+  "linenum": {
+    "background": "rgb(30, 30, 30)",
+    "foreground": "rgb(43, 145, 175)"
+  },
+  "calltip": {
+    "background": "rgb(70, 70, 70)",
+    "foreground": "rgb(240, 240, 240)"
+  },
+  "calltip_hl": {
+    "foreground": "rgb(150, 200, 240)"
+  },
+  "foldmargin": {
+    "background": "rgb(30, 30, 30)",
+    "foreground": "rgb(160, 160, 160)"
+  },
+  "guides": {
+    "foreground": "rgb(90, 90, 90)"
+  },
+  "current_line": {
+    "background": "rgb(45, 45, 45)",
+    "foreground": "rgb(60, 60, 60)"
+  }
+}

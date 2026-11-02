@@ -36,6 +36,7 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -84,7 +85,7 @@ BaseResourceChooser::BaseResourceChooser(wxWindow* parent, bool load_change) :
 																	   { SetSelection(base_resource + 1); });
 
 	if (app::platform() != app::Platform::Linux)
-		wxWindowBase::SetMinSize(wxutil::scaledSize(128, -1));
+		wxWindowBase::SetMinSize(FromDIP(wxSize(128, -1)));
 }
 
 // -----------------------------------------------------------------------------

@@ -34,7 +34,10 @@
 #include "Main.h"
 #include "NewEntryDialog.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveFormat.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -48,7 +51,7 @@ using namespace ui;
 // -----------------------------------------------------------------------------
 namespace slade::ui
 {
-vector<string> type_names          = { "Empty (Marker)", "Text", "Palette", "Boom ANIMATED", "Boom SWITCHES" };
+vector<string> type_names = { "Empty (Marker)", "Text", "Palette", "Boom ANIMATED", "Boom SWITCHES", "ANSI Text" };
 int            selected_entry_type = 0;
 } // namespace slade::ui
 
@@ -84,9 +87,11 @@ void allDirs(const ArchiveDir& dir, wxArrayString& list)
 NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const ArchiveDir* current_dir, bool new_dir) :
 	wxDialog(parent, -1, new_dir ? wxS("New Directory") : wxS("New Entry"))
 {
+	auto lh = LayoutHelper(this);
+
 	wxutil::setWindowIcon(this, new_dir ? "newfolder" : "newentry");
 
-	const auto&   archive_format = archive.formatDesc();
+	const auto&   archive_format = archive.formatInfo();
 	auto          types          = wxutil::arrayStringStd(type_names);
 	wxArrayString all_dirs;
 	allDirs(*archive.rootDir(), all_dirs);
@@ -98,7 +103,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	combo_parent_dir_  = new wxComboBox(
         this,
         -1,
-        current_dir ? wxString::FromUTF8(current_dir->path()) : wxS("/"),
+        current_dir ? wxString::FromUTF8(current_dir->path()) : wxString(wxS("/")),
         wxDefaultPosition,
         wxDefaultSize,
         all_dirs);
@@ -116,8 +121,8 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	// --- Layout controls ---
 	auto* m_sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_sizer);
-	auto* sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	m_sizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	auto* sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	m_sizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// New entry options
 	int row = 0;
@@ -142,9 +147,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 	// Dialog buttons
 	m_sizer->Add(
 		wxutil::createDialogButtonBox(this, "Create", "Cancel"),
-		0,
-		wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM,
-		ui::padLarge());
+		lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 
 	// --- Bind events ---
@@ -171,7 +174,7 @@ NewEntryDialog::NewEntryDialog(wxWindow* parent, const Archive& archive, const A
 
 
 	// Init dialog size
-	SetInitialSize({ ui::scalePx(400), -1 });
+	SetInitialSize(lh.size(400, -1));
 	wxDialog::Layout();
 	wxDialog::Fit();
 	wxDialog::SetMinSize(GetBestSize());

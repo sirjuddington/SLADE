@@ -33,7 +33,10 @@
 #include "Main.h"
 #include "SpecialPresetDialog.h"
 #include "Game/Configuration.h"
+#include "Game/SpecialPreset.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -48,12 +51,12 @@ namespace slade
 class SpecialPresetData : public wxClientData
 {
 public:
-	SpecialPresetData(const game::SpecialPreset& preset) : preset_{ preset } {}
+	SpecialPresetData(const game::SpecialPreset& preset) : preset_{ &preset } {}
 
-	const game::SpecialPreset& preset() const { return preset_; }
+	const game::SpecialPreset& preset() const { return *preset_; }
 
 private:
-	game::SpecialPreset const& preset_;
+	game::SpecialPreset const* preset_;
 };
 
 // -----------------------------------------------------------------------------
@@ -66,9 +69,8 @@ class SpecialPresetTreeView : public wxDataViewTreeCtrl
 {
 public:
 	SpecialPresetTreeView(wxWindow* parent) :
-		wxDataViewTreeCtrl{ parent, -1 },
-		root_{ wxDataViewItem(nullptr) },
-		parent_dialog_{ nullptr }
+		wxDataViewTreeCtrl{ parent, -1, wxDefaultPosition, wxDefaultSize, wxDV_NO_HEADER },
+		root_{ wxDataViewItem(nullptr) }
 	{
 		// Computing the minimum width of the tree is slightly complicated, since
 		// wx doesn't expose it to us directly
@@ -99,15 +101,14 @@ public:
 
 		// 64 is an arbitrary fudge factor -- should be at least the width of a
 		// scrollbar plus the expand icons plus any extra padding
-		int min_width = textsize.GetWidth() + GetIndent() + ui::scalePx(64);
-		wxWindowBase::SetMinSize(wxSize(min_width, ui::scalePx(200)));
+		int min_width = textsize.GetWidth() + GetIndent() + 64;
+		wxWindowBase::SetMinSize(FromDIP(wxSize(min_width, 200)));
 	}
 
 	game::SpecialPreset selectedPreset() const
 	{
 		// Get data from selected item
-		auto sel_data = dynamic_cast<SpecialPresetData*>(GetItemData(GetSelection()));
-		if (sel_data)
+		if (auto sel_data = dynamic_cast<SpecialPresetData*>(GetItemData(GetSelection())))
 			return sel_data->preset();
 
 		return {};
@@ -161,7 +162,7 @@ private:
 
 			if (!found)
 			{
-				current = AppendContainer(current, wxutil::strFromView(path[p]), -1, 1);
+				current = AppendContainer(current, wxutil::strFromView(path[p]));
 				groups_.emplace_back(current, fullpath);
 			}
 		}
@@ -169,7 +170,7 @@ private:
 		return current;
 	}
 
-	void addPresets(const vector<game::SpecialPreset>& presets, wxSize& textsize, wxClientDC& dc)
+	void addPresets(const vector<game::SpecialPreset>& presets, wxSize& textsize, const wxClientDC& dc)
 	{
 		for (auto& preset : presets)
 		{
@@ -194,26 +195,36 @@ private:
 // -----------------------------------------------------------------------------
 SpecialPresetDialog::SpecialPresetDialog(wxWindow* parent) : SDialog{ parent, "Special Presets", "special_presets" }
 {
+	auto lh    = ui::LayoutHelper(this);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
 	// Presets tree
 	tree_presets_ = new SpecialPresetTreeView(this);
 	tree_presets_->setParentDialog(this);
-	sizer->Add(tree_presets_, 1, wxALL | wxEXPAND, ui::padLarge());
+	sizer->Add(tree_presets_, lh.sfWithLargeBorder(1).Expand());
 
-	// OK button
+	// Apply Preset button
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	sizer->Add(hbox, lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 	hbox->AddStretchSpacer(1);
-	auto btn_ok = new wxButton(this, -1, wxS("OK"));
-	hbox->Add(btn_ok, 0, wxEXPAND | wxRIGHT, ui::pad());
+	auto btn_ok = new wxButton(this, -1, wxS("Apply Preset"));
+	hbox->Add(btn_ok, lh.sfWithBorder(0, wxRIGHT).Expand());
 	btn_ok->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_OK); });
 
 	// Cancel button
 	auto btn_cancel = new wxButton(this, -1, wxS("Cancel"));
-	hbox->Add(btn_cancel, 0, wxEXPAND);
+	hbox->Add(btn_cancel, wxSizerFlags().Expand());
 	btn_cancel->Bind(wxEVT_BUTTON, [&](wxCommandEvent& e) { EndModal(wxID_CANCEL); });
+
+	// Only enable Apply Preset button when a preset is selected
+	btn_ok->Enable(false);
+	Bind(
+		wxEVT_DATAVIEW_SELECTION_CHANGED,
+		[&, btn_ok](wxDataViewEvent& e) { btn_ok->Enable(tree_presets_->selectedPreset().special >= 0); });
+
+	wxWindowBase::SetMinClientSize(sizer->GetMinSize());
+	CenterOnParent();
 }
 
 // -----------------------------------------------------------------------------

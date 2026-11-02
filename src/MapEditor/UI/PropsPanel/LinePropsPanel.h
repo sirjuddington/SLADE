@@ -5,7 +5,6 @@
 
 namespace slade
 {
-class MapObject;
 class MapObjectPropsPanel;
 class ActionSpecialPanel;
 class ArgsPanel;
@@ -16,12 +15,10 @@ class LinePropsPanel : public PropsPanelBase
 {
 public:
 	LinePropsPanel(wxWindow* parent);
-	~LinePropsPanel();
+	~LinePropsPanel() override;
 
-	wxPanel* setupGeneralTab();
-	wxPanel* setupSpecialTab();
-	void     openObjects(vector<MapObject*>& objects) override;
-	void     applyChanges() override;
+	void openObjects(vector<MapObject*>& lines) override;
+	void applyChanges() override;
 
 private:
 	TabControl*          stc_tabs_            = nullptr;
@@ -43,5 +40,9 @@ private:
 		string      udmf;
 	};
 	vector<FlagHolder> flags_;
+
+	wxPanel* setupGeneralTab();
+	wxPanel* setupSpecialTab();
+	wxPanel* setupTexturesTab();
 };
 } // namespace slade

@@ -1,0 +1,686 @@
+// ZDoom action specials for hexen/udmf map formats
+// Floor and Ceiling related specials
+{
+  "arg_presets": {
+    "floor_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "slow - standard Doom floor", "value": 8 },
+        { "name": "normal", "value": 16 },
+        { "name": "fast - fast Doom floor", "value": 32 },
+        { "name": "turbo", "value": 64 }
+      ]
+    },
+    "ceiling_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "slow - standard Doom ceiling", "value": 8 },
+        { "name": "normal", "value": 16 },
+        { "name": "fast - fast Doom ceiling", "value": 32 },
+        { "name": "turbo", "value": 64 }
+      ]
+    },
+    "crush_mode": {
+      "name": "Crush mode",
+      "type": "choice",
+      "custom_values": [
+        { "name": "use current game's default", "value": 0 },
+        { "name": "Doom mode - keep moving while crushing", "value": 1 },
+        { "name": "Hexen mode - stop moving until actor dies/leaves", "value": 2 }
+      ]
+    },
+    "lift_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "very slow - perpetual Doom lift", "value": 4 },
+        { "name": "slow", "value": 8 },
+        { "name": "normal", "value": 16 },
+        { "name": "fast - standard Doom lift", "value": 32 },
+        { "name": "turbo - fast Doom lift", "value": 64 }
+      ]
+    },
+    "delay_octics_lift": {
+      "name": "Delay (octics)",
+      "type": "octics",
+      "custom_values": [
+        { "name": "brief", "value": 8 },
+        { "name": "normal - standard Doom lift", "value": 24 },
+        { "name": "slow (approx.)", "value": 38 },
+        { "name": "agonizing", "value": 80 }
+      ]
+    },
+    "delay_tics_lift": {
+      "name": "Delay (tics)",
+      "type": "tics",
+      "custom_values": [
+        { "name": "brief", "value": 35 },
+        { "name": "normal - standard Doom lift", "value": 105 },
+        { "name": "slow", "value": 165 },
+        { "name": "agonizing", "value": 350 }
+      ]
+    },
+    "stair_speed": {
+      "name": "Speed",
+      "type": "speed",
+      "custom_values": [
+        { "name": "slow - standard Doom stairs", "value": 2 },
+        { "name": "normal", "value": 4 },
+        { "name": "fast", "value": 16 },
+        { "name": "turbo - fast Doom stairs", "value": 32 }
+      ]
+    }
+  },
+
+  "groups": [
+    {
+      "name": "Floors",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        {
+          "name": "Generic_Floor",
+          "id": 200,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Distance",
+          "arg4": {
+            "name": "Target",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Move by given distance", "value": 0 },
+              { "name": "Move to highest neighboring floor", "value": 1 },
+              { "name": "Move to lowest neighboring floor", "value": 2 },
+              { "name": "Move to nearest neighboring floor", "value": 3 },
+              { "name": "Move to lowest neighboring ceiling", "value": 4 },
+              { "name": "Move to sector's own ceiling", "value": 5 },
+              { "name": "Move by height of shortest lower texture", "value": 6 }
+            ]
+          },
+          "arg5": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "Don't copy", "value": 0 },
+              { "name": "Copy floor texture; remove sector special", "value": 1 },
+              { "name": "Copy floor texture", "value": 2 },
+              { "name": "Copy floor texture and sector special", "value": 3 },
+              { "name": "Copy from neighbor (otherwise front of trigger line)", "value": 4 },
+              { "name": "Raise (otherwise lower)", "value": 8 },
+              { "name": "Inflict crushing damage", "value": 16 }
+            ]
+          }
+        },
+        { "name": "Floor_LowerToNearest", "id": 22, "arg1": "Sector Tag", "arg2": "$floor_speed" },
+        { "name": "Floor_LowerToLowest", "id": 21, "arg1": "Sector Tag", "arg2": "$floor_speed" },
+        { "name": "Floor_LowerToLowestTxTy", "id": 241, "arg1": "Sector Tag", "arg2": "$floor_speed" },
+        {
+          "name": "Floor_LowerToHighest",
+          "id": 242,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Lip + 128",
+          "arg4": {
+            "name": "Always Adjust?",
+            "description": "If 1, the height adjustment is applied even if neighbouring sectors are at the same floor height"
+          }
+        },
+        { "name": "Floor_LowerByValue", "id": 20, "arg1": "Sector Tag", "arg2": "$floor_speed", "arg3": "Value" },
+        {
+          "name": "Floor_LowerByValueTimes8",
+          "id": 36,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Eighth of Value"
+        },
+        { "name": "Floor_LowerInstant", "id": 66, "arg1": "Sector Tag", "arg2": "Unused", "arg3": "Eighth of Value" },
+        { "name": "Floor_RaiseToNearest", "id": 25, "arg1": "Sector Tag", "arg2": "$floor_speed" },
+        { "name": "Floor_RaiseToHighest", "id": 24, "arg1": "Sector Tag", "arg2": "$floor_speed" },
+        { "name": "Floor_RaiseToLowestCeiling", "id": 238, "arg1": "Sector Tag", "arg2": "$floor_speed" },
+        { "name": "Floor_RaiseByValue", "id": 23, "arg1": "Sector Tag", "arg2": "$floor_speed", "arg3": "Value" },
+        {
+          "name": "Floor_RaiseByValueTimes8",
+          "id": 35,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Floor_RaiseByValueTxTy",
+          "id": 239,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Value"
+        },
+        { "name": "Floor_RaiseByTexture", "id": 240, "arg1": "Sector Tag", "arg2": "$floor_speed" },
+        { "name": "Floor_RaiseInstant", "id": 67, "arg1": "Sector Tag", "arg2": "Unused", "arg3": "Eighth of Value" },
+        {
+          "name": "Floor_RaiseAndCrush",
+          "id": 28,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Crush Damage",
+          "arg4": "$crush_mode"
+        },
+        { "name": "Floor_CrushStop", "id": 46, "arg1": "Sector Tag" },
+        {
+          "name": "Floor_MoveToValue",
+          "id": 37,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Value",
+          "arg4": "Negative?"
+        },
+        {
+          "name": "Floor_MoveToValueTimes8",
+          "id": 68,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": "Eighth of Value",
+          "arg4": "Negative?"
+        },
+        {
+          "name": "Floor_Donut",
+          "id": 250,
+          "arg1": "Pillar Sector Tag",
+          "arg2": "Pillar Speed",
+          "arg3": "Surrounding Speed"
+        },
+        {
+          "name": "Floor_Waggle",
+          "id": 138,
+          "arg1": "Sector Tag",
+          "arg2": "Amplitude",
+          "arg3": "$floor_speed",
+          "arg4": "Phase Offset",
+          "arg5": "Duration (in seconds)"
+        },
+        { "name": "Floor_TransferTrigger", "id": 235, "arg1": "Sector Tag" },
+        { "name": "Floor_TransferNumeric", "id": 236, "arg1": "Sector Tag" }
+      ]
+    },
+
+    {
+      "name": "Ceilings",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        {
+          "name": "Generic_Ceiling",
+          "id": 201,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Distance",
+          "arg4": {
+            "name": "Target",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Move by given distance", "value": 0 },
+              { "name": "Move to highest neighboring ceiling", "value": 1 },
+              { "name": "Move to lowest neighboring ceiling", "value": 2 },
+              { "name": "Move to nearest neighboring ceiling", "value": 3 },
+              { "name": "Move to highest neighboring floor", "value": 4 },
+              { "name": "Move to sector's own floor", "value": 5 },
+              { "name": "Move by height of shortest upper texture", "value": 6 }
+            ]
+          },
+          "arg5": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "name": "Don't copy", "value": 0 },
+              { "name": "Copy ceiling texture; remove sector special", "value": 1 },
+              { "name": "Copy ceiling texture", "value": 2 },
+              { "name": "Copy ceiling texture and sector special", "value": 3 },
+              { "name": "Copy from neighbor (otherwise front of trigger line)", "value": 4 },
+              { "name": "Raise (otherwise lower)", "value": 8 },
+              { "name": "Inflict crushing damage", "value": 16 }
+            ]
+          }
+        },
+        {
+          "name": "Generic_Crusher",
+          "id": 205,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": "Silent?",
+          "arg5": "Crush Damage"
+        },
+        {
+          "name": "Generic_Crusher2",
+          "id": 169,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": { "name": "Silent?", "type": "yesno" },
+          "arg5": "Crush Damage"
+        },
+        { "name": "Ceiling_LowerToLowest", "id": 253, "arg1": "Sector Tag", "arg2": "$ceiling_speed" },
+        { "name": "Ceiling_LowerToFloor", "id": 254, "arg1": "Sector Tag", "arg2": "$ceiling_speed" },
+        { "name": "Ceiling_LowerToHighestFloor", "id": 192, "arg1": "Sector Tag", "arg2": "$ceiling_speed" },
+        { "name": "Ceiling_LowerByValue", "id": 40, "arg1": "Sector Tag", "arg2": "$ceiling_speed", "arg3": "Value" },
+        {
+          "name": "Ceiling_LowerByValueTimes8",
+          "id": 199,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Ceiling_LowerInstant",
+          "id": 193,
+          "arg1": "Sector Tag",
+          "arg2": "Unused",
+          "arg3": "Eighth of Value"
+        },
+        { "name": "Ceiling_RaiseToNearest", "id": 252, "arg1": "Sector Tag", "arg2": "$ceiling_speed" },
+        { "name": "Ceiling_RaiseByValue", "id": 41, "arg1": "Sector Tag", "arg2": "$ceiling_speed", "arg3": "Value" },
+        {
+          "name": "Ceiling_RaiseByValueTimes8",
+          "id": 198,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Ceiling_RaiseInstant",
+          "id": 194,
+          "arg1": "Sector Tag",
+          "arg2": "Unused",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Ceiling_MoveToValue",
+          "id": 47,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Value",
+          "arg4": "Negative?"
+        },
+        {
+          "name": "Ceiling_MoveToValueTimes8",
+          "id": 69,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Eighth of Value",
+          "arg4": "Negative?"
+        },
+        {
+          "name": "Ceiling_Waggle",
+          "id": 38,
+          "arg1": "Sector Tag",
+          "arg2": "Amplitude",
+          "arg3": "$ceiling_speed",
+          "arg4": "Phase Offset",
+          "arg5": "Duration (in seconds)"
+        },
+        {
+          "name": "Ceiling_LowerAndCrush",
+          "id": 43,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Crush Damage",
+          "arg4": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_LowerAndCrushDist",
+          "id": 97,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Crush Damage",
+          "arg4": "Distance to Floor",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushAndRaise",
+          "id": 42,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Crush Damage",
+          "arg4": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushAndRaiseA",
+          "id": 196,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushAndRaiseSilentA",
+          "id": 197,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushAndRaiseDist",
+          "id": 168,
+          "arg1": "Sector Tag",
+          "arg2": "Distance to Floor",
+          "arg3": "$ceiling_speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushAndRaiseSilentDist",
+          "id": 104,
+          "arg1": "Sector Tag",
+          "arg2": "Distance to Floor",
+          "arg3": "$ceiling_speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushRaiseAndStay",
+          "id": 45,
+          "arg1": "Sector Tag",
+          "arg2": "$ceiling_speed",
+          "arg3": "Crush Damage",
+          "arg4": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushRaiseAndStayA",
+          "id": 195,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        {
+          "name": "Ceiling_CrushRaiseAndStaySilA",
+          "id": 255,
+          "arg1": "Sector Tag",
+          "arg2": "Lowering Speed",
+          "arg3": "Raising Speed",
+          "arg4": "Crush Damage",
+          "arg5": "$crush_mode"
+        },
+        { "name": "Ceiling_CrushStop", "id": 44, "arg1": "Sector Tag" }
+      ]
+    },
+
+    {
+      "name": "Platforms & Lifts",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        {
+          "name": "Generic_Lift",
+          "id": 203,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_octics_lift",
+          "arg4": {
+            "name": "Lift Type",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Raise by value * 8, lower after delay", "value": 0 },
+              { "name": "Lower to lowest floor with lip of 8, raise after delay", "value": 1 },
+              { "name": "Lower to nearest floor, raise after delay", "value": 2 },
+              { "name": "Lower to lowest ceiling, raise after delay", "value": 3 },
+              { "name": "Perpetual lift between lowest and highest floors", "value": 4 }
+            ]
+          },
+          "arg5": "Value (for lift type 0)"
+        },
+        {
+          "name": "Plat_DownWaitUpStay",
+          "id": 62,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift"
+        },
+        {
+          "name": "Plat_DownWaitUpStayLip",
+          "id": 206,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift",
+          "arg4": "Lip",
+          "arg5": {
+            "name": "Sound type",
+            "type": "choice",
+            "custom_values": [
+              { "name": "Use platform sound", "value": 0 },
+              { "name": "Use moving floor sound", "value": 1 }
+            ]
+          }
+        },
+        {
+          "name": "Plat_DownByValue",
+          "id": 63,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift",
+          "arg4": "Eighth of Value"
+        },
+        {
+          "name": "Plat_UpWaitDownStay",
+          "id": 64,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift"
+        },
+        {
+          "name": "Plat_UpNearestWaitDownStay",
+          "id": 172,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift"
+        },
+        {
+          "name": "Plat_UpByValue",
+          "id": 65,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift",
+          "arg4": "Eighth of Value"
+        },
+        {
+          "name": "Plat_UpByValueStayTx",
+          "id": 230,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "Eighth of Value"
+        },
+        {
+          "name": "Plat_RaiseAndStayTx0",
+          "id": 228,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed"
+        },
+        {
+          "name": "Plat_PerpetualRaise",
+          "id": 60,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift"
+        },
+        {
+          "name": "Plat_PerpetualRaiseLip",
+          "id": 207,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "$delay_tics_lift",
+          "arg4": "Lip"
+        },
+        { "name": "Plat_ToggleCeiling", "id": 231, "arg1": "Sector Tag" },
+        { "name": "Plat_Stop", "id": 61, "arg1": "Sector Tag" }
+      ]
+    },
+
+    {
+      "name": "Elevators & Pillars",
+      "defaults": { "tagged": "sector_or_back" },
+      "specials": [
+        {
+          "name": "FloorAndCeiling_LowerByValue",
+          "id": 95,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "Value"
+        },
+        {
+          "name": "FloorAndCeiling_RaiseByValue",
+          "id": 96,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed",
+          "arg3": "Value"
+        },
+        {
+          "name": "FloorAndCeiling_LowerRaise",
+          "id": 251,
+          "arg1": "Sector Tag",
+          "arg2": "Floor Lower Speed",
+          "arg3": "Ceiling Raise Speed",
+          "arg4": {
+            "name": "Boom Bug Emulation",
+            "description": "Use value 1998 to emulate a Boom bug"
+          }
+        },
+        {
+          "name": "Elevator_LowerToNearest",
+          "id": 247,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed"
+        },
+        {
+          "name": "Elevator_RaiseToNearest",
+          "id": 245,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed"
+        },
+        {
+          "name": "Elevator_MoveToFloor",
+          "id": 246,
+          "arg1": "Sector Tag",
+          "arg2": "$lift_speed"
+        },
+        {
+          "name": "Pillar_Open",
+          "id": 30,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": {
+            "name": "Floor Lower Value",
+            "description": "0 = Lowest Adjacent Floor"
+          },
+          "arg4": {
+            "name": "Ceiling Raise Value",
+            "description": "0 = Highest Adjacent Ceiling"
+          }
+        },
+        {
+          "name": "Pillar_Build",
+          "id": 29,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": {
+            "name": "Floor Height",
+            "description": "0 = Halfway Point"
+          }
+        },
+        {
+          "name": "Pillar_BuildAndCrush",
+          "id": 94,
+          "arg1": "Sector Tag",
+          "arg2": "$floor_speed",
+          "arg3": {
+            "name": "Floor Height",
+            "description": "0 = Halfway Point"
+          },
+          "arg4": "Crushing Damage",
+          "arg5": "Crushing Mode"
+        },
+        {
+          "name": "Sector_Attach3dMidtex",
+          "id": 48,
+          "arg1": "Line ID",
+          "arg2": "Sector Tag",
+          "arg3": {
+            "name": "Plane",
+            "type": "choice",
+            "custom_values": [
+              { "name": "floor", "value": 0 },
+              { "name": "ceiling", "value": 1 }
+            ]
+          },
+          "tagged": "ex_1line_2sector"
+        }
+      ]
+    },
+
+    {
+      "name": "Stair Builders",
+      "defaults": { "tagged": "sector" },
+      "specials": [
+        {
+          "name": "Generic_Stairs",
+          "id": 204,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": {
+            "name": "Flags",
+            "type": "flags",
+            "custom_flags": [
+              { "value": 0, "name": "build stairs down" },
+              { "value": 1, "name": "build stairs up" },
+              { "value": 2, "name": "ignore floor textures when finding stairs" }
+            ]
+          },
+          "arg5": "Reset Delay (in tics)"
+        },
+        {
+          "name": "Stairs_BuildDown",
+          "id": 26,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": "Step Delay (in tics)",
+          "arg5": "Reset Delay (in tics)"
+        },
+        {
+          "name": "Stairs_BuildDownSync",
+          "id": 31,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": "Reset Delay (in tics)"
+        },
+        {
+          "name": "Stairs_BuildUp",
+          "id": 27,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": "Step Delay (in tics)",
+          "arg5": "Reset Delay (in tics)"
+        },
+        {
+          "name": "Stairs_BuildUpSync",
+          "id": 32,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": "Reset Delay (in tics)"
+        },
+        {
+          "name": "Stairs_BuildUpDoom",
+          "id": 217,
+          "arg1": "Sector Tag",
+          "arg2": "$stair_speed",
+          "arg3": "Step Height",
+          "arg4": "Step Delay (in tics)",
+          "arg5": "Reset Delay (in tics)"
+        }
+      ]
+    }
+  ]
+}

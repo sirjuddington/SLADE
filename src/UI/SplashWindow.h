@@ -6,7 +6,7 @@ class SplashWindow : public wxMiniFrame
 {
 public:
 	SplashWindow(wxWindow* parent = nullptr);
-	~SplashWindow() = default;
+	~SplashWindow() override = default;
 
 	float progress() const { return progress_; }
 	void  setMessage(string_view message);
@@ -17,7 +17,7 @@ public:
 	void hide();
 	void forceRedraw(bool yield_for_ui = true);
 
-	static void init();
+	void init() const;
 
 	// Events
 	void onPaint(wxPaintEvent& e);

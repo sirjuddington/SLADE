@@ -33,8 +33,11 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SectorList.h"
-#include "General/UI.h"
+
+#include "SLADEMap/MapObject/MapSector.h"
+#include "UI/UI.h"
 #include "Utility/StringUtils.h"
+#include <algorithm>
 
 using namespace slade;
 
@@ -82,19 +85,15 @@ void SectorList::remove(unsigned index)
 	MapObjectList::remove(index);
 
 	// The last sector just moved into the deleted sector's space.  Its geometry didn't change, but
-	// because its index did, its VBO is completely invalid now
+	// because its index did, its vertices are completely invalid now
 	if (index < objects_.size())
-	{
-		auto poly = objects_[index]->polygon();
-		if (poly)
-			poly->invalidateVBO();
-	}
+		objects_[index]->resetGeometryInfo();
 }
 
 // -----------------------------------------------------------------------------
 // Returns the sector at the given [point], or null if not within a sector
 // -----------------------------------------------------------------------------
-MapSector* SectorList::atPos(Vec2d point) const
+MapSector* SectorList::atPos(const Vec2d& point) const
 {
 	// Go through sectors
 	for (const auto& sector : objects_)
@@ -124,15 +123,11 @@ BBox SectorList::allSectorBounds() const
 	bbox = objects_[0]->boundingBox();
 	for (unsigned i = 1; i < count_; ++i)
 	{
-		auto sbb = objects_[i]->boundingBox();
-		if (sbb.min.x < bbox.min.x)
-			bbox.min.x = sbb.min.x;
-		if (sbb.min.y < bbox.min.y)
-			bbox.min.y = sbb.min.y;
-		if (sbb.max.x > bbox.max.x)
-			bbox.max.x = sbb.max.x;
-		if (sbb.max.y > bbox.max.y)
-			bbox.max.y = sbb.max.y;
+		auto sbb   = objects_[i]->boundingBox();
+		bbox.min.x = std::min(sbb.min.x, bbox.min.x);
+		bbox.min.y = std::min(sbb.min.y, bbox.min.y);
+		bbox.max.x = std::max(sbb.max.x, bbox.max.x);
+		bbox.max.y = std::max(sbb.max.y, bbox.max.y);
 	}
 
 	return bbox;
@@ -141,14 +136,15 @@ BBox SectorList::allSectorBounds() const
 // -----------------------------------------------------------------------------
 // Forces building of polygons for all sectors in the list
 // -----------------------------------------------------------------------------
-void SectorList::initPolygons()
+void SectorList::initPolygons() const
 {
 	ui::setSplashProgressMessage("Building sector polygons");
 	ui::setSplashProgress(0.0f);
 	for (unsigned i = 0; i < count_; ++i)
 	{
-		ui::setSplashProgress((float)i / (float)count_);
-		objects_[i]->polygon();
+		ui::setSplashProgress(i, count_);
+		objects_[i]->resetGeometryInfo();
+		objects_[i]->polygonVertices();
 	}
 	ui::setSplashProgress(1.0f);
 }
@@ -156,7 +152,7 @@ void SectorList::initPolygons()
 // -----------------------------------------------------------------------------
 // Forces update of bounding boxes for all sectors in the list
 // -----------------------------------------------------------------------------
-void SectorList::initBBoxes()
+void SectorList::initBBoxes() const
 {
 	for (auto& sector : objects_)
 		sector->updateBBox();
@@ -168,7 +164,7 @@ void SectorList::initBBoxes()
 void SectorList::putAllWithId(int id, vector<MapSector*>& list) const
 {
 	for (auto& sector : objects_)
-		if (sector->tag() == id)
+		if (sector->hasId(id))
 			list.push_back(sector);
 }
 
@@ -188,7 +184,7 @@ vector<MapSector*> SectorList::allWithId(int id) const
 MapSector* SectorList::firstWithId(int id) const
 {
 	for (auto& sector : objects_)
-		if (sector->tag() == id)
+		if (sector->hasId(id))
 			return sector;
 
 	return nullptr;
@@ -202,7 +198,7 @@ int SectorList::firstFreeId() const
 	int id = 1;
 	for (unsigned i = 0; i < count_; ++i)
 	{
-		if (objects_[i]->tag() == id)
+		if (objects_[i]->hasId(id))
 		{
 			id++;
 			i = 0;

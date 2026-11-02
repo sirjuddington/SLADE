@@ -33,11 +33,16 @@
 #include "Main.h"
 #include "MapObjectPropsPanel.h"
 #include "Game/Configuration.h"
+#include "Game/UDMFProperty.h"
 #include "MOPGProperty.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/MapEditorWindow.h"
+#include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Controls/SIconButton.h"
+#include "UI/Layout.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -49,7 +54,7 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 CVAR(Bool, mobj_props_show_all, false, CVar::Flag::Save)
-CVAR(Bool, mobj_props_auto_apply, false, CVar::Flag::Save)
+CVAR(Bool, mobj_props_auto_apply, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -64,20 +69,28 @@ CVAR(Bool, mobj_props_auto_apply, false, CVar::Flag::Save)
 // -----------------------------------------------------------------------------
 MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	PropsPanelBase{ parent },
+	last_type_{ map::ObjectType::Object },
 	no_apply_{ no_apply }
 {
+	auto lh = ui::LayoutHelper{ this };
+
 	// Setup sizer
 	wxSizer* sizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(sizer);
 
-	// Add item label
+	// 'No selection' label
+	label_no_object_ = new wxStaticText(this, -1, wxS("No item(s) selected"));
+	sizer->Add(label_no_object_, lh.sfWithBorder(1).Center());
+	label_no_object_->Hide();
+
+	// Show All checkbox
 	cb_show_all_ = new wxCheckBox(this, -1, wxS("Show All"));
 	cb_show_all_->SetValue(mobj_props_show_all);
-	sizer->Add(cb_show_all_, 0, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(cb_show_all_, lh.sfWithBorder().Expand());
 
 	// Add tabs
 	stc_sections_ = STabCtrl::createControl(this);
-	sizer->Add(stc_sections_, 1, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(stc_sections_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add main property grid
 	pg_properties_ = createPropGrid();
@@ -89,20 +102,20 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 
 	// Add buttons
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add button
 	btn_add_ = new SIconButton(this, "plus", "Add Property");
-	hbox->Add(btn_add_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_add_, lh.sfWithBorder(0, wxRIGHT).Expand());
 	hbox->AddStretchSpacer(1);
 
 	// Reset button
 	btn_reset_ = new SIconButton(this, "close", "Discard Changes");
-	hbox->Add(btn_reset_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(btn_reset_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Apply button
 	btn_apply_ = new SIconButton(this, "tick", "Apply Changes");
-	hbox->Add(btn_apply_, 0, wxEXPAND);
+	hbox->Add(btn_apply_, wxSizerFlags().Expand());
 
 	wxPGCell cell;
 	cell.SetText(wxS("<multiple values>"));
@@ -124,14 +137,11 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	pg_props_side1_->Show(false);
 	pg_props_side2_->Show(false);
 
-	// Hide apply button if needed
-	if (no_apply || mobj_props_auto_apply)
-	{
-		btn_apply_->Show(false);
-		btn_reset_->Show(false);
-	}
-
 	wxWindowBase::Layout();
+
+	// Properties hold pointers to UDMF properties in game config, so we need to
+	// clear the grid when the config changes to avoid dangling pointers
+	sc_config_changed_ = game::configuration().signals().config_changed.connect([this] { clearGrid(); });
 }
 
 // -----------------------------------------------------------------------------
@@ -142,7 +152,11 @@ wxPropertyGrid* MapObjectPropsPanel::createPropGrid()
 	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 
 	auto propgrid = new wxPropertyGrid(
-		stc_sections_, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER);
+		stc_sections_,
+		-1,
+		wxDefaultPosition,
+		wxDefaultSize,
+		wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER | wxPG_BOLD_MODIFIED);
 	propgrid->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS | wxPG_EX_MULTIPLE_SELECTION);
 	propgrid->SetCaptionTextColour(inactiveTextColour);
 	propgrid->SetCellDisabledTextColour(inactiveTextColour);
@@ -179,7 +193,7 @@ bool MapObjectPropsPanel::showAll() const
 // wxPGProperty methods on it.  So template it and let god sort 'em out
 template<typename T>
 T* MapObjectPropsPanel::addProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	T*                  prop,
 	bool                readonly,
 	wxPropertyGrid*     grid,
@@ -189,7 +203,7 @@ T* MapObjectPropsPanel::addProperty(
 	prop->setUDMFProp(udmf_prop);
 
 	if (udmf_prop)
-		prop->SetHelpString(wxString::FromUTF8(fmt::format("{}\n({})", udmf_prop->name(), udmf_prop->propName())));
+		prop->SetHelpString(WX_FMT("{}\n({})", udmf_prop->name(), udmf_prop->propName()));
 
 	// Add it
 	properties_.push_back(prop);
@@ -210,7 +224,7 @@ T* MapObjectPropsPanel::addProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addBoolProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	bool                readonly,
@@ -225,7 +239,7 @@ MOPGProperty* MapObjectPropsPanel::addBoolProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addIntProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	bool                readonly,
@@ -241,7 +255,7 @@ MOPGProperty* MapObjectPropsPanel::addIntProperty(
 // [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addFloatProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	bool                readonly,
@@ -257,7 +271,7 @@ MOPGProperty* MapObjectPropsPanel::addFloatProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addStringProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	bool                readonly,
@@ -273,7 +287,7 @@ MOPGProperty* MapObjectPropsPanel::addStringProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	int                 index,
@@ -290,7 +304,7 @@ MOPGProperty* MapObjectPropsPanel::addLineFlagProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(
-	wxPGProperty*       group,
+	const wxPGProperty* group,
 	const wxString&     label,
 	const wxString&     propname,
 	int                 index,
@@ -307,7 +321,7 @@ MOPGProperty* MapObjectPropsPanel::addThingFlagProperty(
 // property [propname]
 // -----------------------------------------------------------------------------
 MOPGProperty* MapObjectPropsPanel::addTextureProperty(
-	wxPGProperty*          group,
+	const wxPGProperty*    group,
 	const wxString&        label,
 	const wxString&        propname,
 	mapeditor::TextureType textype,
@@ -351,7 +365,7 @@ bool MapObjectPropsPanel::setBoolProperty(wxPGProperty* prop, bool value, bool f
 // -----------------------------------------------------------------------------
 void MapObjectPropsPanel::addUDMFProperty(
 	game::UDMFProperty& prop,
-	MapObject::Type     objtype,
+	map::ObjectType     objtype,
 	const wxString&     basegroup,
 	wxPropertyGrid*     grid)
 {
@@ -370,7 +384,10 @@ void MapObjectPropsPanel::addUDMFProperty(
 	// Get group to add
 	auto group = grid->GetProperty(groupname);
 	if (!group)
+	{
 		group = grid->Append(new wxPropertyCategory(wxString::FromUTF8(prop.group()), groupname));
+		groups_.push_back(group);
+	}
 
 	// Determine property name
 	wxString propname;
@@ -405,9 +422,9 @@ void MapObjectPropsPanel::addUDMFProperty(
 	else if (prop.type() == UDMFProperty::Type::ID)
 	{
 		MOPGTagProperty::IdType tagtype;
-		if (objtype == MapObject::Type::Line)
+		if (objtype == map::ObjectType::Line)
 			tagtype = MOPGTagProperty::IdType::Line;
-		else if (objtype == MapObject::Type::Thing)
+		else if (objtype == map::ObjectType::Thing)
 			tagtype = MOPGTagProperty::IdType::Thing;
 		else
 			tagtype = MOPGTagProperty::IdType::Sector;
@@ -419,7 +436,7 @@ void MapObjectPropsPanel::addUDMFProperty(
 // -----------------------------------------------------------------------------
 // Adds all relevant properties to the grid for [objtype]
 // -----------------------------------------------------------------------------
-void MapObjectPropsPanel::setupType(MapObject::Type objtype)
+void MapObjectPropsPanel::setupType(map::ObjectType objtype)
 {
 	// Nothing to do if it was already this type
 	if (last_type_ == objtype && !udmf_)
@@ -445,7 +462,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 	}
 
 	// Vertex properties
-	if (objtype == MapObject::Type::Vertex)
+	if (objtype == map::ObjectType::Vertex)
 	{
 		// Set main tab name
 		stc_sections_->SetPageText(0, wxS("Vertex"));
@@ -457,11 +474,11 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 		addIntProperty(g_basic, wxS("X Position"), wxS("x"));
 		addIntProperty(g_basic, wxS("Y Position"), wxS("y"));
 
-		last_type_ = MapObject::Type::Vertex;
+		last_type_ = map::ObjectType::Vertex;
 	}
 
 	// Line properties
-	else if (objtype == MapObject::Type::Line)
+	else if (objtype == map::ObjectType::Line)
 	{
 		// Set main tab name
 		stc_sections_->SetPageText(0, wxS("Line"));
@@ -582,7 +599,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 	}
 
 	// Sector properties
-	else if (objtype == MapObject::Type::Sector)
+	else if (objtype == map::ObjectType::Sector)
 	{
 		// Set main tab name
 		stc_sections_->SetPageText(0, wxS("Sector"));
@@ -638,7 +655,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 	}
 
 	// Thing properties
-	else if (objtype == MapObject::Type::Thing)
+	else if (objtype == map::ObjectType::Thing)
 	{
 		// Set main tab name
 		stc_sections_->SetPageText(0, wxS("Thing"));
@@ -728,7 +745,7 @@ void MapObjectPropsPanel::setupType(MapObject::Type objtype)
 // -----------------------------------------------------------------------------
 // Adds all relevant UDMF properties to the grid for [objtype]
 // -----------------------------------------------------------------------------
-void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
+void MapObjectPropsPanel::setupTypeUDMF(map::ObjectType objtype)
 {
 	// Nothing to do if it was already this type
 	if (last_type_ == objtype && udmf_)
@@ -750,13 +767,13 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 	}
 
 	// Set main tab title
-	if (objtype == MapObject::Type::Vertex)
+	if (objtype == map::ObjectType::Vertex)
 		stc_sections_->SetPageText(0, wxS("Vertex"));
-	else if (objtype == MapObject::Type::Line)
+	else if (objtype == map::ObjectType::Line)
 		stc_sections_->SetPageText(0, wxS("Line"));
-	else if (objtype == MapObject::Type::Sector)
+	else if (objtype == map::ObjectType::Sector)
 		stc_sections_->SetPageText(0, wxS("Sector"));
-	else if (objtype == MapObject::Type::Thing)
+	else if (objtype == map::ObjectType::Thing)
 		stc_sections_->SetPageText(0, wxS("Thing"));
 
 	// Go through all possible properties for this type, in configuration order
@@ -776,7 +793,7 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 	}
 
 	// Add side properties if line type
-	if (objtype == MapObject::Type::Line)
+	if (objtype == map::ObjectType::Line)
 	{
 		// Add side tabs
 		pg_props_side1_->Show(true);
@@ -821,6 +838,15 @@ void MapObjectPropsPanel::setupTypeUDMF(MapObject::Type objtype)
 }
 
 // -----------------------------------------------------------------------------
+// Hides groups with no visible children and vice/versa
+// -----------------------------------------------------------------------------
+void MapObjectPropsPanel::updateGroupVisibility() const
+{
+	for (auto group : groups_)
+		group->Hide(!group->HasVisibleChildren(), wxPGPropertyValuesFlags::DontRecurse);
+}
+
+// -----------------------------------------------------------------------------
 // Populates the grid with properties for [object]
 // -----------------------------------------------------------------------------
 void MapObjectPropsPanel::openObject(MapObject* object)
@@ -844,6 +870,14 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	// Check any objects were given
 	if (objects.empty() || objects[0] == nullptr)
 	{
+		// Update control visibility
+		stc_sections_->Hide();
+		cb_show_all_->Hide();
+		btn_add_->Hide();
+		btn_reset_->Hide();
+		btn_apply_->Hide();
+		label_no_object_->Show();
+
 		objects_.clear();
 		pg_properties_->DisableProperty(pg_properties_->GetGrid()->GetRoot());
 		pg_properties_->SetPropertyValueUnspecified(pg_properties_->GetGrid()->GetRoot());
@@ -852,6 +886,8 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		pg_props_side2_->DisableProperty(pg_props_side2_->GetGrid()->GetRoot());
 		pg_props_side2_->SetPropertyValueUnspecified(pg_props_side2_->GetGrid()->GetRoot());
 
+		Layout();
+
 		pg_properties_->Thaw();
 		pg_props_side1_->Thaw();
 		pg_props_side2_->Thaw();
@@ -859,7 +895,25 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		return;
 	}
 	else
+	{
 		pg_properties_->EnableProperty(pg_properties_->GetGrid()->GetRoot());
+
+		// Update control visibility
+		stc_sections_->Show();
+		cb_show_all_->Show();
+		btn_add_->Show();
+		if (!mobj_props_auto_apply)
+			btn_reset_->Show();
+		if (!mobj_props_auto_apply)
+			btn_apply_->Show();
+		label_no_object_->Hide();
+
+		Layout();
+	}
+
+	// Show all groups initially
+	for (auto group : groups_)
+		group->Hide(false, wxPGPropertyValuesFlags::DontRecurse);
 
 	// Setup property grid for the object type
 	bool is_udmf      = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
@@ -907,10 +961,10 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 					auto pname_wx = wxString::FromUTF8(prop.name);
 					switch (property::valueType(prop.value))
 					{
-					case property::ValueType::Bool: addBoolProperty(group_custom_, pname_wx, pname_wx); break;
-					case property::ValueType::Int: addIntProperty(group_custom_, pname_wx, pname_wx); break;
+					case property::ValueType::Bool:  addBoolProperty(group_custom_, pname_wx, pname_wx); break;
+					case property::ValueType::Int:   addIntProperty(group_custom_, pname_wx, pname_wx); break;
 					case property::ValueType::Float: addFloatProperty(group_custom_, pname_wx, pname_wx); break;
-					default: addStringProperty(group_custom_, pname_wx, pname_wx); break;
+					default:                         addStringProperty(group_custom_, pname_wx, pname_wx); break;
 					}
 				}
 			}
@@ -918,11 +972,14 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	}
 
 	// Generic properties
-	for (auto& property : properties_)
+	for (auto property : properties_)
+	{
 		property->openObjects(objects);
+		dynamic_cast<wxPGProperty*>(property)->SetModifiedStatus(false);
+	}
 
 	// Handle line sides
-	if (objects[0]->objType() == MapObject::Type::Line)
+	if (objects[0]->objType() == map::ObjectType::Line)
 	{
 		// Enable/disable side properties
 		auto prop = pg_properties_->GetProperty(wxS("sidefront"));
@@ -954,6 +1011,9 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	// Possibly update the argument names and visibility
 	updateArgs(nullptr);
 
+	// Hide empty groups
+	updateGroupVisibility();
+
 	pg_properties_->Thaw();
 	pg_props_side1_->Thaw();
 	pg_props_side2_->Thaw();
@@ -978,9 +1038,10 @@ void MapObjectPropsPanel::updateArgs(MOPGIntWithArgsProperty* source)
 	{
 		if (prop->type() == MOPGProperty::Type::ThingType || prop->type() == MOPGProperty::Type::ActionSpecial)
 		{
-			prop_with_args = (MOPGIntWithArgsProperty*)prop;
+			prop_with_args = dynamic_cast<MOPGIntWithArgsProperty*>(prop);
 
-			if (!prop_with_args->IsValueUnspecified() && prop_with_args->GetValue().GetInteger() != 0
+			if (!prop_with_args->IsValueUnspecified()
+				&& prop_with_args->GetValue().GetInteger() != 0
 				&& prop_with_args->hasArgs())
 			{
 				owner_prop = prop_with_args;
@@ -1001,8 +1062,19 @@ void MapObjectPropsPanel::updateArgs(MOPGIntWithArgsProperty* source)
 void MapObjectPropsPanel::applyChanges()
 {
 	// Go through all current properties and apply the current value
-	for (auto& property : properties_)
+	for (auto property : properties_)
+	{
+		auto wxprop = dynamic_cast<wxPGProperty*>(property);
+		if (!wxprop->HasFlag(wxPG_PROP_MODIFIED))
+			continue;
+
 		property->applyValue();
+		wxprop->SetModifiedStatus(false);
+	}
+
+	pg_properties_->Refresh();
+	pg_props_side1_->Refresh();
+	pg_props_side2_->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -1019,6 +1091,7 @@ void MapObjectPropsPanel::clearGrid()
 	group_custom_ = nullptr;
 	properties_.clear();
 	btn_add_->Show();
+	groups_.clear();
 
 	// Remove side1/2 tabs if they exist
 	// Calling RemovePage() changes the focus for no good reason; this is a
@@ -1033,7 +1106,7 @@ void MapObjectPropsPanel::clearGrid()
 	pg_props_side2_->Show(false);
 
 	// Reset last type so the grid is rebuilt next time objects are opened
-	last_type_ = MapObject::Type::Object;
+	last_type_ = map::ObjectType::Object;
 }
 
 
@@ -1043,6 +1116,8 @@ void MapObjectPropsPanel::clearGrid()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the apply button is clicked
@@ -1050,13 +1125,13 @@ void MapObjectPropsPanel::clearGrid()
 void MapObjectPropsPanel::onBtnApply(wxCommandEvent& e)
 {
 	string type;
-	if (last_type_ == MapObject::Type::Vertex)
+	if (last_type_ == map::ObjectType::Vertex)
 		type = "Vertex";
-	else if (last_type_ == MapObject::Type::Line)
+	else if (last_type_ == map::ObjectType::Line)
 		type = "Line";
-	else if (last_type_ == MapObject::Type::Sector)
+	else if (last_type_ == map::ObjectType::Sector)
 		type = "Sector";
-	else if (last_type_ == MapObject::Type::Thing)
+	else if (last_type_ == map::ObjectType::Thing)
 		type = "Thing";
 
 	// Apply changes
@@ -1090,6 +1165,7 @@ void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 		property->updateVisibility();
 
 	updateArgs(nullptr);
+	updateGroupVisibility();
 }
 
 // -----------------------------------------------------------------------------
@@ -1098,12 +1174,13 @@ void MapObjectPropsPanel::onShowAllToggled(wxCommandEvent& e)
 void MapObjectPropsPanel::onBtnAdd(wxCommandEvent& e)
 {
 	wxDialog dlg(this, -1, wxS("Add UDMF Property"));
+	auto     lh = ui::LayoutHelper(&dlg);
 
 	// Setup dialog sizer
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(msizer);
-	auto sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	auto sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// Name
 	auto text_name = new wxTextCtrl(&dlg, -1, wxEmptyString);
@@ -1200,13 +1277,13 @@ void MapObjectPropsPanel::onPropertyChanged(wxPropertyGridEvent& e)
 		{
 			// Found, apply value
 			string type;
-			if (last_type_ == MapObject::Type::Vertex)
+			if (last_type_ == map::ObjectType::Vertex)
 				type = "Vertex";
-			else if (last_type_ == MapObject::Type::Line)
+			else if (last_type_ == map::ObjectType::Line)
 				type = "Line";
-			else if (last_type_ == MapObject::Type::Sector)
+			else if (last_type_ == map::ObjectType::Sector)
 				type = "Sector";
-			else if (last_type_ == MapObject::Type::Thing)
+			else if (last_type_ == map::ObjectType::Thing)
 				type = "Thing";
 
 			mapeditor::editContext().beginUndoRecordLocked(

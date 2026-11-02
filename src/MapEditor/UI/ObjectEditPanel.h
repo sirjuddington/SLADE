@@ -2,16 +2,19 @@
 
 namespace slade
 {
-class ObjectEditGroup;
+namespace mapeditor
+{
+	class ObjectEditGroup;
+}
 
 class ObjectEditPanel : public wxPanel
 {
 public:
 	ObjectEditPanel(wxWindow* parent);
-	~ObjectEditPanel() = default;
+	~ObjectEditPanel() override = default;
 
-	void init(ObjectEditGroup* group);
-	void update(ObjectEditGroup* group, bool lock_rotation = false) const;
+	void init(const mapeditor::ObjectEditGroup* group);
+	void update(const mapeditor::ObjectEditGroup* group, bool lock_rotation = false) const;
 
 private:
 	wxTextCtrl* text_xoff_      = nullptr;

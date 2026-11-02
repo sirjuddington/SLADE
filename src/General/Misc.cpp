@@ -34,9 +34,12 @@
 #include "General/Misc.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/SImage/SIFormat.h"
 #include "Graphics/SImage/SImage.h"
 #include "Utility/FileUtils.h"
+#include "Utility/PropertyList.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -52,10 +55,6 @@ CVAR(Bool, size_as_string, true, CVar::Flag::Save)
 CVAR(Bool, percent_encoding, false, CVar::Flag::Save)
 EXTERN_CVAR(Float, col_cie_tristim_x)
 EXTERN_CVAR(Float, col_cie_tristim_z)
-namespace slade::misc
-{
-vector<WindowInfo> window_info;
-}
 
 
 // -----------------------------------------------------------------------------
@@ -154,7 +153,7 @@ bool misc::loadImageFromEntry(SImage* image, ArchiveEntry* entry, int index)
 // Detects the few known cases where a picture does not use PLAYPAL as its
 // default palette.
 // -----------------------------------------------------------------------------
-int misc::detectPaletteHack(ArchiveEntry* entry)
+int misc::detectPaletteHack(const ArchiveEntry* entry)
 {
 	if (entry == nullptr || entry->type() == nullptr)
 		return palhack::NONE;
@@ -235,7 +234,7 @@ bool misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 	if (!playpal || playpal->size() < 768)
 	{
 		// Search archive for any palette
-		Archive::SearchOptions opt;
+		ArchiveSearchOptions opt;
 
 		// Search "PLAYPAL" first
 		opt.match_type     = EntryType::fromId("palette");
@@ -262,7 +261,7 @@ bool misc::loadPaletteFromArchive(Palette* pal, Archive* archive, int lump)
 		return false;
 
 	// Read palette colours
-	const uint8_t* playpal_dat = playpal->rawData(true);
+	const uint8_t* playpal_dat = playpal->rawData();
 	uint8_t        max         = 0;
 	for (int a = 0; a < 768; ++a)
 		if (playpal_dat[a] > max)
@@ -300,12 +299,12 @@ string misc::sizeAsString(uint32_t size)
 	}
 	else if (size < 1024 * 1024)
 	{
-		double kb = (double)size / 1024;
+		double kb = static_cast<double>(size) / 1024;
 		return fmt::format("{:1.2f}kb", kb);
 	}
 	else
 	{
-		double mb = (double)size / (1024 * 1024);
+		double mb = static_cast<double>(size) / (1024 * 1024);
 		return fmt::format("{:1.2f}mb", mb);
 	}
 }
@@ -314,8 +313,10 @@ string misc::sizeAsString(uint32_t size)
 // Sanitizes a wad lump name for exporting as a file name.
 // ZDoom merely substitutes \ to ^, but Doomsday requires percent encoding of
 // every non-alphanumeric character.
+// If [for_filesystem] is true, the name will be sanitized for use as a
+// filesystem path (ie. invalid characters replaced with underscores on Windows)
 // -----------------------------------------------------------------------------
-string misc::lumpNameToFileName(string_view lump)
+string misc::lumpNameToFileName(string_view lump, bool for_filesystem)
 {
 	if (percent_encoding)
 	{
@@ -323,8 +324,13 @@ string misc::lumpNameToFileName(string_view lump)
 		string file;
 		for (char chr : lump)
 		{
-			if ((chr < 'a' || chr > 'z') && (chr < 'A' || chr > 'Z') && (chr < '0' || chr > '9') && chr != '-'
-				&& chr != '.' && chr != '_' && chr != '~')
+			if ((chr < 'a' || chr > 'z')
+				&& (chr < 'A' || chr > 'Z')
+				&& (chr < '0' || chr > '9')
+				&& chr != '-'
+				&& chr != '.'
+				&& chr != '_'
+				&& chr != '~')
 			{
 				file += fmt::format("%{:02X}", static_cast<unsigned char>(chr));
 			}
@@ -337,8 +343,14 @@ string misc::lumpNameToFileName(string_view lump)
 
 	// ZDoom
 	string fname{ lump };
-	std::replace(fname.begin(), fname.end(), '\\', '^');
-	std::replace(fname.begin(), fname.end(), '/', '^');
+	std::ranges::replace(fname, '\\', '^');
+	std::ranges::replace(fname, '/', '^');
+
+#ifdef __WXMSW__
+	if (for_filesystem)
+		fname = fileutil::sanitizeFilename(fname);
+#endif
+
 	return fname;
 }
 
@@ -380,7 +392,7 @@ string misc::fileNameToLumpName(string_view file, bool percent_encoding_only)
 // -----------------------------------------------------------------------------
 // Creates a mass rename filter string from [names]
 // -----------------------------------------------------------------------------
-string misc::massRenameFilter(vector<string>& names)
+string misc::massRenameFilter(const vector<string>& names)
 {
 	// Check any names were given
 	if (names.empty())
@@ -461,14 +473,14 @@ uint32_t crc_table[256];
 int crc_table_computed = 0;
 
 /* Make the table for a fast CRC. */
-void make_crc_table(void)
+void make_crc_table()
 {
 	uint32_t c;
 	int      n, k;
 
 	for (n = 0; n < 256; n++)
 	{
-		c = (uint32_t)n;
+		c = static_cast<uint32_t>(n);
 
 		for (k = 0; k < 8; k++)
 		{
@@ -488,21 +500,21 @@ void make_crc_table(void)
 should be initialized to all 1's, and the transmitted value
 is the 1's complement of the final running CRC (see the
 crc() routine below)). */
-uint32_t update_crc(uint32_t crc, const uint8_t* buf, uint32_t len)
+uint32_t update_crc(uint32_t crc, const uint8_t* buf, u64 len)
 {
 	uint32_t c = crc;
 
 	if (!crc_table_computed)
 		make_crc_table();
 
-	for (uint32_t n = 0; n < len; n++)
+	for (u64 n = 0; n < len; n++)
 		c = crc_table[(c ^ buf[n]) & 0xff] ^ (c >> 8);
 
 	return c;
 }
 
 /* Return the CRC of the bytes buf[0..len-1]. */
-uint32_t misc::crc(const uint8_t* buf, uint32_t len)
+uint32_t misc::crc(const uint8_t* buf, u64 len)
 {
 	return update_crc(0xffffffffL, buf, len) ^ 0xffffffffL;
 }
@@ -513,7 +525,7 @@ uint32_t misc::crc(const uint8_t* buf, uint32_t len)
 // the dimensions.
 // In case the texture is not found, the dimensions returned are null
 // -----------------------------------------------------------------------------
-Vec2i misc::findJaguarTextureDimensions(ArchiveEntry* entry, string_view name)
+Vec2i misc::findJaguarTextureDimensions(const ArchiveEntry* entry, string_view name)
 {
 	Vec2i dimensions;
 	dimensions.x = 0;
@@ -552,73 +564,4 @@ Vec2i misc::findJaguarTextureDimensions(ArchiveEntry* entry, string_view name)
 	}
 	// We didn't find the texture
 	return dimensions;
-}
-
-// -----------------------------------------------------------------------------
-// Gets the saved window info for [id]
-// -----------------------------------------------------------------------------
-misc::WindowInfo misc::getWindowInfo(string_view id)
-{
-	for (auto& a : window_info)
-	{
-		if (a.id == id)
-			return a;
-	}
-
-	return WindowInfo("", -1, -1, -1, -1);
-}
-
-// -----------------------------------------------------------------------------
-// Sets the saved window info for [id]
-// -----------------------------------------------------------------------------
-void misc::setWindowInfo(string_view id, int width, int height, int left, int top)
-{
-	if (id.empty())
-		return;
-
-	for (auto& a : window_info)
-	{
-		if (a.id == id)
-		{
-			if (width >= -1)
-				a.width = width;
-			if (height >= -1)
-				a.height = height;
-			if (left >= -1)
-				a.left = left;
-			if (top >= -1)
-				a.top = top;
-			return;
-		}
-	}
-
-	window_info.emplace_back(id, width, height, left, top);
-}
-
-// -----------------------------------------------------------------------------
-// Reads saved window info from tokenizer [tz]
-// -----------------------------------------------------------------------------
-void misc::readWindowInfo(Tokenizer& tz)
-{
-	// Read definitions
-	tz.advIf("{");
-	while (!tz.check("}") && !tz.atEnd())
-	{
-		auto id     = tz.current().text;
-		int  width  = tz.next().asInt();
-		int  height = tz.next().asInt();
-		int  left   = tz.next().asInt();
-		int  top    = tz.next().asInt();
-		setWindowInfo(id, width, height, left, top);
-		tz.adv();
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Writes all saved window info to [file]
-// -----------------------------------------------------------------------------
-void misc::writeWindowInfo(SFile& file)
-{
-	for (auto& a : window_info)
-		file.writeStr(fmt::format("\t{} {} {} {} {}\n", a.id, a.width, a.height, a.left, a.top));
 }

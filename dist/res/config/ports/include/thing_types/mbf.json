@@ -1,0 +1,16 @@
+{
+  "groups": [
+    {
+      "name": "Monsters",
+      "things": [
+        {
+          "type": 888,
+          "name": "Helper Dog",
+          "colour": "rgb(200, 0, 0)",
+          "radius": 12,
+          "sprite": "DOGSA1"
+        }
+      ]
+    }
+  ]
+}

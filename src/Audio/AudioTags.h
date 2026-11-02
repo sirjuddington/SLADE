@@ -2,17 +2,17 @@
 
 namespace slade::audio
 {
-string getID3Tag(MemChunk& mc);
-string getOggComments(MemChunk& mc);
-string getFlacComments(MemChunk& mc);
-string getITComments(MemChunk& mc);
-string getModComments(MemChunk& mc);
-string getS3MComments(MemChunk& mc);
-string getXMComments(MemChunk& mc);
-string getWavInfo(MemChunk& mc);
-string getVocInfo(MemChunk& mc);
-string getSunInfo(MemChunk& mc);
-string getRmidInfo(MemChunk& mc);
-string getAiffInfo(MemChunk& mc);
-size_t checkForTags(MemChunk& mc);
+string getID3Tag(const MemChunk& mc);
+string getOggComments(const MemChunk& mc);
+string getFlacComments(const MemChunk& mc);
+string getITComments(const MemChunk& mc);
+string getModComments(const MemChunk& mc);
+string getS3MComments(const MemChunk& mc);
+string getXMComments(const MemChunk& mc);
+string getWavInfo(const MemChunk& mc);
+string getVocInfo(const MemChunk& mc);
+string getSunInfo(const MemChunk& mc);
+string getRmidInfo(const MemChunk& mc);
+string getAiffInfo(const MemChunk& mc);
+size_t checkForTags(const MemChunk& mc);
 } // namespace slade::audio

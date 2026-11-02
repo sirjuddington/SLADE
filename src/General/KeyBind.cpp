@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "KeyBind.h"
+#include "App.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -53,6 +54,62 @@ vector<KeyBindHandler*> kb_handlers;
 
 // -----------------------------------------------------------------------------
 //
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade
+{
+// -----------------------------------------------------------------------------
+// Returns the path to the keybinds config JSON file
+// -----------------------------------------------------------------------------
+string keybindConfigPath()
+{
+	return app::path("keybinds.json", app::Dir::User);
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if two Keypress structs are equal
+// -----------------------------------------------------------------------------
+bool kpEqual(const Keypress& kp1, const Keypress& kp2)
+{
+	if (!strutil::equalCI(kp1.key, kp2.key))
+		return false;
+
+	return kp1.alt == kp2.alt && kp1.ctrl == kp2.ctrl && kp1.shift == kp2.shift;
+}
+} // namespace slade
+
+
+// -----------------------------------------------------------------------------
+//
+// Keypress Struct <-> JSON Object Conversion Functions
+//
+// -----------------------------------------------------------------------------
+namespace slade
+{
+void to_json(json& j, const Keypress& kp)
+{
+	j = json{ { "key", kp.key } };
+	if (kp.alt)
+		j["mod_alt"] = true;
+	if (kp.ctrl)
+		j["mod_ctrl"] = true;
+	if (kp.shift)
+		j["mod_shift"] = true;
+}
+
+void from_json(const json& j, Keypress& kp)
+{
+	j.at("key").get_to(kp.key);
+	kp.alt   = j.value("mod_alt", false);
+	kp.ctrl  = j.value("mod_ctrl", false);
+	kp.shift = j.value("mod_shift", false);
+}
+} // namespace slade
+
+
+// -----------------------------------------------------------------------------
+//
 // Keypress Struct Functions
 //
 // -----------------------------------------------------------------------------
@@ -66,7 +123,7 @@ string Keypress::asString() const
 	if (key.empty())
 		return "";
 
-	string ret = "";
+	string ret;
 	if (ctrl)
 		ret += "Ctrl+";
 	if (alt)
@@ -75,7 +132,7 @@ string Keypress::asString() const
 		ret += "Shift+";
 
 	string keyname = key;
-	std::replace(keyname.begin(), keyname.end(), '_', ' ');
+	std::ranges::replace(keyname, '_', ' ');
 	strutil::capitalizeIP(keyname);
 	ret += keyname;
 
@@ -101,7 +158,7 @@ void KeyBind::addKey(string_view key, bool alt, bool ctrl, bool shift)
 // -----------------------------------------------------------------------------
 // Returns a string representation of all the keys bound to this keybind
 // -----------------------------------------------------------------------------
-string KeyBind::keysAsString()
+string KeyBind::keysAsString() const
 {
 	string ret;
 
@@ -115,7 +172,7 @@ string KeyBind::keysAsString()
 			ret += "Shift+";
 
 		auto keyname = keys_[a].key;
-		std::replace(keyname.begin(), keyname.end(), '_', ' ');
+		std::ranges::replace(keyname, '_', ' ');
 		strutil::capitalizeIP(keyname);
 		ret += keyname;
 
@@ -127,6 +184,21 @@ string KeyBind::keysAsString()
 		return "None";
 	else
 		return ret;
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if this keybind has default keys
+// -----------------------------------------------------------------------------
+bool KeyBind::isDefault() const
+{
+	if (keys_.size() != defaults_.size())
+		return false;
+
+	for (unsigned a = 0; a < keys_.size(); a++)
+		if (!kpEqual(keys_[a], defaults_[a]))
+			return false;
+
+	return true;
 }
 
 
@@ -154,7 +226,7 @@ KeyBind& KeyBind::bind(string_view name)
 // -----------------------------------------------------------------------------
 // Returns a list of all keybind names bound to [key]
 // -----------------------------------------------------------------------------
-vector<string> KeyBind::bindsForKey(Keypress key)
+vector<string> KeyBind::bindsForKey(const Keypress& key)
 {
 	vector<string> matches;
 
@@ -223,7 +295,9 @@ bool KeyBind::addBind(
 	// Check if the key is already bound to it
 	for (unsigned a = 0; a < bind->keys_.size(); a++)
 	{
-		if (bind->keys_[a].alt == key.alt && bind->keys_[a].ctrl == key.ctrl && bind->keys_[a].shift == key.shift
+		if (bind->keys_[a].alt == key.alt
+			&& bind->keys_[a].ctrl == key.ctrl
+			&& bind->keys_[a].shift == key.shift
 			&& bind->keys_[a].key == key.key)
 		{
 			// It is, remove the bind
@@ -250,103 +324,103 @@ string KeyBind::keyName(int key)
 	// Return string representation of key id
 	switch (key)
 	{
-	case WXK_BACK: return "backspace";
-	case WXK_TAB: return "tab";
-	case WXK_RETURN: return "return";
-	case WXK_ESCAPE: return "escape";
-	case WXK_SPACE: return "space";
-	case WXK_DELETE: return "delete";
-	case WXK_CLEAR: return "clear";
-	case WXK_SHIFT: return "shift";
-	case WXK_ALT: return "alt";
-	case WXK_PAUSE: return "pause";
-	case WXK_END: return "end";
-	case WXK_HOME: return "home";
-	case WXK_LEFT: return "left";
-	case WXK_UP: return "up";
-	case WXK_RIGHT: return "right";
-	case WXK_DOWN: return "down";
-	case WXK_INSERT: return "insert";
-	case WXK_NUMPAD0: return "num_0";
-	case WXK_NUMPAD1: return "num_1";
-	case WXK_NUMPAD2: return "num_2";
-	case WXK_NUMPAD3: return "num_3";
-	case WXK_NUMPAD4: return "num_4";
-	case WXK_NUMPAD5: return "num_5";
-	case WXK_NUMPAD6: return "num_6";
-	case WXK_NUMPAD7: return "num_7";
-	case WXK_NUMPAD8: return "num_8";
-	case WXK_NUMPAD9: return "num_9";
-	case WXK_ADD: return "plus";
-	case WXK_SUBTRACT: return "minus";
-	case WXK_F1: return "f1";
-	case WXK_F2: return "f2";
-	case WXK_F3: return "f3";
-	case WXK_F4: return "f4";
-	case WXK_F5: return "f5";
-	case WXK_F6: return "f6";
-	case WXK_F7: return "f7";
-	case WXK_F8: return "f8";
-	case WXK_F9: return "f9";
-	case WXK_F10: return "f10";
-	case WXK_F11: return "f11";
-	case WXK_F12: return "f12";
-	case WXK_F13: return "f13";
-	case WXK_F14: return "f14";
-	case WXK_F15: return "f15";
-	case WXK_F16: return "f16";
-	case WXK_F17: return "f17";
-	case WXK_F18: return "f18";
-	case WXK_F19: return "f19";
-	case WXK_F20: return "f20";
-	case WXK_F21: return "f21";
-	case WXK_F22: return "f22";
-	case WXK_F23: return "f23";
-	case WXK_F24: return "f24";
-	case WXK_NUMLOCK: return "numlock";
-	case WXK_PAGEUP: return "pageup";
-	case WXK_PAGEDOWN: return "pagedown";
-	case WXK_NUMPAD_SPACE: return "num_space";
-	case WXK_NUMPAD_TAB: return "num_tab";
-	case WXK_NUMPAD_ENTER: return "num_enter";
-	case WXK_NUMPAD_F1: return "num_f1";
-	case WXK_NUMPAD_F2: return "num_f2";
-	case WXK_NUMPAD_F3: return "num_f3";
-	case WXK_NUMPAD_F4: return "num_f4";
-	case WXK_NUMPAD_HOME: return "num_home";
-	case WXK_NUMPAD_LEFT: return "num_left";
-	case WXK_NUMPAD_UP: return "num_up";
-	case WXK_NUMPAD_RIGHT: return "num_right";
-	case WXK_NUMPAD_DOWN: return "num_down";
-	case WXK_NUMPAD_PAGEUP: return "num_pageup";
-	case WXK_NUMPAD_PAGEDOWN: return "num_pagedown";
-	case WXK_NUMPAD_END: return "num_end";
-	case WXK_NUMPAD_BEGIN: return "num_begin";
-	case WXK_NUMPAD_INSERT: return "num_insert";
-	case WXK_NUMPAD_DELETE: return "num_delete";
-	case WXK_NUMPAD_EQUAL: return "num_equal";
-	case WXK_NUMPAD_MULTIPLY: return "num_multiply";
-	case WXK_NUMPAD_ADD: return "num_plus";
+	case WXK_BACK:             return "backspace";
+	case WXK_TAB:              return "tab";
+	case WXK_RETURN:           return "return";
+	case WXK_ESCAPE:           return "escape";
+	case WXK_SPACE:            return "space";
+	case WXK_DELETE:           return "delete";
+	case WXK_CLEAR:            return "clear";
+	case WXK_SHIFT:            return "shift";
+	case WXK_ALT:              return "alt";
+	case WXK_PAUSE:            return "pause";
+	case WXK_END:              return "end";
+	case WXK_HOME:             return "home";
+	case WXK_LEFT:             return "left";
+	case WXK_UP:               return "up";
+	case WXK_RIGHT:            return "right";
+	case WXK_DOWN:             return "down";
+	case WXK_INSERT:           return "insert";
+	case WXK_NUMPAD0:          return "num_0";
+	case WXK_NUMPAD1:          return "num_1";
+	case WXK_NUMPAD2:          return "num_2";
+	case WXK_NUMPAD3:          return "num_3";
+	case WXK_NUMPAD4:          return "num_4";
+	case WXK_NUMPAD5:          return "num_5";
+	case WXK_NUMPAD6:          return "num_6";
+	case WXK_NUMPAD7:          return "num_7";
+	case WXK_NUMPAD8:          return "num_8";
+	case WXK_NUMPAD9:          return "num_9";
+	case WXK_ADD:              return "plus";
+	case WXK_SUBTRACT:         return "minus";
+	case WXK_F1:               return "f1";
+	case WXK_F2:               return "f2";
+	case WXK_F3:               return "f3";
+	case WXK_F4:               return "f4";
+	case WXK_F5:               return "f5";
+	case WXK_F6:               return "f6";
+	case WXK_F7:               return "f7";
+	case WXK_F8:               return "f8";
+	case WXK_F9:               return "f9";
+	case WXK_F10:              return "f10";
+	case WXK_F11:              return "f11";
+	case WXK_F12:              return "f12";
+	case WXK_F13:              return "f13";
+	case WXK_F14:              return "f14";
+	case WXK_F15:              return "f15";
+	case WXK_F16:              return "f16";
+	case WXK_F17:              return "f17";
+	case WXK_F18:              return "f18";
+	case WXK_F19:              return "f19";
+	case WXK_F20:              return "f20";
+	case WXK_F21:              return "f21";
+	case WXK_F22:              return "f22";
+	case WXK_F23:              return "f23";
+	case WXK_F24:              return "f24";
+	case WXK_NUMLOCK:          return "numlock";
+	case WXK_PAGEUP:           return "pageup";
+	case WXK_PAGEDOWN:         return "pagedown";
+	case WXK_NUMPAD_SPACE:     return "num_space";
+	case WXK_NUMPAD_TAB:       return "num_tab";
+	case WXK_NUMPAD_ENTER:     return "num_enter";
+	case WXK_NUMPAD_F1:        return "num_f1";
+	case WXK_NUMPAD_F2:        return "num_f2";
+	case WXK_NUMPAD_F3:        return "num_f3";
+	case WXK_NUMPAD_F4:        return "num_f4";
+	case WXK_NUMPAD_HOME:      return "num_home";
+	case WXK_NUMPAD_LEFT:      return "num_left";
+	case WXK_NUMPAD_UP:        return "num_up";
+	case WXK_NUMPAD_RIGHT:     return "num_right";
+	case WXK_NUMPAD_DOWN:      return "num_down";
+	case WXK_NUMPAD_PAGEUP:    return "num_pageup";
+	case WXK_NUMPAD_PAGEDOWN:  return "num_pagedown";
+	case WXK_NUMPAD_END:       return "num_end";
+	case WXK_NUMPAD_BEGIN:     return "num_begin";
+	case WXK_NUMPAD_INSERT:    return "num_insert";
+	case WXK_NUMPAD_DELETE:    return "num_delete";
+	case WXK_NUMPAD_EQUAL:     return "num_equal";
+	case WXK_NUMPAD_MULTIPLY:  return "num_multiply";
+	case WXK_NUMPAD_ADD:       return "num_plus";
 	case WXK_NUMPAD_SEPARATOR: return "num_separator";
-	case WXK_NUMPAD_SUBTRACT: return "num_minus";
-	case WXK_NUMPAD_DECIMAL: return "num_decimal";
-	case WXK_NUMPAD_DIVIDE: return "num_divide";
-	case WXK_WINDOWS_LEFT: return "win_left";
-	case WXK_WINDOWS_RIGHT: return "win_right";
-	case WXK_WINDOWS_MENU: return "win_menu";
-	case WXK_PRINT: return "printscrn";
+	case WXK_NUMPAD_SUBTRACT:  return "num_minus";
+	case WXK_NUMPAD_DECIMAL:   return "num_decimal";
+	case WXK_NUMPAD_DIVIDE:    return "num_divide";
+	case WXK_WINDOWS_LEFT:     return "win_left";
+	case WXK_WINDOWS_RIGHT:    return "win_right";
+	case WXK_WINDOWS_MENU:     return "win_menu";
+	case WXK_PRINT:            return "printscrn";
 #ifdef __APPLE__
 	case WXK_COMMAND: return "command";
 #else
 	case WXK_CONTROL: return "control";
 #endif
 	case '\\': return "backslash";
-	default: break;
-	};
+	default:   break;
+	}
 
 	// Check for ascii character
 	if (key > 32 && key < 128)
-		return { (char)key };
+		return { static_cast<char>(key) };
 
 	// Unknown character, just return "key##"
 	return fmt::format("key{}", key);
@@ -359,19 +433,19 @@ string KeyBind::mbName(int button)
 {
 	switch (button)
 	{
-	case wxMOUSE_BTN_LEFT: return "mouse1";
-	case wxMOUSE_BTN_RIGHT: return "mouse2";
+	case wxMOUSE_BTN_LEFT:   return "mouse1";
+	case wxMOUSE_BTN_RIGHT:  return "mouse2";
 	case wxMOUSE_BTN_MIDDLE: return "mouse3";
-	case wxMOUSE_BTN_AUX1: return "mouse4";
-	case wxMOUSE_BTN_AUX2: return "mouse5";
-	default: return fmt::format("mouse{}", button);
-	};
+	case wxMOUSE_BTN_AUX1:   return "mouse4";
+	case wxMOUSE_BTN_AUX2:   return "mouse5";
+	default:                 return fmt::format("mouse{}", button);
+	}
 }
 
 // -----------------------------------------------------------------------------
 // 'Presses' all keybinds bound to [key]
 // -----------------------------------------------------------------------------
-bool KeyBind::keyPressed(Keypress key)
+bool KeyBind::keyPressed(const Keypress& key)
 {
 	// Ignore raw modifier keys
 	if (key.key == "control" || key.key == "shift" || key.key == "alt" || key.key == "command")
@@ -388,7 +462,9 @@ bool KeyBind::keyPressed(Keypress key)
 			auto& kp = kb.keys_[a];
 
 			// Check for match with keypress
-			if ((kp.shift == key.shift || kb.ignore_shift_) && kp.alt == key.alt && kp.ctrl == key.ctrl
+			if ((kp.shift == key.shift || kb.ignore_shift_)
+				&& kp.alt == key.alt
+				&& kp.ctrl == key.ctrl
 				&& kp.key == key.key)
 			{
 				// Set bind state
@@ -465,11 +541,10 @@ void KeyBind::pressBind(string_view name)
 // -----------------------------------------------------------------------------
 Keypress KeyBind::asKeyPress(int keycode, int modifiers)
 {
-	return Keypress(
-		keyName(keycode),
-		((modifiers & wxMOD_ALT) != 0),
-		((modifiers & wxMOD_CMD) != 0),
-		((modifiers & wxMOD_SHIFT) != 0));
+	return { keyName(keycode),
+			 ((modifiers & wxMOD_ALT) != 0),
+			 ((modifiers & wxMOD_CMD) != 0),
+			 ((modifiers & wxMOD_SHIFT) != 0) };
 }
 
 // -----------------------------------------------------------------------------
@@ -556,7 +631,7 @@ void KeyBind::initBinds()
 	addBind("txed_tex_down", Keypress("down", KPM_CTRL), "Move Texture down", group);
 	addBind("txed_tex_down", Keypress("D", KPM_CTRL));
 	addBind("txed_tex_new", Keypress("N", KPM_CTRL), "New Texture", group);
-	addBind("txed_tex_new_patch", Keypress("N", KPM_CTRL | KPM_SHIFT), "New Texture from Patch", group);
+	// addBind("txed_tex_new_patch", Keypress("N", KPM_CTRL | KPM_SHIFT), "New Texture from Patch", group);
 	addBind("txed_tex_new_file", Keypress("N", KPM_CTRL | KPM_ALT), "New Texture from File", group);
 	addBind("txed_tex_delete", Keypress("delete"), "Delete Texture", group);
 
@@ -574,10 +649,8 @@ void KeyBind::initBinds()
 	addBind("me2d_pan_view", Keypress("mouse3"), "Pan view", group);
 	addBind("me2d_pan_view", Keypress("space", KPM_CTRL));
 	addBind("me2d_move", Keypress("Z"), "Toggle item move mode", group);
-	addBind("me2d_zoom_in_m", Keypress("mwheelup"), "Zoom in (towards mouse)", group);
-	addBind("me2d_zoom_out_m", Keypress("mwheeldown"), "Zoom out (towards mouse)", group);
-	addBind("me2d_zoom_in", Keypress("="), "Zoom in (towards screen center)", group);
-	addBind("me2d_zoom_out", Keypress("-"), "Zoom out (towards screen center)", group);
+	addBind("me2d_zoom_in", Keypress("="), "Zoom in", group);
+	addBind("me2d_zoom_out", Keypress("-"), "Zoom out", group);
 	addBind("me2d_show_object", Keypress("=", KPM_SHIFT), "Zoom in, show current object", group);
 	addBind("me2d_show_object", Keypress("mwheelup", KPM_SHIFT));
 	addBind("me2d_show_all", Keypress("-", KPM_SHIFT), "Zoom out, show full map", group);
@@ -596,7 +669,7 @@ void KeyBind::initBinds()
 	addBind("me2d_mode_3d_at_mouse", Keypress("Q", KPM_SHIFT), "Enter 3d mode at the mouse cursor position", group);
 	addBind("me2d_flat_type", Keypress("F", KPM_CTRL), "Cycle flat type", group);
 	addBind("me2d_split_line", Keypress("S", KPM_SHIFT), "Split nearest line", group);
-	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock hilight", group);
+	addBind("me2d_lock_hilight", Keypress("H", KPM_CTRL), "Lock/unlock highlight", group);
 	addBind("me2d_begin_linedraw", Keypress("space"), "Begin line drawing", group);
 	addBind("me2d_begin_shapedraw", Keypress("space", KPM_SHIFT), "Begin shape drawing", group);
 	addBind("me2d_create_object", Keypress("insert"), "Create object", group);
@@ -651,11 +724,11 @@ void KeyBind::initBinds()
 	addBind("me3d_toggle_fullbright", Keypress("B"), "Toggle full brightness", group);
 	addBind("me3d_adjust_brightness", Keypress("B", KPM_SHIFT), "Adjust brightness", group);
 	addBind("me3d_toggle_gravity", Keypress("G"), "Toggle camera gravity", group);
-	addBind("me3d_release_mouse", Keypress("tab"), "Release mouse cursor", group);
+	addBind("me3d_lock_mouselook", Keypress("M"), "Toggle mouselook", group);
 	addBind("me3d_clear_selection", Keypress("C"), "Clear selection", group);
 	addBind("me3d_toggle_things", Keypress("T"), "Toggle thing display", group);
-	addBind("me3d_thing_style", Keypress("T", KPM_SHIFT), "Cycle thing render style", group);
-	addBind("me3d_toggle_hilight", Keypress("H"), "Toggle hilight", group);
+	addBind("me3d_thing_boxes", Keypress("T", KPM_SHIFT), "Toggle thing boxes", group);
+	addBind("me3d_toggle_hilight", Keypress("H"), "Toggle highlight", group);
 	addBind("me3d_copy_tex_type", Keypress("C", KPM_CTRL), "Copy texture or thing type", group);
 	addBind("me3d_copy_tex_type", Keypress("mouse3"));
 	addBind("me3d_paste_tex_type", Keypress("V", KPM_CTRL), "Paste texture or thing type", group);
@@ -675,10 +748,12 @@ void KeyBind::initBinds()
 	addBind("me3d_camera_back", Keypress("S"), "Camera backward", group, true);
 	addBind("me3d_camera_left", Keypress("A"), "Camera strafe left", group, true);
 	addBind("me3d_camera_right", Keypress("D"), "Camera strafe right", group, true);
-	addBind("me3d_camera_up", Keypress("up"), "Camera move up", group, true);
-	addBind("me3d_camera_down", Keypress("down"), "Camera move down", group, true);
+	addBind("me3d_camera_up", Keypress("up"), "Camera move or look up", group, true);
+	addBind("me3d_camera_down", Keypress("down"), "Camera move or look down", group, true);
 	addBind("me3d_camera_turn_left", Keypress("left"), "Camera turn left", group, true);
 	addBind("me3d_camera_turn_right", Keypress("right"), "Camera turn right", group, true);
+	addBind("me3d_camera_look_up", Keypress("up", KPM_ALT), "Camera look up", group, true);
+	addBind("me3d_camera_look_down", Keypress("down", KPM_ALT), "Camera look down", group, true);
 
 	// Map Editor 3D Light (me3d_light*)
 	group = "Map Editor 3D Mode Light";
@@ -721,7 +796,7 @@ void KeyBind::initBinds()
 	group = "Map Editor 3D Mode Walls";
 	addBind("me3d_wall_toggle_link_ofs", Keypress("O", KPM_CTRL), "Toggle linked wall offsets", group);
 	addBind("me3d_wall_autoalign_x", Keypress("A", KPM_CTRL), "Auto-align textures on X", group, false, 1);
-	addBind("me3d_wall_autoalign_y", Keypress("A", KPM_SHIFT), "Auto-align textures on Y", group, false, 1);
+	addBind("me3d_wall_autoalign_y", Keypress("A", KPM_CTRL | KPM_SHIFT), "Auto-align textures on Y", group, false, 1);
 	addBind("me3d_wall_unpeg_lower", Keypress("L"), "Toggle lower unpegged", group);
 	addBind("me3d_wall_unpeg_upper", Keypress("U"), "Toggle upper unpegged", group);
 
@@ -751,65 +826,50 @@ void KeyBind::initBinds()
 			keybind.defaults_.push_back(keybind.keys_[k]);
 	}
 
-	// Create sorted list
-	keybinds_sorted = keybinds;
-	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
+	// Load keybind user configuration
+	if (auto j = jsonutil::parseFile(keybindConfigPath()); !j.is_discarded())
+	{
+		for (auto& [name, keys] : j.items())
+		{
+			// Clear any current binds for the key
+			bind(name).keys_.clear();
+
+			// Add keybinds
+			for (auto& kb : keys)
+				addBind(name, kb);
+		}
+	}
+
+	updateSortedBindsList();
 }
 
 // -----------------------------------------------------------------------------
-// Writes all keybind definitions as a string
+// Saves non-default keybind definitions to keybinds.json in the user config dir
 // -----------------------------------------------------------------------------
-string KeyBind::writeBinds()
+void KeyBind::saveBinds()
 {
-	// Init string
-	string ret = "";
-
-	// Go through all keybinds
+	json j;
 	for (auto& kb : keybinds)
 	{
-		// Add keybind line
-		ret += "\t";
-		ret += kb.name_;
+		if (kb.isDefault())
+			continue;
 
-		// 'unbound' indicates no binds
-		if (kb.keys_.empty())
-			ret += " unbound";
+		auto kb_json = json::array();
 
-		// Go through all bound keys
-		for (unsigned a = 0; a < kb.keys_.size(); a++)
-		{
-			auto& kp = kb.keys_[a];
-			ret += " \"";
+		for (auto& key : kb.keys_)
+			kb_json.push_back(key);
 
-			// Add modifiers (if any)
-			if (kp.alt)
-				ret += "a";
-			if (kp.ctrl)
-				ret += "c";
-			if (kp.shift)
-				ret += "s";
-			if (kp.alt || kp.ctrl || kp.shift)
-				ret += "|";
-
-			// Add key
-			ret += kp.key;
-			ret += "\"";
-
-			// Add comma if there are any more keys
-			if (a < kb.keys_.size() - 1)
-				ret += ",";
-		}
-
-		ret += "\n";
+		j[kb.name_] = kb_json;
 	}
 
-	return ret;
+	jsonutil::writeFile(j, keybindConfigPath());
 }
 
 // -----------------------------------------------------------------------------
 // Reads keybind defeinitions from tokenizer [tz]
+// (in old format from pre-3.3.0 slade3.cfg)
 // -----------------------------------------------------------------------------
-bool KeyBind::readBinds(Tokenizer& tz)
+bool KeyBind::readOldBinds(Tokenizer& tz)
 {
 	// Parse until ending }
 	while (!tz.checkOrEnd("}"))
@@ -855,9 +915,7 @@ bool KeyBind::readBinds(Tokenizer& tz)
 		tz.adv();
 	}
 
-	// Create sorted list
-	keybinds_sorted = keybinds;
-	std::sort(keybinds_sorted.begin(), keybinds_sorted.end());
+	updateSortedBindsList();
 
 	return true;
 }

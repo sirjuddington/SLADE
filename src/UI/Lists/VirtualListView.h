@@ -9,7 +9,7 @@ class VirtualListView : public wxListCtrl
 {
 public:
 	VirtualListView(wxWindow* parent);
-	virtual ~VirtualListView() = default;
+	~VirtualListView() override = default;
 
 	void setSearchColumn(int col) { col_search_ = col; }
 	void setColumnEditable(int col, bool edit = true)

@@ -1,9 +1,9 @@
 #pragma once
 
+#include "General/JsonFwd.h"
+
 namespace slade
 {
-class ParseTreeNode;
-
 namespace game
 {
 	struct ArgValue
@@ -35,12 +35,13 @@ namespace game
 		vector<ArgValue> custom_values;
 		vector<ArgValue> custom_flags;
 
-		Arg() {}
+		Arg() = default;
 		Arg(string_view name) : name{ name } {}
 
 		string valueString(int value) const;
 		string speedLabel(int value) const;
 		void   parse(ParseTreeNode* node, SpecialMap* shared_args);
+		void   fromJson(const Json& j, SpecialMap* shared_args);
 	};
 
 	struct ArgSpec

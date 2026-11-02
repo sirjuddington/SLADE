@@ -33,10 +33,19 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "HexenMapFormat.h"
+#include "Archive/ArchiveEntry.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
-#include "General/UI.h"
+#include "Game/Game.h"
 #include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
 #include "SLADEMap/MapObjectCollection.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SideList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -47,6 +56,59 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 
+
+// -----------------------------------------------------------------------------
+// Writes the given [map_data] to Hexen format, returning the list of entries
+// making up the map
+// -----------------------------------------------------------------------------
+vector<unique_ptr<ArchiveEntry>> HexenMapFormat::writeMap(
+	const MapObjectCollection& map_data,
+	const PropertyList&        map_extra_props)
+{
+	// Build hexen format map data
+	auto vertexes = buildVertices(map_data.vertices());
+	auto sidedefs = buildSides(map_data.sides());
+	auto linedefs = buildHexenLines(map_data.lines());
+	auto sectors  = buildSectors(map_data.sectors());
+	auto things   = buildHexenThings(map_data.things());
+
+	// Check if we need to compress sides
+	auto map_compress_sides = CVar::getInt("map_compress_sides");
+	if (map_compress_sides == 2 || map_compress_sides == 1 && sidedefs.size() > 65535)
+	{
+		// Build table of sides not to compress (if their parent line has a special or id)
+		vector<u8> no_compress(sidedefs.size(), 0);
+		for (const auto& line : map_data.lines())
+		{
+			if (line->special() != 0 || line->id() != 0)
+			{
+				if (line->s1Index() >= 0)
+					no_compress[line->s1Index()] = 1;
+				if (line->s2Index() >= 0)
+					no_compress[line->s2Index()] = 1;
+			}
+		}
+
+		// Compress sides & update linedefs with compressed side indices
+		auto side_index_map = compressSides(sidedefs, no_compress);
+		remapLineSides(linedefs, map_data.lines(), side_index_map);
+	}
+
+	// TODO: Check for exceeded limits and abort with error if so
+
+	// Create map data entries
+	vector<unique_ptr<ArchiveEntry>> map_entries;
+	map_entries.push_back(std::make_unique<ArchiveEntry>("THINGS", things.size() * sizeof(Thing), things.data()));
+	map_entries.push_back(
+		std::make_unique<ArchiveEntry>("LINEDEFS", linedefs.size() * sizeof(LineDef), linedefs.data()));
+	map_entries.push_back(
+		std::make_unique<ArchiveEntry>("SIDEDEFS", sidedefs.size() * sizeof(SideDef), sidedefs.data()));
+	map_entries.push_back(
+		std::make_unique<ArchiveEntry>("VERTEXES", vertexes.size() * sizeof(Vertex), vertexes.data()));
+	map_entries.push_back(std::make_unique<ArchiveEntry>("SECTORS", sectors.size() * sizeof(Sector), sectors.data()));
+
+	return map_entries;
+}
 
 // -----------------------------------------------------------------------------
 // Reads Hexen-format LINEDEFS data from [entry] into [map_data]
@@ -67,12 +129,12 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 		return true;
 	}
 
-	auto     line_data = (LineDef*)entry->rawData(true);
+	auto     line_data = reinterpret_cast<const LineDef*>(entry->rawData());
 	unsigned nl        = entry->size() / sizeof(LineDef);
 	float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nl) * 0.2f);
+		ui::setSplashProgress(p + (static_cast<float>(a) / nl) * 0.2f);
 		const auto& data = line_data[a];
 
 		// Check vertices exist
@@ -118,8 +180,8 @@ bool HexenMapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map_
 			{
 			case game::TagType::LineId:
 			case game::TagType::LineId1Line2: line->setId(data.args[0]); break;
-			case game::TagType::LineIdHi5: line->setId((data.args[0] + (data.args[4] << 8))); break;
-			default: break;
+			case game::TagType::LineIdHi5:    line->setId((data.args[0] + (data.args[4] << 8))); break;
+			default:                          break;
 			}
 		}
 	}
@@ -148,13 +210,13 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 		return true;
 	}
 
-	auto              thng_data = (Thing*)entry->rawData(true);
-	unsigned          nt        = entry->size() / sizeof(Thing);
-	float             p         = ui::getSplashProgress();
-	MapObject::ArgSet args;
+	auto        thng_data = reinterpret_cast<const Thing*>(entry->rawData());
+	unsigned    nt        = entry->size() / sizeof(Thing);
+	float       p         = ui::getSplashProgress();
+	map::ArgSet args;
 	for (size_t a = 0; a < nt; a++)
 	{
-		ui::setSplashProgress(p + ((float)a / nt) * 0.2f);
+		ui::setSplashProgress(p + (static_cast<float>(a) / nt) * 0.2f);
 		const auto& data = thng_data[a];
 
 		// Set args
@@ -164,7 +226,7 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 		// Create thing
 		map_data.addThing(
 			std::make_unique<MapThing>(
-				Vec3d{ (double)data.x, (double)data.y, (double)data.z },
+				Vec3d{ static_cast<double>(data.x), static_cast<double>(data.y), static_cast<double>(data.z) },
 				data.type,
 				data.angle,
 				data.flags,
@@ -179,75 +241,57 @@ bool HexenMapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_da
 }
 
 // -----------------------------------------------------------------------------
-// Creates and returns a Hexen-format LINEDEFS entry from [lines]
+// Builds a vector of Hexen-format LineDefs from the given [lines]
 // -----------------------------------------------------------------------------
-unique_ptr<ArchiveEntry> HexenMapFormat::writeLINEDEFS(const LineList& lines) const
+vector<HexenMapFormat::LineDef> HexenMapFormat::buildHexenLines(const LineList& lines) const
 {
-	auto entry = std::make_unique<ArchiveEntry>("LINEDEFS");
+	vector<LineDef> data;
+	data.reserve(lines.size());
 
-	// Init entry data
-	entry->clearData();
-	entry->resize(lines.size() * sizeof(LineDef), false);
-	entry->seek(0, 0);
-
-	// Write line data
-	LineDef data;
 	for (auto& line : lines)
 	{
-		data.vertex1 = line->v1Index();
-		data.vertex2 = line->v2Index();
-
-		// Properties
-		data.flags = line->flags();
-		data.type  = line->special();
-		for (unsigned i = 0; i < 5; ++i)
-			data.args[i] = line->arg(i);
-
-		// Sides
-		data.side1 = line->s1Index();
-		data.side2 = line->s2Index();
-
-		entry->write(&data, sizeof(LineDef));
+		data.push_back(
+			{ .vertex1 = static_cast<u16>(line->v1Index()),
+			  .vertex2 = static_cast<u16>(line->v2Index()),
+			  .flags   = static_cast<u16>(line->flags()),
+			  .type    = static_cast<u8>(line->special()),
+			  .args    = { static_cast<u8>(line->arg(0)),
+						   static_cast<u8>(line->arg(1)),
+						   static_cast<u8>(line->arg(2)),
+						   static_cast<u8>(line->arg(3)),
+						   static_cast<u8>(line->arg(4)) },
+			  .side1   = static_cast<u16>(line->s1Index()),
+			  .side2   = static_cast<u16>(line->s2Index()) });
 	}
 
-	return entry;
+	return data;
 }
 
 // -----------------------------------------------------------------------------
-// Creates and returns a Hexen-format THINGS entry from [things]
+// Builds a vector of Hexen-format Things from the given [things]
 // -----------------------------------------------------------------------------
-unique_ptr<ArchiveEntry> HexenMapFormat::writeTHINGS(const ThingList& things) const
+vector<HexenMapFormat::Thing> HexenMapFormat::buildHexenThings(const ThingList& things) const
 {
-	auto entry = std::make_unique<ArchiveEntry>("THINGS");
+	vector<Thing> data;
+	data.reserve(things.size());
 
-	// Init entry data
-	entry->clearData();
-	entry->resize(things.size() * sizeof(Thing), false);
-	entry->seek(0, 0);
-
-	// Write thing data
-	Thing data;
 	for (auto& thing : things)
 	{
-		// Position
-		data.x = thing->xPos();
-		data.y = thing->yPos();
-		data.z = thing->zPos();
-
-		// Properties
-		data.angle   = thing->angle();
-		data.type    = thing->type();
-		data.flags   = thing->flags();
-		data.special = thing->special();
-		data.tid     = thing->id();
-		data.args[0] = thing->arg(0);
-		data.args[1] = thing->arg(1);
-		data.args[2] = thing->arg(2);
-		data.args[3] = thing->arg(3);
-		data.args[4] = thing->arg(4);
-
-		entry->write(&data, sizeof(Thing));
+		data.push_back(
+			{ .tid     = static_cast<i16>(thing->id()),
+			  .x       = static_cast<i16>(thing->xPos()),
+			  .y       = static_cast<i16>(thing->yPos()),
+			  .z       = static_cast<i16>(thing->zPos()),
+			  .angle   = thing->angle(),
+			  .type    = thing->type(),
+			  .flags   = static_cast<u16>(thing->flags()),
+			  .special = static_cast<u8>(thing->special()),
+			  .args    = { static_cast<u8>(thing->arg(0)),
+						   static_cast<u8>(thing->arg(1)),
+						   static_cast<u8>(thing->arg(2)),
+						   static_cast<u8>(thing->arg(3)),
+						   static_cast<u8>(thing->arg(4)) } });
 	}
 
-	return entry;
+	return data;
 }

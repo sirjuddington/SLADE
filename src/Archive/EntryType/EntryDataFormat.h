@@ -6,22 +6,22 @@ class EntryDataFormat
 {
 public:
 	// Standard values for isThisFormat return value
-	static const int MATCH_FALSE    = 0;
-	static const int MATCH_UNLIKELY = 64;
-	static const int MATCH_MAYBE    = 128;
-	static const int MATCH_PROBABLY = 192;
-	static const int MATCH_TRUE     = 255;
+	static constexpr int MATCH_FALSE    = 0;
+	static constexpr int MATCH_UNLIKELY = 64;
+	static constexpr int MATCH_MAYBE    = 128;
+	static constexpr int MATCH_PROBABLY = 192;
+	static constexpr int MATCH_TRUE     = 255;
 
 	EntryDataFormat(string_view id) : id_{ id } {}
 	virtual ~EntryDataFormat() = default;
 
 	const string& id() const { return id_; }
 
-	virtual int isThisFormat(MemChunk& mc);
+	virtual int isThisFormat(const MemChunk& mc);
 	void        copyToFormat(EntryDataFormat& target) const;
 
 	static void             initBuiltinFormats();
-	static bool             readDataFormatDefinition(MemChunk& mc);
+	static bool             readDataFormatDefinition(const MemChunk& mc);
 	static EntryDataFormat* format(string_view id);
 	static EntryDataFormat* anyFormat();
 	static EntryDataFormat* textFormat();
@@ -49,11 +49,11 @@ private:
 		unsigned               pos;
 		vector<ByteValueRange> valid_values;
 
-		bool match(uint8_t value)
+		bool match(uint8_t value) const
 		{
-			for (unsigned a = 0; a < valid_values.size(); a++)
+			for (auto valid_value : valid_values)
 			{
-				if (value < valid_values[a].min || value > valid_values[a].max)
+				if (value < valid_value.min || value > valid_value.max)
 					return false;
 			}
 

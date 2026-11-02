@@ -1,12 +1,8 @@
 #pragma once
 
-#include "Utility/Colour.h"
-#include "Utility/Tokenizer.h"
-
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
+class Tokenizer;
 
 namespace game
 {
@@ -65,12 +61,12 @@ namespace game
 		// Maps access
 		const vector<Map>& maps() const { return maps_; }
 		Map&               getMap(string_view name);
-		bool               addOrUpdateMap(Map& map);
+		bool               addOrUpdateMap(const Map& map);
 
 		// DoomEdNum access
 		const DoomEdNumMap& doomEdNums() const { return editor_nums_; }
 		DoomEdNum&          doomEdNum(int number) { return editor_nums_[number]; }
-		int                 doomEdNumForClass(string_view actor_class);
+		int                 doomEdNumForClass(string_view actor_class) const;
 
 		// MAPINFO loading
 		bool readMapInfo(const Archive& archive);
@@ -80,15 +76,15 @@ namespace game
 		bool strToCol(const string& str, ColRGBA& col) const;
 
 		// ZDoom MAPINFO parsing
-		bool parseZMapInfo(ArchiveEntry* entry);
+		bool parseZMapInfo(const ArchiveEntry* entry);
 		bool parseZMap(Tokenizer& tz, string_view type);
 		bool parseDoomEdNums(Tokenizer& tz);
 
 		// General
-		Format detectMapInfoType(ArchiveEntry* entry) const;
+		Format detectMapInfoType(const ArchiveEntry* entry) const;
 
 		// Debug info
-		void dumpDoomEdNums();
+		void dumpDoomEdNums() const;
 
 	private:
 		vector<Map>  maps_;

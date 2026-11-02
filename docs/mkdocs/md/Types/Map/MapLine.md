@@ -19,6 +19,7 @@ All properties and functions of <type>[MapObject](MapObject.md)</type> can be us
 <prop class="ro">side1</prop> | <type>[MapSide](MapSide.md)</type> | The line's first (front) side
 <prop class="ro">side2</prop> | <type>[MapSide](MapSide.md)</type> | The line's second (back) side
 <prop class="ro">special</prop> | <type>integer</type> | The line's action special
+<prop class="ro">id</prop> | <type>integer</type> | The line's id
 <prop class="ro">length</prop> | <type>float</type> | The length of the line in map units
 
 ## Constructors

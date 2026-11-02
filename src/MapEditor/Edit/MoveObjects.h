@@ -1,9 +1,8 @@
 #pragma once
 
-#include "MapEditor/MapEditor.h"
-
-namespace slade
+namespace slade::mapeditor
 {
+struct Item;
 class MapEditContext;
 
 class MoveObjects
@@ -11,18 +10,17 @@ class MoveObjects
 public:
 	MoveObjects(MapEditContext& context);
 
-	const vector<mapeditor::Item>& items() const { return items_; }
-	Vec2d                          offset() const { return offset_; }
+	const vector<Item>& items() const { return items_; }
+	Vec2d               offset() const { return offset_; }
 
-	bool begin(Vec2d mouse_pos);
-	void update(Vec2d mouse_pos);
+	bool begin(const Vec2d& mouse_pos);
+	void update(const Vec2d& mouse_pos);
 	void end(bool accept = true);
 
 private:
-	MapEditContext&         context_;
-	Vec2d                   origin_;
-	Vec2d                   offset_;
-	vector<mapeditor::Item> items_;
-	mapeditor::Item         item_closest_ = 0;
+	MapEditContext* context_;
+	Vec2d           origin_;
+	Vec2d           offset_;
+	vector<Item>    items_;
 };
-} // namespace slade
+} // namespace slade::mapeditor

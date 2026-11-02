@@ -6,7 +6,7 @@ class NumberTextCtrl : public wxTextCtrl
 {
 public:
 	NumberTextCtrl(wxWindow* parent, bool allow_decimal = false);
-	~NumberTextCtrl() {}
+	~NumberTextCtrl() override {}
 
 	int    number(int base = 0) const;
 	double decNumber(double base = 0) const;

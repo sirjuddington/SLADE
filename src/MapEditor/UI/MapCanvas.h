@@ -1,21 +1,32 @@
 #pragma once
 
 #include "General/KeyBind.h"
-#include "MapEditor/MapEditContext.h"
-#include "UI/Canvas/OGLCanvas.h"
+#include "UI/Canvas/GL/GLCanvas.h"
+
+namespace sf
+{
+class Clock;
+}
 
 namespace slade
 {
-class MapCanvas : public OGLCanvas, public KeyBindHandler
+namespace mapeditor
+{
+	class MapEditContext;
+}
+
+
+class MapCanvas : public GLCanvas, public KeyBindHandler
 {
 public:
-	MapCanvas(wxWindow* parent, int id, MapEditContext* context);
-	~MapCanvas() = default;
+	MapCanvas(wxWindow* parent, mapeditor::MapEditContext* context);
+	~MapCanvas() override = default;
 
 	// Drawing
 	void draw() override;
 
 	// Mouse
+	void warpMouse(const Vec2i& pos);
 	void mouseToCenter();
 	void lockMouse(bool lock);
 	void mouseLook3d();
@@ -24,11 +35,18 @@ public:
 	void onKeyBindPress(string_view name) override;
 
 private:
-	MapEditContext* context_    = nullptr;
-	bool            mouse_warp_ = false;
-	vector<int>     fps_avg_;
-	sf::Clock       sf_clock_;
-	long            last_wheel_timestamp_ = -1;
+	mapeditor::MapEditContext* context_                = nullptr;
+	bool                       mouse_warp_             = false;
+	int                        mouse_look_skip_frames_ = 0;
+	vector<int>                fps_avg_;
+	unique_ptr<sf::Clock>      sf_clock_;
+	wxTimer                    timer_;
+	long                       next_frame_ms_        = 0;
+	long                       last_wheel_timestamp_ = -1;
+	bool                       mouse_looking_        = false;
+	Vec2i                      mouse_locked_pos_{ -1, -1 };
+
+	void update();
 
 	// Events
 	void onSize(wxSizeEvent& e);
@@ -41,7 +59,7 @@ private:
 	void onMouseLeave(wxMouseEvent& e);
 	void onMouseEnter(wxMouseEvent& e);
 	void onIdle(wxIdleEvent& e);
-	void onRTimer(wxTimerEvent& e);
+	void onRefreshTimer(wxTimerEvent& e);
 	void onFocus(wxFocusEvent& e);
 };
 } // namespace slade

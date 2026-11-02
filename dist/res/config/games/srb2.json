@@ -1,0 +1,173 @@
+{
+  "id": "srb2",
+  "name": "Sonic Robo Blast 2",
+
+  // IWAD filename
+  "iwad": "srb2.pk3",
+
+  // Supported map formats
+  "map_formats": [ "doom", "udmf" ],
+
+  // DECORATE filters
+  "filters": [ "doom", "any" ],
+
+  "configuration": {
+    // Sky flat for 3d mode
+    "sky_flat": "F_SKY1",
+
+    // Mix textures and flats
+    "mix_tex_flats": true,
+
+    // TX textures
+    "tx_textures": true,
+
+    // Light levels
+    "light_level_interval": 16,
+
+    // Maps
+    "maps": [
+      { "mapname": "MAP01", "sky": "SKY1" },
+      { "mapname": "MAP02", "sky": "SKY1" },
+      { "mapname": "MAP03", "sky": "SKY1" },
+      { "mapname": "MAP04", "sky": "SKY4" },
+      { "mapname": "MAP05", "sky": "SKY6" },
+      { "mapname": "MAP06", "sky": "SKY4" },
+      { "mapname": "MAP07", "sky": "SKY8" },
+      { "mapname": "MAP08", "sky": "SKY8" },
+      { "mapname": "MAP09", "sky": "SKY8" },
+
+      { "mapname": "MAP10", "sky": "SKY10" },
+      { "mapname": "MAP11", "sky": "SKY11" },
+      { "mapname": "MAP12", "sky": "SKY10" },
+      { "mapname": "MAP13", "sky": "SKY13" },
+      { "mapname": "MAP14", "sky": "SKY14" },
+      { "mapname": "MAP15", "sky": "SKY15" },
+      { "mapname": "MAP16", "sky": "SKY159" },
+
+      { "mapname": "MAP22", "sky": "SKY21" },
+      { "mapname": "MAP23", "sky": "SKY21" },
+      { "mapname": "MAP25", "sky": "SKY21" },
+      { "mapname": "MAP26", "sky": "SKY21" },
+      { "mapname": "MAP27", "sky": "SKY21" },
+
+      { "mapname": "MAP30", "sky": "SKY30" },
+      { "mapname": "MAP31", "sky": "SKY31" },
+      { "mapname": "MAP32", "sky": "SKY20" },
+      { "mapname": "MAP33", "sky": "SKY1" },
+
+      { "mapname": "MAP40", "sky": "SKY172" },
+      { "mapname": "MAP41", "sky": "SKY40" },
+      { "mapname": "MAP42", "sky": "SKY35" },
+
+      { "mapname": "MAP50", "sky": "SKY1" },
+      { "mapname": "MAP51", "sky": "SKY6" },
+      { "mapname": "MAP52", "sky": "SKY8" },
+      { "mapname": "MAP53", "sky": "SKY10" },
+      { "mapname": "MAP54", "sky": "SKY15" },
+      { "mapname": "MAP55", "sky": "SKY20" },
+      { "mapname": "MAP56", "sky": "SKY21" },
+      { "mapname": "MAP57", "sky": "SKY99" },
+
+      { "mapname": "MAP60", "sky": "SKY1" },
+      { "mapname": "MAP61", "sky": "SKY4" },
+      { "mapname": "MAP62", "sky": "SKY8" },
+      { "mapname": "MAP63", "sky": "SKY10" },
+      { "mapname": "MAP64", "sky": "SKY13" },
+      { "mapname": "MAP65", "sky": "SKY20" },
+      { "mapname": "MAP66", "sky": "SKY21" },
+
+      { "mapname": "MAP70", "sky": "SKY17" },
+      { "mapname": "MAP71", "sky": "SKY40" },
+      { "mapname": "MAP72", "sky": "SKY300" },
+      { "mapname": "MAP73", "sky": "SKY301" },
+
+      { "mapname": "MAPF0", "sky": "SKY1" },
+      { "mapname": "MAPF1", "sky": "SKY8" },
+      { "mapname": "MAPF2", "sky": "SKY20" },
+      { "mapname": "MAPF3", "sky": "SKY55" },
+      { "mapname": "MAPF4", "sky": "SKY21" },
+      { "mapname": "MAPF5", "sky": "SKY20" },
+      { "mapname": "MAPF6", "sky": "SKY4" },
+      { "mapname": "MAPF7", "sky": "SKY11" },
+      { "mapname": "MAPF8", "sky": "SKY68" },
+
+      { "mapname": "MAPM0", "sky": "SKY1" },
+      { "mapname": "MAPM1", "sky": "SKY4" },
+      { "mapname": "MAPM2", "sky": "SKY7" },
+      { "mapname": "MAPM3", "sky": "SKY10" },
+      { "mapname": "MAPM4", "sky": "SKY21" },
+      { "mapname": "MAPM5", "sky": "SKY7" },
+      { "mapname": "MAPM6", "sky": "SKY21" },
+      { "mapname": "MAPM7", "sky": "SKY2" },
+      { "mapname": "MAPM8", "sky": "SKY55" },
+      { "mapname": "MAPM9", "sky": "SKY40" },
+      { "mapname": "MAPMA", "sky": "SKY6" },
+      { "mapname": "MAPMB", "sky": "SKY2" },
+
+      { "mapname": "MAPZ0", "sky": "SKY99" }
+    ],
+
+    // Defaults
+    "defaults": {
+      "sector": {
+        "texturefloor": "GFZFLR01",
+        "textureceiling": "GFZFLR01",
+        "heightfloor": 0,
+        "heightceiling": 512,
+        "lightlevel": 230
+      },
+      "sidedef": {
+        "texturetop": "GFZROCK",
+        "texturemiddle": "GFZROCK",
+        "texturebottom": "GFZROCK"
+      },
+      "thing": {
+        "type": 1,
+        "flags": 0,
+        "udmf": {
+          "skill1": true,
+          "skill2": true,
+          "skill3": true,
+          "skill4": true,
+          "skill5": true,
+          "single": true,
+          "dm": true,
+          "coop": true
+        }
+      }
+    },
+
+    // Action specials
+    "action_specials": {
+      "import": [ "include/action_specials/srb2.json" ]
+    },
+
+    // Thing types
+    "thing_types": {
+      "import": [
+        "include/thing_types/common.json",
+        "include/thing_types/srb2.json"
+      ]
+    },
+
+    // Thing flags
+    "thing_flags": {
+      "import": [ "include/thing_flags/srb2.json" ]
+    },
+
+    // Line flags
+    "line_flags": {
+      "import": [ "include/line_flags/srb2.json" ]
+    },
+
+    // Sector types
+    "sector_types": {
+      "import": [ "include/sector_types/srb2.json" ]
+    },
+
+    // UDMF properties
+    "udmf_properties": {
+      "import": [ "include/udmf_properties/base.json" ]
+    }
+  }
+}

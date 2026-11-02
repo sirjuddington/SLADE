@@ -33,16 +33,27 @@
 #include "Edit3D.h"
 #include "Game/Configuration.h"
 #include "General/UndoRedo.h"
+#include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
+#include "MapEditor/MapEditor.h"
 #include "MapEditor/MapTextureManager.h"
+#include "MapEditor/Renderer/Renderer.h"
 #include "MapEditor/UndoSteps.h"
+#include "OpenGL/GLTexture.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapSpecials/MapSpecials.h"
+#include "SLADEMap/SLADEMap.h"
 #include "Utility/MathStuff.h"
-
+#include "Utility/Vector.h"
 #include <queue>
 #include <set>
 
 using namespace slade;
-using mapeditor::ItemType;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -55,23 +66,24 @@ using mapeditor::ItemType;
 // -----------------------------------------------------------------------------
 // Edit3D class constructor
 // -----------------------------------------------------------------------------
-Edit3D::Edit3D(MapEditContext& context) : context_{ context }, link_light_{ false }, link_offset_{ false }
+Edit3D::Edit3D(MapEditContext& context) : context_{ &context }
 {
 	undo_manager_ = std::make_unique<UndoManager>(&context.map());
+	copy_thing_   = std::make_unique<MapThing>();
 }
 
 // -----------------------------------------------------------------------------
 // Selects all adjacent walls or flats to [item]
 // -----------------------------------------------------------------------------
-void Edit3D::selectAdjacent(mapeditor::Item item) const
+void Edit3D::selectAdjacent(Item item) const
 {
 	// Check item
 	if (item.index < 0)
 		return;
 
 	// Select every adjacent item
-	context_.selection().select(getAdjacent(item));
-	context_.selectionUpdated();
+	context_->selection().select(getAdjacent(item));
+	context_->selectionUpdated();
 }
 
 // -----------------------------------------------------------------------------
@@ -80,9 +92,9 @@ void Edit3D::selectAdjacent(mapeditor::Item item) const
 void Edit3D::changeSectorLight(int amount) const
 {
 	// Get items to process
-	vector<mapeditor::Item> items;
-	auto&                   selection_3d = context_.selection();
-	auto                    hilight_3d   = context_.hilightItem();
+	vector<Item> items;
+	auto&        selection_3d = context_->selection();
+	auto         hilight_3d   = context_->hilightItem();
 	if (selection_3d.empty() && hilight_3d.index >= 0 && hilight_3d.type != ItemType::Thing)
 		items.push_back(hilight_3d);
 	else
@@ -97,7 +109,7 @@ void Edit3D::changeSectorLight(int amount) const
 		return;
 
 	// Begin undo level
-	context_.beginUndoRecordLocked("Change Sector Light", true, false, false);
+	context_->beginUndoRecordLocked("Change Sector Light", true, false, false);
 
 	// Go through items
 	std::set<MapObject*> processed;
@@ -107,7 +119,7 @@ void Edit3D::changeSectorLight(int amount) const
 		if (item.type == ItemType::WallBottom || item.type == ItemType::WallMiddle || item.type == ItemType::WallTop)
 		{
 			// Get side
-			auto side = item.asSide(context_.map());
+			auto side = item.asSide(context_->map());
 			if (!side)
 				continue;
 			auto sector = side->sector();
@@ -117,14 +129,14 @@ void Edit3D::changeSectorLight(int amount) const
 			if (link_light_)
 			{
 				// Ignore if sector already processed
-				if (processed.count(sector))
+				if (processed.contains(sector))
 					continue;
 				processed.insert(sector);
 			}
 			else
 			{
 				// Ignore if side already processed
-				if (processed.count(side))
+				if (processed.contains(side))
 					continue;
 				processed.insert(side);
 			}
@@ -145,12 +157,12 @@ void Edit3D::changeSectorLight(int amount) const
 		if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
 		{
 			// Get sector
-			auto s     = context_.map().sector(item.index);
-			int  where = 0;
+			auto s     = context_->map().sector(item.index);
+			auto where = map::SectorPart::Interior;
 			if (item.type == ItemType::Floor && !link_light_)
-				where = 1;
+				where = map::SectorPart::Floor;
 			else if (item.type == ItemType::Ceiling && !link_light_)
-				where = 2;
+				where = map::SectorPart::Ceiling;
 
 			// Check for decrease when light = 255
 			if (s->lightAt(where) == 255 && amount < -1)
@@ -159,7 +171,7 @@ void Edit3D::changeSectorLight(int amount) const
 			// Ignore if sector already processed
 			if (link_light_)
 			{
-				if (processed.count(s))
+				if (processed.contains(s))
 					continue;
 				processed.insert(s);
 			}
@@ -170,15 +182,15 @@ void Edit3D::changeSectorLight(int amount) const
 	}
 
 	// End undo level
-	context_.endUndoRecord();
+	context_->endUndoRecord();
 
 	// Editor message
 	if (!items.empty())
 	{
 		if (amount > 0)
-			context_.addEditorMessage(fmt::format("Light increased by {}", amount));
+			context_->addEditorMessage(fmt::format("Light increased by {}", amount));
 		else
-			context_.addEditorMessage(fmt::format("Light decreased by {}", -amount));
+			context_->addEditorMessage(fmt::format("Light decreased by {}", -amount));
 	}
 }
 
@@ -189,9 +201,9 @@ void Edit3D::changeSectorLight(int amount) const
 void Edit3D::changeOffset(int amount, bool x) const
 {
 	// Get items to process
-	vector<mapeditor::Item> items;
-	auto&                   selection_3d = context_.selection();
-	auto                    hilight_3d   = context_.hilightItem();
+	vector<Item> items;
+	auto&        selection_3d = context_->selection();
+	auto         hilight_3d   = context_->hilightItem();
 	if (selection_3d.empty())
 	{
 		if (hilight_3d.index >= 0 && hilight_3d.type != ItemType::Thing)
@@ -209,7 +221,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		return;
 
 	// Begin undo level
-	context_.beginUndoRecordLocked("Change Offset", true, false, false);
+	context_->beginUndoRecordLocked("Change Offset", true, false, false);
 
 	// Go through items
 	vector<int> done;
@@ -221,7 +233,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		// Wall
 		if (item.type >= ItemType::WallTop && item.type <= ItemType::WallBottom)
 		{
-			auto side = context_.map().side(index);
+			auto side = context_->map().side(index);
 
 			// If offsets are linked, just change the whole side offset
 			if (link_offset_)
@@ -265,7 +277,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 		// Flat (UDMF only)
 		else if (item.type == ItemType::Ceiling || item.type == ItemType::Floor)
 		{
-			auto sector = context_.map().sector(item.index);
+			auto sector = context_->map().sector(item.index);
 
 			if (game::configuration().featureSupported(game::UDMFFeature::FlatPanning))
 			{
@@ -304,7 +316,7 @@ void Edit3D::changeOffset(int amount, bool x) const
 	}
 
 	// End undo level
-	context_.endUndoRecord(changed);
+	context_->endUndoRecord(changed);
 
 	// Editor message
 	if (!items.empty() && changed)
@@ -314,9 +326,9 @@ void Edit3D::changeOffset(int amount, bool x) const
 			axis = 'Y';
 
 		if (amount > 0)
-			context_.addEditorMessage(fmt::format("{} offset increased by {}", axis, amount));
+			context_->addEditorMessage(fmt::format("{} offset increased by {}", axis, amount));
 		else
-			context_.addEditorMessage(fmt::format("{} offset decreased by {}", axis, -amount));
+			context_->addEditorMessage(fmt::format("{} offset decreased by {}", axis, -amount));
 	}
 }
 
@@ -327,9 +339,9 @@ void Edit3D::changeOffset(int amount, bool x) const
 void Edit3D::changeSectorHeight(int amount) const
 {
 	// Get items to process
-	vector<mapeditor::Item> items;
-	auto&                   selection_3d = context_.selection();
-	auto                    hilight_3d   = context_.hilightItem();
+	vector<Item> items;
+	auto&        selection_3d = context_->selection();
+	auto         hilight_3d   = context_->hilightItem();
 	if (selection_3d.empty() && hilight_3d.type != ItemType::Thing && hilight_3d.index >= 0)
 		items.push_back(hilight_3d);
 	else
@@ -344,17 +356,19 @@ void Edit3D::changeSectorHeight(int amount) const
 		return;
 
 	// Begin undo level
-	context_.beginUndoRecordLocked("Change Sector Height", true, false, false);
+	context_->beginUndoRecordLocked("Change Sector Height", true, false, false);
 
 	// Go through items
-	vector<int> ceilings;
+	vector<int>      ceilings;
+	bool             floors_changed = false;
+	vector<MapLine*> lines;
 	for (auto& item : items)
 	{
 		// Wall (ceiling only for now)
 		if (item.type == ItemType::WallBottom || item.type == ItemType::WallMiddle || item.type == ItemType::WallTop)
 		{
 			// Get sector
-			auto sector = context_.map().side(item.index)->sector();
+			auto sector = context_->map().side(item.index)->sector();
 			if (!sector)
 				continue;
 
@@ -368,6 +382,10 @@ void Edit3D::changeSectorHeight(int amount) const
 
 			// Set to changed
 			ceilings.push_back(index);
+
+			// Add sector lines for later processing
+			for (auto s : sector->connectedSides())
+				vectorAddUnique(lines, s->parentLine());
 		}
 
 		// Floor or ceiling
@@ -376,7 +394,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			bool floor = (item.type == ItemType::Floor);
 
 			// Get sector
-			MapSector* sector = context_.map().sector(item.index);
+			MapSector* sector = context_->map().sector(item.index);
 			if (!sector)
 				continue;
 
@@ -384,6 +402,7 @@ void Edit3D::changeSectorHeight(int amount) const
 			{
 				// Change height
 				sector->setFloorHeight(sector->floor().height + amount);
+				floors_changed = true;
 			}
 			else
 			{
@@ -398,26 +417,51 @@ void Edit3D::changeSectorHeight(int amount) const
 				// Set to changed
 				ceilings.push_back(sector->index());
 			}
+
+			// Add sector lines for later processing
+			for (auto s : sector->connectedSides())
+				vectorAddUnique(lines, s->parentLine());
+		}
+	}
+
+	if (CVar::getBool("map_fill_missing_textures"))
+	{
+		// Find adjacent textures to use (separate for upper/lower since we don't
+		// want eg. an upper texture propogating to a 'disconnected' lower texture)
+		auto tex_default = game::configuration().defaultString(MapObject::Type::Side, "texturemiddle");
+		auto tex_upper = context_->map().adjacentLineTexture(lines, MapLine::Part::AnyUpper | MapLine::Part::AnyMiddle);
+		auto tex_lower = context_->map().adjacentLineTexture(lines, MapLine::Part::AnyLower | MapLine::Part::AnyMiddle);
+
+		// Fill any resulting missing textures
+		bool mix_tex_flats = game::configuration().featureSupported(game::Feature::MixTexFlats);
+		bool found_upper   = tex_upper != MapSide::TEX_NONE;
+		bool found_lower   = tex_lower != MapSide::TEX_NONE;
+		for (auto line : lines)
+		{
+			line->fillMissingTextures(
+				!ceilings.empty(), false, found_upper ? tex_upper : tex_default, mix_tex_flats && !found_upper);
+			line->fillMissingTextures(
+				false, floors_changed, found_lower ? tex_lower : tex_default, mix_tex_flats && !found_lower);
 		}
 	}
 
 	// End undo level
-	context_.endUndoRecord();
+	context_->endUndoRecord();
 
 	// Editor message
 	if (!items.empty())
 	{
 		if (amount > 0)
-			context_.addEditorMessage(fmt::format("Height increased by {}", amount));
+			context_->addEditorMessage(fmt::format("Height increased by {}", amount));
 		else
-			context_.addEditorMessage(fmt::format("Height decreased by {}", -amount));
+			context_->addEditorMessage(fmt::format("Height decreased by {}", -amount));
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Aligns texture offsets beginning from the wall selection [start]
 // -----------------------------------------------------------------------------
-void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
+void Edit3D::autoAlign(Item start, AlignType align_type) const
 {
 	// Check align type
 	if (align_type != AlignType::AlignX && align_type != AlignType::AlignY && align_type != AlignType::AlignXY)
@@ -431,7 +475,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 		return;
 
 	// Get starting side
-	auto first_side = context_.map().side(start.index);
+	auto first_side = context_->map().side(start.index);
 	if (!first_side)
 		return;
 
@@ -484,11 +528,11 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 	string axis_names;
 	switch (align_type)
 	{
-	case AlignType::AlignX: axis_names = "X axis"; break;
-	case AlignType::AlignY: axis_names = "Y axis"; break;
+	case AlignType::AlignX:  axis_names = "X axis"; break;
+	case AlignType::AlignY:  axis_names = "Y axis"; break;
 	case AlignType::AlignXY: axis_names = "X and Y axis"; break;
 	}
-	context_.beginUndoRecord("Auto Align on " + axis_names, true, false, false);
+	context_->beginUndoRecord("Auto Align on " + axis_names, true, false, false);
 
 	// Queue of jobs to process
 	std::queue<AlignmentJob> jobs;
@@ -508,7 +552,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 		jobs.pop();
 
 		// Skip if side has already been processed
-		if (processed_sides.find(job.side->index()) != processed_sides.end())
+		if (processed_sides.contains(job.side->index()))
 			continue;
 
 		// Skip if this wall does not have the desired texture
@@ -534,23 +578,25 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 			// Set X offset
 			job.side->setIntProperty("offsetx", job.tex_offset_x);
 			break;
+		default: break;
 		}
 
 		// Perform Y-alignment
+		MapLine* current_line = nullptr;
+		int      current_offset_y, current_tex_top_height;
 		switch (align_type)
 		{
 		case AlignType::AlignY:
 		case AlignType::AlignXY:
 			// First we need to determine the top height for the respective texture
-			int  current_tex_top_height = -1;
-			auto current_line           = job.side->parentLine();
-			current_tex_top_height      = getTextureTopHeight(current_line, start.type, tex_height);
+			current_line           = job.side->parentLine();
+			current_tex_top_height = getTextureTopHeight(current_line, start.type, tex_height);
 			// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
-			int current_offset_y = first_tex_top_height - current_tex_top_height;
+			current_offset_y = first_tex_top_height - current_tex_top_height;
 
 			// Adjust the y-offset (but only, if we're not adjusting the middle part on a two-sided wall)
 			if (start.type != ItemType::WallMiddle
-				|| !game::configuration().lineBasicFlagSet("twosided", current_line, context_.mapDesc().format))
+				|| !game::configuration().lineBasicFlagSet("twosided", current_line, context_->mapDesc().format))
 			{
 				if (tex_height > 0)
 				{
@@ -563,6 +609,7 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 			// Set Y offset
 			job.side->setIntProperty("offsety", current_offset_y);
 			break;
+		default: break;
 		}
 
 		// Enqueue all sides connected to the start vertex of the current side
@@ -575,10 +622,10 @@ void Edit3D::autoAlign(mapeditor::Item start, AlignType align_type) const
 	}
 
 	// End undo level
-	context_.endUndoRecord();
+	context_->endUndoRecord();
 
 	// Editor message
-	context_.addEditorMessage("Auto-aligned on " + axis_names);
+	context_->addEditorMessage("Auto-aligned on " + axis_names);
 }
 
 // -----------------------------------------------------------------------------
@@ -589,14 +636,15 @@ void Edit3D::resetOffsets() const
 	using game::UDMFFeature;
 
 	// Get items to process
-	vector<mapeditor::Item> walls;
-	vector<mapeditor::Item> flats;
-	vector<mapeditor::Item> things;
-	auto&                   selection_3d = context_.selection();
-	auto                    hilight_3d   = context_.hilightItem();
+	vector<Item> walls;
+	vector<Item> flats;
+	vector<Item> things;
+	auto&        selection_3d = context_->selection();
+	auto         hilight_3d   = context_->hilightItem();
 	if (selection_3d.empty())
 	{
-		if (hilight_3d.type == ItemType::WallTop || hilight_3d.type == ItemType::WallBottom
+		if (hilight_3d.type == ItemType::WallTop
+			|| hilight_3d.type == ItemType::WallBottom
 			|| hilight_3d.type == ItemType::WallMiddle)
 			walls.push_back(hilight_3d);
 		else if (hilight_3d.type == ItemType::Floor || hilight_3d.type == ItemType::Ceiling)
@@ -608,7 +656,8 @@ void Edit3D::resetOffsets() const
 	{
 		for (auto& item : selection_3d)
 		{
-			if (item.type == ItemType::WallTop || item.type == ItemType::WallBottom
+			if (item.type == ItemType::WallTop
+				|| item.type == ItemType::WallBottom
 				|| item.type == ItemType::WallMiddle)
 				walls.push_back(item);
 			else if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
@@ -621,12 +670,12 @@ void Edit3D::resetOffsets() const
 		return;
 
 	// Begin undo level
-	context_.beginUndoRecord("Reset Offsets", true, false, false);
+	context_->beginUndoRecord("Reset Offsets", true, false, false);
 
 	// Go through walls
 	for (auto& wall : walls)
 	{
-		auto side = wall.asSide(context_.map());
+		auto side = wall.asSide(context_->map());
 		if (!side)
 			continue;
 
@@ -658,7 +707,7 @@ void Edit3D::resetOffsets() const
 		}
 
 		// Reset scaling
-		if (context_.mapDesc().format == MapFormat::UDMF
+		if (context_->mapDesc().format == MapFormat::UDMF
 			&& game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (wall.type == ItemType::WallTop)
@@ -680,11 +729,11 @@ void Edit3D::resetOffsets() const
 	}
 
 	// Go through flats
-	if (context_.mapDesc().format == MapFormat::UDMF)
+	if (context_->mapDesc().format == MapFormat::UDMF)
 	{
 		for (auto& flat : flats)
 		{
-			auto sector = flat.asSector(context_.map());
+			auto sector = flat.asSector(context_->map());
 			if (!sector)
 				continue;
 
@@ -711,16 +760,16 @@ void Edit3D::resetOffsets() const
 	}
 
 	// Go through things
-	if (context_.mapDesc().format != MapFormat::Doom)
+	if (context_->mapDesc().format != MapFormat::Doom)
 	{
 		for (auto& item : things)
 		{
-			auto thing = item.asThing(context_.map());
+			auto thing = item.asThing(context_->map());
 			if (!thing)
 				continue;
 
 			// Reset height
-			if (context_.mapDesc().format != MapFormat::UDMF)
+			if (context_->mapDesc().format != MapFormat::UDMF)
 				thing->setZ(0);
 			else
 			{
@@ -743,16 +792,16 @@ void Edit3D::resetOffsets() const
 	}
 
 	// End undo level
-	context_.endUndoRecord();
+	context_->endUndoRecord();
 
 	// Editor message
-	if (context_.mapDesc().format == MapFormat::UDMF
+	if (context_->mapDesc().format == MapFormat::UDMF
 		&& (game::configuration().featureSupported(UDMFFeature::FlatScaling)
 			|| game::configuration().featureSupported(UDMFFeature::SideScaling)
 			|| game::configuration().featureSupported(UDMFFeature::TextureScaling)))
-		context_.addEditorMessage("Offsets and scaling reset");
+		context_->addEditorMessage("Offsets and scaling reset");
 	else
-		context_.addEditorMessage("Offsets reset");
+		context_->addEditorMessage("Offsets reset");
 }
 
 // -----------------------------------------------------------------------------
@@ -760,16 +809,17 @@ void Edit3D::resetOffsets() const
 // -----------------------------------------------------------------------------
 void Edit3D::toggleUnpegged(bool lower) const
 {
-	auto& selection_3d = context_.selection();
-	auto  hilight_3d   = context_.hilightItem();
+	auto& selection_3d = context_->selection();
+	auto  hilight_3d   = context_->hilightItem();
 	if (selection_3d.empty() && hilight_3d.index < 0)
 		return;
 
 	// Get items to process
-	vector<mapeditor::Item> items;
+	vector<Item> items;
 	if (selection_3d.empty())
 	{
-		if (hilight_3d.type == ItemType::WallTop || hilight_3d.type == ItemType::WallBottom
+		if (hilight_3d.type == ItemType::WallTop
+			|| hilight_3d.type == ItemType::WallBottom
 			|| hilight_3d.type == ItemType::WallMiddle)
 			items.push_back(hilight_3d);
 	}
@@ -777,7 +827,8 @@ void Edit3D::toggleUnpegged(bool lower) const
 	{
 		for (auto& item : selection_3d)
 		{
-			if (item.type == ItemType::WallTop || item.type == ItemType::WallBottom
+			if (item.type == ItemType::WallTop
+				|| item.type == ItemType::WallBottom
 				|| item.type == ItemType::WallMiddle)
 				items.push_back(item);
 		}
@@ -787,13 +838,13 @@ void Edit3D::toggleUnpegged(bool lower) const
 
 	// Begin undo level
 	string undo_type = lower ? "Toggle Lower Unpegged" : "Toggle Upper Unpegged";
-	undo_manager_->beginRecord(undo_type);
+	context_->beginUndoRecord(undo_type);
 
 	// Go through items
 	vector<MapLine*> processed_lines;
 	for (auto& item : items)
 	{
-		auto side = item.asSide(context_.map());
+		auto side = item.asSide(context_->map());
 		if (!side || !side->parentLine())
 			continue;
 
@@ -807,27 +858,27 @@ void Edit3D::toggleUnpegged(bool lower) const
 			processed_lines.push_back(line);
 
 		// Toggle flag
-		context_.recordPropertyChangeUndoStep(line);
+		context_->recordPropertyChangeUndoStep(line);
 		if (lower)
 		{
-			bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", line, context_.mapDesc().format);
-			game::configuration().setLineBasicFlag("dontpegbottom", line, context_.map().currentFormat(), !unpegged);
+			bool unpegged = game::configuration().lineBasicFlagSet("dontpegbottom", line, context_->mapDesc().format);
+			game::configuration().setLineBasicFlag("dontpegbottom", line, context_->map().currentFormat(), !unpegged);
 		}
 		else
 		{
-			bool unpegged = game::configuration().lineBasicFlagSet("dontpegtop", line, context_.mapDesc().format);
-			game::configuration().setLineBasicFlag("dontpegtop", line, context_.map().currentFormat(), !unpegged);
+			bool unpegged = game::configuration().lineBasicFlagSet("dontpegtop", line, context_->mapDesc().format);
+			game::configuration().setLineBasicFlag("dontpegtop", line, context_->map().currentFormat(), !unpegged);
 		}
 	}
 
 	// End undo level
-	undo_manager_->endRecord(true);
+	context_->endUndoRecord(true);
 
 	// Editor message
 	if (lower)
-		context_.addEditorMessage("Lower Unpegged flag toggled");
+		context_->addEditorMessage("Lower Unpegged flag toggled");
 	else
-		context_.addEditorMessage("Upper Unpegged flag toggled");
+		context_->addEditorMessage("Upper Unpegged flag toggled");
 }
 
 // -----------------------------------------------------------------------------
@@ -835,8 +886,8 @@ void Edit3D::toggleUnpegged(bool lower) const
 // -----------------------------------------------------------------------------
 void Edit3D::copy(CopyType type)
 {
-	auto  hl  = context_.selection().hilight();
-	auto& map = context_.map();
+	auto  hl  = context_->selection().hilight();
+	auto& map = context_->map();
 
 	auto side   = hl.asSide(map);
 	auto sector = hl.asSector(map);
@@ -889,19 +940,19 @@ void Edit3D::copy(CopyType type)
 	else if (hl.type == ItemType::Thing)
 	{
 		if (auto thing = hl.asThing(map))
-			copy_thing_.copy(thing);
+			copy_thing_->copy(thing);
 	}
 
 	// Flash
-	context_.renderer().animateSelectionChange(hl);
+	context_->renderer().animateSelectionChange(hl);
 
 	// Editor message
 	if (type == CopyType::TexType)
 	{
 		if (hl.type == ItemType::Thing)
-			context_.addEditorMessage("Copied Thing Type");
+			context_->addEditorMessage("Copied Thing Type");
 		else
-			context_.addEditorMessage("Copied Texture");
+			context_->addEditorMessage("Copied Texture");
 	}
 }
 
@@ -914,17 +965,15 @@ void Edit3D::paste(CopyType type) const
 	string ptype = "Paste Properties";
 	if (type == CopyType::TexType)
 		ptype = "Paste Texture/Type";
-	undo_manager_->beginRecord(ptype);
+	context_->beginUndoRecord(ptype);
 
 	// Go through items
-	auto& selection = context_.selection();
+	auto& selection = context_->selection();
 	for (auto& item : selection.selectionOrHilight())
 	{
 		// Wall
-		if (auto side = item.asSide(context_.map()))
+		if (auto side = item.asSide(context_->map()))
 		{
-			undo_manager_->recordUndoStep(std::make_unique<mapeditor::PropertyChangeUS>(side));
-
 			// Upper wall
 			if (item.type == ItemType::WallTop)
 			{
@@ -951,10 +1000,8 @@ void Edit3D::paste(CopyType type) const
 		}
 
 		// Flat
-		else if (auto sector = item.asSector(context_.map()))
+		else if (auto sector = item.asSector(context_->map()))
 		{
-			undo_manager_->recordUndoStep(std::make_unique<mapeditor::PropertyChangeUS>(sector));
-
 			// Floor
 			if (item.type == ItemType::Floor)
 			{
@@ -975,13 +1022,11 @@ void Edit3D::paste(CopyType type) const
 		// Thing
 		else if (item.type == ItemType::Thing)
 		{
-			if (auto thing = item.asThing(context_.map()))
+			if (auto thing = item.asThing(context_->map()))
 			{
-				undo_manager_->recordUndoStep(std::make_unique<mapeditor::PropertyChangeUS>(thing));
-
 				// Type
 				if (type == CopyType::TexType)
-					thing->setType(copy_thing_.type());
+					thing->setType(copy_thing_->type());
 			}
 		}
 	}
@@ -990,21 +1035,22 @@ void Edit3D::paste(CopyType type) const
 	if (type == CopyType::TexType)
 	{
 		if (selection.hilight().type == ItemType::Thing)
-			context_.addEditorMessage("Pasted Thing Type");
+			context_->addEditorMessage("Pasted Thing Type");
 		else
-			context_.addEditorMessage("Pasted Texture");
+			context_->addEditorMessage("Pasted Texture");
 	}
 
-	undo_manager_->endRecord(true);
+	context_->endUndoRecord(true);
 }
 
 // -----------------------------------------------------------------------------
-// Pastes previously copied wall/flat/thing info to selection and ad
+// Pastes previously copied wall/flat info to selection and all adjacent
+// walls/flats
 // -----------------------------------------------------------------------------
 void Edit3D::floodFill(CopyType type) const
 {
 	// Get items to paste to
-	auto& selection = context_.selection();
+	auto& selection = context_->selection();
 	auto  items     = getAdjacent(selection.hilight());
 
 	// Restrict floodfill to selection, if any
@@ -1031,16 +1077,14 @@ void Edit3D::floodFill(CopyType type) const
 
 	// Begin undo step
 	string ptype = "Floodfill textures";
-	undo_manager_->beginRecord(ptype);
+	context_->beginUndoRecord(ptype);
 
 	// Go through items
 	for (auto& item : items)
 	{
 		// Wall
-		if (auto side = item.asSide(context_.map()))
+		if (auto side = item.asSide(context_->map()))
 		{
-			undo_manager_->recordUndoStep(std::make_unique<mapeditor::PropertyChangeUS>(side));
-
 			// Upper wall
 			if (item.type == ItemType::WallTop)
 			{
@@ -1067,10 +1111,8 @@ void Edit3D::floodFill(CopyType type) const
 		}
 
 		// Flat
-		else if (auto sector = item.asSector(context_.map()))
+		else if (auto sector = item.asSector(context_->map()))
 		{
-			undo_manager_->recordUndoStep(std::make_unique<mapeditor::PropertyChangeUS>(sector));
-
 			// Floor
 			if (item.type == ItemType::Floor)
 			{
@@ -1092,10 +1134,61 @@ void Edit3D::floodFill(CopyType type) const
 	// Editor message
 	if (type == CopyType::TexType)
 	{
-		context_.addEditorMessage("Floodfilled Texture");
+		context_->addEditorMessage("Floodfilled Texture");
 	}
 
-	undo_manager_->endRecord(true);
+	context_->endUndoRecord(true);
+}
+
+// -----------------------------------------------------------------------------
+// Opens the thing type browser for the currently selected 3d mode things
+// -----------------------------------------------------------------------------
+void Edit3D::changeThingType(bool force_highlight) const
+{
+	// Get things to edit
+	auto items = context_->selection().selectionOrHilight();
+	if (force_highlight && !vectorContains(items, context_->selection().hilight()))
+		if (context_->selection().hilight().type == ItemType::Thing)
+			items.push_back(context_->selection().hilight());
+
+	if (items.empty())
+		return;
+
+	// Find first selected thing
+	MapThing* first_thing = nullptr;
+	for (auto& item : items)
+		if (auto thing = item.asThing(context_->map()))
+		{
+			first_thing = thing;
+			break;
+		}
+
+	// Browse for new thing type
+	auto type = first_thing->type();
+	if (int new_type = mapeditor::browseThingType(type, context_->map()); new_type >= 0)
+	{
+		// Begin undo level
+		context_->beginUndoRecordLocked("Change Thing Type", true, false, false);
+
+		// Go through items
+		for (auto& item : items)
+		{
+			if (auto thing = item.asThing(context_->map()))
+			{
+				context_->recordPropertyChangeUndoStep(thing);
+				thing->setType(new_type);
+			}
+		}
+
+		// End undo level
+		context_->endUndoRecord();
+
+		// Editor message
+		if (items.size() == 1)
+			context_->addEditorMessage("Thing type changed");
+		else
+			context_->addEditorMessage(fmt::format("{} Thing types changed", items.size()));
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1104,28 +1197,23 @@ void Edit3D::floodFill(CopyType type) const
 void Edit3D::changeThingZ(int amount) const
 {
 	// Ignore for doom format
-	if (context_.map().currentFormat() == MapFormat::Doom)
+	if (context_->map().currentFormat() == MapFormat::Doom)
 		return;
 
 	// Go through 3d selection
-	auto& selection_3d = context_.selection();
-	bool  changed      = false;
+	auto& selection_3d = context_->selection();
 	for (auto& item : selection_3d)
 	{
 		// Check if thing
-		if (auto thing = item.asThing(context_.map()))
+		if (auto thing = item.asThing(context_->map()))
 		{
 			// Change z height
-			context_.recordPropertyChangeUndoStep(thing);
+			context_->recordPropertyChangeUndoStep(thing);
 			double z = thing->zPos();
 			z += amount;
 			thing->setZ(z);
-			changed = true;
 		}
 	}
-
-	if (changed)
-		context_.map().recomputeSpecials();
 }
 
 // -----------------------------------------------------------------------------
@@ -1133,19 +1221,19 @@ void Edit3D::changeThingZ(int amount) const
 // -----------------------------------------------------------------------------
 void Edit3D::deleteThing() const
 {
-	// Begin undo level
-	context_.beginUndoRecord("Delete Thing", false, false, true);
+	// Get thing indices to delete
+	vector<unsigned> delete_things;
+	for (const auto& thing : context_->selection().selectedThings())
+		delete_things.push_back(thing->index());
 
-	// Go through 3d selection
-	auto& selection_3d = context_.selection();
-	for (auto& item : selection_3d)
-	{
-		// Check if thing
-		if (item.type == ItemType::Thing)
-			context_.map().removeThing(item.index);
-	}
+	if (delete_things.empty())
+		return;
 
-	context_.endUndoRecord();
+	context_->beginUndoRecord("Delete Thing(s)", false, false, true);
+	context_->map().removeThings(delete_things);
+	context_->endUndoRecord();
+
+	context_->clearSelection();
 }
 
 // -----------------------------------------------------------------------------
@@ -1157,9 +1245,9 @@ void Edit3D::changeScale(double amount, bool x) const
 	using game::UDMFFeature;
 
 	// Get items to process
-	vector<mapeditor::Item> items;
-	auto&                   selection_3d = context_.selection();
-	auto                    hilight_3d   = context_.hilightItem();
+	vector<Item> items;
+	auto&        selection_3d = context_->selection();
+	auto         hilight_3d   = context_->hilightItem();
 	if (selection_3d.empty())
 	{
 		if (hilight_3d.index >= 0 && hilight_3d.type != ItemType::Thing)
@@ -1177,7 +1265,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		return;
 
 	// Begin undo level
-	context_.beginUndoRecordLocked("Change Scale", true, false, false);
+	context_->beginUndoRecordLocked("Change Scale", true, false, false);
 
 	// Go through selection
 	for (auto& item : items)
@@ -1186,7 +1274,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		if (game::configuration().featureSupported(UDMFFeature::SideScaling)
 			|| game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
-			if (auto side = item.asSide(context_.map()))
+			if (auto side = item.asSide(context_->map()))
 			{
 				// Build property string (offset[x/y]_[top/mid/bottom])
 				string ofs = "scalex";
@@ -1212,7 +1300,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		// Flat (UDMF only)
 		else if (game::configuration().featureSupported(UDMFFeature::FlatScaling))
 		{
-			if (auto sector = item.asSector(context_.map()))
+			if (auto sector = item.asSector(context_->map()))
 			{
 				// Build property string
 				string prop = x ? "xscale" : "yscale";
@@ -1227,7 +1315,7 @@ void Edit3D::changeScale(double amount, bool x) const
 	}
 
 	// End undo record
-	context_.endUndoRecord(true);
+	context_->endUndoRecord(true);
 
 	// Editor message
 }
@@ -1241,10 +1329,10 @@ void Edit3D::changeScale(double amount, bool x) const
 void Edit3D::changeHeight(int amount) const
 {
 	// Get items to process
-	vector<mapeditor::Item> items;
-	auto&                   selection_3d = context_.selection();
-	auto                    hilight_3d   = context_.hilightItem();
-	auto&                   map          = context_.map();
+	vector<Item> items;
+	auto&        selection_3d = context_->selection();
+	auto         hilight_3d   = context_->hilightItem();
+	auto&        map          = context_->map();
 	if (selection_3d.empty() && hilight_3d.index >= 0)
 	{
 		if (hilight_3d.type != ItemType::Thing || map.currentFormat() != MapFormat::Doom)
@@ -1260,7 +1348,7 @@ void Edit3D::changeHeight(int amount) const
 		return;
 
 	// Begin undo level
-	context_.beginUndoRecordLocked("Change Height", true, false, false);
+	context_->beginUndoRecordLocked("Change Height", true, false, false);
 
 	// Go through items
 	for (auto& item : items)
@@ -1297,7 +1385,7 @@ void Edit3D::changeHeight(int amount) const
 
 			// Change the offset
 			float offset = side->floatProperty(ofs);
-			side->setFloatProperty(ofs, offset + amount);
+			side->setFloatProperty(ofs, offset + static_cast<float>(amount));
 		}
 
 		// Flat
@@ -1311,15 +1399,15 @@ void Edit3D::changeHeight(int amount) const
 	}
 
 	// End undo level
-	context_.endUndoRecord();
+	context_->endUndoRecord();
 
 	// Editor message
 	if (!items.empty())
 	{
 		if (amount > 0)
-			context_.addEditorMessage(fmt::format("Height increased by {}", amount));
+			context_->addEditorMessage(fmt::format("Height increased by {}", amount));
 		else
-			context_.addEditorMessage(fmt::format("Height decreased by {}", -amount));
+			context_->addEditorMessage(fmt::format("Height decreased by {}", -amount));
 	}
 }
 
@@ -1327,21 +1415,27 @@ void Edit3D::changeHeight(int amount) const
 // Opens the texture browser for the currently selected 3d mode walls and/or
 // floors
 // -----------------------------------------------------------------------------
-void Edit3D::changeTexture() const
+void Edit3D::changeTexture(bool force_highlight) const
 {
 	// Check for selection or hilight
-	auto selection = context_.selection().selectionOrHilight();
+	auto selection = context_->selection().selectionOrHilight();
+	if (force_highlight && !vectorContains(selection, context_->selection().hilight()))
+	{
+		auto base_type = baseItemType(context_->selection().hilight().type);
+		if (base_type == ItemType::Side || base_type == ItemType::Sector)
+			selection.push_back(context_->selection().hilight());
+	}
 	if (selection.empty())
 		return;
 
 	// Get initial texture
 	string tex;
-	auto   type  = mapeditor::TextureType::Texture;
+	auto   type  = TextureType::Texture;
 	auto&  first = selection[0];
-	auto&  map   = context_.map();
+	auto&  map   = context_->map();
 	if (auto sector = first.asSector(map))
 	{
-		type = mapeditor::TextureType::Flat;
+		type = TextureType::Flat;
 
 		if (first.type == ItemType::Floor)
 			tex = sector->floor().texture;
@@ -1365,10 +1459,10 @@ void Edit3D::changeTexture() const
 		bool mix = game::configuration().featureSupported(game::Feature::MixTexFlats);
 
 		// Begin undo level
-		context_.beginUndoRecord("Change Texture", true, false, false);
+		context_->beginUndoRecord("Change Texture", true, false, false);
 
 		// Apply to flats
-		if (mix || type == mapeditor::TextureType::Flat)
+		if (mix || type == TextureType::Flat)
 		{
 			for (auto& item : selection)
 			{
@@ -1383,7 +1477,7 @@ void Edit3D::changeTexture() const
 		}
 
 		// Apply to walls
-		if (mix || type == mapeditor::TextureType::Texture)
+		if (mix || type == TextureType::Texture)
 		{
 			for (auto& item : selection)
 			{
@@ -1400,7 +1494,7 @@ void Edit3D::changeTexture() const
 		}
 
 		// End undo level
-		context_.endUndoRecord();
+		context_->endUndoRecord();
 	}
 }
 
@@ -1409,8 +1503,11 @@ void Edit3D::changeTexture() const
 // -----------------------------------------------------------------------------
 void Edit3D::deleteTexture() const
 {
-	auto& map = context_.map();
-	for (auto& item : context_.selection().selectionOrHilight())
+	// Begin undo level
+	context_->beginUndoRecord("Delete Texture", true, false, false);
+
+	auto& map = context_->map();
+	for (auto& item : context_->selection().selectionOrHilight())
 	{
 		if (item.type == ItemType::Floor)
 			map.sector(item.index)->setStringProperty("texturefloor", "-");
@@ -1423,15 +1520,147 @@ void Edit3D::deleteTexture() const
 		else if (item.type == ItemType::WallTop)
 			map.side(item.index)->setStringProperty("texturetop", "-");
 	}
+
+	// End undo level
+	context_->endUndoRecord();
+}
+
+// -----------------------------------------------------------------------------
+// Browse to change the current highlight's texture (if it's a wall or flat), or
+// type (if it's a thing)
+// -----------------------------------------------------------------------------
+void Edit3D::changeTextureOrType() const
+{
+	if (!context_->selection().hasHilight())
+		return;
+
+	if (auto hl = context_->selection().hilight(); hl.type == ItemType::Thing)
+		changeThingType(true);
+	else
+		changeTexture(true);
+}
+
+// -----------------------------------------------------------------------------
+// Opens a dialog containing a MapObjectPropsPanel to edit properties for all
+// selected (or hilighted) walls' lines
+// -----------------------------------------------------------------------------
+void Edit3D::editWallProperties() const
+{
+	auto selection = context_->selection().selectedItems();
+	if (selection.empty() && context_->selection().hasHilight())
+		selection.push_back(context_->selection().hilight());
+	if (selection.empty())
+		return;
+
+	vector<MapObject*> lines;
+	for (auto item : selection)
+	{
+		if (item.type == ItemType::WallTop || item.type == ItemType::WallMiddle || item.type == ItemType::WallBottom)
+		{
+			if (auto side = item.asSide(context_->map()))
+				vectorAddUnique(lines, static_cast<MapObject*>(side->parentLine()));
+		}
+	}
+
+	// Begin recording undo level
+	context_->beginUndoRecord("Property Edit (Line)");
+	for (auto item : lines)
+		context_->recordPropertyChangeUndoStep(item);
+
+	bool done = mapeditor::editObjectProperties(lines);
+	if (done)
+	{
+		context_->renderer().forceUpdate();
+		context_->updateDisplay();
+	}
+
+	// End undo level
+	context_->endUndoRecord(done);
+}
+
+// -----------------------------------------------------------------------------
+// Opens a dialog containing a MapObjectPropsPanel to edit properties for all
+// selected (or hilighted) flats' sectors
+// -----------------------------------------------------------------------------
+void Edit3D::editFlatProperties() const
+{
+	auto selection = context_->selection().selectedItems();
+	if (selection.empty() && context_->selection().hasHilight())
+		selection.push_back(context_->selection().hilight());
+	if (selection.empty())
+		return;
+
+	vector<MapObject*> sectors;
+	for (auto item : selection)
+	{
+		if (item.type == ItemType::Floor || item.type == ItemType::Ceiling)
+		{
+			if (auto sector = item.asSector(context_->map()))
+				vectorAddUnique(sectors, static_cast<MapObject*>(sector));
+		}
+	}
+
+	// Begin recording undo level
+	context_->beginUndoRecord("Property Edit (Sector)");
+	for (auto item : sectors)
+		context_->recordPropertyChangeUndoStep(item);
+
+	bool done = mapeditor::editObjectProperties(sectors);
+	if (done)
+	{
+		context_->renderer().forceUpdate();
+		context_->updateDisplay();
+	}
+
+	// End undo level
+	context_->endUndoRecord(done);
+}
+
+// -----------------------------------------------------------------------------
+// Opens a dialog containing a MapObjectPropsPanel to edit properties for all
+// selected (or hilighted) things
+// -----------------------------------------------------------------------------
+void Edit3D::editThingProperties() const
+{
+	auto selection = context_->selection().selectedItems();
+	if (selection.empty() && context_->selection().hasHilight())
+		selection.push_back(context_->selection().hilight());
+	if (selection.empty())
+		return;
+
+	vector<MapObject*> things;
+	for (auto item : selection)
+	{
+		if (item.type == ItemType::Thing)
+		{
+			if (auto thing = item.asThing(context_->map()))
+				vectorAddUnique(things, static_cast<MapObject*>(thing));
+		}
+	}
+
+	// Begin recording undo level
+	context_->beginUndoRecord("Property Edit (Thing)");
+	for (auto item : things)
+		context_->recordPropertyChangeUndoStep(item);
+
+	bool done = mapeditor::editObjectProperties(things);
+	if (done)
+	{
+		context_->renderer().forceUpdate();
+		context_->updateDisplay();
+	}
+
+	// End undo level
+	context_->endUndoRecord(done);
 }
 
 // -----------------------------------------------------------------------------
 // Returns a list of all walls or flats adjacent to [item].
 // Adjacent meaning connected and sharing a texture
 // -----------------------------------------------------------------------------
-vector<mapeditor::Item> Edit3D::getAdjacent(mapeditor::Item item) const
+vector<Item> Edit3D::getAdjacent(Item item) const
 {
-	vector<mapeditor::Item> list;
+	vector<Item> list;
 
 	// Check item
 	if (item.index < 0 || item.type == ItemType::Thing)
@@ -1451,7 +1680,7 @@ vector<mapeditor::Item> Edit3D::getAdjacent(mapeditor::Item item) const
 // -----------------------------------------------------------------------------
 // Returns true if the texture [part] of [side] matches [tex]
 // -----------------------------------------------------------------------------
-bool Edit3D::wallMatches(MapSide* side, ItemType part, string_view tex)
+bool Edit3D::wallMatches(const MapSide* side, ItemType part, string_view tex)
 {
 	// Check for blank texture where it isn't needed
 	if (tex == MapSide::TEX_NONE)
@@ -1493,120 +1722,81 @@ bool Edit3D::wallMatches(MapSide* side, ItemType part, string_view tex)
 // Adds all adjacent walls to [item] to [list].
 // Adjacent meaning connected and sharing a texture
 // -----------------------------------------------------------------------------
-void Edit3D::getAdjacentWalls(mapeditor::Item item, vector<mapeditor::Item>& list) const
+void Edit3D::getAdjacentWalls(Item start_item, vector<Item>& list) const
 {
-	// Add item to list if needed
-	for (auto& list_item : list)
+	// Keep a set of visited items to avoid infinite loops
+	std::set<std::pair<int, ItemType>> visited;
+
+	// Initialize visited set with items already in the list
+	for (auto& i : list)
+		visited.insert({ i.index, i.type });
+
+	// Queue for breadth-first search of adjacent walls
+	std::queue<Item> queue;
+	if (!visited.contains({ start_item.index, start_item.type }))
+		queue.push(start_item);
+
+	while (!queue.empty())
 	{
-		if (list_item.type == item.type && list_item.index == item.index)
-			return;
-	}
-	list.push_back(item);
+		auto item = queue.front();
+		queue.pop();
 
-	// Get initial side
-	auto side = item.asSide(context_.map());
-	if (!side)
-		return;
+		// Skip if already visited
+		if (visited.contains({ item.index, item.type }))
+			continue;
+		visited.insert({ item.index, item.type });
+		list.push_back(item);
 
-	// Get initial line
-	auto line = side->parentLine();
-	if (!line)
-		return;
-
-	// Get texture to match
-	string tex;
-	if (item.type == ItemType::WallBottom)
-		tex = side->texLower();
-	else if (item.type == ItemType::WallMiddle)
-		tex = side->texMiddle();
-	else
-		tex = side->texUpper();
-
-	// Go through attached lines (vertex 1)
-	for (unsigned a = 0; a < line->v1()->nConnectedLines(); a++)
-	{
-		auto oline = line->v1()->connectedLine(a);
-		if (!oline || oline == line)
+		// Get side
+		auto side = item.asSide(context_->map());
+		if (!side)
 			continue;
 
-		// Get line sides
-		auto side1 = oline->s1();
-		auto side2 = oline->s2();
-
-		// Front side
-		if (side1)
-		{
-			// Upper texture
-			if (wallMatches(side1, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side1->index(), ItemType::WallTop }, list);
-
-			// Middle texture
-			if (wallMatches(side1, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side1->index(), ItemType::WallMiddle }, list);
-
-			// Lower texture
-			if (wallMatches(side1, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side1->index(), ItemType::WallBottom }, list);
-		}
-
-		// Back side
-		if (side2)
-		{
-			// Upper texture
-			if (wallMatches(side2, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side2->index(), ItemType::WallTop }, list);
-
-			// Middle texture
-			if (wallMatches(side2, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side2->index(), ItemType::WallMiddle }, list);
-
-			// Lower texture
-			if (wallMatches(side2, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side2->index(), ItemType::WallBottom }, list);
-		}
-	}
-
-	// Go through attached lines (vertex 2)
-	for (unsigned a = 0; a < line->v2()->nConnectedLines(); a++)
-	{
-		auto oline = line->v2()->connectedLine(a);
-		if (!oline || oline == line)
+		// Get line
+		auto line = side->parentLine();
+		if (!line)
 			continue;
 
-		// Get line sides
-		auto side1 = oline->s1();
-		auto side2 = oline->s2();
+		// Get texture to check for match
+		string tex;
+		if (item.type == ItemType::WallBottom)
+			tex = side->texLower();
+		else if (item.type == ItemType::WallMiddle)
+			tex = side->texMiddle();
+		else
+			tex = side->texUpper();
 
-		// Front side
-		if (side1)
+		// Lambda to enqueue all matching wall parts from a given side
+		auto enqueue_side = [&](const MapSide* s)
 		{
-			// Upper texture
-			if (wallMatches(side1, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side1->index(), ItemType::WallTop }, list);
+			if (!s)
+				return;
+			if (wallMatches(s, ItemType::WallTop, tex))
+				queue.emplace(static_cast<int>(s->index()), ItemType::WallTop);
+			if (wallMatches(s, ItemType::WallMiddle, tex))
+				queue.emplace(static_cast<int>(s->index()), ItemType::WallMiddle);
+			if (wallMatches(s, ItemType::WallBottom, tex))
+				queue.emplace(static_cast<int>(s->index()), ItemType::WallBottom);
+		};
 
-			// Middle texture
-			if (wallMatches(side1, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side1->index(), ItemType::WallMiddle }, list);
-
-			// Lower texture
-			if (wallMatches(side1, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side1->index(), ItemType::WallBottom }, list);
+		// Go through attached lines (vertex 1)
+		for (unsigned a = 0; a < line->v1()->nConnectedLines(); a++)
+		{
+			auto oline = line->v1()->connectedLine(a);
+			if (!oline || oline == line)
+				continue;
+			enqueue_side(oline->s1());
+			enqueue_side(oline->s2());
 		}
 
-		// Back side
-		if (side2)
+		// Go through attached lines (vertex 2)
+		for (unsigned a = 0; a < line->v2()->nConnectedLines(); a++)
 		{
-			// Upper texture
-			if (wallMatches(side2, ItemType::WallTop, tex))
-				getAdjacentWalls({ (int)side2->index(), ItemType::WallTop }, list);
-
-			// Middle texture
-			if (wallMatches(side2, ItemType::WallMiddle, tex))
-				getAdjacentWalls({ (int)side2->index(), ItemType::WallMiddle }, list);
-
-			// Lower texture
-			if (wallMatches(side2, ItemType::WallBottom, tex))
-				getAdjacentWalls({ (int)side2->index(), ItemType::WallBottom }, list);
+			auto oline = line->v2()->connectedLine(a);
+			if (!oline || oline == line)
+				continue;
+			enqueue_side(oline->s1());
+			enqueue_side(oline->s2());
 		}
 	}
 }
@@ -1615,7 +1805,7 @@ void Edit3D::getAdjacentWalls(mapeditor::Item item, vector<mapeditor::Item>& lis
 // Adds all walls and flats adjacent to [item] to [list].
 // Adjacent meaning connected and sharing a texture
 // -----------------------------------------------------------------------------
-void Edit3D::getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& list) const
+void Edit3D::getAdjacentFlats(Item item, vector<Item>& list) const
 {
 	// Check item
 	if (item.index < 0 || (item.type != ItemType::Floor && item.type != ItemType::Ceiling))
@@ -1625,7 +1815,7 @@ void Edit3D::getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& lis
 	list.push_back(item);
 
 	// Get initial sector
-	auto sector = item.asSector(context_.map());
+	auto sector = item.asSector(context_->map());
 	if (!sector)
 		return;
 
@@ -1680,7 +1870,7 @@ void Edit3D::getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& lis
 		bool listed = false;
 		for (auto& i : list)
 		{
-			if (i.type == item.type && i.index == (int)osector->index())
+			if (i.type == item.type && std::cmp_equal(i.index, osector->index()))
 			{
 				listed = true;
 				break;
@@ -1691,7 +1881,7 @@ void Edit3D::getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& lis
 		if (!listed)
 		{
 			list.push_back(item);
-			getAdjacentFlats({ (int)osector->index(), item.type }, list);
+			getAdjacentFlats({ static_cast<int>(osector->index()), item.type }, list);
 		}
 	}
 }
@@ -1700,30 +1890,30 @@ void Edit3D::getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& lis
 // Determine the height of the top end of the texture on the respective wall part
 // of the given line using the given texture height.
 // -----------------------------------------------------------------------------
-int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_height) const
+int Edit3D::getTextureTopHeight(const MapLine* first_line, ItemType wall_type, int tex_height) const
 {
-	assert(wallType == ItemType::WallBottom || wallType == ItemType::WallMiddle || wallType == ItemType::WallTop);
-	if (wallType == ItemType::WallBottom)
+	assert(wall_type == ItemType::WallBottom || wall_type == ItemType::WallMiddle || wall_type == ItemType::WallTop);
+	if (wall_type == ItemType::WallBottom)
 	{
 		const bool unpegged = game::configuration().lineBasicFlagSet(
-			"dontpegbottom", firstLine, context_.mapDesc().format);
+			"dontpegbottom", first_line, context_->mapDesc().format);
 		// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
 		// Otherwise: Top of texture is at the highest floor
 		if (unpegged)
-			return firstLine->highestCeiling();
+			return first_line->highestCeiling();
 		else
-			return firstLine->highestFloor();
+			return first_line->highestFloor();
 	}
-	else if (wallType == ItemType::WallMiddle)
+	else if (wall_type == ItemType::WallMiddle)
 	{
 		const bool unpegged = game::configuration().lineBasicFlagSet(
-			"dontpegbottom", firstLine, context_.mapDesc().format);
+			"dontpegbottom", first_line, context_->mapDesc().format);
 		// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
 		// Otherwise: Top of texture is at the lowest ceiling
 		if (unpegged)
-			return firstLine->highestFloor() + tex_height;
+			return first_line->highestFloor() + tex_height;
 		else
-			return firstLine->lowestCeiling();
+			return first_line->lowestCeiling();
 	}
 	else
 	{
@@ -1731,11 +1921,11 @@ int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_h
 		// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
 		// Otherwise: Top of texture is at lowest ceiling plus texture height
 		const bool unpegged = game::configuration().lineBasicFlagSet(
-			"dontpegtop", firstLine, context_.mapDesc().format);
+			"dontpegtop", first_line, context_->mapDesc().format);
 		if (unpegged)
-			return firstLine->highestCeiling();
+			return first_line->highestCeiling();
 		else
-			return firstLine->lowestCeiling() + tex_height;
+			return first_line->lowestCeiling() + tex_height;
 	}
 }
 
@@ -1744,7 +1934,7 @@ int Edit3D::getTextureTopHeight(MapLine* firstLine, ItemType wallType, int tex_h
 // Calculates the correct texture x-offset for the respective sides.
 // tex_offset_x gives the texture x-offset to be assumed for the common vertex.
 // -----------------------------------------------------------------------------
-void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* common_vertex, int tex_offset_x)
+void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, const MapVertex* common_vertex, int tex_offset_x)
 {
 	for (MapLine* line : common_vertex->connectedLines())
 	{
@@ -1762,7 +1952,11 @@ void Edit3D::enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* co
 // Calculates the correct texture x-offset for the respective sides.
 // tex_offset_x gives the texture x-offset to be assumed for the common vertex.
 // -----------------------------------------------------------------------------
-void Edit3D::enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* common_vertex, int tex_offset_x)
+void Edit3D::enqueueSide(
+	std::queue<AlignmentJob>& jobs,
+	MapSide*                  side,
+	const MapVertex*          common_vertex,
+	int                       tex_offset_x)
 {
 	AlignmentJob job;
 	job.side         = side;

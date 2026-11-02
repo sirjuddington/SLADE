@@ -4,12 +4,16 @@
 
 namespace slade
 {
-class BaseResourceArchivesPanel;
+namespace ui
+{
+	class BaseResourceArchiveSettingsPanel;
+}
+
 class BaseResourceWizardPage : public WizardPageBase
 {
 public:
 	BaseResourceWizardPage(wxWindow* parent);
-	~BaseResourceWizardPage() = default;
+	~BaseResourceWizardPage() override = default;
 
 	bool   canGoNext() override { return true; }
 	void   applyChanges() override;
@@ -17,6 +21,6 @@ public:
 	string description() override;
 
 private:
-	BaseResourceArchivesPanel* bra_panel_ = nullptr;
+	ui::BaseResourceArchiveSettingsPanel* bra_panel_ = nullptr;
 };
 } // namespace slade

@@ -1,12 +1,13 @@
 #pragma once
 
+#include "JsonFwd.h"
+
 class wxMenu;
 class wxAuiToolBar;
 class wxToolBar;
 
 namespace slade
 {
-class ParseTreeNode;
 struct CBoolCVar;
 
 class SAction
@@ -20,6 +21,12 @@ public:
 		Radio,
 	};
 
+	// Signals
+	struct Signals
+	{
+		sigslot::signal<SAction&> checked_changed;
+	};
+
 	SAction(
 		string_view id,
 		string_view text,
@@ -27,7 +34,7 @@ public:
 		string_view helptext    = "",
 		string_view shortcut    = "",
 		Type        type        = Type::Normal,
-		int         radio_group = -1,
+		string_view radio_group = "",
 		int         reserve_ids = 1);
 	~SAction() = default;
 
@@ -56,14 +63,17 @@ public:
 		int         wx_id_offset  = 0);
 
 	// Static functions
-	static void                  setBaseWxId(int id) { cur_id_ = id; }
+	static void                  setBaseWxId(int id);
 	static bool                  initActions();
-	static int                   newGroup();
 	static SAction*              fromId(string_view id);
 	static SAction*              fromWxId(int wx_id);
-	static void                  add(SAction* action);
+	static SAction*              add(unique_ptr<SAction> action);
 	static int                   nextWxId();
+	static Signals&              signals();
 	static const vector<string>& history();
+	static vector<string>        lastPerformed(int n);
+	static string                current();
+	static SAction*              invalidAction();
 
 private:
 	// The id associated with this action - to keep things consistent, it should be of the format xxxx_*,
@@ -77,40 +87,13 @@ private:
 	string     helptext_;
 	string     shortcut_;
 	Type       type_;
-	int        group_;
+	string     group_;
 	bool       checked_;
 	string     keybind_;
 	CBoolCVar* linked_cvar_;
+	bool       custom_wx_id_ = false;
 
 	// Internal functions
-	bool parse(const ParseTreeNode* node);
-
-	// Static functions
-	static SAction* invalidAction();
-
-	// Static variables
-	static int              n_groups_;
-	static int              cur_id_;
-	static vector<SAction*> actions_;
-	static SAction*         action_invalid_;
-};
-
-// Basic 'interface' class for classes that handle SActions (yay multiple inheritance)
-class SActionHandler
-{
-public:
-	SActionHandler();
-	virtual ~SActionHandler();
-
-	static void setWxIdOffset(int offset) { wx_id_offset_ = offset; }
-	static bool doAction(string_view id);
-
-protected:
-	static int wx_id_offset_;
-
-	virtual bool handleAction(string_view id) { return false; }
-
-private:
-	static vector<SActionHandler*> action_handlers_;
+	void fromJson(const Json& j);
 };
 } // namespace slade

@@ -33,12 +33,19 @@
 #include "Main.h"
 #include "ArchiveManager.h"
 #include "App.h"
-#include "Formats/All.h"
-#include "Formats/DirArchive.h"
+#include "Archive.h"
+#include "ArchiveDir.h"
+#include "ArchiveEntry.h"
+#include "ArchiveFormatHandler.h"
+#include "Database/Database.h"
+#include "Database/Tables/ArchiveFile.h"
+#include "EntryType/EntryType.h"
+#include "Game/Game.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
-#include "General/UI.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/UI.h"
+#include "Utility/DateTime.h"
 #include "Utility/FileUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -51,8 +58,32 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 CVAR(Int, base_resource, -1, CVar::Flag::Save)
-CVAR(Int, max_recent_files, 25, CVar::Flag::Save)
 CVAR(Bool, auto_open_wads_root, false, CVar::Flag::Save)
+
+
+// -----------------------------------------------------------------------------
+//
+// Functions
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+// -----------------------------------------------------------------------------
+// Updates/Adds [archive] in/to the database and updates last opened time if
+// requested.
+// -----------------------------------------------------------------------------
+i64 updateArchiveInDatabase(Archive& archive, bool update_last_opened)
+{
+	auto db_id = database::archiveFileId(archive);
+	if (db_id < 0)
+		db_id = database::writeArchiveFile(archive);
+
+	if (update_last_opened)
+		database::setArchiveFileLastOpened(db_id, datetime::now());
+
+	return db_id;
+}
+} // namespace
 
 
 // -----------------------------------------------------------------------------
@@ -75,8 +106,8 @@ bool ArchiveManager::validResDir(string_view dir) const
 	// too, so the res folder cannot be used.
 	static string paths[] = {
 		"animated.lmp",
-		"config/executables.cfg",
-		"config/nodebuilders.cfg",
+		"config/executables.json",
+		"config/nodebuilders.json",
 		"fonts/dejavu_sans.ttf",
 		"html/box-title-back.png",
 		"html/startpage.htm",
@@ -113,8 +144,6 @@ bool ArchiveManager::validResDir(string_view dir) const
 // -----------------------------------------------------------------------------
 bool ArchiveManager::init()
 {
-	program_resource_archive_ = std::make_unique<ZipArchive>();
-
 #ifdef __WXOSX__
 	auto resdir = app::path("../Resources", app::Dir::Executable); // Use Resources dir within bundle on mac
 #else
@@ -123,14 +152,20 @@ bool ArchiveManager::init()
 
 	if (fileutil::dirExists(resdir) && validResDir(resdir))
 	{
-		program_resource_archive_->importDir(resdir);
+		program_resource_archive_ = std::make_shared<Archive>(ArchiveFormat::Dir);
+		program_resource_archive_->setFilename(app::path("slade.pk3", app::Dir::Executable));
+		program_resource_archive_->importDir(resdir, false, nullptr, true);
 		res_archive_open_ = (program_resource_archive_->numEntries() > 0);
 
 		if (!initArchiveFormats())
 			log::error("An error occurred reading archive formats configuration");
 
+		program_resource_archive_->setReadOnly();
 		return res_archive_open_;
 	}
+
+	program_resource_archive_ = std::make_shared<Archive>(ArchiveFormat::Zip);
+	program_resource_archive_->setFilename(app::path("slade.pk3", app::Dir::Executable));
 
 	// Find slade3.pk3 directory
 	auto dir_slade_pk3 = app::path("slade.pk3", app::Dir::Resources);
@@ -165,6 +200,7 @@ bool ArchiveManager::init()
 	if (!initArchiveFormats())
 		log::error("An error occurred reading archive formats configuration");
 
+	program_resource_archive_->setReadOnly();
 	return res_archive_open_;
 }
 
@@ -173,7 +209,7 @@ bool ArchiveManager::init()
 // -----------------------------------------------------------------------------
 bool ArchiveManager::initArchiveFormats() const
 {
-	return Archive::loadFormats(program_resource_archive_->entryAtPath("config/archive_formats.cfg")->data());
+	return archive::loadFormatInfo(program_resource_archive_->entryAtPath("config/archive_formats.json")->data());
 }
 
 // -----------------------------------------------------------------------------
@@ -182,6 +218,32 @@ bool ArchiveManager::initArchiveFormats() const
 bool ArchiveManager::initBaseResource()
 {
 	return openBaseResource((int)base_resource);
+}
+
+// -----------------------------------------------------------------------------
+// Reloads the program resource archive from disk
+// Note that this does not re-open the archive, it just reloads existing entry
+// data, so any new entries added to slade.pk3 (or res dir) will not be loaded
+// -----------------------------------------------------------------------------
+void ArchiveManager::reloadResArchive() const
+{
+	for (auto entry : program_resource_archive_->rootDir()->allEntries())
+		program_resource_archive_->revertEntry(entry.get(), true);
+}
+
+// -----------------------------------------------------------------------------
+// Reloads the entry at [res_path] in the program resource archive frin disk
+// -----------------------------------------------------------------------------
+bool ArchiveManager::reloadResource(string_view res_path) const
+{
+	if (auto entry = program_resource_archive_->entryAtPath(res_path))
+	{
+		program_resource_archive_->revertEntry(entry, true);
+		return true;
+	}
+
+	log::warning("Resource {} not found in resource archive", res_path);
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -196,33 +258,27 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 		OpenArchive n_archive;
 		n_archive.archive  = archive;
 		n_archive.resource = true;
+		n_archive.db_id    = -1;
 		open_archives_.push_back(n_archive);
 
 		// Emit archive changed/saved signal when received from the archive
 		archive->signals().modified.connect([this](Archive& archive, bool modified)
 											{ signals_.archive_modified(archiveIndex(&archive), modified); });
-		archive->signals().saved.connect([this](Archive& archive) { signals_.archive_saved(archiveIndex(&archive)); });
+		archive->signals().saved.connect(
+			[this](Archive& archive)
+			{
+				// Update in database
+				if (archive.isOnDisk())
+					setArchiveDbId(archive, database::writeArchiveFile(archive));
+
+				signals_.archive_saved(archiveIndex(&archive));
+			});
 
 		// Announce the addition
 		signals_.archive_added(open_archives_.size() - 1);
 
 		// Add to resource manager
 		app::resources().addArchive(archive.get());
-
-		// ZDoom also loads any WADs found in the root of a PK3 or directory
-		if ((archive->formatId() == "zip" || archive->formatId() == "folder") && auto_open_wads_root)
-		{
-			for (const auto& entry : archive->rootDir()->entries())
-			{
-				if (entry->type() == EntryType::unknownType())
-					EntryType::detectEntryType(*entry);
-
-				if (entry->type()->id() == "wad")
-					// First true: yes, manage this
-					// Second true: open silently, don't open a tab for it
-					openArchive(entry.get(), true, true);
-			}
-		}
 
 		return true;
 	}
@@ -236,7 +292,7 @@ bool ArchiveManager::addArchive(shared_ptr<Archive> archive)
 shared_ptr<Archive> ArchiveManager::getArchive(int index)
 {
 	// Check that index is valid
-	if (index < 0 || index >= (int)open_archives_.size())
+	if (index < 0 || index >= static_cast<int>(open_archives_.size()))
 		return nullptr;
 	else
 		return open_archives_[index].archive;
@@ -264,7 +320,7 @@ shared_ptr<Archive> ArchiveManager::getArchive(string_view filename)
 // Returns the archive opened from the given parent entry
 // (nullptr if it doesn't exist)
 // ----------------------------------------------------------------------------
-shared_ptr<Archive> ArchiveManager::getArchive(ArchiveEntry* parent)
+shared_ptr<Archive> ArchiveManager::getArchive(const ArchiveEntry* parent)
 {
 	for (unsigned a = 0; a < open_archives_.size(); ++a)
 	{
@@ -299,62 +355,25 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 		return new_archive;
 	}
 
+	// Check the file exists
+	if (!fileutil::fileExists(filename))
+	{
+		global::error = fmt::format("File \"{}\" does not exist", filename);
+		return nullptr;
+	}
+
 	// Determine file format
 	string std_fn{ filename };
-	if (WadArchive::isWadArchive(std_fn))
-		new_archive = std::make_shared<WadArchive>();
-	else if (ZipArchive::isZipArchive(std_fn))
-		new_archive = std::make_shared<ZipArchive>();
-	else if (ResArchive::isResArchive(std_fn))
-		new_archive = std::make_shared<ResArchive>();
-	else if (DatArchive::isDatArchive(std_fn))
-		new_archive = std::make_shared<DatArchive>();
-	else if (LibArchive::isLibArchive(std_fn))
-		new_archive = std::make_shared<LibArchive>();
-	else if (PakArchive::isPakArchive(std_fn))
-		new_archive = std::make_shared<PakArchive>();
-	else if (BSPArchive::isBSPArchive(std_fn))
-		new_archive = std::make_shared<BSPArchive>();
-	else if (GrpArchive::isGrpArchive(std_fn))
-		new_archive = std::make_shared<GrpArchive>();
-	else if (RffArchive::isRffArchive(std_fn))
-		new_archive = std::make_shared<RffArchive>();
-	else if (GobArchive::isGobArchive(std_fn))
-		new_archive = std::make_shared<GobArchive>();
-	else if (LfdArchive::isLfdArchive(std_fn))
-		new_archive = std::make_shared<LfdArchive>();
-	else if (HogArchive::isHogArchive(std_fn))
-		new_archive = std::make_shared<HogArchive>();
-	else if (ADatArchive::isADatArchive(std_fn))
-		new_archive = std::make_shared<ADatArchive>();
-	else if (Wad2Archive::isWad2Archive(std_fn))
-		new_archive = std::make_shared<Wad2Archive>();
-	else if (WadJArchive::isWadJArchive(std_fn))
-		new_archive = std::make_shared<WadJArchive>();
-	else if (WolfArchive::isWolfArchive(std_fn))
-		new_archive = std::make_shared<WolfArchive>();
-	else if (GZipArchive::isGZipArchive(std_fn))
-		new_archive = std::make_shared<GZipArchive>();
-	else if (BZip2Archive::isBZip2Archive(std_fn))
-		new_archive = std::make_shared<BZip2Archive>();
-	else if (TarArchive::isTarArchive(std_fn))
-		new_archive = std::make_shared<TarArchive>();
-	else if (DiskArchive::isDiskArchive(std_fn))
-		new_archive = std::make_shared<DiskArchive>();
-	else if (PodArchive::isPodArchive(std_fn))
-		new_archive = std::make_shared<PodArchive>();
-	else if (ChasmBinArchive::isChasmBinArchive(std_fn))
-		new_archive = std::make_shared<ChasmBinArchive>();
-	else if (SiNArchive::isSiNArchive(std_fn))
-		new_archive = std::make_shared<SiNArchive>();
-	else if (LabArchive::isLabArchive(std_fn))
-		new_archive = std::make_shared<LabArchive>();
-	else
+	auto   format_id = archive::detectArchiveFormat(std_fn);
+	if (format_id == ArchiveFormat::Unknown)
 	{
-		// Unsupported format
+		// Unsupported/unknown format
 		global::error = "Unsupported or invalid Archive format";
 		return nullptr;
 	}
+
+	// Create archive
+	new_archive = std::make_shared<Archive>(format_id);
 
 	// If it opened successfully, add it to the list if needed & return it,
 	// Otherwise, delete it and return nullptr
@@ -366,12 +385,20 @@ shared_ptr<Archive> ArchiveManager::openArchive(string_view filename, bool manag
 			auto index = open_archives_.size();
 			addArchive(new_archive);
 
+			// Update in database
+			auto db_id = updateArchiveInDatabase(*new_archive, true);
+			setArchiveDbId(*new_archive, db_id);
+
+			// ZDoom also loads any WADs found in the root of a PK3
+			if (auto_open_wads_root && new_archive->formatId() == "zip")
+				openWadsInRoot(*new_archive);
+
 			// Announce open
 			if (!silent)
+			{
 				signals_.archive_opened(index);
-
-			// Add to recent files
-			addRecentFile(filename);
+				game::updateCustomDefinitions();
+			}
 		}
 
 		// Return the opened archive
@@ -407,61 +434,16 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 	}
 
 	// Check entry type
-	shared_ptr<Archive> new_archive;
-	if (WadArchive::isWadArchive(entry->data()))
-		new_archive = std::make_shared<WadArchive>();
-	else if (ZipArchive::isZipArchive(entry->data()))
-		new_archive = std::make_shared<ZipArchive>();
-	else if (ResArchive::isResArchive(entry->data()))
-		new_archive = std::make_shared<ResArchive>();
-	else if (LibArchive::isLibArchive(entry->data()))
-		new_archive = std::make_shared<LibArchive>();
-	else if (DatArchive::isDatArchive(entry->data()))
-		new_archive = std::make_shared<DatArchive>();
-	else if (PakArchive::isPakArchive(entry->data()))
-		new_archive = std::make_shared<PakArchive>();
-	else if (BSPArchive::isBSPArchive(entry->data()))
-		new_archive = std::make_shared<BSPArchive>();
-	else if (GrpArchive::isGrpArchive(entry->data()))
-		new_archive = std::make_shared<GrpArchive>();
-	else if (RffArchive::isRffArchive(entry->data()))
-		new_archive = std::make_shared<RffArchive>();
-	else if (GobArchive::isGobArchive(entry->data()))
-		new_archive = std::make_shared<GobArchive>();
-	else if (LfdArchive::isLfdArchive(entry->data()))
-		new_archive = std::make_shared<LfdArchive>();
-	else if (HogArchive::isHogArchive(entry->data()))
-		new_archive = std::make_shared<HogArchive>();
-	else if (ADatArchive::isADatArchive(entry->data()))
-		new_archive = std::make_shared<ADatArchive>();
-	else if (Wad2Archive::isWad2Archive(entry->data()))
-		new_archive = std::make_shared<Wad2Archive>();
-	else if (WadJArchive::isWadJArchive(entry->data()))
-		new_archive = std::make_shared<WadJArchive>();
-	else if (WolfArchive::isWolfArchive(entry->data()))
-		new_archive = std::make_shared<WolfArchive>();
-	else if (GZipArchive::isGZipArchive(entry->data()))
-		new_archive = std::make_shared<GZipArchive>();
-	else if (BZip2Archive::isBZip2Archive(entry->data()))
-		new_archive = std::make_shared<BZip2Archive>();
-	else if (TarArchive::isTarArchive(entry->data()))
-		new_archive = std::make_shared<TarArchive>();
-	else if (DiskArchive::isDiskArchive(entry->data()))
-		new_archive = std::make_shared<DiskArchive>();
-	else if (strutil::endsWithCI(entry->name(), ".pod") && PodArchive::isPodArchive(entry->data()))
-		new_archive = std::make_shared<PodArchive>();
-	else if (ChasmBinArchive::isChasmBinArchive(entry->data()))
-		new_archive = std::make_shared<ChasmBinArchive>();
-	else if (SiNArchive::isSiNArchive(entry->data()))
-		new_archive = std::make_shared<SiNArchive>();
-	else if (LabArchive::isLabArchive(entry->data()))
-		new_archive = std::make_shared<LabArchive>();
-	else
+	auto format_id = archive::detectArchiveFormat(entry->data());
+	if (format_id == ArchiveFormat::Unknown)
 	{
-		// Unsupported format
+		// Unsupported/unknown format
 		global::error = "Unsupported or invalid Archive format";
 		return nullptr;
 	}
+
+	// Create archive
+	auto new_archive = std::make_shared<Archive>(format_id);
 
 	// If it opened successfully, add it to the list & return it,
 	// Otherwise, delete it and return nullptr
@@ -480,9 +462,16 @@ shared_ptr<Archive> ArchiveManager::openArchive(ArchiveEntry* entry, bool manage
 			auto index = open_archives_.size();
 			addArchive(new_archive);
 
+			// Update in database
+			auto db_id = updateArchiveInDatabase(*new_archive, true);
+			setArchiveDbId(*new_archive, db_id);
+
 			// Announce open
 			if (!silent)
+			{
 				signals_.archive_opened(index);
+				game::updateCustomDefinitions();
+			}
 
 			entry->lock();
 		}
@@ -516,7 +505,7 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 		return new_archive;
 	}
 
-	new_archive = std::make_shared<DirArchive>();
+	new_archive = std::make_shared<Archive>(ArchiveFormat::Dir);
 
 	// If it opened successfully, add it to the list if needed & return it,
 	// Otherwise, delete it and return nullptr
@@ -528,12 +517,20 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 			auto index = open_archives_.size();
 			addArchive(new_archive);
 
+			// Update in database
+			auto db_id = updateArchiveInDatabase(*new_archive, true);
+			setArchiveDbId(*new_archive, db_id);
+
+			// ZDoom also loads any WADs found in the root of a directory
+			if (auto_open_wads_root)
+				openWadsInRoot(*new_archive);
+
 			// Announce open
 			if (!silent)
+			{
 				signals_.archive_opened(index);
-
-			// Add to recent files
-			addRecentFile(dir);
+				game::updateCustomDefinitions();
+			}
 		}
 
 		// Return the opened archive
@@ -551,34 +548,30 @@ shared_ptr<Archive> ArchiveManager::openDirArchive(string_view dir, bool manage,
 // archives. Returns the created archive, or nullptr if an invalid archive type
 // was given
 // -----------------------------------------------------------------------------
-shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
+shared_ptr<Archive> ArchiveManager::newArchive(ArchiveFormat format)
 {
-	// Create a new archive depending on the type specified
-	shared_ptr<Archive> new_archive;
-	if (format == "wad")
-		new_archive = std::make_shared<WadArchive>();
-	else if (format == "zip")
-		new_archive = std::make_shared<ZipArchive>();
-	else if (format == "grp")
-		new_archive = std::make_shared<GrpArchive>();
-	else if (format == "pak")
-		new_archive = std::make_shared<PakArchive>();
-	else
+	// Check if the format specified allows archive creation
+	auto format_info = archive::formatInfo(format);
+	if (!format_info.create)
 	{
-		global::error = fmt::format("Can not create archive of format: {}", format);
+		global::error = fmt::format("Can not create archive of format: {}", format_info.name);
 		log::error(global::error);
 		return nullptr;
 	}
 
-	// If the archive was created, set its filename and add it to the list
-	if (new_archive)
-	{
-		new_archive->setFilename(fmt::format("UNSAVED ({})", new_archive->formatDesc().name));
-		addArchive(new_archive);
-	}
+	// Create a new archive depending on the format specified
+	auto new_archive = std::make_shared<Archive>(format);
+
+	// Set its filename and add it to the list
+	new_archive->setFilename(fmt::format("UNSAVED ({})", new_archive->formatInfo().name));
+	addArchive(new_archive);
 
 	// Return the created archive, if any
 	return new_archive;
+}
+shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
+{
+	return newArchive(archive::formatFromId(format));
 }
 
 // -----------------------------------------------------------------------------
@@ -588,7 +581,7 @@ shared_ptr<Archive> ArchiveManager::newArchive(string_view format)
 bool ArchiveManager::closeArchive(int index)
 {
 	// Check for invalid index
-	if (index < 0 || index >= (int)open_archives_.size())
+	if (index < 0 || index >= static_cast<int>(open_archives_.size()))
 		return false;
 
 	// Announce archive closing
@@ -612,11 +605,10 @@ bool ArchiveManager::closeArchive(int index)
 	}
 
 	// Remove ourselves from our parent's open-child list
-	auto parent = open_archives_[index].archive->parentEntry();
-	if (parent)
+	bool child = false;
+	if (auto parent = open_archives_[index].archive->parentEntry())
 	{
-		auto gp = parent->parent();
-		if (gp)
+		if (auto gp = parent->parent())
 		{
 			int pi = archiveIndex(gp);
 			if (pi >= 0)
@@ -634,6 +626,7 @@ bool ArchiveManager::closeArchive(int index)
 		}
 
 		parent->unlock();
+		child = true;
 	}
 
 	// Close the archive
@@ -644,6 +637,10 @@ bool ArchiveManager::closeArchive(int index)
 
 	// Announce closed
 	signals_.archive_closed(index);
+
+	// Update custom definitions in case the archive contained any
+	if (!child)
+		game::updateCustomDefinitions();
 
 	return true;
 }
@@ -656,7 +653,7 @@ bool ArchiveManager::closeArchive(int index)
 bool ArchiveManager::closeArchive(string_view filename)
 {
 	// Go through all open archives
-	for (int a = 0; a < (int)open_archives_.size(); a++)
+	for (int a = 0; a < static_cast<int>(open_archives_.size()); a++)
 	{
 		// If the filename matches, remove it
 		if (open_archives_[a].archive->filename() == filename)
@@ -671,10 +668,10 @@ bool ArchiveManager::closeArchive(string_view filename)
 // Closes the specified archive and removes it from the list, if it exists in
 // the list. Returns false if it doesn't exist, else true
 // -----------------------------------------------------------------------------
-bool ArchiveManager::closeArchive(Archive* archive)
+bool ArchiveManager::closeArchive(const Archive* archive)
 {
 	// Go through all open archives
-	for (int a = 0; a < (int)open_archives_.size(); a++)
+	for (int a = 0; a < static_cast<int>(open_archives_.size()); a++)
 	{
 		// If the archive exists in the list, remove it
 		if (open_archives_[a].archive.get() == archive)
@@ -712,14 +709,14 @@ void ArchiveManager::closeAll(bool exiting)
 // Returns the index in the list of the given archive, or -1 if the archive
 // doesn't exist in the list
 // -----------------------------------------------------------------------------
-int ArchiveManager::archiveIndex(Archive* archive)
+int ArchiveManager::archiveIndex(const Archive* archive) const
 {
 	// Go through all open archives
 	for (size_t a = 0; a < open_archives_.size(); a++)
 	{
 		// If the archive we're looking for is this one, return the index
 		if (open_archives_[a].archive.get() == archive)
-			return (int)a;
+			return static_cast<int>(a);
 	}
 
 	// If we get to here the archive wasn't found, so return -1
@@ -730,7 +727,7 @@ int ArchiveManager::archiveIndex(Archive* archive)
 // Returns all open archives that live inside this one, recursively.
 // -----------------------------------------------------------------------------
 // This is the recursive bit, separate from the public entry point
-void ArchiveManager::getDependentArchivesInternal(Archive* archive, vector<shared_ptr<Archive>>& vec)
+void ArchiveManager::getDependentArchivesInternal(const Archive* archive, vector<shared_ptr<Archive>>& vec)
 {
 	int ai = archiveIndex(archive);
 
@@ -743,11 +740,44 @@ void ArchiveManager::getDependentArchivesInternal(Archive* archive, vector<share
 		}
 	}
 }
-vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(Archive* archive)
+vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(const Archive* archive)
 {
 	vector<shared_ptr<Archive>> vec;
 	getDependentArchivesInternal(archive, vec);
 	return vec;
+}
+
+// -----------------------------------------------------------------------------
+// Sets [archive]'s database ID to [db_id]
+// (in the ArchiveManager, not the database itself)
+// -----------------------------------------------------------------------------
+void ArchiveManager::setArchiveDbId(const Archive& archive, i64 db_id)
+{
+	for (auto& oa : open_archives_)
+		if (oa.archive.get() == &archive)
+			oa.db_id = db_id;
+}
+
+// -----------------------------------------------------------------------------
+// Opens all wad archives in the root directory of [archive]
+// -----------------------------------------------------------------------------
+void ArchiveManager::openWadsInRoot(const Archive& archive)
+{
+	// Don't want to trigger this signal for embedded wads
+	database::signals().archive_file_updated.block();
+
+	for (const auto& entry : archive.rootDir()->entries())
+	{
+		if (entry->type() == EntryType::unknownType())
+			EntryType::detectEntryType(*entry);
+
+		if (entry->type()->id() == "wad")
+			// First true: yes, manage this
+			// Second true: open silently, don't open a tab for it
+			openArchive(entry.get(), true, true);
+	}
+
+	database::signals().archive_file_updated.unblock();
 }
 
 // -----------------------------------------------------------------------------
@@ -756,7 +786,7 @@ vector<shared_ptr<Archive>> ArchiveManager::getDependentArchives(Archive* archiv
 // -----------------------------------------------------------------------------
 string ArchiveManager::getArchiveExtensionsString() const
 {
-	auto           formats = Archive::allFormats();
+	auto           formats = archive::allFormatsInfo();
 	vector<string> ext_strings;
 	string         ext_all = "Any supported file|";
 	for (const auto& fmt : formats)
@@ -785,7 +815,7 @@ string ArchiveManager::getArchiveExtensionsString() const
 // -----------------------------------------------------------------------------
 // Returns true if [archive] is set to be used as a resource, false otherwise
 // -----------------------------------------------------------------------------
-bool ArchiveManager::archiveIsResource(Archive* archive)
+bool ArchiveManager::archiveIsResource(const Archive* archive) const
 {
 	int index = archiveIndex(archive);
 	if (index < 0)
@@ -817,7 +847,7 @@ void ArchiveManager::setArchiveResource(Archive* archive, bool resource)
 // Returns a vector of all open archives.
 // If [resources_only] is true, only includes archives marked as resources
 // -----------------------------------------------------------------------------
-vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only)
+vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only) const
 {
 	vector<shared_ptr<Archive>> ret;
 
@@ -832,10 +862,13 @@ vector<shared_ptr<Archive>> ArchiveManager::allArchives(bool resource_only)
 // Returns a shared_ptr to the given [archive], or nullptr if it isn't open in
 // the archive manager
 // -----------------------------------------------------------------------------
-shared_ptr<Archive> ArchiveManager::shareArchive(Archive* const archive)
+shared_ptr<Archive> ArchiveManager::shareArchive(const Archive* const archive)
 {
 	if (archive == base_resource_archive_.get())
 		return base_resource_archive_;
+
+	if (archive == program_resource_archive_.get())
+		return program_resource_archive_;
 
 	for (const auto& oa : open_archives_)
 		if (oa.archive.get() == archive)
@@ -879,11 +912,11 @@ void ArchiveManager::removeBaseResourcePath(unsigned index)
 		return;
 
 	// Unload base resource if removed is open
-	if (index == (unsigned)base_resource)
+	if (index == static_cast<unsigned>(base_resource))
 		openBaseResource(-1);
 
 	// Modify base_resource cvar if needed
-	else if (base_resource > (signed)index)
+	else if (base_resource > static_cast<signed>(index))
 		base_resource = base_resource - 1;
 
 	// Remove the path
@@ -906,6 +939,14 @@ string ArchiveManager::getBaseResourcePath(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
+// Returns the currently selected base resource path
+// -----------------------------------------------------------------------------
+string ArchiveManager::currentBaseResourcePath()
+{
+	return getBaseResourcePath(base_resource);
+}
+
+// -----------------------------------------------------------------------------
 // Opens the base resource archive [index]
 // -----------------------------------------------------------------------------
 bool ArchiveManager::openBaseResource(int index)
@@ -922,7 +963,7 @@ bool ArchiveManager::openBaseResource(int index)
 	}
 
 	// Check index
-	if (index < 0 || (unsigned)index >= base_resource_paths_.size())
+	if (index < 0 || static_cast<unsigned>(index) >= base_resource_paths_.size())
 	{
 		base_resource = -1;
 		signals_.base_res_current_cleared();
@@ -931,10 +972,10 @@ bool ArchiveManager::openBaseResource(int index)
 
 	// Create archive based on file type
 	auto filename = base_resource_paths_[index];
-	if (WadArchive::isWadArchive(filename))
-		base_resource_archive_ = std::make_unique<WadArchive>();
-	else if (ZipArchive::isZipArchive(filename))
-		base_resource_archive_ = std::make_unique<ZipArchive>();
+	if (archive::isFormat(filename, ArchiveFormat::Wad))
+		base_resource_archive_ = std::make_unique<Archive>(ArchiveFormat::Wad);
+	else if (archive::isFormat(filename, ArchiveFormat::Zip))
+		base_resource_archive_ = std::make_unique<Archive>(ArchiveFormat::Zip);
 	else
 		return false;
 
@@ -942,6 +983,10 @@ bool ArchiveManager::openBaseResource(int index)
 	ui::showSplash(fmt::format("Opening {}...", filename), true, maineditor::windowWx());
 	if (base_resource_archive_->open(filename))
 	{
+		// Update in database
+		auto db_id = updateArchiveInDatabase(*base_resource_archive_, false);
+		setArchiveDbId(*base_resource_archive_, db_id);
+
 		base_resource = index;
 		ui::hideSplash();
 		app::resources().addArchive(base_resource_archive_.get());
@@ -958,7 +1003,7 @@ bool ArchiveManager::openBaseResource(int index)
 // Returns the first entry matching [name] in the resource archives.
 // Resource archives = open archives -> base resource archives.
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, Archive* ignore)
+ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, const Archive* ignore) const
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -972,8 +1017,7 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, Archive* ignore
 			continue;
 
 		// Try to find the entry in the archive
-		auto entry = open_archive.archive->entry(name);
-		if (entry)
+		if (auto entry = open_archive.archive->entry(name))
 			return entry;
 	}
 
@@ -987,7 +1031,7 @@ ArchiveEntry* ArchiveManager::getResourceEntry(string_view name, Archive* ignore
 // -----------------------------------------------------------------------------
 // Searches for an entry matching [options] in the resource archives
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options, Archive* ignore)
+ArchiveEntry* ArchiveManager::findResourceEntry(ArchiveSearchOptions& options, const Archive* ignore) const
 {
 	// Go through all open archives
 	for (auto& open_archive : open_archives_)
@@ -1001,8 +1045,7 @@ ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options,
 			continue;
 
 		// Try to find the entry in the archive
-		auto entry = open_archive.archive->findLast(options);
-		if (entry)
+		if (auto entry = open_archive.archive->findLast(options))
 			return entry;
 	}
 
@@ -1016,7 +1059,7 @@ ArchiveEntry* ArchiveManager::findResourceEntry(Archive::SearchOptions& options,
 // -----------------------------------------------------------------------------
 // Searches for entries matching [options] in the resource archives
 // -----------------------------------------------------------------------------
-vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOptions& options, Archive* ignore)
+vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(ArchiveSearchOptions& options, const Archive* ignore) const
 {
 	vector<ArchiveEntry*> ret;
 
@@ -1044,94 +1087,6 @@ vector<ArchiveEntry*> ArchiveManager::findAllResourceEntries(Archive::SearchOpti
 	}
 
 	return ret;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the recent file path at [index]
-// -----------------------------------------------------------------------------
-string ArchiveManager::recentFile(unsigned index)
-{
-	// Check index
-	if (index >= recent_files_.size())
-		return "";
-
-	return recent_files_[index];
-}
-
-// -----------------------------------------------------------------------------
-// Adds a recent file to the list, if it doesn't exist already
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFile(string_view path)
-{
-	// Check the path is valid
-	if (!(fileutil::fileExists(path) || fileutil::dirExists(path)))
-		return;
-
-	// Replace \ with /
-	auto file_path = string{ path };
-	std::replace(file_path.begin(), file_path.end(), '\\', '/');
-
-	// Check if the file is already in the list
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == file_path)
-		{
-			// Move this file to the top of the list
-			recent_files_.erase(recent_files_.begin() + a);
-			recent_files_.insert(recent_files_.begin(), file_path);
-
-			// Announce
-			signals_.recent_files_changed();
-
-			return;
-		}
-	}
-
-	// Add the file to the top of the list
-	recent_files_.insert(recent_files_.begin(), file_path);
-
-	// Keep it trimmed
-	while (recent_files_.size() > (unsigned)max_recent_files)
-		recent_files_.pop_back();
-
-	// Announce
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Adds a list of recent file paths to the recent file list
-// -----------------------------------------------------------------------------
-void ArchiveManager::addRecentFiles(const vector<string>& paths)
-{
-	// Mute annoucements
-	signals_.recent_files_changed.block();
-
-	// Clear existing list
-	recent_files_.clear();
-
-	// Add the files
-	for (const auto& path : paths)
-		addRecentFile(path);
-
-	// Announce
-	signals_.recent_files_changed.unblock();
-	signals_.recent_files_changed();
-}
-
-// -----------------------------------------------------------------------------
-// Removes the recent file matching [path]
-// -----------------------------------------------------------------------------
-void ArchiveManager::removeRecentFile(string_view path)
-{
-	for (unsigned a = 0; a < recent_files_.size(); a++)
-	{
-		if (recent_files_[a] == path)
-		{
-			recent_files_.erase(recent_files_.begin() + a);
-			signals_.recent_files_changed();
-			return;
-		}
-	}
 }
 
 // -----------------------------------------------------------------------------
@@ -1202,7 +1157,7 @@ bool ArchiveManager::deleteBookmark(unsigned index)
 // -----------------------------------------------------------------------------
 // Removes any bookmarked entries in [archive] from the list
 // -----------------------------------------------------------------------------
-bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
+bool ArchiveManager::deleteBookmarksInArchive(const Archive* archive)
 {
 	// Go through bookmarks
 	bool                  removed = false;
@@ -1233,7 +1188,7 @@ bool ArchiveManager::deleteBookmarksInArchive(Archive* archive)
 // -----------------------------------------------------------------------------
 // Removes any bookmarked entries in [node] from the list
 // -----------------------------------------------------------------------------
-bool ArchiveManager::deleteBookmarksInDir(ArchiveDir* node)
+bool ArchiveManager::deleteBookmarksInDir(const ArchiveDir* node)
 {
 	auto archive = node->archive();
 	bool removed = deleteBookmark(node->dirEntry());
@@ -1305,7 +1260,7 @@ void ArchiveManager::deleteAllBookmarks()
 // -----------------------------------------------------------------------------
 // Returns the bookmarked entry at [index]
 // -----------------------------------------------------------------------------
-ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
+ArchiveEntry* ArchiveManager::getBookmark(unsigned index) const
 {
 	// Check index
 	if (index >= bookmarks_.size())
@@ -1317,13 +1272,25 @@ ArchiveEntry* ArchiveManager::getBookmark(unsigned index)
 // -----------------------------------------------------------------------------
 // Returns true if [entry] exists in the bookmarks list
 // -----------------------------------------------------------------------------
-bool slade::ArchiveManager::isBookmarked(ArchiveEntry* entry)
+bool ArchiveManager::isBookmarked(const ArchiveEntry* entry) const
 {
 	for (const auto& bm : bookmarks_)
 		if (bm.lock().get() == entry)
 			return true;
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the database ID of the given [archive], or -1 if it doesn't have one
+// -----------------------------------------------------------------------------
+i64 ArchiveManager::archiveDbId(const Archive& archive) const
+{
+	for (const auto& oa : open_archives_)
+		if (oa.archive.get() == &archive)
+			return oa.db_id;
+
+	return -1;
 }
 
 
@@ -1357,3 +1324,25 @@ void c_open(const vector<string>& args)
 		app::archiveManager().openArchive(arg);
 }
 ConsoleCommand am_open("open", &c_open, 1, true); // Can't use the macro with this name
+
+// -----------------------------------------------------------------------------
+// Reloads all resources from slade.pk3
+// -----------------------------------------------------------------------------
+CONSOLE_COMMAND(reload_resources, 0, true)
+{
+	app::archiveManager().reloadResArchive();
+
+	log::info("Reloaded all resources from slade.pk3");
+}
+
+// -----------------------------------------------------------------------------
+// Reloads a specific resource entry given by its path in the resource archive
+// -----------------------------------------------------------------------------
+CONSOLE_COMMAND(reload_resource, 1, true)
+{
+	auto res_path = args[0];
+	if (app::archiveManager().reloadResource(res_path))
+		log::info("Reloaded resource: {}", res_path);
+	else
+		log::error("Failed to reload resource: {}", res_path);
+}

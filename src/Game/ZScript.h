@@ -1,13 +1,14 @@
 #pragma once
 
-#include "ThingType.h"
-#include "Utility/Property.h"
+#include "Utility/PropertyList.h"
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
 class Tokenizer;
+namespace game
+{
+	class ThingType;
+}
 
 namespace zscript
 {
@@ -86,7 +87,7 @@ namespace zscript
 			string name;
 			string type;
 			string default_value;
-			Parameter() : name{ "<unknown>" }, type{ "<unknown>" }, default_value{ "" } {}
+			Parameter() : name{ "<unknown>" }, type{ "<unknown>" } {}
 
 			unsigned parse(const vector<string>& tokens, unsigned start_index);
 		};
@@ -123,9 +124,11 @@ namespace zscript
 			string sprite_base;
 			string sprite_frame;
 			int    duration;
+			string light;
 		};
 
 		string editorSprite();
+		string light();
 
 		vector<Frame> frames;
 	};
@@ -139,6 +142,7 @@ namespace zscript
 
 		bool   parse(ParsedStatement& states);
 		string editorSprite();
+		string light();
 
 	private:
 		std::map<string, State> states_;
@@ -177,7 +181,6 @@ namespace zscript
 
 		vector<std::pair<string, string>> db_properties_;
 
-		void parseEditorComment(string_view token);
 		bool parseClassBlock(vector<ParsedStatement>& block);
 		bool parseDefaults(vector<ParsedStatement>& defaults);
 	};

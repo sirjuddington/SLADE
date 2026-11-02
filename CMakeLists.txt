@@ -1,4 +1,17 @@
 cmake_minimum_required(VERSION 3.15) # Minimum CMake 3.15 for precompiled header support
+
+# Build options
+# (BUILD_WX must be defined before project(), since vcpkg manifest install runs during project())
+option(NO_LUA "Disable Lua/Scripting features to reduce compile time" OFF)
+option(BUILD_PK3 "Build the SLADE pk3 file from dist/res" ON)
+option(BUILD_WX "Download and build wxWidgets instead of using system-installed libs" OFF)
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+
+# Skip the vcpkg wxwidgets package (the 'system-wx' default feature) when building wxWidgets ourselves
+if (BUILD_WX)
+	set(VCPKG_MANIFEST_NO_DEFAULT_FEATURES ON)
+endif ()
+
 project(SLADE VERSION 3.2.0)
 
 # Additional cmake modules
@@ -9,16 +22,8 @@ if (NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 endif ()
 
-# Build options
-OPTION(NO_WEBVIEW "Disable wxWebview usage (for start page and documentation)" OFF)
-OPTION(NO_LUA "Disable Lua/Scripting features to reduce compile time" OFF)
-OPTION(NO_FLUIDSYNTH "Disable FluidSynth MIDI playback" OFF)
-OPTION(BUILD_PK3 "Build the SLADE pk3 file from dist/res" ON)
-OPTION(BUILD_WX "Download and build wxWidgets instead of using system-installed libs" OFF)
-option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
-
-# c++17 is required to compile
-set(CMAKE_CXX_STANDARD 17)
+# c++20 is required to compile
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 # Enable AddressSanitizer if requested
@@ -39,8 +44,8 @@ if (BUILD_WX)
 	FetchContent_Declare(
 		wxWidgets
 		GIT_REPOSITORY https://github.com/wxWidgets/wxWidgets.git
-		GIT_TAG 08b10e373e8de34ec3f7439615e16a2288df0b35 # master as of 2025-11-10
-		#GIT_TAG v3.3.1
+		#GIT_TAG 68cef639a55be406e764015787c90169ac888135 # master as of 2026-07-07
+		GIT_TAG v3.3.4
 	)
 	FetchContent_GetProperties(wxwidgets)
 	FetchContent_MakeAvailable(wxwidgets)

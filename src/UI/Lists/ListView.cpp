@@ -35,7 +35,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "ListView.h"
-#include "General/ColourConfiguration.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -185,12 +185,12 @@ bool ListView::setItemStatus(int item, ItemStatus status)
 	// Set item text colour to given status colour
 	switch (status)
 	{
-	case ItemStatus::Normal: SetItemTextColour(item, wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
-	case ItemStatus::Modified: SetItemTextColour(item, colourconfig::colour("modified").toWx()); break;
-	case ItemStatus::New: SetItemTextColour(item, colourconfig::colour("new").toWx()); break;
-	case ItemStatus::Locked: SetItemTextColour(item, colourconfig::colour("locked").toWx()); break;
-	case ItemStatus::Error: SetItemTextColour(item, colourconfig::colour("error").toWx());
-	case ItemStatus::Disabled: SetItemTextColour(item, disabledColour().toWx());
+	case ItemStatus::Normal:   SetItemTextColour(item, wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT)); break;
+	case ItemStatus::Modified: SetItemTextColour(item, ui::textColour(ui::TextColour::Modified)); break;
+	case ItemStatus::New:      SetItemTextColour(item, ui::textColour(ui::TextColour::New)); break;
+	case ItemStatus::Locked:   SetItemTextColour(item, ui::textColour(ui::TextColour::Locked)); break;
+	case ItemStatus::Error:    SetItemTextColour(item, ui::textColour(ui::TextColour::Error)); break;
+	case ItemStatus::Disabled: SetItemTextColour(item, disabledColour());
 	}
 
 	return true;
@@ -389,6 +389,10 @@ bool ListView::updateSize()
 			// Minimum size of 24
 			if (GetColumnWidth(a) < 24)
 				SetColumnWidth(a, 24);
+
+			// Add spacing if any
+			if (column_spacing_ > 0)
+				SetColumnWidth(a, GetColumnWidth(a) + column_spacing_);
 		}
 
 		// Add extra width to the first column in linux as wxLIST_AUTOSIZE seems to ignore listitem images on wxGTK

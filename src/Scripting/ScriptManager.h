@@ -1,11 +1,7 @@
 #pragma once
 
-#include "Archive/ArchiveEntry.h"
-
 namespace slade
 {
-class SLADEMap;
-
 namespace scriptmanager
 {
 	enum class ScriptType
@@ -39,7 +35,7 @@ namespace scriptmanager
 	void saveUserScripts();
 
 	bool renameScript(Script* script, string_view new_name);
-	bool deleteScript(Script* script);
+	bool deleteScript(const Script* script);
 
 	Script* createEditorScript(string_view name, ScriptType type);
 	void    populateEditorScriptMenu(wxMenu* menu, ScriptType type, string_view action_id);

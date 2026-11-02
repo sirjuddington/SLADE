@@ -33,9 +33,13 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "LineList.h"
+#include "Game/ActionSpecial.h"
 #include "Game/Configuration.h"
+#include "Game/Game.h"
+#include "Geometry/Geometry.h"
+#include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/SLADEMap.h"
-#include "Utility/MathStuff.h"
+#include "Utility/Debuggable.h"
 
 using namespace slade;
 
@@ -51,7 +55,7 @@ using namespace slade;
 // Returns the line closest to the point, or null if none is found.
 // Ignores lines further away than [mindist]
 // -----------------------------------------------------------------------------
-MapLine* LineList::nearest(Vec2d point, double min) const
+MapLine* LineList::nearest(const Vec2d& point, double min) const
 {
 	// Go through lines
 	double   dist;
@@ -84,7 +88,7 @@ MapLine* LineList::nearest(Vec2d point, double min) const
 // If [reverse] is false, only looks for lines with first vertex [v1] and second
 // vertex [v2] (not the other way around)
 // -----------------------------------------------------------------------------
-MapLine* LineList::withVertices(MapVertex* v1, MapVertex* v2, bool reverse) const
+MapLine* LineList::withVertices(const MapVertex* v1, const MapVertex* v2, bool reverse) const
 {
 	for (const auto& line : objects_)
 		if (line->v1() == v1 && line->v2() == v2 || reverse && line->v2() == v1 && line->v1() == v2)
@@ -109,7 +113,7 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 	{
 		// Check for intersection
 		intersection = cutter.start();
-		if (math::linesIntersect(cutter, line->seg(), intersection))
+		if (geometry::linesIntersect(cutter, line->seg(), intersection))
 		{
 			// Add intersection point to vector
 			intersect_points.push_back(intersection);
@@ -127,28 +131,20 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 	{
 		// Sort points along x axis
 		if (xdif >= 0)
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.x < right.x; });
 		else
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.x > right.x; });
 	}
 	else
 	{
 		// Sort points along y axis
 		if (ydif >= 0)
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.y < right.y; });
 		else
-			std::sort(
-				intersect_points.begin(),
-				intersect_points.end(),
+			std::ranges::sort(intersect_points,
 				[](const Vec2d& left, const Vec2d& right) { return left.y > right.y; });
 	}
 
@@ -161,7 +157,7 @@ vector<Vec2d> LineList::cutPoints(const Seg2d& cutter) const
 MapLine* LineList::firstWithId(int id) const
 {
 	for (auto& line : objects_)
-		if (line->id() == id)
+		if (line->hasId(id))
 			return line;
 
 	return nullptr;
@@ -173,7 +169,7 @@ MapLine* LineList::firstWithId(int id) const
 void LineList::putAllWithId(int id, vector<MapLine*>& list) const
 {
 	for (auto& line : objects_)
-		if (line->id() == id)
+		if (line->hasId(id))
 			list.push_back(line);
 }
 
@@ -209,9 +205,9 @@ void LineList::putAllTaggingWithId(int id, int type, vector<MapLine*>& list) con
 			case TagType::Sector:
 			case TagType::SectorOrBack:
 			case TagType::SectorAndBack: fits = (IDEQ(tag) && type == SLADEMap::SECTORS); break;
-			case TagType::LineNegative: tag = abs(tag);
-			case TagType::Line: fits = (IDEQ(tag) && type == SLADEMap::LINEDEFS); break;
-			case TagType::Thing: fits = (IDEQ(tag) && type == SLADEMap::THINGS); break;
+			case TagType::LineNegative:  tag = abs(tag);
+			case TagType::Line:          fits = (IDEQ(tag) && type == SLADEMap::LINEDEFS); break;
+			case TagType::Thing:         fits = (IDEQ(tag) && type == SLADEMap::THINGS); break;
 			case TagType::Thing1Sector2:
 				arg2 = line->arg(1);
 				fits = (type == SLADEMap::THINGS ? IDEQ(tag) : (IDEQ(arg2) && type == SLADEMap::SECTORS));

@@ -1,29 +1,26 @@
 #pragma once
 
 #include "General/Sigslot.h"
-#include <wx/dataview.h>
+#include "SDataViewCtrl.h"
+#include "UI/SAuiToolBar.h"
 
 namespace slade
 {
-class Archive;
-class ArchiveEntry;
-class ArchiveDir;
 class UndoManager;
-class SToolBarButton;
+class SToolButton;
 
 namespace ui
 {
-	class ArchivePathPanel : public wxPanel
+	class ArchivePathPanel : public SAuiToolBar
 	{
 	public:
 		ArchivePathPanel(wxWindow* parent);
+		~ArchivePathPanel() override;
 
-		void setCurrentPath(const ArchiveDir* dir) const;
+		void setCurrentPath(const ArchiveDir* dir);
 
 	private:
-		SToolBarButton* btn_home_  = nullptr;
-		SToolBarButton* btn_updir_ = nullptr;
-		wxStaticText*   text_path_ = nullptr;
+		wxStaticText* text_path_ = nullptr;
 	};
 
 	class ArchiveViewModel : public wxDataViewModel
@@ -42,11 +39,11 @@ namespace ui
 
 		void setFilter(string_view name, string_view category);
 		void showModifiedIndicators(bool show) { modified_indicator_ = show; }
-		void setRootDir(shared_ptr<ArchiveDir> dir);
+		void setRootDir(const shared_ptr<ArchiveDir>& dir);
 		void setRootDir(const wxDataViewItem& item);
 		void setPathPanel(ArchivePathPanel* path_panel);
 
-		void openArchive(shared_ptr<Archive> archive, UndoManager* undo_manager, bool force_list = false);
+		void openArchive(const shared_ptr<Archive>& archive, UndoManager* undo_manager, bool force_list = false);
 
 		ArchiveEntry* entryForItem(const wxDataViewItem& item) const
 		{
@@ -54,6 +51,8 @@ namespace ui
 		}
 		ArchiveDir*    dirForDirItem(const wxDataViewItem& item) const;
 		wxDataViewItem createItemForDirectory(const ArchiveDir& dir) const;
+
+		void reload(ViewType view_type);
 
 	private:
 		weak_ptr<Archive>    archive_;
@@ -89,16 +88,18 @@ namespace ui
 			const Archive*      parent_archive = nullptr,
 			const ArchiveDir*   parent_dir     = nullptr) const;
 		bool dirIsInList(const ArchiveDir& dir, bool filter = true, const ArchiveDir* parent_dir = nullptr) const;
+
+		static std::unordered_map<string, wxBitmapBundle>& iconCache();
 	};
 
-	class ArchiveEntryTree : public wxDataViewCtrl
+	class ArchiveEntryTree : public SDataViewCtrl
 	{
 	public:
 		ArchiveEntryTree(
-			wxWindow*           parent,
-			shared_ptr<Archive> archive,
-			UndoManager*        undo_manager,
-			bool                force_list = false);
+			wxWindow*                  parent,
+			const shared_ptr<Archive>& archive,
+			UndoManager*               undo_manager,
+			bool                       force_list = false);
 
 		ArchiveEntry* entryForItem(const wxDataViewItem& item) const
 		{
@@ -132,29 +133,24 @@ namespace ui
 		void collapseAll(const ArchiveDir& dir_start);
 		void upDir();
 		void homeDir();
-		void goToDir(shared_ptr<ArchiveDir> dir, bool expand = false);
+		void goToDir(const shared_ptr<ArchiveDir>& dir, bool expand = false);
+		void reloadModel(bool tree = true);
 
 		// Overrides
 		void EnsureVisible(const wxDataViewItem& item, const wxDataViewColumn* column = nullptr) override;
 
 	private:
 		weak_ptr<Archive> archive_;
-		ArchiveViewModel* model_                   = nullptr;
-		wxDataViewColumn* col_name_                = nullptr;
-		wxDataViewColumn* col_size_                = nullptr;
-		wxDataViewColumn* col_type_                = nullptr;
-		wxDataViewColumn* col_index_               = nullptr;
-		int               multi_select_base_index_ = -1;
+		ArchiveViewModel* model_     = nullptr;
+		wxDataViewColumn* col_name_  = nullptr;
+		wxDataViewColumn* col_size_  = nullptr;
+		wxDataViewColumn* col_type_  = nullptr;
+		wxDataViewColumn* col_index_ = nullptr;
 		string            search_;
 
-		void setupColumns();
-		void saveColumnWidths() const;
-		void updateColumnWidths();
+		const Archive* stateArchive() const override { return archive_.lock().get(); }
 
-#ifdef __WXMSW__
-		bool lookForSearchEntryFrom(int index_start);
-		bool searchChar(int key_code);
-#endif
+		void setupColumns();
 	};
 
 } // namespace ui

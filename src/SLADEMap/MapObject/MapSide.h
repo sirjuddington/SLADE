@@ -6,10 +6,6 @@ namespace slade
 {
 class MapSide : public MapObject
 {
-	friend class SLADEMap;
-	friend class MapLine;
-	friend class SideList;
-
 public:
 	inline static const string TEX_NONE = "-";
 
@@ -22,14 +18,14 @@ public:
 	inline static const string PROP_OFFSETY   = "offsety";
 
 	MapSide(
-		MapSector*  sector     = nullptr,
-		string_view tex_upper  = TEX_NONE,
-		string_view tex_middle = TEX_NONE,
-		string_view tex_lower  = TEX_NONE,
-		Vec2i       tex_offset = { 0, 0 });
-	MapSide(MapSector* sector, ParseTreeNode* udmf_def);
+		MapSector*   sector     = nullptr,
+		string_view  tex_upper  = TEX_NONE,
+		string_view  tex_middle = TEX_NONE,
+		string_view  tex_lower  = TEX_NONE,
+		const Vec2i& tex_offset = { 0, 0 });
+	MapSide(MapSector* sector, const ParseTreeNode* udmf_def);
 	MapSide(MapSector* sector, MapSide* copy_side);
-	~MapSide() = default;
+	~MapSide() override = default;
 
 	void copy(MapObject* c) override;
 
@@ -46,9 +42,12 @@ public:
 	short         texOffsetX() const { return tex_offset_.x; }
 	short         texOffsetY() const { return tex_offset_.y; }
 	Vec2i         texOffset() const { return tex_offset_; }
-	uint8_t       light();
+	Vec2d         texOffset(map::SidePart part) const;
+	Vec2d         texScale(map::SidePart part) const;
+	uint8_t       light() const;
 
 	void setSector(MapSector* sector);
+	void setParent(MapLine* parent) { parent_ = parent; }
 	void changeLight(int amount);
 	void setTexUpper(string_view tex, bool modify = true);
 	void setTexMiddle(string_view tex, bool modify = true);
@@ -56,11 +55,11 @@ public:
 	void setTexOffsetX(int offset);
 	void setTexOffsetY(int offset);
 
-	int    intProperty(string_view key) override;
+	int    intProperty(string_view key) const override;
 	void   setIntProperty(string_view key, int value) override;
-	string stringProperty(string_view key) override;
+	string stringProperty(string_view key) const override;
 	void   setStringProperty(string_view key, string_view value) override;
-	bool   scriptCanModifyProp(string_view key) override;
+	bool   scriptCanModifyProp(string_view key) const override;
 
 	void writeBackup(Backup* backup) override;
 	void readBackup(Backup* backup) override;

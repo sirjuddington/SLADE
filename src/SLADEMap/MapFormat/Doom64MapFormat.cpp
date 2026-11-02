@@ -31,9 +31,21 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "Doom64MapFormat.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/MapDesc.h"
 #include "General/ResourceManager.h"
-#include "General/UI.h"
+#include "SLADEMap/MapObject/MapLine.h"
+#include "SLADEMap/MapObject/MapSector.h"
+#include "SLADEMap/MapObject/MapSide.h"
+#include "SLADEMap/MapObject/MapThing.h"
+#include "SLADEMap/MapObject/MapVertex.h"
+#include "SLADEMap/MapObjectList/LineList.h"
+#include "SLADEMap/MapObjectList/SectorList.h"
+#include "SLADEMap/MapObjectList/SideList.h"
+#include "SLADEMap/MapObjectList/ThingList.h"
+#include "SLADEMap/MapObjectList/VertexList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "UI/UI.h"
 
 using namespace slade;
 
@@ -41,7 +53,7 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // Reads the given Doom64-format [map], populating [map_data]
 // -----------------------------------------------------------------------------
-bool Doom64MapFormat::readMap(Archive::MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
+bool Doom64MapFormat::readMap(MapDesc map, MapObjectCollection& map_data, PropertyList& map_extra_props)
 {
 	log::info(2, "Reading Doom64 format map");
 
@@ -139,7 +151,7 @@ bool Doom64MapFormat::readVERTEXES(ArchiveEntry* entry, MapObjectCollection& map
 		return true;
 	}
 
-	const auto     vert_data = reinterpret_cast<const Vertex*>(entry->rawData(true));
+	const auto     vert_data = reinterpret_cast<const Vertex*>(entry->rawData());
 	const unsigned nv        = entry->size() / sizeof(Vertex);
 	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nv; a++)
@@ -174,7 +186,7 @@ bool Doom64MapFormat::readSIDEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		return true;
 	}
 
-	const auto     side_data = reinterpret_cast<const SideDef*>(entry->rawData(true));
+	const auto     side_data = reinterpret_cast<const SideDef*>(entry->rawData());
 	const unsigned ns        = entry->size() / sizeof(SideDef);
 	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
@@ -215,7 +227,7 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		return true;
 	}
 
-	const auto     line_data = reinterpret_cast<const LineDef*>(entry->rawData(true));
+	const auto     line_data = reinterpret_cast<const LineDef*>(entry->rawData());
 	const unsigned nl        = entry->size() / sizeof(LineDef);
 	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < nl; a++)
@@ -233,8 +245,9 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 		}
 
 		// Get side indices
-		int s1_index = data.side1;
-		int s2_index = data.side2;
+		int  s1_index = data.side1;
+		int  s2_index = data.side2;
+		bool no_s2    = false;
 		if (map_data.sides().size() > 32767)
 		{
 			// Support for > 32768 sides
@@ -242,11 +255,20 @@ bool Doom64MapFormat::readLINEDEFS(ArchiveEntry* entry, MapObjectCollection& map
 				s1_index = static_cast<unsigned short>(data.side1);
 			if (data.side2 != 65535)
 				s2_index = static_cast<unsigned short>(data.side2);
+			else
+				no_s2 = true; // No second side if data.side2 == 65535
 		}
 
+		// Copy side(s) if they already have parent lines (compressed sidedefs)
+		auto s1 = map_data.sides().at(s1_index);
+		auto s2 = no_s2 ? nullptr : map_data.sides().at(s2_index);
+		if (s1 && s1->parentLine())
+			s1 = map_data.addSide(std::make_unique<MapSide>(s1->sector(), s1));
+		if (s2 && s2->parentLine())
+			s2 = map_data.addSide(std::make_unique<MapSide>(s2->sector(), s2));
+
 		// Create line
-		auto line = map_data.addLine(
-			std::make_unique<MapLine>(v1, v2, map_data.sides().at(s1_index), map_data.sides().at(s2_index)));
+		auto line = map_data.addLine(std::make_unique<MapLine>(v1, v2, s1, s2));
 
 		// Set properties
 		line->setArg(0, data.sector_tag);
@@ -282,7 +304,7 @@ bool Doom64MapFormat::readSECTORS(ArchiveEntry* entry, MapObjectCollection& map_
 		return true;
 	}
 
-	const auto     sect_data = reinterpret_cast<const Sector*>(entry->rawData(true));
+	const auto     sect_data = reinterpret_cast<const Sector*>(entry->rawData());
 	const unsigned ns        = entry->size() / sizeof(Sector);
 	const float    p         = ui::getSplashProgress();
 	for (size_t a = 0; a < ns; a++)
@@ -334,10 +356,10 @@ bool Doom64MapFormat::readTHINGS(ArchiveEntry* entry, MapObjectCollection& map_d
 		return true;
 	}
 
-	const auto        thng_data = reinterpret_cast<const Thing*>(entry->rawData(true));
-	const unsigned    nt        = entry->size() / sizeof(Thing);
-	const float       p         = ui::getSplashProgress();
-	MapObject::ArgSet args;
+	const auto     thng_data = reinterpret_cast<const Thing*>(entry->rawData());
+	const unsigned nt        = entry->size() / sizeof(Thing);
+	const float    p         = ui::getSplashProgress();
+	map::ArgSet    args;
 	for (size_t a = 0; a < nt; a++)
 	{
 		ui::setSplashProgress(p + static_cast<float>(a) / static_cast<float>(nt) * 0.2f);

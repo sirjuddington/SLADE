@@ -34,11 +34,14 @@
 #include "Main.h"
 #include "TextEditorCtrl.h"
 #include "App.h"
+#include "Archive/ArchiveEntry.h"
 #include "FindReplacePanel.h"
 #include "General/KeyBind.h"
 #include "Graphics/Icons.h"
 #include "SCallTip.h"
 #include "SLADEWxApp.h"
+#include "TextEditor/Lexer.h"
+#include "TextEditor/TextStyle.h"
 #include "UI/WxUtils.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
@@ -54,7 +57,7 @@ using namespace slade;
 CVAR(Int, txed_tab_width, 4, CVar::Flag::Save)
 CVAR(Bool, txed_auto_indent, true, CVar::Flag::Save)
 CVAR(Bool, txed_syntax_hilight, true, CVar::Flag::Save)
-CVAR(Bool, txed_brace_match, false, CVar::Flag::Save)
+CVAR(Bool, txed_brace_match, true, CVar::Flag::Save)
 CVAR(Int, txed_edge_column, 80, CVar::Flag::Save)
 CVAR(Bool, txed_indent_guides, false, CVar::Flag::Save)
 CVAR(String, txed_style_set, "SLADE Default", CVar::Flag::Save)
@@ -80,6 +83,7 @@ CVAR(Int, txed_font_quality, wxSTC_EFF_QUALITY_DEFAULT, CVar::Flag::Save)
 CVAR(Bool, txed_fr_matchcase, false, CVar::Save)
 CVAR(Bool, txed_fr_matchword, false, CVar::Save)
 CVAR(Bool, txed_fr_matchword_start, false, CVar::Save)
+CVAR(Int, txed_minimap_width, 0, CVar::Flag::Save)
 
 wxDEFINE_EVENT(wxEVT_COMMAND_JTCALCULATOR_COMPLETED, wxThreadEvent);
 wxDEFINE_EVENT(wxEVT_TEXT_CHANGED, wxCommandEvent);
@@ -111,79 +115,93 @@ int searchFlags()
 
 // -----------------------------------------------------------------------------
 //
-// JumpToCalculator Class Functions
+// JumpToCalculator Class
 //
 // -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// JumpToCalculator thread entry function
-// -----------------------------------------------------------------------------
-wxThread::ExitCode JumpToCalculator::Entry()
+class JumpToCalculator : public wxThread
 {
-	string jump_points;
-
-	Tokenizer tz;
-	tz.setSpecialCharacters(";,:|={}/()");
-	tz.openString(text_);
-
-	auto token = tz.getToken();
-	while (!tz.atEnd())
+public:
+	JumpToCalculator(wxEvtHandler* handler, string_view text, vector<string> block_names, vector<string> ignore) :
+		handler_(handler),
+		text_(text),
+		block_names_(std::move(block_names)),
+		ignore_(std::move(ignore))
 	{
-		if (token == "{")
-		{
-			// Skip block
-			while (!tz.atEnd() && token != "}")
-				token = tz.getToken();
-		}
+	}
+	~JumpToCalculator() override = default;
 
-		for (auto block : block_names_)
+	ExitCode Entry() override
+	{
+		string jump_points;
+
+		Tokenizer tz;
+		tz.setSpecialCharacters(";,:|={}/()");
+		tz.openString(text_);
+
+		auto token = tz.getToken();
+		while (!tz.atEnd())
 		{
-			// Get jump block keyword
-			long skip = 0;
-			if (strutil::contains(block, ':'))
+			if (token == "{")
 			{
-				auto sp = strutil::splitV(block, ':');
-				skip    = strutil::asInt(sp.back());
-				block   = sp[0];
+				// Skip block
+				while (!tz.atEnd() && token != "}")
+					token = tz.getToken();
 			}
 
-			if (strutil::equalCI(token, block))
+			for (auto block : block_names_)
 			{
-				auto name = tz.getToken();
-				for (int s = 0; s < skip; s++)
-					name = tz.getToken();
+				// Get jump block keyword
+				long skip = 0;
+				if (strutil::contains(block, ':'))
+				{
+					auto sp = strutil::splitV(block, ':');
+					skip    = strutil::asInt(sp.back());
+					block   = sp[0];
+				}
 
-				for (const auto& i : ignore_)
-					if (strutil::equalCI(name, i))
+				if (strutil::equalCI(token, block))
+				{
+					auto name = tz.getToken();
+					for (int s = 0; s < skip; s++)
 						name = tz.getToken();
 
-				// Numbered block, add block name
-				if (strutil::isInteger(name) || strutil::isFloat(name))
-					name = fmt::format("{} {}", block, name);
-				// Unnamed block, use block name
-				if (name == "{" || name == ";")
-					name = block;
+					for (const auto& i : ignore_)
+						if (strutil::equalCI(name, i))
+							name = tz.getToken();
 
-				// Add jump point
-				jump_points += fmt::format("{},{},", tz.lineNo() - 1, name);
+					// Numbered block, add block name
+					if (strutil::isInteger(name) || strutil::isFloat(name))
+						name = fmt::format("{} {}", block, name);
+					// Unnamed block, use block name
+					if (name == "{" || name == ";")
+						name = block;
+
+					// Add jump point
+					jump_points += fmt::format("{},{},", tz.lineNo() - 1, name);
+				}
 			}
+
+			token = tz.getToken();
 		}
 
-		token = tz.getToken();
+		// Remove ending comma
+		if (!jump_points.empty())
+			jump_points.pop_back();
+
+		// Send event
+		auto event = new wxThreadEvent(wxEVT_COMMAND_JTCALCULATOR_COMPLETED);
+		event->SetString(wxString::FromUTF8(jump_points));
+		wxQueueEvent(handler_, event);
+
+		return nullptr;
 	}
 
-	// Remove ending comma
-	if (!jump_points.empty())
-		jump_points.pop_back();
-
-	// Send event
-	auto event = new wxThreadEvent(wxEVT_COMMAND_JTCALCULATOR_COMPLETED);
-	event->SetString(wxString::FromUTF8(jump_points));
-	wxQueueEvent(handler_, event);
-
-	return nullptr;
-}
+private:
+	wxEvtHandler*  handler_;
+	string         text_;
+	vector<string> block_names_;
+	vector<string> ignore_;
+};
 
 
 // -----------------------------------------------------------------------------
@@ -214,20 +232,12 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 	SetMarginWidth(2, 4);
 
 	// Register icons for autocompletion list
-#if wxCHECK_VERSION(3, 1, 6)
-	auto size = wxSize{ ui::scalePx(16), ui::scalePx(16) };
+	auto size = FromDIP(wxSize{ 16, 16 });
 	RegisterImage(1, icons::getIcon(icons::TextEditor, "keyword", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(2, icons::getIcon(icons::TextEditor, "constant", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(3, icons::getIcon(icons::TextEditor, "type", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(4, icons::getIcon(icons::TextEditor, "property", -1, { 1, 3 }).GetBitmap(size));
 	RegisterImage(5, icons::getIcon(icons::TextEditor, "function", -1, { 1, 3 }).GetBitmap(size));
-#else
-	RegisterImage(1, icons::getIcon(icons::TextEditor, "keyword", -1, { 1, 3 }));
-	RegisterImage(2, icons::getIcon(icons::TextEditor, "constant", -1, { 1, 3 }));
-	RegisterImage(3, icons::getIcon(icons::TextEditor, "type", -1, { 1, 3 }));
-	RegisterImage(4, icons::getIcon(icons::TextEditor, "property", -1, { 1, 3 }));
-	RegisterImage(5, icons::getIcon(icons::TextEditor, "function", -1, { 1, 3 }));
-#endif
 
 	// Init w/no language
 	setLanguage(nullptr);
@@ -261,6 +271,7 @@ TextEditorCtrl::TextEditorCtrl(wxWindow* parent, int id) :
 // -----------------------------------------------------------------------------
 TextEditorCtrl::~TextEditorCtrl()
 {
+	timer_update_.Stop();
 	StyleSet::removeEditor(this);
 }
 
@@ -274,8 +285,9 @@ void TextEditorCtrl::setup()
 	SetDoubleBuffered(true);
 	SetBufferedDraw(true);
 	SetUseAntiAliasing(true);
-	if (txed_use_directwrite)
-		SetTechnology(wxSTC_TECHNOLOGY_DIRECTWRITE);
+	const int technology = txed_use_directwrite ? wxSTC_TECHNOLOGY_DIRECTWRITE : wxSTC_TECHNOLOGY_DEFAULT;
+	if (GetTechnology() != technology)
+		SetTechnology(technology);
 	SetFontQuality(txed_font_quality);
 	SetMultipleSelection(true);
 	SetAdditionalSelectionTyping(true);
@@ -305,7 +317,7 @@ void TextEditorCtrl::setup()
 		SetWhitespaceSize(3);
 
 		// TODO: separate colour
-		SetWhitespaceForeground(true, StyleSet::currentSet()->style("guides")->foreground().toWx());
+		SetWhitespaceForeground(true, StyleSet::currentSet()->style("guides")->foreground());
 	}
 	else
 		SetViewWhiteSpace(wxSTC_WS_INVISIBLE);
@@ -323,7 +335,7 @@ void TextEditorCtrl::setup()
 	StyleSetChangeable(wxSTC_STYLE_CALLTIP, true);
 	wxFont font_ct(10, wxFONTFAMILY_DEFAULT, wxFONTSTYLE_NORMAL, wxFONTWEIGHT_NORMAL);
 	StyleSetFont(wxSTC_STYLE_CALLTIP, font_ct);
-	CallTipSetForegroundHighlight(StyleSet::currentSet()->style("calltip_hl")->foreground().toWx());
+	CallTipSetForegroundHighlight(StyleSet::currentSet()->style("calltip_hl")->foreground());
 
 	// Set folding options
 	setupFolding();
@@ -359,13 +371,13 @@ void TextEditorCtrl::setupFoldMargin(const TextStyle* margin_style)
 	wxColour col_fg, col_bg;
 	if (margin_style)
 	{
-		col_fg = margin_style->foreground().toWx();
-		col_bg = margin_style->background().toWx();
+		col_fg = margin_style->foreground();
+		col_bg = margin_style->background();
 	}
 	else
 	{
-		col_fg = StyleSet::currentSet()->style("foldmargin")->foreground().toWx();
-		col_bg = StyleSet::currentSet()->style("foldmargin")->background().toWx();
+		col_fg = StyleSet::currentSet()->style("foldmargin")->foreground();
+		col_bg = StyleSet::currentSet()->style("foldmargin")->background();
 	}
 
 	SetMarginType(1, wxSTC_MARGIN_SYMBOL);
@@ -455,7 +467,7 @@ bool TextEditorCtrl::applyStyleSet(StyleSet* style)
 // Reads the contents of [entry] into the text area, returns false if the given
 // entry is invalid
 // -----------------------------------------------------------------------------
-bool TextEditorCtrl::loadEntry(ArchiveEntry* entry)
+bool TextEditorCtrl::loadEntry(const ArchiveEntry* entry)
 {
 	// Clear current text
 	ClearAll();
@@ -745,7 +757,8 @@ void TextEditorCtrl::selectAllOccurrences()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::checkBraceMatch()
 {
-#ifdef __WXMAC__
+	// Is this still needed now we removed calls to Update()?
+#if defined(__WXMAC__)
 	bool refresh = false;
 #else
 	bool refresh = true;
@@ -755,43 +768,39 @@ void TextEditorCtrl::checkBraceMatch()
 	if (GetCurrentPos() == prev_cursor_pos_)
 		return;
 
+	const int prev_brace_match = prev_brace_match_;
+	const int current_pos      = GetCurrentPos();
+
 	// Check for brace match at current position
-	int bracematch = BraceMatch(GetCurrentPos());
+	int bracematch = BraceMatch(current_pos);
 	if (bracematch != wxSTC_INVALID_POSITION)
 	{
-		BraceHighlight(GetCurrentPos(), bracematch);
-		if (refresh && prev_brace_match_ != bracematch)
-		{
-			Refresh();
-			Update();
-		}
+		BraceHighlight(current_pos, bracematch);
 		prev_brace_match_ = bracematch;
+		if (refresh && prev_brace_match != bracematch)
+			Refresh();
 		return;
 	}
 
 	// No match, check for match at previous position
-	bracematch = BraceMatch(GetCurrentPos() - 1);
+	if (current_pos > 0)
+		bracematch = BraceMatch(current_pos - 1);
+	else
+		bracematch = wxSTC_INVALID_POSITION;
 	if (bracematch != wxSTC_INVALID_POSITION)
 	{
-		BraceHighlight(GetCurrentPos() - 1, bracematch);
-		if (refresh && prev_brace_match_ != bracematch)
-		{
-			Refresh();
-			Update();
-		}
+		BraceHighlight(current_pos - 1, bracematch);
 		prev_brace_match_ = bracematch;
+		if (refresh && prev_brace_match != bracematch)
+			Refresh();
 		return;
 	}
 
 	// No match at all, clear any previous brace match
 	BraceHighlight(-1, -1);
-	if (refresh && prev_brace_match_ != -1)
-	{
-		Refresh();
-		Update();
-	}
-
 	prev_brace_match_ = -1;
+	if (refresh && prev_brace_match != -1)
+		Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -1118,17 +1127,7 @@ void TextEditorCtrl::jumpToLine()
 // -----------------------------------------------------------------------------
 void TextEditorCtrl::foldAll(bool fold)
 {
-#if (wxMAJOR_VERSION >= 3 && wxMINOR_VERSION >= 1)
-	// FoldAll is only available in wxWidgets 3.1+
 	FoldAll(fold ? wxSTC_FOLDACTION_CONTRACT : wxSTC_FOLDACTION_EXPAND);
-#else
-	for (int a = 0; a < GetNumberOfLines(); a++)
-	{
-		int level = GetFoldLevel(a);
-		if ((level & wxSTC_FOLDLEVELHEADERFLAG) > 0 && GetFoldExpanded(a) == fold)
-			ToggleFold(a);
-	}
-#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -1297,6 +1296,8 @@ void TextEditorCtrl::cycleComments() const
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a key is pressed
@@ -1442,7 +1443,10 @@ void TextEditorCtrl::onKeyDown(wxKeyEvent& e)
 	}
 
 	// Check for up/down keys while calltip with multiple arg sets is open
-	if (txed_calltips_argset_kb && call_tip_->IsShown() && ct_function_ && ct_function_->contexts().size() > 1
+	if (txed_calltips_argset_kb
+		&& call_tip_->IsShown()
+		&& ct_function_
+		&& ct_function_->contexts().size() > 1
 		&& !ct_dwell_)
 	{
 		if (e.GetKeyCode() == WXK_UP)

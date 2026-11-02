@@ -1,16 +1,22 @@
 #pragma once
 
-#include "MapEditor/MapEditor.h"
-#include "SLADEMap/MapObject/MapThing.h"
 #include <queue>
 
+// Forward Declarations
 namespace slade
 {
-class MapEditContext;
-class MapVertex;
-class MapSide;
 class UndoManager;
 
+namespace mapeditor
+{
+	enum class ItemType;
+	struct Item;
+	class MapEditContext;
+} // namespace mapeditor
+} // namespace slade
+
+namespace slade::mapeditor
+{
 class Edit3D
 {
 public:
@@ -50,37 +56,43 @@ public:
 		link_offset_ = offsets;
 	}
 
-	void selectAdjacent(mapeditor::Item item) const;
+	void selectAdjacent(Item item) const;
 	void changeSectorLight(int amount) const;
 	void changeOffset(int amount, bool x) const;
 	void changeSectorHeight(int amount) const;
-	void autoAlign(mapeditor::Item start, AlignType alignType = AlignType::AlignX) const;
+	void autoAlign(Item start, AlignType align_type = AlignType::AlignX) const;
 	void resetOffsets() const;
 	void toggleUnpegged(bool lower) const;
 	void copy(CopyType type);
 	void paste(CopyType type) const;
 	void floodFill(CopyType type) const;
+	void changeThingType(bool force_highlight = false) const;
 	void changeThingZ(int amount) const;
 	void deleteThing() const;
 	void changeScale(double amount, bool x) const;
 	void changeHeight(int amount) const;
-	void changeTexture() const;
+	void changeTexture(bool force_highlight = false) const;
 	void deleteTexture() const;
+	void changeTextureOrType() const;
+
+	void editWallProperties() const;
+	void editFlatProperties() const;
+	void editThingProperties() const;
 
 private:
-	MapEditContext&         context_;
+	MapEditContext*         context_ = nullptr;
 	unique_ptr<UndoManager> undo_manager_;
-	bool                    link_light_;
-	bool                    link_offset_;
+	bool                    link_light_  = false;
+	bool                    link_offset_ = false;
 	string                  copy_texture_;
-	MapThing                copy_thing_;
+	unique_ptr<MapThing>    copy_thing_;
 
-	vector<mapeditor::Item> getAdjacent(mapeditor::Item item) const;
+	vector<Item> getAdjacent(Item item) const;
 
 	// Helper for selectAdjacent
-	static bool wallMatches(MapSide* side, mapeditor::ItemType part, string_view tex);
-	void        getAdjacentWalls(mapeditor::Item item, vector<mapeditor::Item>& list) const;
-	void        getAdjacentFlats(mapeditor::Item item, vector<mapeditor::Item>& list) const;
+	static bool wallMatches(const MapSide* side, ItemType part, string_view tex);
+	void        getAdjacentWalls(Item item, vector<Item>& list) const;
+	void        getAdjacentFlats(Item item, vector<Item>& list) const;
 
 	// Helper type for texture auto-alignment
 	struct AlignmentJob
@@ -90,8 +102,12 @@ private:
 	};
 
 	// Helper functions for texture auto-alignment
-	int         getTextureTopHeight(MapLine* firstLine, mapeditor::ItemType wall_type, int tex_height) const;
-	static void enqueueConnectedLines(std::queue<AlignmentJob>& jobs, MapVertex* common_vertex, int tex_offset_x);
-	static void enqueueSide(std::queue<AlignmentJob>& jobs, MapSide* side, MapVertex* common_vertex, int tex_offset_x);
+	int         getTextureTopHeight(const MapLine* first_line, mapeditor::ItemType wall_type, int tex_height) const;
+	static void enqueueConnectedLines(std::queue<AlignmentJob>& jobs, const MapVertex* common_vertex, int tex_offset_x);
+	static void enqueueSide(
+		std::queue<AlignmentJob>& jobs,
+		MapSide*                  side,
+		const MapVertex*          common_vertex,
+		int                       tex_offset_x);
 };
-} // namespace slade
+} // namespace slade::mapeditor

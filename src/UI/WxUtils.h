@@ -1,8 +1,5 @@
 #pragma once
 
-#include "General/UI.h"
-#include "Graphics/Palette/Palette.h"
-
 namespace slade::wxutil
 {
 wxMenuItem* createMenuItem(wxMenu* menu, int id, const string& label, const string& help = "", const string& icon = "");
@@ -20,25 +17,22 @@ wxSizer* createLabelVBox(wxWindow* parent, const string& label, wxSizer* sizer);
 wxSizer* createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel);
 wxSizer* createDialogButtonBox(wxWindow* parent, const string& text_ok = "OK", const string& text_cancel = "Cancel");
 
-wxSizer* layoutHorizontally(vector<wxObject*> widgets, int expand_col = -1);
-void     layoutHorizontally(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags = {}, int expand_col = -1);
-
-wxSizer* layoutVertically(vector<wxObject*> widgets, int expand_row = -1);
-void     layoutVertically(wxSizer* sizer, vector<wxObject*> widgets, wxSizerFlags flags = {}, int expand_row = -1);
+wxSizer* createSectionSeparator(wxWindow* parent, const string& text);
 
 // Strings
-wxArrayString arrayString(vector<wxString> vector);
+wxArrayString arrayString(const vector<wxString>& vector);
 wxArrayString arrayStringStd(const vector<string>& vector);
 wxString      strFromView(string_view str);
-
-// Scaling
-wxSize  scaledSize(int x, int y);
-wxPoint scaledPoint(int x, int y);
-wxRect  scaledRect(int x, int y, int width, int height);
 
 // Misc
 void      setWindowIcon(wxTopLevelWindow* window, string_view icon);
 wxImage   createImageFromSVG(const string& svg_text, int width, int height);
 Palette   paletteFromWx(const wxPalette& palette);
 wxPalette paletteToWx(const Palette& palette);
+void      setNumericChoiceFromValue(wxChoice* choice, const vector<int>& steps, int value);
+
+// From CodeLite
+wxColour systemPanelBGColour();
+wxColour lightColour(const wxColour& colour, float percent);
+wxColour darkColour(const wxColour& colour, float percent);
 } // namespace slade::wxutil

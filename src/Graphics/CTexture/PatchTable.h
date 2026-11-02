@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Archive/ArchiveEntry.h"
-
 namespace slade
 {
 class CTexture;
@@ -30,7 +28,10 @@ public:
 	};
 
 	PatchTable(Archive* parent = nullptr) : parent_{ parent } {}
+	PatchTable(const PatchTable& other) : parent_{ other.parent_ }, patches_{ other.patches_ } {}
 	~PatchTable() = default;
+
+	void copy(const PatchTable& other);
 
 	size_t               nPatches() const { return patches_.size(); }
 	Archive*             parent() const { return parent_; }
@@ -40,19 +41,19 @@ public:
 	Patch&        patch(size_t index);
 	Patch&        patch(string_view name);
 	const string& patchName(size_t index) const;
-	ArchiveEntry* patchEntry(size_t index);
-	ArchiveEntry* patchEntry(string_view name);
+	ArchiveEntry* patchEntry(size_t index) const;
+	ArchiveEntry* patchEntry(string_view name) const;
 	int32_t       patchIndex(string_view name) const;
-	int32_t       patchIndex(ArchiveEntry* entry) const;
+	int32_t       patchIndex(const ArchiveEntry* entry) const;
 	bool          removePatch(unsigned index);
 	bool          replacePatch(unsigned index, string_view newname);
 	bool          addPatch(string_view name, bool allow_dup = false);
 
-	bool loadPNAMES(ArchiveEntry* pnames, Archive* parent = nullptr);
-	bool writePNAMES(ArchiveEntry* pnames);
+	bool loadPNAMES(const ArchiveEntry* pnames, Archive* parent = nullptr);
+	bool writePNAMES(ArchiveEntry* pnames) const;
 
-	void clearPatchUsage();
-	void updatePatchUsage(CTexture* tex);
+	void clearPatchUsage(string_view texture = {});
+	void updatePatchUsage(const CTexture* tex);
 
 	// Signals
 	struct Signals

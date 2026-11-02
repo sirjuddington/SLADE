@@ -35,6 +35,7 @@
 #include "FileUtils.h"
 #include "App.h"
 #include "StringUtils.h"
+#include "thirdparty/xxhash/xxhash.h"
 #include <fstream>
 
 using namespace slade;
@@ -47,18 +48,6 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 namespace slade::fileutil
 {
-// -----------------------------------------------------------------------------
-// Converts a string_view to wxString using UTF-8 encoding
-// -----------------------------------------------------------------------------
-inline wxString fromUtf8(string_view str)
-{
-#if wxCHECK_VERSION(3, 3, 0)
-	return wxString::FromUTF8(str);
-#else
-	return wxString::FromUTF8(str.data(), str.size());
-#endif
-}
-
 // -----------------------------------------------------------------------------
 // Returns the platform-specific path separator
 // -----------------------------------------------------------------------------
@@ -78,7 +67,7 @@ inline string pathSeparator()
 // -----------------------------------------------------------------------------
 bool fileutil::fileExists(string_view path)
 {
-	return !path.empty() && wxFileExists(fromUtf8(path));
+	return !path.empty() && wxFileExists(wxString::FromUTF8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -86,7 +75,7 @@ bool fileutil::fileExists(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::dirExists(string_view path)
 {
-	return !path.empty() && wxDirExists(fromUtf8(path));
+	return !path.empty() && wxDirExists(wxString::FromUTF8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -127,7 +116,7 @@ bool fileutil::validExecutable(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::removeFile(string_view path)
 {
-	return !path.empty() && wxRemoveFile(fromUtf8(path));
+	return !path.empty() && wxRemoveFile(wxString::FromUTF8(path));
 }
 
 // -----------------------------------------------------------------------------
@@ -139,7 +128,7 @@ bool fileutil::copyFile(string_view from, string_view to, bool overwrite)
 	if (from.empty() || to.empty())
 		return false;
 
-	return wxCopyFile(fromUtf8(from), fromUtf8(to), overwrite);
+	return wxCopyFile(wxString::FromUTF8(from), wxString::FromUTF8(to), overwrite);
 }
 
 // -----------------------------------------------------------------------------
@@ -188,7 +177,7 @@ bool fileutil::writeStringToFile(const string& str, const string& path)
 // -----------------------------------------------------------------------------
 bool fileutil::createDir(string_view path)
 {
-	return !path.empty() && wxMkdir(fromUtf8(path));
+	return !path.empty() && wxFileName::Mkdir(wxString::FromUTF8(path), wxS_DIR_DEFAULT, wxPATH_MKDIR_FULL);
 }
 
 // -----------------------------------------------------------------------------
@@ -197,7 +186,7 @@ bool fileutil::createDir(string_view path)
 // -----------------------------------------------------------------------------
 bool fileutil::removeDir(string_view path)
 {
-	return !path.empty() && wxDir::Remove(fromUtf8(path), wxPATH_RMDIR_RECURSIVE);
+	return !path.empty() && wxDir::Remove(wxString::FromUTF8(path), wxPATH_RMDIR_RECURSIVE);
 }
 
 // -----------------------------------------------------------------------------
@@ -214,16 +203,22 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 	if (path.empty())
 		return paths;
 
+	// Get system-specific path (so that include_dir_paths == false works correctly)
+	auto sys_path = systemPath(path);
+
 	wxArrayString all_files;
 	wxDir::GetAllFiles(
-		fromUtf8(path), &all_files, wxEmptyString, include_subdirs ? wxDIR_FILES | wxDIR_DIRS : wxDIR_FILES);
+		wxString::FromUTF8(sys_path),
+		&all_files,
+		wxEmptyString,
+		include_subdirs ? wxDIR_FILES | wxDIR_DIRS : wxDIR_FILES);
 
 	for (const auto& file : all_files)
 	{
 		if (include_dir_paths)
 			paths.push_back(file.utf8_string());
 		else
-			paths.push_back(strutil::replace(file.utf8_string(), path, ""));
+			paths.push_back(strutil::replace(file.utf8_string(), sys_path, ""));
 	}
 
 	return paths;
@@ -231,14 +226,25 @@ vector<string> fileutil::allFilesInDir(string_view path, bool include_subdirs, b
 
 // -----------------------------------------------------------------------------
 // Returns the modification time of the file at [path], or 0 if the file doesn't
-// exist or can't be acessed
+// exist or can't be accessed
 // -----------------------------------------------------------------------------
 time_t fileutil::fileModifiedTime(string_view path)
 {
 	if (path.empty())
 		return 0;
 
-	return wxFileModificationTime(fromUtf8(path));
+	return wxFileModificationTime(wxString::FromUTF8(path));
+}
+
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the file at [path] using xxHash (XXH128).
+// Returns the hash as a hex string or empty if the file doesn't exist or can't
+// be accessed
+// -----------------------------------------------------------------------------
+string fileutil::fileHash(string_view path)
+{
+	SFile file(path);
+	return file.calculateHash();
 }
 
 // -----------------------------------------------------------------------------
@@ -260,6 +266,13 @@ string fileutil::findExecutable(string_view exe_name, string_view bundle_dir)
 			exe_path += ".exe";
 
 		// Check if it exists
+		if (fileExists(exe_path))
+			return exe_path;
+
+		// Try a dedicated folder for the tool (e.g. ".../zip/zip.exe" instead of ".../zip.exe")
+		exe_path = app::path(fmt::format("tools/{0}/{1}/{1}", bundle_dir, exe_name), app::Dir::Executable);
+		if (!strutil::endsWithCI(exe_path, ".exe"))
+			exe_path += ".exe";
 		if (fileExists(exe_path))
 			return exe_path;
 	}
@@ -289,11 +302,43 @@ string fileutil::findExecutable(string_view exe_name, string_view bundle_dir)
 			path += ".exe";
 
 		// Check if file exists and is executable
-		if (wxFileName::IsFileExecutable(fromUtf8(path)))
+		if (wxFileName::IsFileExecutable(wxString::FromUTF8(path)))
 			return path;
 	}
 
 	return {};
+}
+
+// -----------------------------------------------------------------------------
+// Converts a path to use the platform-specific path separator
+// -----------------------------------------------------------------------------
+string fileutil::systemPath(string_view path)
+{
+#ifdef __WXMSW__
+	return strutil::replace(path, "/", "\\");
+#else
+	return strutil::replace(path, "\\", "/");
+#endif
+}
+
+// -----------------------------------------------------------------------------
+// Sanitizes a [filename] by replacing invalid characters with underscores.
+// Note that this will strip / and \ so [filename] should not be a path
+// -----------------------------------------------------------------------------
+string fileutil::sanitizeFilename(string_view filename)
+{
+	auto filename_str = string{ filename };
+
+#ifdef __WXMSW__
+	// On Windows, replace invalid filename characters with underscores
+	for (auto& c : filename_str)
+	{
+		if (c == '<' || c == '>' || c == ':' || c == '"' || c == '/' || c == '\\' || c == '|' || c == '?' || c == '*')
+			c = '_';
+	}
+#endif
+
+	return filename_str;
 }
 
 
@@ -315,7 +360,7 @@ SFile::SFile(string_view path, Mode mode)
 // -----------------------------------------------------------------------------
 // Returns the current read/write position in the file
 // -----------------------------------------------------------------------------
-unsigned SFile::currentPos() const
+u64 SFile::currentPos() const
 {
 	return handle_ ? ftell(handle_) : 0;
 }
@@ -334,24 +379,24 @@ bool SFile::open(const string& path, Mode mode)
 	auto wpath = wxString::FromUTF8(path);
 	switch (mode)
 	{
-	case Mode::ReadOnly: handle_ = _wfopen(wpath.wc_str(), L"rb"); break;
-	case Mode::Write: handle_ = _wfopen(wpath.wc_str(), L"wb"); break;
-	case Mode::ReadWite: handle_ = _wfopen(wpath.wc_str(), L"r+b"); break;
-	case Mode::Append: handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
+	case Mode::ReadOnly:  handle_ = _wfopen(wpath.wc_str(), L"rb"); break;
+	case Mode::Write:     handle_ = _wfopen(wpath.wc_str(), L"wb"); break;
+	case Mode::ReadWrite: handle_ = _wfopen(wpath.wc_str(), L"r+b"); break;
+	case Mode::Append:    handle_ = _wfopen(wpath.wc_str(), L"ab"); break;
 	}
 #else
 	switch (mode)
 	{
-	case Mode::ReadOnly: handle_ = fopen(path.c_str(), "rb"); break;
-	case Mode::Write: handle_ = fopen(path.c_str(), "wb"); break;
-	case Mode::ReadWite: handle_ = fopen(path.c_str(), "r+b"); break;
-	case Mode::Append: handle_ = fopen(path.c_str(), "ab"); break;
+	case Mode::ReadOnly:  handle_ = fopen(path.c_str(), "rb"); break;
+	case Mode::Write:     handle_ = fopen(path.c_str(), "wb"); break;
+	case Mode::ReadWrite: handle_ = fopen(path.c_str(), "r+b"); break;
+	case Mode::Append:    handle_ = fopen(path.c_str(), "ab"); break;
 	}
 #endif
 
-	// Determine file size
 	if (handle_)
 	{
+		// Determine file size
 #ifdef __WXMSW__
 		struct _stat st;
 		_wstat(wpath.wc_str(), &st);
@@ -360,10 +405,15 @@ bool SFile::open(const string& path, Mode mode)
 		stat(path.c_str(), &st);
 #endif
 
-		size_ = st.st_size;
+		// Update member variables
+		size_            = st.st_size;
+		path_            = path;
+		last_read_count_ = 0;
+
+		return true;
 	}
 
-	return handle_ != nullptr;
+	return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -374,15 +424,17 @@ void SFile::close()
 	if (handle_)
 	{
 		fclose(handle_);
-		handle_ = nullptr;
-		size_   = 0;
+		handle_          = nullptr;
+		size_            = 0;
+		last_read_count_ = 0;
+		path_.clear();
 	}
 }
 
 // -----------------------------------------------------------------------------
 // Seeks ahead by [offset] bytes from the current position
 // -----------------------------------------------------------------------------
-bool SFile::seek(unsigned offset)
+bool SFile::seek(u64 offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_CUR) == 0 : false;
 }
@@ -390,7 +442,7 @@ bool SFile::seek(unsigned offset)
 // -----------------------------------------------------------------------------
 // Seeks to [offset] bytes from the beginning of the file
 // -----------------------------------------------------------------------------
-bool SFile::seekFromStart(unsigned offset)
+bool SFile::seekFromStart(u64 offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_SET) == 0 : false;
 }
@@ -398,7 +450,7 @@ bool SFile::seekFromStart(unsigned offset)
 // -----------------------------------------------------------------------------
 // Seeks to [offset] bytes back from the end of the file
 // -----------------------------------------------------------------------------
-bool SFile::seekFromEnd(unsigned offset)
+bool SFile::seekFromEnd(u64 offset) const
 {
 	return handle_ ? fseek(handle_, offset, SEEK_END) == 0 : false;
 }
@@ -406,10 +458,13 @@ bool SFile::seekFromEnd(unsigned offset)
 // -----------------------------------------------------------------------------
 // Reads [count] bytes from the file into [buffer]
 // -----------------------------------------------------------------------------
-bool SFile::read(void* buffer, unsigned count)
+bool SFile::read(void* buffer, u64 count) const
 {
 	if (handle_)
-		return fread(buffer, count, 1, handle_) > 0;
+	{
+		last_read_count_ = fread(buffer, 1, count, handle_);
+		return last_read_count_ > 0;
+	}
 
 	return false;
 }
@@ -418,7 +473,7 @@ bool SFile::read(void* buffer, unsigned count)
 // Reads [count] bytes from the file into a MemChunk [mc]
 // (replaces the existing contents of the MemChunk)
 // -----------------------------------------------------------------------------
-bool SFile::read(MemChunk& mc, unsigned count)
+bool SFile::read(MemChunk& mc, u64 count) const
 {
 	return mc.importFileStream(*this, count);
 }
@@ -427,13 +482,13 @@ bool SFile::read(MemChunk& mc, unsigned count)
 // Reads [count] characters from the file into a string [str]
 // (replaces the existing contents of the string)
 // -----------------------------------------------------------------------------
-bool SFile::read(string& str, unsigned count) const
+bool SFile::read(string& str, u64 count) const
 {
 	if (handle_)
 	{
 		str.resize(count);
-		auto c = fread(&str[0], 1, count, handle_);
-		return c > 0;
+		last_read_count_ = fread(str.data(), 1, count, handle_);
+		return last_read_count_ > 0;
 	}
 
 	return false;
@@ -442,8 +497,11 @@ bool SFile::read(string& str, unsigned count) const
 // -----------------------------------------------------------------------------
 // Writes [count] bytes from [buffer] to the file
 // -----------------------------------------------------------------------------
-bool SFile::write(const void* buffer, unsigned count)
+bool SFile::write(const void* buffer, u64 count)
 {
+	if (count == 0)
+		return true;
+
 	if (handle_)
 		return fwrite(buffer, count, 1, handle_) > 0;
 
@@ -451,12 +509,122 @@ bool SFile::write(const void* buffer, unsigned count)
 }
 
 // -----------------------------------------------------------------------------
+// Writes a 32-bit integer [value] to the file in either big-endian or
+// little-endian format
+// -----------------------------------------------------------------------------
+bool SFile::writeI32(i32 value, bool big_endian) const
+{
+	if (!handle_)
+		return false;
+
+	if (big_endian)
+		value = wxINT32_SWAP_ON_LE(value);
+	else
+		value = wxINT32_SWAP_ON_BE(value);
+
+	return fwrite(&value, sizeof(i32), 1, handle_) > 0;
+}
+
+// -----------------------------------------------------------------------------
+// Writes a 32-bit unsigned integer [value] to the file in either big-endian or
+// little-endian format
+// -----------------------------------------------------------------------------
+bool SFile::writeU32(u32 value, bool big_endian) const
+{
+	if (!handle_)
+		return false;
+
+	if (big_endian)
+		value = wxUINT32_SWAP_ON_LE(value);
+	else
+		value = wxUINT32_SWAP_ON_BE(value);
+
+	return fwrite(&value, sizeof(u32), 1, handle_) > 0;
+}
+
+// -----------------------------------------------------------------------------
+// Writes a 64-bit integer [value] to the file in either big-endian or
+// little-endian format
+// -----------------------------------------------------------------------------
+bool SFile::writeI64(i64 value, bool big_endian) const
+{
+	if (!handle_)
+		return false;
+
+	if (big_endian)
+		value = wxINT64_SWAP_ON_LE(value);
+	else
+		value = wxINT64_SWAP_ON_BE(value);
+
+	return fwrite(&value, sizeof(i64), 1, handle_) > 0;
+}
+
+// -----------------------------------------------------------------------------
+// Writes a 64-bit unsigned integer [value] to the file in either big-endian or
+// little-endian format
+// -----------------------------------------------------------------------------
+bool SFile::writeU64(u64 value, bool big_endian) const
+{
+	if (!handle_)
+		return false;
+
+	if (big_endian)
+		value = wxUINT64_SWAP_ON_LE(value);
+	else
+		value = wxUINT64_SWAP_ON_BE(value);
+
+	return fwrite(&value, sizeof(u64), 1, handle_) > 0;
+}
+
+// -----------------------------------------------------------------------------
 // Writes [str] to the file
 // -----------------------------------------------------------------------------
 bool SFile::writeStr(string_view str) const
 {
+	if (str.empty())
+		return true;
+
 	if (handle_)
-		return fwrite(str.data(), 1, str.size(), handle_);
+		return fwrite(str.data(), 1, str.size(), handle_) > 0;
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Calculates a 128-bit hash of the file using xxHash (XXH128).
+// Returns the hash as a hex string or empty if the file is not open
+// -----------------------------------------------------------------------------
+string SFile::calculateHash() const
+{
+	if (!isOpen())
+		return {};
+
+	auto current_pos = currentPos();
+	auto size        = this->size();
+
+	seekFromStart(0);
+	unsigned pos = 0;
+
+	auto* state = XXH3_createState();
+	XXH3_128bits_reset(state);
+
+	// Read in 1mb chunks
+	unsigned chunk_size = 1024;
+	char     buffer[1024];
+	while (pos < size)
+	{
+		if (size - pos < chunk_size)
+			chunk_size = size - pos;
+
+		read(buffer, chunk_size);
+		XXH3_128bits_update(state, buffer, chunk_size);
+
+		pos += chunk_size;
+	}
+
+	auto hash = XXH3_128bits_digest(state);
+	XXH3_freeState(state);
+	seekFromStart(current_pos);
+
+	return fmt::format("{:x}{:x}", hash.high64, hash.low64);
 }

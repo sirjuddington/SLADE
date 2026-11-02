@@ -1,0 +1,29 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
+    width="16px"
+    height="16px"
+    style="-ms-transform:rotate(360deg);-webkit-transform:rotate(360deg)"
+    viewBox="0 0 24 24"
+    transform="rotate(360)">
+    <rect
+        x="2.5"
+        y="2.5"
+        width="19"
+        height="19"
+        fill="#962FAA"
+        stroke="#F2B2FF"
+        stroke-width="1.5"
+        rx="6"
+        ry="6"
+        transform="rotate(45, 12, 12)"
+    />
+    <g transform="translate(5.4, 5)">
+        <g transform="scale(0.5, 0.5)">
+            <path
+                fill="#FFFFFF"
+                d="M21.563.17l-11.11 3.399c-1.346.384-2.437 1.788-2.437 3.134V18.422s-.805-.543-2.598-.289C2.785 18.507.65 20.528.65 22.648s2.135 3.419 4.768 3.045c2.635-.372 4.566-2.331 4.566-4.452V11.235c0-.94 1.13-1.343 1.13-1.343l9.823-3.079s1.087-.365 1.087.641v8.037s-1.001-.576-2.794-.358c-2.633.319-4.768 2.298-4.768 4.417 0 2.121 2.135 3.463 4.768 3.143 2.635-.319 4.77-2.297 4.77-4.418V1.912C24 .566 22.908-.214 21.563.17z"
+            />
+        </g>
+    </g>
+</svg>

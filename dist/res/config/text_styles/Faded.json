@@ -1,0 +1,83 @@
+{
+  "name": "Faded",
+  "default": {
+    "background": "rgb(35, 35, 35)",
+    "bold": false,
+    "font": "Courier New",
+    "foreground": "rgb(183, 183, 183)",
+    "italic": false,
+    "size": 10,
+    "underlined": false
+  },
+  "selection": {
+    "background": "rgb(70, 73, 79)"
+  },
+  "preprocessor": {
+    "foreground": "rgb(179, 98, 121)"
+  },
+  "comment": {
+    "foreground": "rgb(98, 179, 98)"
+  },
+  "comment_doc": {
+    "foreground": "rgb(98, 179, 98)"
+  },
+  "string": {
+    "foreground": "rgb(96, 184, 191)"
+  },
+  "character": {
+    "foreground": "rgb(89, 172, 179)"
+  },
+  "keyword": {
+    "foreground": "rgb(96, 144, 191)"
+  },
+  "constant": {
+    "foreground": "rgb(181, 96, 191)"
+  },
+  "type": {
+    "foreground": "rgb(96, 144, 191)"
+  },
+  "property": {
+    "foreground": "rgb(96, 144, 191)"
+  },
+  "function": {
+    "foreground": "rgb(179, 126, 89)"
+  },
+  "number": {
+    "foreground": "rgb(183, 153, 146)"
+  },
+  "operator": {
+    "foreground": "rgb(222, 222, 222)"
+  },
+  "bracematch": {
+    "background": "rgb(53, 76, 53)",
+    "bold": true,
+    "foreground": "rgb(191, 191, 191)"
+  },
+  "bracebad": {
+    "background": "rgb(64, 38, 38)",
+    "bold": true,
+    "foreground": "rgb(255, 255, 255)"
+  },
+  "linenum": {
+    "background": "rgb(58, 58, 58)",
+    "foreground": "rgb(128, 167, 183)"
+  },
+  "calltip": {
+    "background": "rgb(90, 90, 90)",
+    "foreground": "rgb(240, 240, 240)"
+  },
+  "calltip_hl": {
+    "foreground": "rgb(150, 180, 245)"
+  },
+  "foldmargin": {
+    "background": "rgb(58, 58, 58)",
+    "foreground": "rgb(100, 120, 140)"
+  },
+  "guides": {
+    "foreground": "rgb(80, 90, 110)"
+  },
+  "current_line": {
+    "background": "rgb(50, 50, 50)",
+    "foreground": "rgb(65, 65, 65)"
+  }
+}

@@ -34,12 +34,10 @@
 #include "App.h"
 #include "Archive/ArchiveManager.h"
 #include "MapEditor/MapEditor.h"
-#include "MapEditor/UI/MapEditorWindow.h"
 #include "UI/ArchiveManagerPanel.h"
 #include "UI/ArchivePanel.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/MainWindow.h"
-#include "UI/WxUtils.h"
 
 using namespace slade;
 
@@ -115,7 +113,7 @@ vector<ArchiveEntry*> maineditor::currentEntrySelection()
 // -----------------------------------------------------------------------------
 // Opens the texture editor for the current archive tab
 // -----------------------------------------------------------------------------
-void maineditor::openTextureEditor(Archive* archive, ArchiveEntry* entry)
+void maineditor::openTextureEditor(const Archive* archive, ArchiveEntry* entry)
 {
 	main_window->archiveManagerPanel()->openTextureTab(app::archiveManager().archiveIndex(archive), entry);
 }
@@ -131,7 +129,7 @@ void maineditor::openMapEditor(Archive* archive)
 // -----------------------------------------------------------------------------
 // Shows the tab for [archive], opening a new tab for it if needed
 // -----------------------------------------------------------------------------
-void ::maineditor::openArchiveTab(Archive* archive)
+void ::maineditor::openArchiveTab(const Archive* archive)
 {
 	main_window->archiveManagerPanel()->openTab(archive);
 }
@@ -163,6 +161,15 @@ void maineditor::setGlobalPaletteFromArchive(Archive* archive)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the status text in the main window's status bar
+// -----------------------------------------------------------------------------
+void maineditor::setStatusText(string_view primary, string_view secondary)
+{
+	main_window->SetStatusText(wxString::FromUTF8(primary.data(), primary.size()), 1);
+	main_window->SetStatusText(wxString::FromUTF8(secondary.data(), secondary.size()), 2);
+}
+
+// -----------------------------------------------------------------------------
 // Returns the currently selected palette
 // -----------------------------------------------------------------------------
 Palette* maineditor::currentPalette(ArchiveEntry* entry)
@@ -191,13 +198,3 @@ EntryPanel* maineditor::currentEntryPanel()
 {
 	return main_window->archiveManagerPanel()->currentArea();
 }
-
-// -----------------------------------------------------------------------------
-// Opens the documentation tab to [page_name] (if enabled)
-// -----------------------------------------------------------------------------
-#ifdef USE_WEBVIEW_STARTPAGE
-void maineditor::openDocs(string_view page_name)
-{
-	main_window->openDocs(page_name);
-}
-#endif

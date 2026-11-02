@@ -314,7 +314,7 @@ bool VirtualListView::defaultSort(long left, long right)
 // -----------------------------------------------------------------------------
 long VirtualListView::itemIndex(long item) const
 {
-	if (item < 0 || item >= (long)items_.size())
+	if (item < 0 || item >= static_cast<long>(items_.size()))
 		return item;
 	else
 		return items_[item];
@@ -391,9 +391,8 @@ void VirtualListView::focusOnIndex(long index)
 // -----------------------------------------------------------------------------
 bool VirtualListView::lookForSearchEntryFrom(long focus)
 {
-	long index    = focus;
-	bool looped   = false;
-	bool gotmatch = false;
+	long index  = focus;
+	bool looped = false;
 	while ((!looped && index < GetItemCount()) || (looped && index < focus))
 	{
 		auto name = itemText(index, col_search_, items_[index]);
@@ -423,6 +422,8 @@ bool VirtualListView::lookForSearchEntryFrom(long focus)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a column is resized

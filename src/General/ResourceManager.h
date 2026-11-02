@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Archive/Archive.h"
 #include "Graphics/CTexture/CTexture.h"
 
 namespace slade
@@ -61,7 +60,7 @@ public:
 	TextureResource() : Resource("texture") {}
 	~TextureResource() override = default;
 
-	void add(CTexture* tex, Archive* parent);
+	void add(CTexture* tex, const Archive* parent);
 	void remove(const Archive* parent);
 
 	int length() const override { return textures_.size(); }

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Property.h"
 #include "Tree.h"
 
 namespace slade
 {
-class ArchiveDir;
 class Parser;
 class Tokenizer;
+
+using Property = std::variant<bool, int, unsigned int, double, string>;
 
 class ParseTreeNode : public STreeNode
 {
@@ -84,7 +84,7 @@ public:
 
 	void setCaseSensitive(bool cs) { case_sensitive_ = cs; }
 
-	bool parseText(MemChunk& mc, string_view source = "memory chunk") const;
+	bool parseText(const MemChunk& mc, string_view source = "memory chunk") const;
 	bool parseText(string_view text, string_view source = "string") const;
 	void define(string_view def);
 	bool defined(string_view def) const;

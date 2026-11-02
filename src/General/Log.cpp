@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "App.h"
+#include <SFML/System/Err.hpp>
 #include <fmt/chrono.h>
 #include <fstream>
 
@@ -60,12 +61,12 @@ template<> struct fmt::formatter<log::MessageType> : formatter<string_view>
 		string_view prefix;
 		switch (type)
 		{
-		case log::MessageType::Info: prefix = " [Info]"; break;
+		case log::MessageType::Info:    prefix = " [Info]"; break;
 		case log::MessageType::Warning: prefix = " [Warn]"; break;
-		case log::MessageType::Error: prefix = "[Error]"; break;
-		case log::MessageType::Debug: prefix = "[Debug]"; break;
-		case log::MessageType::Script: prefix = "[Script]"; break;
-		default: prefix = "  [Log]"; break;
+		case log::MessageType::Error:   prefix = "[Error]"; break;
+		case log::MessageType::Debug:   prefix = "[Debug]"; break;
+		case log::MessageType::Script:  prefix = "[Script]"; break;
+		default:                        prefix = "  [Log]"; break;
 		}
 		return formatter<string_view>::format(prefix, ctx);
 	}
@@ -140,6 +141,22 @@ const vector<log::Message>& log::history()
 }
 
 // -----------------------------------------------------------------------------
+// Returns the last [n] log messages (as pointers)
+// -----------------------------------------------------------------------------
+vector<log::Message*> log::last(int n)
+{
+	vector<Message*> list;
+
+	if (n < 0 || n > log.size())
+		n = log.size();
+
+	for (auto i = log.size() - n; i < log.size(); i++)
+		list.push_back(&log[i]);
+
+	return list;
+}
+
+// -----------------------------------------------------------------------------
 // Returns the current log verbosity level, log messages with a higher level
 // than the current verbosity will not be logged
 // -----------------------------------------------------------------------------
@@ -171,6 +188,11 @@ void log::message(MessageType type, string_view text)
 		sf::err() << log.back().formattedMessageLine() << "\n";
 		sf::err().flush();
 	}
+
+	// Log to debugger in windows+debug
+#if defined(__WXMSW__) && defined(SLADE_DEBUG)
+	OutputDebugStringA(fmt::format("{}\r\n", log.back().formattedMessageLine()).c_str());
+#endif
 }
 
 void log::message(MessageType type, int level, string_view text, fmt::format_args args)

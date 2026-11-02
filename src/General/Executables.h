@@ -1,11 +1,13 @@
 #pragma once
 
+#include "JsonFwd.h"
+#include "Utility/StringPair.h"
+
 class wxMenu;
 
 namespace slade
 {
 class Parser;
-class ParseTreeNode;
 
 namespace executables
 {
@@ -29,17 +31,18 @@ namespace executables
 		string path;
 	};
 
-	string writePaths();
-	string writeExecutables();
-	void   init();
-	void   parse(Parser* p, bool custom);
+	void writePaths(Json& j);
+	bool writeExecutables(string_view path);
+	void readExecutables(Json& j, bool custom);
+	void init();
+	void parse(const Parser* p, bool custom);
 
 	// Game executables
 	GameExe* gameExe(string_view id);
 	GameExe* gameExe(unsigned index);
 	unsigned nGameExes();
 	void     setGameExePath(string_view id, string_view path);
-	void     parseGameExe(ParseTreeNode* node, bool custom);
+	void     parseGameExe(const ParseTreeNode* node, bool custom);
 	void     addGameExe(string_view name);
 	bool     removeGameExe(unsigned index);
 	void     addGameExeRunConfig(
@@ -59,7 +62,7 @@ namespace executables
 	int                 nExternalExes(string_view category = "");
 	ExternalExe         externalExe(string_view name, string_view category = "");
 	vector<ExternalExe> externalExes(string_view category = "");
-	void                parseExternalExe(ParseTreeNode* node);
+	void                parseExternalExe(const ParseTreeNode* node);
 	void                addExternalExe(string_view name, string_view path, string_view category);
 	void                setExternalExeName(string_view name_old, string_view name_new, string_view category);
 	void                setExternalExePath(string_view name, string_view path, string_view category);

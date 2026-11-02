@@ -32,6 +32,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "CodePages.h"
+#include "Colour.h"
 
 using namespace slade;
 
@@ -166,7 +167,7 @@ string codepages::fromASCII(uint8_t val)
 
 wxString codepages::fromCP437(uint8_t val)
 {
-	return wxString::FromUTF8((const char*)cp437table[val], cp437len[val]);
+	return wxString::FromUTF8(reinterpret_cast<const char*>(cp437table[val]), cp437len[val]);
 }
 
 ColRGBA codepages::ansiColor(uint8_t val)

@@ -32,12 +32,27 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DataEntryPanel.h"
-#include "General/ColourConfiguration.h"
-#include "General/UI.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "General/SAction.h"
 #include "MainEditor/BinaryControlLump.h"
 #include "MainEditor/MainEditor.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
+#include "UI/UI.h"
+#include "UI/WxUtils.h"
 
 using namespace slade;
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+CVAR(Int, edata_col_padding, 0, CVar::Flag::Save)
+CVAR(Int, edata_row_padding, 0, CVar::Flag::Save)
+CVAR(Bool, edata_font_monospace, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -85,7 +100,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 			data_.read(&val, 1);
 			return wxString::Format(wxS("%hhd"), val);
 		}
-		else if (columns_[col].size == 2)
+		if (columns_[col].size == 2)
 		{
 			int16_t val;
 			data_.read(&val, 2);
@@ -93,7 +108,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 				val = wxINT16_SWAP_ON_LE(val);
 			return wxString::Format(wxS("%hd"), val);
 		}
-		else if (columns_[col].size == 4)
+		if (columns_[col].size == 4)
 		{
 			int32_t val;
 			data_.read(&val, 4);
@@ -101,7 +116,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 				val = wxINT32_SWAP_ON_LE(val);
 			return wxString::Format(wxS("%d"), val);
 		}
-		else if (columns_[col].size == 8)
+		if (columns_[col].size == 8)
 		{
 			int64_t val;
 			data_.read(&val, 8);
@@ -109,11 +124,12 @@ wxString DataEntryTable::GetValue(int row, int col)
 				val = wxINT64_SWAP_ON_LE(val);
 			return wxString::Format(wxS("%lld"), val);
 		}
+
 		return wxS("INVALID SIZE");
 	}
 
 	// Unsigned integer column
-	else if (columns_[col].type == ColType::IntUnsigned || columns_[col].type == ColType::IntBEUnsigned)
+	if (columns_[col].type == ColType::IntUnsigned || columns_[col].type == ColType::IntBEUnsigned)
 	{
 		bool be = columns_[col].type == ColType::IntBEUnsigned;
 
@@ -123,7 +139,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 			data_.read(&val, 1);
 			return wxString::Format(wxS("%hhd"), val);
 		}
-		else if (columns_[col].size == 2)
+		if (columns_[col].size == 2)
 		{
 			uint16_t val;
 			data_.read(&val, 2);
@@ -131,7 +147,7 @@ wxString DataEntryTable::GetValue(int row, int col)
 				val = wxINT16_SWAP_ON_LE(val);
 			return wxString::Format(wxS("%hd"), val);
 		}
-		else if (columns_[col].size == 4)
+		if (columns_[col].size == 4)
 		{
 			uint32_t val;
 			data_.read(&val, 4);
@@ -139,35 +155,35 @@ wxString DataEntryTable::GetValue(int row, int col)
 				val = wxINT32_SWAP_ON_LE(val);
 			return wxString::Format(wxS("%d"), val);
 		}
-		else if (columns_[col].size == 8)
+		if (columns_[col].size == 8)
 		{
 			uint64_t val;
 			data_.read(&val, 8);
 			if (be)
 				val = wxINT64_SWAP_ON_LE(val);
-			return wxString::Format(wxS("%lld"), (long long)val);
+			return wxString::Format(wxS("%lld"), static_cast<long long>(val));
 		}
 		return wxS("INVALID SIZE");
 	}
 	// Fixed-point float column
-	else if (columns_[col].type == ColType::Fixed)
+	if (columns_[col].type == ColType::Fixed)
 	{
 		if (columns_[col].size == 4)
 		{
 			int32_t val;
 			data_.read(&val, 4);
-			return wxString::Format(wxS("%1.3f"), (double)val / 65536.0);
+			return wxString::Format(wxS("%1.3f"), static_cast<double>(val) / 65536.0);
 		}
 		return wxS("INVALID SIZE");
 	}
 	// String column
-	else if (columns_[col].type == ColType::String)
+	if (columns_[col].type == ColType::String)
 	{
 		return wxString::FromAscii(data_.data() + data_.currentPos(), columns_[col].size);
 	}
 
 	// Custom value column
-	else if (columns_[col].type == ColType::CustomValue)
+	if (columns_[col].type == ColType::CustomValue)
 	{
 		int value = 0;
 		if (columns_[col].size == 1)
@@ -299,7 +315,7 @@ void DataEntryTable::SetValue(int row, int col, const wxString& value)
 // -----------------------------------------------------------------------------
 wxString DataEntryTable::GetColLabelValue(int col)
 {
-	if ((unsigned)col < columns_.size())
+	if (static_cast<unsigned>(col) < columns_.size())
 		return columns_[col].name;
 
 	return wxString::Format(wxS("Column%d"), col);
@@ -333,9 +349,9 @@ bool DataEntryTable::DeleteRows(size_t pos, size_t num)
 	vector<int> new_rows_new;
 	for (int a : rows_new_)
 	{
-		if ((unsigned)a >= pos + num)
+		if (static_cast<unsigned>(a) >= pos + num)
 			new_rows_new.push_back(a - num);
-		else if ((unsigned)a < pos)
+		else if (static_cast<unsigned>(a) < pos)
 			new_rows_new.push_back(a);
 	}
 	rows_new_ = new_rows_new;
@@ -344,9 +360,9 @@ bool DataEntryTable::DeleteRows(size_t pos, size_t num)
 	vector<Vec2i> new_cells_modified;
 	for (auto& cell : cells_modified_)
 	{
-		if ((unsigned)cell.x >= pos + num)
-			new_cells_modified.emplace_back(cell.x - (int)num, cell.y);
-		else if ((unsigned)cell.x < pos)
+		if (static_cast<unsigned>(cell.x) >= pos + num)
+			new_cells_modified.emplace_back(cell.x - static_cast<int>(num), cell.y);
+		else if (static_cast<unsigned>(cell.x) < pos)
 			new_cells_modified.emplace_back(cell.x, cell.y);
 	}
 	cells_modified_ = new_cells_modified;
@@ -381,14 +397,14 @@ bool DataEntryTable::InsertRows(size_t pos, size_t num)
 
 	// Update new rows
 	for (int& row : rows_new_)
-		if ((unsigned)row >= pos)
+		if (static_cast<unsigned>(row) >= pos)
 			row += num;
 	for (unsigned a = 0; a < num; a++)
 		rows_new_.push_back(pos + a);
 
 	// Update modified cells
 	for (auto& cell : cells_modified_)
-		if (cell.x >= (int)pos)
+		if (cell.x >= static_cast<int>(pos))
 			cell.x += num;
 
 	// Send message to grid
@@ -411,7 +427,7 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 	{
 		if (i == row)
 		{
-			attr->SetTextColour(colourconfig::colour("new").toWx());
+			attr->SetTextColour(ui::textColour(ui::TextColour::New));
 			new_row = true;
 			break;
 		}
@@ -424,7 +440,7 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 		{
 			if (cell.x == row && cell.y == col)
 			{
-				attr->SetTextColour(colourconfig::colour("modified").toWx());
+				attr->SetTextColour(ui::textColour(ui::TextColour::Modified));
 				break;
 			}
 		}
@@ -702,6 +718,27 @@ bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
 		}
 	}
 
+	// NODES (DeePBSPV4)
+	else if (type == "map_deepv4nodes")
+	{
+		columns_.emplace_back(wxS("Partition X"), ColType::IntSigned, 2, 0);
+		columns_.emplace_back(wxS("Partition Y"), ColType::IntSigned, 2, 2);
+		columns_.emplace_back(wxS("Partition X Diff"), ColType::IntSigned, 2, 4);
+		columns_.emplace_back(wxS("Partition Y Diff"), ColType::IntSigned, 2, 6);
+		columns_.emplace_back(wxS("Right Box Top"), ColType::IntSigned, 2, 8);
+		columns_.emplace_back(wxS("Right Box Bottom"), ColType::IntSigned, 2, 10);
+		columns_.emplace_back(wxS("Right Box Left"), ColType::IntSigned, 2, 12);
+		columns_.emplace_back(wxS("Right Box Right"), ColType::IntSigned, 2, 14);
+		columns_.emplace_back(wxS("Left Box Top"), ColType::IntSigned, 2, 16);
+		columns_.emplace_back(wxS("Left Box Bottom"), ColType::IntSigned, 2, 18);
+		columns_.emplace_back(wxS("Left Box Left"), ColType::IntSigned, 2, 20);
+		columns_.emplace_back(wxS("Left Box Right"), ColType::IntSigned, 2, 22);
+		columns_.emplace_back(wxS("Right Child"), ColType::IntUnsigned, 4, 24);
+		columns_.emplace_back(wxS("Left Child"), ColType::IntUnsigned, 4, 28);
+		row_stride_ = 32;
+		data_start_ = 8;
+	}
+
 	// LIGHTS
 	else if (type == "map_lights")
 	{
@@ -908,21 +945,25 @@ void DataEntryTable::pasteRows(int row)
 // -----------------------------------------------------------------------------
 DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), table_data_{ new DataEntryTable(this) }
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Cell value combo box
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	sizer_main_->Add(vbox, 1, wxEXPAND);
 	combo_cell_value_ = new wxComboBox(
 		this, -1, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, nullptr, wxTE_PROCESS_ENTER);
-	vbox->Add(combo_cell_value_, 0, wxEXPAND | wxBOTTOM, ui::pad());
+	vbox->Add(combo_cell_value_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	// Create grid
 	grid_data_ = new wxGrid(this, -1);
-	vbox->Add(grid_data_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+	if (edata_font_monospace)
+		grid_data_->SetDefaultCellFont(wxutil::monospaceFont(grid_data_->GetDefaultCellFont()));
+	grid_data_->SetDefaultCellAlignment(wxALIGN_LEFT, wxALIGN_CENTER);
+	grid_data_->SetDefaultRowSize(grid_data_->GetDefaultRowSize() + FromDIP(edata_row_padding * 2));
+	vbox->Add(grid_data_, lh.sfWithBorder(1, wxBOTTOM).Expand());
 
-	// Add actions to toolbar
-	wxArrayString actions;
-	toolbar_->addActionGroup(
-		"Data", { "data_add_row", "data_delete_row", "data_cut_row", "data_copy_row", "data_paste_row" });
+	// Setup toolbar
+	toolbar_->loadLayoutFromResource("entry_data_top");
 
 	// Bind events
 	Bind(wxEVT_KEY_DOWN, &DataEntryPanel::onKeyDown, this);
@@ -937,17 +978,27 @@ DataEntryPanel::DataEntryPanel(wxWindow* parent) : EntryPanel(parent, "data"), t
 // -----------------------------------------------------------------------------
 bool DataEntryPanel::loadEntry(ArchiveEntry* entry)
 {
-	// Load data table
-	table_data_->setupDataStructure(entry);
+	// Clear existing data
 	grid_data_->ClearGrid();
-	grid_data_->SetTable(table_data_);
+	grid_data_->ClearSelection();
+	grid_data_->SetGridCursor(0, 0);
+	grid_data_->Scroll(0, 0);
 	combo_cell_value_->Clear();
 
+	// Load data table
+	table_data_->setupDataStructure(entry);
+	grid_data_->SetTable(table_data_);
+
 	// Set column widths
-	grid_data_->SetColMinimalAcceptableWidth(ui::scalePx(64));
+	grid_data_->SetColMinimalAcceptableWidth(FromDIP(64));
 	for (int a = 0; a < table_data_->GetNumberCols(); a++)
 		grid_data_->AutoSizeColLabelSize(a);
 	grid_data_->ForceRefresh();
+
+	// Apply column padding
+	if (edata_col_padding > 0)
+		for (int a = 0; a < table_data_->GetNumberCols(); a++)
+			grid_data_->SetColSize(a, grid_data_->GetColSize(a) + FromDIP(edata_col_padding * 2));
 
 	Layout();
 
@@ -1124,13 +1175,14 @@ void DataEntryPanel::changeValue() const
 	auto          ci = table_data_->columnInfo(selection[0].y);
 	wxArrayString choices;
 	for (auto& custom_value : ci.custom_values)
-		choices.Add(wxString::Format(wxS("%d: %s"), custom_value.first, custom_value.second));
+		choices.Add(WX_FMT("{}: {}", custom_value.first, custom_value.second.utf8_string()));
 	auto combo = new wxComboBox(&dlg, -1, initial_val, wxDefaultPosition, wxDefaultSize, choices);
 
 	auto vbox = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(vbox);
-	vbox->Add(combo, 0, wxEXPAND | wxALL, 10);
-	vbox->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxALL, 10);
+	auto lh = ui::LayoutHelper(&dlg);
+	vbox->Add(combo, lh.sfWithLargeBorder(0).Expand());
+	vbox->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithLargeBorder(0).Expand());
 
 	// Show dialog
 	dlg.Fit();
@@ -1149,8 +1201,8 @@ void DataEntryPanel::changeValue() const
 		}
 
 		// Apply value to selected cells
-		for (unsigned a = 0; a < selection.size(); a++)
-			grid_data_->SetCellValue(selection[a].x, selection[a].y, WX_FMT("{}", lval));
+		for (auto& a : selection)
+			grid_data_->SetCellValue(a.x, a.y, WX_FMT("{}", lval));
 		grid_data_->ForceRefresh();
 	}
 }
@@ -1281,6 +1333,10 @@ void DataEntryPanel::onGridRightClick(wxGridEvent& e)
 void DataEntryPanel::onGridCursorChanged(wxGridEvent& e)
 {
 	combo_cell_value_->Clear();
+
+	if (table_data_->data().empty())
+		return;
+
 	auto col = table_data_->columnInfo(e.GetCol());
 	for (auto& custom_value : col.custom_values)
 		combo_cell_value_->AppendString(WX_FMT("{}: {}", custom_value.first, custom_value.second.utf8_string()));

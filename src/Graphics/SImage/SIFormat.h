@@ -4,7 +4,6 @@
 
 namespace slade
 {
-class ArchiveEntry;
 class SIFormat
 {
 public:
@@ -34,12 +33,12 @@ public:
 	const string& name() const { return name_; }
 	const string& extension() const { return extension_; }
 
-	virtual bool isThisFormat(MemChunk& mc) = 0;
+	virtual bool isThisFormat(const MemChunk& mc) = 0;
 
 	// Reading
-	virtual SImage::Info info(MemChunk& mc, int index = 0) = 0;
+	virtual SImage::Info info(const MemChunk& mc, int index = 0) = 0;
 
-	bool loadImage(SImage& image, MemChunk& data, int index = 0)
+	bool loadImage(SImage& image, const MemChunk& data, int index = 0)
 	{
 		// Check format
 		if (!isThisFormat(data))
@@ -75,7 +74,7 @@ public:
 	virtual bool     convertWritable(SImage& image, ConvertOptions opt) { return false; }
 	virtual bool     writeOffset(SImage& image, ArchiveEntry* entry, Vec2i offset) { return false; }
 
-	bool saveImage(SImage& image, MemChunk& out, Palette* pal = nullptr, int index = 0)
+	bool saveImage(SImage& image, MemChunk& out, const Palette* pal = nullptr, int index = 0)
 	{
 		// Attempt to write image data
 		out.seek(0, SEEK_SET);
@@ -89,8 +88,8 @@ public:
 	}
 
 	static void      initFormats();
-	static SIFormat* getFormat(string_view name);
-	static SIFormat* determineFormat(MemChunk& mc);
+	static SIFormat* getFormat(string_view id);
+	static SIFormat* determineFormat(const MemChunk& mc);
 	static SIFormat* unknownFormat();
 	static SIFormat* rawFormat();
 	static SIFormat* flatFormat();
@@ -106,9 +105,9 @@ protected:
 	// Stuff to access protected image data
 	uint8_t* imageData(SImage& image) const { return image.data_.data(); }
 	uint8_t* imageMask(SImage& image) const { return image.mask_.data(); }
-	Palette& imagePalette(SImage& image) const { return image.palette_; }
+	Palette& imagePalette(const SImage& image) const { return *image.paletteToUse(static_cast<Palette*>(nullptr)); }
 
-	virtual bool readImage(SImage& image, MemChunk& data, int index) = 0;
-	virtual bool writeImage(SImage& image, MemChunk& data, Palette* pal, int index) { return false; }
+	virtual bool readImage(SImage& image, const MemChunk& data, int index) = 0;
+	virtual bool writeImage(SImage& image, MemChunk& data, const Palette* pal, int index) { return false; }
 };
 } // namespace slade

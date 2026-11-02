@@ -1,0 +1,101 @@
+{
+  "name": "Default",
+  "icons": {
+    "animated": {
+      "svg_light": "icons/entry_list/animated.svg",
+      "svg_dark": "icons/entry_list/dark/animated.svg"
+    },
+    "archive": {
+      "svg": "icons/entry_list/archive.svg"
+    },
+    "bmp": {
+      "svg_light": "icons/entry_list/bmp.svg",
+      "svg_dark": "icons/entry_list/dark/bmp.svg"
+    },
+    "code": {
+      "svg_light": "icons/entry_list/code.svg",
+      "svg_dark": "icons/entry_list/dark/code.svg"
+    },
+    "colormap": {
+      "svg_light": "icons/entry_list/colormap.svg",
+      "svg_dark": "icons/entry_list/dark/colormap.svg"
+    },
+    "data": {
+      "svg_light": "icons/entry_list/data.svg",
+      "svg_dark": "icons/entry_list/dark/data.svg"
+    },
+    "default": {
+      "svg_light": "icons/entry_list/default.svg",
+      "svg_dark": "icons/entry_list/dark/default.svg"
+    },
+    "folder": {
+      "svg": "icons/entry_list/folder.svg"
+    },
+    "font": {
+      "svg_light": "icons/entry_list/font.svg",
+      "svg_dark": "icons/entry_list/dark/font.svg"
+    },
+    "gfx": {
+      "svg_light": "icons/entry_list/gfx.svg",
+      "svg_dark": "icons/entry_list/dark/gfx.svg"
+    },
+    "lua": {
+      "svg_light": "icons/entry_list/lua.svg",
+      "svg_dark": "icons/entry_list/dark/lua.svg"
+    },
+    "map": {
+      "svg_light": "icons/entry_list/map.svg",
+      "svg_dark": "icons/entry_list/dark/map.svg"
+    },
+    "map_data": {
+      "svg_light": "icons/entry_list/map_data.svg",
+      "svg_dark": "icons/entry_list/dark/map_data.svg"
+    },
+    "marker": {
+      "svg_light": "icons/entry_list/marker.svg",
+      "svg_dark": "icons/entry_list/dark/marker.svg"
+    },
+    "music": {
+      "svg_light": "icons/entry_list/music.svg",
+      "svg_dark": "icons/entry_list/dark/music.svg"
+    },
+    "palette": {
+      "svg_light": "icons/entry_list/palette.svg",
+      "svg_dark": "icons/entry_list/dark/palette.svg"
+    },
+    "pnames": {
+      "svg_light": "icons/entry_list/pnames.svg",
+      "svg_dark": "icons/entry_list/dark/pnames.svg"
+    },
+    "png": {
+      "svg_light": "icons/entry_list/png.svg",
+      "svg_dark": "icons/entry_list/dark/png.svg"
+    },
+    "sound": {
+      "svg_light": "icons/entry_list/sound.svg",
+      "svg_dark": "icons/entry_list/dark/sound.svg"
+    },
+    "switches": {
+      "svg_light": "icons/entry_list/switches.svg",
+      "svg_dark": "icons/entry_list/dark/switches.svg"
+    },
+    "text": {
+      "svg_light": "icons/entry_list/text.svg",
+      "svg_dark": "icons/entry_list/dark/text.svg"
+    },
+    "texturex": {
+      "svg_light": "icons/entry_list/texturex.svg",
+      "svg_dark": "icons/entry_list/dark/texturex.svg"
+    },
+    "unknown": {
+      "svg_light": "icons/entry_list/unknown.svg",
+      "svg_dark": "icons/entry_list/dark/unknown.svg"
+    },
+    "wad": {
+      "svg": "icons/entry_list/wad.svg"
+    },
+    "zip": {
+      "svg": "icons/entry_list/zip.svg"
+    }
+  }
+}

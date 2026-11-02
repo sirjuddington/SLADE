@@ -33,12 +33,14 @@
 #include "Main.h"
 #include "Graphics.h"
 #include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
 #include "Graphics/GameFormats.h"
 #include "SImage/SIFormat.h"
 #include "Utility/Memory.h"
 
 using namespace slade;
+
 
 // -----------------------------------------------------------------------------
 //
@@ -98,8 +100,8 @@ bool setOffsetsDoomGfx(SeekableData& data, int xoff, int yoff)
 		return false;
 
 	// Apply new offsets
-	header.left = wxINT16_SWAP_ON_BE((int16_t)xoff);
-	header.top  = wxINT16_SWAP_ON_BE((int16_t)yoff);
+	header.left = wxINT16_SWAP_ON_BE(static_cast<int16_t>(xoff));
+	header.top  = wxINT16_SWAP_ON_BE(static_cast<int16_t>(yoff));
 
 	// Write new header to entry
 	data.seekFromStart(0);
@@ -122,8 +124,8 @@ bool setOffsetsDoomAlphaGfx(SeekableData& data, int xoff, int yoff)
 		return false;
 
 	// Apply new offsets
-	header.left = (int8_t)xoff;
-	header.top  = (int8_t)yoff;
+	header.left = static_cast<int8_t>(xoff);
+	header.top  = static_cast<int8_t>(yoff);
 
 	// Write new header to entry
 	data.seekFromStart(0);
@@ -150,9 +152,9 @@ Vec2i gfx::pngGetSize(const MemChunk& png_data)
 		return { 0, 0 };
 
 	// Read width and height from IHDR chunk
-	const Ihdr* ihdr = (Ihdr*)(png_data.data() + 12);
-	uint32_t    w    = wxINT32_SWAP_ON_LE(ihdr->width);
-	uint32_t    h    = wxINT32_SWAP_ON_LE(ihdr->height);
+	auto     ihdr = reinterpret_cast<const Ihdr*>(png_data.data() + 12);
+	uint32_t w    = wxINT32_SWAP_ON_LE(ihdr->width);
+	uint32_t h    = wxINT32_SWAP_ON_LE(ihdr->height);
 
 	return { static_cast<int>(w), static_cast<int>(h) };
 }
@@ -200,7 +202,7 @@ bool gfx::pngSetgrAb(MemChunk& png_data, int xoff, int yoff)
 		if (data[a] == 'g' && data[a + 1] == 'r' && data[a + 2] == 'A' && data[a + 3] == 'b')
 		{
 			grab_start = a - 4;
-			auto grab  = (const GrabChunk*)(data + a);
+			auto grab  = reinterpret_cast<const GrabChunk*>(data + a);
 			ox         = wxINT32_SWAP_ON_LE(grab->xoff);
 			oy         = wxINT32_SWAP_ON_LE(grab->yoff);
 			break;
@@ -303,7 +305,6 @@ bool gfx::pngSettRNS(MemChunk& png_data, bool value)
 		if (png_data[a] == 't' && png_data[a + 1] == 'R' && png_data[a + 2] == 'N' && png_data[a + 3] == 'S')
 		{
 			trns_start = a - 4;
-			auto trns  = (TransChunk*)(png_data.data() + a);
 			trns_size  = 12 + memory::readB32(png_data.data(), a - 4);
 		}
 
@@ -502,15 +503,16 @@ Vec2i gfx::calculateOffsets(int width, int height, OffsetType type)
 {
 	switch (type)
 	{
-	case OffsetType::Monster: return { static_cast<int>(width * 0.5), height - 4 };
-	case OffsetType::MonsterGL: return { static_cast<int>(width * 0.5), height };
-	case OffsetType::Projectile: return { static_cast<int>(width * 0.5), static_cast<int>(height * 0.5) };
-	case OffsetType::WeaponFull: return { -160 + static_cast<int>(width * 0.5), -200 + height };
-	case OffsetType::WeaponDoom: return { -160 + static_cast<int>(width * 0.5), -200 + 32 + height };
+	case OffsetType::Monster:       return { static_cast<int>(width * 0.5), height - 4 };
+	case OffsetType::MonsterGL:     return { static_cast<int>(width * 0.5), height };
+	case OffsetType::Projectile:    return { static_cast<int>(width * 0.5), static_cast<int>(height * 0.5) };
+	case OffsetType::WeaponFull:    return { -160 + static_cast<int>(width * 0.5), -200 + height };
+	case OffsetType::WeaponDoom:    return { -160 + static_cast<int>(width * 0.5), -200 + 32 + height };
 	case OffsetType::WeaponHeretic: return { -160 + static_cast<int>(width * 0.5), -200 + 42 + height };
-	case OffsetType::WeaponHexen: return { -160 + static_cast<int>(width * 0.5), -200 + 38 + height };
-	default: return { 0, 0 };
-	};
+	case OffsetType::WeaponHexen:   return { -160 + static_cast<int>(width * 0.5), -200 + 38 + height };
+	}
+
+	return { 0, 0 };
 }
 
 // -----------------------------------------------------------------------------
@@ -518,7 +520,7 @@ Vec2i gfx::calculateOffsets(int width, int height, OffsetType type)
 // Will return an empty std::optional if the data is not a format that supports
 // offsets, or if no offsets are present in the image.
 // -----------------------------------------------------------------------------
-std::optional<Vec2i> gfx::getImageOffsets(MemChunk& img_data)
+std::optional<Vec2i> gfx::getImageOffsets(const MemChunk& img_data)
 {
 	// Detect image format if any
 	auto* format = SIFormat::determineFormat(img_data);
@@ -592,4 +594,55 @@ bool gfx::supportsOffsets(const ArchiveEntry& entry)
 	auto& entryformat = type->formatId();
 	return entryformat == "img_doom" || entryformat == "img_doom_arah" || entryformat == "img_doom_alpha"
 		   || entryformat == "img_doom_beta" || entryformat == "img_png";
+}
+
+// -----------------------------------------------------------------------------
+// Returns true if the given offsets [xoff, yoff] are more likely to be HUD
+// offsets thansprite offsets, based on the [width] and [height] of the image
+// and the offset values.
+// -----------------------------------------------------------------------------
+bool gfx::isHudOffsets(int width, int height, int xoff, int yoff)
+{
+	const int left         = -xoff;
+	const int right        = left + width;
+	const int top          = -yoff;
+	const int bottom       = top + height;
+	const int horiz_center = (left + right) / 2;
+
+	// Determine sprite vs. HUD with a rough heuristic: give each one a
+	// penalty, measuring how far (in pixels) the offsets are from the "ideal"
+	// offsets for that type.  Lowest penalty wins.
+	int sprite_penalty = 0;
+	int hud_penalty    = 0;
+	// The HUD is drawn with the origin in the top left, so HUD offsets
+	// generally put the center of the screen (160, 100) above or inside the
+	// top center of the sprite.
+	hud_penalty += abs(horiz_center - 160);
+	hud_penalty += abs(top - 100);
+	// It's extremely unusual for the bottom of the sprite to be above 168,
+	// which is where the weapon is cut off in fullscreen.  Extra penalty.
+	if (bottom < 168)
+		hud_penalty += (168 - bottom);
+	// Sprites are drawn relative to the center of an object at floor height,
+	// so the offsets generally put the origin (0, 0) near the vertical center
+	// line and the bottom edge.  Some sprites are vertically centered whereas
+	// some use a small bottom margin for feet, so split the difference and use
+	// 1/4 up from the bottom.
+	const int bottom_quartile = (bottom * 3 + top) / 4;
+	sprite_penalty += abs(bottom_quartile - 0);
+	sprite_penalty += abs(horiz_center - 0);
+	// It's extremely unusual for the sprite to not contain the origin, which
+	// would draw it not touching its actual position.  Extra panalty for that,
+	// though allow for a sprite that floats up to its own height above the
+	// floor.
+	if (top > 0)
+		sprite_penalty += (top - 0);
+	else if (bottom < 0 - height)
+		sprite_penalty += (0 - height - bottom);
+
+	// Sprites are more common than HUD, so in case of a tie, sprite wins
+	if (sprite_penalty > hud_penalty)
+		return true;
+	else
+		return false;
 }

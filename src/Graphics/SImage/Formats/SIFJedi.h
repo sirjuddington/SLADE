@@ -68,9 +68,9 @@ public:
 	}
 	~SIFJediBM() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_jedi_bm")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_jedi_bm")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 		JediBMHeader header;
@@ -80,7 +80,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Get image info
 		SImage::Info info;
@@ -158,7 +158,7 @@ private:
 		uint8_t  pad2[3];  // No known use
 	};
 
-	unsigned getImageInfo(SImage::Info& info, MemChunk& mc, int index, JediBMHeader* header, bool& transparent)
+	unsigned getImageInfo(SImage::Info& info, const MemChunk& mc, int index, JediBMHeader* header, bool& transparent)
 	{
 		mc.read(header, sizeof(JediBMHeader), 0);
 		bool multibm         = false;
@@ -200,9 +200,9 @@ private:
 				global::error = "Jedi BM file: invalid multi-BM file";
 				return 0;
 			}
-			auto header_poffset = reinterpret_cast<uint32_t*>(mc.data() + offset_offset);
+			auto header_poffset = reinterpret_cast<const uint32_t*>(mc.data() + offset_offset);
 			auto header_offset  = wxINT32_SWAP_ON_BE(*header_poffset) + 34;
-			auto subheader      = reinterpret_cast<JediBMSubheader*>(mc.data() + header_offset);
+			auto subheader      = reinterpret_cast<const JediBMSubheader*>(mc.data() + header_offset);
 			transparent         = !!(subheader->flag & 8);
 			info.width          = wxINT16_SWAP_ON_BE(subheader->width);
 			info.height         = wxINT16_SWAP_ON_BE(subheader->height);
@@ -230,14 +230,14 @@ public:
 	}
 	~SIFJediFME() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_jedi_fme")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_jedi_fme")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		// Read headers
 		SImage::Info info;
-		const auto   header1 = reinterpret_cast<JediFMEHeader1*>(mc.data());
-		const auto   header2 = reinterpret_cast<JediFMEHeader2*>(mc.data() + wxINT32_SWAP_ON_BE(header1->head2));
+		const auto   header1 = reinterpret_cast<const JediFMEHeader1*>(mc.data());
+		const auto   header2 = reinterpret_cast<const JediFMEHeader2*>(mc.data() + wxINT32_SWAP_ON_BE(header1->head2));
 
 		// Setup variables
 		info.offset_x  = 0 - wxINT32_SWAP_ON_BE(header1->offsx);
@@ -271,12 +271,12 @@ protected:
 		uint32_t padding; // No known use
 	};
 
-	bool readFrame(SImage& image, MemChunk& data, unsigned offset, unsigned numimages = 1) const
+	bool readFrame(SImage& image, const MemChunk& data, unsigned offset, unsigned numimages = 1) const
 	{
 		SImage::Info info;
-		const auto   header1 = reinterpret_cast<JediFMEHeader1*>(data.data() + offset);
-		const auto   header2 = reinterpret_cast<JediFMEHeader2*>(data.data() + wxINT32_SWAP_ON_BE(header1->head2));
-		bool         flip    = !!(header1->flag & 1);
+		const auto   header1 = reinterpret_cast<const JediFMEHeader1*>(data.data() + offset);
+		const auto header2 = reinterpret_cast<const JediFMEHeader2*>(data.data() + wxINT32_SWAP_ON_BE(header1->head2));
+		bool       flip    = !!(header1->flag & 1);
 
 		info.offset_x  = 0 - wxINT32_SWAP_ON_BE(header1->offsx);
 		info.offset_y  = 0 - wxINT32_SWAP_ON_BE(header1->offsy);
@@ -315,7 +315,7 @@ protected:
 		return true;
 	}
 
-	bool readImage(SImage& image, MemChunk& data, int index) override { return readFrame(image, data, 0); }
+	bool readImage(SImage& image, const MemChunk& data, int index) override { return readFrame(image, data, 0); }
 };
 
 class SIFJediWAX : public SIFJediFME
@@ -329,9 +329,9 @@ public:
 	}
 	~SIFJediWAX() override = default;
 
-	bool isThisFormat(MemChunk& mc) override { return EntryDataFormat::format("img_jedi_wax")->isThisFormat(mc); }
+	bool isThisFormat(const MemChunk& mc) override { return EntryDataFormat::format("img_jedi_wax")->isThisFormat(mc); }
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -349,8 +349,8 @@ public:
 			info.imgindex = info.numimages + info.imgindex;
 
 		// Read headers
-		const auto header1 = reinterpret_cast<JediFMEHeader1*>(mc.data() + offsets[info.imgindex]);
-		const auto header2 = reinterpret_cast<JediFMEHeader2*>(mc.data() + wxINT32_SWAP_ON_BE(header1->head2));
+		const auto header1 = reinterpret_cast<const JediFMEHeader1*>(mc.data() + offsets[info.imgindex]);
+		const auto header2 = reinterpret_cast<const JediFMEHeader2*>(mc.data() + wxINT32_SWAP_ON_BE(header1->head2));
 
 		// Setup variables
 		info.offset_x  = 0 - wxINT32_SWAP_ON_BE(header1->offsx);
@@ -364,7 +364,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Determine all frame offsets
 		vector<unsigned> offsets;
@@ -410,9 +410,9 @@ private:
 		uint32_t frames[32]; // Offsets to frames
 	};
 
-	void readFrameOffsets(MemChunk& data, vector<unsigned>& offsets)
+	void readFrameOffsets(const MemChunk& data, vector<unsigned>& offsets)
 	{
-		const auto     header = reinterpret_cast<JediWAXHeader*>(data.data());
+		const auto     header = reinterpret_cast<const JediWAXHeader*>(data.data());
 		vector<size_t> frameoffs;
 
 		// This is a recursive nightmare. What were the LucasArts devs smoking when they specced this format?
@@ -420,17 +420,17 @@ private:
 		{
 			if (wax_off > sizeof(JediWAXHeader) && wax_off < data.size() - sizeof(JediWAXSubheader))
 			{
-				const auto subhdr = reinterpret_cast<JediWAXSubheader*>(data.data() + wax_off);
+				const auto subhdr = reinterpret_cast<const JediWAXSubheader*>(data.data() + wax_off);
 				for (auto seq_off : subhdr->seqs)
 				{
 					if (seq_off > sizeof(JediWAXHeader) && seq_off < data.size() - sizeof(JediWAXSequence))
 					{
-						const auto seq = reinterpret_cast<JediWAXSequence*>(data.data() + seq_off);
+						const auto seq = reinterpret_cast<const JediWAXSequence*>(data.data() + seq_off);
 						for (auto frame_off : seq->frames)
 						{
 							if (frame_off > sizeof(JediWAXHeader) && frame_off < data.size() - sizeof(JediWAXSequence))
 							{
-								const auto frame = reinterpret_cast<JediFMEHeader1*>(data.data() + frame_off);
+								const auto frame = reinterpret_cast<const JediFMEHeader1*>(data.data() + frame_off);
 								uint32_t   cell  = wxINT32_SWAP_ON_BE(frame->head2);
 								if (cell > sizeof(JediWAXHeader) && cell < data.size() - sizeof(JediFMEHeader2))
 								{

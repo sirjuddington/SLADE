@@ -35,8 +35,7 @@
 #include "SAuiTabArt.h"
 #include "App.h"
 #include "Graphics/Icons.h"
-#include "OpenGL/Drawing.h"
-#include "Utility/Colour.h"
+#include "WxUtils.h"
 
 using namespace slade;
 
@@ -124,12 +123,12 @@ SAuiTabArt::SAuiTabArt(const wxWindow* window, bool close_buttons, bool main_tab
 	m_fixedTabWidth = window->FromDIP(100);
 	m_tabCtrlHeight = 0;
 
-	wxColor baseColour = drawing::systemPanelBGColour();
+	wxColor baseColour = wxutil::systemPanelBGColour();
 
 	m_activeColour       = baseColour;
 	m_baseColour         = baseColour;
 	wxColor borderColour = baseColour.ChangeLightness(app::isDarkTheme() ? 115 : 75);
-	inactive_tab_colour_ = drawing::darkColour(m_baseColour, 0.95f);
+	inactive_tab_colour_ = wxutil::darkColour(m_baseColour, 0.95f);
 
 	m_borderPen       = wxPen(borderColour);
 	m_baseColourPen   = wxPen(m_baseColour);
@@ -338,11 +337,7 @@ void SAuiTabArt::DrawTab(
 		// highlight top of tab
 		if (!bluetab)
 		{
-#ifdef __WXMSW__
-			auto col_hilight = wxColour(app::isDarkTheme() ? wxS("#6696FF") : wxS("#476DBD"));
-#else
 			wxColour col_hilight = wxSystemSettings::GetColour(wxSYS_COLOUR_HIGHLIGHT);
-#endif
 			dc.SetPen(*wxTRANSPARENT_PEN);
 			dc.SetBrush(wxBrush(col_hilight));
 			dc.DrawRectangle(r.x + 1, r.y + 1, r.width - 1, px3);
@@ -440,7 +435,6 @@ void SAuiTabArt::DrawTab(
 	dc.DestroyClippingRegion();
 }
 
-#if wxCHECK_VERSION(3, 3, 0)
 int SAuiTabArt::DrawPageTab(wxDC& dc, wxWindow* wnd, wxAuiNotebookPage& page, const wxRect& rect)
 {
 	wxCoord normal_textx, normal_texty;
@@ -700,55 +694,6 @@ wxSize SAuiTabArt::GetPageTabSize(wxReadOnlyDC& dc, wxWindow* wnd, const wxAuiNo
 
 	return { tab_width, tab_height };
 }
-#else
-wxSize SAuiTabArt::GetTabSize(
-	wxDC&                 dc,
-	wxWindow*             wnd,
-	const wxString&       caption,
-	const wxBitmapBundle& bitmap,
-	bool                  WXUNUSED(active),
-	int                   close_button_state,
-	int*                  x_extent)
-{
-	wxCoord measured_textx, measured_texty, tmp;
-
-	dc.SetFont(m_measuringFont);
-	dc.GetTextExtent(caption, &measured_textx, &measured_texty);
-
-	dc.GetTextExtent(wxT("ABCDEFXj"), &tmp, &measured_texty);
-
-	// add padding around the text
-	wxCoord tab_width  = measured_textx;
-	wxCoord tab_height = measured_texty;
-
-	// if close buttons are enabled, add space for one
-	if (close_buttons_)
-		tab_width += wnd->FromPhys(m_activeCloseBmp.GetPreferredBitmapSizeFor(wnd).x) + padding_;
-
-	// if there's a bitmap, add space for it
-	if (bitmap.IsOk())
-	{
-		tab_width += wnd->FromPhys(bitmap.GetPreferredBitmapSizeFor(wnd).x);
-		tab_width += padding_; // right side bitmap padding
-		tab_height = wxMax(tab_height, wnd->FromPhys(bitmap.GetPreferredBitmapSizeFor(wnd).y));
-	}
-	else if (tabs_condensed)
-		tab_width += padding_ * 2; // a bit extra padding if there isn't an icon in condensed mode
-
-	// add padding
-	tab_width += padding_ * 2;
-	tab_height += 10;
-
-	// minimum width
-	int min_width = tabs_condensed ? 48 : 64;
-	if (tab_width < min_width)
-		tab_width = min_width;
-
-	*x_extent = tab_width;
-
-	return { tab_width, tab_height };
-}
-#endif
 
 void SAuiTabArt::SetSelectedFont(const wxFont& font)
 {
@@ -764,7 +709,7 @@ void SAuiTabArt::SetSelectedFont(const wxFont& font)
 
 SAuiDockArt::SAuiDockArt(const wxWindow* window)
 {
-	caption_back_colour_ = drawing::darkColour(drawing::systemPanelBGColour(), 0.0f);
+	caption_back_colour_ = wxutil::darkColour(wxutil::systemPanelBGColour(), 0.0f);
 
 	wxColour textColour = wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOWTEXT);
 	float    r = static_cast<float>(textColour.Red()) * 0.2f + static_cast<float>(caption_back_colour_.Red()) * 0.8f;
@@ -793,7 +738,7 @@ SAuiDockArt::SAuiDockArt(const wxWindow* window)
 	m_buttonSize  = window->FromDIP(16);
 	m_captionFont = wxFont(wxSystemSettings::GetFont(wxSYS_DEFAULT_GUI_FONT));
 
-	wxColor borderColour = drawing::systemPanelBGColour().ChangeLightness(app::isDarkTheme() ? 115 : 75);
+	wxColor borderColour = wxutil::systemPanelBGColour().ChangeLightness(app::isDarkTheme() ? 115 : 75);
 	m_borderPen          = wxPen(borderColour);
 }
 
@@ -801,18 +746,13 @@ SAuiDockArt::~SAuiDockArt() = default;
 
 void SAuiDockArt::DrawCaption(wxDC& dc, wxWindow* window, const wxString& text, const wxRect& rect, wxAuiPaneInfo& pane)
 {
-	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.SetFont(m_captionFont);
 
+#ifdef __WXMSW__
+	dc.SetPen(*wxTRANSPARENT_PEN);
 	dc.SetBrush(wxBrush(caption_back_colour_));
 	dc.DrawRectangle(rect.x, rect.y, rect.width, rect.height);
-
-	wxColor sepCol;
-	int     l = ColRGBA(caption_back_colour_).greyscale().r;
-	if (l < 100)
-		sepCol = drawing::lightColour(caption_back_colour_, 2.0f);
-	else
-		sepCol = drawing::darkColour(caption_back_colour_, 2.0f);
+#endif
 
 	auto px2 = window->FromDIP(2);
 	auto px3 = window->FromDIP(3);

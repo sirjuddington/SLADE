@@ -32,19 +32,24 @@
 #include "Main.h"
 #include "ArchiveOperations.h"
 #include "App.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
-#include "Archive/Formats/DirArchive.h"
-#include "Archive/Formats/WadArchive.h"
+#include "Archive/EntryType/EntryType.h"
+#include "Archive/Formats/DirArchiveHandler.h"
+#include "Archive/MapDesc.h"
 #include "General/Console.h"
 #include "General/ResourceManager.h"
+#include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/MainWindow.h"
 #include "SLADEMap/MapFormat/Doom64MapFormat.h"
 #include "SLADEMap/MapFormat/DoomMapFormat.h"
 #include "SLADEMap/MapFormat/HexenMapFormat.h"
-#include "SLADEMap/MapObject/MapSector.h"
 #include "UI/Dialogs/ExtMessageDialog.h"
+#include "UI/UI.h"
 #include "UI/WxUtils.h"
 #include "Utility/FileUtils.h"
 #include "Utility/SFileDialog.h"
@@ -66,6 +71,14 @@ typedef std::map<int, vector<ArchiveEntry*>>    CRCMap;
 
 // -----------------------------------------------------------------------------
 //
+// External Variables
+//
+// -----------------------------------------------------------------------------
+EXTERN_CVAR(Bool, archive_dir_ignore_hidden)
+
+
+// -----------------------------------------------------------------------------
+//
 // ArchiveOperations Namespace Functions
 //
 // -----------------------------------------------------------------------------
@@ -80,7 +93,7 @@ namespace slade::archiveoperations
 bool resolveDuplicateEntryNames(const Archive& archive)
 {
 	// Ignore if duplicate names are allowed
-	auto fmt = archive.formatDesc();
+	auto fmt = archive.formatInfo();
 	if (fmt.allow_duplicate_names)
 		return true;
 
@@ -138,7 +151,8 @@ bool archiveoperations::save(Archive& archive)
 		return false;
 
 	// Check if the file has been modified on disk
-	if (archive.formatId() != "folder" && fileutil::fileModifiedTime(archive.filename()) > archive.fileModifiedTime())
+	if (archive.format() != ArchiveFormat::Dir
+		&& fileutil::fileModifiedTime(archive.filename()) > archive.fileModifiedTime())
 	{
 		if (wxMessageBox(
 				WX_FMT(
@@ -165,9 +179,9 @@ bool archiveoperations::save(Archive& archive)
 	}
 
 	// Check if there were issues saving directory
-	if (archive.formatId() == "folder")
+	if (archive.format() == ArchiveFormat::Dir)
 	{
-		auto* dir_archive = dynamic_cast<DirArchive*>(&archive);
+		auto* dir_archive = dynamic_cast<DirArchiveHandler*>(&archive.formatHandler());
 		if (dir_archive->saveErrorsOccurred())
 		{
 			auto   messages = log::since(time);
@@ -210,13 +224,55 @@ bool archiveoperations::saveAs(Archive& archive)
 			return false;
 		}
 
-		// Add recent file
-		app::archiveManager().addRecentFile(filename);
-
 		return true;
 	}
 
 	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Build pk3/zip archive from the directory [path]
+// -----------------------------------------------------------------------------
+bool archiveoperations::buildArchive(string_view path)
+{
+	// Create temporary archive
+	Archive zip(ArchiveFormat::Zip);
+
+	// Create dialog
+	filedialog::FDInfo info;
+	if (filedialog::saveFile(info, "Build Archive", zip.fileExtensionString(), maineditor::windowWx()))
+	{
+		ui::showSplash("Building " + info.filenames[0], true);
+		ui::setSplashProgress(0.0f);
+
+		// prevent for "archive in archive" when saving in the current directory
+		if (fileutil::fileExists(info.filenames[0]))
+			fileutil::removeFile(info.filenames[0]);
+
+		// Log
+		ui::setSplashProgressMessage("Importing files...");
+		ui::setSplashProgress(-1.0f);
+
+		// Import all files into new archive
+		zip.importDir(path, archive_dir_ignore_hidden);
+		ui::setSplashProgress(1.0f);
+		ui::setSplashMessage("Saving archive...");
+		ui::setSplashProgressMessage("");
+
+		// Save the archive
+		if (!zip.save(info.filenames[0]))
+		{
+			ui::hideSplash();
+
+			// If there was an error pop up a message box
+			wxMessageBox(WX_FMT("Error:\n{}", global::error), wxS("Error"), wxICON_ERROR);
+			return false;
+		}
+	}
+
+	ui::hideSplash();
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -229,7 +285,7 @@ bool archiveoperations::removeUnusedPatches(Archive* archive)
 		return false;
 
 	// Find PNAMES entry
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("pnames");
 	auto pnames    = archive->findLast(opt);
 
@@ -304,7 +360,7 @@ bool archiveoperations::removeUnusedPatches(Archive* archive)
 
 	// Notify user
 	wxMessageBox(
-		WX_FMT("Removed %d patches and {} entries. See console log for details.", removed, to_remove.size()),
+		WX_FMT("Removed {} patches and {} entries. See console log for details.", removed, to_remove.size()),
 		wxS("Removed Unused Patches"),
 		wxOK | wxICON_INFORMATION);
 
@@ -413,10 +469,10 @@ void archiveoperations::removeEntriesUnchangedFromIWAD(Archive* archive)
 	archive->putEntryTreeAsList(entries);
 
 	// Init search options
-	Archive::SearchOptions search;
-	ArchiveEntry*          other = nullptr;
-	string                 dups;
-	size_t                 count = 0;
+	ArchiveSearchOptions search;
+	ArchiveEntry*        other = nullptr;
+	string               dups;
+	size_t               count = 0;
 
 	// Go through list
 	for (auto& entry : entries)
@@ -481,10 +537,10 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 	archive->putEntryTreeAsList(entries);
 
 	// Init search options
-	Archive::SearchOptions search;
-	ArchiveEntry*          other = nullptr;
-	string                 overrides;
-	size_t                 count = 0;
+	ArchiveSearchOptions search;
+	ArchiveEntry*        other = nullptr;
+	string               overrides;
+	size_t               count = 0;
 
 	// Go through list
 	for (auto& entry : entries)
@@ -535,13 +591,13 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 	std::unordered_multimap<string, std::pair<ArchiveEntry*, ArchiveEntry*>> duplicate_texture_entries;
 	std::set<string>                                                         found_duplicate_textures;
 
-	Archive::SearchOptions pnamesopt;
+	ArchiveSearchOptions pnamesopt;
 	pnamesopt.match_type = EntryType::fromId("pnames");
 
-	Archive::SearchOptions texturexopt;
+	ArchiveSearchOptions texturexopt;
 	texturexopt.match_type = EntryType::fromId("texturex");
 
-	Archive::SearchOptions zdtexturesopt;
+	ArchiveSearchOptions zdtexturesopt;
 	zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 
@@ -567,7 +623,7 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 	}
 
 	// If we ended up not loading textures from base resource archive
-	if (!braTextureEntries.size())
+	if (braTextureEntries.empty())
 	{
 		log::error("Base resource archive has no texture entries to compare against");
 		return true;
@@ -620,11 +676,11 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 		processTextureList(textureEntry, textureList);
 	}
 
-	if (found_duplicate_textures.size())
+	if (!found_duplicate_textures.empty())
 	{
 		string dups;
 
-		for (string duplicate_entry : found_duplicate_textures)
+		for (const string& duplicate_entry : found_duplicate_textures)
 		{
 			dups += fmt::format("\n{}", duplicate_entry);
 
@@ -642,10 +698,10 @@ bool archiveoperations::checkOverriddenEntriesInIWAD(Archive* archive)
 		}
 
 		// Display list of duplicate entry names
-		ExtMessageDialog msg(theMainWindow, "Overridden Texture Entries");
-		msg.setExt(dups);
-		msg.setMessage("The following textures are overridden:");
-		msg.ShowModal();
+		ExtMessageDialog msg_dialog(theMainWindow, "Overridden Texture Entries");
+		msg_dialog.setExt(dups);
+		msg_dialog.setMessage("The following textures are overridden:");
+		msg_dialog.ShowModal();
 	}
 	else
 	{
@@ -677,12 +733,12 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 	std::set<string>                               overiddenBraTexNames;
 
 	// Load BRA pnames
-	Archive::SearchOptions pnames_opt;
+	ArchiveSearchOptions pnames_opt;
 	pnames_opt.match_type = EntryType::fromId("pnames");
 
 	auto braPnames = bra->findLast(pnames_opt);
 
-	auto process_entries = [&archiveTexEntries](const vector<ArchiveEntry*> archive_entries)
+	auto process_entries = [&archiveTexEntries](const vector<ArchiveEntry*>& archive_entries)
 	{
 		for (auto& archive_entry : archive_entries)
 		{
@@ -726,14 +782,14 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	// Find all textures
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "textures";
 		process_entries(archive->findAll(search_opt));
 	}
 
 	// Find all flats
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "flats";
 		process_entries(archive->findAll(search_opt));
 	}
@@ -753,7 +809,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		}
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : archive->findAll(texturexopt))
@@ -767,7 +823,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	// Load all zdtextures entries
 	{
-		Archive::SearchOptions zdtexturesopt;
+		ArchiveSearchOptions zdtexturesopt;
 		zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 		for (ArchiveEntry* texturesentry : archive->findAll(zdtexturesopt))
@@ -780,7 +836,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 	}
 
 	auto process_bra_entries = [&archiveTexEntries, &overiddenBraTexEntries, &overiddenBraTexNames, &braPnames](
-								   const vector<ArchiveEntry*> archive_entries)
+								   const vector<ArchiveEntry*>& archive_entries)
 	{
 		for (auto& archive_entry : archive_entries)
 		{
@@ -849,14 +905,14 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	// Find all textures
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "textures";
 		process_bra_entries(bra->findAll(search_opt));
 	}
 
 	// Find all flats
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "flats";
 		process_bra_entries(bra->findAll(search_opt));
 	}
@@ -870,7 +926,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 		process_bra_patch_table(braPnames, ptable);
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : bra->findAll(texturexopt))
@@ -884,7 +940,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	// Load all zdtextures entries
 	{
-		Archive::SearchOptions zdtexturesopt;
+		ArchiveSearchOptions zdtexturesopt;
 		zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 		for (ArchiveEntry* texturesentry : bra->findAll(zdtexturesopt))
@@ -904,7 +960,7 @@ bool archiveoperations::checkZDoomOverriddenEntriesInIWAD(Archive* archive)
 
 	string dups;
 
-	for (string overriddenTexName : overiddenBraTexNames)
+	for (const string& overriddenTexName : overiddenBraTexNames)
 	{
 		dups += fmt::format("\n{}", overriddenTexName);
 
@@ -1049,7 +1105,7 @@ void archiveoperations::removeUnusedTextures(Archive* archive)
 	int        total_maps = 0;
 
 	// Get all SIDEDEFS entries
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("map_sidedefs");
 	auto sidedefs  = archive->findAll(opt);
 	total_maps += sidedefs.size();
@@ -1285,7 +1341,7 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 	int        total_maps = 0;
 
 	// Get all SECTORS entries
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("map_sectors");
 	auto sectors   = archive->findAll(opt);
 	total_maps += sectors.size();
@@ -1428,9 +1484,8 @@ void archiveoperations::removeUnusedFlats(Archive* archive)
 		opt.match_namespace = "flats";
 		for (int i : selection)
 		{
-			opt.match_name      = unused_tex[i];
-			ArchiveEntry* entry = archive->findFirst(opt);
-			if (entry)
+			opt.match_name = unused_tex[i];
+			if (ArchiveEntry* entry = archive->findFirst(opt))
 			{
 				archive->removeEntry(entry);
 				n_removed++;
@@ -1473,7 +1528,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 	// must keep this smart pointer around or the archive gets dealloced immediately
 	// from the heap and we get huge memory issues while referencing a dangling pointer
-	auto ptr_archive = archive->formatId() == "folder"
+	auto ptr_archive = archive->format() == ArchiveFormat::Dir
 						   ? app::archiveManager().openDirArchive(archive->filename(), false, true)
 						   : app::archiveManager().openArchive(archive->filename(), false, true);
 	archive          = ptr_archive.get();
@@ -1485,7 +1540,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	auto process_maps_in_archive_func = [&total_maps, &used_textures](Archive* archive)
 	{
 		// Get all SIDEDEFS entries
-		Archive::SearchOptions side_def_opt;
+		ArchiveSearchOptions side_def_opt;
 		side_def_opt.match_type = EntryType::fromId("map_sidedefs");
 		auto sidedefs           = archive->findAll(side_def_opt);
 		total_maps += sidedefs.size();
@@ -1515,7 +1570,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		}
 
 		// Get all SECTORS entries
-		Archive::SearchOptions sectors_opt;
+		ArchiveSearchOptions sectors_opt;
 		sectors_opt.match_type = EntryType::fromId("map_sectors");
 		auto sectors           = archive->findAll(sectors_opt);
 		total_maps += sectors.size();
@@ -1543,7 +1598,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		}
 
 		// Get all TEXTMAP entries
-		Archive::SearchOptions text_map_opt;
+		ArchiveSearchOptions text_map_opt;
 		text_map_opt.match_name = "TEXTMAP";
 		text_map_opt.match_type = EntryType::fromId("udmf_textmap");
 		auto udmfmaps           = archive->findAll(text_map_opt);
@@ -1607,7 +1662,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	process_maps_in_archive_func(archive);
 
 	// Get all wad entries and their maps
-	Archive::SearchOptions wad_opt;
+	ArchiveSearchOptions wad_opt;
 	wad_opt.match_type     = EntryType::fromId("wad");
 	wad_opt.search_subdirs = true;
 	auto wads              = archive->findAll(wad_opt);
@@ -1626,7 +1681,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	}
 
 	// Load all animdefs
-	Archive::SearchOptions anim_defs_opt;
+	ArchiveSearchOptions anim_defs_opt;
 	anim_defs_opt.match_type = EntryType::fromId("animdefs");
 	auto animdefs            = archive->findAll(anim_defs_opt);
 
@@ -1679,7 +1734,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		{
 			string animated_tex_name       = tex_name_prefix;
 			string animatex_tex_num_format = fmt::format("{{:0{}d}}", number_digit_chars);
-			string animated_tex_num        = fmt::format(animatex_tex_num_format, tex_name_num);
+			string animated_tex_num        = fmt::format(fmt::runtime(animatex_tex_num_format), tex_name_num);
 
 			animated_tex_name.append(animated_tex_num);
 
@@ -1791,7 +1846,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	}
 
 	// Find all textures
-	Archive::SearchOptions tex_opt;
+	ArchiveSearchOptions tex_opt;
 	tex_opt.match_namespace = "textures";
 	auto textures           = archive->findAll(tex_opt);
 
@@ -1850,7 +1905,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	wxMessageBox(WX_FMT("Removed {} unused textures", n_removed));
 
 	// Find all flats
-	Archive::SearchOptions flat_opt;
+	ArchiveSearchOptions flat_opt;
 	flat_opt.match_namespace = "flats";
 	auto flats               = archive->findAll(flat_opt);
 
@@ -1908,8 +1963,9 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 
 	wxMessageBox(WX_FMT("Removed {} unused flats", n_removed));
 
-	auto process_texture_list = [archive, &used_textures, &exclude_tex, &unused_tex, &selection, &n_removed](
-									ArchiveEntry* texture_archive_entry, TextureXList& texture_list, PatchTable* ptable)
+	auto process_texture_list =
+		[archive, &used_textures, &exclude_tex, &unused_tex, &selection, &n_removed](
+			ArchiveEntry* texture_archive_entry, TextureXList& texture_list, const PatchTable* ptable)
 	{
 		for (unsigned texture_index = 0; texture_index < texture_list.size(); texture_index++)
 		{
@@ -1979,7 +2035,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		}
 	};
 
-	Archive::SearchOptions pnames_opt;
+	ArchiveSearchOptions pnames_opt;
 	pnames_opt.match_type = EntryType::fromId("pnames");
 	auto pnames           = archive->findLast(pnames_opt);
 
@@ -1990,7 +2046,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 		ptable.loadPNAMES(pnames);
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : archive->findAll(texturexopt))
@@ -2003,7 +2059,7 @@ void archiveoperations::removeUnusedZDoomTextures(Archive* archive)
 	}
 
 	// Load all zdtextures entries
-	Archive::SearchOptions zdtexturesopt;
+	ArchiveSearchOptions zdtexturesopt;
 	zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 	for (ArchiveEntry* texturesentry : archive->findAll(zdtexturesopt))
@@ -2086,19 +2142,19 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 
 	// Find all textures
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "textures";
 		process_entries(archive->findAll(search_opt));
 	}
 
 	// Find all flats
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "flats";
 		process_entries(archive->findAll(search_opt));
 	}
 
-	Archive::SearchOptions pnames_opt;
+	ArchiveSearchOptions pnames_opt;
 	pnames_opt.match_type = EntryType::fromId("pnames");
 	auto pnames           = archive->findLast(pnames_opt);
 
@@ -2111,7 +2167,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 		process_patch_table(pnames, ptable);
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : archive->findAll(texturexopt))
@@ -2125,7 +2181,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 
 	// Load all zdtextures entries
 	{
-		Archive::SearchOptions zdtexturesopt;
+		ArchiveSearchOptions zdtexturesopt;
 		zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 		for (ArchiveEntry* texturesentry : archive->findAll(zdtexturesopt))
@@ -2145,7 +2201,7 @@ bool archiveoperations::checkDuplicateZDoomTextures(Archive* archive)
 
 	string dups;
 
-	for (string duplicate_entry : found_duplicates)
+	for (const string& duplicate_entry : found_duplicates)
 	{
 		dups += fmt::format("\n{}", duplicate_entry);
 
@@ -2173,7 +2229,7 @@ bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
 	std::unordered_multimap<string, ArchiveEntry*> found_entries;
 	std::set<string>                               found_duplicates;
 
-	Archive::SearchOptions pnames_opt;
+	ArchiveSearchOptions pnames_opt;
 	pnames_opt.match_type = EntryType::fromId("pnames");
 	auto pnames           = archive->findLast(pnames_opt);
 
@@ -2199,7 +2255,7 @@ bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
 
 	// Find all patches
 	{
-		Archive::SearchOptions search_opt;
+		ArchiveSearchOptions search_opt;
 		search_opt.match_namespace = "patches";
 
 		for (auto& archive_entry : archive->findAll(search_opt))
@@ -2227,7 +2283,7 @@ bool archiveoperations::checkDuplicateZDoomPatches(Archive* archive)
 
 	string dups;
 
-	for (string duplicate_entry : found_duplicates)
+	for (const string& duplicate_entry : found_duplicates)
 	{
 		dups += fmt::format("\n{}", duplicate_entry);
 
@@ -2361,7 +2417,7 @@ size_t replaceThingsHexen(ArchiveEntry* entry, int oldtype, int newtype)
 
 	return changed;
 }
-size_t replaceThingsUDMF(ArchiveEntry* entry, int oldtype, int newtype)
+size_t replaceThingsUDMF(const ArchiveEntry* entry, int oldtype, int newtype)
 {
 	if (entry == nullptr)
 		return 0;
@@ -2397,12 +2453,12 @@ size_t archiveoperations::replaceThings(Archive* archive, int oldtype, int newty
 		if (map.archive)
 		{
 			// Attempt to open entry as wad archive
-			auto temp_archive = std::make_shared<WadArchive>();
+			auto temp_archive = std::make_shared<Archive>(ArchiveFormat::Wad);
 			if (temp_archive->open(m_head->data()))
 			{
 				achanged = archiveoperations::replaceThings(temp_archive.get(), oldtype, newtype);
 				MemChunk mc;
-				if (!(temp_archive->write(mc, true)))
+				if (!(temp_archive->write(mc)))
 				{
 					achanged = 0;
 				}
@@ -2449,11 +2505,11 @@ size_t archiveoperations::replaceThings(Archive* archive, int oldtype, int newty
 			{
 				switch (map.format)
 				{
-				case MapFormat::Doom: achanged = replaceThingsDoom(things, oldtype, newtype); break;
-				case MapFormat::Hexen: achanged = replaceThingsHexen(things, oldtype, newtype); break;
+				case MapFormat::Doom:   achanged = replaceThingsDoom(things, oldtype, newtype); break;
+				case MapFormat::Hexen:  achanged = replaceThingsHexen(things, oldtype, newtype); break;
 				case MapFormat::Doom64: achanged = replaceThingsDoom64(things, oldtype, newtype); break;
-				case MapFormat::UDMF: achanged = replaceThingsUDMF(things, oldtype, newtype); break;
-				default: log::warning("Unknown map format for " + m_head->name()); break;
+				case MapFormat::UDMF:   achanged = replaceThingsUDMF(things, oldtype, newtype); break;
+				default:                log::warning("Unknown map format for " + m_head->name()); break;
 				}
 			}
 		}
@@ -2695,24 +2751,24 @@ size_t replaceSpecialsHexen(
 	return changed;
 }
 size_t replaceSpecialsUDMF(
-	ArchiveEntry* entry,
-	int           oldtype,
-	int           newtype,
-	bool          arg0,
-	bool          arg1,
-	bool          arg2,
-	bool          arg3,
-	bool          arg4,
-	int           oldarg0,
-	int           oldarg1,
-	int           oldarg2,
-	int           oldarg3,
-	int           oldarg4,
-	int           newarg0,
-	int           newarg1,
-	int           newarg2,
-	int           newarg3,
-	int           newarg4)
+	const ArchiveEntry* entry,
+	int                 oldtype,
+	int                 newtype,
+	bool                arg0,
+	bool                arg1,
+	bool                arg2,
+	bool                arg3,
+	bool                arg4,
+	int                 oldarg0,
+	int                 oldarg1,
+	int                 oldarg2,
+	int                 oldarg3,
+	int                 oldarg4,
+	int                 newarg0,
+	int                 newarg1,
+	int                 newarg2,
+	int                 newarg3,
+	int                 newarg4)
 {
 	if (entry == nullptr)
 		return 0;
@@ -2768,11 +2824,11 @@ size_t archiveoperations::replaceSpecials(
 		if (map.archive)
 		{
 			// Attempt to open entry as wad archive
-			Archive* temp_archive = new WadArchive();
+			auto temp_archive = std::make_unique<Archive>(ArchiveFormat::Wad);
 			if (temp_archive->open(m_head.get()))
 			{
 				achanged = archiveoperations::replaceSpecials(
-					temp_archive,
+					temp_archive.get(),
 					oldtype,
 					newtype,
 					lines,
@@ -2793,7 +2849,7 @@ size_t archiveoperations::replaceSpecials(
 					oldarg4,
 					newarg4);
 				MemChunk mc;
-				if (!(temp_archive->write(mc, true)))
+				if (!(temp_archive->write(mc)))
 				{
 					achanged = 0;
 				}
@@ -2806,9 +2862,6 @@ size_t archiveoperations::replaceSpecials(
 					}
 				}
 			}
-
-			// Cleanup
-			delete temp_archive;
 		}
 		else
 		{
@@ -2935,10 +2988,10 @@ CONSOLE_COMMAND(replacespecials, 2, true)
 		{
 		case 12: arg4 = strutil::toInt(args[oldtail--], oldarg4) && strutil::toInt(args[newtail--], newarg4);
 		case 10: arg3 = strutil::toInt(args[oldtail--], oldarg3) && strutil::toInt(args[newtail--], newarg3);
-		case 8: arg2 = strutil::toInt(args[oldtail--], oldarg2) && strutil::toInt(args[newtail--], newarg2);
-		case 6: arg1 = strutil::toInt(args[oldtail--], oldarg1) && strutil::toInt(args[newtail--], newarg1);
-		case 4: arg0 = strutil::toInt(args[oldtail--], oldarg0) && strutil::toInt(args[newtail--], newarg0);
-		case 2: run = strutil::toInt(args[oldtail--], oldtype) && strutil::toInt(args[newtail--], newtype); break;
+		case 8:  arg2 = strutil::toInt(args[oldtail--], oldarg2) && strutil::toInt(args[newtail--], newarg2);
+		case 6:  arg1 = strutil::toInt(args[oldtail--], oldarg1) && strutil::toInt(args[newtail--], newarg1);
+		case 4:  arg0 = strutil::toInt(args[oldtail--], oldarg0) && strutil::toInt(args[newtail--], newarg0);
+		case 2:  run = strutil::toInt(args[oldtail--], oldtype) && strutil::toInt(args[newtail--], newtype); break;
 		default: log::warning("Invalid number of arguments: {}", fullarg);
 		}
 	}
@@ -3164,14 +3217,14 @@ size_t replaceWallsDoom64(
 	return changed;
 }
 size_t replaceTexturesUDMF(
-	ArchiveEntry* entry,
-	const string& oldtex,
-	const string& newtex,
-	bool          floor,
-	bool          ceiling,
-	bool          lower,
-	bool          middle,
-	bool          upper)
+	const ArchiveEntry* entry,
+	const string&       oldtex,
+	const string&       newtex,
+	bool                floor,
+	bool                ceiling,
+	bool                lower,
+	bool                middle,
+	bool                upper)
 {
 	if (entry == nullptr)
 		return 0;
@@ -3215,13 +3268,13 @@ size_t archiveoperations::replaceTextures(
 		if (map.archive)
 		{
 			// Attempt to open entry as wad archive
-			Archive* temp_archive = new WadArchive();
+			auto temp_archive = std::make_unique<Archive>(ArchiveFormat::Wad);
 			if (temp_archive->open(m_head.get()))
 			{
 				achanged = archiveoperations::replaceTextures(
-					temp_archive, oldtex, newtex, floor, ceiling, lower, middle, upper);
+					temp_archive.get(), oldtex, newtex, floor, ceiling, lower, middle, upper);
 				MemChunk mc;
-				if (!(temp_archive->write(mc, true)))
+				if (!(temp_archive->write(mc)))
 				{
 					achanged = 0;
 				}
@@ -3234,9 +3287,6 @@ size_t archiveoperations::replaceTextures(
 					}
 				}
 			}
-
-			// Cleanup
-			delete temp_archive;
 		}
 		else
 		{

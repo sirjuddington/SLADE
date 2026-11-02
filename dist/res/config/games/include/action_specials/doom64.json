@@ -1,0 +1,260 @@
+// Doom 64 action specials
+{
+  "groups": [
+    {
+      "name": "Doors",
+      "defaults": {
+        "tagged": "sector_or_back"
+      },
+      "specials": [
+        { "id": 1, "name": "Door Normal" },
+        { "id": 2, "name": "Door Open" },
+        { "id": 3, "name": "Door Close" },
+        { "id": 4, "name": "Door Raise" },
+        { "id": 16, "name": "Door Close Wait 30 Sec Open" },
+        { "id": 31, "name": "Door Open Once" },
+        { "id": 108, "name": "Door Raise Fast Once" },
+        { "id": 109, "name": "Door Open Close Fast" },
+        { "id": 110, "name": "Door Close Fast" },
+        { "id": 117, "name": "Door Open Close Fast" },
+        { "id": 118, "name": "Door Open Fast" }
+      ]
+    },
+
+    {
+      "name": "Floors",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 5, "name": "Floor Raise" },
+        { "id": 19, "name": "Floor Lower" },
+        { "id": 30, "name": "Floor Raise To Nearest" },
+        { "id": 36, "name": "Floor Lower Fast" },
+        { "id": 37, "name": "Floor Lower and Change" },
+        { "id": 38, "name": "Floor Lower To Lowest" },
+        { "id": 56, "name": "Floor Raise Crush" },
+        { "id": 58, "name": "Floor Raise 24" },
+        { "id": 59, "name": "Floor Raise 24 Change" },
+        { "id": 119, "name": "Floor Raise To Nearest" }
+      ]
+    },
+
+    {
+      "name": "Ceilings",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 6, "name": "Ceiling Crush and Raise" },
+        { "id": 25, "name": "Ceiling Crush and Raise (Duplicate)" },
+        { "id": 43, "name": "Ceiling Lower To Floor" },
+        { "id": 44, "name": "Ceiling Crush and Raise" },
+        { "id": 57, "name": "Ceiling Crush Stop" },
+        { "id": 141, "name": "Silent Crush and Kill (Instant Death Sector Type 666)" },
+        { "id": 232, "name": "Ceiling Crush and Raise Fast" }
+      ]
+    },
+
+    {
+      "name": "Plats",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 10, "name": "Plat Down Wait Up" },
+        { "id": 22, "name": "Plat Raise And Change" },
+        { "id": 53, "name": "Plat Perpetual Raise" },
+        { "id": 54, "name": "Plat Platform Stop" },
+        { "id": 66, "name": "Plat Down Wait Up Stay 24 Units" },
+        { "id": 67, "name": "Plat Down Wait Up Stay 32 Units" },
+        { "id": 121, "name": "Plat Down Wait Up Stay Fast" },
+        { "id": 122, "name": "Plat Up Wait Down Stay" },
+        { "id": 123, "name": "Plat Up Wait Down Stay Fast" }
+      ]
+    },
+
+    {
+      "name": "Stairs",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 8, "name": "Stairs Build" },
+        { "id": 100, "name": "Stairs Build Fast 16" }
+      ]
+    },
+    {
+      "name": "Scripted Effects/Scripted Floors",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 212, "name": "Custom Floor" },
+        { "id": 228, "name": "Custom Floor Fast" },
+        { "id": 229, "name": "Custom Floor Instant" },
+        { "id": 244, "name": "Floor Set Height" },
+        { "id": 247, "name": "Floor Move By Height" }
+      ]
+    },
+
+    {
+      "name": "Scripted Effects/Scripted Ceilings",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 210, "name": "Custom Ceiling" },
+        { "id": 226, "name": "Custom Ceiling Fast" },
+        { "id": 227, "name": "Custom Ceiling Instant" },
+        { "id": 245, "name": "Ceiling Set Hieght" },
+        { "id": 252, "name": "Ceiling Move By Height" }
+      ]
+    },
+
+    {
+      "name": "Scripted Effects/Scripted Plats",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 236, "name": "Custom Plat Down Up" },
+        { "id": 237, "name": "Custom Plat Down Up Fast" },
+        { "id": 238, "name": "Custom Plat Up Down" },
+        { "id": 239, "name": "Custom Plat Up Down Fast" }
+      ]
+    },
+
+    {
+      "name": "Scripted Effects/Macro Control",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 246, "name": "Macro Restart at Batch ID" },
+        { "id": 248, "name": "Macro Suspend" },
+        { "id": 250, "name": "Macro Toggle On" },
+        { "id": 251, "name": "Macro Toggle Off" }
+      ]
+    },
+
+    {
+      "name": "Scripted Effects/Specials",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 200, "name": "Camera Clear" },
+        { "id": 201, "name": "Camera Set" },
+        { "id": 203, "name": "Delay" },
+        { "id": 204, "name": "Set Level Integer" },
+        { "id": 225, "name": "Quake" },
+        { "id": 233, "name": "Freeze Player" },
+        { "id": 240, "name": "Trigger Line Group (Pick random of group)" },
+        { "id": 243, "name": "Camera Move" }
+      ]
+    },
+
+    {
+      "name": "Scripted Effects/Misc",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 253, "name": "Unlock Cheat Menu" },
+        { "id": 254, "name": "Draw Logo on F_SKYG flat" }
+      ]
+    },
+
+    {
+      "name": "Teleports",
+      "defaults": {
+        "tagged": "thing"
+      },
+      "specials": [
+        { "id": 39, "name": "Teleport" },
+        { "id": 125, "name": "Monster Teleport" },
+        { "id": 249, "name": "Telefrag" }
+      ]
+    },
+
+    {
+      "name": "Thing Specials",
+      "defaults": {
+        "tagged": "thing"
+      },
+      "specials": [
+        { "id": 93, "name": "Thing Disable Infighting" },
+        { "id": 94, "name": "Thing Alert" },
+        { "id": 202, "name": "Spawn Dart" },
+        { "id": 224, "name": "Thing Spawn" },
+        { "id": 231, "name": "Spawn Tracer" },
+        { "id": 242, "name": "Thing Fade Out" }
+      ]
+    },
+
+    {
+      "name": "Sectors",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 214, "name": "Sector Move" },
+        { "id": 241, "name": "Sector Split" }
+      ]
+    },
+
+    {
+      "name": "Light Specials",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 17, "name": "Spawn Light Strobe" },
+        { "id": 234, "name": "Light Change By Light Tag" }
+      ]
+    },
+
+    {
+      "name": "Modifiers",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 205, "name": "Modify Sector Color1" },
+        { "id": 206, "name": "Modify Sector Color2" },
+        { "id": 207, "name": "Modify Sector Color3" },
+        { "id": 208, "name": "Modify Sector Color4" },
+        { "id": 209, "name": "Modify Sector Color5" },
+        { "id": 218, "name": "Modify Line Flag" },
+        { "id": 219, "name": "Modify Line Texture" },
+        { "id": 220, "name": "Modify Sector Flag" },
+        { "id": 221, "name": "Modify Sector Special" },
+        { "id": 222, "name": "Modify Sector Light" },
+        { "id": 223, "name": "Modify Sector Flat" },
+        { "id": 230, "name": "Modify Line Special" },
+        { "id": 235, "name": "Modify Light Data" }
+      ]
+    },
+
+    {
+      "name": "Artifact Specials",
+      "defaults": {
+        "tagged": "sector"
+      },
+      "specials": [
+        { "id": 90, "name": "Artifact Switch 1" },
+        { "id": 91, "name": "Artifact Switch 2" },
+        { "id": 92, "name": "Artifact Switch 3" }
+      ]
+    },
+
+    {
+      "name": "Exits",
+      "specials": [
+        { "id": 52, "name": "Exit Level" },
+        { "id": 124, "name": "Secret Exit (Tag = Map#)" }
+      ]
+    }
+  ]
+}

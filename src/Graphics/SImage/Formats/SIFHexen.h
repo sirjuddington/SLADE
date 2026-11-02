@@ -3,9 +3,9 @@ class SIFPlanar : public SIFormat
 {
 public:
 	SIFPlanar() : SIFormat("planar", "Planar", "lmp", 240) {}
-	~SIFPlanar() = default;
+	~SIFPlanar() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		// Can only go by image size
 		if (mc.size() == 153648)
@@ -14,7 +14,7 @@ public:
 			return false;
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -65,7 +65,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		// Variables
 		Palette palette;
@@ -146,7 +146,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override
 	{
 		// Is there really any point to being able to write this format?
 		// Answer: yeah, no other tool can do it. :p
@@ -251,15 +251,15 @@ class SIF4BitChunk : public SIFormat
 {
 public:
 	SIF4BitChunk() : SIFormat("4bit", "4-bit", "lmp", 80) {}
-	~SIF4BitChunk() = default;
+	~SIF4BitChunk() override = default;
 
-	bool isThisFormat(MemChunk& mc) override
+	bool isThisFormat(const MemChunk& mc) override
 	{
 		// Can only detect by size
 		return (mc.size() == 32 || mc.size() == 184);
 	}
 
-	SImage::Info info(MemChunk& mc, int index) override
+	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
 
@@ -304,7 +304,7 @@ public:
 	}
 
 protected:
-	bool readImage(SImage& image, MemChunk& data, int index) override
+	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
 		int width, height;
 
@@ -336,7 +336,7 @@ protected:
 		return true;
 	}
 
-	bool writeImage(SImage& image, MemChunk& out, Palette* pal, int index) override
+	bool writeImage(SImage& image, MemChunk& out, const Palette* pal, int index) override
 	{
 		// Again, don't see much point
 		if (!gfx_extraconv)

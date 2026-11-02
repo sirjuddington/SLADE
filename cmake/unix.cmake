@@ -5,69 +5,11 @@
 # Additional Find* cmake modules for linux/macos dependencies
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake/find_modules)
 
+# Where to put the built slade binary and pk3 file
 set(SLADE_OUTPUT_DIR ${CMAKE_BINARY_DIR} CACHE PATH "Directory where slade will be created.")
 
-if (NOT APPLE)
-	OPTION(WX_GTK3 "Use GTK3 (if wx is built with it)" ON)
-endif (NOT APPLE)
-
-# wxWidgets libs
-if (WITH_WXPATH)
-	set(ENV{PATH} ${WITH_WXPATH}:$ENV{PATH})
-endif ()
-unset(WITH_WXPATH CACHE)
-
-set(CL_WX_CONFIG wx-config CACHE STRING "")
-
-if (UNIX OR MINGW)
-	if (NOT wxWidgets_CONFIG_EXECUTABLE)
-		execute_process(COMMAND which ${CL_WX_CONFIG} OUTPUT_VARIABLE WX_TOOL OUTPUT_STRIP_TRAILING_WHITESPACE)
-	else ()
-		set(WX_TOOL ${wxWidgets_CONFIG_EXECUTABLE})
-	endif ()
-	if (NOT WX_TOOL)
-		message(FATAL_ERROR
-			"\nNo functional wx_config script was found in your PATH.\nIs the wxWidgets development package installed?\nIf you built wxWidgets yourself, you can specify the path to your built wx-config executable via WITH_WXPATH\neg. -DWITH_WXPATH=\"/path/to/wx-config/\""
-		)
-	else ()
-		execute_process(COMMAND sh ${WX_TOOL} --version OUTPUT_VARIABLE WX_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-		string(SUBSTRING "${WX_VERSION}" "0" "1" wxMAJOR_VERSION)
-		string(SUBSTRING "${WX_VERSION}" "2" "1" wxMINOR_VERSION)
-		string(SUBSTRING "${WX_VERSION}" "4" "1" wxRELEASE_NUMBER)
-		if (wxMAJOR_VERSION LESS 3)
-			message(FATAL_ERROR
-				"\nBuilding SLADE requires at least wxWidgets-3.0.0"
-			)
-		endif ()
-		if (MINGW)
-			execute_process(COMMAND sh ${WX_TOOL} --debug=no --rescomp OUTPUT_VARIABLE WX_RC_FLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-			string(REGEX REPLACE "windres" "" WX_RC_FLAGS ${WX_RC_FLAGS})
-			set(CMAKE_RC_FLAGS "${CMAKE_RC_FLAGS} ${WX_RC_FLAGS}")
-			add_definitions(-D__WXMSW__)
-		endif (MINGW)
-	endif ()
-	message("-- wx-config used is: ${WX_TOOL}")
-	message("-- wxWidgets version is: ${WX_VERSION}")
-	if (NOT APPLE AND NOT MINGW)
-		# Is the wx we are using built on gtk2 or 3?
-		execute_process(COMMAND ${WX_TOOL} --selected_config OUTPUT_VARIABLE WX_GTK_VERSION OUTPUT_STRIP_TRAILING_WHITESPACE)
-		string(SUBSTRING "${WX_GTK_VERSION}" "3" "1" GTK_VERSION)
-		message("-- gtk version is: ${GTK_VERSION}")
-	endif ()
-	set(wxWidgets_CONFIG_EXECUTABLE "${WX_TOOL}")
-endif (UNIX OR MINGW)
-
-if (WX_GTK3)
-	set(wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
-endif (WX_GTK3)
-
-SET(WX_LIBS std aui gl stc richtext propgrid)
-if (NO_WEBVIEW)
-	SET(WX_LIBS ${WX_LIBS} html)
-else (NO_WEBVIEW)
-	SET(WX_LIBS ${WX_LIBS} webview)
-	ADD_DEFINITIONS(-DUSE_WEBVIEW_STARTPAGE)
-endif (NO_WEBVIEW)
+# wxWidgets
+SET(WX_LIBS std aui gl stc propgrid html)
 find_package(wxWidgets ${WX_VERSION} COMPONENTS ${WX_LIBS} REQUIRED)
 include(${wxWidgets_USE_FILE})
 
@@ -82,46 +24,38 @@ else ()
 	find_package(SFML 3 COMPONENTS ${SFML_FIND_COMPONENTS} REQUIRED)
 endif ()
 
-find_package(Freetype REQUIRED)
-find_package(FTGL REQUIRED)
-
-# Fluidsynth
-if (NO_FLUIDSYNTH)
-	ADD_DEFINITIONS(-DNO_FLUIDSYNTH)
-endif (NO_FLUIDSYNTH)
-
 if (CMAKE_INSTALL_PREFIX)
 	ADD_DEFINITIONS(-DINSTALL_PREFIX="${CMAKE_INSTALL_PREFIX}")
 endif (CMAKE_INSTALL_PREFIX)
 
-if (NOT NO_FLUIDSYNTH)
-	find_package(FluidSynth REQUIRED)
-else (NO_FLUIDSYNTH)
-	message(STATUS "Fluidsynth support is disabled.")
-endif ()
-
+find_package(FluidSynth REQUIRED)
 find_package(OpenGL REQUIRED)
-if (NOT NO_LUA)
-	find_package(Lua REQUIRED)
-endif ()
 find_package(MPG123 REQUIRED)
-find_package(WebP REQUIRED)
 find_package(PNG REQUIRED)
+find_package(glm REQUIRED)
+find_package(Freetype REQUIRED)
+find_package(libxmp CONFIG REQUIRED)
+find_package(LibArchive REQUIRED)
+
+# Cpptrace
+include(FetchContent)
+FetchContent_Declare(
+	cpptrace
+	GIT_REPOSITORY https://github.com/jeremy-rifkin/cpptrace.git
+	GIT_TAG v1.0.4
+)
+FetchContent_MakeAvailable(cpptrace)
+
 include_directories(
 	${FREETYPE_INCLUDE_DIRS}
-	${FTGL_INCLUDE_DIR}
-	${LUA_INCLUDE_DIR}
 	${MPG123_INCLUDE_DIR}
 	${WebP_INCLUDE_DIRS}
+	${FLUIDSYNTH_INCLUDE_DIR}
 	.
 	..
 	../thirdparty/glad/include
 	./Application
 )
-
-if (NOT NO_FLUIDSYNTH)
-	include_directories(${FLUIDSYNTH_INCLUDE_DIR})
-endif ()
 
 if (APPLE)
 	set(OSX_ICON "${CMAKE_SOURCE_DIR}/SLADE-osx.icns")
@@ -143,9 +77,13 @@ endif ()
 # Define a SLADE_DEBUG macro
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSLADE_DEBUG")
 
-# Enable debug symbols for glib (so gdb debugging works properly with strings etc.)
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
+# (Optionally) Enable debug symbols for glib (so gdb debugging works properly with strings etc.)
+OPTION(GLIB_DEBUG "Enable glib debug symbols" OFF)
+if (GLIB_DEBUG)
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
+endif (GLIB_DEBUG)
 
+# Enable AddressSanitizer if option enabled
 if (USE_SANITIZER)
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fsanitize=address")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize=address")
@@ -166,20 +104,18 @@ target_link_libraries(slade
 	${wxWidgets_LIBRARIES}
 	${SFML_LIBRARIES}
 	${FREETYPE_LIBRARIES}
-	${FTGL_LIBRARIES}
 	${OPENGL_LIBRARIES}
-	${LUA_LIBRARIES}
 	${MPG123_LIBRARIES}
-	${WebP_LIBRARIES}
+	${FLUIDSYNTH_LIBRARIES}
+	glm::glm
+	cpptrace::cpptrace
 	PNG::PNG
+	libxmp::xmp_shared
+	LibArchive::LibArchive
 )
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)
 	target_link_libraries(slade -lstdc++fs)
-endif ()
-
-if (NOT NO_FLUIDSYNTH)
-	target_link_libraries(slade ${FLUIDSYNTH_LIBRARIES})
 endif ()
 
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
@@ -203,16 +139,15 @@ else (APPLE)
 			)
 		endif ()
 
-		install(FILES "${PROJECT_SOURCE_DIR}/dist/res/icons/general/logo.svg"
+		install(FILES "${PROJECT_SOURCE_DIR}/unix/net.mancubus.SLADE.svg"
 			DESTINATION share/icons/hicolor/scalable/apps/
-			RENAME net.mancubus.SLADE.svg
 		)
 
-		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.desktop"
+		install(FILES "${PROJECT_SOURCE_DIR}/unix/net.mancubus.SLADE.desktop"
 			DESTINATION share/applications/
 		)
 
-		install(FILES "${PROJECT_SOURCE_DIR}/net.mancubus.SLADE.metainfo.xml"
+		install(FILES "${PROJECT_SOURCE_DIR}/unix/net.mancubus.SLADE.metainfo.xml"
 			DESTINATION share/metainfo/
 		)
 	endif (UNIX)
@@ -230,4 +165,4 @@ if (NOT TARGET uninstall)
 endif ()
 
 # Precompiled Header
-target_precompile_headers(slade PRIVATE "common.h")
+target_precompile_headers(slade PRIVATE "Application/Main.h")

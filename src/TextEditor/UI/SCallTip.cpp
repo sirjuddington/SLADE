@@ -31,8 +31,10 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SCallTip.h"
+
 #include "UI/WxUtils.h"
-#include "Utility/StringUtils.h"
+#include "Utility/Colour.h"
+#include <utility>
 
 using namespace slade;
 
@@ -90,11 +92,7 @@ void SCallTip::setFont(string_view face, int size)
 	if (face.empty())
 	{
 		font_.SetFaceName(GetFont().GetFaceName());
-#if wxCHECK_VERSION(3, 1, 6)
 		font_.SetPointSize(FromDIP(GetFont().GetPointSize()));
-#else
-		font_.SetPointSize(GetFont().GetPointSize());
-#endif
 	}
 	else
 	{
@@ -108,8 +106,6 @@ void SCallTip::setFont(string_view face, int size)
 // -----------------------------------------------------------------------------
 void SCallTip::loadContext(unsigned long index)
 {
-	context_ = function_->context(index);
-
 	updateSize();
 
 	Update();
@@ -119,12 +115,13 @@ void SCallTip::loadContext(unsigned long index)
 // -----------------------------------------------------------------------------
 // Opens [function] in the call tip, with [arg] highlighted
 // -----------------------------------------------------------------------------
-void SCallTip::openFunction(TLFunction* function, int arg)
+void SCallTip::openFunction(const TLFunction* function, int arg)
 {
 	// Set current function
-	function_ = function;
-	if (!function)
-		return;
+	if (function)
+		function_ = *function;
+	else
+		function_.clear();
 
 	// Init with first arg set
 	context_current_ = 0;
@@ -137,7 +134,7 @@ void SCallTip::openFunction(TLFunction* function, int arg)
 // -----------------------------------------------------------------------------
 void SCallTip::nextArgSet()
 {
-	if (++context_current_ >= function_->contexts().size())
+	if (++context_current_ >= function_.contexts().size())
 		context_current_ = 0;
 	loadContext(context_current_);
 }
@@ -148,7 +145,7 @@ void SCallTip::nextArgSet()
 void SCallTip::prevArgSet()
 {
 	if (context_current_ == 0)
-		context_current_ = function_->contexts().size() - 1;
+		context_current_ = function_.contexts().size() - 1;
 	else
 		--context_current_;
 	loadContext(context_current_);
@@ -160,10 +157,10 @@ void SCallTip::prevArgSet()
 void SCallTip::updateSize()
 {
 	updateBuffer();
-	SetSize(buffer_.GetWidth() + ui::scalePx(24), buffer_.GetHeight() + ui::scalePx(16));
+	SetSize(buffer_.GetWidth() + FromDIP(24), buffer_.GetHeight() + FromDIP(16));
 
 	// Get screen bounds and window bounds
-	auto      index = (unsigned)wxDisplay::GetFromWindow(this->GetParent());
+	auto      index = static_cast<unsigned>(wxDisplay::GetFromWindow(this->GetParent()));
 	wxDisplay display(index);
 	auto      screen_area = display.GetClientArea();
 	auto      ct_area     = GetScreenRect();
@@ -219,7 +216,7 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	// Draw function qualifiers
 	if (!context.qualifiers.empty())
 	{
-		dc.SetTextForeground(col_keyword_.toWx());
+		dc.SetTextForeground(col_keyword_);
 		left = drawText(dc, context.qualifiers, left, top, &rect);
 	}
 
@@ -239,8 +236,8 @@ wxRect SCallTip::drawFunctionSpec(wxDC& dc, const TLFunction::Context& context, 
 	}
 
 	// Draw function name
-	auto fname = function_->name();
-	dc.SetTextForeground(col_func_.toWx());
+	auto fname = function_.name();
+	dc.SetTextForeground(col_func_);
 	left = drawText(dc, fname, left, top, &rect);
 
 	// Draw opening bracket
@@ -259,8 +256,8 @@ wxRect SCallTip::drawArgs(
 	const TLFunction::Context& context,
 	int                        left,
 	int                        top,
-	wxColour&                  col_faded,
-	wxFont&                    bold) const
+	const wxColour&            col_faded,
+	const wxFont&              bold) const
 {
 	wxRect rect{ left, top, 0, 0 };
 
@@ -268,35 +265,35 @@ wxRect SCallTip::drawArgs(
 	int args_left = left;
 	int args_top  = top;
 
-	size_t params_lenght = 0;
+	size_t params_length = 0;
 
 	for (const auto& param : context.params)
 	{
 		// Count param name + space length
 		if (!param.type.empty())
-			params_lenght += param.name.size() + 1;
+			params_length += param.name.size() + 1;
 
 		// Count param type + space length
 		if (!param.type.empty())
-			params_lenght += param.type.size() + 1;
+			params_length += param.type.size() + 1;
 
 		// Count param default_value + " = " length
 		if (!param.default_value.empty())
-			params_lenght += param.default_value.size() + 3;
+			params_length += param.default_value.size() + 3;
 
 		// Count brackets for optional params
 		if (param.optional)
-			params_lenght += 2;
+			params_length += 2;
 	}
 
 	if (context.params.empty())
-		params_lenght = 4; // void
+		params_length = 4; // void
 
-	params_lenght *= ui::scalePx(font_.GetPixelSize().GetWidth());
+	params_length *= FromDIP(font_.GetPixelSize().GetWidth());
 
-	bool long_params = (args_left + params_lenght) > MAX_WIDTH;
+	bool long_params = (args_left + params_length) > MAX_WIDTH;
 
-	for (int a = 0; a < (int)context.params.size(); a++)
+	for (int a = 0; std::cmp_less(a, context.params.size()); a++)
 	{
 		auto& arg = context.params[a];
 
@@ -304,7 +301,7 @@ wxRect SCallTip::drawArgs(
 		if ((a != 0 && (long_params && !(a % 2))) || left > MAX_WIDTH)
 		{
 			left = args_left;
-			top  = rect.GetBottom() + ui::scalePx(2);
+			top  = rect.GetBottom() + FromDIP(2);
 		}
 
 		// Set highlight colour if current arg
@@ -343,7 +340,7 @@ wxRect SCallTip::drawArgs(
 		// Comma (if needed)
 		dc.SetFont(font_);
 		dc.SetTextForeground(wxcol_fg);
-		if (a < (int)context.params.size() - 1)
+		if (a < static_cast<int>(context.params.size()) - 1)
 			left = drawText(dc, ", ", left, top, &rect);
 
 		// Update max width
@@ -366,8 +363,8 @@ wxRect SCallTip::drawFunctionContext(
 	const TLFunction::Context& context,
 	int                        left,
 	int                        top,
-	wxColour&                  col_faded,
-	wxFont&                    bold) const
+	const wxColour&            col_faded,
+	const wxFont&              bold) const
 {
 	auto rect_func = drawFunctionSpec(dc, context, left, top);
 	auto rect_args = drawArgs(dc, context, rect_func.GetRight() + 1, rect_func.GetTop(), col_faded, bold);
@@ -422,20 +419,18 @@ wxRect SCallTip::drawFunctionDescription(wxDC& dc, const string& desc, int left,
 			}
 		}
 
-		int bottom = rect.GetBottom() + ui::scalePx(font_.GetPixelSize().GetHeight());
+		int bottom = rect.GetBottom() + FromDIP(font_.GetPixelSize().GetHeight());
 		for (const auto& desc_line : desc_lines)
 		{
 			drawText(dc, desc_line, 0, bottom, &rect);
 			bottom = rect.GetBottom();
-			if (rect.GetRight() > max_right)
-				max_right = rect.GetRight();
+			max_right = std::max(rect.GetRight(), max_right);
 		}
 	}
 	else
 	{
-		drawText(dc, desc, 0, rect.GetBottom() + ui::scalePx(font_.GetPixelSize().GetHeight()), &rect);
-		if (rect.GetRight() > max_right)
-			max_right = rect.GetRight();
+		drawText(dc, desc, 0, rect.GetBottom() + FromDIP(font_.GetPixelSize().GetHeight()), &rect);
+		max_right = std::max(rect.GetRight(), max_right);
 	}
 
 	return { left, top, max_right - left, rect.GetBottom() - top };
@@ -454,24 +449,24 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 	ColRGBA faded;
 	if (txed_calltips_dim_optional)
 		faded = ColRGBA(
-			(uint8_t)round((col_fg_.r + col_bg_.r) * 0.5),
-			(uint8_t)round((col_fg_.g + col_bg_.g) * 0.5),
-			(uint8_t)round((col_fg_.b + col_bg_.b) * 0.5));
+			static_cast<uint8_t>(round((col_fg_.r + col_bg_.r) * 0.5)),
+			static_cast<uint8_t>(round((col_fg_.g + col_bg_.g) * 0.5)),
+			static_cast<uint8_t>(round((col_fg_.b + col_bg_.b) * 0.5)));
 	else
 		faded = col_fg_;
 
 	// Clear
 	dc.SetPen(*wxTRANSPARENT_PEN);
-	dc.SetBrush(wxBrush(col_bg_.toWx()));
+	dc.SetBrush(wxBrush(col_bg_));
 	dc.DrawRectangle(0, 0, 1000, 1000);
 
 	// Wx Colours (to avoid creating them multiple times)
-	wxcol_fg         = col_fg_.toWx();
-	wxcol_fg_hl      = col_fg_hl.toWx();
-	wxcol_type       = col_type_.toWx();
-	auto wxcol_faded = faded.toWx();
+	wxcol_fg         = col_fg_;
+	wxcol_fg_hl      = col_fg_hl;
+	wxcol_type       = col_type_;
+	auto wxcol_faded = faded;
 
-	if (function_)
+	if (!function_.name().empty())
 	{
 		dc.SetFont(font_);
 		dc.SetTextForeground(wxcol_fg);
@@ -480,6 +475,7 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		int    left      = xoff;
 		int    max_right = 0;
 		int    bottom    = yoff;
+		auto   context   = function_.context(context_current_);
 
 		// Context switching calltip
 		if (switch_contexts_)
@@ -498,9 +494,9 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			int width = dc.GetTextExtent(wxS("X/X")).x;
 			dc.SetTextForeground(wxcol_fg);
 			dc.DrawLabel(
-				WX_FMT("{}/{}", context_current_ + 1, function_->contexts().size()),
+				WX_FMT("{}/{}", context_current_ + 1, function_.contexts().size()),
 				wxNullBitmap,
-				wxRect(rect_btn_up_.GetRight() + ui::scalePx(4), yoff, width, 900),
+				wxRect(rect_btn_up_.GetRight() + FromDIP(4), yoff, width, 900),
 				wxALIGN_CENTER_HORIZONTAL);
 
 			// Down arrow
@@ -508,17 +504,17 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 			dc.DrawLabel(
 				wxString::FromUTF8("\xE2\x96\xBC"),
 				wxNullBitmap,
-				wxRect(rect_btn_up_.GetRight() + width + ui::scalePx(8), yoff, 900, 900),
+				wxRect(rect_btn_up_.GetRight() + width + FromDIP(8), yoff, 900, 900),
 				0,
 				-1,
 				&rect_btn_down_);
 
-			left = rect_btn_down_.GetRight() + ui::scalePx(8);
-			rect_btn_up_.Offset(wxutil::scaledPoint(12, 8));
-			rect_btn_down_.Offset(wxutil::scaledPoint(12, 8));
+			left = rect_btn_down_.GetRight() + FromDIP(8);
+			rect_btn_up_.Offset(FromDIP(wxPoint(12, 8)));
+			rect_btn_down_.Offset(FromDIP(wxPoint(12, 8)));
 
 			// Draw function (current context)
-			rect      = drawFunctionContext(dc, context_, left, yoff, wxcol_faded, bold);
+			rect      = drawFunctionContext(dc, context, left, yoff, wxcol_faded, bold);
 			max_right = rect.GetRight();
 			bottom    = rect.GetBottom();
 		}
@@ -528,16 +524,16 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 		{
 			// Determine separator colour
 			wxColour col_sep;
-			if (col_bg_.greyscale().r < 128)
-				col_sep = col_bg_.amp(30, 30, 30, 0).toWx();
+			if (colour::greyscale(col_bg_).r < 128)
+				col_sep = col_bg_.amp(30, 30, 30, 0);
 			else
-				col_sep = col_bg_.amp(-30, -30, -30, 0).toWx();
+				col_sep = col_bg_.amp(-30, -30, -30, 0);
 
 			bool first = true;
-			auto num   = std::min<unsigned long>(function_->contexts().size(), 12u);
+			auto num   = std::min<unsigned long>(function_.contexts().size(), 12u);
 			for (auto a = 0u; a < num; a++)
 			{
-				auto& context = function_->contexts()[a];
+				auto& ctx = function_.contexts()[a];
 
 				if (!first)
 				{
@@ -545,40 +541,39 @@ wxSize SCallTip::drawCallTip(wxDC& dc, int xoff, int yoff)
 					dc.DrawLine(xoff, bottom + 5, 2000, bottom + 5);
 				}
 
-				rect = drawFunctionContext(
-					dc, context, xoff, bottom + (first ? 0 : ui::scalePx(11)), wxcol_faded, bold);
-				bottom    = (int)round(rect.GetBottom() + ui::scaleFactor());
+				rect      = drawFunctionContext(dc, ctx, xoff, bottom + (first ? 0 : FromDIP(11)), wxcol_faded, bold);
+				bottom    = static_cast<int>(round(rect.GetBottom()));
 				max_right = std::max(max_right, rect.GetRight());
 				first     = false;
 			}
 
 			// Show '... # more' if there are too many contexts
-			if (function_->contexts().size() > num)
+			if (function_.contexts().size() > num)
 			{
 				dc.SetTextForeground(wxcol_faded);
 				drawText(
 					dc,
-					fmt::format("... {} more", function_->contexts().size() - num),
+					fmt::format("... {} more", function_.contexts().size() - num),
 					xoff,
-					bottom + ui::scalePx(11),
+					bottom + FromDIP(11),
 					&rect);
-				bottom = (int)round(rect.GetBottom() + ui::scaleFactor());
+				bottom = static_cast<int>(round(rect.GetBottom()));
 			}
 
 			if (num > 1)
 				bottom--;
 		}
 
-		if (!rect.IsEmpty() && !context_.description.empty())
+		if (!rect.IsEmpty() && !context.description.empty())
 		{
-			auto rect_desc = drawFunctionDescription(dc, context_.description, left, rect.GetBottom());
+			auto rect_desc = drawFunctionDescription(dc, context.description, left, rect.GetBottom());
 			max_right      = std::max(max_right, rect_desc.GetRight());
 			bottom         = rect_desc.GetBottom();
 		}
 
 		// Size buffer bitmap to fit
-		ct_size.SetWidth((int)round(max_right + ui::scaleFactor()));
-		ct_size.SetHeight((int)round(bottom + ui::scaleFactor()));
+		ct_size.SetWidth(static_cast<int>(round(max_right)) + FromDIP(1));
+		ct_size.SetHeight(static_cast<int>(round(bottom)));
 	}
 	else
 	{
@@ -611,6 +606,8 @@ void SCallTip::updateBuffer()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when the control is to be (re)painted
@@ -621,21 +618,21 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	wxAutoBufferedPaintDC dc(this);
 
 	// Determine border colours
-	wxColour bg = col_bg_.toWx();
+	wxColour bg = col_bg_;
 	wxColour border, border2;
-	if (col_bg_.greyscale().r < 128)
+	if (colour::greyscale(col_bg_).r < 128)
 	{
 		auto c  = col_bg_.amp(50, 50, 50, 0);
-		border  = c.toWx();
+		border  = c;
 		c       = col_bg_.amp(20, 20, 20, 0);
-		border2 = c.toWx();
+		border2 = c;
 	}
 	else
 	{
 		auto c  = col_bg_.amp(-50, -50, -50, 0);
-		border  = c.toWx();
+		border  = c;
 		c       = col_bg_.amp(-20, -20, -20, 0);
-		border2 = c.toWx();
+		border2 = c;
 	}
 
 	// Draw background
@@ -650,7 +647,7 @@ void SCallTip::onPaint(wxPaintEvent& e)
 	// so just draw the entire calltip again in this case
 	drawCallTip(dc, 12, 8);
 #else
-	dc.DrawBitmap(buffer_, ui::scalePx(12), ui::scalePx(8), true);
+	dc.DrawBitmap(buffer_, FromDIP(12), FromDIP(8), true);
 #endif
 
 	// Draw border
@@ -735,7 +732,7 @@ void SCallTip::onShow(wxShowEvent& e)
 	{
 		// Get screen bounds and window bounds
 		int       index = wxDisplay::GetFromWindow(this->GetParent());
-		wxDisplay display((unsigned)index);
+		wxDisplay display(static_cast<unsigned>(index));
 		auto      screen_area = display.GetClientArea();
 		auto      ct_area     = GetScreenRect();
 

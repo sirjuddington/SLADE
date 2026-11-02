@@ -32,7 +32,6 @@
 #include "Main.h"
 #include "EntryDataFormat.h"
 #include "Archive/Formats/All.h"
-#include "MainEditor/BinaryControlLump.h"
 #include "Utility/Parser.h"
 #include "Utility/StringUtils.h"
 
@@ -93,7 +92,7 @@ EntryDataFormat* registerDataFormat(string_view id)
 // To be overridden by specific data types, returns true if the data in [mc]
 // matches the data format
 // -----------------------------------------------------------------------------
-int EntryDataFormat::isThisFormat(MemChunk& mc)
+int EntryDataFormat::isThisFormat(const MemChunk& mc)
 {
 	return MATCH_TRUE;
 }
@@ -147,7 +146,7 @@ EntryDataFormat* EntryDataFormat::textFormat()
 // -----------------------------------------------------------------------------
 // Parses a user data format definition (unimplemented, currently)
 // -----------------------------------------------------------------------------
-bool EntryDataFormat::readDataFormatDefinition(MemChunk& mc)
+bool EntryDataFormat::readDataFormatDefinition(const MemChunk& mc)
 {
 	// Parse the definition
 	Parser p;
@@ -181,8 +180,11 @@ public:
 	AnyDataFormat() : EntryDataFormat("any") {}
 	~AnyDataFormat() override = default;
 
-	int isThisFormat(MemChunk& mc) override { return MATCH_FALSE; }
+	int isThisFormat(const MemChunk& mc) override { return MATCH_FALSE; }
 };
+
+// Required for below #includes
+#include "MainEditor/BinaryControlLump.h"
 
 // Format enumeration moved to separate files
 #include "DataFormats/ArchiveFormats.h"
@@ -191,6 +193,7 @@ public:
 #include "DataFormats/LumpFormats.h"
 #include "DataFormats/MiscFormats.h"
 #include "DataFormats/ModelFormats.h"
+
 
 // -----------------------------------------------------------------------------
 // Initialises all built-in data formats (this is currently all formats, as
@@ -251,6 +254,7 @@ void EntryDataFormat::initBuiltinFormats()
 	// registerDataFormat<JediANIMFormat>();
 	registerDataFormat<WadDataFormat>();
 	registerDataFormat<ZipDataFormat>();
+	registerDataFormat<Zip7DataFormat>();
 	registerDataFormat<LibDataFormat>();
 	registerDataFormat<DatDataFormat>();
 	registerDataFormat<ResDataFormat>();
@@ -272,6 +276,7 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<PodArchiveDataFormat>();
 	registerDataFormat<ChasmBinArchiveDataFormat>();
 	registerDataFormat<SinArchiveDataFormat>();
+	registerDataFormat<SinReloadedArchiveDataFormat>();
 	registerDataFormat<MUSDataFormat>();
 	registerDataFormat<MIDIDataFormat>();
 	registerDataFormat<XMIDataFormat>();
@@ -330,14 +335,17 @@ void EntryDataFormat::initBuiltinFormats()
 	registerDataFormat<ZNodesDataFormat>();
 	registerDataFormat<ZGLNodesDataFormat>();
 	registerDataFormat<ZGLNodes2DataFormat>();
+	registerDataFormat<ZGLNodes3DataFormat>();
 	registerDataFormat<XNodesDataFormat>();
 	registerDataFormat<XGLNodesDataFormat>();
 	registerDataFormat<XGLNodes2DataFormat>();
 	registerDataFormat<XGLNodes3DataFormat>();
+	registerDataFormat<DeePBSPV4NodesDataFormat>();
 	registerDataFormat<DMDModelDataFormat>();
 	registerDataFormat<MDLModelDataFormat>();
 	registerDataFormat<MD2ModelDataFormat>();
 	registerDataFormat<MD3ModelDataFormat>();
+	registerDataFormat<ThreeDSModelDataFormat>();
 	registerDataFormat<VOXVoxelDataFormat>();
 	registerDataFormat<KVXVoxelDataFormat>();
 	registerDataFormat<RLE0DataFormat>();

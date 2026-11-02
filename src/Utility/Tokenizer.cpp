@@ -43,7 +43,13 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 const string     Tokenizer::DEFAULT_SPECIAL_CHARACTERS = ";,:|={}/";
-Tokenizer::Token Tokenizer::invalid_token_{ "", 0, false, 0, 0, 0, false };
+Tokenizer::Token Tokenizer::invalid_token_{ .text          = "",
+											.line_no       = 0,
+											.quoted_string = false,
+											.pos_start     = 0,
+											.pos_end       = 0,
+											.length        = 0,
+											.valid         = false };
 
 
 // -----------------------------------------------------------------------------
@@ -59,7 +65,7 @@ namespace
 bool isWhitespace(char p)
 {
 	// Whitespace is either a newline, tab character or space
-	return p == '\n' || p == 13 || p == ' ' || p == '\t';
+	return p == '\r' || p == '\n' || p == 13 || p == ' ' || p == '\t';
 }
 } // namespace
 
@@ -76,12 +82,12 @@ bool isWhitespace(char p)
 // Returns a pair of the key (lowercased) and any value, or "true" if none.
 // See also: https://zdoom.org/wiki/Editor_keys
 // -----------------------------------------------------------------------------
-
-// These aren't documented very well, and it's not really clear what the argument format is intended
-// to be, but none of them seem to take more than one argument.  So take the whole rest of the line,
-// strip whitespace, and drop the quotes if any.
 std::pair<string, string> Tokenizer::parseEditorComment(string_view token)
 {
+	// These aren't documented very well, and it's not really clear what the argument format is intended
+	// to be, but none of them seem to take more than one argument.  So take the whole rest of the line,
+	// strip whitespace, and drop the quotes if any.
+
 	// Find the first space
 	size_t spos = token.find_first_of(" \t");
 	if (spos == string_view::npos)
@@ -98,7 +104,7 @@ std::pair<string, string> Tokenizer::parseEditorComment(string_view token)
 	strutil::trimIP(value);
 
 	// Strip quotes, if present
-	if (value.front() == '"' && value.back() == '"')
+	if (!value.empty() && value.front() == '"' && value.back() == '"')
 	{
 		value.erase(value.begin());
 		value.pop_back();
@@ -400,6 +406,9 @@ void Tokenizer::advToNextLine()
 	token_next_ = token_current_;
 }
 
+// -----------------------------------------------------------------------------
+// Advances to the end of the current line (or the last token)
+// -----------------------------------------------------------------------------
 void Tokenizer::advToEndOfLine()
 {
 	// Ignore if we're on the last token already
@@ -429,8 +438,7 @@ void Tokenizer::advUntil(const char* end)
 			break;
 	}
 }
-
-void slade::Tokenizer::advUntilNC(const char* end)
+void Tokenizer::advUntilNC(const char* end)
 {
 	while (!atEnd())
 	{
@@ -469,6 +477,9 @@ void Tokenizer::skipSection(const char* begin, const char* end, bool allow_quote
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Returns a vector of tokens until [end] is found
+// -----------------------------------------------------------------------------
 vector<Tokenizer::Token> Tokenizer::getTokensUntil(const char* end)
 {
 	vector<Token> tokens;
@@ -485,6 +496,9 @@ vector<Tokenizer::Token> Tokenizer::getTokensUntil(const char* end)
 	return tokens;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a vector of tokens until [end] is found, ignoring case
+// -----------------------------------------------------------------------------
 vector<Tokenizer::Token> Tokenizer::getTokensUntilNC(const char* end)
 {
 	vector<Token> tokens;
@@ -501,6 +515,9 @@ vector<Tokenizer::Token> Tokenizer::getTokensUntilNC(const char* end)
 	return tokens;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a vector of tokens until the next line is found
+// -----------------------------------------------------------------------------
 vector<Tokenizer::Token> Tokenizer::getTokensUntilNextLine(bool from_start)
 {
 	// Reset to start of line if needed
@@ -528,6 +545,9 @@ vector<Tokenizer::Token> Tokenizer::getTokensUntilNextLine(bool from_start)
 	return tokens;
 }
 
+// -----------------------------------------------------------------------------
+// Returns the current line as a string
+// -----------------------------------------------------------------------------
 string Tokenizer::getLine(bool from_start)
 {
 	// Reset to start of line if needed
@@ -542,7 +562,7 @@ string Tokenizer::getLine(bool from_start)
 	}
 
 	string line;
-	while (data_[state_.position] != '\n' && data_[state_.position] != '\r')
+	while (state_.position < state_.size && data_[state_.position] != '\n' && data_[state_.position] != '\r')
 		line += data_[state_.position++];
 
 	readNext(&token_current_);
@@ -551,6 +571,9 @@ string Tokenizer::getLine(bool from_start)
 	return line;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if the current token matches [check] or if at the end
+// -----------------------------------------------------------------------------
 bool Tokenizer::checkOrEnd(const char* check) const
 {
 	// At end, return true
@@ -576,11 +599,18 @@ bool Tokenizer::checkOrEnd(char check) const
 	return token_current_ == check;
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if the current token matches [check] (Case-Insensitive)
+// -----------------------------------------------------------------------------
 bool Tokenizer::checkNC(const char* check) const
 {
 	return strutil::equalCI(token_current_.text, check);
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if the current token matches [check] (Case-Insensitive) or if at
+// the end
+// -----------------------------------------------------------------------------
 bool Tokenizer::checkOrEndNC(const char* check) const
 {
 	// At end, return true
@@ -645,7 +675,7 @@ bool Tokenizer::openFile(string_view filename, size_t offset, size_t length)
 	// If length isn't specified or exceeds the file length,
 	// only read to the end of the file
 	if (offset + length > file.size() || length == 0)
-		length = (size_t)file.size() - offset;
+		length = static_cast<size_t>(file.size()) - offset;
 
 	// Read the file portion
 	data_.resize((size_t)length, 0);
@@ -725,17 +755,23 @@ void Tokenizer::reset()
 unsigned Tokenizer::checkCommentBegin() const
 {
 	// C-Style comment (/*)
-	if (comment_types_ & CStyle && state_.position + 1 < state_.size && data_[state_.position] == '/'
+	if (comment_types_ & CStyle
+		&& state_.position + 1 < state_.size
+		&& data_[state_.position] == '/'
 		&& data_[state_.position + 1] == '*')
 		return CStyle;
 
 	// CPP-Style comment (//)
-	if (comment_types_ & CPPStyle && state_.position + 1 < state_.size && data_[state_.position] == '/'
+	if (comment_types_ & CPPStyle
+		&& state_.position + 1 < state_.size
+		&& data_[state_.position] == '/'
 		&& data_[state_.position + 1] == '/')
 		return CPPStyle;
 
 	// ## comment
-	if (comment_types_ & DoubleHash && state_.position + 1 < state_.size && data_[state_.position] == '#'
+	if (comment_types_ & DoubleHash
+		&& state_.position + 1 < state_.size
+		&& data_[state_.position] == '#'
 		&& data_[state_.position + 1] == '#')
 		return DoubleHash;
 
@@ -874,7 +910,7 @@ void Tokenizer::tokenizeComment()
 	}
 
 	// Check for end of line comment
-	if (state_.comment_type != CStyle && data_[state_.position] == '\n')
+	if (state_.comment_type != CStyle && (data_[state_.position] == '\n' || data_[state_.position] == '\r'))
 	{
 		state_.state = TokenizeState::State::Unknown;
 		++state_.position;
@@ -930,10 +966,10 @@ bool Tokenizer::readNext(Token* target)
 		// Process current character depending on state
 		switch (state_.state)
 		{
-		case TokenizeState::State::Unknown: tokenizeUnknown(); break;
+		case TokenizeState::State::Unknown:    tokenizeUnknown(); break;
 		case TokenizeState::State::Whitespace: tokenizeWhitespace(); break;
-		case TokenizeState::State::Token: tokenizeToken(); break;
-		case TokenizeState::State::Comment: tokenizeComment(); break;
+		case TokenizeState::State::Token:      tokenizeToken(); break;
+		case TokenizeState::State::Comment:    tokenizeComment(); break;
 		}
 	}
 
@@ -971,6 +1007,9 @@ bool Tokenizer::readNext(Token* target)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Resets the tokenizer to the start of the current line
+// -----------------------------------------------------------------------------
 void Tokenizer::resetToLineStart()
 {
 	// Reset state to start of current token
@@ -992,16 +1031,22 @@ void Tokenizer::resetToLineStart()
 	}
 }
 
+// -----------------------------------------------------------------------------
+// Returns true if the current position is the end of a token
+// (whitespace, special character, comment or end of data)
+// -----------------------------------------------------------------------------
 bool Tokenizer::isEndOfToken() const
 {
 	// Token is to end of line, only ends on newline
 	if (state_.to_eol)
-		return data_[state_.position] == '\n';
+		return data_[state_.position] == '\n' || data_[state_.position] == '\r';
 
 	// Regular token
-	return isWhitespace(data_[state_.position]) ||       // Whitespace
-		   isSpecialCharacter(data_[state_.position]) || // Special character
-		   checkCommentBegin() > 0;                      // Comment
+	return isWhitespace(data_[state_.position])
+		   || // Whitespace
+		   isSpecialCharacter(data_[state_.position])
+		   ||                       // Special character
+		   checkCommentBegin() > 0; // Comment
 }
 
 
@@ -1043,7 +1088,10 @@ CONSOLE_COMMAND(test_tokenizer, 0, false)
 		while (!tz.atEnd())
 		{
 			if (a == 0)
-				t_new.push_back({ tz.current().text, tz.current().quoted_string, tz.current().line_no });
+				t_new.push_back(
+					{ .text          = tz.current().text,
+					  .quoted_string = tz.current().quoted_string,
+					  .line_no       = tz.current().line_no });
 
 			tz.next();
 		}

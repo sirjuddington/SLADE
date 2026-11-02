@@ -1,15 +1,16 @@
 #pragma once
 
-#include "SLADEMap/MapObject/MapLine.h"
-#include "SLADEMap/MapObject/MapSector.h"
-#include "SLADEMap/MapObject/MapSide.h"
-#include "SLADEMap/MapObject/MapThing.h"
-
+// Forward declarations
 namespace slade
 {
-class MapObject;
-class MapEditContext;
+namespace mapeditor
+{
+	class MapEditContext;
+}
+} // namespace slade
 
+namespace slade::mapeditor
+{
 class Edit2D
 {
 public:
@@ -31,20 +32,20 @@ public:
 	void joinSectors(bool remove_lines) const;
 
 	// Things
-	void changeThingType();
-	void thingQuickAngle(Vec2d mouse_pos) const;
+	void changeThingType() const;
+	void thingQuickAngle(const Vec2d& mouse_pos) const;
 
 	// Copy / Paste
 	void copy() const;
-	void paste(Vec2d mouse_pos) const;
+	void paste(const Vec2d& mouse_pos) const;
 	void copyProperties();
-	void pasteProperties();
+	void pasteProperties() const;
 
 	// Create / Delete
-	void createObject(Vec2d pos) const;
+	void createObject(const Vec2d& pos) const;
 	void createVertex(Vec2d pos) const;
 	void createThing(Vec2d pos) const;
-	void createSector(Vec2d pos) const;
+	void createSector(const Vec2d& pos) const;
 	void deleteObject() const;
 	void deleteVertex() const;
 	void deleteLine() const;
@@ -52,16 +53,16 @@ public:
 	void deleteSector() const;
 
 private:
-	MapEditContext& context_;
+	MapEditContext* context_ = nullptr;
 
 	// Object properties and copy/paste
-	MapThing  copy_thing_;
-	MapSector copy_sector_;
-	MapSide   copy_side_front_;
-	MapSide   copy_side_back_;
-	MapLine   copy_line_;
-	bool      line_copied_   = false;
-	bool      sector_copied_ = false;
-	bool      thing_copied_  = false;
+	unique_ptr<MapThing>  copy_thing_;
+	unique_ptr<MapSector> copy_sector_;
+	unique_ptr<MapSide>   copy_side_front_;
+	unique_ptr<MapSide>   copy_side_back_;
+	unique_ptr<MapLine>   copy_line_;
+	bool                  line_copied_   = false;
+	bool                  sector_copied_ = false;
+	bool                  thing_copied_  = false;
 };
-} // namespace slade
+} // namespace slade::mapeditor

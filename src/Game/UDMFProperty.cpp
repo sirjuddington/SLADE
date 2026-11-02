@@ -31,13 +31,24 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "UDMFProperty.h"
+#include "Utility/Colour.h"
 #include "Utility/Parser.h"
+#include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
 using namespace game;
 
-int UDMFProperty::next_order_ = 0;
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+int next_order = 0;
+}
 
 
 // -----------------------------------------------------------------------------
@@ -48,9 +59,14 @@ int UDMFProperty::next_order_ = 0;
 
 
 // -----------------------------------------------------------------------------
+// UDMFProperty class constructor
+// -----------------------------------------------------------------------------
+UDMFProperty::UDMFProperty() : order_{ next_order++ } {}
+
+// -----------------------------------------------------------------------------
 // Reads a UDMF property definition from a parsed tree [node]
 // -----------------------------------------------------------------------------
-void UDMFProperty::parse(ParseTreeNode* node, string_view group)
+void UDMFProperty::parse(const ParseTreeNode* node, string_view group)
 {
 	// Set group and property name
 	group_    = group;
@@ -109,18 +125,18 @@ void UDMFProperty::parse(ParseTreeNode* node, string_view group)
 		{
 			switch (type_)
 			{
-			case Type::Boolean: default_value_ = prop->boolValue(); break;
-			case Type::Int: default_value_ = prop->intValue(); break;
-			case Type::Float: default_value_ = prop->floatValue(); break;
-			case Type::String: default_value_ = prop->stringValue(); break;
+			case Type::Boolean:       default_value_ = prop->boolValue(); break;
+			case Type::Int:           default_value_ = prop->intValue(); break;
+			case Type::Float:         default_value_ = prop->floatValue(); break;
+			case Type::String:        default_value_ = prop->stringValue(); break;
 			case Type::ActionSpecial: default_value_ = prop->intValue(); break;
 			case Type::SectorSpecial: default_value_ = prop->intValue(); break;
-			case Type::ThingType: default_value_ = prop->intValue(); break;
-			case Type::Angle: default_value_ = prop->intValue(); break;
-			case Type::TextureWall: default_value_ = prop->stringValue(); break;
-			case Type::TextureFlat: default_value_ = prop->stringValue(); break;
-			case Type::ID: default_value_ = prop->intValue(); break;
-			default: default_value_ = prop->stringValue(); break;
+			case Type::ThingType:     default_value_ = prop->intValue(); break;
+			case Type::Angle:         default_value_ = prop->intValue(); break;
+			case Type::TextureWall:   default_value_ = prop->stringValue(); break;
+			case Type::TextureFlat:   default_value_ = prop->stringValue(); break;
+			case Type::ID:            default_value_ = prop->intValue(); break;
+			default:                  default_value_ = prop->stringValue(); break;
 			}
 
 			// Not sure why I have to do this here, but for whatever reason prop->getIntValue() doesn't work
@@ -173,6 +189,84 @@ void UDMFProperty::parse(ParseTreeNode* node, string_view group)
 }
 
 // -----------------------------------------------------------------------------
+// Reads a UDMF property definition from a JSON object [j], with [group] as the
+// group name
+// -----------------------------------------------------------------------------
+void UDMFProperty::fromJson(const Json& j, string_view group)
+{
+	try
+	{
+		// Set group and property name
+		group_    = group;
+		property_ = j.value("udmf", "");
+
+		// Property type
+		if (j.contains("type"))
+		{
+			auto val_lower = strutil::lower(j.at("type").get<string>());
+
+			if (val_lower == "bool")
+				type_ = Type::Boolean;
+			else if (val_lower == "int")
+				type_ = Type::Int;
+			else if (val_lower == "float")
+				type_ = Type::Float;
+			else if (val_lower == "string")
+				type_ = Type::String;
+			else if (val_lower == "colour")
+				type_ = Type::Colour;
+			else if (val_lower == "actionspecial")
+				type_ = Type::ActionSpecial;
+			else if (val_lower == "sectorspecial")
+				type_ = Type::SectorSpecial;
+			else if (val_lower == "thingtype")
+				type_ = Type::ThingType;
+			else if (val_lower == "angle")
+				type_ = Type::Angle;
+			else if (val_lower == "texture_wall")
+				type_ = Type::TextureWall;
+			else if (val_lower == "texture_flat")
+				type_ = Type::TextureFlat;
+			else if (val_lower == "id")
+				type_ = Type::ID;
+		}
+
+		// Property name
+		jsonutil::getIf(j, "name", name_);
+
+		// Default value
+		if (j.contains("default"))
+		{
+			// Colour property defaults can be strings
+			if (type_ == Type::Colour && j.at("default").is_string())
+				default_value_ = colour::toInt(colour::fromString(j.at("default").get<string>()));
+			else
+				default_value_ = jsonutil::toProp(j.at("default"));
+
+			has_default_ = true;
+		}
+
+		// Property is a flag
+		jsonutil::getIf(j, "flag", flag_);
+
+		// Property is a SPAC trigger
+		jsonutil::getIf(j, "trigger", trigger_);
+
+		// Possible values
+		if (j.contains("values"))
+			for (auto& v : j.at("values"))
+				values_.emplace_back(jsonutil::toProp(v));
+
+		// Show always
+		jsonutil::getIf(j, "show_always", show_always_);
+	}
+	catch (const std::exception& e)
+	{
+		log::error("Error parsing UDMF property '{}': {}", property_, e.what());
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Returns a string representation of the UDMF property definition
 // -----------------------------------------------------------------------------
 string UDMFProperty::getStringRep()
@@ -181,20 +275,20 @@ string UDMFProperty::getStringRep()
 
 	switch (type_)
 	{
-	case Type::Boolean: ret += ", type = bool"; break;
-	case Type::Int: ret += ", type = int"; break;
-	case Type::Float: ret += ", type = float"; break;
-	case Type::String: ret += ", type = string"; break;
-	case Type::Colour: ret += ", type = colour"; break;
+	case Type::Boolean:       ret += ", type = bool"; break;
+	case Type::Int:           ret += ", type = int"; break;
+	case Type::Float:         ret += ", type = float"; break;
+	case Type::String:        ret += ", type = string"; break;
+	case Type::Colour:        ret += ", type = colour"; break;
 	case Type::ActionSpecial: ret += ", type = actionspecial"; break;
 	case Type::SectorSpecial: ret += ", type = sectorspecial"; break;
-	case Type::ThingType: ret += ", type = thingtype"; break;
-	case Type::Angle: ret += ", type = angle"; break;
-	case Type::TextureWall: ret += ", type = wall texture"; break;
-	case Type::TextureFlat: ret += ", type = flat texture"; break;
-	case Type::ID: ret += ", type = id"; break;
-	default: ret += ", ******unknown type********"; break;
-	};
+	case Type::ThingType:     ret += ", type = thingtype"; break;
+	case Type::Angle:         ret += ", type = angle"; break;
+	case Type::TextureWall:   ret += ", type = wall texture"; break;
+	case Type::TextureFlat:   ret += ", type = flat texture"; break;
+	case Type::ID:            ret += ", type = id"; break;
+	default:                  ret += ", ******unknown type********"; break;
+	}
 
 	if (has_default_)
 	{

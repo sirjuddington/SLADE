@@ -1,12 +1,11 @@
 #pragma once
 
 #include "Args.h"
-#include "Utility/Colour.h"
+#include "General/JsonFwd.h"
 
 namespace slade
 {
 class PropertyList;
-class ParseTreeNode;
 
 namespace game
 {
@@ -35,6 +34,7 @@ namespace game
 		const string&  group() const { return group_; }
 		ColRGBA        colour() const { return colour_; }
 		int            radius() const { return radius_; }
+		int            displayRadius() const { return display_radius_ < 0 ? radius_ : display_radius_; }
 		int            height() const { return height_; }
 		float          scaleX() const { return scale_.x; }
 		float          scaleY() const { return scale_.y; }
@@ -58,17 +58,20 @@ namespace game
 		bool           decorate() const { return decorate_; }
 		const string&  className() const { return class_name_; }
 		bool           zHeightAbsolute() const { return z_height_absolute_; }
-		const string&  pointLight() const { return point_light_; }
+		bool           dynamicLight() const { return dynamic_light_; }
+		const string&  lightName() const { return light_name_; }
 
 		void setSprite(string_view sprite) { sprite_ = sprite; }
+		void setClassName(string_view class_name) { class_name_ = class_name; }
 
 		bool defined() const { return number_ >= 0; }
 		void define(int number, string_view name, string_view group);
 
 		void   reset();
-		void   parse(ParseTreeNode* node);
+		void   parse(const ParseTreeNode* node);
 		string stringDesc() const;
 		void   loadProps(PropertyList& props, bool decorate = true, bool zscript = false);
+		void   fromJson(const Json& j);
 
 		static const ThingType& unknown() { return unknown_; }
 		static void             initGlobal();
@@ -78,6 +81,7 @@ namespace game
 		string  group_;
 		ColRGBA colour_     = { 170, 170, 180, 255 };
 		int     radius_     = 20;
+		int     display_radius_ = -1;
 		int     height_     = -1;
 		Vec2f   scale_      = { 1., 1. };
 		bool    angled_     = true;
@@ -100,7 +104,8 @@ namespace game
 		int     number_ = -1;
 		string  class_name_;
 		bool    z_height_absolute_ = false;
-		string  point_light_;
+		bool    dynamic_light_     = false;
+		string  light_name_;
 
 		static ThingType unknown_;
 	};

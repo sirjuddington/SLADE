@@ -31,11 +31,17 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
-#include "TextureXList.h"
+
 #include "Archive/Archive.h"
-#include "Archive/ArchiveManager.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormat.h"
+#include "Archive/EntryType/EntryType.h"
+#include "CTexture.h"
 #include "Graphics/SImage/SImage.h"
 #include "MainEditor/MainEditor.h"
+#include "PatchTable.h"
+#include "TextureXList.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -115,16 +121,28 @@ struct StrifeTexDef
 //
 // -----------------------------------------------------------------------------
 
+// -----------------------------------------------------------------------------
+// TextureXList class constructor
+// -----------------------------------------------------------------------------
+TextureXList::TextureXList()
+{
+	tex_invalid_ = std::make_unique<CTexture>("INVALID_TEXTURE"); // Deliberately set the invalid name to >8 characters
+}
+
+// -----------------------------------------------------------------------------
+// TextureXList class destructor
+// -----------------------------------------------------------------------------
+TextureXList::~TextureXList() = default;
 
 // -----------------------------------------------------------------------------
 // Returns the texture at [index], or the 'invalid' texture if [index] is
 // out of range
 // -----------------------------------------------------------------------------
-CTexture* TextureXList::texture(size_t index)
+CTexture* TextureXList::texture(size_t index) const
 {
 	// Check index
 	if (index >= textures_.size())
-		return &tex_invalid_;
+		return tex_invalid_.get();
 
 	// Return texture at index
 	return textures_[index].get();
@@ -134,7 +152,7 @@ CTexture* TextureXList::texture(size_t index)
 // Returns the texture matching [name], or the 'invalid' texture if no match is
 // found
 // -----------------------------------------------------------------------------
-CTexture* TextureXList::texture(string_view name)
+CTexture* TextureXList::texture(string_view name) const
 {
 	// Search for texture by name
 	for (auto& texture : textures_)
@@ -144,7 +162,7 @@ CTexture* TextureXList::texture(string_view name)
 	}
 
 	// Not found
-	return &tex_invalid_;
+	return tex_invalid_.get();
 }
 
 // -----------------------------------------------------------------------------
@@ -173,7 +191,7 @@ void TextureXList::addTexture(unique_ptr<CTexture> tex, int position)
 {
 	// Add it to the list at position if valid
 	tex->in_list_ = this;
-	if (position >= 0 && (unsigned)position < textures_.size())
+	if (position >= 0 && static_cast<unsigned>(position) < textures_.size())
 	{
 		tex->index_ = position;
 		textures_.insert(textures_.begin() + position, std::move(tex));
@@ -237,6 +255,24 @@ unique_ptr<CTexture> TextureXList::replaceTexture(unsigned index, unique_ptr<CTe
 }
 
 // -----------------------------------------------------------------------------
+// Sorts the textures in the list between [first] and [last] (inclusive) by
+// name, then index
+// -----------------------------------------------------------------------------
+void TextureXList::sortTextures(unsigned first, unsigned last)
+{
+	// Check indices
+	if (first >= textures_.size() || last >= textures_.size())
+		return;
+
+	// Sort the textures
+	std::sort(
+		textures_.begin() + first,
+		textures_.begin() + last + 1,
+		[](const unique_ptr<CTexture>& a, const unique_ptr<CTexture>& b)
+		{ return a->name() == b->name() ? a->index() < b->index() : a->name() < b->name(); });
+}
+
+// -----------------------------------------------------------------------------
 // Clears all textures
 // -----------------------------------------------------------------------------
 void TextureXList::clear(bool clear_patches)
@@ -258,8 +294,10 @@ void TextureXList::removePatch(string_view patch) const
 // Reads in a doom-format TEXTUREx entry.
 // Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table, bool add)
+bool TextureXList::readTEXTUREXData(const ArchiveEntry* texturex, const PatchTable& patch_table, bool add)
 {
+	using Format = TextureXFormat;
+
 	// Check entries were actually given
 	if (!texturex)
 		return false;
@@ -325,8 +363,11 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& pa
 			// log::info(1, "Jaguar texture");
 			break;
 		}
-		else if (!((tempname[a] >= 'A' && tempname[a] <= '[') || (tempname[a] >= '0' && tempname[a] <= '9')
-				   || tempname[a] == ']' || tempname[a] == '-' || tempname[a] == '_'))
+		else if (!((tempname[a] >= 'A' && tempname[a] <= '[')
+				   || (tempname[a] >= '0' && tempname[a] <= '9')
+				   || tempname[a] == ']'
+				   || tempname[a] == '-'
+				   || tempname[a] == '_'))
 		// We're out of character range, so this is probably not a texture name.
 		{
 			txformat_ = Format::Nameless;
@@ -418,7 +459,7 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& pa
 
 		// Set flags
 		if (tdef.flags & Flags::WorldPanning)
-			tex->world_panning_ = true;
+			tex->setFlag(CTexture::Flag::WorldPanning, true);
 
 		// Read patches
 		int16_t n_patches = 0;
@@ -490,6 +531,8 @@ bool TextureXList::readTEXTUREXData(ArchiveEntry* texturex, const PatchTable& pa
 // -----------------------------------------------------------------------------
 bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table) const
 {
+	using Format = TextureXFormat;
+
 	// Check entry was given
 	if (!texturex)
 		return false;
@@ -517,11 +560,10 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 	}
 	log::info("{} patch references in {} textures", numpatchrefs, numtextures);
 
-	size_t datasize   = 0;
-	size_t headersize = 4 + (4 * numtextures);
+	size_t datasize;
 	switch (txformat_)
 	{
-	case Format::Normal: datasize = 4 + (26 * numtextures) + (10 * numpatchrefs); break;
+	case Format::Normal:   datasize = 4 + (26 * numtextures) + (10 * numpatchrefs); break;
 	case Format::Nameless: datasize = 4 + (18 * numtextures) + (10 * numpatchrefs); break;
 	case Format::Strife11:
 		datasize = 4 + (22 * numtextures) + (6 * numpatchrefs);
@@ -532,7 +574,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 
 	MemChunk        txdata(datasize);
 	vector<int32_t> offsets(numtextures);
-	int32_t         foo = wxINT32_SWAP_ON_BE((signed)numtextures);
+	int32_t         foo = wxINT32_SWAP_ON_BE(static_cast<signed>(numtextures));
 
 	// Write header
 	txdata.seek(0, SEEK_SET);
@@ -548,7 +590,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 		auto tex = textures_[i].get();
 
 		// Set offset
-		offsets[i] = (signed)txdata.currentPos();
+		offsets[i] = static_cast<signed>(txdata.currentPos());
 
 		// Write texture entry
 		switch (txformat_)
@@ -571,7 +613,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 			txdef.patchcount   = tex->nPatches();
 
 			// Check for WorldPanning flag
-			if (tex->world_panning_)
+			if (tex->worldPanning())
 				txdef.flags |= Flags::WorldPanning;
 
 			// Write texture definition
@@ -613,7 +655,7 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 			txdef.patchcount = tex->nPatches();
 
 			// Check for WorldPanning flag
-			if (tex->world_panning_)
+			if (tex->worldPanning())
 				txdef.flags |= Flags::WorldPanning;
 
 			// Write texture definition
@@ -677,8 +719,10 @@ bool TextureXList::writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& p
 // Reads in a ZDoom-format TEXTURES entry.
 // Returns true on success, false otherwise
 // -----------------------------------------------------------------------------
-bool TextureXList::readTEXTURESData(ArchiveEntry* textures)
+bool TextureXList::readTEXTURESData(const ArchiveEntry* textures)
 {
+	using Format = TextureXFormat;
+
 	// Check for empty entry
 	if (!textures)
 	{
@@ -761,7 +805,7 @@ bool TextureXList::readTEXTURESData(ArchiveEntry* textures)
 bool TextureXList::writeTEXTURESData(ArchiveEntry* textures) const
 {
 	// Check format
-	if (txformat_ != Format::Textures)
+	if (txformat_ != TextureXFormat::Textures)
 		return false;
 
 	log::info("Writing ZDoom text format TEXTURES entry");
@@ -786,11 +830,11 @@ string TextureXList::textureXFormatString() const
 {
 	switch (txformat_)
 	{
-	case Format::Normal: return "Doom TEXTUREx";
-	case Format::Strife11: return "Strife TEXTUREx";
-	case Format::Nameless: return "Nameless (Doom Alpha)";
-	case Format::Textures: return "ZDoom TEXTURES";
-	default: return "Unknown";
+	case TextureXFormat::Normal:   return "Doom TEXTUREx";
+	case TextureXFormat::Strife11: return "Strife TEXTUREx";
+	case TextureXFormat::Nameless: return "Nameless (Doom Alpha)";
+	case TextureXFormat::Textures: return "ZDoom TEXTURES";
+	default:                       return "Unknown";
 	}
 }
 
@@ -800,7 +844,7 @@ string TextureXList::textureXFormatString() const
 bool TextureXList::convertToTEXTURES()
 {
 	// Check format is appropriate
-	if (txformat_ == Format::Textures)
+	if (txformat_ == TextureXFormat::Textures)
 	{
 		global::error = "Already TEXTURES format";
 		return false;
@@ -811,10 +855,11 @@ bool TextureXList::convertToTEXTURES()
 		texture->convertExtended();
 
 	// First texture is null texture
-	textures_[0]->null_texture_ = true;
+	if (!textures_.empty())
+		textures_[0]->setFlag(CTexture::Flag::NullTexture, true);
 
 	// Set new format
-	txformat_ = Format::Textures;
+	txformat_ = TextureXFormat::Textures;
 
 	return true;
 }
@@ -883,7 +928,7 @@ bool TextureXList::findErrors() const
 // -----------------------------------------------------------------------------
 // Find and remove duplicates that exist in another texture list
 // -----------------------------------------------------------------------------
-bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
+bool TextureXList::removeDupesFoundIn(const TextureXList& texture_list)
 {
 	vector<unsigned int> indices_to_remove;
 
@@ -915,9 +960,12 @@ bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
 		other_texture_copy.copyTexture(*other_texture, true);
 
 		// Force a null texture because that value doesn't transfer from TEXTUREX defs
-		if (a == 0 && other_texture_index == 0
-			&& (this_texture->name() == "AASHITTY" || this_texture->name() == "AASTINKY"
-				|| this_texture->name() == "BADPATCH" || this_texture->name() == "ABADONE"))
+		if (a == 0
+			&& other_texture_index == 0
+			&& (this_texture->name() == "AASHITTY"
+				|| this_texture->name() == "AASTINKY"
+				|| this_texture->name() == "BADPATCH"
+				|| this_texture->name() == "ABADONE"))
 		{
 			this_texture_copy.setNullTexture(true);
 			other_texture_copy.setNullTexture(true);
@@ -957,13 +1005,13 @@ bool TextureXList::removeDupesFoundIn(TextureXList& texture_list)
 bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 {
 	// Check format is appropriate
-	if (txformat_ != Format::Textures)
+	if (txformat_ != TextureXFormat::Textures)
 	{
 		global::error = "Not TEXTURES format";
 		return false;
 	}
 
-	if (!current_archive->formatDesc().supports_dirs)
+	if (!current_archive->formatInfo().supports_dirs)
 	{
 		global::error = "Archive doesn't support directories";
 		return false;
@@ -990,8 +1038,14 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		}
 
 		// Check for any properties
-		if (texture->scaleX() != 1.0 || texture->scaleY() != 1.0 || texture->offsetX() != 0 || texture->offsetY() != 0
-			|| texture->worldPanning() || texture->isOptional() || texture->noDecals() || texture->nullTexture())
+		if (texture->scaleX() != 1.0
+			|| texture->scaleY() != 1.0
+			|| texture->offsetX() != 0
+			|| texture->offsetY() != 0
+			|| texture->worldPanning()
+			|| texture->isOptional()
+			|| texture->noDecals()
+			|| texture->nullTexture())
 		{
 			log::info("KEEP Texture: {}. It has some special properties set.", texture->name());
 			continue;
@@ -999,6 +1053,12 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 
 		// Check things about the single patch
 		CTPatchEx* patch = dynamic_cast<CTPatchEx*>(texture->patch(0));
+
+		if (!patch)
+		{
+			log::info("KEEP Texture: {}. Its single patch is not a CTPatchEx.", texture->name());
+			continue;
+		}
 
 		// Check if the single patch is actually a patch in another archive
 		ArchiveEntry* patch_entry = patch->patchEntry(nullptr);
@@ -1017,21 +1077,21 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 
 		// Check if the patch is in the patches directory
 		{
-			ArchiveDir* patch_parent_dir = patch_entry->parentDir();
+			auto patch_parent_dir = patch_entry->parentDir();
 
 			if (patch_parent_dir)
 			{
-				while (patch_parent_dir->parent()->parent())
+				while (patch_parent_dir->parent() && patch_parent_dir->parent()->parent())
 				{
 					patch_parent_dir = patch_parent_dir->parent().get();
 				}
 
-				if (patch_parent_dir->dirEntry()->upperName() != "PATCHES")
+				if (!patch_parent_dir->dirEntry() || patch_parent_dir->dirEntry()->upperName() != "PATCHES")
 				{
 					log::info(
 						"KEEP Texture: {}. Its single patch is not from the patches directory. Found in: \"{}\".",
 						texture->name(),
-						patch_parent_dir->dirEntry()->name());
+						patch_parent_dir->dirEntry() ? patch_parent_dir->dirEntry()->name() : "<unknown>");
 					continue;
 				}
 			}
@@ -1068,8 +1128,13 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		}
 
 		// Check for any properties
-		if (patch->flipX() || patch->flipY() || patch->useOffsets() || patch->rotation() != 0 || patch->alpha() < 1.0f
-			|| !(strutil::equalCI(patch->style(), "Copy")) || patch->blendType() != CTPatchEx::BlendType::None)
+		if (patch->flipX()
+			|| patch->flipY()
+			|| patch->useOffsets()
+			|| patch->rotation() != 0
+			|| patch->alpha() < 1.0f
+			|| !(strutil::equalCI(patch->style(), "Copy"))
+			|| patch->blendType() != CTPatchEx::BlendType::None)
 		{
 			log::info("KEEP Texture: {}. Its single patch has some special properties set.", texture->name());
 			continue;
@@ -1096,7 +1161,7 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 	// Now load base resource archive textures into a single list
 	TextureXList archive_tx_list;
 
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_type = EntryType::fromId("pnames");
 	auto pnames    = current_archive->findLast(opt);
 
@@ -1107,7 +1172,7 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 		ptable.loadPNAMES(pnames);
 
 		// Load all Texturex entries
-		Archive::SearchOptions texturexopt;
+		ArchiveSearchOptions texturexopt;
 		texturexopt.match_type = EntryType::fromId("texturex");
 
 		for (ArchiveEntry* texturexentry : current_archive->findAll(texturexopt))
@@ -1117,7 +1182,7 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 	}
 
 	// Load all zdtextures entries
-	Archive::SearchOptions zdtexturesopt;
+	ArchiveSearchOptions zdtexturesopt;
 	zdtexturesopt.match_type = EntryType::fromId("zdtextures");
 
 	for (ArchiveEntry* texturesentry : current_archive->findAll(zdtexturesopt))
@@ -1130,7 +1195,7 @@ bool TextureXList::cleanTEXTURESsinglePatch(Archive* current_archive)
 	{
 		CTexture* texture = a.get();
 
-		for (int p = 0; p < texture->nPatches(); p++)
+		for (int p = 0; p < static_cast<int>(texture->nPatches()); p++)
 		{
 			ArchiveEntry* patch_entry = texture->patches()[p]->patchEntry(nullptr);
 

@@ -1,10 +1,11 @@
 #pragma once
 
 #include "MapObjectList.h"
-#include "SLADEMap/MapObject/MapSector.h"
 
 namespace slade
 {
+struct BBox;
+
 class SectorList : public MapObjectList<MapSector>
 {
 public:
@@ -13,10 +14,10 @@ public:
 	void add(MapSector* sector) override;
 	void remove(unsigned index) override;
 
-	MapSector*         atPos(Vec2d point) const;
+	MapSector*         atPos(const Vec2d& point) const;
 	BBox               allSectorBounds() const;
-	void               initPolygons();
-	void               initBBoxes();
+	void               initPolygons() const;
+	void               initBBoxes() const;
 	void               putAllWithId(int id, vector<MapSector*>& list) const;
 	vector<MapSector*> allWithId(int id) const;
 	MapSector*         firstWithId(int id) const;

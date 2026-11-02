@@ -2,8 +2,8 @@
 #ifndef __MAIN_H__
 #define __MAIN_H__
 
-#include "common.h"
-#include "common2.h"
+#include "Common.h"
+#include "CommonFwd.h"
 
 #if defined _MSC_VER && _MSC_VER < 1900
 #define _CRT_SECURE_NO_WARNINGS 1
@@ -25,6 +25,7 @@ typedef unsigned __int64 uint64_t;
 #define WX_FMT(...) wxString::FromUTF8(fmt::format(__VA_ARGS__))
 
 // Usings for common std types, to avoid std:: spam
+using std::optional;
 using std::shared_ptr;
 using std::string;
 using std::string_view;
@@ -64,7 +65,7 @@ namespace slade
 using i8  = int8_t;
 using u8  = uint8_t;
 using i16 = int16_t;
-using y16 = uint16_t;
+using u16 = uint16_t;
 using i32 = int32_t;
 using u32 = uint32_t;
 using i64 = int64_t;
@@ -73,10 +74,14 @@ using u64 = uint64_t;
 
 // Global internal includes
 // clang-format off
+#include "General/Enums.h"
 #include "General/CVar.h"
-#include "Utility/Structs.h"
+#include "Geometry/Vectors.h"
 #include "General/Log.h"
 #include "Utility/MemChunk.h"
+#include "OpenGL/GLHeaders.h"
+#include "Utility/ColRGBA.h"
+#include "Utility/JsonUtils.h"
 // clang-format on
 
 #endif // __MAIN_H__

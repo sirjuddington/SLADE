@@ -1,0 +1,129 @@
+{
+  "id": "doom64",
+  "name": "Doom 64",
+
+  // IWAD filename
+  "iwad": "doom64.wad",
+
+  // Supported map formats
+  "map_formats": [ "doom64" ],
+
+  // DECORATE filters
+  "filters": [ "doom64", "any" ],
+
+  "configuration": {
+    // Valid map names -- Doom64 EX supports MAPINFO so actually
+    // any map name is a valid name.
+    "map_name_any": true,
+
+    // Enable mixed textures and flats
+    "mix_tex_flats": true,
+
+    // Enable TX_ namespace (actually T_ namespace)
+    "tx_textures": true,
+
+    // Light levels
+    "light_level_interval": 16,
+
+    // Player eye height for 3d mode camera
+    "player_eye_height": 56,
+
+    // Maps
+    "maps": [
+      // temp sky values (will need special handling)
+      { "mapname": "MAP01", "sky": "SKY1" },
+      { "mapname": "MAP02", "sky": "SKY1" },
+      { "mapname": "MAP03", "sky": "SKY1" },
+      { "mapname": "MAP04", "sky": "SKY1" },
+      { "mapname": "MAP05", "sky": "SKY1" },
+      { "mapname": "MAP06", "sky": "SKY1" },
+      { "mapname": "MAP07", "sky": "SKY1" },
+      { "mapname": "MAP08", "sky": "SKY1" },
+      { "mapname": "MAP09", "sky": "SKY1" },
+      { "mapname": "MAP10", "sky": "SKY1" },
+      { "mapname": "MAP11", "sky": "SKY1" },
+      { "mapname": "MAP12", "sky": "SKY1" },
+      { "mapname": "MAP13", "sky": "SKY1" },
+      { "mapname": "MAP14", "sky": "SKY1" },
+      { "mapname": "MAP15", "sky": "SKY1" },
+      { "mapname": "MAP16", "sky": "SKY1" },
+      { "mapname": "MAP17", "sky": "SKY1" },
+      { "mapname": "MAP18", "sky": "SKY1" },
+      { "mapname": "MAP19", "sky": "SKY1" },
+      { "mapname": "MAP20", "sky": "SKY1" },
+      { "mapname": "MAP21", "sky": "SKY1" },
+      { "mapname": "MAP22", "sky": "SKY1" },
+      { "mapname": "MAP23", "sky": "SKY1" },
+      { "mapname": "MAP24", "sky": "SKY1" },
+      { "mapname": "MAP25", "sky": "SKY1" },
+      { "mapname": "MAP26", "sky": "SKY1" },
+      { "mapname": "MAP27", "sky": "SKY1" },
+      { "mapname": "MAP28", "sky": "SKY1" },
+      { "mapname": "MAP29", "sky": "SKY1" },
+      { "mapname": "MAP30", "sky": "SKY1" },
+      { "mapname": "MAP31", "sky": "SKY1" },
+      { "mapname": "MAP32", "sky": "SKY1" },
+      { "mapname": "MAP33", "sky": "SKY1" },
+      { "mapname": "MAP34", "sky": "SKY1" },
+      { "mapname": "MAP35", "sky": "SKY1" },
+      { "mapname": "MAP36", "sky": "SKY1" },
+      { "mapname": "MAP37", "sky": "SKY1" },
+      { "mapname": "MAP38", "sky": "SKY1" },
+      { "mapname": "MAP39", "sky": "SKY1" },
+      { "mapname": "MAP40", "sky": "SKY1" }
+    ],
+
+    // Defaults
+    "defaults": {
+      "sector": {
+        "texturefloor": "CASFL26",
+        "textureceiling": "HFLATB",
+        "heightfloor": 0,
+        "heightceiling": 128,
+        "lightlevel": 256
+      },
+      "sidedef": {
+        "texturetop": "C29",
+        "texturemiddle": "C29",
+        "texturebottom": "C29"
+      },
+      "thing": {
+        "type": 1,
+        "flags": 7
+      }
+    },
+
+    // Action specials
+    "action_specials": {
+      "import": [ "include/action_specials/doom64.json" ]
+    },
+
+    // Thing types
+    "thing_types": {
+      "import": [
+        "include/thing_types/common.json",
+        "include/thing_types/doom64.json"
+      ]
+    },
+
+    // Thing flags
+    "thing_flags": {
+      "import": [ "include/thing_flags/doom64.json" ]
+    },
+
+    // Line flags
+    "line_flags": {
+      "import": [ "include/line_flags/doom64.json" ]
+    },
+
+    // Sector types
+    "sector_types": {
+      "import": [ "include/sector_types/doom64.json" ]
+    },
+
+    // UDMF properties
+    "udmf_properties": {
+      "import": [ "include/udmf_properties/base.json" ]
+    }
+  }
+}

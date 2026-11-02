@@ -32,6 +32,8 @@
 //
 // -----------------------------------------------------------------------------
 #include "Main.h"
+#include "General/SAction.h"
+#include "ItemSelection.h"
 #include "MapBackupManager.h"
 #include "MapEditContext.h"
 #include "MapEditor/UI/Dialogs/MapTextureBrowser.h"
@@ -40,6 +42,9 @@
 #include "MapEditor/UI/PropsPanel/SectorPropsPanel.h"
 #include "MapEditor/UI/PropsPanel/ThingPropsPanel.h"
 #include "MapTextureManager.h"
+#include "SLADEMap/MapObject/MapObject.h"
+#include "UI/Browser/BrowserItem.h"
+#include "UI/Layout.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
 #include "UI/PropsPanel/MapObjectPropsPanel.h"
@@ -47,6 +52,7 @@
 #include "UI/WxUtils.h"
 
 using namespace slade;
+using namespace mapeditor;
 
 
 // -----------------------------------------------------------------------------
@@ -58,100 +64,10 @@ namespace slade::mapeditor
 {
 unique_ptr<MapEditContext> edit_context;
 MapTextureManager          texture_manager;
-Archive::MapDesc           current_map_desc;
+MapDesc                    current_map_desc;
 MapEditorWindow*           map_window;
 MapBackupManager           backup_manager;
 } // namespace slade::mapeditor
-
-
-// -----------------------------------------------------------------------------
-//
-// MapEditor::Item Struct Functions
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// Returns the vertex in [map] matching this item, or null if the item isn't a
-// vertex
-// -----------------------------------------------------------------------------
-MapVertex* mapeditor::Item::asVertex(const SLADEMap& map) const
-{
-	if (type == ItemType::Vertex)
-		return map.vertex(index);
-
-	return nullptr;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the line in [map] matching this item, or null if the item isn't a
-// line
-// -----------------------------------------------------------------------------
-MapLine* mapeditor::Item::asLine(const SLADEMap& map) const
-{
-	if (type == ItemType::Line)
-		return map.line(index);
-
-	return nullptr;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the side in [map] matching this item, or null if the item isn't a
-// side
-// -----------------------------------------------------------------------------
-MapSide* mapeditor::Item::asSide(const SLADEMap& map) const
-{
-	if (type == ItemType::Side || type == ItemType::WallBottom || type == ItemType::WallMiddle
-		|| type == ItemType::WallTop)
-		return map.side(index);
-
-	return nullptr;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the sector in [map] matching this item, or null if the item isn't a
-// sector
-// -----------------------------------------------------------------------------
-MapSector* mapeditor::Item::asSector(const SLADEMap& map) const
-{
-	if (type == ItemType::Sector || type == ItemType::Ceiling || type == ItemType::Floor)
-		return map.sector(index);
-
-	return nullptr;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the thing in [map] matching this item, or null if the item isn't a
-// thing
-// -----------------------------------------------------------------------------
-MapThing* mapeditor::Item::asThing(const SLADEMap& map) const
-{
-	if (type == ItemType::Thing)
-		return map.thing(index);
-
-	return nullptr;
-}
-
-// -----------------------------------------------------------------------------
-// Returns the object in [map] matching this item
-// -----------------------------------------------------------------------------
-MapObject* mapeditor::Item::asObject(const SLADEMap& map) const
-{
-	switch (type)
-	{
-	case ItemType::Vertex: return map.vertex(index);
-	case ItemType::Side:
-	case ItemType::WallTop:
-	case ItemType::WallMiddle:
-	case ItemType::WallBottom:
-	case ItemType::Line: return map.line(index);
-	case ItemType::Floor:
-	case ItemType::Ceiling:
-	case ItemType::Sector: return map.sector(index);
-	case ItemType::Thing: return map.thing(index);
-	default: return nullptr;
-	}
-}
 
 
 // -----------------------------------------------------------------------------
@@ -274,76 +190,9 @@ void mapeditor::lockMouse(bool lock)
 // -----------------------------------------------------------------------------
 void mapeditor::openContextMenu()
 {
-	// Context menu
 	wxMenu menu_context;
-
-	// Set 3d camera
-	SAction::fromId("mapw_camera_set")->addToMenu(&menu_context, true);
-
-	// 3d mode at mouse cursor
-	SAction::fromId("mapw_mode_3d_at_mouse")->addToMenu(&menu_context, true);
-
-	// Run from here
-	SAction::fromId("mapw_run_map_here")->addToMenu(&menu_context, true);
-
-	// Mode-specific
-	bool object_selected = edit_context->selection().hasHilightOrSelection();
-	if (edit_context->editMode() == Mode::Vertices)
-	{
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_vertex_create")->addToMenu(&menu_context, true);
-	}
-	else if (edit_context->editMode() == Mode::Lines)
-	{
-		if (object_selected)
-		{
-			menu_context.AppendSeparator();
-			SAction::fromId("mapw_line_changetexture")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_changespecial")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_tagedit")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_flip")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_line_correctsectors")->addToMenu(&menu_context, true);
-		}
-	}
-	else if (edit_context->editMode() == Mode::Things)
-	{
-		menu_context.AppendSeparator();
-
-		if (object_selected)
-			SAction::fromId("mapw_thing_changetype")->addToMenu(&menu_context, true);
-
-		SAction::fromId("mapw_thing_create")->addToMenu(&menu_context, true);
-	}
-	else if (edit_context->editMode() == Mode::Sectors)
-	{
-		if (object_selected)
-		{
-			SAction::fromId("mapw_sector_changetexture")->addToMenu(&menu_context, true);
-			SAction::fromId("mapw_sector_changespecial")->addToMenu(&menu_context, true);
-			if (edit_context->selection().size() > 1)
-			{
-				SAction::fromId("mapw_sector_join")->addToMenu(&menu_context, true);
-				SAction::fromId("mapw_sector_join_keep")->addToMenu(&menu_context, true);
-			}
-		}
-
-		SAction::fromId("mapw_sector_create")->addToMenu(&menu_context, true);
-	}
-
-	if (object_selected)
-	{
-		// General edit
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_edit_objects")->addToMenu(&menu_context, true);
-		SAction::fromId("mapw_mirror_x")->addToMenu(&menu_context, true);
-		SAction::fromId("mapw_mirror_y")->addToMenu(&menu_context, true);
-
-		// Properties
-		menu_context.AppendSeparator();
-		SAction::fromId("mapw_item_properties")->addToMenu(&menu_context, true);
-	}
-
-	map_window->PopupMenu(&menu_context);
+	if (edit_context->populateContextMenu(menu_context))
+		map_window->PopupMenu(&menu_context);
 }
 
 // -----------------------------------------------------------------------------
@@ -351,7 +200,8 @@ void mapeditor::openContextMenu()
 // -----------------------------------------------------------------------------
 void mapeditor::openObjectProperties(MapObject* object)
 {
-	map_window->propsPanel()->openObject(object);
+	if (map_window->propsPanel()->IsShown())
+		map_window->propsPanel()->openObject(object);
 }
 
 // -----------------------------------------------------------------------------
@@ -359,7 +209,8 @@ void mapeditor::openObjectProperties(MapObject* object)
 // -----------------------------------------------------------------------------
 void mapeditor::openMultiObjectProperties(vector<MapObject*>& objects)
 {
-	map_window->propsPanel()->openObjects(objects);
+	if (map_window->propsPanel()->IsShown())
+		map_window->propsPanel()->openObjects(objects);
 }
 
 // -----------------------------------------------------------------------------
@@ -384,11 +235,6 @@ void mapeditor::showObjectEditPanel(bool show, ObjectEditGroup* group)
 // -----------------------------------------------------------------------------
 string mapeditor::browseTexture(string_view init_texture, TextureType tex_type, SLADEMap& map, string_view title)
 {
-	// Unlock cursor if locked
-	bool cursor_locked = edit_context->mouseLocked();
-	if (cursor_locked)
-		edit_context->lockMouse(false);
-
 	// Setup texture browser
 	MapTextureBrowser browser(map_window, tex_type, init_texture, &map);
 	browser.SetTitle(wxutil::strFromView(title));
@@ -397,10 +243,6 @@ string mapeditor::browseTexture(string_view init_texture, TextureType tex_type, 
 	string tex{ init_texture };
 	if (browser.ShowModal() == wxID_OK && browser.selectedItem())
 		tex = browser.selectedItem()->name();
-
-	// Re-lock cursor if needed
-	if (cursor_locked)
-		edit_context->lockMouse(true);
 
 	return tex;
 }
@@ -437,8 +279,11 @@ int mapeditor::browseThingType(int init_type, SLADEMap& map)
 // -----------------------------------------------------------------------------
 bool mapeditor::editObjectProperties(vector<MapObject*>& list)
 {
+	if (list.empty())
+		return false;
+
 	string selsize;
-	string type = edit_context->modeString(false);
+	string type = list[0]->typeName();
 	if (list.size() == 1)
 		type += fmt::format(" #{}", list[0]->index());
 	else if (list.size() > 1)
@@ -448,26 +293,27 @@ bool mapeditor::editObjectProperties(vector<MapObject*>& list)
 	SDialog dlg(
 		mapeditor::window(),
 		fmt::format("{} Properties {}", type, selsize),
-		fmt::format("mobjprops_{}", edit_context->modeString(false)),
+		fmt::format("mobjprops_{}", list[0]->typeName()),
 		-1,
 		-1);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
 	dlg.SetSizer(sizer);
 
 	// Create/add properties panel
+	auto            lh          = ui::LayoutHelper(&dlg);
 	PropsPanelBase* panel_props = nullptr;
-	switch (edit_context->editMode())
+	switch (list[0]->objType())
 	{
-	case Mode::Lines: panel_props = new LinePropsPanel(&dlg); break;
-	case Mode::Sectors: panel_props = new SectorPropsPanel(&dlg); break;
-	case Mode::Things: panel_props = new ThingPropsPanel(&dlg); break;
-	default: panel_props = new MapObjectPropsPanel(&dlg, true);
+	case MapObject::Type::Line:   panel_props = new LinePropsPanel(&dlg); break;
+	case MapObject::Type::Sector: panel_props = new SectorPropsPanel(&dlg); break;
+	case MapObject::Type::Thing:  panel_props = new ThingPropsPanel(&dlg); break;
+	default:                      panel_props = new MapObjectPropsPanel(&dlg, true); break;
 	}
-	sizer->Add(panel_props, 1, wxEXPAND | wxLEFT | wxRIGHT | wxTOP, ui::padLarge());
+	sizer->Add(panel_props, lh.sfWithLargeBorder(1, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Add dialog buttons
-	sizer->AddSpacer(ui::pad());
-	sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	sizer->AddSpacer(lh.pad());
+	sizer->Add(dlg.CreateButtonSizer(wxOK | wxCANCEL), lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Open current selection
 	panel_props->openObjects(list);
@@ -490,42 +336,4 @@ bool mapeditor::editObjectProperties(vector<MapObject*>& list)
 void mapeditor::resetObjectPropertiesPanel()
 {
 	map_window->propsPanel()->clearGrid();
-}
-
-// -----------------------------------------------------------------------------
-// Returns the 'base' item type for [type]
-// (eg. WallMiddle is technically a Side)
-// -----------------------------------------------------------------------------
-mapeditor::ItemType mapeditor::baseItemType(const ItemType& type)
-{
-	switch (type)
-	{
-	case ItemType::Vertex: return ItemType::Vertex;
-	case ItemType::Line: return ItemType::Line;
-	case ItemType::Side:
-	case ItemType::WallBottom:
-	case ItemType::WallMiddle:
-	case ItemType::WallTop: return ItemType::Side;
-	case ItemType::Sector:
-	case ItemType::Ceiling:
-	case ItemType::Floor: return ItemType::Sector;
-	case ItemType::Thing: return ItemType::Thing;
-	default: return ItemType::Any;
-	}
-}
-
-// -----------------------------------------------------------------------------
-// Returns the map editor item type of the given map [object]
-// -----------------------------------------------------------------------------
-mapeditor::ItemType mapeditor::itemTypeFromObject(const MapObject* object)
-{
-	switch (object->objType())
-	{
-	case MapObject::Type::Vertex: return ItemType::Vertex;
-	case MapObject::Type::Line: return ItemType::Line;
-	case MapObject::Type::Side: return ItemType::Side;
-	case MapObject::Type::Sector: return ItemType::Sector;
-	case MapObject::Type::Thing: return ItemType::Thing;
-	default: return ItemType::Any;
-	}
 }

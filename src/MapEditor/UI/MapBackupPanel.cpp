@@ -32,11 +32,15 @@
 #include "Main.h"
 #include "MapBackupPanel.h"
 #include "App.h"
-#include "Archive/Formats/WadArchive.h"
-#include "Archive/Formats/ZipArchive.h"
-#include "UI/Canvas/MapPreviewCanvas.h"
+#include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/ArchiveFormatHandler.h"
+#include "General/MapPreviewData.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Layout.h"
 #include "UI/Lists/ListView.h"
-#include "UI/WxUtils.h"
+#include "Utility/StringUtils.h"
 
 using namespace slade;
 
@@ -51,17 +55,20 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // MapBackupPanel class constructor
 // -----------------------------------------------------------------------------
-MapBackupPanel::MapBackupPanel(wxWindow* parent) : wxPanel{ parent, -1 }, archive_backups_{ new ZipArchive() }
+MapBackupPanel::MapBackupPanel(wxWindow* parent) :
+	wxPanel{ parent, -1 },
+	map_data_{ new MapPreviewData },
+	archive_backups_{ new Archive(ArchiveFormat::Zip) }
 {
 	// Setup Sizer
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
 
 	// Backups list
-	sizer->Add(list_backups_ = new ListView(this, -1), 0, wxEXPAND | wxRIGHT, ui::pad());
+	sizer->Add(list_backups_ = new ListView(this, -1), ui::LayoutHelper(this).sfWithBorder(0, wxRIGHT).Expand());
 
 	// Map preview
-	sizer->Add(canvas_map_ = new MapPreviewCanvas(this), 1, wxEXPAND);
+	sizer->Add(canvas_map_ = ui::createMapPreviewCanvas(this, map_data_.get()), 1, wxEXPAND);
 
 	// Bind events
 	list_backups_->Bind(wxEVT_LIST_ITEM_SELECTED, [&](wxListEvent&) { updateMapPreview(); });
@@ -121,7 +128,7 @@ bool MapBackupPanel::loadBackups(string archive_name, string_view map_name)
 void MapBackupPanel::updateMapPreview()
 {
 	// Clear current preview
-	canvas_map_->clearMap();
+	map_data_->clear();
 
 	// Check for selection
 	if (list_backups_->selectedItems().IsEmpty())
@@ -129,7 +136,7 @@ void MapBackupPanel::updateMapPreview()
 	int selection = (list_backups_->GetItemCount() - 1) - list_backups_->selectedItems()[0];
 
 	// Load map data to temporary wad
-	archive_mapdata_ = std::make_unique<WadArchive>();
+	archive_mapdata_ = std::make_unique<Archive>(ArchiveFormat::Wad);
 	auto dir         = dir_current_->subdirAt(selection);
 	for (unsigned a = 0; a < dir->numEntries(); a++)
 		archive_mapdata_->addEntry(std::make_shared<ArchiveEntry>(*dir->entryAt(a)), "");
@@ -137,5 +144,5 @@ void MapBackupPanel::updateMapPreview()
 	// Open map preview
 	auto maps = archive_mapdata_->detectMaps();
 	if (!maps.empty())
-		canvas_map_->openMap(maps[0]);
+		map_data_->openMap(maps[0]);
 }

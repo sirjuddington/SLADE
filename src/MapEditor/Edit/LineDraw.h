@@ -1,6 +1,6 @@
 #pragma once
 
-namespace slade
+namespace slade::mapeditor
 {
 class MapEditContext;
 
@@ -14,11 +14,11 @@ public:
 		ShapeEdge
 	};
 
-	explicit LineDraw(MapEditContext& context) : context_(context) {}
+	explicit LineDraw(MapEditContext& context) : context_(&context) {}
 
 	State                state() const { return state_current_; }
 	unsigned             nPoints() const { return draw_points_.size(); }
-	Vec2d                point(unsigned index);
+	Vec2d                point(unsigned index) const;
 	const vector<Vec2d>& points() const { return draw_points_; }
 
 	void setState(State new_state) { state_current_ = new_state; }
@@ -31,9 +31,10 @@ public:
 	void end(bool apply = true);
 
 private:
-	vector<Vec2d>   draw_points_;
-	Vec2d           draw_origin_;
-	MapEditContext& context_;
-	State           state_current_ = State::Line;
+	MapEditContext* context_;
+
+	vector<Vec2d> draw_points_;
+	Vec2d         draw_origin_;
+	State         state_current_ = State::Line;
 };
-} // namespace slade
+} // namespace slade::mapeditor

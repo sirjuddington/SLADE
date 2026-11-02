@@ -1,0 +1,660 @@
+// Action Doom 2 thing types
+{
+  "groups": [
+    {
+      "name": "Player Starts",
+      "defaults": { "colour": "rgb(0, 255, 0)", "radius": 16, "solid": true },
+      "things": [
+        // Action Doom II doesn't support multiplayer, so this is all there is.
+        { "type": 1, "name": "Player Start", "sprite": "PLAYA?", "scale": 0.23, "player_coop": true }
+      ]
+    },
+
+    {
+      "name": "Teleports",
+      "things": [
+        { "type": 14, "name": "Teleport Destination", "colour": "rgb(255, 255, 0)" }
+      ]
+    },
+
+    {
+      "name": "Monsters",
+      "defaults": { "colour": "rgb(200, 0, 0)", "solid": true, "scale": 0.24 },
+      "things": [
+        { "type": 13379, "name": "Leather Jacket Punk Spawner", "sprite": "PUNKA?" },
+        { "type": 13401, "name": "Flynn Haggar (ally)", "sprite": "FLYNA?", "scale": 0.44 },
+        { "type": 13403, "name": "Village Randy", "sprite": "VIL1A?", "scale": 0.55 },
+        { "type": 13404, "name": "Village Glenn", "sprite": "VIL2A?", "scale": 0.55 },
+        { "type": 13405, "name": "Village Felipe", "sprite": "VIL3A?", "scale": 0.55 },
+        { "type": 13406, "name": "Village David", "sprite": "VIL4A?", "scale": 0.55 },
+        { "type": 13407, "name": "Village Victor", "sprite": "VIL5A?", "scale": 0.55 },
+        { "type": 13408, "name": "Village Alex", "sprite": "VIL6A?", "scale": 0.55 },
+        { "type": 13428, "name": "Fat Construction Guy", "sprite": "TRKRA?", "scale": 0.27 },
+        { "type": 13429, "name": "Purple Jacket Punk Spawner", "sprite": "PNK2A?" },
+        { "type": 13430, "name": "Goth Chick", "sprite": "GOTHA?" },
+        {
+          "type": 13431,
+          "name": "Green Jacket Punk Spawner",
+          "sprite": "PNK2A?",
+          "translation": [
+            "250:254=112:127",
+            "201:201=73:73",
+            "204:204=76:76",
+            "192:192=64:64",
+            "196:196=68:68"
+          ]
+        },
+        {
+          "type": 13432,
+          "name": "Yellow Jacket Punk Spawner",
+          "sprite": "PNK2A?",
+          "translation": [
+            "250:254=227:231",
+            "48:63=64:79",
+            "255:255=2:2",
+            "201:201=121:121",
+            "204:204=124:124",
+            "192:192=112:112",
+            "196:196=116:116"
+          ]
+        },
+        { "type": 13439, "name": "Shirtless Thug", "sprite": "THUGA?", "scale": 0.195 },
+        { "type": 13442, "name": "Redneck", "sprite": "REDNA?", "scale": 0.27 },
+        { "type": 13444, "name": "Redhead Kylie", "sprite": "KYLIA?", "scale": 0.205 },
+        { "type": 13446, "name": "Knife Thug", "sprite": "KTHGA?", "scale": 0.21 },
+        { "type": 13447, "name": "Knife-Throwing Thug", "sprite": "TTHGA?", "scale": 0.21 },
+        {
+          "type": 13459,
+          "name": "Darkhead Tina",
+          "sprite": "KYLIA?",
+          "translation": [
+            "22:22=119:119",
+            "37:37=122:122",
+            "198:198=188:188",
+            "192:192=184:184",
+            "214:214=107:107",
+            "178:178=110:110",
+            "250:252=115:117",
+            "160:160=81:81",
+            "184:184=8:8",
+            "17:17=222:222",
+            "54:54=70:70",
+            "255:255=75:75",
+            "50:50=64:64"
+          ],
+          "scale": 0.205
+        },
+        { "type": 13466, "name": "Kickboxer", "sprite": "KBXRA?", "scale": 0.175 },
+        { "type": 13487, "name": "Hugo the Butcher", "sprite": "HUGOA?", "scale": 0.175 },
+        { "type": 13495, "name": "Ninja chick", "sprite": "NINJB?", "scale": 0.205 },
+        { "type": 13498, "name": "Blue Suit Guy", "sprite": "TUX1A?", "scale": 0.21 },
+        { "type": 13499, "name": "Red Suit Guy", "sprite": "TUX2A?", "scale": 0.21 },
+        { "type": 13500, "name": "Green suit guy", "sprite": "TUX3A?", "scale": 0.21 },
+        { "type": 13504, "name": "Gary Johnson (ally)", "sprite": "GARYA?", "scale": 0.23 },
+        { "type": 13514, "name": "Tommy LaCoata", "sprite": "TOMYA?", "scale": 0.27 },
+        { "type": 13519, "name": "Bebop", "sprite": "BBOPA?", "scale": 0.195 },
+        { "type": 13520, "name": "Rocksteady", "sprite": "RSDYA?", "scale": 0.27 },
+        { "type": 13522, "name": "Uzi guy", "sprite": "TUX4A?", "scale": 0.21 },
+        { "type": 13531, "name": "Scuba Steve", "sprite": "SCUBE?", "scale": 0.22 },
+        { "type": 13537, "name": "Purple Jacket Punk With Pipe", "sprite": "PNK3A?" },
+        {
+          "type": 13538,
+          "name": "Green Jacket Punk With Pipe",
+          "sprite": "PNK3A?",
+          "translation": [
+            "250:254=112:127",
+            "201:201=73:73",
+            "204:204=76:76",
+            "192:192=64:64",
+            "196:196=68:68"
+          ]
+        },
+        {
+          "type": 13539,
+          "name": "Yellow Jacket Punk With Pipe",
+          "sprite": "PNK3A?",
+          "translation": [
+            "250:254=227:231",
+            "48:63=64:79",
+            "255:255=2:2",
+            "201:201=121:121",
+            "204:204=124:124",
+            "192:192=112:112",
+            "196:196=116:116"
+          ]
+        },
+        { "type": 13540, "name": "Purple Jacket Punk With Board", "sprite": "PNK4A?" },
+        {
+          "type": 13541,
+          "name": "Green Jacket Punk With Board",
+          "sprite": "PNK4A?",
+          "translation": [
+            "250:254=112:127",
+            "201:201=73:73",
+            "204:204=76:76",
+            "192:192=64:64",
+            "196:196=68:68"
+          ]
+        },
+        {
+          "type": 13542,
+          "name": "Yellow Jacket Punk With Board",
+          "sprite": "PNK4A?",
+          "translation": [
+            "250:254=227:231",
+            "48:63=64:79",
+            "255:255=2:2",
+            "201:201=121:121",
+            "204:204=124:124",
+            "192:192=112:112",
+            "196:196=116:116"
+          ]
+        },
+        { "type": 13543, "name": "Leather Jacket Punk With Chain", "sprite": "PNK5A?" },
+        { "type": 13546, "name": "Chopper Gun" },
+        { "type": 13554, "name": "Blue Suit Guy Drops Gun", "sprite": "TUX1A?", "scale": 0.21 },
+        { "type": 13555, "name": "Leather Jacket Punk", "sprite": "PUNKA?" },
+        { "type": 13556, "name": "Purple Jacket Punk", "sprite": "PNK2A?" },
+        {
+          "type": 13557,
+          "name": "Green Jacket Punk",
+          "sprite": "PNK2A?",
+          "translation": [
+            "250:254=112:127",
+            "201:201=73:73",
+            "204:204=76:76",
+            "192:192=64:64",
+            "196:196=68:68"
+          ]
+        },
+        {
+          "type": 13558,
+          "name": "Yellow Jacket Punk",
+          "sprite": "PNK2A?",
+          "translation": [
+            "250:254=227:231",
+            "48:63=64:79",
+            "255:255=2:2",
+            "201:201=121:121",
+            "204:204=124:124",
+            "192:192=112:112",
+            "196:196=116:116"
+          ]
+        },
+        { "type": 13559, "name": "Wolf", "sprite": "WOLFB?", "scale": 0.5 },
+        { "type": 13560, "name": "Tree Sniper", "sprite": "SNPRA?", "scale": 0.18 },
+        { "type": 13568, "name": "Maggie (ally)", "scale": 0.4, "sprite": "MAGGB?" }
+      ]
+    },
+
+    {
+      "name": "Monsters/Bonus",
+      "things": [
+        { "type": 13485, "name": "Darknation Zombie", "sprite": "DNZ1E?" },
+        { "type": 13486, "name": "Armless Darknation Zombie", "sprite": "DNZ1E?" },
+        { "type": 20001, "name": "Topless Kylie (pillowfight)", "sprite": "GAL1A?", "scale": 0.205 },
+        { "type": 20002, "name": "Topless Tina (pillowfight)", "sprite": "GAL2A?", "scale": 0.205 },
+        { "type": 20004, "name": "Zombie Punk", "sprite": "ZOM1A?" },
+        { "type": 20005, "name": "Zombie Thug", "sprite": "ZOM2A?", "scale": 0.21 },
+        { "type": 20006, "name": "Zombie Girl", "sprite": "ZOM3A?", "scale": 0.205 },
+        { "type": 13561, "name": "Knife Thug (no drop)", "sprite": "KTHGA?", "scale": 0.21 },
+        { "type": 13562, "name": "Knife-Throwing Thug (no drop)", "sprite": "TTHGA?", "scale": 0.21 },
+        { "type": 13563, "name": "Tommy LaCoata (no drop)", "sprite": "TOMYA?", "scale": 0.27 },
+        { "type": 13564, "name": "Uzi guy (no drop)", "sprite": "TUX4A?", "scale": 0.21 },
+        { "type": 13565, "name": "Scuba Steve (no drop)", "sprite": "SCUBE?", "scale": 0.22 },
+        { "type": 13566, "name": "Ninja chick (no drop)", "sprite": "NINJB?", "scale": 0.205 }
+      ]
+    },
+
+    {
+      "name": "Monsters/Dead of Winter",
+      "things": [
+        { "type": 13579, "name": "Silly ninja chick (1 hp)", "sprite": "NINJB?", "scale": 0.205 },
+        { "type": 13581, "name": "Winter Punk", "sprite": "WPK1A?" },
+        { "type": 13582, "name": "Winter Punk With Pipe", "sprite": "WPK2A?" },
+        { "type": 13583, "name": "Winter Punk With Board", "sprite": "WPK3A?" },
+        { "type": 13584, "name": "Winter Kylie", "sprite": "WCHXA?", "scale": 0.205 },
+        { "type": 13585, "name": "Winter Knife-Throwing Thug", "sprite": "WTHGA?", "scale": 0.21 },
+        { "type": 13586, "name": "St. Nick", "sprite": "SNTAL?", "scale": 0.27 },
+        { "type": 13588, "name": "Hockey Thug", "sprite": "WPK4A?", "scale": 0.195 },
+        { "type": 13592, "name": "Winter Punk Spawner", "sprite": "WPK1A?", "scale": 0.24 }
+      ]
+    },
+
+    {
+      "name": "Health And Armour",
+      "defaults": {
+        "angle": false
+      },
+      "things": [
+        { "type": 13382, "name": "Apple", "sprite": "APLEA?" },
+        { "type": 13383, "name": "Six-pack of cola", "sprite": "ESPIA?" },
+        { "type": 13384, "name": "Turkey dinner", "sprite": "TRKYA?" },
+        { "type": 13411, "name": "Hershey bar", "sprite": "CDY1A?" },
+        { "type": 13412, "name": "Heath bar", "sprite": "CDY2A?" },
+        { "type": 13413, "name": "Fritos", "sprite": "CDY3A?" },
+        { "type": 13414, "name": "Can of coke", "sprite": "POP1A?" },
+        { "type": 13415, "name": "Can of pepsi", "sprite": "POP2A?" },
+        { "type": 13416, "name": "Can of 7up", "sprite": "POP3A?" },
+        { "type": 13448, "name": "Hamburger", "sprite": "BRGRA?" },
+        { "type": 13449, "name": "Taco", "sprite": "TACOA?" },
+        { "type": 13450, "name": "Sandwich", "sprite": "SWCHA?" },
+        { "type": 13451, "name": "Pizza pie", "sprite": "PZA2A?" }
+      ]
+    },
+
+    {
+      "name": "Weapons",
+      "defaults": {
+        "colour": "rgb(220, 180, 100)",
+        "radius": 20,
+        "angle": false,
+        "icon": "weapon"
+      },
+      "things": [
+        { "type": 13371, "name": "Green bottle", "sprite": "DNR1A?" },
+        { "type": 13433, "name": "Sarah (Pistol)", "sprite": "APISJ?" },
+        { "type": 13435, "name": "Hefty 2x4", "sprite": "BORDF?" },
+        { "type": 13436, "name": "Rusty old pipe", "sprite": "PIPEG?" },
+        { "type": 13437, "name": "Brown bottle", "sprite": "BBOTI?" },
+        { "type": 13438, "name": "Broken green bottle (invisible)", "sprite": "BOT1A?" },
+        { "type": 13440, "name": "Chain", "sprite": "CHANI?" },
+        { "type": 13441, "name": "Switchblade knife", "sprite": "KNIFH?" },
+        { "type": 13443, "name": "Baseball bat", "sprite": "BBATH?" },
+        { "type": 13445, "name": "Wrench", "sprite": "WRCHG?" },
+        { "type": 13460, "name": "Broken brown bottle (invisible)", "sprite": "BBOTJ?" },
+        { "type": 13461, "name": "Fire extinguisher", "sprite": "FEXTA?" },
+        { "type": 13467, "name": "Katana", "sprite": "SWRDO?" },
+        { "type": 13470, "name": "Chainsaw", "sprite": "JONZH?" },
+        { "type": 13494, "name": "Shovel", "sprite": "SHVLH?" },
+        { "type": 13496, "name": "Shurikens", "sprite": "STARA?" },
+        { "type": 13497, "name": "Sledge hammer", "sprite": "GABEI?" },
+        { "type": 13503, "name": "Cardboard tube", "sprite": "TUBEH?" },
+        { "type": 13521, "name": "Bottle of Jack Daniel's", "sprite": "JACKI?" },
+        { "type": 13523, "name": "Uzi", "sprite": "AUZIR?" },
+        { "type": 13533, "name": "Etruscan statue", "sprite": "ROMNS?" },
+        { "type": 13535, "name": "Taser", "sprite": "TAZRE?" },
+        { "type": 13536, "name": "Pool cue", "sprite": "PCUEI?" },
+        { "type": 13547, "name": "Blunderbuss", "sprite": "BUSSM?" }
+      ]
+    },
+
+    {
+      "name": "Weapons/Bonus",
+      "things": [
+        {
+          "type": 20003,
+          "name": "Pillow",
+          "sprite": "PILOF?",
+          "colour": "rgb(220, 180, 100)",
+          "radius": 20,
+          "angle": false,
+          "icon": "weapon"
+        }
+      ]
+    },
+
+    {
+      "name": "Weapons/Dead of Winter",
+      "defaults": {
+        "colour": "rgb(220, 180, 100)",
+        "radius": 20,
+        "angle": false,
+        "icon": "weapon"
+      },
+      "things": [
+        { "type": 3223, "name": "Snow Blower", "sprite": "SNWBE?" },
+        { "type": 13577, "name": "Hockey Stick", "sprite": "HOKYI?" },
+        { "type": 13587, "name": "Cigarettes", "sprite": "ACIGL?" },
+        { "type": 13590, "name": "Ice Pick", "sprite": "WPCKH?" },
+        { "type": 13598, "name": "Shotgun", "sprite": "ASHTM?" }
+      ]
+    },
+
+    {
+      "name": "Ammunition",
+      "defaults": {
+        "colour": "rgb(180, 150, 50)",
+        "angle": false,
+        "radius": 16,
+        "icon": "ammo"
+      },
+      "things": [
+        { "type": 13434, "name": "Clip of ammo", "sprite": "ACLPA?" },
+        { "type": 13488, "name": "Can of gasoline", "sprite": "GASCA?" },
+        { "type": 13489, "name": "Small can of gasoline", "sprite": "SGASA?" },
+        { "type": 13567, "name": "Cannon ball", "sprite": "BUSSG?" }
+      ]
+    },
+
+    {
+      "name": "Ammunition/Dead of Winter",
+      "defaults": {
+        "colour": "rgb(180, 150, 50)",
+        "angle": false,
+        "radius": 16,
+        "icon": "ammo"
+      },
+      "things": [
+        { "type": 13578, "name": "Puck", "sprite": "PUCKA?" },
+        { "type": 13599, "name": "Shotgun Shells", "sprite": "WSHLA?" }
+      ]
+    },
+
+    {
+      "name": "Powerups",
+      "defaults": {
+        "colour": "rgb(220, 100, 220)",
+        "radius": 16,
+        "angle": false,
+        "icon": "powerup"
+      },
+      "things": [
+        { "type": 13385, "name": "Bag of cash", "sprite": "SACKA?" },
+        { "type": 13386, "name": "Gold ingots", "sprite": "GOLDA?" },
+        { "type": 13452, "name": "Rolex", "sprite": "ROLXA?" },
+        { "type": 13453, "name": "Necklace", "sprite": "NECKA?" },
+        { "type": 13454, "name": "Ring", "sprite": "RINGA?" },
+        { "type": 13455, "name": "Silver ingots", "sprite": "SLVRA?" },
+        { "type": 13456, "name": "Sunglasses", "sprite": "RAYBA?" },
+        { "type": 13457, "name": "Banknotes", "sprite": "MONYA?" },
+        { "type": 13458, "name": "Action Comic", "sprite": "ACMCA?" },
+        { "type": 13468, "name": "Diamond", "sprite": "DIMDA?" },
+        { "type": 13491, "name": "TV", "sprite": "LOT1A?" },
+        { "type": 13492, "name": "Stereo", "sprite": "LOT2A?" },
+        { "type": 13493, "name": "Radio", "sprite": "BARTA?" },
+        { "type": 13502, "name": "River City Ransom coins", "sprite": "RCR2A?" },
+        { "type": 13505, "name": "ActionDoom", "sprite": "ACTNA?" },
+        { "type": 13506, "name": "Pitfall Gold", "sprite": "PITFA?" },
+        { "type": 13507, "name": "Daikatana", "sprite": "DAIKA?" },
+        { "type": 13527, "name": "Stapler", "sprite": "OFS2A?" },
+        { "type": 13534, "name": "Necronomicon", "sprite": "NECRA?" },
+        { "type": 13550, "name": "Romero BobbleHead", "sprite": "BOBLA?" },
+        { "type": 13551, "name": "Mordeth's computer", "sprite": "MORDA?" },
+        { "type": 13553, "name": "Windows source code", "sprite": "XPCDA?" }
+      ]
+    },
+
+    {
+      "name": "Powerups/Dead of Winter",
+      "defaults": {
+        "colour": "rgb(220, 100, 220)",
+        "radius": 16,
+        "angle": false,
+        "icon": "powerup"
+      },
+      "things": [
+        { "type": 13593, "name": "Salvation Army Bucket With Cash", "sprite": "WSALB?", "solid": false },
+        { "type": 13597, "name": "Doom", "sprite": "DMBXA?", "scale": 0.35 },
+        { "type": 13605, "name": "Sled", "sprite": "ROSEA?", "scale": 0.65 },
+        { "type": 13606, "name": "Snowglobe", "sprite": "WSNOA?", "scale": 0.4 }
+      ]
+    },
+
+    {
+      "name": "Billboard NPCs",
+      "defaults": {
+        "radius": 16,
+        "angle": false,
+        "decoration": true
+      },
+      "things": [
+        { "type": 13381, "name": "Jerry Marconi", "sprite": "HOMOA?" },
+        { "type": 13394, "name": "Pigeon", "sprite": "PIGNA?" },
+        { "type": 13399, "name": "Sir Elton John", "sprite": "ELTNA?" },
+        { "type": 13400, "name": "RocketMan", "sprite": "ELTNB?" },
+        { "type": 13410, "name": "Rasta man", "sprite": "RASTA?" },
+        { "type": 13420, "name": "Bickle", "sprite": "BICKA?" },
+        { "type": 13513, "name": "Peter Crisp with daughter", "sprite": "DICKB?" },
+        { "type": 13548, "name": "Your daughter", "sprite": "GIRLA?" },
+        { "type": 13549, "name": "Gary Johnson", "sprite": "GARYO?" }
+      ]
+    },
+
+    {
+      "name": "Billboard NPCs/Bonus",
+      "things": [
+        { "type": 13575, "name": "Mime", "sprite": "MIMEA?" }
+      ]
+    },
+
+    {
+      "name": "Interactive Items",
+      "defaults": {
+        "radius": 16,
+        "angle": false,
+        "decoration": false
+      },
+      "things": [
+        { "type": 13370, "name": "Trash can", "sprite": "TRASA?", "height": 48 },
+        { "type": 13374, "name": "Basket ball", "sprite": "BBALA?", "width": 12, "height": 24 },
+        { "type": 13377, "name": "Tire stack", "sprite": "TIREB?", "width": 12, "height": 56 },
+        { "type": 13380, "name": "Fire hydrant", "sprite": "HYDRA?", "width": 12, "height": 42 },
+        { "type": 13392, "name": "Cigarette trash can", "sprite": "ASHCA?", "height": 48 },
+        { "type": 13395, "name": "Bad clipping sign", "sprite": "SIGNA?", "width": 12, "height": 32 },
+        { "type": 13397, "name": "Chandelier", "sprite": "CHNDA?", "height": 70 },
+        { "type": 13402, "name": "Disco ball", "sprite": "GLOBA?", "height": 70 },
+        { "type": 13462, "name": "Trash bin", "sprite": "TRASF?" },
+        { "type": 13516, "name": "Night trash can", "sprite": "TRASL?" },
+        { "type": 13552, "name": "Trash can with key", "sprite": "TRASA?" }
+      ]
+    },
+
+    {
+      "name": "Interactive Items/Dead of Winter",
+      "defaults": {
+        "radius": 16,
+        "angle": false,
+        "decoration": false
+      },
+      "things": [
+        { "type": 13570, "name": "Fire Hydrant", "sprite": "WHYDA?" },
+        { "type": 13572, "name": "Tire stack", "sprite": "WTIRC?" },
+        { "type": 13573, "name": "Trash can", "sprite": "WTRSA?" },
+        { "type": 13575, "name": "Snowman", "sprite": "WSNMA?" },
+        { "type": 13603, "name": "Trash bin with key", "sprite": "TRASF?" },
+        { "type": 13604, "name": "Exploding Gasoline", "sprite": "GASCA?" }
+      ]
+    },
+
+    {
+      "name": "Gore/Dead Things",
+      "things": [
+        {
+          "type": 13515,
+          "name": "Dead Gary Johnson",
+          "sprite": "GARYM?",
+          "radius": 16,
+          "angle": false,
+          "decoration": true,
+          "colour": "rgb(90, 0, 0)"
+        }
+      ]
+    },
+
+    {
+      "name": "Gore/Dead of Winter",
+      "things": [
+        {
+          "type": 13602,
+          "name": "Frozen Hobo",
+          "sprite": "WBUMA?",
+          "radius": 16,
+          "angle": false,
+          "decoration": true,
+          "colour": "rgb(90, 0, 0)"
+        }
+      ]
+    },
+
+    {
+      "name": "Hanging & Impaled Bodies",
+      "defaults": {
+        "colour": "rgb(120, 0, 0)",
+        "radius": 16,
+        "angle": false,
+        "hanging": true,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 13508, "name": "Meathook", "sprite": "HOOKA?" },
+        { "type": 13509, "name": "Leg on meathook", "sprite": "BOD1A?" },
+        { "type": 13510, "name": "Body on meathook", "sprite": "BOD2A?" },
+        { "type": 13511, "name": "Torso on meathook", "sprite": "BOD3A?" }
+      ]
+    },
+
+    {
+      "name": "Blood & Stuff",
+      "defaults": {
+        "colour": "rgb(160, 0, 0)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true
+      },
+      "things": [
+        { "type": 10102, "name": "Blood dropper", "sprite": "BLD1Y?" },
+        { "type": 13524, "name": "Dojo debris spawner", "sprite": "CHP8A?" },
+        { "type": 13532, "name": "Splash spawner", "sprite": "SPLSA?" }
+      ]
+    },
+
+    {
+      "name": "Decorations/Streets",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 13375, "name": "Traffic cone", "sprite": "CONEA?", "width": 12, "height": 32 },
+        { "type": 13376, "name": "Tire", "sprite": "TIREA?", "width": 12, "height": 16 },
+        { "type": 13419, "name": "Parking meter", "sprite": "PMTRA?", "width": 8, "heigt": 56 }
+      ]
+    },
+
+    {
+      "name": "Decorations/Dead of Winter",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 13569, "name": "Traffic cone", "sprite": "WCONA?" },
+        { "type": 13571, "name": "Tire", "sprite": "WTIRD?" }
+      ]
+    },
+
+    {
+      "name": "Furniture",
+      "things": [
+        { "type": 13421, "name": "Umbrella", "sprite": "UMBRA?", "width": 8, "height": 56 },
+        { "type": 13464, "name": "Water cooler tank", "sprite": "COOLA?", "width": 12, "height": 42 },
+        { "type": 13465, "name": "Water cooler tank outline", "sprite": "COOLB?", "width": 12, "height": 42 },
+        { "type": 13525, "name": "Marble statue", "sprite": "STATA?", "width": 25, "height": 80 },
+        { "type": 13544, "name": "Wine cooler tank", "sprite": "WINEA?", "width": 12, "height": 42 }
+      ]
+    },
+
+    {
+      "name": "Plants",
+      "things": [
+        { "type": 13396, "name": "Leafy plant", "sprite": "PLNTA?", "width": 8, "height": 48 },
+        { "type": 13409, "name": "Leafy plant (hang)", "sprite": "PLNTA?", "width": 8, "height": 48, "hanging": true },
+        { "type": 13418, "name": "Birch tree", "sprite": "ACTRA?", "width": 24, "height": 72 }
+      ]
+    },
+
+    {
+      "name": "Rocks",
+      "things": [
+        { "type": 13480, "name": "Large rock #1", "sprite": "RCK1A?", "width": 24, "height": 30 },
+        { "type": 13481, "name": "Large rock #2", "sprite": "RCK2A?", "width": 24, "height": 30 },
+        { "type": 13482, "name": "Large rock #3", "sprite": "RCK3A?", "width": 24, "height": 30 }
+      ]
+    },
+
+    {
+      "name": "Small Things",
+      "defaults": {
+        "solid": false
+      },
+      "things": [
+        { "type": 13372, "name": "Cocktail glass", "sprite": "DNR2A?" },
+        { "type": 13373, "name": "Mug of beer", "sprite": "DNR3A?" },
+        { "type": 13387, "name": "Crumpled paper trash", "sprite": "TRSHA?" },
+        { "type": 13388, "name": "Newspaper", "sprite": "NEWSA?" },
+        { "type": 13391, "name": "Bust", "sprite": "BUSTA?" },
+        { "type": 13393, "name": "Cigarette", "sprite": "CIGGA?" },
+        { "type": 13417, "name": "Pot plant (tiny)", "sprite": "PLNTA?" },
+        { "type": 13425, "name": "Fruit pile (white)", "sprite": "FRT1A?", "width": 8, "height": 56 },
+        { "type": 13426, "name": "Fruit Pile (red)", "sprite": "FRT2A?", "width": 8, "height": 56 },
+        { "type": 13427, "name": "Fruit Pile (green)", "sprite": "FRT3A?", "width": 8, "height": 56 },
+        { "type": 13463, "name": "Empty fire extinguisher", "sprite": "FEXTJ?" },
+        { "type": 13469, "name": "Stone debris (temporary)", "sprite": "STN1A?" },
+        { "type": 13471, "name": "Night leafy bush", "sprite": "ATR2A?" },
+        { "type": 13472, "name": "Night dead bush", "sprite": "ATR2A?" },
+        { "type": 13473, "name": "Night grass", "sprite": "GRS1A?" },
+        { "type": 13474, "name": "Night grass with flower", "sprite": "GRS2A?" },
+        { "type": 13475, "name": "Big mushroom", "sprite": "MSH1A?" },
+        { "type": 13476, "name": "Small mushroom", "sprite": "MSH2A?" },
+        { "type": 13477, "name": "Reeds", "sprite": "GRS3A?" },
+        { "type": 13478, "name": "Tall grass", "sprite": "GRS4A?" },
+        { "type": 13479, "name": "Night grass tuft", "sprite": "GRS5A?" },
+        { "type": 13483, "name": "Small rock #1", "sprite": "RCK2A?" },
+        { "type": 13484, "name": "Small rock #2", "sprite": "RCK3A?" },
+        { "type": 13501, "name": "River City Ransom Alex", "sprite": "RCR1A?" },
+        { "type": 13517, "name": "Night trash", "sprite": "TRSHB?" },
+        { "type": 13518, "name": "Night newspaper", "sprite": "NEWSB?" },
+        { "type": 13526, "name": "Office chair", "sprite": "OFS1A?" },
+        { "type": 13528, "name": "Cell phone", "sprite": "OFS3A?" },
+        { "type": 13529, "name": "Microscope", "sprite": "OFS4A?" },
+        { "type": 13530, "name": "Pencil", "sprite": "OFS5A?" }
+      ]
+    },
+
+    {
+      "name": "Small Things/Dead of Winter",
+      "things": [
+        { "type": 13591, "name": "Salvation Army Bucket", "sprite": "WSALA?", "solid": false }
+      ]
+    },
+
+    {
+      "name": "Lighting",
+      "defaults": {
+        "colour": "rgb(220, 220, 200)",
+        "radius": 16,
+        "angle": false,
+        "icon": "light",
+        "fullbright": true,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 13389, "name": "Light post", "sprite": "LITEA?" },
+        { "type": 13390, "name": "Light corona", "sprite": "GLOWA?" },
+        { "type": 13398, "name": "Light bulb", "sprite": "BULBA?" },
+        { "type": 13422, "name": "Chinese lantern (red)", "sprite": "LMP1A?" },
+        { "type": 13423, "name": "Chinese lantern (blue)", "sprite": "LMP2A?" },
+        { "type": 13424, "name": "Chinese lantern (green)", "sprite": "LMP3A?" },
+        { "type": 13490, "name": "Swinging light bulb", "sprite": "BULBE?" }
+      ]
+    },
+
+    {
+      "name": "Lighting/Dead of Winter",
+      "things": [
+        { "type": 13574, "name": "Lamp Light", "sprite": "WLT1A?" },
+        { "type": 13576, "name": "Lamp Globe", "sprite": "WLT2A?" },
+        { "type": 13580, "name": "Fire", "sprite": "WFIRA?" }
+      ]
+    }
+  ]
+}

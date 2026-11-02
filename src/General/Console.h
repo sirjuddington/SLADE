@@ -17,8 +17,8 @@ public:
 	void   execute(const vector<string>& args) const;
 	size_t minArgs() const { return min_args_; }
 
-	bool operator<(ConsoleCommand c) const { return name_ < c.name(); }
-	bool operator>(ConsoleCommand c) const { return name_ > c.name(); }
+	bool operator<(const ConsoleCommand& c) const { return name_ < c.name(); }
+	bool operator>(const ConsoleCommand& c) const { return name_ > c.name(); }
 
 private:
 	string name_;
@@ -33,14 +33,16 @@ public:
 	Console()  = default;
 	~Console() = default;
 
-	int             numCommands() const { return (int)commands_.size(); }
+	int             numCommands() const { return static_cast<int>(commands_.size()); }
 	ConsoleCommand& command(size_t index);
 
-	void   addCommand(ConsoleCommand& c);
+	void   addCommand(const ConsoleCommand& c);
 	void   execute(string_view command);
 	string lastCommand();
 	string prevCommand(int index);
 	int    numPrevCommands() const { return cmd_log_.size(); }
+
+	static Console& instance();
 
 private:
 	vector<ConsoleCommand> commands_;
@@ -50,6 +52,6 @@ private:
 
 // Define for neat console command definitions
 #define CONSOLE_COMMAND(name, min_args, show_in_list)              \
-	void           c_##name(const vector<string>& args);           \
-	ConsoleCommand name(#name, &c_##name, min_args, show_in_list); \
-	void           c_##name(const vector<string>& args)
+	void           cc_##name(const vector<string>& args);           \
+	ConsoleCommand name(#name, &cc_##name, min_args, show_in_list); \
+	void           cc_##name(const vector<string>& args)

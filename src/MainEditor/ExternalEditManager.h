@@ -2,7 +2,6 @@
 
 namespace slade
 {
-class ArchiveEntry;
 class ExternalEditFileMonitor;
 
 class ExternalEditManager
@@ -19,6 +18,6 @@ private:
 	vector<ExternalEditFileMonitor*> file_monitors_;
 	bool                             destructing_ = false;
 
-	void monitorStopped(ExternalEditFileMonitor* monitor);
+	void monitorStopped(const ExternalEditFileMonitor* monitor);
 };
 } // namespace slade

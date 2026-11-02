@@ -1,0 +1,362 @@
+// Doom 64 thing types
+{
+  "groups": [
+    {
+      "name": "Player Starts",
+      "defaults": {
+        "colour": "rgb(0, 255, 0)",
+        "radius": 19,
+        "height": 64,
+        "solid": true
+      },
+      "things": [
+        { "type": 1, "name": "Player 1 Start", "sprite": "PLAYA?", "player_coop": true },
+        { "type": 2, "name": "Player 2 Start", "sprite": "PLAYB?", "palette": "PALPLAY1", "player_coop": true },
+        { "type": 3, "name": "Player 3 Start", "sprite": "PLAYC?", "palette": "PALPLAY2", "player_coop": true },
+        { "type": 4, "name": "Player 4 Start", "sprite": "PLAYD?", "palette": "PALPLAY3", "player_coop": true },
+        { "type": 11, "name": "Deathmatch Start", "sprite": "PLAYF?", "player_dm": true }
+      ]
+    },
+    {
+      "name": "Player Bots",
+      "defaults": {
+        "colour": "rgb(30, 220, 30)",
+        "radius": 32,
+        "height": 87,
+        "solid": true
+      },
+      "things": [
+        { "type": 3008, "name": "Red Player Bot", "sprite": "PLAYA?", "palette": "PALPLAY1" },
+        { "type": 3009, "name": "Aqua Player Bot", "sprite": "PLAYA?", "palette": "PALPLAY2" },
+        { "type": 3010, "name": "Green Player Bot", "sprite": "PLAYD?" }
+      ]
+    },
+    {
+      "name": "Teleports",
+      "things": [
+        { "type": 14, "name": "Teleport Destination", "colour": "rgb(255, 255, 0)", "sprite": "TFOGB?" }
+      ]
+    },
+    {
+      "name": "Monsters",
+      "defaults": {
+        "colour": "rgb(200, 0, 0)",
+        "solid": true
+      },
+      "things": [
+        {
+          "type": 9,
+          "name": "Former Human Sergeant",
+          "radius": 32,
+          "height": 87,
+          "sprite": "POSSA?",
+          "palette": "PALPOSS1"
+        },
+        {
+          "type": 16,
+          "name": "Cyberdemon",
+          "radius": 70,
+          "height": 170,
+          "sprite": "CYBRA?"
+        },
+        {
+          "type": 58,
+          "name": "Spectre",
+          "radius": 50,
+          "height": 100,
+          "sprite": "SARGA?",
+          "palette": "PALSARG1"
+        },
+        {
+          "type": 67,
+          "name": "Mancubus",
+          "radius": 60,
+          "height": 108,
+          "sprite": "FATTA?"
+        },
+        {
+          "type": 68,
+          "name": "Arachnotron",
+          "radius": 64,
+          "height": 80,
+          "sprite": "BSPIA?"
+        },
+        {
+          "type": 69,
+          "name": "Hell Knight",
+          "radius": 24,
+          "height": 100,
+          "sprite": "BOSSA1"
+        },
+        {
+          "type": 71,
+          "name": "Pain Elemental",
+          "radius": 60,
+          "height": 112,
+          "sprite": "PAINA?"
+        },
+        {
+          "type": 3001,
+          "name": "Imp",
+          "radius": 42,
+          "height": 94,
+          "sprite": "TROOA?"
+        },
+        {
+          "type": 3002,
+          "name": "Demon",
+          "radius": 44,
+          "height": 100,
+          "sprite": "SARGA?"
+        },
+        {
+          "type": 3003,
+          "name": "Baron of Hell",
+          "radius": 24,
+          "height": 100,
+          "sprite": "BOSSA?",
+          "palette": "PALBOSS1"
+        },
+        {
+          "type": 3004,
+          "name": "Former Human",
+          "radius": 32,
+          "height": 87,
+          "sprite": "POSSA?"
+        },
+        {
+          "type": 3005,
+          "name": "Cacodemon",
+          "radius": 55,
+          "height": 90,
+          "sprite": "HEADA?"
+        },
+        {
+          "type": 3006,
+          "name": "Lost Soul",
+          "radius": 28,
+          "height": 64,
+          "sprite": "SKULA?"
+        },
+        {
+          "type": 3007,
+          "name": "Nightmare Imp",
+          "radius": 42,
+          "height": 94,
+          "sprite": "TROOB?",
+          "palette": "PALTROO1"
+        },
+        {
+          "type": 3013,
+          "name": "Mother Demon",
+          "radius": 80,
+          "height": 150,
+          "sprite": "RECTB?"
+        },
+        {
+          "type": 3014,
+          "name": "Cyberdemon Bot",
+          "radius": 40,
+          "height": 110,
+          "sprite": "CYBRB?"
+        }
+      ]
+    },
+    {
+      "name": "Health And Armour",
+      "defaults": {
+        "angle": false
+      },
+      "things": [
+        { "type": 2011, "name": "Stimpack", "colour": "rgb(100, 100, 200)", "sprite": "STIMA?" },
+        { "type": 2012, "name": "Medikit", "colour": "rgb(100, 100, 200)", "sprite": "MEDIA?" },
+        { "type": 2014, "name": "Health Potion", "colour": "rgb(0, 0, 200)", "sprite": "BON1A?" },
+        { "type": 2015, "name": "Armour Helmet", "colour": "rgb(0, 0, 200)", "sprite": "BON2A?" },
+        { "type": 2018, "name": "Green Armour", "colour": "rgb(100, 200, 100)", "sprite": "ARM1A?" },
+        { "type": 2019, "name": "Blue Armour", "colour": "rgb(100, 100, 200)", "sprite": "ARM2A?" }
+      ]
+    },
+    {
+      "name": "Weapons",
+      "defaults": {
+        "colour": "rgb(220, 180, 100)",
+        "angle": false,
+        "icon": "weapon"
+      },
+      "things": [
+        { "type": 82, "name": "Super Shotgun", "sprite": "SGN2A?" },
+        { "type": 84, "name": "Laser Carbine", "sprite": "LSRGA?" },
+        { "type": 2001, "name": "Shotgun", "sprite": "SHOTA?" },
+        { "type": 2002, "name": "Chaingun", "sprite": "MGUNA?" },
+        { "type": 2003, "name": "Rocket Launcher", "sprite": "LAUNA?" },
+        { "type": 2004, "name": "Plasma Gun", "sprite": "PLSMA?" },
+        { "type": 2005, "name": "Chainsaw", "sprite": "CSAWA?" },
+        { "type": 2006, "name": "BFG9000", "sprite": "BFUGA?" }
+      ]
+    },
+    {
+      "name": "Ammunition",
+      "defaults": {
+        "colour": "rgb(180, 150, 50)",
+        "angle": false
+      },
+      "things": [
+        { "type": 8, "name": "Backpack", "sprite": "BPAKA?" },
+        { "type": 17, "name": "Energy Pack", "sprite": "CELPA?" },
+        { "type": 2007, "name": "Ammo Clip", "sprite": "CLIPA?" },
+        { "type": 2008, "name": "Shotgun Shells", "sprite": "SHELA?" },
+        { "type": 2010, "name": "Rocket", "sprite": "RCKTA?" },
+        { "type": 2046, "name": "Box Of Rockets", "sprite": "BROKA?" },
+        { "type": 2047, "name": "Energy Cell", "sprite": "CELLA?" },
+        { "type": 2048, "name": "Box Of Ammo", "sprite": "AMMOA?" },
+        { "type": 2049, "name": "Box Of Shells", "sprite": "SBOXA?" }
+      ]
+    },
+    {
+      "name": "Powerups",
+      "defaults": {
+        "colour": "rgb(220, 100, 220)",
+        "angle": false
+      },
+      "things": [
+        { "type": 83, "name": "Megasphere", "sprite": "MEGAA?" },
+        { "type": 1042, "name": "Yellow Artifact", "sprite": "ART1A?" },
+        { "type": 1043, "name": "Blue Artifact", "sprite": "ART2A?" },
+        { "type": 1044, "name": "Purple Artifact", "sprite": "ART3A?" },
+        { "type": 2013, "name": "Soul Sphere", "sprite": "SOULA?" },
+        { "type": 2022, "name": "Invulnerability Sphere", "sprite": "PINVA?" },
+        { "type": 2023, "name": "Berserk Pack", "sprite": "PSTRA?" },
+        { "type": 2024, "name": "Partial Invisibility Sphere", "sprite": "PINSB?" },
+        { "type": 2025, "name": "Radiation Shielding Suit", "sprite": "SUITA?" },
+        { "type": 2026, "name": "Computer Area Map", "sprite": "PMAPA?" },
+        { "type": 2045, "name": "Lite-Amp Goggles", "sprite": "PVISA?" }
+      ]
+    },
+    {
+      "name": "Keys",
+      "defaults": {
+        "angle": false
+      },
+      "things": [
+        { "type": 13, "name": "Red Keycard", "colour": "rgb(255, 0, 0)", "sprite": "RKEYA?" },
+        { "type": 38, "name": "Red Skull Key", "colour": "rgb(255, 0, 0)", "sprite": "RSKUA?" },
+        { "type": 5, "name": "Blue Keycard", "colour": "rgb(0, 0, 255)", "sprite": "BKEYA?" },
+        { "type": 40, "name": "Blue Skull Key", "colour": "rgb(0, 0, 255)", "sprite": "BSKUA?" },
+        { "type": 6, "name": "Yellow Keycard", "colour": "rgb(255, 255, 0)", "sprite": "YKEYA?" },
+        { "type": 39, "name": "Yellow Skull Key", "colour": "rgb(255, 255, 0)", "sprite": "YSKUA?" }
+      ]
+    },
+    {
+      "name": "Gore/Hanging & Impaled Bodies",
+      "defaults": {
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "colour": "rgb(120, 0, 0)",
+        "hanging": true
+      },
+      "things": [
+        { "type": 1005, "name": "Meat Stick", "sprite": "A006A?", "hanging": false, "solid": true },
+        { "type": 1006, "name": "Hanging Body", "sprite": "A021A?", "height": 95 },
+        { "type": 1007, "name": "Hanging Torso", "sprite": "A003A?", "height": 83 },
+        { "type": 1014, "name": "Chain Hook", "sprite": "A015A?", "height": 95 },
+        { "type": 1017, "name": "Hanging Cage", "sprite": "A001A?", "height": 91 },
+        { "type": 1018, "name": "Chain Pincer", "sprite": "A012A?", "height": 101 },
+        { "type": 1019, "name": "Chain Arm", "sprite": "A010A?", "height": 58 },
+        { "type": 1020, "name": "Bloody Mace", "sprite": "A018A?", "height": 80 },
+        { "type": 1046, "name": "Clean Mace", "sprite": "A019A?", "height": 56 },
+        { "type": 1047, "name": "Hanging Meat", "sprite": "A004A?", "height": 64 },
+        { "type": 1048, "name": "Hanging Head", "sprite": "A005A?", "height": 60 },
+        { "type": 1049, "name": "Hanging Ribq", "sprite": "A023A?", "height": 98 },
+        { "type": 1022, "name": "Skull Stick", "sprite": "A017A?", "radius": 8, "hanging": false, "solid": true },
+        { "type": 1023, "name": "Head Stick", "sprite": "A026A?", "radius": 8, "hanging": false, "solid": true },
+        { "type": 1024, "name": "Double Meat Stick", "sprite": "A022A?", "radius": 8, "hanging": false, "solid": true },
+        { "type": 1045, "name": "Bloody Metal Pole", "sprite": "A013A?", "hanging": false, "solid": true }
+      ]
+    },
+    {
+      "name": "Gore/Blood & Stuff",
+      "defaults": {
+        "radius": 16,
+        "angle": false,
+        "decoration": true,
+        "colour": "rgb(160, 0, 0)"
+      },
+      "things": [
+        { "type": 1008, "name": "Ribs", "sprite": "A020A?" },
+        { "type": 1009, "name": "Twitching Meat", "sprite": "A014A?" },
+        { "type": 1010, "name": "Blood Pool", "sprite": "A016A?" },
+        { "type": 1011, "name": "Gore Pool", "sprite": "A027A?" },
+        { "type": 1012, "name": "Torso", "sprite": "A008A?" },
+        { "type": 1013, "name": "Rib Cage", "sprite": "A007A?" }
+      ]
+    },
+    {
+      "name": "Lighting",
+      "defaults": {
+        "colour": "rgb(220, 220, 200)",
+        "angle": false,
+        "fullbright": true,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 34, "name": "Candle", "sprite": "CANDA?", "solid": false },
+        { "type": 1003, "name": "Blue Torch", "sprite": "A031A?" },
+        { "type": 1025, "name": "Red Torch", "sprite": "A032A?" },
+        { "type": 1033, "name": "Blue Fire", "sprite": "BFLMA?", "solid": false },
+        { "type": 1034, "name": "Red Fire", "sprite": "RFLMA?", "solid": false },
+        { "type": 1035, "name": "Yellow Fire", "sprite": "YFLMA?", "solid": false },
+        { "type": 1039, "name": "Yellow Torch", "sprite": "A030A?" },
+        { "type": 1015, "name": "Hanging Tech Lamp (Long)", "sprite": "LMP1A?", "height": 54, "hanging": true },
+        { "type": 1016, "name": "Hanging Tech Lamp (Short)", "sprite": "LMP2A?", "height": 12, "hanging": true },
+        { "type": 1050, "name": "Torch Stick (Long)", "sprite": "A033A?", "radius": 12, "solid": true },
+        { "type": 1051, "name": "Torch Stick (Short)", "sprite": "A034A?", "radius": 8, "solid": true },
+        { "type": 2051, "name": "Big Fire", "sprite": "FIREA?", "radius": 16, "height": 64 }
+      ]
+    },
+    {
+      "name": "Decorations",
+      "defaults": {
+        "colour": "rgb(200, 200, 200)",
+        "angle": false,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 1001, "name": "Barrel", "sprite": "BAR1A0", "radius": 16, "height": 50 },
+        { "type": 1028, "name": "Dragon Statue", "sprite": "A028A?" },
+        { "type": 1029, "name": "Demon Statue", "sprite": "A029A?" },
+        { "type": 1031, "name": "Long Tech Pole", "sprite": "A035A?", "radius": 8, "height": 80 },
+        { "type": 1032, "name": "Short Tech Pole", "sprite": "A036A?", "radius": 8, "height": 62 }
+      ]
+    },
+    {
+      "name": "Plants & Rocks",
+      "defaults": {
+        "colour": "rgb(80, 160, 80)",
+        "angle": false,
+        "radius": 16,
+        "decoration": true,
+        "solid": true
+      },
+      "things": [
+        { "type": 1038, "name": "Tree", "sprite": "TRE1A?" },
+        { "type": 1036, "name": "Small Tree Stump", "sprite": "TRE3A?" },
+        { "type": 1037, "name": "Large Tree Stump", "sprite": "TRE2A?" }
+      ]
+    },
+    {
+      "name": "Special Effects",
+      "defaults": {
+        "colour": "rgb(120, 120, 200)"
+      },
+      "things": [
+        { "type": 0, "name": "Camera", "sprite": "LASSA?" },
+        { "type": 2050, "name": "Projectile Spot", "sprite": "TRCRA?" },
+        { "type": 89, "name": "Trigger", "sprite": "APLSA?", "radius": 32 },
+        { "type": 90, "name": "DON'T USE - BUG!", "sprite": "PLSSE?" }
+      ]
+    }
+  ]
+}

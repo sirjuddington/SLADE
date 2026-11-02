@@ -34,8 +34,7 @@
 #include "Main.h"
 #include "UndoManagerHistoryPanel.h"
 #include "General/UndoRedo.h"
-#include "UI/WxUtils.h"
-#include "Utility/Colour.h"
+#include "UI/Layout.h"
 
 using namespace slade;
 
@@ -80,9 +79,7 @@ string UndoListView::itemText(long item, long column, long index) const
 			return fmt::format("{}. {}", item + 1, name);
 		}
 		else
-		{
 			return level->timeStamp(false, true);
-		}
 	}
 	else
 		return "Invalid Index";
@@ -110,9 +107,9 @@ void UndoListView::updateItemAttr(long item, long column, long index) const
 	item_attr_->SetTextColour(wxSystemSettings::GetColour(wxSYS_COLOUR_LISTBOXTEXT));
 
 	if (item == manager_->currentIndex())
-		item_attr_->SetTextColour(ColRGBA(0, 170, 0).toWx());
+		item_attr_->SetTextColour({ 0, 170, 0 });
 	else if (item > manager_->currentIndex())
-		item_attr_->SetTextColour(ColRGBA(150, 150, 150).toWx());
+		item_attr_->SetTextColour({ 150, 150, 150 });
 }
 
 // -----------------------------------------------------------------------------
@@ -152,15 +149,14 @@ void UndoListView::connectManagerSignals()
 {
 	if (manager_)
 	{
-		sc_recorded_ = manager_->signals().level_recorded.connect([this]() { updateFromManager(); });
-		sc_undo_     = manager_->signals().undo.connect([this]() { updateFromManager(); });
-		sc_redo_     = manager_->signals().redo.connect([this]() { updateFromManager(); });
+		connections_ += manager_->signals().level_recorded.connect([this]() { updateFromManager(); });
+		connections_ += manager_->signals().undo.connect([this]() { updateFromManager(); });
+		connections_ += manager_->signals().redo.connect([this]() { updateFromManager(); });
+		connections_ += manager_->signals().cleared.connect([this]() { updateFromManager(); });
 	}
 	else
 	{
-		sc_recorded_.disconnect();
-		sc_undo_.disconnect();
-		sc_redo_.disconnect();
+		connections_.disconnect();
 	}
 }
 
@@ -185,9 +181,9 @@ UndoManagerHistoryPanel::UndoManagerHistoryPanel(wxWindow* parent, UndoManager* 
 
 	// Add undo levels list
 	list_levels_ = new UndoListView(this, manager);
-	sizer->Add(list_levels_, 1, wxEXPAND | wxALL, ui::pad());
+	sizer->Add(list_levels_, ui::LayoutHelper(this).sfWithBorder(1).Expand());
 
-	list_levels_->AppendColumn(wxS("Action"), wxLIST_FORMAT_LEFT, ui::scalePx(160));
+	list_levels_->AppendColumn(wxS("Action"), wxLIST_FORMAT_LEFT, FromDIP(160));
 	list_levels_->AppendColumn(wxS("Time"), wxLIST_FORMAT_RIGHT);
 	list_levels_->Bind(wxEVT_LIST_ITEM_RIGHT_CLICK, &UndoManagerHistoryPanel::onItemRightClick, this);
 	Bind(wxEVT_MENU, &UndoManagerHistoryPanel::onMenu, this);
@@ -209,6 +205,8 @@ void UndoManagerHistoryPanel::setManager(UndoManager* manager)
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when a list item is right clicked

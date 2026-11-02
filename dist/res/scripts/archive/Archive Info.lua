@@ -32,7 +32,7 @@ function YesNo(boolean)
    end
 end
 
-function Execute(archive)
+return function(archive)
    -- Archive format info
    AddOutputLine("Format: " .. archive.format.name)
    AddOutputLine("Supports directories: " .. YesNo(archive.format.supportsDirs))

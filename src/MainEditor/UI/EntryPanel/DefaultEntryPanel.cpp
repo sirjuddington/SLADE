@@ -33,13 +33,16 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "DefaultEntryPanel.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
 #include "General/Misc.h"
-#include "General/SAction.h"
-#include "General/UI.h"
-#include "MainEditor/EntryOperations.h"
+#include "General/UndoRedo.h"
+#include "General/UndoSteps/EntryDataUS.h"
 #include "MainEditor/MainEditor.h"
 #include "MainEditor/UI/ArchivePanel.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
+#include "UI/Layout.h"
+#include "UI/SAuiToolBar.h"
 
 using namespace slade;
 
@@ -56,37 +59,39 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "default")
 {
+	auto lh = ui::LayoutHelper(this);
+
 	sizer_main_->AddStretchSpacer(1);
 
 	// Add index label
 	label_index_ = new wxStaticText(this, -1, wxS("Index"));
-	sizer_main_->Add(label_index_, 0, wxALL | wxALIGN_CENTER, ui::pad());
+	sizer_main_->Add(label_index_, lh.sfWithBorder().Center());
 
 	// Add type label
 	label_type_ = new wxStaticText(this, -1, wxS("Type"));
-	sizer_main_->Add(label_type_, 0, wxALL | wxALIGN_CENTER, ui::pad());
+	sizer_main_->Add(label_type_, lh.sfWithBorder().Center());
 
 	// Add size label
 	label_size_ = new wxStaticText(this, -1, wxS("Size"));
-	sizer_main_->Add(label_size_, 0, wxALL | wxALIGN_CENTER, ui::pad());
+	sizer_main_->Add(label_size_, lh.sfWithBorder().Center());
 
 	// Add actions frame
 	frame_actions_  = new wxStaticBox(this, -1, wxS("Actions"));
 	auto framesizer = new wxStaticBoxSizer(frame_actions_, wxVERTICAL);
-	sizer_main_->Add(framesizer, 0, wxALL | wxALIGN_CENTER, ui::pad());
+	sizer_main_->Add(framesizer, lh.sfWithBorder().Center());
 
 	// Add 'Convert Gfx' button
 	btn_gfx_convert_ = new wxButton(frame_actions_, -1, wxS("Convert Gfx To..."));
-	framesizer->AddSpacer(4);
-	framesizer->Add(btn_gfx_convert_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	framesizer->AddSpacer(lh.px(4));
+	framesizer->Add(btn_gfx_convert_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add 'Modify Gfx Offsets' button
 	btn_gfx_modify_offsets_ = new wxButton(frame_actions_, -1, wxS("Modify Gfx Offsets"));
-	framesizer->Add(btn_gfx_modify_offsets_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	framesizer->Add(btn_gfx_modify_offsets_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Add 'Edit Textures' button
 	btn_texture_edit_ = new wxButton(frame_actions_, -1, wxS("Edit Textures"));
-	framesizer->Add(btn_texture_edit_, 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::pad());
+	framesizer->Add(btn_texture_edit_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	sizer_main_->AddStretchSpacer(1);
 
@@ -101,16 +106,8 @@ DefaultEntryPanel::DefaultEntryPanel(wxWindow* parent) : EntryPanel(parent, "def
 				maineditor::openTextureEditor(entry->parent(), entry.get());
 		});
 
-	// Hide save/revert toolbar
-	toolbar_->deleteGroup("Entry");
-	stb_save_   = nullptr;
-	stb_revert_ = nullptr;
-
 	// Setup toolbar
-	auto group = new SToolBarGroup(toolbar_, "View As");
-	group->addActionButton("arch_view_text", "", true);
-	group->addActionButton("arch_view_hex", "", true);
-	toolbar_->addGroup(group);
+	toolbar_->loadLayoutFromResource("entry_default_top");
 
 	wxWindowBase::Layout();
 }

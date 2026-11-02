@@ -1,7 +1,7 @@
 #include "include/Defines.iss"
 
 #include "include/Setup.iss"
-OutputBaseFilename=Setup_{#MyAppName}_{#MyAppVersion}
+OutputBaseFilename={#MyAppName}_{#MyAppVersion}_win_x86_setup
 
 #include "include/Languages.iss"
 

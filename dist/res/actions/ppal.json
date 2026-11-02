@@ -1,0 +1,87 @@
+{
+  "ppal_addcustom": {
+    "text": "Add to Custom Palettes",
+    "icon": "plus",
+    "help_text": "Add the current palette to the custom palettes list"
+  },
+  "ppal_test": {
+    "text": "Test Palette",
+    "icon": "palette_test",
+    "help_text": "Temporarily add the current palette to the palette chooser"
+  },
+  "ppal_exportas": {
+    "text": "Export As...",
+    "icon": "export",
+    "help_text": "Export the current palette to a file"
+  },
+  "ppal_importfrom": {
+    "text": "Import From...",
+    "icon": "import",
+    "help_text": "Import data from a file in the current palette"
+  },
+  "ppal_colourise": {
+    "text": "Colourise",
+    "icon": "palette_colourise",
+    "help_text": "Colourise the palette"
+  },
+  "ppal_tint": {
+    "text": "Tint",
+    "icon": "palette_tint",
+    "help_text": "Tint the palette"
+  },
+  "ppal_tweak": {
+    "text": "Tweak",
+    "icon": "palette_tweak",
+    "help_text": "Tweak the palette"
+  },
+  "ppal_invert": {
+    "text": "Invert",
+    "icon": "palette_invert",
+    "help_text": "Invert the palette"
+  },
+  "ppal_gradient": {
+    "text": "Gradient",
+    "icon": "palette_gradient",
+    "help_text": "Add a gradient to the palette"
+  },
+  "ppal_moveup": {
+    "text": "Pull Ahead",
+    "icon": "palette_pull",
+    "help_text": "Move this palette one rank towards the first"
+  },
+  "ppal_movedown": {
+    "text": "Push Back",
+    "icon": "palette_push",
+    "help_text": "Move this palette one rank towards the last"
+  },
+  "ppal_duplicate": {
+    "text": "Duplicate",
+    "icon": "palette_duplicate",
+    "help_text": "Create a copy of this palette at the end"
+  },
+  "ppal_remove": {
+    "text": "Remove",
+    "icon": "palette_delete",
+    "help_text": "Erase this palette"
+  },
+  "ppal_removeothers": {
+    "text": "Remove Others",
+    "icon": "palette_deleteothers",
+    "help_text": "Keep only this palette and erase all others"
+  },
+  "ppal_report": {
+    "text": "Write Report",
+    "icon": "text",
+    "help_text": "Write an info report on this palette"
+  },
+  "ppal_generate": {
+    "text": "Generate Palettes",
+    "icon": "palette_generate",
+    "help_text": "Generate full range of palettes from the first"
+  },
+  "ppal_colormap": {
+    "text": "Generate Colormaps",
+    "icon": "colormap",
+    "help_text": "Generate colormap lump from the first palette"
+  }
+}

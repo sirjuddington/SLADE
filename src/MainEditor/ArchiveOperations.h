@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Archive/Archive.h"
-
 namespace slade::archiveoperations
 {
 bool save(Archive& archive);
 bool saveAs(Archive& archive);
+
+bool buildArchive(string_view path);
 
 bool removeUnusedPatches(Archive* archive);
 bool checkDuplicateEntryNames(Archive* archive);
@@ -23,8 +23,8 @@ bool checkZDoomOverriddenEntriesInIWAD(Archive* archive);
 size_t replaceThings(Archive* archive, int oldtype, int newtype);
 size_t replaceTextures(
 	Archive*      archive,
-	const string& oldname,
-	const string& newname,
+	const string& oldtex,
+	const string& newtex,
 	bool          floor   = false,
 	bool          ceiling = false,
 	bool          lower   = false,

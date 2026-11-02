@@ -1,9 +1,8 @@
 #pragma once
 
-#include "Graphics/SImage/SImage.h"
-
 namespace slade
 {
+class SImage;
 class SAction;
 
 class SBrush

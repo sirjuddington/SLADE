@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -31,7 +31,9 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "MapVertex.h"
+#include "MapLine.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/Debuggable.h"
 #include "Utility/Parser.h"
 
 using namespace slade;
@@ -52,7 +54,7 @@ MapVertex::MapVertex(const Vec2d& pos) : MapObject(Type::Vertex), position_{ pos
 // -----------------------------------------------------------------------------
 // MapVertex class constructor from UDMF definition
 // -----------------------------------------------------------------------------
-MapVertex::MapVertex(const Vec2d& pos, ParseTreeNode* udmf_def) : MapObject(Type::Vertex), position_{ pos }
+MapVertex::MapVertex(const Vec2d& pos, const ParseTreeNode* udmf_def) : MapObject(Type::Vertex), position_{ pos }
 {
 	// Set properties from UDMF definition
 	ParseTreeNode* prop;
@@ -69,10 +71,20 @@ MapVertex::MapVertex(const Vec2d& pos, ParseTreeNode* udmf_def) : MapObject(Type
 }
 
 // -----------------------------------------------------------------------------
+// Copies another MapVertex object [c] (does not copy position)
+// -----------------------------------------------------------------------------
+void MapVertex::copy(MapObject* c)
+{
+	beginModify();
+	MapObject::copy(c);
+	endModify();
+}
+
+// -----------------------------------------------------------------------------
 // Returns the object point [point].
 // Currently for vertices this is always the vertex position
 // -----------------------------------------------------------------------------
-Vec2d MapVertex::getPoint(Point point)
+Vec2d MapVertex::getPoint(Point point) const
 {
 	return position_;
 }
@@ -83,9 +95,10 @@ Vec2d MapVertex::getPoint(Point point)
 void MapVertex::move(double nx, double ny)
 {
 	// Move the vertex
-	setModified();
+	beginModify();
 	position_.x = nx;
 	position_.y = ny;
+	endModify();
 
 	// Reset all attached lines' geometry info
 	for (auto& connected_line : connected_lines_)
@@ -97,12 +110,12 @@ void MapVertex::move(double nx, double ny)
 // -----------------------------------------------------------------------------
 // Returns the value of the integer property matching [key]
 // -----------------------------------------------------------------------------
-int MapVertex::intProperty(string_view key)
+int MapVertex::intProperty(string_view key) const
 {
 	if (key == PROP_X)
-		return (int)position_.x;
+		return static_cast<int>(position_.x);
 	else if (key == PROP_Y)
-		return (int)position_.y;
+		return static_cast<int>(position_.y);
 	else
 		return MapObject::intProperty(key);
 }
@@ -110,7 +123,7 @@ int MapVertex::intProperty(string_view key)
 // -----------------------------------------------------------------------------
 // Returns the value of the float property matching [key]
 // -----------------------------------------------------------------------------
-double MapVertex::floatProperty(string_view key)
+double MapVertex::floatProperty(string_view key) const
 {
 	if (key == PROP_X)
 		return position_.x;
@@ -125,18 +138,21 @@ double MapVertex::floatProperty(string_view key)
 // -----------------------------------------------------------------------------
 void MapVertex::setIntProperty(string_view key, int value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_X)
 	{
+		beginModify();
 		position_.x = value;
+		endModify();
+
 		for (auto& connected_line : connected_lines_)
 			connected_line->resetInternals();
 	}
 	else if (key == PROP_Y)
 	{
+		beginModify();
 		position_.y = value;
+		endModify();
+
 		for (auto& connected_line : connected_lines_)
 			connected_line->resetInternals();
 	}
@@ -149,13 +165,18 @@ void MapVertex::setIntProperty(string_view key, int value)
 // -----------------------------------------------------------------------------
 void MapVertex::setFloatProperty(string_view key, double value)
 {
-	// Update modified time
-	setModified();
-
 	if (key == PROP_X)
+	{
+		beginModify();
 		position_.x = value;
+		endModify();
+	}
 	else if (key == PROP_Y)
+	{
+		beginModify();
 		position_.y = value;
+		endModify();
+	}
 	else
 		return MapObject::setFloatProperty(key, value);
 }
@@ -163,7 +184,7 @@ void MapVertex::setFloatProperty(string_view key, double value)
 // -----------------------------------------------------------------------------
 // Returns true if the property [key] can be modified via script
 // -----------------------------------------------------------------------------
-bool MapVertex::scriptCanModifyProp(string_view key)
+bool MapVertex::scriptCanModifyProp(string_view key) const
 {
 	if (key == PROP_X || key == PROP_Y)
 		return false;
@@ -182,7 +203,7 @@ void MapVertex::connectLine(MapLine* line)
 // -----------------------------------------------------------------------------
 // Removes [line] from the list of lines connected to this vertex
 // -----------------------------------------------------------------------------
-void MapVertex::disconnectLine(MapLine* line)
+void MapVertex::disconnectLine(const MapLine* line)
 {
 	for (unsigned a = 0; a < connected_lines_.size(); a++)
 	{
@@ -197,7 +218,7 @@ void MapVertex::disconnectLine(MapLine* line)
 // -----------------------------------------------------------------------------
 // Returns the connected line at [index]
 // -----------------------------------------------------------------------------
-MapLine* MapVertex::connectedLine(unsigned index)
+MapLine* MapVertex::connectedLine(unsigned index) const
 {
 	if (index >= connected_lines_.size())
 		return nullptr;
@@ -241,3 +262,16 @@ void MapVertex::writeUDMF(string& def)
 
 	def += "}\n\n";
 }
+
+#ifndef NDEBUG
+// -----------------------------------------------------------------------------
+// Debuggable operator
+// -----------------------------------------------------------------------------
+MapVertex::operator Debuggable() const
+{
+	if (!this)
+		return { "<vertex NULL>" };
+
+	return { fmt::format("<vertex {}>", index_) };
+}
+#endif

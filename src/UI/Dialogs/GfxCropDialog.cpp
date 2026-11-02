@@ -31,106 +31,15 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "GfxCropDialog.h"
-#include "General/UI.h"
 #include "Graphics/SImage/SImage.h"
-#include "OpenGL/Drawing.h"
-#include "OpenGL/GLTexture.h"
+#include "OpenGL/View.h"
+#include "UI/Canvas/Canvas.h"
+#include "UI/Canvas/GfxCanvasBase.h"
 #include "UI/Controls/NumberTextCtrl.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
-
-
-// -----------------------------------------------------------------------------
-//
-// CropCanvas Class Functions
-//
-// -----------------------------------------------------------------------------
-
-
-// -----------------------------------------------------------------------------
-// CropCanvas class constructor
-// -----------------------------------------------------------------------------
-CropCanvas::CropCanvas(wxWindow* parent, SImage* image, Palette* palette) :
-	OGLCanvas(parent, -1, false),
-	image_{ image }
-{
-	if (image && image->isValid())
-		crop_rect_.set(0, 0, image->width(), image->height());
-
-	setPalette(palette);
-
-	int size = ui::scalePx(220);
-	SetInitialSize(wxSize(size, size));
-}
-
-// -----------------------------------------------------------------------------
-// Draw the canvas contents
-// -----------------------------------------------------------------------------
-void CropCanvas::draw()
-{
-	// Setup for 2d
-	setup2D();
-
-	// Draw background
-	drawCheckeredBackground();
-
-	// Load texture
-	if (!texture_ && image_ && image_->isValid())
-		texture_ = gl::Texture::createFromImage(*image_, &palette_);
-
-	// Determine graphic position & scale
-	const wxSize size   = GetSize() * GetContentScaleFactor();
-	double       width  = size.x;
-	double       height = size.y;
-
-	// Get image dimensions
-	auto&  tex_info = gl::Texture::info(texture_);
-	double x_dim    = (double)tex_info.size.x;
-	double y_dim    = (double)tex_info.size.y;
-
-	// Get max scale for x and y (including padding)
-	double x_scale = ((double)width - ui::scalePx(24)) / x_dim;
-	double y_scale = ((double)height - ui::scalePx(24)) / y_dim;
-
-	// Set scale to smallest of the 2 (so that none of the texture will be clipped)
-	double scale = std::min<double>(x_scale, y_scale);
-
-	glPushMatrix();
-	glTranslated(width * 0.5, height * 0.5, 0); // Translate to middle of area
-	glScaled(scale, scale, scale);              // Scale to fit within area
-
-	// Draw graphic
-	double hw = 0;
-	double hh = 0;
-	if (texture_)
-	{
-		glEnable(GL_TEXTURE_2D);
-		hw = x_dim * -0.5;
-		hh = y_dim * -0.5;
-		drawing::drawTexture(texture_, hw, hh);
-	}
-
-	// Draw cropping rectangle
-	gl::setColour(0, 0, 0, 255, gl::Blend::Normal);
-	glDisable(GL_TEXTURE_2D);
-	glTranslated(hw, hh, 0);                                          // Translate to top-left of graphic
-	drawing::drawLine(crop_rect_.tl.x, -1000, crop_rect_.tl.x, 1000); // Left
-	drawing::drawLine(-1000, crop_rect_.tl.y, 1000, crop_rect_.tl.y); // Top
-	drawing::drawLine(crop_rect_.br.x, -1000, crop_rect_.br.x, 1000); // Right
-	drawing::drawLine(-1000, crop_rect_.br.y, 1000, crop_rect_.br.y); // Bottom
-
-	// Shade cropped-out area
-	gl::setColour(0, 0, 0, 100, gl::Blend::Normal);
-	drawing::drawFilledRect(-1000, -1000, crop_rect_.tl.x, 1000);                      // Left
-	drawing::drawFilledRect(crop_rect_.br.x, -1000, 1000, 1000);                       // Right
-	drawing::drawFilledRect(crop_rect_.tl.x, -1000, crop_rect_.br.x, crop_rect_.tl.y); // Top
-	drawing::drawFilledRect(crop_rect_.tl.x, crop_rect_.br.y, crop_rect_.br.x, 1000);  // Bottom
-
-	glPopMatrix();
-
-	SwapBuffers();
-}
 
 
 // -----------------------------------------------------------------------------
@@ -143,17 +52,14 @@ void CropCanvas::draw()
 // -----------------------------------------------------------------------------
 // GfxCropDialog class constructor
 // -----------------------------------------------------------------------------
-GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) :
+GfxCropDialog::GfxCropDialog(wxWindow* parent, const SImage& image, const Palette* palette) :
 	wxDialog(parent, -1, wxS("Crop"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
+	auto lh = ui::LayoutHelper(this);
+
 	// Set max crop size
-	if (image)
-	{
-		max_width_  = image->width();
-		max_height_ = image->height();
-	}
-	else
-		max_width_ = max_height_ = 0;
+	max_width_  = image.width();
+	max_height_ = image.height();
 	crop_rect_.set(0, 0, max_width_, max_height_);
 
 	// Set dialog icon
@@ -163,30 +69,35 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 	auto msizer = new wxBoxSizer(wxVERTICAL);
 	SetSizer(msizer);
 	auto sizer = new wxBoxSizer(wxVERTICAL);
-	msizer->Add(sizer, 1, wxEXPAND | wxALL, ui::padLarge());
+	msizer->Add(sizer, lh.sfWithLargeBorder(1).Expand());
 
 	// Add preview
-	canvas_preview_ = new CropCanvas(this, image, palette);
-	sizer->Add(canvas_preview_, 1, wxEXPAND | wxBOTTOM, ui::pad());
+	canvas_preview_ = ui::createGfxCanvas(this);
+	canvas_preview_->setViewType(GfxView::Centered);
+	canvas_preview_->setPalette(palette);
+	canvas_preview_->image().copyImage(&image);
+	canvas_preview_->setCropRect(crop_rect_);
+	canvas_preview_->window()->SetInitialSize(lh.size(220, 220));
+	sizer->Add(canvas_preview_->window(), lh.sfWithBorder(1, wxBOTTOM).Expand());
 
 	// Add crop controls
 	auto frame      = new wxStaticBox(this, -1, wxS("Crop Borders"));
 	auto framesizer = new wxStaticBoxSizer(frame, wxVERTICAL);
-	sizer->Add(framesizer, 0, wxEXPAND | wxBOTTOM, ui::padLarge());
+	sizer->Add(framesizer, lh.sfWithLargeBorder(0, wxBOTTOM).Expand());
 
 	// Absolute
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	framesizer->Add(hbox, 0, wxEXPAND | wxALL, ui::pad());
+	framesizer->Add(hbox, lh.sfWithBorder().Expand());
 	rb_absolute_ = new wxRadioButton(frame, -1, wxS("Absolute"));
 	rb_absolute_->SetValue(true);
-	hbox->Add(rb_absolute_, 0, wxEXPAND | wxRIGHT, ui::pad());
+	hbox->Add(rb_absolute_, lh.sfWithBorder(0, wxRIGHT).Expand());
 
 	// Relative
 	rb_relative_ = new wxRadioButton(frame, -1, wxS("Relative"));
-	hbox->Add(rb_relative_, 0, wxEXPAND);
+	hbox->Add(rb_relative_, wxSizerFlags().Expand());
 
-	auto gb_sizer = new wxGridBagSizer(ui::pad(), ui::pad());
-	framesizer->Add(gb_sizer, 1, wxEXPAND | wxALL, ui::pad());
+	auto gb_sizer = new wxGridBagSizer(lh.pad(), lh.pad());
+	framesizer->Add(gb_sizer, lh.sfWithBorder(1).Expand());
 
 	// Left
 	gb_sizer->Add(
@@ -208,7 +119,7 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 		new wxStaticText(frame, -1, wxS("Right:")), wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	text_right_ = new NumberTextCtrl(frame);
 	text_right_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
-	text_right_->setNumber(image->width());
+	text_right_->setNumber(image.width());
 	gb_sizer->Add(text_right_, wxGBPosition(2, 1), wxDefaultSpan, wxEXPAND);
 
 	// Bottom
@@ -216,25 +127,35 @@ GfxCropDialog::GfxCropDialog(wxWindow* parent, SImage* image, Palette* palette) 
 		new wxStaticText(frame, -1, wxS("Bottom:")), wxGBPosition(3, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 	text_bottom_ = new NumberTextCtrl(frame);
 	text_bottom_->SetWindowStyleFlag(wxTE_PROCESS_ENTER);
-	text_bottom_->setNumber(image->height());
+	text_bottom_->setNumber(image.height());
 	gb_sizer->Add(text_bottom_, wxGBPosition(3, 1), wxDefaultSpan, wxEXPAND);
 
 	gb_sizer->AddGrowableCol(1);
 
 	// Add buttons
-	sizer->Add(wxutil::createDialogButtonBox(this, "Crop", "Cancel"), 0, wxEXPAND);
+	sizer->Add(wxutil::createDialogButtonBox(this, "Crop", "Cancel"), wxSizerFlags().Expand());
 
 	bindEvents();
 
 	// Setup dialog size
 	SetInitialSize(wxSize(-1, -1));
-	const wxSize size = GetSize() * GetContentScaleFactor();
+	const wxSize size = GetSize() * wxWindowBase::GetContentScaleFactor();
 	wxTopLevelWindowBase::SetMinSize(size);
 	CenterOnParent();
 }
 
 void GfxCropDialog::bindEvents()
 {
+	// Preview resize
+	canvas_preview_->window()->Bind(
+		wxEVT_SIZE,
+		[this](wxSizeEvent& e)
+		{
+			canvas_preview_->zoomToFit(true, 0.2);
+			canvas_preview_->resetViewOffsets();
+			e.Skip();
+		});
+
 	// Left text box
 	text_left_->Bind(wxEVT_TEXT_ENTER, &GfxCropDialog::onTextEnter, this);
 	text_left_->Bind(
@@ -283,11 +204,10 @@ void GfxCropDialog::bindEvents()
 // -----------------------------------------------------------------------------
 // Update the preview canvas with the current crop settings
 // -----------------------------------------------------------------------------
-void GfxCropDialog::updatePreview()
+void GfxCropDialog::updatePreview() const
 {
 	canvas_preview_->setCropRect(crop_rect_);
-	canvas_preview_->Refresh();
-	canvas_preview_->Update();
+	canvas_preview_->window()->Refresh();
 }
 
 // -----------------------------------------------------------------------------
@@ -398,6 +318,8 @@ void GfxCropDialog::setBottom()
 //
 // -----------------------------------------------------------------------------
 
+// ReSharper disable CppMemberFunctionMayBeConst
+// ReSharper disable CppParameterMayBeConstPtrOrRef
 
 // -----------------------------------------------------------------------------
 // Called when enter is pressed in a text box

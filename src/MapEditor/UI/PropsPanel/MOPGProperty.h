@@ -1,15 +1,14 @@
 #pragma once
 
-#include "Game/Args.h"
 #include "MapEditor/MapEditor.h"
 
 namespace slade
 {
 namespace game
 {
+	struct ArgSpec;
 	class UDMFProperty;
-}
-class MapObject;
+} // namespace game
 class MapObjectPropsPanel;
 
 class MOPGProperty
@@ -52,6 +51,7 @@ protected:
 	bool                 noupdate_  = false;
 	game::UDMFProperty*  udmf_prop_ = nullptr;
 	string               propname_;
+	bool                 object_has_prop_ = false;
 };
 
 class MOPGBoolProperty : public MOPGProperty, public wxBoolProperty
@@ -134,7 +134,7 @@ public:
 	Type type() override { return Type::ActionSpecial; }
 
 	// wxPGProperty overrides
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
+	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
 	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 
@@ -152,7 +152,7 @@ public:
 	Type type() override { return Type::ThingType; }
 
 	// wxPGProperty overrides
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
+	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
 	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 
@@ -194,7 +194,7 @@ public:
 	void clearValue() override;
 
 	// wxPGProperty overrides
-	wxString ValueToString(wxVariant& value, int arg_flags = 0) const override;
+	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
 };
 
 class MOPGColourProperty : public MOPGProperty, public wxColourProperty
@@ -270,7 +270,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 
 	// wxPGProperty overrides
-	wxString ValueToString(wxVariant& value, int argFlags = 0) const override;
+	wxString ValueToString(wxVariant& value, wxPGPropValFormatFlags flags) const override;
 	bool     OnEvent(wxPropertyGrid* propgrid, wxWindow* window, wxEvent& e) override;
 };
 } // namespace slade

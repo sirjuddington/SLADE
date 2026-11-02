@@ -33,7 +33,9 @@
 #include "ZScript.h"
 #include "App.h"
 #include "Archive/Archive.h"
-#include "Archive/ArchiveManager.h"
+#include "Archive/ArchiveEntry.h"
+#include "Archive/EntryType/EntryType.h"
+#include "ThingType.h"
 #include "Utility/StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -65,12 +67,10 @@ bool dump_parsed_functions = false;
 
 // Doom Builder's magic comment indicator
 // Only documentation seems to be: https://zdoom.org/wiki/Editor_keys
-string editor_comment_prefix = "//$";
+const string editor_comment_prefix = "//$";
 
-#if wxCHECK_VERSION(3, 3, 0)
 //  Not sure why wx3.3 confuses the compiler about string <-> char comparisons,
 //  but we'll just do this for now
-//  TODO: Try removing this once wx 3.3 is released and on vcpkg
 bool operator==(const string& str, char c)
 {
 	return str.size() == 1 && str[0] == c;
@@ -79,7 +79,6 @@ bool operator!=(const string& str, char c)
 {
 	return str.size() != 1 || str[0] != c;
 }
-#endif
 } // namespace slade::zscript
 
 
@@ -109,6 +108,9 @@ string parseType(const vector<string>& tokens, unsigned& index)
 {
 	string type;
 
+	if (index >= tokens.size())
+		return type;
+
 	// Qualifiers
 	while (index < tokens.size())
 	{
@@ -118,26 +120,28 @@ string parseType(const vector<string>& tokens, unsigned& index)
 			break;
 	}
 
+	if (index >= tokens.size())
+		return type;
+
 	type += tokens[index];
 
 	// Check for ...
-	if (index + 2 < tokens.size() && tokens[index] == '.' && tokens[index + 1] == '.' && tokens[index + 2] == '.')
-	{
+	if (tokens[index] == "...")
 		type = "...";
-		index += 2;
-	}
 
 	// Check for <>
-	if (tokens[index + 1] == '<')
+	if (index + 1 < tokens.size() && tokens[index + 1] == '<')
 	{
 		type += '<';
 		index += 2;
 		while (index < tokens.size() && tokens[index] != '>')
 			type += tokens[index++];
-		type += '>';
+		if (index < tokens.size() && tokens[index] == '>')
+			type += '>';
 	}
 
-	++index;
+	if (index < tokens.size())
+		++index;
 
 	return type;
 }
@@ -148,14 +152,14 @@ string parseType(const vector<string>& tokens, unsigned& index)
 string parseValue(const vector<string>& tokens, unsigned& index)
 {
 	string value;
-	while (true)
+	while (index < tokens.size())
 	{
 		// Read between ()
 		if (tokens[index] == '(')
 		{
 			int level = 1;
 			value += tokens[index++];
-			while (level > 0)
+			while (level > 0 && index < tokens.size())
 			{
 				if (tokens[index] == '(')
 					++level;
@@ -165,6 +169,9 @@ string parseValue(const vector<string>& tokens, unsigned& index)
 				value += tokens[index++];
 			}
 
+			if (level > 0)
+				break;
+
 			continue;
 		}
 
@@ -172,9 +179,6 @@ string parseValue(const vector<string>& tokens, unsigned& index)
 			break;
 
 		value += tokens[index++];
-
-		if (index >= tokens.size())
-			break;
 	}
 
 	return value;
@@ -206,7 +210,7 @@ bool checkKeywordValueStatement(const vector<string>& tokens, unsigned index, st
 void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<ArchiveEntry*>& entry_stack)
 {
 	Tokenizer tz;
-	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?.<>");
+	tz.setSpecialCharacters(Tokenizer::DEFAULT_SPECIAL_CHARACTERS + "()+-[]&!?<>");
 	tz.setCommentTypes(Tokenizer::CommentTypes::CPPStyle | Tokenizer::CommentTypes::CStyle);
 	tz.enableEditorComments();
 	tz.openMem(entry->data(), "ZScript");
@@ -257,7 +261,7 @@ void parseBlocks(ArchiveEntry* entry, vector<ParsedStatement>& parsed, vector<Ar
 		}
 
 		// ZScript
-		parsed.push_back({});
+		parsed.emplace_back();
 		parsed.back().entry = entry;
 		if (!parsed.back().parse(tz))
 			parsed.pop_back();
@@ -401,7 +405,7 @@ bool Function::parse(ParsedStatement& statement)
 			override_      = true;
 			last_qualifier = index;
 		}
-		else if ((int)index > last_qualifier + 2 && statement.tokens[index] == '(')
+		else if (static_cast<int>(index) > last_qualifier + 2 && statement.tokens[index] == '(')
 		{
 			name_        = statement.tokens[index - 1];
 			return_type_ = statement.tokens[index - 2];
@@ -547,6 +551,21 @@ string State::editorSprite()
 	return "";
 }
 
+// -----------------------------------------------------------------------------
+// Returns the first valid light name
+// -----------------------------------------------------------------------------
+string State::light()
+{
+	if (frames.empty())
+		return "";
+
+	for (auto& f : frames)
+		if (!f.light.empty())
+			return f.light;
+
+	return "";
+}
+
 
 // -----------------------------------------------------------------------------
 //
@@ -592,6 +611,7 @@ bool StateTable::parse(ParsedStatement& states)
 				current_states.push_back(state);
 				if (state_first_.empty())
 					state_first_ = state;
+				states_[state].frames.clear();
 				states_added = true;
 
 				index = a + 1;
@@ -608,26 +628,50 @@ bool StateTable::parse(ParsedStatement& states)
 		}
 
 		// Ignore state commands
-		if (strutil::equalCI(statement.tokens[index], "stop") || strutil::equalCI(statement.tokens[index], "goto")
-			|| strutil::equalCI(statement.tokens[index], "loop") || strutil::equalCI(statement.tokens[index], "wait")
+		if (strutil::equalCI(statement.tokens[index], "stop")
+			|| strutil::equalCI(statement.tokens[index], "goto")
+			|| strutil::equalCI(statement.tokens[index], "loop")
+			|| strutil::equalCI(statement.tokens[index], "wait")
 			|| strutil::equalCI(statement.tokens[index], "fail"))
 			continue;
 
 		if (index + 2 < statement.tokens.size())
 		{
 			// Parse duration
-			int duration = 0;
+			int      duration    = 0;
+			unsigned idx_command = 0;
 			if (statement.tokens[index + 2] == '-' && index + 3 < statement.tokens.size())
 			{
 				// Negative number
 				strutil::toInt(statement.tokens[index + 3], duration);
-				duration = -duration;
+				duration    = -duration;
+				idx_command = index + 4;
 			}
-			else
+			else if (index + 2 < statement.tokens.size())
+			{
 				strutil::toInt(statement.tokens[index + 2], duration);
+				idx_command = index + 3;
+			}
+
+			// Check for light
+			string light;
+			for (auto a = idx_command; a < statement.tokens.size(); ++a)
+			{
+				if (a + 2 < statement.tokens.size()
+					&& strutil::equalCI(statement.tokens[a], "light")
+					&& statement.tokens[a + 1] == "(")
+				{
+					light = statement.tokens[a + 2];
+					break;
+				}
+			}
 
 			for (auto& state : current_states)
-				states_[state].frames.push_back({ statement.tokens[index], statement.tokens[index + 1], duration });
+				states_[state].frames.push_back(
+					{ .sprite_base  = statement.tokens[index],
+					  .sprite_frame = statement.tokens[index + 1],
+					  .duration     = duration,
+					  .light        = light });
 		}
 	}
 
@@ -666,6 +710,15 @@ string StateTable::editorSprite()
 		return states_[state_first_].editorSprite();
 
 	return "";
+}
+
+// -----------------------------------------------------------------------------
+// Returns the most appropriate light from the state table to use for the
+// editor (spawn state only)
+// -----------------------------------------------------------------------------
+string StateTable::light()
+{
+	return states_["spawn"].light();
 }
 
 
@@ -725,8 +778,10 @@ bool Class::parse(ParsedStatement& class_statement, const vector<Class>& parsed_
 		return false;
 	}
 
-	// Set editor sprite from parsed states
+	// Set editor sprite & light name from parsed states
 	default_properties_["sprite"] = states_.editorSprite();
+	if (auto light_name = states_.light(); !light_name.empty())
+		default_properties_["light_name"] = light_name;
 
 	// Add DB comment props to default properties
 	for (auto& i : db_properties_)
@@ -761,6 +816,10 @@ bool Class::parse(ParsedStatement& class_statement, const vector<Class>& parsed_
 		// Obsolete thing
 		else if (strutil::equalCI(i.first, "Obsolete"))
 			default_properties_["obsolete"] = true;
+
+		// Light name
+		else if (strutil::equalCI(i.first, "LightName"))
+			default_properties_["light_name"] = i.second;
 	}
 
 	return true;
@@ -934,11 +993,6 @@ bool Class::parseDefaults(vector<ParsedStatement>& defaults)
 
 		// Name
 		auto name = statement.tokens[t];
-		if (t + 2 < count && statement.tokens[t + 1] == '.')
-		{
-			name.append(".").append(statement.tokens[t + 2]);
-			t += 2;
-		}
 
 		// Value
 		// For now ignore anything after the first whitespace/special character
@@ -1020,7 +1074,8 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 
 		// Extend Class
 		else if (
-			block.tokens.size() > 2 && strutil::equalCI(block.tokens[0], "extend")
+			block.tokens.size() > 2
+			&& strutil::equalCI(block.tokens[0], "extend")
 			&& strutil::equalCI(block.tokens[1], "class"))
 		{
 			for (auto& c : classes_)
@@ -1054,7 +1109,7 @@ bool Definitions::parseZScript(ArchiveEntry* entry)
 bool Definitions::parseZScript(Archive* archive)
 {
 	// Get base ZScript file
-	Archive::SearchOptions opt;
+	ArchiveSearchOptions opt;
 	opt.match_name      = "zscript";
 	opt.ignore_ext      = true;
 	auto zscript_enries = archive->findAll(opt);
@@ -1167,6 +1222,10 @@ bool ParsedStatement::parse(Tokenizer& tz)
 
 		tokens.emplace_back(tz.current().text);
 		tz.adv();
+
+		// DB comments are treated as standalone statements
+		if (strutil::startsWith(tokens.back(), editor_comment_prefix))
+			return true;
 	}
 
 	// Block
@@ -1181,7 +1240,7 @@ bool ParsedStatement::parse(Tokenizer& tz)
 			return false;
 		}
 
-		block.push_back({});
+		block.emplace_back();
 		block.back().entry = entry;
 		if (!block.back().parse(tz) || block.back().tokens.empty())
 			block.pop_back();

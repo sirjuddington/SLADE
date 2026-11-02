@@ -1,4 +1,4 @@
-
+﻿
 // -----------------------------------------------------------------------------
 // SLADE - It's a Doom Editor
 // Copyright(C) 2008 - 2026 Simon Judd
@@ -33,12 +33,24 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "SImage.h"
+#include "Graphics/Palette/Palette.h"
 #include "Graphics/Translation.h"
 #include "SIFormat.h"
 #include "Utility/MathStuff.h"
 #undef BOOL
 
 using namespace slade;
+
+
+// -----------------------------------------------------------------------------
+//
+// Variables
+//
+// -----------------------------------------------------------------------------
+namespace
+{
+Palette pal_greyscale;
+}
 
 
 // -----------------------------------------------------------------------------
@@ -59,29 +71,41 @@ EXTERN_CVAR(Float, col_greyscale_b)
 
 
 // -----------------------------------------------------------------------------
+// SImage class constructors
+// -----------------------------------------------------------------------------
+SImage::SImage() = default;
+SImage::SImage(Type type) : type_{ type } {}
+
+// -----------------------------------------------------------------------------
 // SImage class copy constructor
 // -----------------------------------------------------------------------------
 SImage::SImage(const SImage& img) :
 	width_{ img.width_ },
 	height_{ img.height_ },
 	type_{ img.type_ },
-	palette_{ img.palette_ },
-	has_palette_{ img.has_palette_ },
 	offset_x_{ img.offset_x_ },
 	offset_y_{ img.offset_y_ },
 	format_{ img.format_ },
 	imgindex_{ img.imgindex_ },
 	numimages_{ img.numimages_ }
 {
+	if (img.palette_)
+		palette_ = std::make_unique<Palette>(*img.palette_);
+
 	data_.importMem(img.data_);
 	mask_.importMem(img.mask_);
 }
 
 // -----------------------------------------------------------------------------
+// SImage class destructor
+// -----------------------------------------------------------------------------
+SImage::~SImage() = default;
+
+// -----------------------------------------------------------------------------
 // Loads the image as RGBA data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::putRGBAData(MemChunk& mc, Palette* pal) const
+bool SImage::putRGBAData(MemChunk& mc, const Palette* pal) const
 {
 	// Check the image is valid
 	if (!isValid())
@@ -101,13 +125,13 @@ bool SImage::putRGBAData(MemChunk& mc, Palette* pal) const
 	else if (type_ == Type::PalMask)
 	{
 		// Get palette to use
-		const auto& palette = (has_palette_ || !pal) ? palette_ : *pal;
+		auto palette = paletteToUse(pal);
 
 		uint8_t rgba[4];
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Get colour
-			ColRGBA col = palette.colour(data_[a]);
+			ColRGBA col = palette->colour(data_[a]);
 
 			// Set alpha
 			if (mask_.data())
@@ -144,7 +168,7 @@ bool SImage::putRGBAData(MemChunk& mc, Palette* pal) const
 // Loads the image as RGB data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::putRGBData(MemChunk& mc, Palette* pal) const
+bool SImage::putRGBData(MemChunk& mc, const Palette* pal) const
 {
 	// Check the image is valid
 	if (!isValid())
@@ -166,13 +190,13 @@ bool SImage::putRGBData(MemChunk& mc, Palette* pal) const
 		// Paletted, convert to RGB
 
 		// Get palette to use
-		const auto& palette = (has_palette_ || !pal) ? palette_ : *pal;
+		auto palette = paletteToUse(pal);
 
 		// Build RGB data
 		uint8_t rgba[4];
 		for (int a = 0; a < width_ * height_; a++)
 		{
-			palette.colour(data_[a]).write(rgba);
+			palette->colour(data_[a]).write(rgba);
 			mc.write(rgba, 3);
 		}
 
@@ -209,15 +233,15 @@ bool SImage::putIndexedData(MemChunk& mc) const
 
 	switch (type_)
 	{
-	case Type::RGBA: return false; // Cannot do this for trucolor graphics.
+	case Type::RGBA:     return false; // Cannot do this for trucolor graphics.
 	case Type::PalMask:
 	case Type::AlphaMap: return mc.write(data_.data(), data_.size());
-	default: return false;
+	default:             return false;
 	}
 }
 
 // -----------------------------------------------------------------------------
-// Loads the image alpha channel into [mc].
+// Loads the image alpha/mask data into [mc].
 // Returns false if image is invalid, true otherwise
 // -----------------------------------------------------------------------------
 bool SImage::putAlphaData(MemChunk& mc) const
@@ -226,18 +250,40 @@ bool SImage::putAlphaData(MemChunk& mc) const
 	if (!isValid())
 		return false;
 
-	switch (type_)
+	// Init rgba data
+	mc.reSize(width_ * height_ * 4, false);
+
+	// If data is already in alpha map format just return a copy
+	if (type_ == Type::AlphaMap)
 	{
-	case Type::PalMask:
-	case Type::AlphaMap: return mc.write(mask_.data(), mask_.size());
-	case Type::RGBA:
+		mc.importMem(data_);
+		return true;
+	}
+
+	// If paletted, return the mask or full opaque
+	else if (type_ == Type::PalMask)
 	{
-		mc.reSize(width_ * height_, false);
-		for (int a = 0; a < width_ * height_ * 4; a += 4)
-			mc.write(&data_[a + 3], 1);
+		if (mask_.data())
+			mc.importMem(mask_);
+		else
+		{
+			mc.reSize(width_ * height_, false);
+			mc.fillData(255);
+		}
+
+		return true;
 	}
-	default: return false;
+
+	// If RGBA, return the alpha channel
+	else if (type_ == Type::RGBA)
+	{
+		vector<uint8_t> alpha_map(width_ * height_);
+		for (int a = 0; a < width_ * height_; a++)
+			alpha_map[a] = data_[a * 4 + 3];
+		mc.importMem(alpha_map.data(), width_ * height_);
 	}
+
+	return false; // Invalid image type
 }
 
 // -----------------------------------------------------------------------------
@@ -279,7 +325,7 @@ SImage::Info SImage::info() const
 	inf.imgindex    = imgindex_;
 	inf.offset_x    = offset_x_;
 	inf.offset_y    = offset_y_;
-	inf.has_palette = has_palette_;
+	inf.has_palette = hasPalette();
 
 	return inf;
 }
@@ -288,7 +334,7 @@ SImage::Info SImage::info() const
 // Returns the colour of the pixel at [x,y] in the image, or black+invisible if
 // out of range
 // -----------------------------------------------------------------------------
-ColRGBA SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
+ColRGBA SImage::pixelAt(unsigned x, unsigned y, const Palette* pal) const
 {
 	// Get pixel index
 	const unsigned index = y * stride() + x * bpp();
@@ -309,10 +355,9 @@ ColRGBA SImage::pixelAt(unsigned x, unsigned y, Palette* pal)
 	else if (type_ == Type::PalMask)
 	{
 		// Get palette to use
-		if (has_palette_ || !pal)
-			pal = &palette_;
+		auto palette = paletteToUse(pal);
 
-		col.set(pal->colour(data_[index]));
+		col.set(palette->colour(data_[index]));
 		if (mask_.hasData())
 			col.a = mask_[index];
 	}
@@ -381,6 +426,23 @@ void SImage::setOffsets(const Vec2i& offsets)
 }
 
 // -----------------------------------------------------------------------------
+// Sets the image palette to [pal]
+// -----------------------------------------------------------------------------
+void SImage::setPalette(const Palette* pal)
+{
+	if (!pal)
+	{
+		palette_.reset();
+		return;
+	}
+
+	if (!palette_)
+		palette_ = std::make_unique<Palette>(*pal);
+	else
+		palette_->copyPalette(pal);
+}
+
+// -----------------------------------------------------------------------------
 // Deletes/clears any existing image data
 // -----------------------------------------------------------------------------
 void SImage::clearData(bool clear_mask)
@@ -396,7 +458,7 @@ void SImage::clearData(bool clear_mask)
 // -----------------------------------------------------------------------------
 // Creates an empty image
 // -----------------------------------------------------------------------------
-void SImage::create(int width, int height, Type type, Palette* pal, int index, int numimages)
+void SImage::create(int width, int height, Type type, const Palette* pal, int index, int numimages)
 {
 	// Check valid width/height
 	if (width < 0 || height < 0)
@@ -414,21 +476,26 @@ void SImage::create(int width, int height, Type type, Palette* pal, int index, i
 	numimages_ = numimages;
 	imgindex_  = index;
 	if (pal)
-	{
-		palette_.copyPalette(pal);
-		has_palette_ = true;
-	}
+		palette_ = std::make_unique<Palette>(*pal);
 	else
-		has_palette_ = false;
+		palette_.reset();
 
 	// Create blank image
 	if (width > 0 && height > 0)
 	{
-		data_.reSize(width * height * bpp(), false);
+		const i64     data_size = static_cast<i64>(width) * height * bpp();
+		const i64     mask_size = static_cast<i64>(width) * height;
+		constexpr i64 max_u32   = std::numeric_limits<u32>::max();
+		if (data_size > max_u32 || mask_size > max_u32)
+		{
+			log::error("SImage::create: image dimensions too large ({}x{} bpp={})", width, height, bpp());
+			return;
+		}
+		data_.reSize(static_cast<u32>(data_size), false);
 		data_.fillData(0);
 		if (type == Type::PalMask)
 		{
-			mask_.reSize(width * height, false);
+			mask_.reSize(static_cast<u32>(mask_size), false);
 			mask_.fillData(0);
 		}
 	}
@@ -443,15 +510,14 @@ void SImage::create(int width, int height, Type type, Palette* pal, int index, i
 // -----------------------------------------------------------------------------
 // Creates an empty image, initialising with properties from [info]
 // -----------------------------------------------------------------------------
-void SImage::create(Info info, Palette* pal)
+void SImage::create(const Info& info, const Palette* pal)
 {
 	// Normal creation
 	create(info.width, info.height, info.colformat, pal, info.imgindex, info.numimages);
 
 	// Set other info
-	offset_x_    = info.offset_x;
-	offset_y_    = info.offset_y;
-	has_palette_ = info.has_palette;
+	offset_x_ = info.offset_x;
+	offset_y_ = info.offset_y;
 }
 
 // -----------------------------------------------------------------------------
@@ -578,8 +644,7 @@ void SImage::shrinkPalette(Palette* pal)
 		return;
 
 	// Get palette to use
-	if (has_palette_ || !pal)
-		pal = &palette_;
+	auto palette = paletteToUse(pal);
 
 	// Init variables
 	Palette         newpal;
@@ -597,7 +662,7 @@ void SImage::shrinkPalette(Palette* pal)
 	{
 		if (usedcolours[b])
 		{
-			newpal.setColour(used, pal->colour(b));
+			newpal.setColour(used, palette->colour(b));
 			remap[b] = used;
 			++used;
 		}
@@ -607,13 +672,13 @@ void SImage::shrinkPalette(Palette* pal)
 	for (int c = 0; c < width_ * height_; ++c)
 		data_[c] = remap[data_[c]];
 
-	pal->copyPalette(&newpal);
+	palette->copyPalette(&newpal);
 }
 
 // -----------------------------------------------------------------------------
 // Copies all data and properties from [image]
 // -----------------------------------------------------------------------------
-bool SImage::copyImage(SImage* image)
+bool SImage::copyImage(const SImage* image)
 {
 	// Check image was given
 	if (!image)
@@ -623,15 +688,19 @@ bool SImage::copyImage(SImage* image)
 	clearData();
 
 	// Copy image properties
-	width_  = image->width_;
-	height_ = image->height_;
-	type_   = image->type_;
-	palette_.copyPalette(&image->palette_);
-	has_palette_ = image->has_palette_;
-	offset_x_    = image->offset_x_;
-	offset_y_    = image->offset_y_;
-	imgindex_    = image->imgindex_;
-	numimages_   = image->numimages_;
+	width_     = image->width_;
+	height_    = image->height_;
+	type_      = image->type_;
+	offset_x_  = image->offset_x_;
+	offset_y_  = image->offset_y_;
+	imgindex_  = image->imgindex_;
+	numimages_ = image->numimages_;
+
+	// Copy palette
+	if (image->palette_)
+		setPalette(image->palette_.get());
+	else
+		palette_.reset();
 
 	// Copy image data
 	if (image->data_.hasData())
@@ -649,7 +718,7 @@ bool SImage::copyImage(SImage* image)
 // Detects the format of [data] and, if it's a valid image format, loads it into
 // this image
 // -----------------------------------------------------------------------------
-bool SImage::open(MemChunk& data, int index, string_view type_hint)
+bool SImage::open(const MemChunk& data, int index, string_view type_hint)
 {
 	// Check with type hint format first
 	if (!type_hint.empty())
@@ -667,7 +736,7 @@ bool SImage::open(MemChunk& data, int index, string_view type_hint)
 // Converts the image to 32bpp (RGBA).
 // Returns false if the image was already 32bpp, true otherwise.
 // -----------------------------------------------------------------------------
-bool SImage::convertRGBA(Palette* pal)
+bool SImage::convertRGBA(const Palette* pal)
 {
 	// If it's already 32bpp do nothing
 	if (type_ == Type::RGBA)
@@ -684,8 +753,8 @@ bool SImage::convertRGBA(Palette* pal)
 	data_.importMem(rgba_data);
 
 	// Set new type & update variables
-	type_        = Type::RGBA;
-	has_palette_ = false;
+	type_ = Type::RGBA;
+	palette_.reset();
 
 	// Announce change
 	signals_.image_changed();
@@ -701,7 +770,7 @@ bool SImage::convertRGBA(Palette* pal)
 // [pal_current] will be used as the image's current palette if it doesn't
 // already have one
 // -----------------------------------------------------------------------------
-bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
+bool SImage::convertPaletted(const Palette* pal_target, const Palette* pal_current)
 {
 	// Check image/parameters are valid
 	if (!isValid() || !pal_target)
@@ -727,7 +796,7 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 	}
 
 	// Load given palette
-	palette_.copyPalette(pal_target);
+	setPalette(pal_target);
 
 	// Clear current image data (but not mask)
 	clearData(false);
@@ -741,13 +810,12 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 		col.r    = rgba_data[i++];
 		col.g    = rgba_data[i++];
 		col.b    = rgba_data[i++];
-		data_[a] = palette_.nearestColour(col);
+		data_[a] = palette_->nearestColour(col);
 		i++; // Skip alpha
 	}
 
 	// Update variables
-	type_        = Type::PalMask;
-	has_palette_ = true;
+	type_ = Type::PalMask;
 
 	// Announce change
 	signals_.image_changed();
@@ -760,7 +828,7 @@ bool SImage::convertPaletted(Palette* pal_target, Palette* pal_current)
 // Converts the image to an alpha map, generating alpha values from either pixel
 // brightness or existing alpha, depending on the value of [alpha_source]
 // -----------------------------------------------------------------------------
-bool SImage::convertAlphaMap(AlphaSource alpha_source, Palette* pal)
+bool SImage::convertAlphaMap(AlphaSource alpha_source, const Palette* pal)
 {
 	// Get RGBA data
 	MemChunk rgba;
@@ -798,18 +866,17 @@ bool SImage::convertAlphaMap(AlphaSource alpha_source, Palette* pal)
 // Changes the mask/alpha channel so that pixels that match [colour] are fully
 // transparent, and all other pixels fully opaque
 // -----------------------------------------------------------------------------
-bool SImage::maskFromColour(ColRGBA colour, Palette* pal)
+bool SImage::maskFromColour(ColRGBA colour, const Palette* pal)
 {
 	if (type_ == Type::PalMask)
 	{
 		// Get palette to use
-		if (has_palette_ || !pal)
-			pal = &palette_;
+		auto palette = paletteToUse(pal);
 
 		// Palette+Mask type, go through the mask
 		for (int a = 0; a < width_ * height_; a++)
 		{
-			if (pal->colour(data_[a]).equals(colour))
+			if (palette->colour(data_[a]).equals(colour))
 				mask_[a] = 0;
 			else
 				mask_[a] = 255;
@@ -845,19 +912,18 @@ bool SImage::maskFromColour(ColRGBA colour, Palette* pal)
 // Changes the mask/alpha channel so that each pixel's transparency matches its
 // brigntness level (where black is fully transparent)
 // -----------------------------------------------------------------------------
-bool SImage::maskFromBrightness(Palette* pal)
+bool SImage::maskFromBrightness(const Palette* pal)
 {
 	if (type_ == Type::PalMask)
 	{
 		// Get palette to use
-		if (has_palette_ || !pal)
-			pal = &palette_;
+		auto palette = paletteToUse(pal);
 
 		// Go through pixel data
 		for (int a = 0; a < width_ * height_; a++)
 		{
 			// Set mask from pixel colour brightness value
-			const ColRGBA col = pal->colour(data_[a]);
+			const ColRGBA col = palette->colour(data_[a]);
 			mask_[a]          = (static_cast<double>(col.r) * 0.3) + (static_cast<double>(col.g) * 0.59)
 					   + (static_cast<double>(col.b) * 0.11);
 		}
@@ -936,7 +1002,7 @@ bool SImage::cutoffMask(uint8_t threshold)
 // Sets the pixel at [x],[y] to [colour].
 // Returns false if the position is out of range, true otherwise
 // -----------------------------------------------------------------------------
-bool SImage::setPixel(int x, int y, ColRGBA colour, Palette* pal)
+bool SImage::setPixel(int x, int y, ColRGBA colour, const Palette* pal)
 {
 	// Check position
 	if (x < 0 || x >= width_ || y < 0 || y >= height_)
@@ -948,11 +1014,10 @@ bool SImage::setPixel(int x, int y, ColRGBA colour, Palette* pal)
 	else if (type_ == Type::PalMask)
 	{
 		// Get palette to use
-		if (has_palette_ || !pal)
-			pal = &palette_;
+		auto palette = paletteToUse(pal);
 
 		// Get color index to use (the ColRGBA's index if defined, nearest colour otherwise)
-		const uint8_t index = (colour.index == -1) ? pal->nearestColour(colour) : colour.index;
+		const uint8_t index = (colour.index == -1) ? palette->nearestColour(colour) : colour.index;
 
 		data_[y * width_ + x] = index;
 		if (mask_.hasData())
@@ -985,7 +1050,7 @@ bool SImage::setPixel(int x, int y, uint8_t pal_index, uint8_t alpha)
 	if (type_ == Type::RGBA)
 	{
 		// Set the pixel
-		auto col = palette_.colour(pal_index);
+		auto col = palette_ ? palette_->colour(pal_index) : pal_greyscale.colour(pal_index);
 		col.a    = alpha;
 		col.write(data_.data() + (y * (width_ * 4) + (x * 4)));
 	}
@@ -1096,10 +1161,10 @@ bool SImage::rotate(int angle)
 		switch (angle)
 		{
 			// Urgh maths...
-		case 90: j = (((new_height - 1) - (i % width_)) * new_width) + (i / width_); break;
+		case 90:  j = (((new_height - 1) - (i % width_)) * new_width) + (i / width_); break;
 		case 180: j = (numpixels - 1) - i; break;
 		case 270: j = ((i % width_) * new_width) + ((new_width - 1) - (i / width_)); break;
-		default: return false;
+		default:  return false;
 		}
 		if (j >= numpixels)
 		{
@@ -1350,7 +1415,7 @@ bool SImage::setImageData(const uint8_t* ndata, unsigned ndata_size, int nwidth,
 // -----------------------------------------------------------------------------
 // Applies a palette translation to the image
 // -----------------------------------------------------------------------------
-bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
+bool SImage::applyTranslation(const Translation* tr, const Palette* pal, bool truecolor)
 {
 	// Check image is ok
 	if (!data_.hasData())
@@ -1366,8 +1431,7 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 	const size_t bpp = this->bpp();
 
 	// Get palette to use
-	if (has_palette_ || !pal)
-		pal = &palette_;
+	auto palette = paletteToUse(pal);
 
 	uint8_t* newdata;
 	if (truecolor && type_ == Type::PalMask)
@@ -1388,18 +1452,18 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 		ColRGBA col;
 		int     q = p * bpp;
 		if (type_ == Type::PalMask)
-			col.set(pal->colour(data_[p]));
+			col.set(palette->colour(data_[p]));
 		else if (type_ == Type::RGBA)
 		{
 			col.set(data_[q], data_[q + 1], data_[q + 2], data_[q + 3]);
 
 			// skip colours that don't match exactly to the palette
-			col.index = pal->nearestColour(col);
-			if (!col.equals(pal->colour(col.index)))
+			col.index = palette->nearestColour(col);
+			if (!col.equals(palette->colour(col.index)))
 				continue;
 		}
 
-		col = tr->translate(col, pal);
+		col = tr->translate(col, palette);
 
 		if (truecolor)
 		{
@@ -1420,13 +1484,16 @@ bool SImage::applyTranslation(Translation* tr, Palette* pal, bool truecolor)
 		type_ = Type::RGBA;
 	}
 
+	// Announce change
+	signals_.image_changed();
+
 	return true;
 }
 
 // -----------------------------------------------------------------------------
 // Applies a palette translation to the image
 // -----------------------------------------------------------------------------
-bool SImage::applyTranslation(string_view tr, Palette* pal, bool truecolor)
+bool SImage::applyTranslation(string_view tr, const Palette* pal, bool truecolor)
 {
 	Translation trans;
 	trans.clear();
@@ -1440,15 +1507,14 @@ bool SImage::applyTranslation(string_view tr, Palette* pal, bool truecolor)
 // If the image is paletted, the resulting pixel colour is converted to its
 // nearest match in [pal]
 // -----------------------------------------------------------------------------
-bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Palette* pal)
+bool SImage::drawPixel(int x, int y, ColRGBA colour, const DrawProps& properties, const Palette* pal)
 {
 	// Check valid coords
 	if (x < 0 || y < 0 || x >= width_ || y >= height_)
 		return false;
 
 	// Get palette to use
-	if (has_palette_ || !pal)
-		pal = &palette_;
+	auto palette = paletteToUse(pal);
 
 	// Setup alpha
 	if (properties.src_alpha)
@@ -1470,7 +1536,7 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 			colour.write(data_.data() + p);
 		else
 		{
-			data_[p] = pal->nearestColour(colour);
+			data_[p] = palette->nearestColour(colour);
 			mask_[p] = colour.a;
 		}
 
@@ -1480,7 +1546,7 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 	// Not-so-simple case, do full processing
 	ColRGBA d_colour;
 	if (type_ == Type::PalMask)
-		d_colour = pal->colour(data_[p]);
+		d_colour = palette->colour(data_[p]);
 	else
 		d_colour.set(data_[p], data_[p + 1], data_[p + 2], data_[p + 3]);
 	const float alpha = static_cast<float>(colour.a) / 255.0f;
@@ -1539,7 +1605,7 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 	// Apply new colour
 	if (type_ == Type::PalMask)
 	{
-		data_[p] = pal->nearestColour(d_colour);
+		data_[p] = palette->nearestColour(d_colour);
 		mask_[p] = d_colour.a;
 	}
 	else if (type_ == Type::RGBA)
@@ -1555,17 +1621,21 @@ bool SImage::drawPixel(int x, int y, ColRGBA colour, DrawProps& properties, Pale
 // [properties]. [pal_src] is used for the source image, and [pal_dest] is used
 // for the destination image, if either is paletted
 // -----------------------------------------------------------------------------
-bool SImage::drawImage(SImage& img, int x_pos, int y_pos, DrawProps& properties, Palette* pal_src, Palette* pal_dest)
+bool SImage::drawImage(
+	const SImage&    img,
+	int              x_pos,
+	int              y_pos,
+	const DrawProps& properties,
+	const Palette*   pal_src,
+	const Palette*   pal_dest)
 {
 	// Check images
 	if (!data_.hasData() || !img.data_.hasData())
 		return false;
 
 	// Setup palettes
-	if (img.has_palette_ || !pal_src)
-		pal_src = &(img.palette_);
-	if (has_palette_ || !pal_dest)
-		pal_dest = &palette_;
+	pal_src  = img.paletteToUse(pal_src);
+	pal_dest = paletteToUse(pal_dest);
 
 	// Go through pixels
 	const unsigned s_stride = img.stride();
@@ -1629,15 +1699,14 @@ bool SImage::drawImage(SImage& img, int x_pos, int y_pos, DrawProps& properties,
 // If the image is paletted, each pixel will be set to its nearest matching
 // colour in [pal]
 // -----------------------------------------------------------------------------
-bool SImage::colourise(ColRGBA colour, Palette* pal, int start, int stop)
+bool SImage::colourise(ColRGBA colour, const Palette* pal, int start, int stop)
 {
 	// Can't do this with alpha maps
 	if (type_ == Type::AlphaMap)
 		return false;
 
 	// Get palette to use
-	if (has_palette_ || !pal)
-		pal = &palette_;
+	auto palette = paletteToUse(pal);
 
 	// Go through all pixels
 	const uint8_t bpp = this->bpp();
@@ -1655,7 +1724,7 @@ bool SImage::colourise(ColRGBA colour, Palette* pal, int start, int stop)
 		if (type_ == Type::RGBA)
 			col.set(data_[a], data_[a + 1], data_[a + 2], data_[a + 3]);
 		else
-			col.set(pal->colour(data_[a]));
+			col.set(palette->colour(data_[a]));
 
 		// Colourise it
 		float grey = (col.r * col_greyscale_r + col.g * col_greyscale_g + col.b * col_greyscale_b) / 255.0f;
@@ -1669,8 +1738,11 @@ bool SImage::colourise(ColRGBA colour, Palette* pal, int start, int stop)
 		if (type_ == Type::RGBA)
 			col.write(data_.data() + a);
 		else
-			data_[a] = pal->nearestColour(col);
+			data_[a] = palette->nearestColour(col);
 	}
+
+	// Announce change
+	signals_.image_changed();
 
 	return true;
 }
@@ -1680,15 +1752,14 @@ bool SImage::colourise(ColRGBA colour, Palette* pal, int start, int stop)
 // If the image is paletted, each pixel will be set to its nearest matching
 // colour in [pal]
 // -----------------------------------------------------------------------------
-bool SImage::tint(ColRGBA colour, float amount, Palette* pal, int start, int stop)
+bool SImage::tint(ColRGBA colour, float amount, const Palette* pal, int start, int stop)
 {
 	// Can't do this with alpha maps
 	if (type_ == Type::AlphaMap)
 		return false;
 
 	// Get palette to use
-	if (has_palette_ || !pal)
-		pal = &palette_;
+	auto palette = paletteToUse(pal);
 
 	// Go through all pixels
 	const uint8_t bpp = this->bpp();
@@ -1706,7 +1777,7 @@ bool SImage::tint(ColRGBA colour, float amount, Palette* pal, int start, int sto
 		if (type_ == Type::RGBA)
 			col.set(data_[a], data_[a + 1], data_[a + 2], data_[a + 3]);
 		else
-			col.set(pal->colour(data_[a]));
+			col.set(palette->colour(data_[a]));
 
 		// Tint it
 		const float inv_amt = 1.0f - amount;
@@ -1720,8 +1791,11 @@ bool SImage::tint(ColRGBA colour, float amount, Palette* pal, int start, int sto
 		if (type_ == Type::RGBA)
 			col.write(data_.data() + a);
 		else
-			data_[a] = pal->nearestColour(col);
+			data_[a] = palette->nearestColour(col);
 	}
+
+	// Announce change
+	signals_.image_changed();
 
 	return true;
 }
@@ -1898,4 +1972,96 @@ bool SImage::mirrorpad()
 		offset_x_ += extra;
 	}
 	return success;
+}
+
+// -----------------------------------------------------------------------------
+// Generates a checkered pattern of [square_size] squares, alternating between
+// [col1] and [col2] (or the nearest colours in the palette)
+// -----------------------------------------------------------------------------
+void SImage::generateCheckeredPattern(int square_size, const ColRGBA& col1, const ColRGBA& col2, const Palette* pal)
+{
+	if (type_ == Type::AlphaMap || type_ == Type::Unknown)
+		return;
+
+	// Get nearest palette colours for non-RGBA image
+	int  pal_c1  = 0;
+	int  pal_c2  = 0;
+	auto palette = paletteToUse(pal);
+	if (type_ == Type::PalMask)
+	{
+		pal_c1 = palette->nearestColour(col1);
+		pal_c2 = palette->nearestColour(col2);
+	}
+
+	// Quick and dirty lambda to 'draw' a square
+	auto drawSquare = [this, square_size](int x, int y, const ColRGBA& col, int p_index)
+	{
+		for (auto yp = y; yp < y + square_size; ++yp)
+		{
+			for (auto xp = x; xp < x + square_size; ++xp)
+			{
+				if (type_ == Type::PalMask)
+					setPixel(xp, yp, p_index);
+				else
+					setPixel(xp, yp, col);
+			}
+		}
+	};
+
+	// First colour
+	int  x       = 0;
+	int  y       = 0;
+	bool odd_row = false;
+	while (y < height_)
+	{
+		x = odd_row ? square_size : 0;
+
+		while (x < width_)
+		{
+			drawSquare(x, y, col1, pal_c1);
+			x += square_size * 2;
+		}
+
+		// Next row
+		y += square_size;
+		odd_row = !odd_row;
+	}
+
+	// Second colour
+	y       = 0;
+	odd_row = false;
+	while (y < height_)
+	{
+		x = odd_row ? 0 : square_size;
+
+		while (x < width_)
+		{
+			drawSquare(x, y, col2, pal_c2);
+			x += square_size * 2;
+		}
+
+		// Next row
+		y += square_size;
+		odd_row = !odd_row;
+	}
+}
+
+const Palette* SImage::paletteToUse(const Palette* pal) const
+{
+	auto palette = palette_ ? palette_.get() : pal;
+
+	if (!palette)
+		return &pal_greyscale;
+
+	return palette;
+}
+
+Palette* SImage::paletteToUse(Palette* pal) const
+{
+	auto palette = palette_ ? palette_.get() : pal;
+
+	if (!palette)
+		return &pal_greyscale;
+
+	return palette;
 }

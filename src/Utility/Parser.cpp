@@ -34,6 +34,9 @@
 #include "Main.h"
 #include "Parser.h"
 #include "Archive/Archive.h"
+#include "Archive/ArchiveDir.h"
+#include "Archive/ArchiveEntry.h"
+#include "PropertyUtils.h"
 #include "StringUtils.h"
 #include "Utility/Tokenizer.h"
 
@@ -83,7 +86,7 @@ Property ParseTreeNode::value(unsigned index)
 {
 	// Check index
 	if (index >= values_.size())
-		return Property(false);
+		return { false };
 
 	return values_[index];
 }
@@ -107,6 +110,7 @@ string ParseTreeNode::stringValue(unsigned index) const
 vector<string> ParseTreeNode::stringValues() const
 {
 	vector<string> string_values;
+	string_values.reserve(values_.size());
 	for (const auto& value : values_)
 		string_values.push_back(property::asString(value));
 	return string_values;
@@ -465,8 +469,6 @@ bool ParseTreeNode::parse(Tokenizer& tz)
 // -----------------------------------------------------------------------------
 void ParseTreeNode::write(string& out, int indent) const
 {
-	using Type = property::ValueType;
-
 	// Indentation
 	string tabs;
 	for (int a = 0; a < indent; a++)
@@ -499,22 +501,13 @@ void ParseTreeNode::write(string& out, int indent) const
 				out += ", ";
 			first = false;
 
-			/*switch (value.type())
-			{
-			case Property::Type::Boolean:
-			case Property::Type::Flag: out += value.boolValue() ? "true" : "false"; break;
-			case Property::Type::Int: out += fmt::format("{}", value.intValue()); break;
-			case Property::Type::Float: out += fmt::format("{:1.3f}", value.floatValue()); break;
-			case Property::Type::UInt: out += fmt::format("{}", value.unsignedValue()); break;
-			default: out += fmt::format("\"{}\"", value.stringValue()); break;
-			}*/
 			switch (property::valueType(value))
 			{
 			case property::ValueType::Bool:
 			case property::ValueType::Int:
-			case property::ValueType::UInt: out += property::asString(value); break;
+			case property::ValueType::UInt:  out += property::asString(value); break;
 			case property::ValueType::Float: out += fmt::format("{:1.3f}", std::get<double>(value)); break;
-			default: out += fmt::format("\"{}\"", property::asString(value)); break;
+			default:                         out += fmt::format("\"{}\"", property::asString(value)); break;
 			}
 		}
 
@@ -586,7 +579,7 @@ Parser::Parser(ArchiveDir* dir_root) : archive_dir_root_{ dir_root }
 // 		</base>
 // 	</root>
 // -----------------------------------------------------------------------------
-bool Parser::parseText(MemChunk& mc, string_view source) const
+bool Parser::parseText(const MemChunk& mc, string_view source) const
 {
 	Tokenizer tz;
 

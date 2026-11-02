@@ -32,9 +32,8 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "PaletteDialog.h"
-#include "General/UI.h"
-#include "Graphics/Palette/Palette.h"
 #include "UI/Canvas/PaletteCanvas.h"
+#include "UI/Layout.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -50,20 +49,20 @@ using namespace slade;
 // -----------------------------------------------------------------------------
 // PaletteDialog class constructor
 // -----------------------------------------------------------------------------
-PaletteDialog::PaletteDialog(Palette* palette) :
+PaletteDialog::PaletteDialog(const Palette* palette) :
 	wxDialog(nullptr, -1, wxS("Palette"), wxDefaultPosition, wxDefaultSize, wxDEFAULT_DIALOG_STYLE | wxRESIZE_BORDER)
 {
-	int size = ui::scalePx(400);
+	auto lh = ui::LayoutHelper(this);
 
 	auto m_vbox = new wxBoxSizer(wxVERTICAL);
 	SetSizer(m_vbox);
 
-	pal_canvas_ = new PaletteCanvas(this, -1);
-	pal_canvas_->palette().copyPalette(palette);
-	pal_canvas_->SetInitialSize(wxSize(size, size));
+	pal_canvas_ = new PaletteCanvas(this);
+	pal_canvas_->setPalette(palette);
+	pal_canvas_->SetInitialSize(lh.size(400, 400));
 	pal_canvas_->setSelectionType(PaletteCanvas::SelectionType::One);
-	m_vbox->Add(pal_canvas_, 1, wxEXPAND | wxALL, ui::padLarge());
-	m_vbox->Add(wxutil::createDialogButtonBox(this), 0, wxEXPAND | wxLEFT | wxRIGHT | wxBOTTOM, ui::padLarge());
+	m_vbox->Add(pal_canvas_, lh.sfWithLargeBorder(1).Expand());
+	m_vbox->Add(wxutil::createDialogButtonBox(this), lh.sfWithLargeBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
 
 	// Bind events
 	pal_canvas_->Bind(wxEVT_LEFT_DCLICK, [&](wxMouseEvent&) { EndModal(wxID_OK); });

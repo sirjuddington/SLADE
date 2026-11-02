@@ -1,0 +1,33 @@
+<svg
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="16px"
+    height="16px"
+    viewBox="0 0 24 24">
+    <rect
+        x="2"
+        y="2"
+        width="20"
+        height="20"
+        fill="#FFFF00"
+		fill-opacity="0.4"
+        rx="2"
+        ry="2"
+    />
+	<rect
+		x="2"
+		y="2"
+		width="20"
+		height="20"
+		fill-opacity="0"
+		stroke="#FFFF00"
+		stroke-width="2"
+		stroke-linejoin="round"
+	/>
+	<g transform="scale(1.2, 1.2) translate(2, 2)">
+		<path
+			fill="#FFFF00"
+			d="M4.5 3c-.277 0-.5.223-.5.5v9c0 .277.223.5.5.5h1c.277 0 .5-.223.5-.5V9h4v3.5c0 .277.223.5.5.5h1c.277 0 .5-.223.5-.5v-9c0-.277-.223-.5-.5-.5h-1c-.277 0-.5.223-.5.5V7H6V3.5c0-.277-.223-.5-.5-.5z"
+		/>
+	</g>
+</svg>

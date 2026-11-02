@@ -6,7 +6,7 @@ class ExtMessageDialog : public wxDialog
 {
 public:
 	ExtMessageDialog(wxWindow* parent, string_view caption);
-	~ExtMessageDialog() = default;
+	~ExtMessageDialog() override = default;
 
 	void setMessage(const string& message) const;
 	void setExt(const string& text) const;
