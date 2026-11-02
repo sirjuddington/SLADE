@@ -2,13 +2,20 @@
 $version_major =    "3"
 $version_minor =    "3"
 $version_revision = "0"
-$version_beta =     "3"
+$version_beta =     "0"
 
 # Prompt for new version numbers
 Write-Host "Major version number: $version_major (locked)"
 if ($v = Read-Host "Enter minor version number (current $version_minor)") { $version_minor = $v }
 if ($v = Read-Host "Enter revision number (current $version_revision)") { $version_revision = $v }
 if ($v = Read-Host "Enter beta number (0 for release, current $version_beta)") { $version_beta = $v }
+
+# Build version string
+$version = "$version_major.$version_minor.$version_revision"
+if ($version_beta -ne "0")
+{
+    $version = "$version-beta$version_beta"
+}
 
 
 # App.cpp ----------------------------------------------------------------------
