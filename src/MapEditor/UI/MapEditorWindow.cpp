@@ -750,7 +750,8 @@ void MapEditorWindow::buildNodes(Archive* wad)
 		return;
 
 	// Switch to ZDBSP if UDMF
-	if (editContext().mapDesc().format == MapFormat::UDMF && !(nodebuilder_id.value == "zdbsp" || nodebuilder_id.value == "elfbsp"))
+	if (editContext().mapDesc().format == MapFormat::UDMF
+		&& !(nodebuilder_id.value == "zdbsp" || nodebuilder_id.value == "elfbsp"))
 	{
 		wxMessageBox(wxS("Nodebuilder switched to ZDBSP for UDMF format"), wxS("Save Map"), wxICON_INFORMATION);
 		builder = nodebuilders::builder("zdbsp");
@@ -1368,11 +1369,7 @@ bool MapEditorWindow::handleAction(string_view id)
 		if (auto head = mdesc_current.head.lock())
 			archive = head->parent();
 		RunDialog dlg(this, archive, id == "mapw_run_map", true);
-		if (map_canvas_)
-			map_canvas_->Freeze();
 		const int modal_result = (id == "mapw_quick_run_map") ? wxID_OK : dlg.ShowModal();
-		if (map_canvas_)
-			map_canvas_->Thaw();
 		if (modal_result == wxID_OK)
 		{
 			// Move player 1 start if needed
