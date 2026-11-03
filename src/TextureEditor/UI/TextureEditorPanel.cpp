@@ -503,9 +503,9 @@ bool TextureEditorPanel::close()
 			wxYES_NO | wxCANCEL | wxICON_QUESTION,
 			this);
 
-		if (result == wxID_YES)
+		if (result == wxYES)
 			saveAll(); // User selected to save
-		else if (result == wxID_CANCEL)
+		else if (result == wxCANCEL)
 			return false; // User selected cancel, don't close the editor
 	}
 
