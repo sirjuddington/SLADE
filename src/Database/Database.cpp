@@ -117,7 +117,7 @@ void createMissingTables(Context& db)
 			continue;
 
 		// Doesn't exist, create table
-		string sql{ reinterpret_cast<const char*>(entry->data().data()), entry->data().size() };
+		string sql = entry->data().asString();
 		try
 		{
 			Transaction tx(db.connectionRW());
@@ -142,7 +142,7 @@ void createMissingTables(Context& db)
 				continue;
 
 			// Doesn't exist, create view
-			string sql{ reinterpret_cast<const char*>(entry->data().data()), entry->data().size() };
+			string sql = entry->data().asString();
 			try
 			{
 				Transaction tx(db.connectionRW());
@@ -253,7 +253,7 @@ void updateDatabase(int prev_version)
 		if (!update_entry)
 			throw std::runtime_error(fmt::format("Database update script for v{} not found", v));
 
-		string sql{ reinterpret_cast<const char*>(update_entry->data().data()), update_entry->data().size() };
+		string sql = update_entry->data().asString();
 		try
 		{
 			Transaction tx(db.connectionRW());
@@ -672,7 +672,7 @@ void           c_db(const vector<string>& args)
 					return;
 				}
 
-				string sql{ reinterpret_cast<const char*>(sql_entry->data().data()), sql_entry->data().size() };
+				string sql = sql_entry->data().asString();
 				db->exec(fmt::format("DROP TABLE IF EXISTS {}", table));
 				db->exec(sql);
 				log::console("Table {} recreated and reset to default", table);

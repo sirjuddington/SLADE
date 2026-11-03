@@ -77,7 +77,7 @@ static bool showArchive(const Archive* archive)
 // -----------------------------------------------------------------------------
 static string_view memChunkData(const MemChunk& mc)
 {
-	return string_view{ reinterpret_cast<const char*>(mc.data()), mc.size() };
+	return string_view{ reinterpret_cast<const char*>(mc.data()), static_cast<size_t>(mc.size()) };
 }
 
 // -----------------------------------------------------------------------------

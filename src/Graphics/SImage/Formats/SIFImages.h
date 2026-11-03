@@ -282,7 +282,7 @@ protected:
 			return false;
 		}
 
-		PngReadContext ctx{ .data = data.data(), .size = data.size(), .offset = 0 };
+		PngReadContext ctx{ .data = data.data(), .size = static_cast<size_t>(data.size()), .offset = 0 };
 		png_set_read_fn(png_ptr, &ctx, pngReadData);
 
 		// Read header
