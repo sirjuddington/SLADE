@@ -310,6 +310,16 @@ BrowserWindow::~BrowserWindow()
 }
 
 // -----------------------------------------------------------------------------
+// Shows the browser modally. wxMSW doesn't reset the dialog's return code after
+// a previous EndModal call, which prevents the dialog from being shown again
+// -----------------------------------------------------------------------------
+int BrowserWindow::ShowModal()
+{
+	SetReturnCode(0);
+	return wxDialog::ShowModal();
+}
+
+// -----------------------------------------------------------------------------
 // Sets the browser palette to [pal]
 // -----------------------------------------------------------------------------
 void BrowserWindow::setPalette(const Palette* pal) const

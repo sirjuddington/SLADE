@@ -133,11 +133,11 @@ NewTextureDialog::NewTextureDialog(wxWindow* parent, PatchBrowser* patch_browser
 		});
 
 	// Setup dialog size
-	setSavedSize(FromDIP(400), -1);
-	// SetInitialSize({ FromDIP(400), -1 });
-	// wxTopLevelWindowBase::Layout();
-	// wxWindowBase::Fit();
-	// wxTopLevelWindowBase::SetMinSize(GetBestSize());
+	SetInitialSize(lh.size(400, -1));
+	Layout();
+	Fit();
+	SetMinSize(GetBestSize());
+	SetMaxSize({ -1, GetBestSize().y });
 	CenterOnParent();
 }
 

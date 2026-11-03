@@ -51,6 +51,8 @@ public:
 	BrowserWindow(wxWindow* parent, bool truncate_names = false);
 	~BrowserWindow() override;
 
+	int ShowModal() override;
+
 	bool truncateNames() const { return truncate_names_; }
 
 	Palette* palette() const { return palette_.get(); }
