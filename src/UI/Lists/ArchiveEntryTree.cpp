@@ -902,6 +902,7 @@ ArchiveEntryTree::ArchiveEntryTree(
 
 	// Add Columns
 	setupColumns();
+	setSearchColumn(0);
 
 	// --- Bind Events ---
 

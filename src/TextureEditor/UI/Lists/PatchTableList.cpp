@@ -59,6 +59,7 @@ PatchTableList::PatchTableList(wxWindow* parent, PatchTable* patch_table) :
 	AssociateModel(model.get());
 
 	setupColumns();
+	setSearchColumn(static_cast<int>(PatchTableModel::Column::Name));
 
 	enableHeaderContextMenu();
 }

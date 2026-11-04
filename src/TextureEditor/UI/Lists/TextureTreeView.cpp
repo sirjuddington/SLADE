@@ -67,6 +67,7 @@ TextureTreeView::TextureTreeView(wxWindow* parent, const TextureEditor& editor) 
 	AssociateModel(model.get());
 
 	setupColumns();
+	setSearchColumn(static_cast<int>(TextureTreeModel::Column::Name));
 
 	// Save sort state when the sorting changes
 	Bind(
