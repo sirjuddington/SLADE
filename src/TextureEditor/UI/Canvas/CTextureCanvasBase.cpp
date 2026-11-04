@@ -59,6 +59,7 @@ CVAR(Bool, tx_hover_info, true, CVar::Flag::Save)
 CVAR(Bool, tx_apply_scale, true, CVar::Flag::Save)
 CVAR(Bool, tx_show_outside, true, CVar::Flag::Save)
 CVAR(Bool, tx_truecolour, true, CVar::Flag::Save)
+CVAR(Bool, tx_zoom_towards_cursor, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -804,7 +805,29 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 		}
 		if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 		{
-			zoom_point_ = { p_x, p_y };
+			// Zoom towards cursor if enabled
+			if (tx_zoom_towards_cursor)
+				zoom_point_ = { p_x, p_y };
+
+			// Otherwise, zoom towards center of view
+			else
+			{
+				switch (view_type_)
+				{
+				case View::Normal:
+					// Normal view, zoom towards center of texture
+					zoom_point_ = view().screenPos(texture_->width() / 2.0, texture_->height() / 2.0);
+					break;
+				case View::HUD:
+					// HUD view, zoom towards center of HUD
+					zoom_point_ = view().screenPos(160, 100);
+					break;
+				default:
+					// Any other view, zoom towards origin
+					zoom_point_ = view().screenPos(0, 0);
+					break;
+				}
+			}
 
 			if (e.GetWheelRotation() > 0)
 				linked_zoom_control_->zoomIn(true);

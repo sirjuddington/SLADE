@@ -51,6 +51,7 @@
 #include "UI/Settings/ScriptSettingsPanel.h"
 #include "UI/Settings/TextEditorSettingsPanel.h"
 #include "UI/Settings/TextEditorStyleSettingsPanel.h"
+#include "UI/Settings/TextureEditorSettingsPanel.h"
 #include "UI/WxUtils.h"
 
 using namespace slade;
@@ -117,17 +118,18 @@ SettingsDialog::SettingsDialog(wxWindow* parent, SettingsPage initial_page) :
 	content_sizer_->Add(title_panel, wxSizerFlags().Expand());
 
 	// Settings pages
-	settings_pages_[static_cast<size_t>(SettingsPage::General)]    = new GeneralSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Interface)]  = new InterfaceSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Keybinds)]   = new InputSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Editing)]    = new EditingSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Text)]       = new TextEditorSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Graphics)]   = new GraphicsSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Audio)]      = new AudioSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Scripting)]  = new ScriptSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::MapGeneral)] = new MapGeneralSettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::MapDisplay)] = new MapDisplaySettingsPanel(this);
-	settings_pages_[static_cast<size_t>(SettingsPage::Advanced)]   = new AdvancedSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::General)]       = new GeneralSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Interface)]     = new InterfaceSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Keybinds)]      = new InputSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Editing)]       = new EditingSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Text)]          = new TextEditorSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Graphics)]      = new GraphicsSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::TextureEditor)] = new TextureEditorSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Audio)]         = new AudioSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Scripting)]     = new ScriptSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::MapGeneral)]    = new MapGeneralSettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::MapDisplay)]    = new MapDisplaySettingsPanel(this);
+	settings_pages_[static_cast<size_t>(SettingsPage::Advanced)]      = new AdvancedSettingsPanel(this);
 
 	// Hide all pages initially
 	for (auto* page : settings_pages_)
@@ -214,6 +216,7 @@ bool SettingsDialog::popupSettingsPage(wxWindow* parent, SettingsPage page)
 	case SettingsPage::Editing:         settings_panel = new EditingSettingsPanel(&dlg); break;
 	case SettingsPage::Text:            settings_panel = new TextEditorSettingsPanel(&dlg); break;
 	case SettingsPage::Graphics:        settings_panel = new GraphicsSettingsPanel(&dlg); break;
+	case SettingsPage::TextureEditor:   settings_panel = new TextureEditorSettingsPanel(&dlg); break;
 	case SettingsPage::Audio:           settings_panel = new AudioSettingsPanel(&dlg); break;
 	case SettingsPage::Scripting:       settings_panel = new ScriptSettingsPanel(&dlg); break;
 	case SettingsPage::MapGeneral:      settings_panel = new MapGeneralSettingsPanel(&dlg); break;
@@ -295,6 +298,7 @@ wxPanel* SettingsDialog::createSectionsPanel()
 	createSectionButton(panel, SettingsPage::Editing, "Editing", "wrench");
 	createSectionButton(panel, SettingsPage::Text, "Text Editor", "text");
 	createSectionButton(panel, SettingsPage::Graphics, "Graphics", "gfx");
+	createSectionButton(panel, SettingsPage::TextureEditor, "Texture Editor", "texeditor");
 	createSectionButton(panel, SettingsPage::Audio, "Audio", "sound");
 	createSectionButton(panel, SettingsPage::Scripting, "Scripting & Compilers", "script");
 	createSectionButton(panel, SettingsPage::MapGeneral, "Map Editor", "mapeditor");
@@ -335,6 +339,7 @@ string SettingsDialog::pageId(SettingsPage page)
 	case SettingsPage::Editing:         return "editing";
 	case SettingsPage::Text:            return "text";
 	case SettingsPage::Graphics:        return "gfx";
+	case SettingsPage::TextureEditor:   return "texture_editor";
 	case SettingsPage::Audio:           return "audio";
 	case SettingsPage::Scripting:       return "scripts";
 	case SettingsPage::MapGeneral:      return "map_general";

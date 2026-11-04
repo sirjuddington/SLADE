@@ -21,6 +21,7 @@ enum class SettingsPage : u8
 	Editing,
 	Text,
 	Graphics,
+	TextureEditor,
 	Audio,
 	Scripting,
 	MapGeneral,
