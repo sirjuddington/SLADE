@@ -47,6 +47,7 @@ using namespace slade;
 //
 // -----------------------------------------------------------------------------
 CVAR(Bool, gfx_default_centered, true, CVar::Flag::Save)
+CVAR(Bool, gfx_zoom_towards_cursor, true, CVar::Flag::Save)
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_OFFSET_CHANGED)
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_PIXELS_CHANGED)
 DEFINE_EVENT_TYPE(wxEVT_GFXCANVAS_COLOUR_PICKED)
@@ -542,11 +543,31 @@ void GfxCanvasBase::onMouseWheel(wxMouseEvent& e)
 
 	if (!wxGetKeyState(WXK_CONTROL) && linked_zoom_control_ && e.GetWheelAxis() == wxMOUSE_WHEEL_VERTICAL)
 	{
-		// Zoom towards cursor if the view is centered, otherwise just zoom towards origin
-		if (view().centered())
+		// Zoom towards cursor if enabled and view is centered
+		if (gfx_zoom_towards_cursor && view().centered())
 			zoom_point_ = { window()->ToPhys(e.GetPosition().x), window()->ToPhys(e.GetPosition().y) };
+
+		// Otherwise, zoom towards center of view
 		else
-			zoom_point_ = { 0, 0 };
+		{
+			switch (view_type_)
+			{
+			case View::Default:
+				// Default - if centered, zoom towards center of image, otherwise origin
+				if (gfx_default_centered)
+					zoom_point_ = view().screenPos(image_->width() / 2.0, image_->height() / 2.0);
+				else
+					zoom_point_ = view().screenPos(0, 0);
+				break;
+			case View::HUD:
+				// HUD - zoom towards center of HUD
+				zoom_point_ = view().screenPos(160, 100);
+				break;
+			default:
+				// Sprite or Tiled - zoom towards origin
+				zoom_point_ = view().screenPos(0, 0);
+			}
+		}
 
 		if (e.GetWheelRotation() > 0)
 			linked_zoom_control_->zoomIn(true);

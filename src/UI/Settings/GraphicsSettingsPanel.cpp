@@ -199,6 +199,7 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 	settings_table_->addCheckBox("Show outline around graphics and textures", "gfx_show_border");
 	settings_table_->addCheckBox("Highlight graphics on mouse hover", "gfx_hilight_mouseover");
 	settings_table_->addCheckBox("Centered default graphics view", "gfx_default_centered");
+	settings_table_->addCheckBox("Zoom towards cursor when using mouse wheel", "gfx_zoom_towards_cursor");
 	settings_table_->addCheckBox("Offer additional conversion options", "gfx_extraconv");
 	settings_table_->addCheckBox(
 		"Condensed Translation Editor layout|"
@@ -208,9 +209,8 @@ wxPanel* GraphicsSettingsPanel::createGeneralPanel(wxWindow* parent)
 
 	// Transparent Background Colours
 	settings_table_->addSectionSeparator("Transparent Background Colours");
-	settings_table_->addCustomControl("Preset", choice_presets_, wxALIGN_CENTER_VERTICAL);
 	settings_table_->addCustomSizer(
-		"Colours", lh.layoutHorizontally({ cp_colour1_, cp_colour2_ }), wxALIGN_CENTER_VERTICAL);
+		"Colours", lh.layoutHorizontally({ cp_colour1_, cp_colour2_, choice_presets_ }), wxALIGN_CENTER_VERTICAL);
 	settings_table_->addRadioButtons(
 		"Browser Background", "browser_bg_type", { "Transparent (as above)", "System", "Black" });
 
