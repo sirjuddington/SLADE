@@ -129,6 +129,10 @@ void NodeBuildersSettingsPanel::applySettings()
 	auto& builder  = nodebuilders::builder(choice_nodebuilder_->GetSelection());
 	nodebuilder_id = builder.id;
 
+	// Set path if changed
+	if (builder.path != flp_nodebuilder_path_->location())
+		builder.path = flp_nodebuilder_path_->location();
+
 	// Set options string
 	string opt = " ";
 	for (unsigned a = 0; a < clb_options_->GetCount(); a++)
