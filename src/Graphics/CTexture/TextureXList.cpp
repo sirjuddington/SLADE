@@ -185,6 +185,33 @@ int TextureXList::textureIndex(string_view name) const
 }
 
 // -----------------------------------------------------------------------------
+// Returns the index of [texture] in the list, or -1 if not found
+// -----------------------------------------------------------------------------
+int TextureXList::textureIndex(const CTexture* texture) const
+{
+	// First, check the CTexture's cached index (validated, since it can go
+	// stale after insertions, deletions, sorting, etc.)
+	if (texture
+		&& texture->index_ >= 0
+		&& std::cmp_less(texture->index_, textures_.size())
+		&& textures_[texture->index_].get() == texture)
+		return texture->index_;
+
+	// Cached index is stale, search for texture by pointer
+	for (unsigned a = 0; a < textures_.size(); a++)
+	{
+		if (textures_[a].get() == texture)
+		{
+			textures_[a]->index_ = a; // Refresh cached index
+			return a;
+		}
+	}
+
+	// Not found
+	return -1;
+}
+
+// -----------------------------------------------------------------------------
 // Adds [tex] to the texture list at [position]
 // -----------------------------------------------------------------------------
 void TextureXList::addTexture(unique_ptr<CTexture> tex, int position)

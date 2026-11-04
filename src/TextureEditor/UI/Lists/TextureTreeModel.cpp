@@ -195,9 +195,8 @@ bool TextureTreeModel::matchesFilter(const CTexture& tex) const
 	if (filter_name_.empty())
 		return true;
 
-	auto name_upper = strutil::upper(tex.name());
 	for (const auto& f : filter_name_)
-		if (strutil::matches(name_upper, f))
+		if (strutil::matchesCI(tex.name(), f))
 			return true;
 
 	return false;

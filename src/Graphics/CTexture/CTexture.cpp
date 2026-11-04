@@ -546,7 +546,7 @@ int CTexture::index() const
 		return index_;
 
 	// Find this texture in the parent list
-	return in_list_->textureIndex(name());
+	return in_list_->textureIndex(this);
 }
 
 // -----------------------------------------------------------------------------

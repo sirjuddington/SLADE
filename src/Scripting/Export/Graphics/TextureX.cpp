@@ -134,7 +134,8 @@ void registerTextureXListType(lua_State* lua)
 	// Functions
 	// -------------------------------------------------------------------------
 	lua_txlist.addFunction("Texture", luabridge::constOverload<string_view>(&TextureXList::texture));
-	lua_txlist.addFunction("TextureIndex", &TextureXList::textureIndex);
+	lua_txlist.addFunction(
+		"TextureIndex", [](const TextureXList& self, string_view texture) { return self.textureIndex(texture); });
 	lua_txlist.addFunction(
 		"AddTexture",
 		&addTexture,

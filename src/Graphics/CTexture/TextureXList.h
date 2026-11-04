@@ -35,6 +35,7 @@ public:
 	TextureXFormat format() const { return txformat_; }
 	string         textureXFormatString() const;
 	int            textureIndex(string_view name) const;
+	int            textureIndex(const CTexture* texture) const;
 
 	void setFormat(TextureXFormat format) { txformat_ = format; }
 
