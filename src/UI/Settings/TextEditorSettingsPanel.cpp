@@ -102,7 +102,7 @@ wxPanel* TextEditorSettingsPanel::createSettingsPanel(wxWindow* parent)
 	settings_general_->addCheckBox("Highlight matching braces", "txed_brace_match");
 	settings_general_->addCheckBox(
 		"Highlight matching words|"
-		"When enabled, any words matching the word at the current cursor position or selection will be hilighted",
+		"When enabled, any words matching the word at the current cursor position or selection will be highlighted",
 		"txed_match_cursor_word");
 	settings_general_->addSpinControl("Right margin at column", "txed_edge_column", 0, 1000);
 	settings_general_->addSpinControl("Extra line spacing", "txed_line_extra_height", 0, 10);
@@ -123,7 +123,7 @@ wxPanel* TextEditorSettingsPanel::createCodePanel(wxWindow* parent)
 {
 	settings_code_ = new SettingsTable(parent);
 
-	settings_code_->addCheckBox("Enable syntax hilighting", "txed_syntax_hilight");
+	settings_code_->addCheckBox("Enable syntax highlighting", "txed_syntax_hilight");
 
 	// Calltips
 	settings_code_->addSectionSeparator("Calltips");
