@@ -49,6 +49,7 @@
 #include "SLADEMap/MapObject/MapVertex.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/SLADEMap.h"
+#include "Utility/MathStuff.h"
 #include "Utility/StringUtils.h"
 
 using namespace slade;
@@ -140,7 +141,7 @@ void InfoOverlay3D::update(mapeditor::Item item, SLADEMap* map)
 			strutil::removeLast(flags, 2);
 		info_.push_back(flags);
 
-		info_.push_back(fmt::format("Length: {}", static_cast<int>(line->length())));
+		info_.push_back(fmt::format("Length: {}", math::round(line->length())));
 
 		// Other potential info: special, sector#
 

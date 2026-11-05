@@ -333,7 +333,7 @@ void buildWallExtraFloorQuads(LineQuadsContext& context, const ExtraFloor& ef, b
 						.gl_texture    = &gl_tex,
 						.offsets       = { 0, 0 },
 						.tex_scale     = { 1, 1 },
-						.line_length   = static_cast<int>(context.line->length()),
+						.line_length   = math::round(context.line->length()),
 						.tex_y_origin  = ef.height,
 						.back_side     = front, // Show on back side of line if extrafloor is on front
 						.extrafloor    = true };
@@ -450,7 +450,7 @@ void buildWallPartQuads(LineQuadsContext& context, MapLine::Part part)
 						.texture       = &texture,
 						.gl_texture    = &gl_tex,
 						.offsets       = side->texOffset(side_part),
-						.line_length   = static_cast<int>(line->length()),
+						.line_length   = math::round(line->length()),
 						.tex_y_origin  = tex_y_origin,
 						.back_side     = (side == line->s2()),
 						.translucency  = context.translucency };
