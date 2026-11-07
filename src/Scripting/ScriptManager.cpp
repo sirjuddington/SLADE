@@ -356,6 +356,12 @@ vector<unique_ptr<scriptmanager::Script>>& scriptmanager::editorScripts(ScriptTy
 // -----------------------------------------------------------------------------
 void scriptmanager::populateEditorScriptMenu(wxMenu* menu, ScriptType type, string_view action_id)
 {
+	if (scripts_editor[type].empty())
+	{
+		menu->Append(SAction::fromId(action_id)->wxId(), wxS("No scripts available"))->Enable(false);
+		return;
+	}
+
 	int index = 0;
 	for (auto& script : scripts_editor[type])
 		menu->Append(SAction::fromId(action_id)->wxId() + index++, wxString::FromUTF8(script->name));
