@@ -51,6 +51,11 @@ if (BUILD_WX)
 	FetchContent_MakeAvailable(wxwidgets)
 endif ()
 
+# Git revision string (shown as global::sc_rev), eg. from `git describe`
+if (GIT_DESCRIPTION)
+	add_compile_definitions(GIT_DESCRIPTION="${GIT_DESCRIPTION}")
+endif ()
+
 add_subdirectory(src)
 
 if (BUILD_PK3)

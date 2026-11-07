@@ -133,12 +133,12 @@ wxPanel* createLogoPanel(wxWindow* parent)
 	vbox->Add(tagline_label, lh.sfWithBorder(0, wxBOTTOM).Center());
 
 	// Version
-	string version = "v" + app::version().toString();
-	if (!global::sc_rev.empty())
-		version += " (Git Rev " + global::sc_rev + ")";
-	auto version_label = new wxStaticText(panel, -1, wxString::FromUTF8(version));
+	string version       = "v" + app::version().toString();
+	auto   version_label = new wxStaticText(panel, -1, wxString::FromUTF8(version));
 	version_label->SetFont(version_label->GetFont().Bold());
 	vbox->Add(version_label, wxSizerFlags().Center());
+	if (!global::sc_rev.empty())
+		vbox->Add(new wxStaticText(panel, -1, WX_FMT("Git Rev {}", global::sc_rev)), wxSizerFlags().Center());
 
 	vbox->AddStretchSpacer();
 

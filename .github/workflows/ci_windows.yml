@@ -1,0 +1,96 @@
+name: Continuous Integration (Windows)
+
+on: [push, pull_request]
+
+env:
+  VCPKG_DEFAULT_TRIPLET: x64-windows-static
+  VCPKG_BINARY_CACHE_DIR: ${{ github.workspace }}\vcpkg-binary-cache
+
+jobs:
+  build:
+    name: Windows x64
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Get git revision
+        shell: pwsh
+        run: |
+          $rev = (git describe --tags --always).Trim()
+          "GIT_DESCRIPTION=$rev" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+      - name: Set up MSVC environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Restore vcpkg binary cache
+        uses: actions/cache/restore@v6
+        with:
+          path: ${{ env.VCPKG_BINARY_CACHE_DIR }}
+          key: vcpkg-bin-${{ runner.os }}-${{ env.VCPKG_DEFAULT_TRIPLET }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
+          restore-keys: |
+            vcpkg-bin-${{ runner.os }}-${{ env.VCPKG_DEFAULT_TRIPLET }}-${{ hashFiles('vcpkg.json') }}-
+            vcpkg-bin-${{ runner.os }}-${{ env.VCPKG_DEFAULT_TRIPLET }}-
+
+      # Manifest mode with a builtin-baseline needs the baseline commit present in the vcpkg git history
+      - name: Prepare vcpkg
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path $env:VCPKG_BINARY_CACHE_DIR | Out-Null
+          if ((git -C $env:VCPKG_INSTALLATION_ROOT rev-parse --is-shallow-repository) -eq 'true') {
+            git -C $env:VCPKG_INSTALLATION_ROOT fetch --unshallow
+          } else {
+            git -C $env:VCPKG_INSTALLATION_ROOT fetch origin
+          }
+          "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+          "VCPKG_BINARY_SOURCES=clear;files,$env:VCPKG_BINARY_CACHE_DIR,readwrite" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Configure
+        shell: pwsh
+        run: >
+          cmake -G Ninja -B build
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DBUILD_WX=ON
+          -DGIT_DESCRIPTION="$env:GIT_DESCRIPTION"
+          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
+          -DVCPKG_TARGET_TRIPLET=${{ env.VCPKG_DEFAULT_TRIPLET }}
+          .
+
+      - name: Build
+        run: cmake --build build
+
+      # Saved even if the build fails, as long as dependencies were built
+      - name: Save vcpkg binary cache
+        if: always() && hashFiles('vcpkg-binary-cache/**') != ''
+        uses: actions/cache/save@v6
+        with:
+          path: ${{ env.VCPKG_BINARY_CACHE_DIR }}
+          key: vcpkg-bin-${{ runner.os }}-${{ env.VCPKG_DEFAULT_TRIPLET }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
+
+      - name: Upload vcpkg logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: vcpkg-logs
+          path: |
+            build/vcpkg-manifest-install.log
+            build/vcpkg_installed/vcpkg/issue_body.md
+          if-no-files-found: ignore
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $name = "SLADE_git-${env:GIT_DESCRIPTION}_win_x64"
+          7z a -mx=9 "$name.7z" ./dist/SLADE.exe ./dist/SLADE.pdb ./dist/slade.pk3
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          "PACKAGE=$name.7z" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          path: ${{ env.PACKAGE }}
+          archive: false
+          if-no-files-found: error
