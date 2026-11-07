@@ -33,6 +33,9 @@ if (NOT MSVC)
 endif ()
 
 # SQLiteCpp
+# Static analysis targets aren't needed and fail with a broken/missing cppcheck install
+set(SQLITECPP_RUN_CPPCHECK OFF CACHE BOOL "" FORCE)
+set(SQLITECPP_RUN_CPPLINT OFF CACHE BOOL "" FORCE)
 add_subdirectory(sqlitecpp)
 
 # JSON (nlohmann)
