@@ -192,6 +192,9 @@ void SettingsDialog::applySettings() const
 
 	// Apply advanced settings last
 	advanced_page->applySettings();
+
+	// Save configuration files
+	app::saveConfiguration();
 }
 
 // -----------------------------------------------------------------------------
@@ -384,7 +387,7 @@ void SettingsDialog::onSectionButtonClicked(wxCommandEvent& e)
 	// Show the appropriate panel
 	SettingsPanel* new_page;
 	auto           index = std::distance(
-        section_buttons_.begin(), std::find(section_buttons_.begin(), section_buttons_.end(), btn));
+		section_buttons_.begin(), std::find(section_buttons_.begin(), section_buttons_.end(), btn));
 	new_page = settings_pages_[index];
 	title_text_->SetLabel(wxString::FromUTF8(new_page->title()));
 

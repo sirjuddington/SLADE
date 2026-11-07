@@ -22,7 +22,7 @@ namespace app
 	Archive*         programResource();
 
 	bool init(const vector<string>& args);
-	void saveConfigFile();
+	void saveConfiguration();
 	void exit(bool save_config);
 	void handleException();
 

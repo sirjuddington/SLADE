@@ -436,6 +436,66 @@ void readConfigFile()
 }
 
 // -----------------------------------------------------------------------------
+// Saves the SLADE configuration file
+// -----------------------------------------------------------------------------
+void saveConfigFile()
+{
+	// Open config file for writing
+	auto  cfg_path = path("config.json", Dir::User);
+	SFile config_json(cfg_path, SFile::Mode::Write);
+
+	// Show error message if it didn't open correctly
+	if (!config_json.isOpen())
+	{
+		log::error("Failed to open config.json for writing");
+		wxMessageBox(
+			WX_FMT(
+				"Failed to open the SLADE configuration file ({}) for writing, settings will not be saved!", cfg_path),
+			wxS("Error"),
+			wxICON_ERROR);
+		return;
+	}
+
+	// Build JSON object
+	Json j;
+
+	// CVars
+	auto& j_cvars = j["cvars"];
+	for (auto cvar : CVar::allCvars())
+	{
+		if (cvar->flags & CVar::Flag::Save)
+		{
+			switch (cvar->type)
+			{
+			case CVar::Type::Integer: j_cvars[cvar->name] = cvar->getValue().Int; break;
+			case CVar::Type::Boolean: j_cvars[cvar->name] = cvar->getValue().Bool; break;
+			case CVar::Type::Float:   j_cvars[cvar->name] = cvar->getValue().Float; break;
+			case CVar::Type::String:  j_cvars[cvar->name] = dynamic_cast<CStringCVar*>(cvar)->value; break;
+			default:                  break;
+			}
+		}
+	}
+
+	// Base resource archive paths
+	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
+	{
+		auto path = archive_manager.getBaseResourcePath(a);
+		std::replace(path.begin(), path.end(), '\\', '/');
+		j["base_resource_paths"].push_back(path);
+	}
+
+	// Nodebuilder paths
+	nodebuilders::writeBuilderPaths(j);
+
+	// Game exe paths
+	executables::writePaths(j);
+
+
+	// Write JSON to file
+	config_json.writeStr(j.dump(2));
+}
+
+// -----------------------------------------------------------------------------
 // Processes command line [args]
 // -----------------------------------------------------------------------------
 vector<string> processCommandLine(const vector<string>& args)
@@ -707,12 +767,12 @@ bool app::init(const vector<string>& args)
 	CFStringRef     keys[]   = { kAXTrustedCheckOptionPrompt };
 	CFTypeRef       values[] = { kCFBooleanTrue };
 	CFDictionaryRef options  = CFDictionaryCreate(
-        NULL,
-        (const void**)&keys,
-        (const void**)&values,
-        sizeof(keys) / sizeof(keys[0]),
-        &kCFTypeDictionaryKeyCallBacks,
-        &kCFTypeDictionaryValueCallBacks);
+		NULL,
+		(const void**)&keys,
+		(const void**)&values,
+		sizeof(keys) / sizeof(keys[0]),
+		&kCFTypeDictionaryKeyCallBacks,
+		&kCFTypeDictionaryValueCallBacks);
 	if (AXIsProcessTrustedWithOptions(options))
 		CFRelease(options);
 #endif
@@ -725,63 +785,16 @@ bool app::init(const vector<string>& args)
 }
 
 // -----------------------------------------------------------------------------
-// Saves the SLADE configuration file
+// Saves all configuration related files
 // -----------------------------------------------------------------------------
-void app::saveConfigFile()
+void app::saveConfiguration()
 {
-	// Open config file for writing
-	auto  cfg_path = path("config.json", Dir::User);
-	SFile config_json(cfg_path, SFile::Mode::Write);
-
-	// Show error message if it didn't open correctly
-	if (!config_json.isOpen())
-	{
-		log::error("Failed to open slade3.cfg for writing");
-		wxMessageBox(
-			WX_FMT(
-				"Failed to open the SLADE configuration file ({}) for writing, settings will not be saved!", cfg_path),
-			wxS("Error"),
-			wxICON_ERROR);
-		return;
-	}
-
-	// Build JSON object
-	Json j;
-
-	// CVars
-	auto& j_cvars = j["cvars"];
-	for (auto cvar : CVar::allCvars())
-	{
-		if (cvar->flags & CVar::Flag::Save)
-		{
-			switch (cvar->type)
-			{
-			case CVar::Type::Integer: j_cvars[cvar->name] = cvar->getValue().Int; break;
-			case CVar::Type::Boolean: j_cvars[cvar->name] = cvar->getValue().Bool; break;
-			case CVar::Type::Float:   j_cvars[cvar->name] = cvar->getValue().Float; break;
-			case CVar::Type::String:  j_cvars[cvar->name] = dynamic_cast<CStringCVar*>(cvar)->value; break;
-			default:                  break;
-			}
-		}
-	}
-
-	// Base resource archive paths
-	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
-	{
-		auto path = archive_manager.getBaseResourcePath(a);
-		std::replace(path.begin(), path.end(), '\\', '/');
-		j["base_resource_paths"].push_back(path);
-	}
-
-	// Nodebuilder paths
-	nodebuilders::writeBuilderPaths(j);
-
-	// Game exe paths
-	executables::writePaths(j);
-
-
-	// Write JSON to file
-	config_json.writeStr(j.dump(2));
+	saveConfigFile();                                                   // config.json
+	KeyBind::saveBinds();                                               // Keybinds
+	StyleSet::saveCurrent();                                            // Text style configuration
+	colourconfig::saveCustomConfiguration();                            // Custom colour configuration
+	executables::writeExecutables(path("executables.json", Dir::User)); // Executable paths
+	game::saveCustomSpecialPresets();                                   // Custom special presets
 }
 
 // -----------------------------------------------------------------------------
@@ -795,25 +808,11 @@ void app::exit(bool save_config)
 	if (save_config)
 	{
 		// Save configuration
-		saveConfigFile();
-
-		// Save keybinds
-		KeyBind::saveBinds();
-
-		// Save text style configuration
-		StyleSet::saveCurrent();
-
-		// Save any custom colour configuration
-		colourconfig::saveCustomConfiguration();
-
-		// Save game exes
-		executables::writeExecutables(path("executables.json", Dir::User));
-
-		// Save custom special presets
-		game::saveCustomSpecialPresets();
+		saveConfiguration();
 
 #ifndef NO_LUA
 		// Save custom scripts
+		// TODO: This should be done in the script manager (and not on exit)
 		scriptmanager::saveUserScripts();
 #endif
 	}
