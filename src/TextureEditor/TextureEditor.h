@@ -25,9 +25,9 @@ public:
 
 	bool hasUnsavedChanges() const;
 
-	void saveAll() const;
+	void saveAll();
 	bool saveTextureList(unsigned index) const;
-	bool savePatchTable() const;
+	bool savePatchTable();
 
 	unsigned      nTextureLists() const { return texturex_entries_.size(); }
 	TextureXList* textureList(unsigned index) const;

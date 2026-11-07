@@ -125,7 +125,10 @@ TextureEditor::TextureEditor(shared_ptr<Archive> archive) : archive_{ archive }
 	undo_manager_ = std::make_unique<UndoManager>();
 
 	// Find patch table (if any)
-	if (auto pnames = archive_->findLast({ .match_type = EntryType::fromId("pnames") }))
+	auto pnames = archive_->findLast({ .match_type = EntryType::fromId("pnames") });
+	if (!pnames)
+		pnames = app::archiveManager().baseResourceArchive()->findLast({ .match_type = EntryType::fromId("pnames") });
+	if (pnames)
 	{
 		patch_table_->loadPNAMES(pnames);
 		pnames_ = pnames->getShared();
@@ -197,7 +200,7 @@ bool TextureEditor::hasUnsavedChanges() const
 // Saves all texture lists and the patch table (if modified) back to their
 // respective entries
 // -----------------------------------------------------------------------------
-void TextureEditor::saveAll() const
+void TextureEditor::saveAll()
 {
 	for (unsigned i = 0; i < texturex_entries_.size(); ++i)
 	{
@@ -246,11 +249,21 @@ bool TextureEditor::saveTextureList(unsigned index) const
 // -----------------------------------------------------------------------------
 // Saves the patch table back to the PNAMES entry, if modified
 // -----------------------------------------------------------------------------
-bool TextureEditor::savePatchTable() const
+bool TextureEditor::savePatchTable()
 {
 	auto pnames = pnames_.lock().get();
 	if (!patch_table_ || !patch_table_modified_ || !pnames)
 		return true;
+
+	// If the patch table is in the base resource archive,
+	// make a copy of it in the current archive
+	if (pnames->parent() == app::archiveManager().baseResourceArchive())
+	{
+		auto new_pnames = std::make_shared<ArchiveEntry>(*pnames);
+		archive_->addEntry(new_pnames);
+		pnames_ = new_pnames->getShared();
+		pnames  = new_pnames.get();
+	}
 
 	pnames->unlock();
 	const auto ok = patch_table_->writePNAMES(pnames);
@@ -455,9 +468,9 @@ string TextureEditor::importPatchFile(string_view filename, bool add_to_patch_ta
 	auto file_name = strutil::Path::fileNameOf(filename);
 	auto tex_name  = strutil::upper(strutil::truncate(file_name, 8));
 	auto name      = wxGetTextFromUser(
-                    WX_FMT("Enter a texture name for {}:", file_name), wxS("New Texture"), wxString::FromUTF8(tex_name))
-					.Truncate(8)
-					.utf8_string();
+						 WX_FMT("Enter a texture name for {}:", file_name), wxS("New Texture"), wxString::FromUTF8(tex_name))
+						 .Truncate(8)
+						 .utf8_string();
 
 	// Add patch to archive
 	entry->setName(name);
