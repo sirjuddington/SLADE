@@ -83,7 +83,7 @@ jobs:
       - name: Package
         shell: pwsh
         run: |
-          $name = "SLADE_${{ github.ref_name }}_windows_x64".Replace('/', '_')
+          $name = "SLADE_git-${env:GIT_DESCRIPTION}_win_x64"
           7z a -mx=9 "$name.7z" ./dist/SLADE.exe ./dist/SLADE.pdb ./dist/slade.pk3
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "PACKAGE=$name.7z" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
