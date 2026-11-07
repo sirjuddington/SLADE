@@ -68,7 +68,8 @@ jobs:
         shell: pwsh
         run: |
           $name = "SLADE_${{ github.ref_name }}_windows_x64".Replace('/', '_')
-          7z a -mx=9 "$name.7z" ./build/slade.exe ./build/slade.pdb ./build/slade.pk3
+          7z a -mx=9 "$name.7z" ./dist/SLADE.exe ./dist/SLADE.pdb ./dist/slade.pk3
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           "PACKAGE=$name.7z" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Upload Artifacts
