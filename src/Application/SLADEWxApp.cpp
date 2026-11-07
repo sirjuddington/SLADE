@@ -47,9 +47,6 @@
 #include <wx/statbmp.h>
 #include <wx/url.h>
 #include <wx/webrequest.h>
-#ifdef UPDATEREVISION
-#include "gitinfo.h"
-#endif
 
 using namespace slade;
 
@@ -217,7 +214,7 @@ string currentExceptionInfo()
 
 	const auto rec  = wxGlobalSEInformation->ExceptionRecord;
 	auto       info = fmt::format(
-        "Exception: 0x{:08X} at address {:p}", static_cast<unsigned>(rec->ExceptionCode), rec->ExceptionAddress);
+		"Exception: 0x{:08X} at address {:p}", static_cast<unsigned>(rec->ExceptionCode), rec->ExceptionAddress);
 
 	if (rec->ExceptionCode == EXCEPTION_ACCESS_VIOLATION || rec->ExceptionCode == EXCEPTION_IN_PAGE_ERROR)
 	{

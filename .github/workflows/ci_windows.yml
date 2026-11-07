@@ -13,14 +13,21 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
+      - name: Get git revision
+        shell: pwsh
+        run: |
+          $rev = (git describe --tags --always).Trim()
+          "GIT_DESCRIPTION=$rev" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
       - name: Set up MSVC environment
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
 
       - name: Restore vcpkg binary cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: ${{ env.VCPKG_BINARY_CACHE_DIR }}
           key: vcpkg-bin-${{ runner.os }}-${{ env.VCPKG_DEFAULT_TRIPLET }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
@@ -47,12 +54,21 @@ jobs:
           cmake -G Ninja -B build
           -DCMAKE_BUILD_TYPE=RelWithDebInfo
           -DBUILD_WX=ON
+          -DGIT_DESCRIPTION="$env:GIT_DESCRIPTION"
           -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake"
           -DVCPKG_TARGET_TRIPLET=${{ env.VCPKG_DEFAULT_TRIPLET }}
           .
 
       - name: Build
         run: cmake --build build
+
+      # Saved even if the build fails, as long as dependencies were built
+      - name: Save vcpkg binary cache
+        if: always() && hashFiles('vcpkg-binary-cache/**') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.VCPKG_BINARY_CACHE_DIR }}
+          key: vcpkg-bin-${{ runner.os }}-${{ env.VCPKG_DEFAULT_TRIPLET }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}
 
       - name: Upload vcpkg logs on failure
         if: failure()
@@ -73,8 +89,8 @@ jobs:
           "PACKAGE=$name.7z" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
-          name: windows_x64
           path: ${{ env.PACKAGE }}
+          archive: false
           if-no-files-found: error
