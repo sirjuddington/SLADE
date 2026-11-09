@@ -1237,13 +1237,15 @@ bool ArchivePanel::moveUp() const
 		archive->swapEntries(entry->index(), entry->index() - 1, dir);
 	undo_manager_->endRecord(true);
 
+	// Resort first (to avoid selection issues on macOS)
+	entry_tree_->GetModel()->Resort();
+
 	// Update selection
 	entry_tree_->SetSelections(sel_items);
 	entry_tree_->SetCurrentItem(focus);
 
 	// Ensure top-most entry is visible
 	entry_tree_->EnsureVisible(first);
-	entry_tree_->GetModel()->Resort();
 	entry_tree_->Thaw();
 
 	// Return success
@@ -1289,13 +1291,15 @@ bool ArchivePanel::moveDown() const
 		archive->swapEntries(sel_entries[a]->index(), sel_entries[a]->index() + 1, dir);
 	undo_manager_->endRecord(true);
 
+	// Resort first (to avoid selection issues on macOS)
+	entry_tree_->GetModel()->Resort();
+
 	// Update selection
 	entry_tree_->SetSelections(sel_items);
 	entry_tree_->SetCurrentItem(focus);
 
 	// Ensure bottom-most entry is visible
 	entry_tree_->EnsureVisible(last);
-	entry_tree_->GetModel()->Resort();
 	entry_tree_->Thaw();
 
 	// Return success
