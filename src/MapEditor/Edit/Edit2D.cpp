@@ -516,28 +516,26 @@ void Edit2D::joinSectors(bool remove_lines) const
 	context_->beginUndoRecord("Join/Merge Sectors", true, false, true);
 
 	// Go through merge sectors
+	vector<MapLine*> double_sector_lines;
 	for (unsigned a = 1; a < sectors.size(); a++)
 	{
 		// Go through sector sides
 		auto sector = sectors[a];
 		while (!sector->connectedSides().empty())
 		{
-			// Set sector
 			auto side = sector->connectedSides()[0];
+			auto line = side->parentLine();
+
+			// Check if the parent line has the same sector on both sides
+			// (ignore these if/when removing lines below)
+			if (line->doubleSector())
+				vectorAddUnique(double_sector_lines, line);
+
+			// Set sector
 			side->setSector(target);
 
 			// Add line to list if not already there
-			bool exists = false;
-			for (auto& line : lines)
-			{
-				if (side->parentLine() == line)
-				{
-					exists = true;
-					break;
-				}
-			}
-			if (!exists)
-				lines.push_back(side->parentLine());
+			vectorAddUnique(lines, line);
 		}
 
 		// Delete sector
@@ -551,10 +549,12 @@ void Edit2D::joinSectors(bool remove_lines) const
 	{
 		for (auto& line : lines)
 		{
-			if (line->frontSector() == target && line->backSector() == target)
+			if (line->frontSector() == target
+				&& line->backSector() == target
+				&& !vectorContains(double_sector_lines, line))
 			{
-				VECTOR_ADD_UNIQUE(verts, line->v1());
-				VECTOR_ADD_UNIQUE(verts, line->v2());
+				vectorAddUnique(verts, line->v1());
+				vectorAddUnique(verts, line->v2());
 				context_->map().removeLine(line);
 				nlines++;
 			}
