@@ -252,7 +252,7 @@ IMPLEMENT_APP(SLADEWxApp)
 SLADEWxApp::SLADEWxApp()
 {
 #ifndef __WXMSW__
-	SetClassName("net.mancubus.SLADE");
+	SetClassName(wxS("net.mancubus.SLADE"));
 #endif
 }
 

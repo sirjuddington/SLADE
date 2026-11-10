@@ -67,7 +67,7 @@ string findFileCasing(const strutil::Path& filename)
 	return string{ filename.fileName() };
 #else
 	string path{ filename.path() };
-	wxDir  dir(path);
+	wxDir  dir(wxString::FromUTF8(path));
 	if (!dir.IsOpened())
 	{
 		log::error("No directory at path {}. This shouldn't happen.", path);

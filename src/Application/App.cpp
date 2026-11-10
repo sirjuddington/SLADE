@@ -246,7 +246,7 @@ bool initDirectories()
 	// If we're passed in a INSTALL_PREFIX (from CMAKE_INSTALL_PREFIX),
 	// use this for the installation prefix
 #if defined(__WXGTK__) && defined(INSTALL_PREFIX)
-	wxStandardPaths::Get().SetInstallPrefix(INSTALL_PREFIX);
+	wxStandardPaths::Get().SetInstallPrefix(wxString::FromUTF8(INSTALL_PREFIX));
 #endif // defined(__UNIX__) && defined(INSTALL_PREFIX)
 
 #ifdef __WXGTK__
@@ -272,7 +272,7 @@ bool initDirectories()
 #ifdef __WXGTK__
 		dir_user = wxStandardPaths::Get()
 					   .GetUserConfigDir()
-					   .Append(dir_separator)
+					   .Append(wxString::FromUTF8(dir_separator))
 					   .Append(wxTheApp->GetAppName())
 					   .utf8_string();
 #else

@@ -36,9 +36,12 @@ endif ()
 if (BUILD_WX)
 	set(wxWidgets_USE_STATIC 1)
 	set(wxBUILD_SHARED OFF)
-	set(wxBUILD_USE_STATIC_RUNTIME ON)
 	set(wxUSE_LIBPNG sys)
-	set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	if (MSVC)
+		# Use static runtime on Windows
+		set(wxBUILD_USE_STATIC_RUNTIME ON)
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	endif ()
 
 	include(FetchContent)
 	FetchContent_Declare(
