@@ -74,3 +74,5 @@ elf-alchemist
 sulewicz
 SupSuper
 ribbon-otter
+d3lm2
+deviant-syndrome

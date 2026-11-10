@@ -1,7 +1,7 @@
 # Current version
 $version_major =    "3"
 $version_minor =    "3"
-$version_revision = "0"
+$version_revision = "1"
 $version_beta =     "0"
 
 # Prompt for new version numbers
