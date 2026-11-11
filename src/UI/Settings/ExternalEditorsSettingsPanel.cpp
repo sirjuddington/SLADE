@@ -127,6 +127,19 @@ public:
 		// Browse button click
 		btn_browse_->Bind(wxEVT_BUTTON, [&](wxCommandEvent&) { browse(); });
 
+		// OK button click
+		btn_ok_->Bind(
+			wxEVT_BUTTON,
+			[&](wxCommandEvent&)
+			{
+				if (text_name_->GetValue().IsEmpty())
+					wxMessageBox(wxS("Please enter a name for the editor"), wxS("Name Required"));
+				else if (text_path_->GetValue().IsEmpty())
+					wxMessageBox(wxS("Please browse or enter an executable path"), wxS("Executable Path Required"));
+				else
+					EndModal(wxID_OK);
+			});
+
 		// Show event
 		Bind(
 			wxEVT_SHOW,
@@ -253,23 +266,14 @@ void ExternalEditorsSettingsPanel::applySettings() {}
 void ExternalEditorsSettingsPanel::onBtnAddClicked(wxCommandEvent& e)
 {
 	ExternalEditorDialog dlg(this, true);
-	while (dlg.ShowModal() == wxID_OK)
+	if (dlg.ShowModal() == wxID_OK)
 	{
-		if (dlg.getName().empty())
-			wxMessageBox(wxS("Please enter a name for the editor"), wxS("Name Required"));
-		else if (dlg.getPath().empty())
-			wxMessageBox(wxS("Please enter or select an executable"), wxS("Path Required"));
-		else
-		{
-			// Add executable
-			auto category = choice_category_->GetStringSelection().utf8_string();
-			executables::addExternalExe(dlg.getName(), dlg.getPath(), category);
+		// Add executable
+		auto category = choice_category_->GetStringSelection().utf8_string();
+		executables::addExternalExe(dlg.getName(), dlg.getPath(), category);
 
-			// Refresh list
-			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
-
-			break;
-		}
+		// Refresh list
+		dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
 	}
 }
 
@@ -302,22 +306,13 @@ void ExternalEditorsSettingsPanel::onExternalExeActivated(wxListEvent& e)
 	auto exe      = executables::externalExe(name, category);
 
 	ExternalEditorDialog dlg(this, false, name, exe.path);
-	while (dlg.ShowModal() == wxID_OK)
+	if (dlg.ShowModal() == wxID_OK)
 	{
-		if (dlg.getName().empty())
-			wxMessageBox(wxS("Please enter a name for the editor"), wxS("Name Required"));
-		else if (dlg.getPath().empty())
-			wxMessageBox(wxS("Please enter or select an executable"), wxS("Path Required"));
-		else
-		{
-			// Update executable
-			executables::setExternalExeName(name, dlg.getName(), category);
-			executables::setExternalExePath(dlg.getName(), dlg.getPath(), category);
+		// Update executable
+		executables::setExternalExeName(name, dlg.getName(), category);
+		executables::setExternalExePath(dlg.getName(), dlg.getPath(), category);
 
-			// Refresh list
-			dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
-
-			break;
-		}
+		// Refresh list
+		dynamic_cast<ExternalEditorList*>(lv_ext_editors_)->setCategory(category);
 	}
 }
