@@ -31,6 +31,7 @@
 // -----------------------------------------------------------------------------
 #include "Main.h"
 #include "TextureEditorPanel.h"
+#include "Application/App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
 #include "Archive/EntryType/EntryType.h"
@@ -39,6 +40,7 @@
 #include "Dialogs/PatchBrowser.h"
 #include "General/KeyBind.h"
 #include "General/Misc.h"
+#include "General/ResourceManager.h"
 #include "General/SAction.h"
 #include "General/UndoRedo.h"
 #include "Graphics/CTexture/CTexture.h"
@@ -412,6 +414,9 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 				populateTextureBrowser(*tex_list_browsing_);
 			patch_table_panel_->updatePatchTablePreview();
 		});
+
+	// Reload patch browser when resources change
+	connections_ += app::resources().signals().resources_updated.connect([this] { initPatchBrowser(); });
 
 	// Init UI
 	CallAfter(
@@ -794,7 +799,7 @@ wxPanel* TextureEditorPanel::createOffsetsPanel(wxWindow* parent)
 	// Offset view type
 	vector<string> offset_types = { "Auto", "Texture", "Sprite", "HUD" };
 	choice_offset_type_         = new wxChoice(
-        panel, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(offset_types));
+		panel, -1, wxDefaultPosition, wxDefaultSize, wxutil::arrayStringStd(offset_types));
 	choice_offset_type_->SetSelection(0);
 	sizer->Add(choice_offset_type_, lh.sfWithBorder(0, wxRIGHT).CenterVertical());
 
@@ -1057,7 +1062,8 @@ void TextureEditorPanel::populateTextureBrowser(const TextureXList& list) const
 // -----------------------------------------------------------------------------
 void TextureEditorPanel::initPatchBrowser()
 {
-	patch_browser_ = new PatchBrowser(this);
+	if (!patch_browser_)
+		patch_browser_ = new PatchBrowser(this);
 	patch_browser_->setPalette(maineditor::currentPalette());
 
 	auto list = textures_tree_view_->textureListForItem(textures_tree_view_->lastSelectedItem());
