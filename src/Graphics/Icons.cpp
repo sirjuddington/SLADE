@@ -332,21 +332,29 @@ bool icons::loadIcons()
 	if (!res_archive)
 		return false;
 
-	// Load General sets
+	auto add_icon_set = [res_archive](vector<IconSet>& iconsets, const ArchiveEntry* entry)
+	{
+		if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
+			iconsets.push_back(readIconSet(j, *res_archive));
+	};
+
+	// Load General sets (default first)
+	auto entry_general_default = res_archive->entryAtPath("config/icons/general/default.json");
+	if (entry_general_default)
+		add_icon_set(iconsets_general, entry_general_default);
 	auto dir_general = res_archive->dirAtPath("config/icons/general");
 	for (auto entry : dir_general->entries())
-	{
-		if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
-			iconsets_general.push_back(readIconSet(j, *res_archive));
-	}
+		if (entry.get() != entry_general_default)
+			add_icon_set(iconsets_general, entry.get());
 
-	// Load Entry List sets
+	// Load Entry List sets (default first)
+	auto entry_entrylist_default = res_archive->entryAtPath("config/icons/entry_list/default.json");
+	if (entry_entrylist_default)
+		add_icon_set(iconsets_entry, entry_entrylist_default);
 	auto dir_elist = res_archive->dirAtPath("config/icons/entry_list");
 	for (auto entry : dir_elist->entries())
-	{
-		if (auto j = jsonutil::parse(entry->data()); !j.is_discarded())
-			iconsets_entry.push_back(readIconSet(j, *res_archive));
-	}
+		if (entry.get() != entry_entrylist_default)
+			add_icon_set(iconsets_entry, entry.get());
 
 	// Load Text Editor icons
 	auto dir_txed_icons = res_archive->dirAtPath("icons/text_editor");
