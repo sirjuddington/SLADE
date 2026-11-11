@@ -114,7 +114,7 @@ else
 
 # Defines.iss ------------------------------------------------------------------
 
-$file = "../win_installer/include/Defines.iss"
+$file = "../win_installer/SLADE-x64.iss"
 $version_line = Get-Content $file `
 	| Select-String "#define MyAppVersion" `
 	| Select-Object -ExpandProperty Line

@@ -27,12 +27,10 @@ if ($buildbinaries.ToLower() -eq "y")
 
 # Determine release directory + platforms
 $releasedir = "..\dist\$version"
-$releasedir32 = "$releasedir\win32"
 $releasedir64 = "$releasedir\x64"
 
 # Create release directory if needed
 Write-Host "`nCreate directory $releasedir" -foregroundcolor blue
-New-Item -ItemType directory -Force -Path "$releasedir32" | out-null
 New-Item -ItemType directory -Force -Path "$releasedir64" | out-null
 
 # Remove existing pk3 if it exists
@@ -55,12 +53,7 @@ Write-Host "Done" -foregroundcolor green
 
 # Copy Files
 Write-Host "`nCopying SLADE files..." -foregroundcolor blue
-# Common
 Copy-Item (resolve-path "..\dist\slade.pk3") "$releasedir" -Force
-# Win32
-Copy-Item (resolve-path "..\dist\build32\SLADE.exe") "$releasedir32" -Force
-Copy-Item (resolve-path "..\dist\build32\SLADE.pdb") "$releasedir32" -Force
-# x64
 Copy-Item (resolve-path "..\dist\build64\SLADE.exe") "$releasedir64" -Force
 Copy-Item (resolve-path "..\dist\build64\SLADE.pdb") "$releasedir64" -Force
 Write-Host "Done" -foregroundcolor green
@@ -81,13 +74,6 @@ if ($buildbinaries.ToLower() -eq "y")
 		$timestamp = ""
 	}
 
-	Write-Host "`nBuiling win32 binaries 7z..." -foregroundcolor blue
-	& $7zpath a -t7z "$releasedir\SLADE_${version}${timestamp}_win_x86.7z" `
-	"$releasedir32\SLADE.exe" `
-	"$releasedir32\SLADE.pdb" `
-	"$releasedir\slade.pk3"
-	Write-Host "Done" -foregroundcolor green
-
 	Write-Host "`nBuiling x64 binaries 7z..." -foregroundcolor blue
 	& $7zpath a -t7z "$releasedir\SLADE_${version}${timestamp}_win_x64.7z" `
 	"$releasedir64\SLADE.exe" `
@@ -97,7 +83,7 @@ if ($buildbinaries.ToLower() -eq "y")
 }
 
 # Prompt to build installer
-Write-Host "`nBuild Installers? (y/n) " -foregroundcolor cyan -nonewline
+Write-Host "`nBuild Installer? (y/n) " -foregroundcolor cyan -nonewline
 $buildinstaller = Read-Host
 
 # Build installer
@@ -110,10 +96,6 @@ if ($buildinstaller.ToLower() -eq "y")
 	}
 	if (Test-Path $innocompiler)
 	{
-		Write-Host "`nBuiling x86 installer..." -foregroundcolor blue
-		& $innocompiler "/O+" "/O$releasedir" (resolve-path "..\win_installer\SLADE-x86.iss").Path
-		Write-Host "Done" -foregroundcolor green
-
 		Write-Host "`nBuiling x64 installer..." -foregroundcolor blue
 		& $innocompiler "/O+" "/O$releasedir" (resolve-path "..\win_installer\SLADE-x64.iss").Path
 		Write-Host "Done" -foregroundcolor green
