@@ -423,7 +423,10 @@ void TextureEditor::revertTexture()
 void TextureEditor::selectPatch(unsigned index, bool selected)
 {
 	if (selected)
-		vectorAddUnique(selected_patches_, index);
+	{
+		if (tex_current_ && index < tex_current_->nPatches())
+			vectorAddUnique(selected_patches_, index);
+	}
 	else
 		vectorRemoveVal(selected_patches_, index);
 }

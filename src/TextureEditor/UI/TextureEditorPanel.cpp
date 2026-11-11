@@ -383,6 +383,9 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	connections_ += editor_->signals().current_texture_modified.connect(
 		[this](bool texture, bool patch_list)
 		{
+			if (!editor_->currentTexture())
+				return;
+
 			toolbar_texture_->enableItem("revert", editor_->currentTextureModified());
 			pg_properties_->refreshTextureProperties();
 			pg_properties_->refreshPatchProperties();

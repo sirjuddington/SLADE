@@ -355,9 +355,9 @@ void TexturePropGrid::patchesChanged()
 	ClearSelection();
 
 	// Setup property visibility
-	if (!editor_->selectedPatches().empty())
+	auto tex = editor_->currentTexture();
+	if (tex && !editor_->selectedPatches().empty())
 	{
-		auto tex = editor_->currentTexture();
 		HideProperty(wxS("patch"), false);
 		HideProperty(wxS("patch_use_offsets"), !tex->isExtended());
 		HideProperty(wxS("patch_flip_x"), !tex->isExtended());
@@ -387,10 +387,11 @@ void TexturePropGrid::patchesChanged()
 // -----------------------------------------------------------------------------
 void TexturePropGrid::refreshPatchProperties()
 {
-	if (editor_->selectedPatches().size() == 1)
+	auto tex = editor_->currentTexture();
+	if (tex && editor_->selectedPatches().size() == 1 && editor_->selectedPatches()[0] < tex->nPatches())
 	{
 		auto index = editor_->selectedPatches()[0];
-		auto patch = editor_->currentTexture()->patch(index);
+		auto patch = tex->patch(index);
 		SetPropertyValue(wxS("patch_x"), patch->xOffset());
 		SetPropertyValue(wxS("patch_y"), patch->yOffset());
 		if (editor_->currentTexture()->isExtended())
