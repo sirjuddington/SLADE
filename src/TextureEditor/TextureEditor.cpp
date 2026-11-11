@@ -127,7 +127,8 @@ TextureEditor::TextureEditor(shared_ptr<Archive> archive) : archive_{ archive }
 	// Find patch table (if any)
 	auto pnames = archive_->findLast({ .match_type = EntryType::fromId("pnames") });
 	if (!pnames)
-		pnames = app::archiveManager().baseResourceArchive()->findLast({ .match_type = EntryType::fromId("pnames") });
+		if (auto bra = app::archiveManager().baseResourceArchive(); bra)
+			pnames = bra->findLast({ .match_type = EntryType::fromId("pnames") });
 	if (pnames)
 	{
 		patch_table_->loadPNAMES(pnames);
