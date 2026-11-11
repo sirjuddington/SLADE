@@ -248,7 +248,7 @@ void SlopeSpecials::removeSlopeThing(const MapThing& thing)
 	}
 
 	// Remove from individual slope thing lists
-	static auto remove_slope_thing = [this](const MapThing& thing, auto& vec)
+	auto remove_slope_thing = [this](const MapThing& thing, auto& vec)
 	{
 		unsigned i = 0;
 		while (i < vec.size())
