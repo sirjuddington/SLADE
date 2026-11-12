@@ -246,10 +246,6 @@ bool Input::mouseMove(int new_x, int new_y)
 // -----------------------------------------------------------------------------
 bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 {
-	// Update hilight
-	if (mouse_state_ == MouseState::Normal)
-		context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale().x);
-
 	// Update mouse variables
 	mouse_pos_                 = { x, y };
 	mouse_pos_map_             = context_->renderer().view().canvasPos(mouse_pos_);
@@ -257,6 +253,10 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 	mouse_down_pos_map_        = mouse_pos_map_;
 	mouse_button_down_[button] = true;
 	mouse_drag_                = DragType::None;
+
+	// Update highlight
+	if (mouse_state_ == MouseState::Normal)
+		context_->selection().updateHilight(mouse_pos_map_, context_->renderer().view().scale().x);
 
 	// Check if a full screen overlay is active
 	if (context_->overlayActive())
