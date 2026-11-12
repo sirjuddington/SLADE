@@ -157,14 +157,16 @@ void MapCanvas::draw()
 }
 
 // -----------------------------------------------------------------------------
-// Moves the mouse cursor to [pos] (in client coordinates) and updates the input
-// system's mouse position accordingly
+// Moves the mouse cursor to [pos] (in logical client coordinates) and updates
+// the input system's mouse position (in physical pixels) accordingly
 // -----------------------------------------------------------------------------
 void MapCanvas::warpMouse(const Vec2i& pos)
 {
 	mouse_warp_ = true;
 	WarpPointer(pos.x, pos.y);
-	context_->input().setMousePos(pos);
+
+	const auto scale = GetContentScaleFactor();
+	context_->input().setMousePos({ static_cast<int>(pos.x * scale), static_cast<int>(pos.y * scale) });
 }
 
 // -----------------------------------------------------------------------------
@@ -602,6 +604,8 @@ void MapCanvas::onMouseWheel(wxMouseEvent& e)
 	else
 		last_wheel_timestamp_ = e.GetTimestamp();
 
+	context_->input().setMousePos(
+		{ static_cast<int>(e.GetX() * GetContentScaleFactor()), static_cast<int>(e.GetY() * GetContentScaleFactor()) });
 	context_->input().mouseWheel(static_cast<double>(e.GetWheelRotation()) / static_cast<double>(e.GetWheelDelta()));
 }
 
