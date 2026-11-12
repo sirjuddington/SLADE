@@ -544,9 +544,15 @@ void MapEditContext::update(double frametime)
 			Item hl{ -1, ItemType::Any };
 			if (!selection_->hilightLocked())
 			{
+				// With locked mouselook, use the center of the canvas as the
+				// cursor position
+				const auto cursor_pos = input_->mouseState() == Input::MouseState::MouseLook && map3d_mlook_always
+											? Vec2i{ renderer_->view().size().x / 2, renderer_->view().size().y / 2 }
+											: input_->mousePos();
+
 				auto old_hl = selection_->hilight();
-				hl          = renderer_->renderer3D().findHighlightedItem(
-                    renderer_->camera(), renderer_->view(), input_->mousePos());
+				hl = renderer_->renderer3D().findHighlightedItem(renderer_->camera(), renderer_->view(), cursor_pos);
+
 				if (selection_->setHilight(hl))
 				{
 					// Update 3d info overlay
@@ -557,11 +563,11 @@ void MapEditContext::update(double frametime)
 					{
 						switch (baseItemType(hl.type))
 						{
-						case ItemType::Vertex: mapeditor::openObjectProperties(map().vertex(hl.index)); break;
-						case ItemType::Side:   mapeditor::openObjectProperties(map().side(hl.index)->parentLine()); break;
-						case ItemType::Sector: mapeditor::openObjectProperties(map().sector(hl.index)); break;
-						case ItemType::Thing:  mapeditor::openObjectProperties(map().thing(hl.index)); break;
-						default:               mapeditor::openObjectProperties(nullptr); break;
+						case ItemType::Vertex: openObjectProperties(map().vertex(hl.index)); break;
+						case ItemType::Side:   openObjectProperties(map().side(hl.index)->parentLine()); break;
+						case ItemType::Sector: openObjectProperties(map().sector(hl.index)); break;
+						case ItemType::Thing:  openObjectProperties(map().thing(hl.index)); break;
+						default:               openObjectProperties(nullptr); break;
 						}
 					}
 
