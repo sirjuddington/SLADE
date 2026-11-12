@@ -79,9 +79,35 @@ EXTERN_CVAR(Int, map3d_mlook_type)
 // -----------------------------------------------------------------------------
 namespace
 {
+// -----------------------------------------------------------------------------
+// Returns the number of milliseconds per frame for a given [fps] value
+// -----------------------------------------------------------------------------
 int fpsToMs(int fps)
 {
 	return fps > 0 ? 1000 / fps : 1;
+}
+
+// -----------------------------------------------------------------------------
+// Returns the squared distance between two points
+// -----------------------------------------------------------------------------
+int distSquared(const Vec2i& a, const Vec2i& b)
+{
+	return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
+}
+
+// -----------------------------------------------------------------------------
+// Wraps a coordinate [p] to the opposite side of an extent [extent] if it is
+// near the edge of the extent, with a margin of 1/8th the extent (or 8 pixels,
+// whichever is greater)
+// -----------------------------------------------------------------------------
+int wrapCoord(int p, int extent)
+{
+	const int margin = std::max(extent / 8, 8);
+	if (p < margin)
+		return extent - 2 * margin;
+	if (p > extent - margin)
+		return 2 * margin;
+	return p;
 }
 } // namespace
 
@@ -162,7 +188,14 @@ void MapCanvas::draw()
 // -----------------------------------------------------------------------------
 void MapCanvas::warpMouse(const Vec2i& pos)
 {
-	mouse_warp_ = true;
+	// Remember the old position so stale pointer readings (GTK warps are
+	// asynchronous) can be detected until the warp takes effect
+	const auto from  = ScreenToClient(wxGetMousePosition());
+	mouse_warp_from_ = { from.x, from.y };
+	mouse_look_last_ = pos;
+	mouse_warp_wait_ = (from.x == pos.x && from.y == pos.y) ? 0 : 10;
+	mouse_warp_      = true;
+
 	WarpPointer(pos.x, pos.y);
 
 	const auto scale = GetContentScaleFactor();
@@ -170,34 +203,20 @@ void MapCanvas::warpMouse(const Vec2i& pos)
 }
 
 // -----------------------------------------------------------------------------
-// Moves the mouse cursor to the center of the canvas
-// -----------------------------------------------------------------------------
-void MapCanvas::mouseToCenter()
-{
-	auto size = GetSize();
-	warpMouse({ static_cast<int>(size.x * 0.5), static_cast<int>(size.y * 0.5) });
-}
-
-// -----------------------------------------------------------------------------
 // Locks/unlocks the mouse cursor.
-// A locked cursor is invisible and will be moved to the center of the canvas
-// every frame
+// A locked cursor is invisible and is wrapped to the opposite edge of the
+// canvas when it nears an edge (see mouseLook3d)
 // -----------------------------------------------------------------------------
 void MapCanvas::lockMouse(bool lock)
 {
 	if (lock)
 	{
-		// Skip a few frames of mouselook to allow the mouse to actually move to the center
-		mouse_look_skip_frames_ = 2;
-
 		// Save current mouse position
 		auto mouse_pos      = ScreenToClient(wxGetMousePosition());
 		mouse_locked_pos_.x = mouse_pos.x;
 		mouse_locked_pos_.y = mouse_pos.y;
-
-		// Center mouse
-		if (map3d_mlook_type != 1)
-			mouseToCenter();
+		mouse_look_last_    = { mouse_pos.x, mouse_pos.y };
+		mouse_warp_wait_    = 0;
 
 		// Hide cursor
 		if (map3d_mlook_type == 1)
@@ -212,8 +231,6 @@ void MapCanvas::lockMouse(bool lock)
 	}
 	else
 	{
-		mouse_look_skip_frames_ = 0;
-
 		// Show cursor
 		SetCursor(wxNullCursor);
 
@@ -241,32 +258,36 @@ void MapCanvas::mouseLook3d()
 	auto overlay_current = context_->currentOverlay();
 	if (!overlay_current || !overlay_current->isActive() || overlay_current->allow3dMlook())
 	{
-		// Hack to avoid camera view jumping when beginning mouselook on linux
-		if (mouse_look_skip_frames_ > 0)
+		const auto  mouse_client_pos = ScreenToClient(wxGetMousePosition());
+		const Vec2i pos{ mouse_client_pos.x, mouse_client_pos.y };
+
+		// Hack to account for asynchronous mouse warps (GTK)
+		if (mouse_warp_wait_ > 0)
 		{
-			mouse_look_skip_frames_--;
-			mouseToCenter();
-			return;
+			// If the cursor is still near the old position, ignore it for now
+			if (distSquared(pos, mouse_warp_from_) <= distSquared(pos, mouse_look_last_))
+			{
+				if (--mouse_warp_wait_ == 0)
+					mouse_look_last_ = pos; // Waited too long, resync
+				return;
+			}
+			mouse_warp_wait_ = 0;
 		}
 
-		// Get relative mouse movement
-		const wxPoint mouse_screen_pos = wxGetMousePosition();
-		const wxPoint mouse_client_pos = ScreenToClient(mouse_screen_pos);
-
-		const wxSize size = GetSize();
-		double       xrel = mouse_client_pos.x - floor(size.x * 0.5);
-		double       yrel = mouse_client_pos.y - floor(size.y * 0.5);
-
-		// Scale from logical to physical pixels for consistent movement on HiDPI displays
+		// Get relative movement since the last reading, in physical pixels
 		const double scale = GetContentScaleFactor();
-		xrel *= scale;
-		yrel *= scale;
-
-		if (fabs(xrel) > 0 || fabs(yrel) > 0)
-		{
+		const double xrel  = (pos.x - mouse_look_last_.x) * scale;
+		const double yrel  = (pos.y - mouse_look_last_.y) * scale;
+		mouse_look_last_   = pos;
+		if (xrel != 0 || yrel != 0)
 			context_->camera3d().look(xrel, yrel);
-			mouseToCenter();
-		}
+
+		// Wrap the pointer to the opposite side when it nears the edge of the
+		// canvas
+		const auto  size = GetSize();
+		const Vec2i target{ wrapCoord(pos.x, size.x), wrapCoord(pos.y, size.y) };
+		if (target.x != pos.x || target.y != pos.y)
+			warpMouse(target);
 	}
 }
 

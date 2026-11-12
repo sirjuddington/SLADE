@@ -27,7 +27,6 @@ public:
 
 	// Mouse
 	void warpMouse(const Vec2i& pos);
-	void mouseToCenter();
 	void lockMouse(bool lock);
 	void mouseLook3d();
 
@@ -37,7 +36,9 @@ public:
 private:
 	mapeditor::MapEditContext* context_                = nullptr;
 	bool                       mouse_warp_             = false;
-	int                        mouse_look_skip_frames_ = 0;
+	int                        mouse_warp_wait_        = 0;
+	Vec2i                      mouse_look_last_;
+	Vec2i                      mouse_warp_from_;
 	vector<int>                fps_avg_;
 	unique_ptr<sf::Clock>      sf_clock_;
 	wxTimer                    timer_;
