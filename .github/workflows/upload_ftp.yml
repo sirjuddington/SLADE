@@ -51,15 +51,20 @@ jobs:
           BUILD_REF: ${{ github.event.workflow_run.head_branch }}
         run: |
           set -euo pipefail
+          mkdir -p ~/.ssh
+          host="${FTP_SERVER%%:*}"
+          port="${FTP_SERVER##*:}"; [ "$port" = "$FTP_SERVER" ] && port=22
+          ssh-keyscan -p "$port" "$host" >> ~/.ssh/known_hosts
+
           printf 'user = "%s:%s"\n' "$FTP_USERNAME" "$FTP_PASSWORD" > "$RUNNER_TEMP/curl.cfg"
           chmod 600 "$RUNNER_TEMP/curl.cfg"
 
           branch="${BUILD_REF//\//-}"
-          dest="ftp://${FTP_SERVER}/${FTP_DIR}/${branch}"
+          dest="sftp://${FTP_SERVER}/${FTP_DIR}/${branch}"
           find artifacts -type f | while read -r f; do
             rel="$(basename "$f")"
             echo "Uploading $rel"
-            curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
+            curl --fail --silent --show-error --ftp-create-dirs \
               -K "$RUNNER_TEMP/curl.cfg" -T "$f" "$dest/$rel"
           done
           rm -f "$RUNNER_TEMP/curl.cfg"
