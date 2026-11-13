@@ -1,0 +1,65 @@
+name: Upload Builds (FTP)
+
+on:
+  workflow_run:
+    workflows:
+      - "Continuous Integration (Windows)"
+      - "Continuous Integration (Linux)"
+      - "Continuous Integration (macOS)"
+    types: [completed]
+
+jobs:
+  upload:
+    name: Upload artifacts to FTP
+    # Only successful push builds (never fork PRs, since this runs with secrets)
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+
+    steps:
+      # workflow_run has no direct tag indicator; for tag pushes head_branch is the tag name
+      - name: Check for tag push
+        id: tagcheck
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BUILD_REF: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          if gh api "repos/${{ github.repository }}/git/ref/tags/${BUILD_REF}" --silent 2>/dev/null; then
+            echo "Tag push, skipping"
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download artifacts
+        if: steps.tagcheck.outputs.skip != 'true'
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: artifacts
+
+      - name: Upload via FTP
+        if: steps.tagcheck.outputs.skip != 'true'
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_DIR: ${{ vars.FTP_DIR || 'builds' }}
+          BUILD_REF: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+          printf 'user = "%s:%s"\n' "$FTP_USERNAME" "$FTP_PASSWORD" > "$RUNNER_TEMP/curl.cfg"
+          chmod 600 "$RUNNER_TEMP/curl.cfg"
+
+          branch="${BUILD_REF//\//-}"
+          dest="ftp://${FTP_SERVER}/${FTP_DIR}/${branch}"
+          find artifacts -type f | while read -r f; do
+            rel="$(basename "$f")"
+            echo "Uploading $rel"
+            curl --fail --silent --show-error --ssl-reqd --ftp-create-dirs \
+              -K "$RUNNER_TEMP/curl.cfg" -T "$f" "$dest/$rel"
+          done
+          rm -f "$RUNNER_TEMP/curl.cfg"
