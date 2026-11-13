@@ -60,13 +60,17 @@ jobs:
           chmod 600 "$RUNNER_TEMP/curl.cfg"
 
           branch="${BUILD_REF//\//-}"
-          dest="sftp://${FTP_SERVER}/${FTP_DIR}/${branch}"
-          # Only upload packaged builds; the Linux artifacts contain the whole build directory
-          # and only the Clang AppImage is wanted
+          base="${FTP_DIR}/${branch}"
+          dest="sftp://${FTP_SERVER}/${base}"
+          # Only upload packaged builds (and only the Clang AppImage used for releases, not gcc)
           find artifacts -type f -not -path '*AppImage-linux_gcc*' \( -name '*.7z' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.AppImage.zsync' \) | while read -r f; do
             rel="$(basename "$f")"
             echo "Uploading $rel"
+            # Upload into partial/ then move it to the target destination once the upload is complete
             curl --fail --silent --show-error --ftp-create-dirs \
-              -K "$RUNNER_TEMP/curl.cfg" -T "$f" "$dest/$rel"
+              -K "$RUNNER_TEMP/curl.cfg" -T "$f" \
+              -Q "-*rm ${base}/${rel}" \
+              -Q "-rename ${base}/partial/${rel} ${base}/${rel}" \
+              "$dest/partial/$rel"
           done
           rm -f "$RUNNER_TEMP/curl.cfg"
