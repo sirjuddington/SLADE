@@ -66,11 +66,24 @@ jobs:
           find artifacts -type f -not -path '*AppImage-linux_gcc*' \( -name '*.7z' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.AppImage.zsync' \) | while read -r f; do
             rel="$(basename "$f")"
             echo "Uploading $rel"
+
+            # Windows packages include the git revision in their name, so remove any
+            # other .7z left from previous builds once this one is in place
+            stale=()
+            if [[ "$rel" == *.7z ]]; then
+              while read -r old; do
+                if [ "$old" != "$rel" ] && [[ "$old" == *.7z ]]; then
+                  stale+=(-Q "-*rm ${base}/${old}")
+                fi
+              done < <(curl --silent -K "$RUNNER_TEMP/curl.cfg" --list-only "$dest/" || true)
+            fi
+
             # Upload into partial/ then move it to the target destination once the upload is complete
             curl --fail --silent --show-error --ftp-create-dirs \
               -K "$RUNNER_TEMP/curl.cfg" -T "$f" \
               -Q "-*rm ${base}/${rel}" \
               -Q "-rename ${base}/partial/${rel} ${base}/${rel}" \
+              "${stale[@]}" \
               "$dest/partial/$rel"
           done
           rm -f "$RUNNER_TEMP/curl.cfg"
