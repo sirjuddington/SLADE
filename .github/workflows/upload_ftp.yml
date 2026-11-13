@@ -61,7 +61,8 @@ jobs:
 
           branch="${BUILD_REF//\//-}"
           dest="sftp://${FTP_SERVER}/${FTP_DIR}/${branch}"
-          find artifacts -type f | while read -r f; do
+          # Only upload packaged builds; the Linux artifacts contain the whole build directory
+          find artifacts -type f \( -name '*.7z' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.AppImage.zsync' \) | while read -r f; do
             rel="$(basename "$f")"
             echo "Uploading $rel"
             curl --fail --silent --show-error --ftp-create-dirs \
