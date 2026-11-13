@@ -60,8 +60,8 @@ jobs:
           chmod 600 "$RUNNER_TEMP/curl.cfg"
 
           branch="${BUILD_REF//\//-}"
-          base="${FTP_DIR}/${branch}"
-          dest="sftp://${FTP_SERVER}/${base}"
+          base="/${FTP_DIR#/}/${branch}"
+          dest="sftp://${FTP_SERVER}${base}"
           # Only upload packaged builds (and only the Clang AppImage used for releases, not gcc)
           find artifacts -type f -not -path '*AppImage-linux_gcc*' \( -name '*.7z' -o -name '*.dmg' -o -name '*.AppImage' -o -name '*.AppImage.zsync' \) | while read -r f; do
             rel="$(basename "$f")"
