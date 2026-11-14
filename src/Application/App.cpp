@@ -724,9 +724,11 @@ bool app::init(const vector<string>& args)
 	maineditor::init();
 
 	// Init base resource
-	log::info("Loading base resource");
-	archive_manager.initBaseResource();
-	log::info("Base resource loaded");
+	log::info("Loading base resource...");
+	if (!archive_manager.initBaseResource())
+		log::error("No base resource loaded");
+	else
+		log::info("Base resource loaded");
 
 	// Init game configuration
 	log::info("Loading game configurations");
