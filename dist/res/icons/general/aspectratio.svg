@@ -1,11 +1,14 @@
 <svg
     xmlns="http://www.w3.org/2000/svg"
-    xmlns:xlink="http://www.w3.org/1999/xlink"
     width="16px"
     height="16px"
     viewBox="0 0 24 24">
-	<path
-        d="M19 12h-2v3h-3v2h5v-5M7 9h3V7H5v5h2V9m14-6H3a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h18a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2m0 16H3V5h18v14z"
-        fill="#000000"
-    />
+	<g transform="translate(-9,-2.5) scale(1.2, 1.2)">
+		<path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 15a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-3V8h4"/>
+	</g>
+	<g transform="translate(4, -2.5), scale(1.2, 1.2)">
+		<path fill="none" stroke="#000000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-3"/>
+	</g>
+	<circle cx="12" cy="10" r="0.5" fill="none" stroke="#000000" stroke-width="1.5"/>
+	<circle cx="12" cy="14" r="0.5" fill="none" stroke="#000000" stroke-width="1.5"/>
 </svg>
