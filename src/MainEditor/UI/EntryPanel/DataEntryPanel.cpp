@@ -450,6 +450,17 @@ wxGridCellAttr* DataEntryTable::GetAttr(int row, int col, wxGridCellAttr::wxAttr
 }
 
 // -----------------------------------------------------------------------------
+// Returns column information for [col]
+// -----------------------------------------------------------------------------
+DataEntryTable::Column DataEntryTable::columnInfo(int col) const
+{
+	if (col < 0 || col >= static_cast<int>(columns_.size()))
+		return Column{ wxEmptyString, ColType::String, 0, 0 };
+
+	return columns_[col];
+}
+
+// -----------------------------------------------------------------------------
 // Determines the data structure (columns etc.) for [entry]'s type
 // -----------------------------------------------------------------------------
 bool DataEntryTable::setupDataStructure(ArchiveEntry* entry)
@@ -1334,7 +1345,11 @@ void DataEntryPanel::onGridCursorChanged(wxGridEvent& e)
 {
 	combo_cell_value_->Clear();
 
-	if (table_data_->data().empty())
+	if (table_data_->data().empty()
+		|| e.GetCol() < 0
+		|| e.GetCol() >= table_data_->GetNumberCols()
+		|| e.GetRow() < 0
+		|| e.GetRow() >= table_data_->GetNumberRows())
 		return;
 
 	auto col = table_data_->columnInfo(e.GetCol());

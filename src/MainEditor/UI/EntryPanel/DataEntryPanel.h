@@ -68,7 +68,7 @@ public:
 	wxGridCellAttr* GetAttr(int row, int col, wxGridCellAttr::wxAttrKind kind) override;
 
 	MemChunk& data() { return data_; }
-	Column    columnInfo(int col) { return columns_[col]; }
+	Column    columnInfo(int col) const;
 	bool      setupDataStructure(ArchiveEntry* entry);
 	void      copyRows(int row, int num, bool add = false);
 	void      pasteRows(int row);
