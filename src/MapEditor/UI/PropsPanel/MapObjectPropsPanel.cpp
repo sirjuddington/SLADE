@@ -102,20 +102,20 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 
 	// Add buttons
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
-	sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(hbox, lh.sfWithBorder(0, wxLEFT | wxRIGHT).Expand());
 
 	// Add button
 	btn_add_ = new SIconButton(this, "plus", "Add Property");
-	hbox->Add(btn_add_, lh.sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_add_, lh.sfWithBorder(0, wxRIGHT | wxBOTTOM).Expand());
 	hbox->AddStretchSpacer(1);
 
 	// Reset button
 	btn_reset_ = new SIconButton(this, "close", "Discard Changes");
-	hbox->Add(btn_reset_, lh.sfWithBorder(0, wxRIGHT).Expand());
+	hbox->Add(btn_reset_, lh.sfWithBorder(0, wxRIGHT | wxBOTTOM).Expand());
 
 	// Apply button
 	btn_apply_ = new SIconButton(this, "tick", "Apply Changes");
-	hbox->Add(btn_apply_, wxSizerFlags().Expand());
+	hbox->Add(btn_apply_, lh.sfWithBorder(0, wxBOTTOM).Expand());
 
 	wxPGCell cell;
 	cell.SetText(wxS("<multiple values>"));
@@ -447,7 +447,6 @@ void MapObjectPropsPanel::setupType(map::ObjectType objtype)
 
 	// Clear property grid
 	clearGrid();
-	btn_add_->Show(false);
 
 	// Hide buttons if not needed
 	if (no_apply_ || mobj_props_auto_apply)
@@ -868,6 +867,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	pg_props_side2_->Freeze();
 
 	// Check any objects were given
+	bool is_udmf = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
 	if (objects.empty() || objects[0] == nullptr)
 	{
 		// Update control visibility
@@ -901,7 +901,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		// Update control visibility
 		stc_sections_->Show();
 		cb_show_all_->Show();
-		btn_add_->Show();
+		btn_add_->Show(is_udmf);
 		if (!mobj_props_auto_apply)
 			btn_reset_->Show();
 		if (!mobj_props_auto_apply)
@@ -916,7 +916,6 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		group->Hide(false, wxPGPropertyValuesFlags::DontRecurse);
 
 	// Setup property grid for the object type
-	bool is_udmf      = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
 	bool type_changed = !(last_type_ == objects[0]->objType() && udmf_ == is_udmf);
 	if (is_udmf)
 		setupTypeUDMF(objects[0]->objType());
@@ -1090,7 +1089,6 @@ void MapObjectPropsPanel::clearGrid()
 	pg_props_side2_->Clear();
 	group_custom_ = nullptr;
 	properties_.clear();
-	btn_add_->Show();
 	groups_.clear();
 
 	// Remove side1/2 tabs if they exist
