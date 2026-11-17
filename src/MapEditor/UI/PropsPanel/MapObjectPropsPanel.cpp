@@ -86,11 +86,11 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	// Show All checkbox
 	cb_show_all_ = new wxCheckBox(this, -1, wxS("Show All"));
 	cb_show_all_->SetValue(mobj_props_show_all);
-	sizer->Add(cb_show_all_, lh.sfWithBorder().Expand());
+	sizer->Add(cb_show_all_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
 
 	// Add tabs
 	stc_sections_ = STabCtrl::createControl(this);
-	sizer->Add(stc_sections_, lh.sfWithBorder(1, wxLEFT | wxRIGHT | wxBOTTOM).Expand());
+	sizer->Add(stc_sections_, lh.sfWithBorder(1).Expand());
 
 	// Add main property grid
 	pg_properties_ = createPropGrid();
@@ -868,7 +868,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 
 		// Update control visibility
 		stc_sections_->Show();
-		cb_show_all_->Show();
+		cb_show_all_->Show(is_udmf);
 		btn_add_->Show(is_udmf);
 		if (!mobj_props_auto_apply)
 			btn_reset_->Show();
