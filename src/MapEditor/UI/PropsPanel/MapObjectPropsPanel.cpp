@@ -542,59 +542,27 @@ void MapObjectPropsPanel::setupType(map::ObjectType objtype)
 					g_flags, wxString::FromUTF8(game::configuration().lineFlag(a).name), WX_FMT("flag{}", a), a);
 		}
 
-		// --- Sides ---
-		pg_props_side1_->Show(true);
-		pg_props_side2_->Show(true);
-		stc_sections_->AddPage(pg_props_side1_, wxS("Front Side"));
-		stc_sections_->AddPage(pg_props_side2_, wxS("Back Side"));
+		// --- Front Side ---
+		auto group_front = pg_properties_->Append(new wxPropertyCategory(wxS("Front Side"), wxS("side1")));
+		addIntProperty(group_front, wxS("Sector"), wxS("side1.sector"));
+		addTextureProperty(group_front, wxS("Upper Texture"), wxS("side1.texturetop"), mapeditor::TextureType::Texture);
+		addTextureProperty(
+			group_front, wxS("Middle Texture"), wxS("side1.texturemiddle"), mapeditor::TextureType::Texture);
+		addTextureProperty(
+			group_front, wxS("Lower Texture"), wxS("side1.texturebottom"), mapeditor::TextureType::Texture);
+		addIntProperty(group_front, wxS("X Offset"), wxS("side1.offsetx"));
+		addIntProperty(group_front, wxS("Y Offset"), wxS("side1.offsety"));
 
-		// 'General' group 1
-		auto subgroup = pg_props_side1_->Append(new wxPropertyCategory(wxS("General"), wxS("side1.general")));
-		addIntProperty(subgroup, wxS("Sector"), wxS("side1.sector"));
-
-		// 'Textures' group 1
-		if (!propHidden("texturetop"))
-		{
-			subgroup = pg_props_side1_->Append(new wxPropertyCategory(wxS("Textures"), wxS("side1.textures")));
-			addTextureProperty(
-				subgroup, wxS("Upper Texture"), wxS("side1.texturetop"), mapeditor::TextureType::Texture);
-			addTextureProperty(
-				subgroup, wxS("Middle Texture"), wxS("side1.texturemiddle"), mapeditor::TextureType::Texture);
-			addTextureProperty(
-				subgroup, wxS("Lower Texture"), wxS("side1.texturebottom"), mapeditor::TextureType::Texture);
-		}
-
-		// 'Offsets' group 1
-		if (!propHidden("offsetx"))
-		{
-			subgroup = pg_props_side1_->Append(new wxPropertyCategory(wxS("Offsets"), wxS("side1.offsets")));
-			addIntProperty(subgroup, wxS("X Offset"), wxS("side1.offsetx"));
-			addIntProperty(subgroup, wxS("Y Offset"), wxS("side1.offsety"));
-		}
-
-		// 'General' group 2
-		subgroup = pg_props_side2_->Append(new wxPropertyCategory(wxS("General"), wxS("side2.general")));
-		addIntProperty(subgroup, wxS("Sector"), wxS("side2.sector"));
-
-		// 'Textures' group 2
-		if (!propHidden("texturetop"))
-		{
-			subgroup = pg_props_side2_->Append(new wxPropertyCategory(wxS("Textures"), wxS("side2.textures")));
-			addTextureProperty(
-				subgroup, wxS("Upper Texture"), wxS("side2.texturetop"), mapeditor::TextureType::Texture);
-			addTextureProperty(
-				subgroup, wxS("Middle Texture"), wxS("side2.texturemiddle"), mapeditor::TextureType::Texture);
-			addTextureProperty(
-				subgroup, wxS("Lower Texture"), wxS("side2.texturebottom"), mapeditor::TextureType::Texture);
-		}
-
-		// 'Offsets' group 2
-		if (!propHidden("offsetx"))
-		{
-			subgroup = pg_props_side2_->Append(new wxPropertyCategory(wxS("Offsets"), wxS("side2.offsets")));
-			addIntProperty(subgroup, wxS("X Offset"), wxS("side2.offsetx"));
-			addIntProperty(subgroup, wxS("Y Offset"), wxS("side2.offsety"));
-		}
+		// --- Back Side ---
+		auto group_back = pg_properties_->Append(new wxPropertyCategory(wxS("Back Side"), wxS("side2")));
+		addIntProperty(group_back, wxS("Sector"), wxS("side2.sector"));
+		addTextureProperty(group_back, wxS("Upper Texture"), wxS("side2.texturetop"), mapeditor::TextureType::Texture);
+		addTextureProperty(
+			group_back, wxS("Middle Texture"), wxS("side2.texturemiddle"), mapeditor::TextureType::Texture);
+		addTextureProperty(
+			group_back, wxS("Lower Texture"), wxS("side2.texturebottom"), mapeditor::TextureType::Texture);
+		addIntProperty(group_back, wxS("X Offset"), wxS("side2.offsetx"));
+		addIntProperty(group_back, wxS("Y Offset"), wxS("side2.offsety"));
 	}
 
 	// Sector properties
@@ -980,23 +948,34 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 	// Handle line sides
 	if (objects[0]->objType() == map::ObjectType::Line)
 	{
+		bool has_side1 = false;
+		bool has_side2 = false;
+		if (auto prop = pg_properties_->GetProperty(wxS("sidefront"));
+			prop && !prop->IsValueUnspecified() && prop->GetValue().GetInteger() >= 0)
+			has_side1 = true;
+		if (auto prop = pg_properties_->GetProperty(wxS("sideback"));
+			prop && !prop->IsValueUnspecified() && prop->GetValue().GetInteger() >= 0)
+			has_side2 = true;
+
 		// Enable/disable side properties
-		auto prop = pg_properties_->GetProperty(wxS("sidefront"));
-		if (prop && (prop->IsValueUnspecified() || prop->GetValue().GetInteger() >= 0))
+		if (has_side1)
 			pg_props_side1_->EnableProperty(pg_props_side1_->GetGrid()->GetRoot());
 		else
 		{
 			pg_props_side1_->DisableProperty(pg_props_side1_->GetGrid()->GetRoot());
 			pg_props_side1_->SetPropertyValueUnspecified(pg_props_side1_->GetGrid()->GetRoot());
 		}
-		prop = pg_properties_->GetProperty(wxS("sideback"));
-		if (prop && (prop->IsValueUnspecified() || prop->GetValue().GetInteger() >= 0))
+		if (has_side2)
 			pg_props_side2_->EnableProperty(pg_props_side2_->GetGrid()->GetRoot());
 		else
 		{
 			pg_props_side2_->DisableProperty(pg_props_side2_->GetGrid()->GetRoot());
 			pg_props_side2_->SetPropertyValueUnspecified(pg_props_side2_->GetGrid()->GetRoot());
 		}
+		if (auto group_s1 = pg_properties_->GetProperty(wxS("side1")); group_s1)
+			group_s1->Hide(!has_side1, wxPGPropertyValuesFlags::DontRecurse);
+		if (auto group_s2 = pg_properties_->GetProperty(wxS("side2")); group_s2)
+			group_s2->Hide(!has_side2, wxPGPropertyValuesFlags::DontRecurse);
 	}
 
 	// Update internal objects list
