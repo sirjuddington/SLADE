@@ -37,11 +37,10 @@
 #include "MOPGProperty.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/MapEditorWindow.h"
+#include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapObject.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Layout.h"
-#include "UI/UI.h"
-#include "UI/WxUtils.h"
 #include "Utility/PropertyUtils.h"
 #include "Utility/StringUtils.h"
 
@@ -88,17 +87,14 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	cb_show_all_->SetValue(mobj_props_show_all);
 	sizer->Add(cb_show_all_, lh.sfWithBorder(0, wxLEFT | wxRIGHT | wxTOP).Expand());
 
-	// Add tabs
-	stc_sections_ = STabCtrl::createControl(this);
-	sizer->Add(stc_sections_, lh.sfWithBorder(1).Expand());
-
 	// Add main property grid
-	pg_properties_ = createPropGrid();
-	stc_sections_->AddPage(pg_properties_, wxS("Properties"));
+	pg_properties_ = createPropGrid(this);
+	sizer->Add(pg_properties_, lh.sfWithBorder(1).Expand());
 
 	// Create side property grids
-	pg_props_side1_ = createPropGrid();
-	pg_props_side2_ = createPropGrid();
+	tabs_line_sides_ = STabCtrl::createControl(this);
+	pg_props_side1_  = createPropGrid(tabs_line_sides_);
+	pg_props_side2_  = createPropGrid(tabs_line_sides_);
 
 	// Add buttons
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
@@ -134,6 +130,7 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 	pg_props_side2_->Bind(wxEVT_PG_CHANGED, &MapObjectPropsPanel::onPropertyChanged, this);
 
 	// Hide side property grids
+	tabs_line_sides_->Hide();
 	pg_props_side1_->Show(false);
 	pg_props_side2_->Show(false);
 
@@ -147,16 +144,12 @@ MapObjectPropsPanel::MapObjectPropsPanel(wxWindow* parent, bool no_apply) :
 // -----------------------------------------------------------------------------
 // Create and set up a property grid
 // -----------------------------------------------------------------------------
-wxPropertyGrid* MapObjectPropsPanel::createPropGrid()
+wxPropertyGrid* MapObjectPropsPanel::createPropGrid(wxWindow* parent)
 {
 	const auto& inactiveTextColour = wxSystemSettings::GetColour(wxSYS_COLOUR_INACTIVECAPTIONTEXT);
 
 	auto propgrid = new wxPropertyGrid(
-		stc_sections_,
-		-1,
-		wxDefaultPosition,
-		wxDefaultSize,
-		wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER | wxPG_BOLD_MODIFIED);
+		parent, -1, wxDefaultPosition, wxDefaultSize, wxPG_TOOLTIPS | wxPG_SPLITTER_AUTO_CENTER | wxPG_BOLD_MODIFIED);
 	propgrid->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS | wxPG_EX_MULTIPLE_SELECTION);
 	propgrid->SetCaptionTextColour(inactiveTextColour);
 	propgrid->SetCellDisabledTextColour(inactiveTextColour);
@@ -434,6 +427,47 @@ void MapObjectPropsPanel::addUDMFProperty(
 }
 
 // -----------------------------------------------------------------------------
+// Shows or hides the line/side tabs
+// -----------------------------------------------------------------------------
+void MapObjectPropsPanel::showTabs(bool show)
+{
+	if (tabs_shown_ == show)
+		return;
+
+	tabs_line_sides_->Hide();
+	tabs_line_sides_->Freeze();
+
+	if (show)
+	{
+		GetSizer()->Replace(pg_properties_, tabs_line_sides_);
+		pg_properties_->Reparent(tabs_line_sides_);
+		tabs_line_sides_->AddPage(pg_properties_, wxS("Line"));
+		tabs_line_sides_->AddPage(pg_props_side1_, wxS("Front Side"));
+		tabs_line_sides_->AddPage(pg_props_side2_, wxS("Back Side"));
+		tabs_line_sides_->Show();
+	}
+	else
+	{
+		tabs_line_sides_->RemovePage(0);
+		tabs_line_sides_->RemovePage(0);
+		tabs_line_sides_->RemovePage(0);
+		pg_properties_->Reparent(this);
+		GetSizer()->Replace(tabs_line_sides_, pg_properties_);
+		tabs_line_sides_->Hide();
+		pg_props_side1_->Hide();
+		pg_props_side2_->Hide();
+		pg_properties_->Show();
+	}
+
+	tabs_line_sides_->Thaw();
+
+	Layout();
+	Refresh();
+
+	tabs_shown_ = show;
+}
+
+// -----------------------------------------------------------------------------
 // Adds all relevant properties to the grid for [objtype]
 // -----------------------------------------------------------------------------
 void MapObjectPropsPanel::setupType(map::ObjectType objtype)
@@ -463,11 +497,8 @@ void MapObjectPropsPanel::setupType(map::ObjectType objtype)
 	// Vertex properties
 	if (objtype == map::ObjectType::Vertex)
 	{
-		// Set main tab name
-		stc_sections_->SetPageText(0, wxS("Vertex"));
-
 		// Add 'basic' group
-		auto g_basic = pg_properties_->Append(new wxPropertyCategory(wxS("General")));
+		auto g_basic = pg_properties_->Append(new wxPropertyCategory(wxS("Vertex"), wxS("Basic")));
 
 		// Add X and Y position
 		addIntProperty(g_basic, wxS("X Position"), wxS("x"));
@@ -479,11 +510,8 @@ void MapObjectPropsPanel::setupType(map::ObjectType objtype)
 	// Line properties
 	else if (objtype == map::ObjectType::Line)
 	{
-		// Set main tab name
-		stc_sections_->SetPageText(0, wxS("Line"));
-
 		// Add 'General' group
-		auto g_basic = pg_properties_->Append(new wxPropertyCategory(wxS("General")));
+		auto g_basic = pg_properties_->Append(new wxPropertyCategory(wxS("Line"), wxS("Basic")));
 
 		// Add side indices
 		addIntProperty(g_basic, wxS("Front Side"), wxS("sidefront"));
@@ -568,11 +596,8 @@ void MapObjectPropsPanel::setupType(map::ObjectType objtype)
 	// Sector properties
 	else if (objtype == map::ObjectType::Sector)
 	{
-		// Set main tab name
-		stc_sections_->SetPageText(0, wxS("Sector"));
-
 		// Add 'General' group
-		auto g_basic = pg_properties_->Append(new wxPropertyCategory(wxS("General")));
+		auto g_basic = pg_properties_->Append(new wxPropertyCategory(wxS("Sector"), wxS("Basic")));
 
 		// Add heights
 		if (!propHidden("heightfloor"))
@@ -624,11 +649,8 @@ void MapObjectPropsPanel::setupType(map::ObjectType objtype)
 	// Thing properties
 	else if (objtype == map::ObjectType::Thing)
 	{
-		// Set main tab name
-		stc_sections_->SetPageText(0, wxS("Thing"));
-
 		// Add 'General' group
-		auto g_basic = pg_properties_->Append(new wxPropertyCategory(wxS("General")));
+		auto g_basic = pg_properties_->Append(new wxPropertyCategory(wxS("Thing"), wxS("Basic")));
 
 		// Add position
 		addIntProperty(g_basic, wxS("X Position"), wxS("x"));
@@ -733,16 +755,6 @@ void MapObjectPropsPanel::setupTypeUDMF(map::ObjectType objtype)
 		btn_reset_->Show();
 	}
 
-	// Set main tab title
-	if (objtype == map::ObjectType::Vertex)
-		stc_sections_->SetPageText(0, wxS("Vertex"));
-	else if (objtype == map::ObjectType::Line)
-		stc_sections_->SetPageText(0, wxS("Line"));
-	else if (objtype == map::ObjectType::Sector)
-		stc_sections_->SetPageText(0, wxS("Sector"));
-	else if (objtype == map::ObjectType::Thing)
-		stc_sections_->SetPageText(0, wxS("Thing"));
-
 	// Go through all possible properties for this type, in configuration order
 	auto props = game::configuration().sortedUDMFProperties(objtype);
 	for (auto& i : props)
@@ -762,11 +774,7 @@ void MapObjectPropsPanel::setupTypeUDMF(map::ObjectType objtype)
 	// Add side properties if line type
 	if (objtype == map::ObjectType::Line)
 	{
-		// Add side tabs
-		pg_props_side1_->Show(true);
-		pg_props_side2_->Show(true);
-		stc_sections_->AddPage(pg_props_side1_, wxS("Front Side"));
-		stc_sections_->AddPage(pg_props_side2_, wxS("Back Side"));
+		showTabs(true);
 
 		// Get side properties
 		auto sprops = game::configuration().sortedUDMFProperties(MapObject::Type::Side);
@@ -787,6 +795,8 @@ void MapObjectPropsPanel::setupTypeUDMF(map::ObjectType objtype)
 			addUDMFProperty(i->second, objtype, wxS("side2"), pg_props_side2_);
 		}
 	}
+	else
+		showTabs(false);
 
 	// Set all bool properties to use checkboxes
 	pg_properties_->SetPropertyAttributeAll(wxPG_BOOL_USE_CHECKBOX, true);
@@ -830,16 +840,20 @@ void MapObjectPropsPanel::openObject(MapObject* object)
 // -----------------------------------------------------------------------------
 void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 {
+	const bool is_udmf = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
+
 	pg_properties_->Freeze();
 	pg_props_side1_->Freeze();
 	pg_props_side2_->Freeze();
 
 	// Check any objects were given
-	bool is_udmf = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
 	if (objects.empty() || objects[0] == nullptr)
 	{
 		// Update control visibility
-		stc_sections_->Hide();
+		if (tabs_shown_)
+			tabs_line_sides_->Hide();
+		else
+			pg_properties_->Hide();
 		cb_show_all_->Hide();
 		btn_add_->Hide();
 		btn_reset_->Hide();
@@ -860,6 +874,8 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		pg_props_side1_->Thaw();
 		pg_props_side2_->Thaw();
 
+		Refresh();
+
 		return;
 	}
 	else
@@ -867,7 +883,10 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		pg_properties_->EnableProperty(pg_properties_->GetGrid()->GetRoot());
 
 		// Update control visibility
-		stc_sections_->Show();
+		if (tabs_shown_)
+			tabs_line_sides_->Show();
+		else
+			pg_properties_->Show();
 		cb_show_all_->Show(is_udmf);
 		btn_add_->Show(is_udmf);
 		if (!mobj_props_auto_apply)
@@ -889,6 +908,40 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 		setupTypeUDMF(objects[0]->objType());
 	else
 		setupType(objects[0]->objType());
+
+	// Update basic category name
+	if (auto basic_group = pg_properties_->GetProperty(wxS("Basic")); basic_group)
+	{
+		wxString item_index = objects.size() > 1 ? WX_FMT(" ({} selected)", objects.size())
+												 : WX_FMT(" #{}", objects[0]->index());
+
+		if (objects[0]->objType() == map::ObjectType::Vertex)
+			basic_group->SetLabel(wxS("Vertex") + item_index);
+		else if (objects[0]->objType() == map::ObjectType::Line)
+			basic_group->SetLabel(wxS("Line") + item_index);
+		else if (objects[0]->objType() == map::ObjectType::Sector)
+			basic_group->SetLabel(wxS("Sector") + item_index);
+		else if (objects[0]->objType() == map::ObjectType::Thing)
+			basic_group->SetLabel(wxS("Thing") + item_index);
+	}
+	if (objects[0]->objType() == map::ObjectType::Line && objects.size() == 1)
+	{
+		auto line = dynamic_cast<MapLine*>(objects[0]);
+		if (auto basic_group = pg_props_side1_->GetProperty(wxS("side1.Basic")); basic_group)
+		{
+			if (line->s1Index() >= 0)
+				basic_group->SetLabel(WX_FMT("Side #{}", line->s1Index()));
+			else
+				basic_group->SetLabel(wxS("No Front Side"));
+		}
+		if (auto basic_group = pg_props_side2_->GetProperty(wxS("side2.Basic")); basic_group)
+		{
+			if (line->s2Index() >= 0)
+				basic_group->SetLabel(WX_FMT("Side #{}", line->s2Index()));
+			else
+				basic_group->SetLabel(wxS("No Back Side"));
+		}
+	}
 
 	// Find any custom properties (UDMF only)
 	if (is_udmf)
@@ -1069,18 +1122,6 @@ void MapObjectPropsPanel::clearGrid()
 	group_custom_ = nullptr;
 	properties_.clear();
 	groups_.clear();
-
-	// Remove side1/2 tabs if they exist
-	// Calling RemovePage() changes the focus for no good reason; this is a
-	// workaround.  See http://trac.wxwidgets.org/ticket/11333
-	stc_sections_->Freeze();
-	stc_sections_->Hide();
-	while (stc_sections_->GetPageCount() > 1)
-		stc_sections_->RemovePage(1);
-	stc_sections_->Show();
-	stc_sections_->Thaw();
-	pg_props_side1_->Show(false);
-	pg_props_side2_->Show(false);
 
 	// Reset last type so the grid is rebuilt next time objects are opened
 	last_type_ = map::ObjectType::Object;

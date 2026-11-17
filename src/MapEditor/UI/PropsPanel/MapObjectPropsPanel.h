@@ -45,10 +45,10 @@ public:
 	bool propHidden(const string& property) { return VECTOR_EXISTS(hide_props_, property); }
 
 private:
-	TabControl*                stc_sections_   = nullptr;
-	wxPropertyGrid*            pg_properties_  = nullptr;
-	wxPropertyGrid*            pg_props_side1_ = nullptr;
-	wxPropertyGrid*            pg_props_side2_ = nullptr;
+	TabControl*                tabs_line_sides_ = nullptr;
+	wxPropertyGrid*            pg_properties_   = nullptr;
+	wxPropertyGrid*            pg_props_side1_  = nullptr;
+	wxPropertyGrid*            pg_props_side2_  = nullptr;
 	map::ObjectType            last_type_;
 	string                     last_config_;
 	vector<MOPGProperty*>      properties_;
@@ -60,6 +60,7 @@ private:
 	wxPGProperty*              group_custom_ = nullptr;
 	bool                       no_apply_     = false;
 	bool                       udmf_         = false;
+	bool                       tabs_shown_   = false;
 	vector<wxPGProperty*>      groups_;
 	wxStaticText*              label_no_object_ = nullptr;
 	sigslot::scoped_connection sc_config_changed_;
@@ -69,7 +70,7 @@ private:
 	bool           hide_triggers_ = false;
 	vector<string> hide_props_;
 
-	wxPropertyGrid* createPropGrid();
+	wxPropertyGrid* createPropGrid(wxWindow* parent);
 
 	template<typename T>
 	T* addProperty(
@@ -138,6 +139,7 @@ private:
 
 	bool setBoolProperty(wxPGProperty* prop, bool value, bool force_set = false) const;
 
+	void showTabs(bool show);
 	void setupType(map::ObjectType objtype);
 	void setupTypeUDMF(map::ObjectType objtype);
 
