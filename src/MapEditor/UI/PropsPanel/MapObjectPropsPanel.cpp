@@ -843,7 +843,7 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 {
 	const bool is_udmf = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
 
-	if (hasUnappliedChanges())
+	if (!mobj_props_auto_apply && hasUnappliedChanges())
 	{
 		// Need to do this so that we don't start a selection drag
 		mapeditor::editContext().input().blockMouseDrag();
