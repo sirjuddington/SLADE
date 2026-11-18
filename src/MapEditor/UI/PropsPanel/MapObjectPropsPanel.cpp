@@ -35,6 +35,7 @@
 #include "Game/Configuration.h"
 #include "Game/UDMFProperty.h"
 #include "MOPGProperty.h"
+#include "MapEditor/Edit/Input.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/UI/MapEditorWindow.h"
 #include "SLADEMap/MapObject/MapLine.h"
@@ -842,6 +843,29 @@ void MapObjectPropsPanel::openObjects(vector<MapObject*>& objects)
 {
 	const bool is_udmf = (mapeditor::editContext().mapDesc().format == MapFormat::UDMF);
 
+	if (hasUnappliedChanges())
+	{
+		// Need to do this so that we don't start a selection drag
+		mapeditor::editContext().input().blockMouseDrag();
+
+		// Prompt user to apply or discard changes
+		auto result = wxMessageBox(
+			wxS("Changes have been made to the item(s) properties. Do you want to apply them?"),
+			wxS("Unapplied Changes"),
+			wxYES_NO | wxICON_QUESTION,
+			this);
+
+		if (result == wxYES)
+			applyChanges();
+		else
+		{
+			// Clear modified status of all properties
+			for (const auto& prop : properties_)
+				if (const auto wxprop = dynamic_cast<wxPGProperty*>(prop); wxprop)
+					wxprop->SetModifiedStatus(false);
+		}
+	}
+
 	pg_properties_->Freeze();
 	pg_props_side1_->Freeze();
 	pg_props_side2_->Freeze();
@@ -1106,6 +1130,22 @@ void MapObjectPropsPanel::applyChanges()
 	pg_properties_->Refresh();
 	pg_props_side1_->Refresh();
 	pg_props_side2_->Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Checks if any properties have been modified but not applied
+// -----------------------------------------------------------------------------
+bool MapObjectPropsPanel::hasUnappliedChanges() const
+{
+	// Go through all current properties and check if any have been modified
+	for (auto property : properties_)
+	{
+		auto wxprop = dynamic_cast<wxPGProperty*>(property);
+		if (wxprop->HasFlag(wxPG_PROP_MODIFIED))
+			return true;
+	}
+
+	return false;
 }
 
 // -----------------------------------------------------------------------------

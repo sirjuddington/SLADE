@@ -253,6 +253,7 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 	mouse_down_pos_map_        = mouse_pos_map_;
 	mouse_button_down_[button] = true;
 	mouse_drag_                = DragType::None;
+	block_mouse_drag_          = false;
 
 	// Update highlight
 	if (mouse_state_ == MouseState::Normal)
@@ -366,7 +367,10 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 			else
 			{
 				if (!context_->selection().toggleCurrent(selection_clear_click))
-					mouse_drag_ = DragType::Selection;
+				{
+					if (!block_mouse_drag_)
+						mouse_drag_ = DragType::Selection;
+				}
 			}
 		}
 	}
@@ -418,6 +422,8 @@ bool Input::mouseDown(MouseButton button, int x, int y, bool double_click)
 	// Any other mouse button (let keybind system handle it)
 	else
 		KeyBind::keyPressed(Keypress(mouseButtonKBName(button), alt_down_, ctrl_down_, shift_down_));
+
+	block_mouse_drag_ = false;
 
 	return true;
 }

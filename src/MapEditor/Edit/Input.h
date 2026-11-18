@@ -67,6 +67,7 @@ public:
 	bool mouseUp(MouseButton button);
 	void mouseWheel(double amount);
 	void mouseLeave();
+	void blockMouseDrag() { block_mouse_drag_ = true; }
 
 	// Keyboard handling
 	void updateKeyModifiers(bool shift, bool ctrl, bool alt)
@@ -102,6 +103,7 @@ private:
 	DragType   mouse_drag_           = DragType::None;
 	double     mouse_wheel_accum_    = 0;
 	bool       panning_              = false;
+	bool       block_mouse_drag_     = false;
 
 	// Keyboard
 	bool shift_down_ = false;

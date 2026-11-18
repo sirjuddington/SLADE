@@ -37,6 +37,7 @@ public:
 	void openObjects(vector<MapObject*>& objects) override;
 	void updateArgs(MOPGIntWithArgsProperty* source);
 	void applyChanges() override;
+	bool hasUnappliedChanges() const;
 	void clearGrid();
 	void hideFlags(bool hide) { hide_flags_ = hide; }
 	void hideTriggers(bool hide) { hide_triggers_ = hide; }
