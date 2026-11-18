@@ -435,6 +435,14 @@ void MapObjectPropsPanel::showTabs(bool show)
 	if (tabs_shown_ == show)
 		return;
 
+#ifdef __WXGTK__
+	// Adding pages can make GTK move keyboard focus into the tab control,
+	// so restore it afterwards
+	wxWindow* prev_focus = FindFocus();
+	if (prev_focus && (prev_focus == this || IsDescendant(prev_focus)))
+		prev_focus = nullptr;
+#endif
+
 	tabs_line_sides_->Hide();
 	tabs_line_sides_->Freeze();
 
@@ -442,6 +450,13 @@ void MapObjectPropsPanel::showTabs(bool show)
 	{
 		GetSizer()->Replace(pg_properties_, tabs_line_sides_);
 		pg_properties_->Reparent(tabs_line_sides_);
+
+		// Pages must be visible before being added, otherwise GTK won't show
+		// their tabs
+		pg_properties_->Show();
+		pg_props_side1_->Show();
+		pg_props_side2_->Show();
+
 		tabs_line_sides_->AddPage(pg_properties_, wxS("Line"));
 		tabs_line_sides_->AddPage(pg_props_side1_, wxS("Front Side"));
 		tabs_line_sides_->AddPage(pg_props_side2_, wxS("Back Side"));
@@ -465,6 +480,17 @@ void MapObjectPropsPanel::showTabs(bool show)
 	Layout();
 	Refresh();
 
+#ifdef __WXGTK__
+	// Restore focus if it was in this panel before
+	if (prev_focus)
+		CallAfter(
+			[ref = wxWeakRef(prev_focus)]
+			{
+				if (ref)
+					ref->SetFocus();
+			});
+#endif
+
 	tabs_shown_ = show;
 }
 
@@ -482,6 +508,9 @@ void MapObjectPropsPanel::setupType(map::ObjectType objtype)
 
 	// Clear property grid
 	clearGrid();
+
+	// Tabs are only shown for UDMF
+	showTabs(false);
 
 	// Hide buttons if not needed
 	if (no_apply_ || mobj_props_auto_apply)
