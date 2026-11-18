@@ -111,6 +111,9 @@ public:
 
 	bool isThisFormat(const MemChunk& mc) override
 	{
+		if (badPCXHeader(mc))
+			return false;
+
 		auto stream = wxMemoryInputStream(mc.data(), mc.size());
 		return wxImage::CanRead(stream);
 	}
@@ -118,6 +121,9 @@ public:
 	SImage::Info info(const MemChunk& mc, int index) override
 	{
 		SImage::Info info;
+
+		if (badPCXHeader(mc))
+			return info;
 
 		// Load wxImage
 		wxMemoryInputStream memstream(mc.data(), mc.size());
@@ -135,8 +141,29 @@ public:
 	}
 
 protected:
+	// wxPCXHandler::CanRead only checks for a 0x0A first byte, but can crash if
+	// it attempts to read a PCX with a header that isn't valid
+	static bool badPCXHeader(const MemChunk& mc)
+	{
+		const auto d = mc.data();
+		if (mc.size() < 1 || d[0] != 0x0A)
+			return false; // Not PCX
+
+		// Valid PCX (for wx): 128 byte header, version 5, RLE encoding
+		bool valid = mc.size() >= 128 && d[1] == 5 && d[2] == 1;
+
+		return !valid;
+	}
+
 	bool readImage(SImage& image, const MemChunk& data, int index) override
 	{
+		if (badPCXHeader(data))
+		{
+			global::error = "Unable to read image data";
+			log::error("Unable to read image data (invalid PCX header)");
+			return false;
+		}
+
 		// Load to wxImage
 		wxMemoryInputStream memstream(data.data(), data.size());
 		const wxImage       wx_image(memstream, wxBITMAP_TYPE_ANY);
@@ -324,7 +351,8 @@ protected:
 	{
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
 		{
-			if (static_cast<int>(valid_flat_size[a][0]) == width && static_cast<int>(valid_flat_size[a][1]) == height
+			if (static_cast<int>(valid_flat_size[a][0]) == width
+				&& static_cast<int>(valid_flat_size[a][1]) == height
 				&& (valid_flat_size[a][2] == 1 || gfx_extraconv))
 				return true;
 		}
@@ -386,7 +414,8 @@ public:
 		// Otherwise, check if it can be cropped to a valid size
 		for (unsigned a = 0; a < n_valid_flat_sizes; a++)
 			if ((static_cast<unsigned>(width) >= valid_flat_size[a][0]
-				 && static_cast<unsigned>(height) >= valid_flat_size[a][1] && valid_flat_size[a][2] == 1)
+				 && static_cast<unsigned>(height) >= valid_flat_size[a][1]
+				 && valid_flat_size[a][2] == 1)
 				|| gfx_extraconv)
 				return Writable::Convert;
 
@@ -420,13 +449,16 @@ public:
 
 			// Check for exact match (no need to crop)
 			if (image.width() == static_cast<int>(valid_flat_size[a][0])
-				&& image.height() == static_cast<int>(valid_flat_size[a][1]) && writable)
+				&& image.height() == static_cast<int>(valid_flat_size[a][1])
+				&& writable)
 				return true;
 
 			// If the flat will fit within this size, crop to the previous size
 			// (this works because flat sizes list is in size-order)
 			if (image.width() <= static_cast<int>(valid_flat_size[a][0])
-				&& image.height() <= static_cast<int>(valid_flat_size[a][1]) && width > 0 && height > 0)
+				&& image.height() <= static_cast<int>(valid_flat_size[a][1])
+				&& width > 0
+				&& height > 0)
 			{
 				image.crop(0, 0, width, height);
 				return true;
