@@ -27,6 +27,19 @@ SLADE provides a vcpkg.json file for 'manifest mode' which should automatically 
 
 ### Compiling
 
+#### Easy way
+
+1.  Install Visual Studio 2026.
+	- Make sure to install `cmake` and `git`.
+2.  Ensure that `git` is in your path.
+	- If installed as part of VS, it can be found in "C:\Program Files\Microsoft Visual Studio\18\Community\Common7\IDE\CommonExtensions\Microsoft\TeamFoundation\Team Explorer\Git\cmd\git.exe").
+3.  In Visual Studio, go to File > Open > Project/Solution and open `CMakeLists.txt` in the SLADE source directory.
+4.  Build the project.
+
+SLADE should now be built into the `dist` subdirectory.
+
+#### Slightly less easy way
+
 1.  Install Visual Studio 2026.
 	- Make sure to install `cmake` and `git`.
 2.  Open up an "x64 Native Tools Command Prompt for VS" (a batch file installed as part of VS).
