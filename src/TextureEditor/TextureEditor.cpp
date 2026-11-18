@@ -40,6 +40,7 @@
 #include "General/Clipboard.h"
 #include "General/Misc.h"
 #include "General/UndoRedo.h"
+#include "General/ResourceManager.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
@@ -1822,6 +1823,8 @@ void TextureEditor::signalCurrentTextureModified(bool texture, bool patch_list, 
 
 	if (patch_list)
 		patch_table_->updatePatchUsage(tex_current_);
+
+	app::resources().signals().resources_updated();
 }
 
 // -----------------------------------------------------------------------------
