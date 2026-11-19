@@ -137,6 +137,7 @@ private:
 	bool splitFromEdge(int splitter_edge);
 	bool testTracePolyOutline(int edge_start);
 	vector<glm::vec2> buildConvexPolygon(int edge_start);
+	void              optimizeEdges();
 };
 } // namespace slade::polygon
 
@@ -568,10 +569,85 @@ vector<glm::vec2> Triangulator::buildConvexPolygon(int edge_start)
 }
 
 // -----------------------------------------------------------------------------
+// Merges any collinear edges
+// -----------------------------------------------------------------------------
+void Triangulator::optimizeEdges()
+{
+	bool merged = false;
+	for (auto& vertex : vertices_)
+	{
+		// We only care about vertices with exactly one edge in and one edge out
+		if (vertex.edges_in.size() != 1 || vertex.edges_out.size() != 1)
+			continue;
+
+		int in  = vertex.edges_in[0];
+		int out = vertex.edges_out[0];
+		int v1  = edges_[in].v1;
+		int v2  = edges_[out].v2;
+
+		// Check if the edges are collinear and in the same direction
+		auto dx1 = vertex.x - vertices_[v1].x;
+		auto dy1 = vertex.y - vertices_[v1].y;
+		auto dx2 = vertices_[v2].x - vertex.x;
+		auto dy2 = vertices_[v2].y - vertex.y;
+		if (dx1 * dy2 != dy1 * dx2 || dx1 * dx2 + dy1 * dy2 <= 0)
+			continue;
+
+		// Do not introduce a duplicate edge
+		bool duplicate = false;
+		for (int edge : vertices_[v1].edges_out)
+		{
+			if (edges_[edge].v2 == v2)
+			{
+				duplicate = true;
+				break;
+			}
+		}
+		if (duplicate)
+			continue;
+
+		// Merge the edges
+		edges_[in].v2  = v2;
+		edges_[out].ok = false;
+		for (auto& edge : vertices_[v2].edges_in)
+		{
+			if (edge == out)
+			{
+				edge = in;
+				break;
+			}
+		}
+		vertex.edges_in.clear();
+		vertex.edges_out.clear();
+		vertex.ok = false;
+		merged    = true;
+	}
+
+	if (!merged)
+		return;
+
+	// Refresh edge indices if any edges were merged
+	std::erase_if(edges_, [](const Edge& edge) { return !edge.ok; });
+	for (auto& vertex : vertices_)
+	{
+		vertex.edges_in.clear();
+		vertex.edges_out.clear();
+	}
+	for (unsigned a = 0; a < edges_.size(); a++)
+	{
+		vertices_[edges_[a].v1].edges_out.push_back(a);
+		vertices_[edges_[a].v2].edges_in.push_back(a);
+	}
+}
+
+// -----------------------------------------------------------------------------
 // Triangulates the polygon, returning a list of triangles (as vertex positions)
 // -----------------------------------------------------------------------------
 vector<glm::vec2> Triangulator::triangulate()
 {
+	// Merge any collinear edges
+	optimizeEdges();
+
 	// Init
 	split_edges_start_ = edges_.size();
 
