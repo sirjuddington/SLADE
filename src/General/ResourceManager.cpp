@@ -477,6 +477,10 @@ void ResourceManager::removeEntry(ArchiveEntry* entry, string_view entry_name, b
 	if (!entry)
 		return;
 
+	// Detect type if unknown
+	if (entry->type() == EntryType::unknownType())
+		EntryType::detectEntryType(*entry);
+
 	// Get resource name (extension cut, uppercase)
 	auto name = strutil::truncate(entry_name.empty() ? entry->upperNameNoExt() : entry_name, 8);
 	auto path = entry->path(true);
