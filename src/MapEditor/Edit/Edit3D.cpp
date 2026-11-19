@@ -1270,12 +1270,16 @@ void Edit3D::changeScale(double amount, bool x) const
 	// Go through selection
 	for (auto& item : items)
 	{
+		bool isWall = false;
+
 		// Wall
 		if (game::configuration().featureSupported(UDMFFeature::SideScaling)
 			|| game::configuration().featureSupported(UDMFFeature::TextureScaling))
 		{
 			if (auto side = item.asSide(context_->map()))
 			{
+				isWall = true;
+
 				// Build property string (offset[x/y]_[top/mid/bottom])
 				string ofs = "scalex";
 				if (!x)
@@ -1298,7 +1302,7 @@ void Edit3D::changeScale(double amount, bool x) const
 		}
 
 		// Flat (UDMF only)
-		else if (game::configuration().featureSupported(UDMFFeature::FlatScaling))
+		if (!isWall && game::configuration().featureSupported(UDMFFeature::FlatScaling))
 		{
 			if (auto sector = item.asSector(context_->map()))
 			{
