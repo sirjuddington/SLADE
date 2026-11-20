@@ -25,11 +25,6 @@ public:
 	void openLines(const vector<MapObject*>& lines);
 	void updateArgsPanel() const;
 
-	void onRadioButtonChanged(wxCommandEvent& e);
-	void onSpecialSelectionChanged(wxDataViewEvent& e);
-	void onSpecialItemActivated(wxDataViewEvent& e);
-	void onSpecialPresetClicked(wxCommandEvent& e);
-
 private:
 	ActionSpecialTreeView* tree_specials_        = nullptr;
 	wxPanel*               panel_action_special_ = nullptr;
@@ -41,6 +36,7 @@ private:
 	bool                   show_trigger_         = false;
 	wxTextCtrl*            text_special_         = nullptr;
 	wxButton*              btn_preset_           = nullptr;
+	wxButton*              btn_save_preset_      = nullptr;
 	bool                   ignore_select_event_  = false;
 
 	struct FlagHolder
@@ -50,5 +46,11 @@ private:
 		string      udmf;
 	};
 	vector<FlagHolder> flags_;
+
+	void onRadioButtonChanged(wxCommandEvent& e);
+	void onSpecialSelectionChanged(wxDataViewEvent& e);
+	void onSpecialItemActivated(wxDataViewEvent& e);
+	void onSpecialPresetClicked(wxCommandEvent& e);
+	void onSaveSpecialPresetClicked(wxCommandEvent& e);
 };
 } // namespace slade

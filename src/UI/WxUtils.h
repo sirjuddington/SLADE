@@ -24,6 +24,10 @@ wxArrayString arrayString(const vector<wxString>& vector);
 wxArrayString arrayStringStd(const vector<string>& vector);
 wxString      strFromView(string_view str);
 
+// wxDataViewCtrl
+void expandAll(wxDataViewCtrl* dv);
+void collapseAll(wxDataViewCtrl* dv);
+
 // Misc
 void      setWindowIcon(wxTopLevelWindow* window, string_view icon);
 wxImage   createImageFromSVG(const string& svg_text, int width, int height);

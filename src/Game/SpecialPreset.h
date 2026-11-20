@@ -22,6 +22,8 @@ namespace game
 	};
 
 	const vector<SpecialPreset>& customSpecialPresets();
+	void                         addCustomSpecialPreset(const SpecialPreset& preset);
+	bool                         deleteCustomSpecialPreset(string_view group, string_view name);
 	bool                         loadCustomSpecialPresets();
 	bool                         saveCustomSpecialPresets();
 } // namespace game

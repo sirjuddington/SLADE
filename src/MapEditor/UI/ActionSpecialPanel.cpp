@@ -123,9 +123,8 @@ ActionSpecialTreeView::ActionSpecialTreeView(wxWindow* parent) :
 		textsize.IncTo(dc.GetTextExtent(label));
 		sorted_specials_.push_back({ &i.second, label, {} });
 	}
-	std::sort(
-		sorted_specials_.begin(),
-		sorted_specials_.end(),
+	std::ranges::sort(
+		sorted_specials_,
 		[](const auto& a, const auto& b) { return a.special->order() < b.special->order(); });
 
 	filterSpecials();
@@ -167,8 +166,8 @@ void ActionSpecialTreeView::showSpecial(int special, bool focus)
 {
 	if (special == 0)
 	{
-		EnsureVisible(item_none_);
 		Select(item_none_);
+		EnsureVisible(item_none_);
 		if (focus)
 			SetFocus();
 		return;
@@ -180,8 +179,8 @@ void ActionSpecialTreeView::showSpecial(int special, bool focus)
 		// Select+show if match
 		if (i.special->number() == special)
 		{
-			EnsureVisible(i.item);
 			Select(i.item);
+			EnsureVisible(i.item);
 			if (focus)
 				SetFocus();
 			return;
@@ -323,7 +322,7 @@ wxDataViewItem ActionSpecialTreeView::getGroup(const string& group_name)
 	for (unsigned p = 0; p < path.size(); p++)
 	{
 		if (p > 0)
-			fullpath += "/";
+			fullpath += '/';
 		fullpath += path[p];
 
 		bool found = false;
@@ -442,12 +441,12 @@ void ActionSpecialPanel::setupSpecialPanel()
 
 			// Get all UDMF trigger properties
 			std::map<string, wxFlexGridSizer*> named_flexgrids;
-			for (auto& i : props)
+			for (auto& prop : props | std::views::values)
 			{
-				if (!i.second.isTrigger())
+				if (!prop.isTrigger())
 					continue;
 
-				auto group       = i.second.group();
+				auto group       = prop.group();
 				auto frame_sizer = named_flexgrids[group];
 				if (!frame_sizer)
 				{
@@ -467,13 +466,13 @@ void ActionSpecialPanel::setupSpecialPanel()
 				auto cb_trigger = new wxCheckBox(
 					panel_action_special_,
 					-1,
-					wxString::FromUTF8(i.second.name()),
+					wxString::FromUTF8(prop.name()),
 					wxDefaultPosition,
 					wxDefaultSize,
 					wxCHK_3STATE);
 				frame_sizer->Add(cb_trigger, wxSizerFlags().Expand());
 
-				flags_.push_back({ cb_trigger, -1, i.second.propName() });
+				flags_.push_back({ cb_trigger, -1, prop.propName() });
 			}
 		}
 
@@ -509,10 +508,12 @@ void ActionSpecialPanel::setupSpecialPanel()
 			}
 		}
 
-		// Preset button
-		btn_preset_ = new wxButton(panel_action_special_, -1, wxS("Preset..."));
-		sizer->Add(btn_preset_, lh.sfWithBorder(0, wxTOP).Right());
+		// Preset buttons
+		btn_preset_      = new wxButton(panel_action_special_, -1, wxS("Apply Preset..."));
+		btn_save_preset_ = new wxButton(panel_action_special_, -1, wxS("Save as Preset"));
+		sizer->Add(lh.layoutHorizontally({ btn_preset_, btn_save_preset_ }), lh.sfWithBorder(0, wxTOP).Right());
 		btn_preset_->Bind(wxEVT_BUTTON, &ActionSpecialPanel::onSpecialPresetClicked, this);
+		btn_save_preset_->Bind(wxEVT_BUTTON, &ActionSpecialPanel::onSaveSpecialPresetClicked, this);
 	}
 
 	panel_action_special_->SetSizerAndFit(sizer);
@@ -558,7 +559,7 @@ void ActionSpecialPanel::setTrigger(int index) const
 		choice_trigger_->SetSelection(index);
 
 	// UDMF Trigger
-	else if (index < static_cast<int>(flags_.size()))
+	else if (std::cmp_less(index, flags_.size()))
 		flags_[index].check_box->SetValue(true);
 }
 
@@ -888,4 +889,42 @@ void ActionSpecialPanel::onSpecialPresetClicked(wxCommandEvent& e)
 				setTrigger(flag);
 		}
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Called when the save special preset button is clicked
+// -----------------------------------------------------------------------------
+void ActionSpecialPanel::onSaveSpecialPresetClicked(wxCommandEvent& e)
+{
+	auto name = wxGetTextFromUser(wxS("Enter preset name:"), wxS("Save Preset")).utf8_string();
+
+	// Split name from group (if any \ or / entered)
+	string group;
+	strutil::replaceIP(name, "\\", "/");
+	if (strutil::contains(name, '/'))
+	{
+		group = strutil::beforeLast(name, '/');
+		name  = strutil::afterLast(name, '/');
+	}
+
+	// Get selected trigger flags
+	vector<string> flags;
+	for (auto& flag : flags_)
+		if (flag.check_box->GetValue())
+			flags.push_back(flag.udmf);
+
+	game::SpecialPreset sp{ .name = name, .group = group, .special = selectedSpecial(), .flags = flags };
+
+	// Get args
+	if (panel_args_)
+	{
+		sp.args[0] = panel_args_->argValue(0);
+		sp.args[1] = panel_args_->argValue(1);
+		sp.args[2] = panel_args_->argValue(2);
+		sp.args[3] = panel_args_->argValue(3);
+		sp.args[4] = panel_args_->argValue(4);
+	}
+
+	// Add custom preset
+	game::addCustomSpecialPreset(sp);
 }

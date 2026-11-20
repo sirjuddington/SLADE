@@ -189,6 +189,42 @@ const vector<SpecialPreset>& game::customSpecialPresets()
 }
 
 // -----------------------------------------------------------------------------
+// Adds a new custom special preset to the list of loaded presets. If a preset
+// with the same name and group already exists, it will be updated instead.
+// -----------------------------------------------------------------------------
+void game::addCustomSpecialPreset(const SpecialPreset& preset)
+{
+	// Update if preset already exists
+	for (auto& p : custom_presets)
+		if (p.name == preset.name && p.group == preset.group)
+		{
+			p = preset;
+			return;
+		}
+
+	custom_presets.push_back(preset);
+}
+
+// -----------------------------------------------------------------------------
+// Deletes a custom special preset with the given [group] and [name] from the
+// list of loaded presets.
+// Returns true if a preset was deleted, false if not found.
+// -----------------------------------------------------------------------------
+bool game::deleteCustomSpecialPreset(string_view group, string_view name)
+{
+	for (auto it = custom_presets.begin(); it != custom_presets.end(); ++it)
+	{
+		if (it->name == name && it->group == group)
+		{
+			custom_presets.erase(it);
+			return true;
+		}
+	}
+
+	return false;
+}
+
+// -----------------------------------------------------------------------------
 // Loads user defined (custom) special presets from special_presets.json in the
 // user data directory.
 // Returns true on success or false if loading failed
@@ -206,12 +242,6 @@ bool game::loadCustomSpecialPresets()
 			{
 				custom_presets.emplace_back();
 				custom_presets.back().fromJson(j_preset);
-
-				// Add 'Custom' to preset group
-				if (!custom_presets.back().group.empty())
-					custom_presets.back().group = fmt::format("Custom/{}", custom_presets.back().group);
-				else
-					custom_presets.back().group = "Custom";
 			}
 
 			return true;

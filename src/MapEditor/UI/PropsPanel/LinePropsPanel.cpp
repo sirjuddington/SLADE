@@ -237,6 +237,9 @@ void LinePropsPanel::openObjects(vector<MapObject*>& lines)
 	for (auto line : lines)
 		objects_.push_back(line);
 
+	// Show General tab
+	stc_tabs_->SetSelection(0);
+
 	// Update layout
 	Layout();
 	Refresh();

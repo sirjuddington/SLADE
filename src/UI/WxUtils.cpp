@@ -279,6 +279,68 @@ wxString wxutil::strFromView(string_view str)
 }
 
 // -----------------------------------------------------------------------------
+// Expands all items in the given wxDataViewCtrl [dv]
+// -----------------------------------------------------------------------------
+void wxutil::expandAll(wxDataViewCtrl* dv)
+{
+	if (!dv)
+		return;
+
+	auto* model = dv->GetModel();
+	if (!model)
+		return;
+
+	// Lambda to recursively expand all children in [parent]
+	auto expand = [&](auto&& self, const wxDataViewItem& parent) -> void
+	{
+		wxDataViewItemArray children;
+		model->GetChildren(parent, children);
+		for (const auto& child : children)
+		{
+			if (!model->IsContainer(child))
+				continue;
+
+			dv->Expand(child);
+			self(self, child);
+		}
+	};
+
+	// Start expanding from the root
+	expand(expand, {});
+}
+
+// -----------------------------------------------------------------------------
+// Collapses all items in the given wxDataViewCtrl [dv]
+// -----------------------------------------------------------------------------
+void wxutil::collapseAll(wxDataViewCtrl* dv)
+{
+	if (!dv)
+		return;
+
+	auto* model = dv->GetModel();
+	if (!model)
+		return;
+
+	// Lambda to recursively collapse all children in [parent]
+	auto collapse = [&](auto&& self, const wxDataViewItem& parent) -> void
+	{
+		wxDataViewItemArray children;
+		model->GetChildren(parent, children);
+		for (const auto& child : children)
+		{
+			if (!model->IsContainer(child))
+				continue;
+
+			self(self, child);
+			dv->Collapse(child);
+		}
+	};
+
+	// Start collapsing from the root
+	collapse(collapse, {});
+}
+
+// -----------------------------------------------------------------------------
 // Sets the given [window]'s [icon]
 // -----------------------------------------------------------------------------
 void wxutil::setWindowIcon(wxTopLevelWindow* window, string_view icon)
