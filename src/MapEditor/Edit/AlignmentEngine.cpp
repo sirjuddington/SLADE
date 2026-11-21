@@ -49,6 +49,13 @@
 using namespace slade;
 using namespace mapeditor;
 
+// -----------------------------------------------------------------------------
+//
+// Helper Functions Predeclarations
+//
+// -----------------------------------------------------------------------------
+static int wrap_texture_offset(int texture_offset, int texture_width);
+
 
 // -----------------------------------------------------------------------------
 //
@@ -78,6 +85,8 @@ bool AlignmentEngine::run(Item start)
 
 	auto first_side = context_->map().side(start.index);
 	assert(first_side);
+	if (!first_side)
+		return false;
 
 	// Get texture to match
 	string tex;
@@ -130,6 +139,8 @@ bool AlignmentEngine::run(Item start)
 	first_job.tex_offset_x = first_side->texOffsetX();
 	jobs.push(first_job);
 
+	processed_sides.clear();
+
 	while (!jobs.empty())
 	{
 		AlignmentJob job = jobs.front();
@@ -146,52 +157,22 @@ bool AlignmentEngine::run(Item start)
 		// Add side to set of processed sides
 		processed_sides.insert(job.side->index());
 
-		// Perform X-Alignment
+		// Perform X-alignment
 		switch (align_type_)
 		{
 		case AlignType::AlignX:
 		case AlignType::AlignXY:
-			// Wrap x-offset
-			if (tex_width > 0)
-			{
-				while (job.tex_offset_x >= tex_width)
-					job.tex_offset_x -= tex_width;
-				while (job.tex_offset_x < 0)
-					job.tex_offset_x += tex_width;
-			}
-			// Set X offset
-			job.side->setIntProperty("offsetx", job.tex_offset_x);
+			alignX(job, tex_width);
 			break;
 		default: break;
 		}
 
 		// Perform Y-alignment
-		MapLine* current_line = nullptr;
-		int      current_offset_y, current_tex_top_height;
 		switch (align_type_)
 		{
 		case AlignType::AlignY:
 		case AlignType::AlignXY:
-			// First we need to determine the top height for the respective texture
-			current_line           = job.side->parentLine();
-			current_tex_top_height = getTextureTopHeight(current_line, start.type, tex_height);
-			// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
-			current_offset_y = first_tex_top_height - current_tex_top_height;
-
-			// Adjust the y-offset (but only, if we're not adjusting the middle part on a two-sided wall)
-			if (start.type != ItemType::WallMiddle
-				|| !game::configuration().lineBasicFlagSet("twosided", current_line, context_->mapDesc().format))
-			{
-				if (tex_height > 0)
-				{
-					while (current_offset_y > tex_height)
-						current_offset_y -= tex_height;
-					while (current_offset_y < 0)
-						current_offset_y += tex_height;
-				}
-			}
-			// Set Y offset
-			job.side->setIntProperty("offsety", current_offset_y);
+			alignY(job, start.type, first_tex_top_height, tex_height);
 			break;
 		default: break;
 		}
@@ -208,35 +189,66 @@ bool AlignmentEngine::run(Item start)
 	return true;
 }
 
+// -----------------------------------------------------------------------------
+// Perform alignment along X-Axis
+// -----------------------------------------------------------------------------
+void AlignmentEngine::alignX(const AlignmentJob& job, int tex_width)
+{
+	// Set X offset
+	job.side->setIntProperty("offsetx", wrap_texture_offset(job.tex_offset_x, tex_width));
+}
+
+// -----------------------------------------------------------------------------
+// Perform alignment along Y-Axis
+// -----------------------------------------------------------------------------
+void AlignmentEngine::alignY(const AlignmentJob& job, ItemType wall_type, int first_tex_top_height, int texture_height)
+{
+	MapLine*	current_line = job.side->parentLine();
+	// First we need to determine the top height for the respective texture
+	int			current_tex_top_height = getTextureTopHeight(current_line, wall_type, texture_height);
+	// We set the offset such that currentTexTopHeight + offsetY == firstTexTopHeight
+	int      	current_offset_y = first_tex_top_height - current_tex_top_height;
+
+	// Wrap the y-offset, but not for two-sided middle walls.
+	// All other cases are filled by a repeating texture, where the offset is
+	// not relevant. The textures for two-sided middle walls are not repeated,
+	// so the offset is the position of the single repetition of the texture, and
+	// we must not wrap it.
+	if (wall_type != ItemType::WallMiddle
+		|| !game::configuration().lineBasicFlagSet("twosided", current_line, context_->mapDesc().format))
+		current_offset_y = wrap_texture_offset(current_offset_y, texture_height);
+	// Set Y offset
+	job.side->setIntProperty("offsety", current_offset_y);
+}
 
 // -----------------------------------------------------------------------------
 // Determine the height of the top end of the texture on the respective wall part
 // of the given line using the given texture height.
 // -----------------------------------------------------------------------------
-int AlignmentEngine::getTextureTopHeight(const MapLine* first_line, ItemType wall_type, int tex_height) const
+int AlignmentEngine::getTextureTopHeight(const MapLine* line, ItemType wall_type, int tex_height) const
 {
 	assert(wall_type == ItemType::WallBottom || wall_type == ItemType::WallMiddle || wall_type == ItemType::WallTop);
 	if (wall_type == ItemType::WallBottom)
 	{
 		const bool unpegged = game::configuration().lineBasicFlagSet(
-			"dontpegbottom", first_line, context_->mapDesc().format);
+			"dontpegbottom", line, context_->mapDesc().format);
 		// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
 		// Otherwise: Top of texture is at the highest floor
 		if (unpegged)
-			return first_line->highestCeiling();
+			return line->highestCeiling();
 		else
-			return first_line->highestFloor();
+			return line->highestFloor();
 	}
 	else if (wall_type == ItemType::WallMiddle)
 	{
 		const bool unpegged = game::configuration().lineBasicFlagSet(
-			"dontpegbottom", first_line, context_->mapDesc().format);
+			"dontpegbottom", line, context_->mapDesc().format);
 		// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
 		// Otherwise: Top of texture is at the lowest ceiling
 		if (unpegged)
-			return first_line->highestFloor() + tex_height;
+			return line->highestFloor() + tex_height;
 		else
-			return first_line->lowestCeiling();
+			return line->lowestCeiling();
 	}
 	else
 	{
@@ -244,11 +256,11 @@ int AlignmentEngine::getTextureTopHeight(const MapLine* first_line, ItemType wal
 		// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
 		// Otherwise: Top of texture is at lowest ceiling plus texture height
 		const bool unpegged = game::configuration().lineBasicFlagSet(
-			"dontpegtop", first_line, context_->mapDesc().format);
+			"dontpegtop", line, context_->mapDesc().format);
 		if (unpegged)
-			return first_line->highestCeiling();
+			return line->highestCeiling();
 		else
-			return first_line->lowestCeiling() + tex_height;
+			return line->lowestCeiling() + tex_height;
 	}
 }
 
@@ -292,4 +304,26 @@ void AlignmentEngine::enqueueSide(
 	}
 
 	jobs.push(job);
+}
+
+// -----------------------------------------------------------------------------
+//
+// Helper Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Clamp the texture offset to the range [0;texture_width-1]
+// -----------------------------------------------------------------------------
+static int wrap_texture_offset(int texture_offset, int texture_width)
+{
+	if (texture_width != 0)
+	{
+		texture_offset %= texture_width;
+		if (texture_offset < 0)
+		{
+			texture_offset += texture_width;
+		}
+	}
+	return texture_offset;
 }

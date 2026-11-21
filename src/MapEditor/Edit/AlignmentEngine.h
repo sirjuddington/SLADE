@@ -43,6 +43,9 @@ private:
 	// Set of sides already processed
 	std::set<unsigned int> processed_sides;
 
+	void alignX(const AlignmentJob& job, int tex_width);
+	void alignY(const AlignmentJob& job, ItemType wall_type, int first_tex_top_height, int texture_height);
+
 	// Helper functions
 	int  getTextureTopHeight(
 		const MapLine* first_line,
