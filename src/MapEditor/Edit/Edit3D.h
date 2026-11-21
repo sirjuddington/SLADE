@@ -12,6 +12,7 @@ namespace mapeditor
 	enum class ItemType;
 	struct Item;
 	class MapEditContext;
+	enum class AlignType;
 } // namespace mapeditor
 } // namespace slade
 
@@ -25,13 +26,6 @@ public:
 		TexType,
 		Offsets,
 		Scale
-	};
-
-	enum class AlignType
-	{
-		AlignX  = 1,
-		AlignY  = 2,
-		AlignXY = AlignX | AlignY
 	};
 
 	explicit Edit3D(MapEditContext& context);
@@ -60,7 +54,7 @@ public:
 	void changeSectorLight(int amount) const;
 	void changeOffset(int amount, bool x) const;
 	void changeSectorHeight(int amount) const;
-	void autoAlign(Item start, AlignType align_type = AlignType::AlignX) const;
+	void autoAlign(Item start, AlignType align_type) const;
 	void resetOffsets() const;
 	void toggleUnpegged(bool lower) const;
 	void copy(CopyType type);
@@ -93,21 +87,5 @@ private:
 	static bool wallMatches(const MapSide* side, ItemType part, string_view tex);
 	void        getAdjacentWalls(Item item, vector<Item>& list) const;
 	void        getAdjacentFlats(Item item, vector<Item>& list) const;
-
-	// Helper type for texture auto-alignment
-	struct AlignmentJob
-	{
-		MapSide* side;
-		int      tex_offset_x;
-	};
-
-	// Helper functions for texture auto-alignment
-	int         getTextureTopHeight(const MapLine* first_line, mapeditor::ItemType wall_type, int tex_height) const;
-	static void enqueueConnectedLines(std::queue<AlignmentJob>& jobs, const MapVertex* common_vertex, int tex_offset_x);
-	static void enqueueSide(
-		std::queue<AlignmentJob>& jobs,
-		MapSide*                  side,
-		const MapVertex*          common_vertex,
-		int                       tex_offset_x);
 };
 } // namespace slade::mapeditor
