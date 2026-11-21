@@ -591,11 +591,22 @@ void MainWindow::onClose(wxCloseEvent& e)
 void MainWindow::onTabChanged(wxAuiNotebookEvent& e)
 {
 	// Get current page
-	auto page = stc_tabs_->GetPage(stc_tabs_->GetSelection());
+	const auto selection = stc_tabs_->GetSelection();
+	if (selection == wxNOT_FOUND)
+	{
+		panel_undo_history_->setManager(nullptr);
+		e.Skip();
+		return;
+	}
+	auto page = stc_tabs_->GetPage(selection);
 
 	// Archive tab, update undo history panel
 	if (page->GetName() == wxS("archive"))
 		panel_undo_history_->setManager(static_cast<ArchivePanel*>(page)->undoManager());
+
+	// Clear undo history panel if not an archive or texture tab
+	else if (page->GetName() != wxS("texture"))
+		panel_undo_history_->setManager(nullptr);
 
 	// Continue
 	e.Skip();

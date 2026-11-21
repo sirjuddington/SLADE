@@ -147,16 +147,14 @@ void UndoListView::updateFromManager()
 // -----------------------------------------------------------------------------
 void UndoListView::connectManagerSignals()
 {
+	connections_.disconnect();
+
 	if (manager_)
 	{
 		connections_ += manager_->signals().level_recorded.connect([this]() { updateFromManager(); });
 		connections_ += manager_->signals().undo.connect([this]() { updateFromManager(); });
 		connections_ += manager_->signals().redo.connect([this]() { updateFromManager(); });
 		connections_ += manager_->signals().cleared.connect([this]() { updateFromManager(); });
-	}
-	else
-	{
-		connections_.disconnect();
 	}
 }
 
