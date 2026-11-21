@@ -33,6 +33,7 @@
 #include "App.h"
 #include "Game/Configuration.h"
 #include "General/ColourConfiguration.h"
+#include "Geometry/Geometry.h"
 #include "MapEditor/ItemSelection.h"
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
@@ -65,6 +66,7 @@ CVAR(Float, map2d_flat_brightness, 0.8f, CVar::Flag::Save)
 CVAR(Bool, map2d_flat_ignore_light, false, CVar::Flag::Save)
 CVAR(Bool, map2d_sector_hilight_fill, true, CVar::Flag::Save)
 CVAR(Bool, map2d_sector_selected_fill, true, CVar::Flag::Save)
+CVAR(Bool, map2d_show_triangles, false, CVar::Flag::Save | CVar::Flag::Secret)
 
 
 // -----------------------------------------------------------------------------
@@ -105,7 +107,7 @@ const MapTextureManager::Texture& sectorTexture(const MapSector* sector, bool ce
 glm::vec4 sectorColour(const MapSector& sector, bool ceiling)
 {
 	auto& map_specials = sector.parentMap()->mapSpecials();
-	auto part          = ceiling ? map::SectorPart::Ceiling : map::SectorPart::Floor;
+	auto  part         = ceiling ? map::SectorPart::Ceiling : map::SectorPart::Floor;
 
 	// Apply sector light level (unless ignored)
 	float mult = 1.0f;
@@ -275,13 +277,27 @@ void MapRenderer2D::renderFlatHilight(gl::draw2d::Context& dc, int index, float 
 	// Render lines
 	dc.drawLines(render_lines);
 
-	//// Draw sector split lines
-	// if (test_ssplit)
-	//{
-	//	glColor4f(col.fr(), col.fg(), col.fb(), col.fa() * 0.5f);
-	//	glLineWidth(1.0f);
-	//	map_->sector(index)->polygon()->renderWireframe();
-	// }
+	// Draw triangle outlines (for testing)
+	if (map2d_show_triangles)
+	{
+		vector<Rectf> triangle_lines;
+		auto          vi = 0;
+		while (vi < map_->sector(index)->polygonVertices().size())
+		{
+			auto v1 = map_->sector(index)->polygonVertices()[vi];
+			auto v2 = map_->sector(index)->polygonVertices()[vi + 1];
+			auto v3 = map_->sector(index)->polygonVertices()[vi + 2];
+			triangle_lines.emplace_back(v1.x, v1.y, v2.x, v2.y);
+			triangle_lines.push_back(geometry::lineTab({ v1, v2 }, 0.01f, 8.0f));
+			triangle_lines.emplace_back(v2.x, v2.y, v3.x, v3.y);
+			triangle_lines.push_back(geometry::lineTab({ v2, v3 }, 0.01f, 8.0f));
+			triangle_lines.emplace_back(v3.x, v3.y, v1.x, v1.y);
+			triangle_lines.push_back(geometry::lineTab({ v3, v1 }, 0.01f, 8.0f));
+			vi += 3;
+		}
+		dc.line_thickness = 1.0f;
+		dc.drawLines(triangle_lines);
+	}
 
 	//// TEST draw text point
 	// glPointSize(8.0f);
