@@ -73,6 +73,7 @@ AdvancedSettingsPanel::AdvancedSettingsPanel(wxWindow* parent) : SettingsPanel(p
 		wxDefaultPosition,
 		wxDefaultSize,
 		wxPG_BOLD_MODIFIED | wxPG_SPLITTER_AUTO_CENTER | wxPG_TOOLTIPS | wxPG_HIDE_MARGIN);
+	pg_cvars_->SetExtraStyle(wxPG_EX_HELP_AS_TOOLTIPS);
 	pg_cvars_->SetCaptionTextColour(inactiveTextColour);
 	pg_cvars_->SetCellDisabledTextColour(inactiveTextColour);
 	sizer->Add(pg_cvars_, wxSizerFlags(1).Expand());
@@ -94,7 +95,7 @@ void AdvancedSettingsPanel::refreshPropGrid() const
 	// Get list of cvars
 	vector<string> cvars;
 	CVar::putList(cvars);
-	std::sort(cvars.begin(), cvars.end());
+	std::ranges::sort(cvars);
 
 	for (const auto& name : cvars)
 	{
@@ -112,6 +113,9 @@ void AdvancedSettingsPanel::refreshPropGrid() const
 		else if (cvar->type == CVar::Type::String)
 			pg_cvars_->Append(
 				new wxStringProperty(name_wx, name_wx, wxString::FromUTF8(static_cast<CStringCVar*>(cvar)->value)));
+
+		if (!cvar->description.empty())
+			pg_cvars_->SetPropertyHelpString(name_wx, wxString::FromUTF8(cvar->description));
 	}
 
 	// Set all bool properties to use checkboxes

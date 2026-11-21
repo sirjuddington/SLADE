@@ -116,10 +116,15 @@ ResourceManager resource_manager;
 
 CVAR(Int, temp_location, 0, CVar::Flag::Save)
 CVAR(String, temp_location_custom, "", CVar::Flag::Save)
-CVAR(Int, win_darkmode, 1, CVar::Flag::Save)
+DCVAR(
+	Int,
+	win_darkmode,
+	1,
+	CVar::Flag::Save,
+	"Dark (or light) theme setting for Windows. 0 = light, 1 = system, 2 = dark");
 
 
-#if defined(__WXMSW__)
+#ifdef __WXMSW__
 namespace slade::app
 {
 // -----------------------------------------------------------------------------
@@ -480,7 +485,7 @@ void saveConfigFile()
 	for (size_t a = 0; a < archive_manager.numBaseResourcePaths(); a++)
 	{
 		auto path = archive_manager.getBaseResourcePath(a);
-		std::replace(path.begin(), path.end(), '\\', '/');
+		std::ranges::replace(path, '\\', '/');
 		j["base_resource_paths"].push_back(path);
 	}
 

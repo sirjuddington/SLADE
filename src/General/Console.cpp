@@ -280,7 +280,7 @@ CONSOLE_COMMAND(cvarlist, 0, true)
 {
 	// Get sorted list of cvars
 	vector<string> list;
-	CVar::putList(list);
+	CVar::putList(list, true);
 	std::ranges::sort(list);
 
 	// Filter list if an argument is given

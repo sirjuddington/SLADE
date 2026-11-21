@@ -77,7 +77,9 @@ void addCVarList(CVar* cvar)
 // -----------------------------------------------------------------------------
 // CIntCVar class constructor
 // -----------------------------------------------------------------------------
-CIntCVar::CIntCVar(string_view name, int defval, uint16_t flags) : CVar{ Type::Integer, flags, name }, value{ defval }
+CIntCVar::CIntCVar(string_view name, int defval, uint16_t flags, string_view description) :
+	CVar{ Type::Integer, flags, name, description },
+	value{ defval }
 {
 	addCVarList(this);
 }
@@ -85,8 +87,8 @@ CIntCVar::CIntCVar(string_view name, int defval, uint16_t flags) : CVar{ Type::I
 // -----------------------------------------------------------------------------
 // CBoolCVar class constructor
 // -----------------------------------------------------------------------------
-CBoolCVar::CBoolCVar(string_view name, bool defval, uint16_t flags) :
-	CVar{ Type::Boolean, flags, name },
+CBoolCVar::CBoolCVar(string_view name, bool defval, uint16_t flags, string_view description) :
+	CVar{ Type::Boolean, flags, name, description },
 	value{ defval }
 {
 	addCVarList(this);
@@ -95,8 +97,8 @@ CBoolCVar::CBoolCVar(string_view name, bool defval, uint16_t flags) :
 // -----------------------------------------------------------------------------
 // CFloatCVar class constructor
 // -----------------------------------------------------------------------------
-CFloatCVar::CFloatCVar(string_view name, double defval, uint16_t flags) :
-	CVar{ Type::Float, flags, name },
+CFloatCVar::CFloatCVar(string_view name, double defval, uint16_t flags, string_view description) :
+	CVar{ Type::Float, flags, name, description },
 	value{ defval }
 {
 	addCVarList(this);
@@ -105,8 +107,8 @@ CFloatCVar::CFloatCVar(string_view name, double defval, uint16_t flags) :
 // -----------------------------------------------------------------------------
 // CStringCVar class constructor
 // -----------------------------------------------------------------------------
-CStringCVar::CStringCVar(string_view name, string_view defval, uint16_t flags) :
-	CVar{ Type::String, flags, name },
+CStringCVar::CStringCVar(string_view name, string_view defval, uint16_t flags, string_view description) :
+	CVar{ Type::String, flags, name, description },
 	value{ defval }
 {
 	addCVarList(this);
@@ -181,12 +183,15 @@ string CVar::getString(const string& cvar_name)
 // -----------------------------------------------------------------------------
 // Adds all cvar names to a vector of strings
 // -----------------------------------------------------------------------------
-void CVar::putList(vector<string>& list)
+void CVar::putList(vector<string>& list, bool descriptions)
 {
 	for (unsigned i = 0; i < n_cvars; ++i)
 	{
 		if (!(cvars[i]->flags & Flag::Secret))
-			list.push_back(cvars[i]->name);
+			list.push_back(
+				descriptions && !cvars[i]->description.empty()
+					? fmt::format("{} - {}", cvars[i]->name, cvars[i]->description)
+					: cvars[i]->name);
 	}
 }
 

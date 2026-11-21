@@ -34,9 +34,16 @@ struct CVar
 	Type     type  = Type::Integer;
 	string   name;
 	CVar*    next = nullptr;
+	string   description;
 
 	CVar() = default;
-	CVar(Type type, uint16_t flags, string_view name) : flags{ flags }, type{ type }, name{ name } {}
+	CVar(Type type, uint16_t flags, string_view name, string_view description) :
+		flags{ flags },
+		type{ type },
+		name{ name },
+		description{ description }
+	{
+	}
 	virtual ~CVar() = default;
 
 	virtual Value getValue()
@@ -57,14 +64,14 @@ struct CVar
 	static int           getInt(const string& cvar_name);
 	static double        getFloat(const string& cvar_name);
 	static string        getString(const string& cvar_name);
-	static void          putList(vector<string>& list);
+	static void          putList(vector<string>& list, bool descriptions = false);
 };
 
 struct CIntCVar : CVar
 {
 	int value;
 
-	CIntCVar(string_view name, int defval, uint16_t flags);
+	CIntCVar(string_view name, int defval, uint16_t flags, string_view description = {});
 	~CIntCVar() override = default;
 
 	// Operators so the cvar name can be used like a normal variable
@@ -89,7 +96,7 @@ struct CBoolCVar : CVar
 {
 	bool value;
 
-	CBoolCVar(string_view name, bool defval, uint16_t flags);
+	CBoolCVar(string_view name, bool defval, uint16_t flags, string_view description = {});
 	~CBoolCVar() override = default;
 
 	operator bool() const { return value; }
@@ -113,7 +120,7 @@ struct CFloatCVar : CVar
 {
 	double value;
 
-	CFloatCVar(string_view name, double defval, uint16_t flags);
+	CFloatCVar(string_view name, double defval, uint16_t flags, string_view description = {});
 	~CFloatCVar() override = default;
 
 	operator double() const { return value; }
@@ -137,7 +144,7 @@ struct CStringCVar : CVar
 {
 	string value;
 
-	CStringCVar(string_view name, string_view defval, uint16_t flags);
+	CStringCVar(string_view name, string_view defval, uint16_t flags, string_view description = {});
 	~CStringCVar() override = default;
 
 	bool empty() const { return value.empty(); }
@@ -156,5 +163,6 @@ struct CStringCVar : CVar
 } // namespace slade
 
 #define CVAR(type, name, val, flags) C##type##CVar name(#name, val, flags);
+#define DCVAR(type, name, val, flags, description) C##type##CVar name(#name, val, flags, description);
 
 #define EXTERN_CVAR(type, name) extern C##type##CVar name;
