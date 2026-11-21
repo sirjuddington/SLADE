@@ -51,6 +51,7 @@
 #include "UI/Controls/UndoManagerHistoryPanel.h"
 #include "UI/Dialogs/AboutDialog.h"
 #include "UI/Dialogs/SettingsDialog.h"
+#include "UI/SAuiManager.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SAuiToolBar.h"
 #include "UI/State.h"
@@ -131,41 +132,12 @@ MainWindow::~MainWindow()
 }
 
 // -----------------------------------------------------------------------------
-// Loads the previously saved layout file for the window
-// -----------------------------------------------------------------------------
-void MainWindow::loadLayout() const
-{
-	auto layout = ui::getWindowLayout(id_.c_str());
-
-	for (const auto& component : layout)
-		if (!component.first.empty() && !component.second.empty())
-			aui_mgr_->LoadPaneInfo(
-				wxString::FromUTF8(component.second), aui_mgr_->GetPane(wxString::FromUTF8(component.first)));
-}
-
-// -----------------------------------------------------------------------------
-// Saves the current window layout to a file
-// -----------------------------------------------------------------------------
-void MainWindow::saveLayout() const
-{
-	vector<StringPair> layout;
-
-	layout.emplace_back("console", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("console"))).utf8_string());
-	layout.emplace_back(
-		"archive_manager", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("archive_manager"))).utf8_string());
-	layout.emplace_back("undo_history", aui_mgr_->SavePaneInfo(aui_mgr_->GetPane(wxS("undo_history"))).utf8_string());
-
-	ui::setWindowLayout(id_.c_str(), layout);
-}
-
-// -----------------------------------------------------------------------------
 // Sets up the wxWidgets window layout
 // -----------------------------------------------------------------------------
 void MainWindow::setupLayout()
 {
 	// Create the wxAUI manager & related things
-	aui_mgr_ = new wxAuiManager(this);
-	aui_mgr_->SetArtProvider(new SAuiDockArt(this));
+	aui_mgr_ = new ui::SAuiManager(this);
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
@@ -179,7 +151,7 @@ void MainWindow::setupLayout()
 	stc_tabs_ = new STabCtrl(this, true, true, tabs_condensed ? 27 : 31, true, true);
 
 	// Setup panel info & add panel
-	aui_mgr_->AddPane(stc_tabs_, wxAuiPaneInfo().CenterPane().Name(wxS("editor_area")).PaneBorder(false));
+	aui_mgr_->AddPane(stc_tabs_, wxAuiPaneInfo().CenterPane().Name(wxS("_editor_area")).PaneBorder(false));
 
 	// Create Start Page
 	if (show_start_page)
@@ -328,18 +300,15 @@ void MainWindow::setupLayout()
 			.PaneBorder(false)
 			.Movable(false)
 			.Floatable(false)
-			.Name(wxS("toolbar")));
+			.Name(wxS("_toolbar")));
 
 
 	// -- Status Bar --
 	CreateStatusBar(3);
 
 
-	// Load previously saved perspective string
-	loadLayout();
-
-	// Finalize
-	aui_mgr_->Update();
+	// Load previously saved layout
+	aui_mgr_->loadLayout();
 	Layout();
 
 	// Bind events
@@ -384,8 +353,7 @@ bool MainWindow::exitProgram()
 		return false;
 
 	// Save current layout
-	// main_window_layout = aui_mgr_->SavePerspective();
-	saveLayout();
+	aui_mgr_->saveLayout();
 	ui::saveStateBool(ui::MAINWINDOW_MAXIMIZED, IsMaximized());
 	const wxSize size = GetSize();
 	if (!IsMaximized())
@@ -483,32 +451,22 @@ bool MainWindow::handleAction(string_view id)
 	// View->Archive Manager
 	if (id == "main_showam")
 	{
-		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
-		auto& p_inf = m_mgr->GetPane(wxS("archive_manager"));
-		p_inf.Show(!p_inf.IsShown());
-		m_mgr->Update();
+		aui_mgr_->togglePane("archive_manager");
 		return true;
 	}
 
 	// View->Console
 	if (id == "main_showconsole")
 	{
-		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
-		auto& p_inf = m_mgr->GetPane(wxS("console"));
-		p_inf.Show(!p_inf.IsShown());
-		p_inf.MinSize(FromDIP(wxSize(200, 128)));
-		dynamic_cast<ConsolePanel*>(p_inf.window)->focusInput();
-		m_mgr->Update();
+		if (aui_mgr_->togglePane("console"))
+			dynamic_cast<ConsolePanel*>(aui_mgr_->GetPane(wxS("console")).window)->focusInput();
 		return true;
 	}
 
 	// View->Undo History
 	if (id == "main_showundohistory")
 	{
-		auto  m_mgr = wxAuiManager::GetManager(panel_archivemanager_);
-		auto& p_inf = m_mgr->GetPane(wxS("undo_history"));
-		p_inf.Show(!p_inf.IsShown());
-		m_mgr->Update();
+		aui_mgr_->togglePane("undo_history");
 		return true;
 	}
 

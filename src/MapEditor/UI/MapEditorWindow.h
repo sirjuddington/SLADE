@@ -3,6 +3,11 @@
 #include "General/SActionHandler.h"
 #include "UI/STopWindow.h"
 
+namespace slade::ui
+{
+class SAuiManager;
+}
+
 namespace slade
 {
 class MapCanvas;
@@ -24,10 +29,6 @@ class MapEditorWindow : public STopWindow, public SActionHandler
 public:
 	MapEditorWindow();
 	~MapEditorWindow() override;
-
-	// Layout save/load
-	void loadLayout();
-	void saveLayout();
 
 	void setupMenu();
 	void setupLayout();
@@ -63,6 +64,7 @@ private:
 	UndoManagerHistoryPanel*         panel_undo_history_ = nullptr;
 	wxMenu*                          menu_scripts_       = nullptr;
 	wxChoice*                        view_distance_      = nullptr;
+	ui::SAuiManager*                 aui_mgr_            = nullptr;
 
 	void buildNodes(Archive* wad);
 	void lockMapEntries(bool lock = true) const;

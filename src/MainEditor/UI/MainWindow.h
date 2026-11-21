@@ -3,7 +3,10 @@
 #include "General/SActionHandler.h"
 #include "UI/STopWindow.h"
 
-class wxAuiManager;
+namespace slade::ui
+{
+class SAuiManager;
+}
 
 namespace slade
 {
@@ -19,10 +22,6 @@ public:
 	MainWindow();
 	~MainWindow() override;
 
-	// Layout save/load
-	void loadLayout() const;
-	void saveLayout() const;
-
 	void setupLayout();
 	bool exitProgram();
 
@@ -37,7 +36,7 @@ private:
 	ArchiveManagerPanel*     panel_archivemanager_ = nullptr;
 	UndoManagerHistoryPanel* panel_undo_history_   = nullptr;
 	STabCtrl*                stc_tabs_             = nullptr;
-	wxAuiManager*            aui_mgr_              = nullptr;
+	ui::SAuiManager*         aui_mgr_              = nullptr;
 	PaletteChooser*          palette_chooser_      = nullptr;
 	bool                     opengl_test_done      = false;
 

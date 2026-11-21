@@ -34,8 +34,6 @@
 #include "App.h"
 #include "Archive/Archive.h"
 #include "Archive/ArchiveEntry.h"
-#include "Archive/ArchiveManager.h"
-#include "General/Misc.h"
 #include "General/SAction.h"
 #include "Graphics/Icons.h"
 #include "MapEditor/MapEditor.h"
@@ -46,7 +44,7 @@
 #include "UI/Controls/ConsolePanel.h"
 #include "UI/Controls/STabCtrl.h"
 #include "UI/Layout.h"
-#include "UI/SAuiTabArt.h"
+#include "UI/SAuiManager.h"
 #include "UI/SAuiToolBar.h"
 #include "UI/State.h"
 #include "UI/UI.h"
@@ -64,8 +62,7 @@ using namespace scriptmanager;
 // -----------------------------------------------------------------------------
 namespace
 {
-string docs_url       = "https://slade.readthedocs.io/en/latest";
-int    layout_version = 1;
+string docs_url = "https://slade.readthedocs.io/en/latest";
 } // namespace
 
 
@@ -224,34 +221,6 @@ ScriptManagerWindow::ScriptManagerWindow() :
 }
 
 // -----------------------------------------------------------------------------
-// Loads the previously saved layout file for the window
-// -----------------------------------------------------------------------------
-void ScriptManagerWindow::loadLayout()
-{
-	auto* aui_mgr = wxAuiManager::GetManager(this);
-	auto  layout  = ui::getWindowLayout(id_.c_str());
-
-	for (const auto& component : layout)
-		if (!component.first.empty() && !component.second.empty())
-			aui_mgr->LoadPaneInfo(
-				wxString::FromUTF8(component.second), aui_mgr->GetPane(wxString::FromUTF8(component.first)));
-}
-
-// -----------------------------------------------------------------------------
-// Saves the current window layout to a file
-// -----------------------------------------------------------------------------
-void ScriptManagerWindow::saveLayout()
-{
-	vector<StringPair> layout;
-	auto*              aui_mgr = wxAuiManager::GetManager(this);
-
-	layout.emplace_back("console", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("console"))).utf8_string());
-	layout.emplace_back("scripts_area", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("scripts_area"))).utf8_string());
-
-	ui::setWindowLayout(id_.c_str(), layout);
-}
-
-// -----------------------------------------------------------------------------
 // Sets up the wxWidgets window layout
 // -----------------------------------------------------------------------------
 void ScriptManagerWindow::setupLayout()
@@ -261,8 +230,7 @@ void ScriptManagerWindow::setupLayout()
 		ScriptManagerWindow::Maximize();
 
 	// Create the wxAUI manager & related things
-	auto m_mgr = new wxAuiManager(this);
-	m_mgr->SetArtProvider(new SAuiDockArt(this));
+	aui_mgr_ = new ui::SAuiManager(this);
 	wxAuiPaneInfo p_inf;
 
 	// Set icon
@@ -270,9 +238,9 @@ void ScriptManagerWindow::setupLayout()
 
 	// -- Main Panel --
 	p_inf.CenterPane();
-	p_inf.Name(wxS("editor_area"));
+	p_inf.Name(wxS("_editor_area"));
 	p_inf.PaneBorder(false);
-	m_mgr->AddPane(setupMainArea(), p_inf);
+	aui_mgr_->AddPane(setupMainArea(), p_inf);
 
 	// -- Scripts Panel --
 	p_inf.DefaultPane();
@@ -282,7 +250,7 @@ void ScriptManagerWindow::setupLayout()
 	p_inf.Name(wxS("scripts_area"));
 	p_inf.Show(true);
 	p_inf.Dock();
-	m_mgr->AddPane(setupScriptTreePanel(), p_inf);
+	aui_mgr_->AddPane(setupScriptTreePanel(), p_inf);
 
 	// -- Console Panel --
 	auto panel_console = new ConsolePanel(this, -1);
@@ -296,7 +264,7 @@ void ScriptManagerWindow::setupLayout()
 	p_inf.Show(false);
 	p_inf.Caption(wxS("Console"));
 	p_inf.Name(wxS("console"));
-	m_mgr->AddPane(panel_console, p_inf);
+	aui_mgr_->AddPane(panel_console, p_inf);
 
 	// Setup menu and toolbar
 	setupMenu();
@@ -308,11 +276,9 @@ void ScriptManagerWindow::setupLayout()
 	// Bind events
 	bindEvents();
 
-	// Load previously saved perspective string
-	loadLayout();
+	// Load previously saved layout
+	aui_mgr_->loadLayout();
 
-	// Finalize
-	m_mgr->Update();
 	Layout();
 }
 
@@ -388,15 +354,14 @@ void ScriptManagerWindow::setupMenu()
 // -----------------------------------------------------------------------------
 void ScriptManagerWindow::setupToolbar()
 {
-	auto aui_mgr = wxAuiManager::GetManager(this);
-	toolbar_     = new SAuiToolBar(this, false, true, aui_mgr);
+	toolbar_ = new SAuiToolBar(this, false, true, aui_mgr_);
 
 	// Create toolbar from JSON definition
 	auto toolbar_entry = app::programResource()->entryAtPath("toolbars/script_window.json");
 	toolbar_->loadLayout(toolbar_entry->data().asString());
 
 	// Add toolbar to aui
-	aui_mgr->AddPane(
+	aui_mgr_->AddPane(
 		toolbar_,
 		wxAuiPaneInfo()
 			.ToolbarPane()
@@ -407,7 +372,7 @@ void ScriptManagerWindow::setupToolbar()
 			.PaneBorder(false)
 			.Movable(false)
 			.Floatable(false)
-			.Name(wxS("toolbar")));
+			.Name(wxS("_toolbar")));
 }
 
 // -----------------------------------------------------------------------------
@@ -449,7 +414,7 @@ void ScriptManagerWindow::bindEvents()
 		[this](wxCloseEvent&)
 		{
 			// Save Layout
-			saveLayout();
+			aui_mgr_->saveLayout();
 			ui::saveStateBool(ui::SCRIPTMANAGERWINDOW_MAXIMIZED, IsMaximized());
 			const wxSize size = GetSize();
 			if (!IsMaximized())
@@ -754,22 +719,15 @@ bool ScriptManagerWindow::handleAction(string_view id)
 	// View->Scripts
 	if (id == "scrm_showscripts")
 	{
-		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane(wxS("scripts_area"));
-		p_inf.Show(!p_inf.IsShown());
-		m_mgr->Update();
+		aui_mgr_->togglePane("scripts_area");
 		return true;
 	}
 
 	// View->Console
 	if (id == "scrm_showconsole")
 	{
-		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane(wxS("console"));
-		p_inf.Show(!p_inf.IsShown());
-		p_inf.MinSize(200, 128);
-		dynamic_cast<ConsolePanel*>(p_inf.window)->focusInput();
-		m_mgr->Update();
+		if (aui_mgr_->togglePane("console"))
+			dynamic_cast<ConsolePanel*>(aui_mgr_->GetPane(wxS("console")).window)->focusInput();
 		return true;
 	}
 

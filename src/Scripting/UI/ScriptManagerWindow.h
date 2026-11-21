@@ -13,6 +13,10 @@ namespace scriptmanager
 	enum class ScriptType;
 	struct Script;
 } // namespace scriptmanager
+namespace ui
+{
+	class SAuiManager;
+}
 } // namespace slade
 
 namespace slade
@@ -34,12 +38,9 @@ private:
 	std::map<scriptmanager::ScriptType, wxTreeItemId> editor_script_nodes_;
 
 	// Widgets
-	STabCtrl*   tabs_scripts_ = nullptr;
-	wxTreeCtrl* tree_scripts_ = nullptr;
-
-	// Layout
-	void loadLayout();
-	void saveLayout();
+	STabCtrl*        tabs_scripts_ = nullptr;
+	wxTreeCtrl*      tree_scripts_ = nullptr;
+	ui::SAuiManager* aui_mgr_      = nullptr;
 
 	// Setup
 	void         setupLayout();

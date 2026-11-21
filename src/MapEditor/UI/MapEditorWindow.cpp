@@ -62,6 +62,7 @@
 #include "UI/Dialogs/MapEditorConfigDialog.h"
 #include "UI/Dialogs/RunDialog.h"
 #include "UI/Dialogs/SettingsDialog.h"
+#include "UI/SAuiManager.h"
 #include "UI/SAuiTabArt.h"
 #include "UI/SAuiToolBar.h"
 #include "UI/State.h"
@@ -131,38 +132,7 @@ MapEditorWindow::MapEditorWindow() : STopWindow{ "SLADE", "map" }
 // -----------------------------------------------------------------------------
 MapEditorWindow::~MapEditorWindow()
 {
-	wxAuiManager::GetManager(this)->UnInit();
-}
-
-// -----------------------------------------------------------------------------
-// Loads the previously saved layout file for the window
-// -----------------------------------------------------------------------------
-void MapEditorWindow::loadLayout()
-{
-	auto* aui_mgr = wxAuiManager::GetManager(this);
-	auto  layout  = ui::getWindowLayout(id_.c_str());
-
-	for (const auto& component : layout)
-		if (!component.first.empty() && !component.second.empty())
-			aui_mgr->LoadPaneInfo(
-				wxString::FromUTF8(component.second), aui_mgr->GetPane(wxString::FromUTF8(component.first)));
-}
-
-// -----------------------------------------------------------------------------
-// Saves the current window layout to a file
-// -----------------------------------------------------------------------------
-void MapEditorWindow::saveLayout()
-{
-	vector<StringPair> layout;
-	auto*              aui_mgr = wxAuiManager::GetManager(this);
-
-	layout.emplace_back("console", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("console"))).utf8_string());
-	layout.emplace_back("item_props", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("item_props"))).utf8_string());
-	layout.emplace_back("script_editor", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("script_editor"))).utf8_string());
-	layout.emplace_back("map_checks", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("map_checks"))).utf8_string());
-	layout.emplace_back("undo_history", aui_mgr->SavePaneInfo(aui_mgr->GetPane(wxS("undo_history"))).utf8_string());
-
-	ui::setWindowLayout(id_.c_str(), layout);
+	aui_mgr_->UnInit();
 }
 
 // -----------------------------------------------------------------------------
@@ -254,21 +224,21 @@ void MapEditorWindow::setupMenu()
 void MapEditorWindow::setupLayout()
 {
 	// Create the wxAUI manager & related things
-	auto m_mgr = new wxAuiManager(this);
-	m_mgr->SetArtProvider(new SAuiDockArt(this));
+	aui_mgr_ = new ui::SAuiManager(this);
 	wxAuiPaneInfo p_inf;
 
 	// Map canvas
 	map_canvas_ = new MapCanvas(this, &editContext());
 	p_inf.CenterPane();
-	m_mgr->AddPane(map_canvas_, p_inf);
+	p_inf.Name(wxS("_canvas"));
+	aui_mgr_->AddPane(map_canvas_, p_inf);
 
 	// --- Menus ---
 	setupMenu();
 
 
 	// --- Toolbars ---
-	toolbar_ = new SAuiToolBar(this, false, true, m_mgr);
+	toolbar_ = new SAuiToolBar(this, false, true, aui_mgr_);
 
 	// Load toolbar layout from JSON definition
 	auto toolbar_entry = app::programResource()->entryAtPath("toolbars/map_window.json");
@@ -318,7 +288,7 @@ void MapEditorWindow::setupLayout()
 	toolbar_->createFromLayout();
 
 	// Add toolbar to aui
-	m_mgr->AddPane(
+	aui_mgr_->AddPane(
 		toolbar_,
 		wxAuiPaneInfo()
 			.ToolbarPane()
@@ -328,7 +298,7 @@ void MapEditorWindow::setupLayout()
 			.PaneBorder(false)
 			.Movable(false)
 			.Floatable(false)
-			.Name(wxS("toolbar")));
+			.Name(wxS("_toolbar")));
 
 
 	// Status bar
@@ -350,7 +320,7 @@ void MapEditorWindow::setupLayout()
 	p_inf.Show(false);
 	p_inf.Caption(wxS("Console"));
 	p_inf.Name(wxS("console"));
-	m_mgr->AddPane(panel_console, p_inf);
+	aui_mgr_->AddPane(panel_console, p_inf);
 
 
 	// -- Map Object Properties Panel --
@@ -365,7 +335,7 @@ void MapEditorWindow::setupLayout()
 	p_inf.Show(true);
 	p_inf.Caption(wxS("Item Properties"));
 	p_inf.Name(wxS("item_props"));
-	m_mgr->AddPane(panel_obj_props_, p_inf);
+	aui_mgr_->AddPane(panel_obj_props_, p_inf);
 
 
 	// --- Script Editor Panel ---
@@ -380,7 +350,7 @@ void MapEditorWindow::setupLayout()
 	p_inf.Show(false);
 	p_inf.Caption(wxS("Script Editor"));
 	p_inf.Name(wxS("script_editor"));
-	m_mgr->AddPane(panel_script_editor_, p_inf);
+	aui_mgr_->AddPane(panel_script_editor_, p_inf);
 
 
 	// --- Shape Draw Options Panel ---
@@ -401,8 +371,8 @@ void MapEditorWindow::setupLayout()
 	p_inf.MinSize(msize.x, msize.y);
 	p_inf.Show(false);
 	p_inf.Caption(wxS("Shape Drawing"));
-	p_inf.Name(wxS("shape_draw"));
-	m_mgr->AddPane(panel_shapedraw, p_inf);
+	p_inf.Name(wxS("_shape_draw"));
+	aui_mgr_->AddPane(panel_shapedraw, p_inf);
 
 
 	// --- Object Edit Panel ---
@@ -422,8 +392,8 @@ void MapEditorWindow::setupLayout()
 	p_inf.MinSize(msize.x, msize.y);
 	p_inf.Show(false);
 	p_inf.Caption(wxS("Object Edit"));
-	p_inf.Name(wxS("object_edit"));
-	m_mgr->AddPane(panel_obj_edit_, p_inf);
+	p_inf.Name(wxS("_object_edit"));
+	aui_mgr_->AddPane(panel_obj_edit_, p_inf);
 
 
 	// --- Map Checks Panel ---
@@ -442,7 +412,7 @@ void MapEditorWindow::setupLayout()
 	p_inf.Caption(wxS("Map Checks"));
 	p_inf.Name(wxS("map_checks"));
 	p_inf.Layer(0);
-	m_mgr->AddPane(panel_checks_, p_inf);
+	aui_mgr_->AddPane(panel_checks_, p_inf);
 
 
 	// -- Undo History Panel --
@@ -457,13 +427,11 @@ void MapEditorWindow::setupLayout()
 	p_inf.Name(wxS("undo_history"));
 	p_inf.Show(false);
 	p_inf.Dock();
-	m_mgr->AddPane(panel_undo_history_, p_inf);
+	aui_mgr_->AddPane(panel_undo_history_, p_inf);
 
 
 	// Load previously saved window layout
-	loadLayout();
-
-	m_mgr->Update();
+	aui_mgr_->loadLayout();
 	Layout();
 
 	// Initial focus on the canvas, so shortcuts work
@@ -1265,100 +1233,53 @@ bool MapEditorWindow::handleAction(string_view id)
 	// View->Item Properties
 	if (id == "mapw_showproperties")
 	{
-		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane(wxS("item_props"));
-
-		// Toggle window and focus
-		p_inf.Show(!p_inf.IsShown());
+		aui_mgr_->togglePane("item_props");
 		mapeditor::openObjectProperties(nullptr);
 		map_canvas_->SetFocus();
-
-		p_inf.MinSize(FromDIP(wxSize(256, 256)));
-		m_mgr->Update();
 		return true;
 	}
 
 	// View->Console
 	else if (id == "mapw_showconsole")
 	{
-		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane(wxS("console"));
-
-		// Toggle window and focus
-		if (p_inf.IsShown())
+		if (aui_mgr_->togglePane("console"))
 		{
-			p_inf.Show(false);
-			map_canvas_->SetFocus();
+			if (auto console_panel = dynamic_cast<ConsolePanel*>(aui_mgr_->GetPane(wxS("console")).window))
+				console_panel->focusInput();
 		}
 		else
-		{
-			p_inf.Show(true);
-			p_inf.window->SetFocus();
-			dynamic_cast<ConsolePanel*>(p_inf.window)->focusInput();
-		}
+			map_canvas_->SetFocus();
 
-		p_inf.MinSize(FromDIP(wxSize(200, 128)));
-		m_mgr->Update();
 		return true;
 	}
 
 	// View->Script Editor
 	else if (id == "mapw_showscripteditor")
 	{
-		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane(wxS("script_editor"));
-
-		// Toggle window and focus
-		if (p_inf.IsShown())
+		if (aui_mgr_->togglePane("script_editor", true))
 		{
-			p_inf.Show(false);
+			if (auto script_panel = dynamic_cast<ScriptEditorPanel*>(aui_mgr_->GetPane(wxS("script_editor")).window))
+				script_panel->updateUI();
+		}
+		else
 			map_canvas_->SetFocus();
-		}
-		else if (!game::configuration().scriptLanguage().empty())
-		{
-			p_inf.Show(true);
-			p_inf.window->SetFocus();
-			dynamic_cast<ScriptEditorPanel*>(p_inf.window)->updateUI();
-		}
 
-		p_inf.MinSize(FromDIP(wxSize(200, 128)));
-		m_mgr->Update();
 		return true;
 	}
 
 	// View->Map Checks
 	else if (id == "mapw_showchecks")
 	{
-		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane(wxS("map_checks"));
-
-		// Toggle window and focus
-		if (p_inf.IsShown())
-		{
-			p_inf.Show(false);
+		if (!aui_mgr_->togglePane("map_checks", true))
 			map_canvas_->SetFocus();
-		}
-		else
-		{
-			p_inf.Show(true);
-			p_inf.window->SetFocus();
-		}
 
-		p_inf.MinSize(panel_checks_->GetBestSize());
-		m_mgr->Update();
 		return true;
 	}
 
 	// View->Undo History
 	else if (id == "mapw_showundohistory")
 	{
-		auto  m_mgr = wxAuiManager::GetManager(this);
-		auto& p_inf = m_mgr->GetPane(wxS("undo_history"));
-
-		// Toggle window
-		p_inf.Show(!p_inf.IsShown());
-
-		m_mgr->Update();
+		aui_mgr_->togglePane("undo_history");
 		return true;
 	}
 
@@ -1442,7 +1363,7 @@ void MapEditorWindow::onClose(wxCloseEvent& e)
 	}
 
 	// Save current layout
-	saveLayout();
+	aui_mgr_->saveLayout();
 	const wxSize size = GetSize();
 	if (!IsMaximized())
 		ui::setWindowInfo(this, id_, size.x, size.y, GetPosition().x, GetPosition().y);
