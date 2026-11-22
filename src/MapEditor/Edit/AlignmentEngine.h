@@ -20,11 +20,18 @@ enum class AlignType
 	AlignXY = AlignX | AlignY
 };
 
+enum AlignTarget
+{
+	OverallAlignment,	// Perform overall alignment
+	PerPartAlignment	// Perform alignment per wall part, if possible
+};
+
 class AlignmentEngine {
 public:
 	AlignmentEngine(
 		MapEditContext *context,
-		AlignType align_type);
+		AlignType align_type,
+		AlignTarget align_target = OverallAlignment);
 
 	bool run(Item start_item);
 private:
@@ -36,6 +43,7 @@ private:
 
 	MapEditContext*	context_ = nullptr;
 	AlignType		align_type_;
+	AlignTarget     align_target_;
 
 	// Pending alignment jobs
 	std::queue<AlignmentJob> jobs;

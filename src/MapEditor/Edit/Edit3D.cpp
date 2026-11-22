@@ -485,7 +485,9 @@ void Edit3D::autoAlign(Item start, AlignType align_type) const
 	}
 	context_->beginUndoRecord("Auto Align on " + axis_names, true, false, false);
 
-	AlignmentEngine alignment_engine(context_, align_type);
+	AlignTarget align_target = (
+		offsetsLinked() ? AlignTarget::OverallAlignment : AlignTarget::PerPartAlignment);
+	AlignmentEngine alignment_engine(context_, align_type, align_target);
 	bool success = alignment_engine.run(start);
 
 	// End undo level (abort, if alignment failed)
