@@ -1,4 +1,7 @@
-﻿{
-	"version": 4,
-	"include": [ "cmake/presets_windows.json" ]
+{
+    "version": 4,
+    "include": [
+        "cmake/presets_windows.json",
+        "cmake/presets_linux.json"
+    ]
 }
