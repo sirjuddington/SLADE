@@ -56,7 +56,7 @@ using namespace mapeditor;
 // -----------------------------------------------------------------------------
 static int wrap_texture_offset(int texture_offset, int texture_width);
 
-	
+
 // -----------------------------------------------------------------------------
 //
 // Mechanism Class Declarations
