@@ -1,0 +1,116 @@
+﻿{
+  "version": 4,
+  "configurePresets": [
+    {
+      "name": "linux-base",
+      "description": "Target Linux",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "installDir": "${sourceDir}/out/install/${presetName}",
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "linux-gcc-base",
+      "description": "Target Linux with the GNU Compiler Collection (GCC)",
+      "hidden": true,
+      "inherits": "linux-base"
+    },
+    {
+      "name": "linux-clang-base",
+      "description": "Target Linux with clang",
+      "hidden": true,
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "linux-x64-base",
+      "description": "Target Linux (64-bit)",
+      "hidden": true,
+      "inherits": "linux-base"
+    },
+    {
+      "name": "linux-x86-base",
+      "description": "Target Linux (32-bit)",
+      "hidden": true,
+      "inherits": "linux-base",
+      "cacheVariables": {
+        "CMAKE_C_FLAGS": "-m32",
+        "CMAKE_CXX_FLAGS": "-m32",
+        "CMAKE_EXE_LINKER_FLAGS": "-m32",
+        "CMAKE_SHARED_LINKER_FLAGS": "-m32"
+      }
+    },
+    {
+      "name": "debug",
+      "hidden": true,
+      "description": "Debug build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "hidden": true,
+      "description": "Release build",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "RelWithDebInfo"
+      }
+    },
+    {
+      "name": "linux-gcc-x64-debug",
+      "displayName": "Linux gcc x64 Debug",
+      "description": "Target Linux (64-bit) with the GNU Compiler Collection (GCC). (Debug)",
+      "inherits": ["linux-gcc-base", "linux-x64-base", "debug"]
+    },
+    {
+      "name": "linux-gcc-x64-release",
+      "displayName": "Linux gcc x64 Release",
+      "description": "Target Linux (32-bit) with the GNU Compiler Collection (GCC). (RelWithDebInfo)",
+      "inherits": ["linux-gcc-base", "linux-x64-base", "release"]
+    },
+    {
+      "name": "linux-gcc-x86-debug",
+      "displayName": "Linux gcc x86 Debug",
+      "description": "Target Linux (32-bit) with the GNU Compiler Collection (GCC). (Debug)",
+      "inherits": ["linux-gcc-base", "linux-x86-base", "debug"]
+    },
+    {
+      "name": "linux-gcc-x86-release",
+      "displayName": "Linux gcc x86 Release",
+      "description": "Target Linux (32-bit) with the GNU Compiler Collection (GCC). (RelWithDebInfo)",
+      "inherits": ["linux-gcc-base", "linux-x86-base", "release"]
+    },
+    {
+      "name": "linux-clang-x64-debug",
+      "displayName": "Linux clang x64 Debug",
+      "description": "Target Linux (64-bit) with clang. (Debug)",
+      "inherits": ["linux-clang-base", "linux-x64-base", "debug"]
+    },
+    {
+      "name": "linux-clang-x64-release",
+      "displayName": "Linux clang x64 Release",
+      "description": "Target Linux (32-bit) with clang. (RelWithDebInfo)",
+      "inherits": ["linux-clang-base", "linux-x64-base", "release"]
+    },
+    {
+      "name": "linux-clang-x86-debug",
+      "displayName": "Linux clang x86 Debug",
+      "description": "Target Linux (32-bit) with clang. (Debug)",
+      "inherits": ["linux-clang-base", "linux-x86-base", "debug"]
+    },
+    {
+      "name": "linux-clang-x86-release",
+      "displayName": "Linux clang x86 Release",
+      "description": "Target Linux (32-bit) with clang. (RelWithDebInfo)",
+      "inherits": ["linux-clang-base", "linux-x86-base", "release"]
+    }
+  ]
+}
