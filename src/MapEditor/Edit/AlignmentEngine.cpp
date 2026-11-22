@@ -65,6 +65,10 @@ static int getTopTextureTopHeight(MapEditContext *context, MapLine *line, int te
 // Mechanism Class Declarations
 //
 // -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// Abstract base class for alignment mechanisms
+// -----------------------------------------------------------------------------
 class AbstractAlignmentMechanism {
 public:
 	virtual string getTextureToMatch(MapSide *side) = 0;
@@ -78,11 +82,47 @@ public:
 	virtual void setOffsetY(MapSide *side, int texture_offset) = 0;
 };
 
+// -----------------------------------------------------------------------------
+// Base class for alignment with property-based offset access
+// -----------------------------------------------------------------------------
+class AbstractOffsetPropertyAlignmentMechanism: public AbstractAlignmentMechanism {
+public:
+	AbstractOffsetPropertyAlignmentMechanism(
+		string offset_x_property,
+		string offset_y_property
+	);
+
+	virtual int getOffsetX(MapSide *side);
+	virtual void setOffsetX(MapSide *side, int texture_offset);
+	virtual int getOffsetY(MapSide *side);
+	virtual void setOffsetY(MapSide *side, int texture_offset);
+private:
+	string offset_x_property_;
+	string offset_y_property_;
+};
+
+// -----------------------------------------------------------------------------
+// Base class for generalized property-based alignment
+// -----------------------------------------------------------------------------
+class AbstractPropertyBasedAlignmentMechanism: public AbstractOffsetPropertyAlignmentMechanism {
+public:
+	AbstractPropertyBasedAlignmentMechanism(
+		string texture_property,
+		string offset_x_property,
+		string offset_y_property
+	);
+
+	virtual string getTextureToMatch(MapSide *side);
+	virtual bool matchesTexture(MapSide *side, string texture);
+private:
+	string texture_property_;
+};
+
 
 // -----------------------------------------------------------------------------
 // Mechanism for alignment based on common offset and selection intent
 // -----------------------------------------------------------------------------
-class OverallAlignmentMechanism: public AbstractAlignmentMechanism {
+class OverallAlignmentMechanism: public AbstractOffsetPropertyAlignmentMechanism {
 public:
 	OverallAlignmentMechanism(MapEditContext *context, ItemType wall_type_);
 
@@ -90,12 +130,6 @@ public:
 	virtual bool matchesTexture(MapSide *side, string texture);
 
 	virtual int getTextureTopHeight(MapLine *line, int texture_height);
-
-	virtual int getOffsetX(MapSide *side);
-	virtual void setOffsetX(MapSide *side, int texture_offset);
-
-	virtual int getOffsetY(MapSide *side);
-	virtual void setOffsetY(MapSide *side, int texture_offset);
 protected:
 	MapEditContext	*context_;
 	ItemType		wall_type_;
@@ -104,20 +138,11 @@ protected:
 // -----------------------------------------------------------------------------
 // Mechanism for alignment of individual top offset
 // -----------------------------------------------------------------------------
-class TopAlignmentMechanism: public AbstractAlignmentMechanism {
+class TopAlignmentMechanism: public AbstractPropertyBasedAlignmentMechanism {
 public:
 	TopAlignmentMechanism(MapEditContext *context);
 
-	virtual string getTextureToMatch(MapSide *side);
-	virtual bool matchesTexture(MapSide *side, string texture);
-
 	virtual int getTextureTopHeight(MapLine *line, int texture_height);
-
-	virtual int getOffsetX(MapSide *side);
-	virtual void setOffsetX(MapSide *side, int texture_offset);
-
-	virtual int getOffsetY(MapSide *side);
-	virtual void setOffsetY(MapSide *side, int texture_offset);
 protected:
 	MapEditContext	*context_;
 };
@@ -125,20 +150,11 @@ protected:
 // -----------------------------------------------------------------------------
 // Mechanism for alignment of individual middle offset
 // -----------------------------------------------------------------------------
-class MiddleAlignmentMechanism: public AbstractAlignmentMechanism {
+class MiddleAlignmentMechanism: public AbstractPropertyBasedAlignmentMechanism {
 public:
 	MiddleAlignmentMechanism(MapEditContext *context);
 
-	virtual string getTextureToMatch(MapSide *side);
-	virtual bool matchesTexture(MapSide *side, string texture);
-
 	virtual int getTextureTopHeight(MapLine *line, int texture_height);
-
-	virtual int getOffsetX(MapSide *side);
-	virtual void setOffsetX(MapSide *side, int texture_offset);
-
-	virtual int getOffsetY(MapSide *side);
-	virtual void setOffsetY(MapSide *side, int texture_offset);
 protected:
 	MapEditContext	*context_;
 };
@@ -146,20 +162,11 @@ protected:
 // -----------------------------------------------------------------------------
 // Mechanism for alignment of individual bottom offset
 // -----------------------------------------------------------------------------
-class BottomAlignmentMechanism: public AbstractAlignmentMechanism {
+class BottomAlignmentMechanism: public AbstractPropertyBasedAlignmentMechanism {
 public:
 	BottomAlignmentMechanism(MapEditContext *context);
 
-	virtual string getTextureToMatch(MapSide *side);
-	virtual bool matchesTexture(MapSide *side, string texture);
-
 	virtual int getTextureTopHeight(MapLine *line, int texture_height);
-
-	virtual int getOffsetX(MapSide *side);
-	virtual void setOffsetX(MapSide *side, int texture_offset);
-
-	virtual int getOffsetY(MapSide *side);
-	virtual void setOffsetY(MapSide *side, int texture_offset);
 protected:
 	MapEditContext	*context_;
 };
@@ -441,6 +448,89 @@ static int getTopTextureTopHeight(MapEditContext *context, MapLine *line, int te
 
 // -----------------------------------------------------------------------------
 //
+// AbstractPropertyBasedAlignmentMechanism Class Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// AbstractPropertyBasedAlignmentMechanism class constructor
+// -----------------------------------------------------------------------------
+AbstractOffsetPropertyAlignmentMechanism::AbstractOffsetPropertyAlignmentMechanism(
+		string offset_x_property,
+		string offset_y_property):
+	offset_x_property_(offset_x_property),
+	offset_y_property_(offset_y_property)
+{
+}
+
+// -----------------------------------------------------------------------------
+// Get the X-Offset
+// -----------------------------------------------------------------------------
+int AbstractOffsetPropertyAlignmentMechanism::getOffsetX(MapSide *side)
+{
+	return side->intProperty(offset_x_property_);
+}
+
+// -----------------------------------------------------------------------------
+// Set the X-Offset
+// -----------------------------------------------------------------------------
+void AbstractOffsetPropertyAlignmentMechanism::setOffsetX(MapSide *side, int texture_offset)
+{
+	side->setIntProperty(offset_x_property_, texture_offset);
+}
+
+// -----------------------------------------------------------------------------
+// Get the Y-Offset
+// -----------------------------------------------------------------------------
+int AbstractOffsetPropertyAlignmentMechanism::getOffsetY(MapSide *side)
+{
+	return side->intProperty(offset_y_property_);
+}
+
+// -----------------------------------------------------------------------------
+// Set the Y-Offset
+// -----------------------------------------------------------------------------
+void AbstractOffsetPropertyAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
+{
+	side->setIntProperty(offset_y_property_, texture_offset);
+}
+
+// -----------------------------------------------------------------------------
+//
+// AbstractPropertyBasedAlignmentMechanism Class Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// AbstractPropertyBasedAlignmentMechanism class constructor
+// -----------------------------------------------------------------------------
+AbstractPropertyBasedAlignmentMechanism::AbstractPropertyBasedAlignmentMechanism(
+		string texture_property,
+		string offset_x_property,
+		string offset_y_property):
+	AbstractOffsetPropertyAlignmentMechanism(offset_x_property, offset_y_property),
+	texture_property_(texture_property)
+{
+}
+
+// -----------------------------------------------------------------------------
+// Determine the texture to match from the given side
+// -----------------------------------------------------------------------------
+string AbstractPropertyBasedAlignmentMechanism::getTextureToMatch(MapSide *side)
+{
+	return side->stringProperty(texture_property_);
+}
+
+// -----------------------------------------------------------------------------
+// Determine if the relevant texture of the given side matches the given texture
+// -----------------------------------------------------------------------------
+bool AbstractPropertyBasedAlignmentMechanism::matchesTexture(MapSide *side, string texture)
+{
+	return getTextureToMatch(side) == texture;
+}
+
+// -----------------------------------------------------------------------------
+//
 // OverallAlignmentMechanism Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -449,6 +539,9 @@ static int getTopTextureTopHeight(MapEditContext *context, MapLine *line, int te
 // OverallAlignmentMechanism class constructor
 // -----------------------------------------------------------------------------
 OverallAlignmentMechanism::OverallAlignmentMechanism(MapEditContext *context, ItemType wall_type):
+	AbstractOffsetPropertyAlignmentMechanism(
+		MapSide::PROP_OFFSETX,
+		MapSide::PROP_OFFSETY),
 	context_(context),
 	wall_type_(wall_type)
 {
@@ -497,38 +590,6 @@ int OverallAlignmentMechanism::getTextureTopHeight(MapLine* line, int texture_he
 }
 
 // -----------------------------------------------------------------------------
-// Get the X-Offset
-// -----------------------------------------------------------------------------
-int OverallAlignmentMechanism::getOffsetX(MapSide *side)
-{
-	return side->texOffsetX();
-}
-
-// -----------------------------------------------------------------------------
-// Set the X-Offset
-// -----------------------------------------------------------------------------
-void OverallAlignmentMechanism::setOffsetX(MapSide *side, int texture_offset)
-{
-	side->setIntProperty("offsetx", texture_offset);
-}
-
-// -----------------------------------------------------------------------------
-// Get the Y-Offset
-// -----------------------------------------------------------------------------
-int OverallAlignmentMechanism::getOffsetY(MapSide *side)
-{
-	return side->texOffsetY();
-}
-
-// -----------------------------------------------------------------------------
-// Set the Y-Offset
-// -----------------------------------------------------------------------------
-void OverallAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
-{
-	side->setIntProperty("offsety", texture_offset);
-}
-
-// -----------------------------------------------------------------------------
 //
 // TopAlignmentMechanism Class Functions
 //
@@ -538,25 +599,13 @@ void OverallAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
 // TopAlignmentMechanism class constructor
 // -----------------------------------------------------------------------------
 TopAlignmentMechanism::TopAlignmentMechanism(MapEditContext *context):
+	AbstractPropertyBasedAlignmentMechanism(
+		MapSide::PROP_TEXUPPER,
+		"offsetx_top",
+		"offsety_top"
+	),
 	context_(context)
 {
-}
-
-
-// -----------------------------------------------------------------------------
-// Determine the texture to match from the given side
-// -----------------------------------------------------------------------------
-string TopAlignmentMechanism::getTextureToMatch(MapSide *side)
-{
-	return side->texUpper();
-}
-
-// -----------------------------------------------------------------------------
-// Determine if the relevant texture of the given side matches the given texture
-// -----------------------------------------------------------------------------
-bool TopAlignmentMechanism::matchesTexture(MapSide *side, string texture)
-{
-	return side->texUpper() == texture;
 }
 
 // -----------------------------------------------------------------------------
@@ -565,38 +614,6 @@ bool TopAlignmentMechanism::matchesTexture(MapSide *side, string texture)
 int TopAlignmentMechanism::getTextureTopHeight(MapLine* line, int texture_height)
 {
 	return getTopTextureTopHeight(context_, line, texture_height);
-}
-
-// -----------------------------------------------------------------------------
-// Get the X-Offset
-// -----------------------------------------------------------------------------
-int TopAlignmentMechanism::getOffsetX(MapSide *side)
-{
-	return side->intProperty("offsetx_top");
-}
-
-// -----------------------------------------------------------------------------
-// Set the X-Offset
-// -----------------------------------------------------------------------------
-void TopAlignmentMechanism::setOffsetX(MapSide *side, int texture_offset)
-{
-	side->setIntProperty("offsetx_top", texture_offset);
-}
-
-// -----------------------------------------------------------------------------
-// Get the Y-Offset
-// -----------------------------------------------------------------------------
-int TopAlignmentMechanism::getOffsetY(MapSide *side)
-{
-	return side->intProperty("offsety_top");
-}
-
-// -----------------------------------------------------------------------------
-// Set the Y-Offset
-// -----------------------------------------------------------------------------
-void TopAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
-{
-	side->setIntProperty("offsety_top", texture_offset);
 }
 
 // -----------------------------------------------------------------------------
@@ -609,25 +626,13 @@ void TopAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
 // MiddleAlignmentMechanism class constructor
 // -----------------------------------------------------------------------------
 MiddleAlignmentMechanism::MiddleAlignmentMechanism(MapEditContext *context):
+	AbstractPropertyBasedAlignmentMechanism(
+		MapSide::PROP_TEXMIDDLE,
+		"offsetx_mid",
+		"offsety_mid"
+	),
 	context_(context)
 {
-}
-
-
-// -----------------------------------------------------------------------------
-// Determine the texture to match from the given side
-// -----------------------------------------------------------------------------
-string MiddleAlignmentMechanism::getTextureToMatch(MapSide *side)
-{
-	return side->texMiddle();
-}
-
-// -----------------------------------------------------------------------------
-// Determine if the relevant texture of the given side matches the given texture
-// -----------------------------------------------------------------------------
-bool MiddleAlignmentMechanism::matchesTexture(MapSide *side, string texture)
-{
-	return side->texMiddle() == texture;
 }
 
 // -----------------------------------------------------------------------------
@@ -636,38 +641,6 @@ bool MiddleAlignmentMechanism::matchesTexture(MapSide *side, string texture)
 int MiddleAlignmentMechanism::getTextureTopHeight(MapLine* line, int texture_height)
 {
 	return getMiddleTextureTopHeight(context_, line, texture_height);
-}
-
-// -----------------------------------------------------------------------------
-// Get the X-Offset
-// -----------------------------------------------------------------------------
-int MiddleAlignmentMechanism::getOffsetX(MapSide *side)
-{
-	return side->intProperty("offsetx_mid");
-}
-
-// -----------------------------------------------------------------------------
-// Set the X-Offset
-// -----------------------------------------------------------------------------
-void MiddleAlignmentMechanism::setOffsetX(MapSide *side, int texture_offset)
-{
-	side->setIntProperty("offsetx_mid", texture_offset);
-}
-
-// -----------------------------------------------------------------------------
-// Get the Y-Offset
-// -----------------------------------------------------------------------------
-int MiddleAlignmentMechanism::getOffsetY(MapSide *side)
-{
-	return side->intProperty("offsety_mid");
-}
-
-// -----------------------------------------------------------------------------
-// Set the Y-Offset
-// -----------------------------------------------------------------------------
-void MiddleAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
-{
-	side->setIntProperty("offsety_mid", texture_offset);
 }
 
 // -----------------------------------------------------------------------------
@@ -680,25 +653,13 @@ void MiddleAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
 // BottomAlignmentMechanism class constructor
 // -----------------------------------------------------------------------------
 BottomAlignmentMechanism::BottomAlignmentMechanism(MapEditContext *context):
+	AbstractPropertyBasedAlignmentMechanism(
+		MapSide::PROP_TEXLOWER,
+		"offsetx_bottom",
+		"offsety_bottom"
+	),
 	context_(context)
 {
-}
-
-
-// -----------------------------------------------------------------------------
-// Determine the texture to match from the given side
-// -----------------------------------------------------------------------------
-string BottomAlignmentMechanism::getTextureToMatch(MapSide *side)
-{
-	return side->texLower();
-}
-
-// -----------------------------------------------------------------------------
-// Determine if the relevant texture of the given side matches the given texture
-// -----------------------------------------------------------------------------
-bool BottomAlignmentMechanism::matchesTexture(MapSide *side, string texture)
-{
-	return side->texLower() == texture;
 }
 
 // -----------------------------------------------------------------------------
@@ -707,36 +668,4 @@ bool BottomAlignmentMechanism::matchesTexture(MapSide *side, string texture)
 int BottomAlignmentMechanism::getTextureTopHeight(MapLine* line, int texture_height)
 {
 	return getBottomTextureTopHeight(context_, line);
-}
-
-// -----------------------------------------------------------------------------
-// Get the X-Offset
-// -----------------------------------------------------------------------------
-int BottomAlignmentMechanism::getOffsetX(MapSide *side)
-{
-	return side->intProperty("offsetx_bottom");
-}
-
-// -----------------------------------------------------------------------------
-// Set the X-Offset
-// -----------------------------------------------------------------------------
-void BottomAlignmentMechanism::setOffsetX(MapSide *side, int texture_offset)
-{
-	side->setIntProperty("offsetx_bottom", texture_offset);
-}
-
-// -----------------------------------------------------------------------------
-// Get the Y-Offset
-// -----------------------------------------------------------------------------
-int BottomAlignmentMechanism::getOffsetY(MapSide *side)
-{
-	return side->intProperty("offsety_bottom");
-}
-
-// -----------------------------------------------------------------------------
-// Set the Y-Offset
-// -----------------------------------------------------------------------------
-void BottomAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
-{
-	side->setIntProperty("offsety_bottom", texture_offset);
 }
