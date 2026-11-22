@@ -76,35 +76,42 @@ public:
 
 	virtual int getTextureTopHeight(MapLine *line, int texture_height) = 0;
 
+	// Offset getters and setters
+	// Note that these must return and accept the total offset
+	// (i.e. in case of per-part-offset, the per-part-offset plus
+	// the general offset)
 	virtual int getOffsetX(MapSide *side) = 0;
 	virtual void setOffsetX(MapSide *side, int texture_offset) = 0;
 	virtual int getOffsetY(MapSide *side) = 0;
 	virtual void setOffsetY(MapSide *side, int texture_offset) = 0;
 };
 
+
 // -----------------------------------------------------------------------------
-// Base class for alignment with property-based offset access
+// Mechanism for alignment based on common offset and selection intent
 // -----------------------------------------------------------------------------
-class AbstractOffsetPropertyAlignmentMechanism: public AbstractAlignmentMechanism {
+class OverallAlignmentMechanism: public AbstractAlignmentMechanism {
 public:
-	AbstractOffsetPropertyAlignmentMechanism(
-		string offset_x_property,
-		string offset_y_property
-	);
+	OverallAlignmentMechanism(MapEditContext *context, ItemType wall_type_);
+
+	virtual string getTextureToMatch(MapSide *side);
+	virtual bool matchesTexture(MapSide *side, string texture);
+
+	virtual int getTextureTopHeight(MapLine *line, int texture_height);
 
 	virtual int getOffsetX(MapSide *side);
 	virtual void setOffsetX(MapSide *side, int texture_offset);
 	virtual int getOffsetY(MapSide *side);
 	virtual void setOffsetY(MapSide *side, int texture_offset);
-private:
-	string offset_x_property_;
-	string offset_y_property_;
+protected:
+	MapEditContext	*context_;
+	ItemType		wall_type_;
 };
 
 // -----------------------------------------------------------------------------
 // Base class for generalized property-based alignment
 // -----------------------------------------------------------------------------
-class AbstractPropertyBasedAlignmentMechanism: public AbstractOffsetPropertyAlignmentMechanism {
+class AbstractPropertyBasedAlignmentMechanism: public AbstractAlignmentMechanism {
 public:
 	AbstractPropertyBasedAlignmentMechanism(
 		string texture_property,
@@ -114,25 +121,15 @@ public:
 
 	virtual string getTextureToMatch(MapSide *side);
 	virtual bool matchesTexture(MapSide *side, string texture);
+
+	virtual int getOffsetX(MapSide *side);
+	virtual void setOffsetX(MapSide *side, int texture_offset);
+	virtual int getOffsetY(MapSide *side);
+	virtual void setOffsetY(MapSide *side, int texture_offset);
 private:
 	string texture_property_;
-};
-
-
-// -----------------------------------------------------------------------------
-// Mechanism for alignment based on common offset and selection intent
-// -----------------------------------------------------------------------------
-class OverallAlignmentMechanism: public AbstractOffsetPropertyAlignmentMechanism {
-public:
-	OverallAlignmentMechanism(MapEditContext *context, ItemType wall_type_);
-
-	virtual string getTextureToMatch(MapSide *side);
-	virtual bool matchesTexture(MapSide *side, string texture);
-
-	virtual int getTextureTopHeight(MapLine *line, int texture_height);
-protected:
-	MapEditContext	*context_;
-	ItemType		wall_type_;
+	string offset_x_property_;
+	string offset_y_property_;
 };
 
 // -----------------------------------------------------------------------------
@@ -448,89 +445,6 @@ static int getTopTextureTopHeight(MapEditContext *context, MapLine *line, int te
 
 // -----------------------------------------------------------------------------
 //
-// AbstractPropertyBasedAlignmentMechanism Class Functions
-//
-// -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-// AbstractPropertyBasedAlignmentMechanism class constructor
-// -----------------------------------------------------------------------------
-AbstractOffsetPropertyAlignmentMechanism::AbstractOffsetPropertyAlignmentMechanism(
-		string offset_x_property,
-		string offset_y_property):
-	offset_x_property_(offset_x_property),
-	offset_y_property_(offset_y_property)
-{
-}
-
-// -----------------------------------------------------------------------------
-// Get the X-Offset
-// -----------------------------------------------------------------------------
-int AbstractOffsetPropertyAlignmentMechanism::getOffsetX(MapSide *side)
-{
-	return side->intProperty(offset_x_property_);
-}
-
-// -----------------------------------------------------------------------------
-// Set the X-Offset
-// -----------------------------------------------------------------------------
-void AbstractOffsetPropertyAlignmentMechanism::setOffsetX(MapSide *side, int texture_offset)
-{
-	side->setIntProperty(offset_x_property_, texture_offset);
-}
-
-// -----------------------------------------------------------------------------
-// Get the Y-Offset
-// -----------------------------------------------------------------------------
-int AbstractOffsetPropertyAlignmentMechanism::getOffsetY(MapSide *side)
-{
-	return side->intProperty(offset_y_property_);
-}
-
-// -----------------------------------------------------------------------------
-// Set the Y-Offset
-// -----------------------------------------------------------------------------
-void AbstractOffsetPropertyAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
-{
-	side->setIntProperty(offset_y_property_, texture_offset);
-}
-
-// -----------------------------------------------------------------------------
-//
-// AbstractPropertyBasedAlignmentMechanism Class Functions
-//
-// -----------------------------------------------------------------------------
-
-// -----------------------------------------------------------------------------
-// AbstractPropertyBasedAlignmentMechanism class constructor
-// -----------------------------------------------------------------------------
-AbstractPropertyBasedAlignmentMechanism::AbstractPropertyBasedAlignmentMechanism(
-		string texture_property,
-		string offset_x_property,
-		string offset_y_property):
-	AbstractOffsetPropertyAlignmentMechanism(offset_x_property, offset_y_property),
-	texture_property_(texture_property)
-{
-}
-
-// -----------------------------------------------------------------------------
-// Determine the texture to match from the given side
-// -----------------------------------------------------------------------------
-string AbstractPropertyBasedAlignmentMechanism::getTextureToMatch(MapSide *side)
-{
-	return side->stringProperty(texture_property_);
-}
-
-// -----------------------------------------------------------------------------
-// Determine if the relevant texture of the given side matches the given texture
-// -----------------------------------------------------------------------------
-bool AbstractPropertyBasedAlignmentMechanism::matchesTexture(MapSide *side, string texture)
-{
-	return getTextureToMatch(side) == texture;
-}
-
-// -----------------------------------------------------------------------------
-//
 // OverallAlignmentMechanism Class Functions
 //
 // -----------------------------------------------------------------------------
@@ -539,9 +453,6 @@ bool AbstractPropertyBasedAlignmentMechanism::matchesTexture(MapSide *side, stri
 // OverallAlignmentMechanism class constructor
 // -----------------------------------------------------------------------------
 OverallAlignmentMechanism::OverallAlignmentMechanism(MapEditContext *context, ItemType wall_type):
-	AbstractOffsetPropertyAlignmentMechanism(
-		MapSide::PROP_OFFSETX,
-		MapSide::PROP_OFFSETY),
 	context_(context),
 	wall_type_(wall_type)
 {
@@ -587,6 +498,109 @@ int OverallAlignmentMechanism::getTextureTopHeight(MapLine* line, int texture_he
 		default:
 		case ItemType::WallTop: return getTopTextureTopHeight(context_, line, texture_height);
 	}
+}
+
+// -----------------------------------------------------------------------------
+// Get the X-Offset
+// -----------------------------------------------------------------------------
+int OverallAlignmentMechanism::getOffsetX(MapSide *side)
+{
+	return side->texOffsetX();
+}
+
+// -----------------------------------------------------------------------------
+// Set the X-Offset
+// -----------------------------------------------------------------------------
+void OverallAlignmentMechanism::setOffsetX(MapSide *side, int texture_offset)
+{
+	side->setTexOffsetX(texture_offset);
+}
+
+// -----------------------------------------------------------------------------
+// Get the Y-Offset
+// -----------------------------------------------------------------------------
+int OverallAlignmentMechanism::getOffsetY(MapSide *side)
+{
+	return side->texOffsetY();
+}
+
+// -----------------------------------------------------------------------------
+// Set the Y-Offset
+// -----------------------------------------------------------------------------
+void OverallAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
+{
+	side->setTexOffsetY(texture_offset);
+}
+
+// -----------------------------------------------------------------------------
+//
+// AbstractPropertyBasedAlignmentMechanism Class Functions
+//
+// -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+// AbstractPropertyBasedAlignmentMechanism class constructor
+// -----------------------------------------------------------------------------
+AbstractPropertyBasedAlignmentMechanism::AbstractPropertyBasedAlignmentMechanism(
+		string texture_property,
+		string offset_x_property,
+		string offset_y_property):
+	texture_property_(texture_property),
+	offset_x_property_(offset_x_property),
+	offset_y_property_(offset_y_property)
+{
+}
+
+// -----------------------------------------------------------------------------
+// Get the X-Offset
+// -----------------------------------------------------------------------------
+int AbstractPropertyBasedAlignmentMechanism::getOffsetX(MapSide *side)
+{
+	// We need to correct for the basic texture X-offset
+	return side->intProperty(offset_x_property_) + side->texOffsetX();
+}
+
+// -----------------------------------------------------------------------------
+// Set the X-Offset
+// -----------------------------------------------------------------------------
+void AbstractPropertyBasedAlignmentMechanism::setOffsetX(MapSide *side, int texture_offset)
+{
+	// We need to correct for the basic texture X-offset
+	side->setIntProperty(offset_x_property_, texture_offset - side->texOffsetX());
+}
+
+// -----------------------------------------------------------------------------
+// Get the Y-Offset
+// -----------------------------------------------------------------------------
+int AbstractPropertyBasedAlignmentMechanism::getOffsetY(MapSide *side)
+{
+	// We need to correct for the basic texture Y-offset
+	return side->intProperty(offset_y_property_) + side->texOffsetY();
+}
+
+// -----------------------------------------------------------------------------
+// Set the Y-Offset
+// -----------------------------------------------------------------------------
+void AbstractPropertyBasedAlignmentMechanism::setOffsetY(MapSide *side, int texture_offset)
+{
+	// We need to correct for the basic texture Y-offset
+	side->setIntProperty(offset_y_property_, texture_offset - side->texOffsetY());
+}
+
+// -----------------------------------------------------------------------------
+// Determine the texture to match from the given side
+// -----------------------------------------------------------------------------
+string AbstractPropertyBasedAlignmentMechanism::getTextureToMatch(MapSide *side)
+{
+	return side->stringProperty(texture_property_);
+}
+
+// -----------------------------------------------------------------------------
+// Determine if the relevant texture of the given side matches the given texture
+// -----------------------------------------------------------------------------
+bool AbstractPropertyBasedAlignmentMechanism::matchesTexture(MapSide *side, string texture)
+{
+	return getTextureToMatch(side) == texture;
 }
 
 // -----------------------------------------------------------------------------
