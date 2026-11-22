@@ -47,16 +47,12 @@ private:
 	void alignY(const AlignmentJob& job, ItemType wall_type, int first_tex_top_height, int texture_height);
 
 	// Helper functions
-	int  getTextureTopHeight(
-		const MapLine* first_line,
-		ItemType wall_type,
-		int tex_height) const;
 	void enqueueConnectedLines(
-		const MapVertex* common_vertex,
-		int tex_offset_x);
+		const MapVertex*	common_vertex,
+		int 				tex_offset_x);
 	void enqueueSide(
-		MapSide*                  side,
-		const MapVertex*          common_vertex,
-		int                       tex_offset_x);
+		MapSide*            side,
+		const MapVertex*    common_vertex,
+		int                 tex_offset_x);
 };
 }; // namespace slade::mapeditor
