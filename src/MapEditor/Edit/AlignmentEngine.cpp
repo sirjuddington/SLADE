@@ -55,6 +55,9 @@ using namespace mapeditor;
 //
 // -----------------------------------------------------------------------------
 static int wrap_texture_offset(int texture_offset, int texture_width);
+static int getBottomTextureTopHeight(MapEditContext *context, MapLine *line);
+static int getMiddleTextureTopHeight(MapEditContext *context, MapLine *line, int texture_height);
+static int getTopTextureTopHeight(MapEditContext *context, MapLine *line, int texture_height);
 
 
 // -----------------------------------------------------------------------------
@@ -296,6 +299,51 @@ static int wrap_texture_offset(int texture_offset, int texture_width)
 }
 
 // -----------------------------------------------------------------------------
+// Determine the top height of the bottom wall
+// -----------------------------------------------------------------------------
+static int getBottomTextureTopHeight(MapEditContext *context, MapLine *line)
+{
+	// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
+	// Otherwise: Top of texture is at the highest floor
+	const bool unpegged = game::configuration().lineBasicFlagSet(
+		"dontpegbottom", line, context->mapDesc().format);
+	if (unpegged)
+		return line->highestCeiling();
+	else
+		return line->highestFloor();
+}
+
+// -----------------------------------------------------------------------------
+// Determine the top height of the middle wall
+// -----------------------------------------------------------------------------
+static int getMiddleTextureTopHeight(MapEditContext *context, MapLine *line, int texture_height)
+{
+	// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
+	// Otherwise: Top of texture is at the lowest ceiling
+	const bool unpegged = game::configuration().lineBasicFlagSet(
+		"dontpegbottom", line, context->mapDesc().format);
+	if (unpegged)
+		return line->highestFloor() + texture_height;
+	else
+		return line->lowestCeiling();
+}
+
+// -----------------------------------------------------------------------------
+// Determine the top height of the top wall
+// -----------------------------------------------------------------------------
+static int getTopTextureTopHeight(MapEditContext *context, MapLine *line, int texture_height)
+{
+	// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
+	// Otherwise: Top of texture is at lowest ceiling plus texture height
+	const bool unpegged = game::configuration().lineBasicFlagSet(
+		"dontpegtop", line, context->mapDesc().format);
+	if (unpegged)
+		return line->highestCeiling();
+	else
+		return line->lowestCeiling() + texture_height;
+}
+
+// -----------------------------------------------------------------------------
 //
 // CentralMechanism Class Functions
 //
@@ -338,45 +386,14 @@ bool OverallAlignmentMechanism::matchesTexture(MapSide *side, string texture)
 		 || side->texLower() == texture);
 }
 
-int OverallAlignmentMechanism::getTextureTopHeight(MapLine* line, int tex_height)
+int OverallAlignmentMechanism::getTextureTopHeight(MapLine* line, int texture_height)
 {
 	switch (wall_type_)
 	{
-		case ItemType::WallBottom:
-		{
-			const bool unpegged = game::configuration().lineBasicFlagSet(
-				"dontpegbottom", line, context_->mapDesc().format);
-			// If the "lower unpegged" flag is set: Top of texture is at the highest ceiling
-			// Otherwise: Top of texture is at the highest floor
-			if (unpegged)
-				return line->highestCeiling();
-			else
-				return line->highestFloor();
-		}
-		case ItemType::WallMiddle:
-		{
-			const bool unpegged = game::configuration().lineBasicFlagSet(
-				"dontpegbottom", line, context_->mapDesc().format);
-			// If the "lower unpegged" flag is set: Top of texture is at the highest floor plus texture height
-			// Otherwise: Top of texture is at the lowest ceiling
-			if (unpegged)
-				return line->highestFloor() + tex_height;
-			else
-				return line->lowestCeiling();
-		}
+		case ItemType::WallBottom: return getBottomTextureTopHeight(context_, line);
+		case ItemType::WallMiddle: return getMiddleTextureTopHeight(context_, line, texture_height);
 		default:
-		case ItemType::WallTop:
-		{
-			// wallType == ItemType::WallTop
-			// If the "upper unpegged" flag is set: Top of texture is at the highest ceiling
-			// Otherwise: Top of texture is at lowest ceiling plus texture height
-			const bool unpegged = game::configuration().lineBasicFlagSet(
-				"dontpegtop", line, context_->mapDesc().format);
-			if (unpegged)
-				return line->highestCeiling();
-			else
-				return line->lowestCeiling() + tex_height;
-		}
+		case ItemType::WallTop: return getTopTextureTopHeight(context_, line, texture_height);
 	}
 }
 
