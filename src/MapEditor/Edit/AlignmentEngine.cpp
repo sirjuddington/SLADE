@@ -62,14 +62,25 @@ static int wrap_texture_offset(int texture_offset, int texture_width);
 // Mechanism Class Declarations
 //
 // -----------------------------------------------------------------------------
-class OverallAlignmentMechanism {
+class AbstractAlignmentMechanism {
+public:
+	virtual string getTextureToMatch(MapSide *side) = 0;
+	virtual bool matchesTexture(MapSide *side, string texture) = 0;
+
+	virtual int getTextureTopHeight(MapLine *line, int texture_height) = 0;
+
+	virtual void setOffsetX(MapSide *side, int texture_offset) = 0;
+	virtual void setOffsetY(MapSide *side, int texture_offset) = 0;
+};
+
+class OverallAlignmentMechanism: public AbstractAlignmentMechanism {
 public:
 	OverallAlignmentMechanism(MapEditContext *context, ItemType wall_type_);
 
-	string getTextureToMatch(MapSide *side);
-	bool matchesTexture(MapSide *side, string texture);
+	virtual string getTextureToMatch(MapSide *side);
+	virtual bool matchesTexture(MapSide *side, string texture);
 
-	int getTextureTopHeight(MapLine *line, int texture_height);
+	virtual int getTextureTopHeight(MapLine *line, int texture_height);
 
 	int getOffsetX(MapSide *side);
 	void setOffsetX(MapSide *side, int texture_offset);
@@ -113,7 +124,7 @@ bool AlignmentEngine::run(Item start)
 	if (!first_side)
 		return false;
 
-	std::unique_ptr<OverallAlignmentMechanism> mechanism(new OverallAlignmentMechanism(context_, start.type));
+	std::unique_ptr<AbstractAlignmentMechanism> mechanism(new OverallAlignmentMechanism(context_, start.type));
 
 	// Get texture to match
 	const string tex = mechanism->getTextureToMatch(first_side);
