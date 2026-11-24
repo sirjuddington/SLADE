@@ -64,7 +64,7 @@ using namespace game;
 EXTERN_CVAR(String, game_configuration)
 EXTERN_CVAR(String, port_configuration)
 CVAR(Bool, debug_configuration, false, CVar::Flag::Save)
-namespace slade::game
+namespace
 {
 Configuration config_current;
 
@@ -78,7 +78,7 @@ struct ParsedJsonEntry
 	ParsedJsonEntry(const ArchiveEntry& entry) : entry(&entry) { parsed_json = jsonutil::parse(entry.data()); }
 };
 vector<ParsedJsonEntry> parsed_json_entries;
-} // namespace slade::game
+} // namespace
 
 
 // -----------------------------------------------------------------------------

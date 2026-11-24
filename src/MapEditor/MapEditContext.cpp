@@ -77,7 +77,6 @@
 #include "SLADEMap/MapObjectList/LineList.h"
 #include "SLADEMap/MapObjectList/SectorList.h"
 #include "SLADEMap/MapObjectList/ThingList.h"
-#include "SLADEMap/MapSpecials/MapSpecials.h"
 #include "SLADEMap/SLADEMap.h"
 #include "UI/MapCanvas.h"
 #include "UI/MapEditorWindow.h"
@@ -646,9 +645,9 @@ bool MapEditContext::openMap(const MapDesc& map)
 
 		// Set sky texture for 3d renderer
 		auto minfmap = game::configuration().mapInfoMap(map_->mapName());
-		auto mconf = game::configuration().mapConf(map_->mapName());
-		auto sky1 = !minfmap.sky1.empty() ? minfmap.sky1 : mconf.sky1;
-		auto sky2 = !minfmap.sky2.empty() ? minfmap.sky2 : mconf.sky2;
+		auto mconf   = game::configuration().mapConf(map_->mapName());
+		auto sky1    = !minfmap.sky1.empty() ? minfmap.sky1 : mconf.sky1;
+		auto sky2    = !minfmap.sky2.empty() ? minfmap.sky2 : mconf.sky2;
 		renderer_->renderer3D().setSkyTexture(sky1, sky2);
 	}
 
@@ -2109,7 +2108,6 @@ void MapEditContext::updateInfoOverlay3d()
 // -----------------------------------------------------------------------------
 void MapEditContext::drawInfoOverlay(gl::draw2d::Context& dc, float alpha) const
 {
-	auto size = dc.view->size();
 	switch (edit_mode_)
 	{
 	case Mode::Vertices: info_vertex_->draw(dc, alpha); return;

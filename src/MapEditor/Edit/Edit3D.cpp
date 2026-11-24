@@ -38,7 +38,6 @@
 #include "MapEditor/MapEditContext.h"
 #include "MapEditor/MapEditor.h"
 #include "MapEditor/Renderer/Renderer.h"
-#include "MapEditor/UndoSteps.h"
 #include "SLADEMap/MapObject/MapLine.h"
 #include "SLADEMap/MapObject/MapSector.h"
 #include "SLADEMap/MapObject/MapSide.h"
@@ -485,10 +484,9 @@ void Edit3D::autoAlign(Item start, AlignType align_type) const
 	}
 	context_->beginUndoRecord("Auto Align on " + axis_names, true, false, false);
 
-	AlignTarget align_target = (
-		offsetsLinked() ? AlignTarget::OverallAlignment : AlignTarget::PerPartAlignment);
+	auto            align_target = (offsetsLinked() ? AlignTarget::OverallAlignment : AlignTarget::PerPartAlignment);
 	AlignmentEngine alignment_engine(context_, align_type, align_target);
-	bool success = alignment_engine.run(start);
+	bool            success = alignment_engine.run(start);
 
 	// End undo level (abort, if alignment failed)
 	context_->endUndoRecord(success);

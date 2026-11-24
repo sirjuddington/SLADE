@@ -1,8 +1,6 @@
 ﻿#pragma once
 
-#include "Args.h"
 #include "Game/MapInfo.h"
-#include "General/JsonFwd.h"
 #include "General/MapFormat.h"
 #include "Utility/PropertyList.h"
 
@@ -190,13 +188,13 @@ public:
 	bool   sectorMBF21AltDamageMode(int type) const;
 	bool   sectorMBF21KillGroundedMonsters(int type) const;
 	int    boomSectorType(
-		   int  base,
-		   int  damage,
-		   bool secret,
-		   bool friction,
-		   bool pushpull,
-		   bool alt_damage,
-		   bool kill_grounded) const;
+		int  base,
+		int  damage,
+		bool secret,
+		bool friction,
+		bool pushpull,
+		bool alt_damage,
+		bool kill_grounded) const;
 
 	// Defaults
 	string defaultString(map::ObjectType type, const string& property) const;
