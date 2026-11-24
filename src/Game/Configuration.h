@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Args.h"
+#include "Game/MapInfo.h"
 #include "General/JsonFwd.h"
 #include "General/MapFormat.h"
 #include "Utility/PropertyList.h"
@@ -99,7 +100,9 @@ public:
 
 	unsigned      nMapNames() const { return maps_.size(); }
 	const string& mapName(unsigned index);
-	MapConf       mapInfo(string_view mapname);
+	MapConf       mapConf(string_view mapname);
+
+	const MapInfo::Map& mapInfoMap(string_view mapName);
 
 	// General Accessors
 	const std::map<int, ActionSpecial>& allActionSpecials() const { return action_specials_; }

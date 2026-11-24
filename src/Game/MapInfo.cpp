@@ -70,7 +70,7 @@ void MapInfo::clear(bool maps, bool editor_nums)
 MapInfo::Map& MapInfo::getMap(string_view name)
 {
 	for (auto& map : maps_)
-		if (map.entry_name == name)
+		if (strutil::equalCI(map.entry_name, name))
 			return map;
 
 	return default_map_;
@@ -82,7 +82,7 @@ MapInfo::Map& MapInfo::getMap(string_view name)
 bool MapInfo::addOrUpdateMap(const Map& map)
 {
 	for (auto& m : maps_)
-		if (m.entry_name == map.entry_name)
+		if (strutil::equalCI(map.entry_name, map.entry_name))
 		{
 			m = map;
 			return true;
@@ -429,20 +429,7 @@ bool MapInfo::parseZMap(Tokenizer& tz, string_view type)
 	if (type == "map")
 	{
 		log::info(2, "Parsed ZMapInfo Map {} ({}) successfully", map.entry_name, map.name);
-
-		// Update existing map
-		bool updated = false;
-		for (auto& m : maps_)
-			if (m.entry_name == map.entry_name)
-			{
-				m       = map;
-				updated = true;
-				break;
-			}
-
-		// Add if it didn't exist
-		if (!updated)
-			maps_.push_back(map);
+		addOrUpdateMap(map);
 	}
 	else if (type == "defaultmap")
 		default_map_ = map;

@@ -644,8 +644,11 @@ bool MapEditContext::openMap(const MapDesc& map)
 			renderer_->setCameraThing(pstart);
 
 		// Set sky texture for 3d renderer
-		auto minf = game::configuration().mapInfo(map_->mapName());
-		renderer_->renderer3D().setSkyTexture(minf.sky1, minf.sky2);
+		auto minfmap = game::configuration().mapInfoMap(map_->mapName());
+		auto mconf = game::configuration().mapConf(map_->mapName());
+		auto sky1 = !minfmap.sky1.empty() ? minfmap.sky1 : mconf.sky1;
+		auto sky2 = !minfmap.sky2.empty() ? minfmap.sky2 : mconf.sky2;
+		renderer_->renderer3D().setSkyTexture(sky1, sky2);
 	}
 
 	edit_3d_->setLinked(true, true);
