@@ -349,6 +349,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	textures_tree_view_->GetMainWindow()->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTreeViewKeyDown, this);
 	textures_tree_view_->Bind(wxEVT_DATAVIEW_ITEM_CONTEXT_MENU, &TextureEditorPanel::onTreeViewRightClick, this);
 	list_patches_->Bind(wxEVT_DATAVIEW_SELECTION_CHANGED, &TextureEditorPanel::onPatchSelectionChanged, this);
+	list_patches_->Bind(wxEVT_KEY_DOWN, &TextureEditorPanel::onTexCanvasKeyDown, this);
 	tex_canvas_->window()->Bind(wxEVT_LEFT_DOWN, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas_->window()->Bind(wxEVT_LEFT_DCLICK, &TextureEditorPanel::onTexCanvasMouseEvent, this);
 	tex_canvas_->window()->Bind(wxEVT_LEFT_UP, &TextureEditorPanel::onTexCanvasMouseEvent, this);
@@ -1967,34 +1968,38 @@ void TextureEditorPanel::onTexCanvasKeyDown(wxKeyEvent& e)
 	int  x_movement = 0;
 	int  y_movement = 0;
 	bool handled    = false;
+	bool on_canvas  = e.GetEventObject() == tex_canvas_->window();
 	for (const auto& name : binds)
 	{
-		// Move patch left
-		if (name == "txed_patch_left")
-			x_movement = -1;
-		else if (name == "txed_patch_left8")
-			x_movement = -8;
+		if (on_canvas)
+		{
+			// Move patch left
+			if (name == "txed_patch_left")
+				x_movement = -1;
+			else if (name == "txed_patch_left8")
+				x_movement = -8;
 
-		// Move patch up
-		else if (name == "txed_patch_up")
-			y_movement = -1;
-		else if (name == "txed_patch_up8")
-			y_movement = -8;
+			// Move patch up
+			else if (name == "txed_patch_up")
+				y_movement = -1;
+			else if (name == "txed_patch_up8")
+				y_movement = -8;
 
-		// Move patch right
-		else if (name == "txed_patch_right")
-			x_movement = 1;
-		else if (name == "txed_patch_right8")
-			x_movement = 8;
+			// Move patch right
+			else if (name == "txed_patch_right")
+				x_movement = 1;
+			else if (name == "txed_patch_right8")
+				x_movement = 8;
 
-		// Move patch down
-		else if (name == "txed_patch_down")
-			y_movement = 1;
-		else if (name == "txed_patch_down8")
-			y_movement = 8;
+			// Move patch down
+			else if (name == "txed_patch_down")
+				y_movement = 1;
+			else if (name == "txed_patch_down8")
+				y_movement = 8;
+		}
 
 		// Add patch
-		else if (name == "txed_patch_add")
+		if (name == "txed_patch_add")
 		{
 			addPatch();
 			handled = true;
