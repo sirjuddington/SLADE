@@ -306,9 +306,9 @@ const string& Configuration::mapName(unsigned index)
 }
 
 // -----------------------------------------------------------------------------
-// Returns map info for the map matching [name]
+// Returns map conf for the map matching [name]
 // -----------------------------------------------------------------------------
-Configuration::MapConf Configuration::mapInfo(string_view mapname)
+Configuration::MapConf Configuration::mapConf(string_view mapname)
 {
 	for (auto& map : maps_)
 	{
@@ -320,6 +320,14 @@ Configuration::MapConf Configuration::mapInfo(string_view mapname)
 		return maps_[0];
 	else
 		return {};
+}
+
+// -----------------------------------------------------------------------------
+// Returns map info for the map matching [name]
+// -----------------------------------------------------------------------------
+const MapInfo::Map& Configuration::mapInfoMap(string_view mapName)
+{
+	return map_info_->getMap(mapName);
 }
 
 // -----------------------------------------------------------------------------
