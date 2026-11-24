@@ -18,6 +18,7 @@ class BrowserCanvas;
 } // namespace slade
 namespace slade::ui
 {
+class GridControl;
 class ZoomControl;
 class Splitter;
 } // namespace slade::ui
@@ -77,6 +78,7 @@ private:
 	wxScrollBar*        tex_browser_scrollbar_ = nullptr;
 	ui::ZoomControl*    zc_zoom_               = nullptr;
 	TextureXList*       tex_list_browsing_     = nullptr;
+	ui::GridControl*    grid_control_          = nullptr;
 
 	// Offsets panel
 	wxPanel*     panel_offsets_      = nullptr;
@@ -156,5 +158,7 @@ private:
 	void onPatchTableTextureDClick(wxCommandEvent& e);
 	void onTextFilterChanged(wxCommandEvent& e);
 	void onBtnClearFilter(wxCommandEvent& e);
+	void onGridSizeChanged(wxCommandEvent& e);
+	void onGridSnapChanged(wxCommandEvent& e);
 };
 } // namespace slade::texeditor

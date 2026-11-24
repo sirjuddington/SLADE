@@ -67,6 +67,10 @@ public:
 	void      cancelDrag();
 	bool      showGrid() const { return show_grid_; }
 	void      showGrid(bool show = true) { show_grid_ = show; }
+	Vec2i     gridSize() const { return grid_size_; }
+	void      setGridSize(Vec2i size);
+	bool      snapToGrid() const { return grid_snap_; }
+	void      snapToGrid(bool snap);
 	void      setBlendRGBA(bool rgba) { blend_rgba_ = rgba; }
 	bool      blendRGBA() const { return blend_rgba_; }
 	bool      applyTexScale() const { return tex_scale_; }
@@ -129,6 +133,7 @@ protected:
 
 	bool  show_grid_ = false;
 	Vec2i grid_size_ = { 8, 8 };
+	bool  grid_snap_ = false;
 
 	bool  draw_outside_ = true;
 	bool  blend_rgba_   = false;

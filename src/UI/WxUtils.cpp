@@ -229,26 +229,38 @@ wxSizer* wxutil::createDialogButtonBox(wxWindow* parent, const string& text_ok, 
 wxSizer* wxutil::createSectionSeparator(wxWindow* parent, const string& text)
 {
 	auto hbox = new wxBoxSizer(wxHORIZONTAL);
+
 	hbox->Add(
 		new wxStaticText(parent, -1, wxString::FromUTF8(text)),
 		wxSizerFlags().CenterVertical().Border(wxRIGHT, ui::pad(parent)));
+	hbox->Add(createSeparator(parent), wxSizerFlags(1).CenterVertical());
 
-	wxWindow* separator = nullptr;
+	return hbox;
+}
+
+// -----------------------------------------------------------------------------
+// Creates a separator (line) widget, either vertical or horizontal depending
+// on [vertical]
+// -----------------------------------------------------------------------------
+wxWindow* wxutil::createSeparator(wxWindow* parent, bool vertical)
+{
+	wxWindow* separator;
 	if (app::platform() == app::Windows && app::isDarkTheme())
 	{
 		// Use a custom separator on windows dark mode as wxStaticLine is way
 		// too bright
+		auto  size = vertical ? wxSize(1, -1) : wxSize(-1, 1);
 		auto* line = new wxPanel(parent);
-		line->SetMinSize(parent->FromDIP(wxSize{ -1, 1 }));
-		line->SetMaxSize(wxSize{ -1, parent->FromDIP(1) });
+		line->SetMinSize(parent->FromDIP(size));
+		line->SetMaxSize(parent->FromDIP(size));
 		line->SetBackgroundColour(lightColour(systemPanelBGColour(), 5.0f));
 		separator = line;
 	}
 	else
-		separator = new wxStaticLine(parent);
+		separator = new wxStaticLine(
+			parent, -1, wxDefaultPosition, wxDefaultSize, vertical ? wxLI_VERTICAL : wxLI_HORIZONTAL);
 
-	hbox->Add(separator, wxSizerFlags(1).CenterVertical());
-	return hbox;
+	return separator;
 }
 
 // -----------------------------------------------------------------------------

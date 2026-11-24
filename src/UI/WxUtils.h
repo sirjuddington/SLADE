@@ -17,7 +17,8 @@ wxSizer* createLabelVBox(wxWindow* parent, const string& label, wxSizer* sizer);
 wxSizer* createDialogButtonBox(wxButton* btn_ok, wxButton* btn_cancel);
 wxSizer* createDialogButtonBox(wxWindow* parent, const string& text_ok = "OK", const string& text_cancel = "Cancel");
 
-wxSizer* createSectionSeparator(wxWindow* parent, const string& text);
+wxSizer*  createSectionSeparator(wxWindow* parent, const string& text);
+wxWindow* createSeparator(wxWindow* parent, bool vertical = false);
 
 // Strings
 wxArrayString arrayString(const vector<wxString>& vector);

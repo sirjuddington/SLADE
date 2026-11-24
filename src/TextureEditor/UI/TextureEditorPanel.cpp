@@ -57,6 +57,7 @@
 #include "TexturePropGrid.h"
 #include "UI/Browser/BrowserCanvas.h"
 #include "UI/Browser/BrowserItem.h"
+#include "UI/Controls/GridControl.h"
 #include "UI/Controls/PaletteChooser.h"
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/Splitter.h"
@@ -369,6 +370,9 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	tex_browser_canvas_->Bind(
 		wxEVT_BROWSERCANVAS_SELECTION_CHANGED, &TextureEditorPanel::onTexBrowserSelectionChanged, this);
 	Bind(wxEVT_MENU, &TextureEditorPanel::onToolbarButton, this);
+	grid_control_->Bind(wxEVT_COMBOBOX, &TextureEditorPanel::onGridSizeChanged, this);
+	grid_control_->Bind(wxEVT_TEXT, &TextureEditorPanel::onGridSizeChanged, this);
+	grid_control_->Bind(wxEVT_CHECKBOX, &TextureEditorPanel::onGridSnapChanged, this);
 
 	if (patch_table_panel_)
 		patch_table_panel_->Bind(wxEVT_LISTBOX_DCLICK, &TextureEditorPanel::onPatchTableTextureDClick, this);
@@ -658,6 +662,13 @@ wxPanel* TextureEditorPanel::createTextureViewPanel(wxWindow* parent)
 	hbox->Add(panel_offsets_, wxSizerFlags().Expand());
 
 	hbox->AddStretchSpacer();
+
+	// Grid
+	grid_control_ = new ui::GridControl(panel, false, 1, 1024);
+	grid_control_->setGridSize(tex_canvas_->gridSize().x);
+	grid_control_->snapToGrid(tex_canvas_->snapToGrid());
+	hbox->Add(new wxStaticText(panel, -1, wxS("Grid:")), lh.sfWithSmallBorder(0, wxRIGHT).CenterVertical());
+	hbox->Add(grid_control_, lh.sfWithLargeBorder(0, wxRIGHT).Expand());
 
 	// Zoom
 	zc_zoom_ = new ui::ZoomControl(panel, tex_canvas_);
@@ -2213,4 +2224,21 @@ void TextureEditorPanel::onTextFilterChanged(wxCommandEvent& e)
 void TextureEditorPanel::onBtnClearFilter(wxCommandEvent& e)
 {
 	text_filter_->SetValue(wxEmptyString);
+}
+
+// -----------------------------------------------------------------------------
+// Called when the grid size control value changes
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onGridSizeChanged(wxCommandEvent& e)
+{
+	auto gs = grid_control_->gridSize();
+	tex_canvas_->setGridSize({ gs, gs });
+}
+
+// -----------------------------------------------------------------------------
+// Called when the grid snap checkbox is toggled
+// -----------------------------------------------------------------------------
+void TextureEditorPanel::onGridSnapChanged(wxCommandEvent& e)
+{
+	tex_canvas_->snapToGrid(grid_control_->snapEnabled());
 }

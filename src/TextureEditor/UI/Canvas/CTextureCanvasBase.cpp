@@ -60,6 +60,8 @@ CVAR(Bool, tx_apply_scale, true, CVar::Flag::Save)
 CVAR(Bool, tx_show_outside, true, CVar::Flag::Save)
 CVAR(Bool, tx_truecolour, true, CVar::Flag::Save)
 CVAR(Bool, tx_zoom_towards_cursor, true, CVar::Flag::Save)
+CVAR(Int, tx_grid_size, 8, CVar::Flag::Save)
+CVAR(Bool, tx_grid_snap, false, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -78,6 +80,8 @@ CTextureCanvasBase::CTextureCanvasBase(TextureEditor& editor) : editor_{ &editor
 	tex_scale_    = tx_apply_scale;
 	draw_outside_ = tx_show_outside;
 	blend_rgba_   = tx_truecolour;
+	grid_size_    = { tx_grid_size, tx_grid_size };
+	grid_snap_    = tx_grid_snap;
 
 	// Update when current editor texture is modified
 	connections_ += editor.signals().current_texture_modified.connect(
@@ -239,6 +243,31 @@ void CTextureCanvasBase::cancelDrag()
 	last_drag_offset_ = { 0, 0 };
 	refreshTexturePreview();
 	window()->Refresh();
+}
+
+// -----------------------------------------------------------------------------
+// Sets the grid size to [size], clamped to a minimum of 1x1
+// -----------------------------------------------------------------------------
+void CTextureCanvasBase::setGridSize(Vec2i size)
+{
+	if (size.x < 1)
+		size.x = 1;
+	if (size.y < 1)
+		size.y = 1;
+
+	grid_size_   = size;
+	tx_grid_size = size.x;
+
+	redraw();
+}
+
+// -----------------------------------------------------------------------------
+// Enables/disables grid snapping
+// -----------------------------------------------------------------------------
+void CTextureCanvasBase::snapToGrid(bool snap)
+{
+	grid_snap_   = snap;
+	tx_grid_snap = snap;
 }
 
 // -----------------------------------------------------------------------------
@@ -585,7 +614,7 @@ void CTextureCanvasBase::drawContent()
 	// Draw dragged patches if currently dragging a patch
 	if (dragging_ && mode_ == Mode::Edit && (drag_origin_.x >= 0 || drag_origin_.y >= 0))
 	{
-		auto offset = dragOffset(false);
+		auto offset = dragOffset(grid_snap_);
 		for (auto i : selection)
 		{
 			// Draw patch offset by drag amount
@@ -754,7 +783,7 @@ void CTextureCanvasBase::onMouseEvent(wxMouseEvent& e)
 		// If we were dragging, generate end drag event
 		if (dragging_ && drag_origin_.x >= 0 && drag_origin_.y >= 0 && mouse_pos_.x >= 0 && mouse_pos_.y >= 0)
 		{
-			last_drag_offset_ = dragOffset(false);
+			last_drag_offset_ = dragOffset(mode_ == Mode::DragOffsets ? false : grid_snap_);
 			dragging_         = false;
 			drag_on_texture_  = false;
 			refreshTexturePreview();
