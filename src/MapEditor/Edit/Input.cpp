@@ -513,10 +513,13 @@ void Input::mouseWheel(double amount)
 	// Handle 2d mode mousewheel zooming
 	if (context_->editMode() != Mode::Visual)
 	{
-		if (amount < 0)
-			context_->renderer().zoom(1.0 + (0.2 * amount), true);
-		else
-			context_->renderer().zoom(1.0 + (0.25 * amount), true);
+		if (!(alt_down_ || ctrl_down_ || shift_down_))
+		{
+			if (amount < 0)
+				context_->renderer().zoom(1.0 + (0.2 * amount), true);
+			else
+				context_->renderer().zoom(1.0 + (0.25 * amount), true);
+		}
 	}
 
 	// Accumulate mouse wheel movement, and trigger keybinds when it reaches a
