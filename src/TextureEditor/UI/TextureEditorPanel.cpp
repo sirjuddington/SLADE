@@ -425,6 +425,7 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 
 	// Reload patch browser when resources change
 	connections_ += app::resources().signals().resources_updated.connect([this] { initPatchBrowser(); });
+	connections_ += editor_->patchTable()->signals().modified.connect([this] { initPatchBrowser(); });
 
 	// Init UI
 	CallAfter(
@@ -1268,6 +1269,9 @@ void TextureEditorPanel::newTexture()
 			editor_->newTexture(list, dlg->texName(), index, dlg->texWidth(), dlg->texHeight());
 		else
 			editor_->newTexture(list, dlg->texName(), index, 0, 0, dlg->patch());
+
+		if (tex_list_browsing_)
+			populateTextureBrowser(*tex_list_browsing_);
 	}
 }
 
@@ -1322,11 +1326,18 @@ void TextureEditorPanel::newTextureFromFile()
 		editor_->undoManager()->beginRecord("New Texture from File");
 
 	// Go through file selection, import patches and create textures from each
+	bool created = false;
 	for (const auto& file : fd_info.filenames)
 		if (auto name = editor_->importPatchFile(file, list->format() != TextureXFormat::Textures); !name.empty())
+		{
 			editor_->newTexture(list, name, index < 0 ? index : index++, 0, 0, name);
+			created = true;
+		}
 
-	editor_->undoManager()->endRecord(true);
+	if (created && tex_list_browsing_)
+		populateTextureBrowser(*tex_list_browsing_);
+
+	editor_->undoManager()->endRecord(created);
 }
 
 // -----------------------------------------------------------------------------
