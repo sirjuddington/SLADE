@@ -62,6 +62,7 @@ public:
 	void      setScale(double scale);
 	void      setViewType(View type);
 	View      autoDetectViewType() const;
+	Vec2i     zoomPointForView();
 	void      drawOutside(bool draw = true) { draw_outside_ = draw; }
 	bool      isDragging() const { return dragging_; }
 	void      cancelDrag();

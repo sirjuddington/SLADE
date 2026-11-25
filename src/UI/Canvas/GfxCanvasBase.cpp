@@ -75,9 +75,11 @@ GfxCanvasBase::~GfxCanvasBase() = default;
 void GfxCanvasBase::setScale(double scale)
 {
 	if (zoom_point_.x < 0 && zoom_point_.y < 0)
-		view().setScale(scale);
-	else
-		view().setScale(scale, zoom_point_);
+		zoom_point_ = zoomPointForView();
+
+	view().setScale(scale, zoom_point_);
+
+	zoom_point_ = { -1, -1 };
 }
 
 // -----------------------------------------------------------------------------
@@ -149,6 +151,34 @@ void GfxCanvasBase::resetViewOffsets()
 		view().setOffset(0, 0);
 
 	signals_.view_reset();
+}
+
+// -----------------------------------------------------------------------------
+// Returns the zoom focus point based on the current view type, in screen coords
+// -----------------------------------------------------------------------------
+Vec2i GfxCanvasBase::zoomPointForView()
+{
+	Vec2i zoom_point;
+
+	switch (view_type_)
+	{
+	case View::Default:
+		// Default - if centered, zoom towards center of image, otherwise origin
+		if (gfx_default_centered)
+			zoom_point = view().screenPos(image_->width() / 2.0, image_->height() / 2.0);
+		else
+			zoom_point = view().screenPos(0, 0);
+		break;
+	case View::HUD:
+		// HUD - zoom towards center of HUD
+		zoom_point = view().screenPos(160, 100);
+		break;
+	default:
+		// Sprite or Tiled - zoom towards origin
+		zoom_point = view().screenPos(0, 0);
+	}
+
+	return zoom_point;
 }
 
 // -----------------------------------------------------------------------------
@@ -547,34 +577,10 @@ void GfxCanvasBase::onMouseWheel(wxMouseEvent& e)
 		if (gfx_zoom_towards_cursor && view().centered())
 			zoom_point_ = { window()->ToPhys(e.GetPosition().x), window()->ToPhys(e.GetPosition().y) };
 
-		// Otherwise, zoom towards center of view
-		else
-		{
-			switch (view_type_)
-			{
-			case View::Default:
-				// Default - if centered, zoom towards center of image, otherwise origin
-				if (gfx_default_centered)
-					zoom_point_ = view().screenPos(image_->width() / 2.0, image_->height() / 2.0);
-				else
-					zoom_point_ = view().screenPos(0, 0);
-				break;
-			case View::HUD:
-				// HUD - zoom towards center of HUD
-				zoom_point_ = view().screenPos(160, 100);
-				break;
-			default:
-				// Sprite or Tiled - zoom towards origin
-				zoom_point_ = view().screenPos(0, 0);
-			}
-		}
-
 		if (e.GetWheelRotation() > 0)
 			linked_zoom_control_->zoomIn(true);
 		else
 			linked_zoom_control_->zoomOut(true);
-
-		zoom_point_ = { -1, -1 };
 
 		signals_.view_changed();
 	}

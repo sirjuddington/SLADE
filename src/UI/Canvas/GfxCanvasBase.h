@@ -76,8 +76,9 @@ public:
 	ColRGBA paintColour() const { return paint_colour_; }
 	void    linkZoomControl(ui::ZoomControl* zoom_control) { linked_zoom_control_ = zoom_control; }
 
-	void zoomToFit(bool mag = true, double padding = 0.0f);
-	void resetViewOffsets();
+	void  zoomToFit(bool mag = true, double padding = 0.0f);
+	void  resetViewOffsets();
+	Vec2i zoomPointForView();
 
 	bool  onImage(int x, int y) const;
 	Vec2i imageCoords(int x, int y, bool allow_outside = false) const;
