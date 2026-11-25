@@ -353,6 +353,7 @@ bool entryoperations::exportEntries(const vector<ArchiveEntry*>& entries, const 
 			info, "Export Multiple Entries (Filename is ignored)", "Any File (*.*)|*", maineditor::windowWx()))
 	{
 		// Go through the selected entries
+		filedialog::MultiFileSaveSession session;
 		for (auto& entry : entries)
 		{
 			// Setup entry filename
@@ -361,16 +362,13 @@ bool entryoperations::exportEntries(const vector<ArchiveEntry*>& entries, const 
 
 			// Add file extension if it doesn't exist
 			if (!fn.hasExtension())
-			{
 				fn.setExtension(entry->type()->extension());
 
-				// ...unless a file already exists with said extension
-				if (fileutil::fileExists(fn.fullPath()))
-					fn.setExtension("");
-			}
-
-			// Do export
-			entry->exportFile(fn.fullPath());
+			// Process the filename and export if it's ok to do so
+			// (ie. the file doesn't already exist or the user has chosen to
+			// overwrite or rename)
+			if (session.processFile(fn.fullPath(), maineditor::windowWx()))
+				entry->exportFile(session.file_path);
 		}
 
 		// Go through selected dirs
@@ -2069,6 +2067,7 @@ bool entryoperations::exportEntriesAsPNG(const vector<ArchiveEntry*>& entries)
 				maineditor::windowWx()))
 		{
 			// Go through the entries
+			filedialog::MultiFileSaveSession session;
 			for (auto& entry : entries)
 			{
 				// Setup entry filename
@@ -2076,8 +2075,11 @@ bool entryoperations::exportEntriesAsPNG(const vector<ArchiveEntry*>& entries)
 				fn.setPath(info.path);
 				fn.setExtension("png");
 
-				// Do export
-				exportAsPNG(entry, fn.fullPath());
+				// Process the filename and export if it's ok to do so
+				// (ie. the file doesn't already exist or the user has chosen to
+				// overwrite or rename)
+				if (session.processFile(fn.fullPath(), maineditor::windowWx()))
+					exportAsPNG(entry, session.file_path);
 			}
 		}
 	}

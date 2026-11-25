@@ -21,6 +21,7 @@ namespace fileutil
 	string         fileHash(string_view path);
 	string         systemPath(string_view path);
 	string         sanitizeFilename(string_view filename);
+	string         ensureUniqueFilename(string_view path);
 } // namespace fileutil
 
 class SFile : public SeekableData

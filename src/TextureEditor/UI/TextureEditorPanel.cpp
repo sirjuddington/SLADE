@@ -1554,6 +1554,7 @@ void TextureEditorPanel::exportTexturesAsPNG() const
 			ui::showSplash("Saving converted image data...", true, maineditor::windowWx());
 
 			// Go through the selection
+			filedialog::MultiFileSaveSession session;
 			for (size_t a = 0; a < selection.size(); a++)
 			{
 				// Update splash window
@@ -1565,8 +1566,11 @@ void TextureEditorPanel::exportTexturesAsPNG() const
 				fn.setPath(info.path);
 				fn.setExtension("png");
 
-				// Do export
-				editor_->exportAsPNG(*selection[a], fn.fullPath(), tex_canvas_->palette(), force_rgba);
+				// Process the filename and export if it's ok to do so
+				// (ie. the file doesn't already exist or the user has chosen to
+				// overwrite or rename)
+				if (session.processFile(fn.fullPath(), maineditor::windowWx()))
+					editor_->exportAsPNG(*selection[a], session.file_path, tex_canvas_->palette(), force_rgba);
 			}
 
 			// Hide splash window

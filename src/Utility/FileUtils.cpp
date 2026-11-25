@@ -341,6 +341,31 @@ string fileutil::sanitizeFilename(string_view filename)
 	return filename_str;
 }
 
+// -----------------------------------------------------------------------------
+// Returns a unique filename based on [path].
+// If a file at [path] already exists, it will append " (1)", "(2)", etc. to the
+// filename until a unique filename is found
+// -----------------------------------------------------------------------------
+string fileutil::ensureUniqueFilename(string_view path)
+{
+	if (!fileExists(path))
+		return string{ path };
+
+	auto fn       = strutil::Path{ path };
+	auto filename = fn.fileName(false);
+
+	unsigned index = 1;
+	while (true)
+	{
+		fn.setFileName(fmt::format("{} ({})", filename, index));
+
+		if (!fileExists(fn.fullPath()))
+			return fn.fullPath();
+
+		index++;
+	}
+}
+
 
 // -----------------------------------------------------------------------------
 //

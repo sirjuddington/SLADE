@@ -34,9 +34,11 @@
 #include "Main.h"
 #include "SFileDialog.h"
 #include "App.h"
+#include "FileUtils.h"
 #include "StringUtils.h"
 #include "UI/State.h"
 #include "UI/WxUtils.h"
+#include <wx/richmsgdlg.h>
 
 using namespace slade;
 
@@ -271,25 +273,8 @@ string filedialog::saveFile(
 	string_view fn_default,
 	int         ext_default)
 {
-	// Create file dialog
-	wxFileDialog fd(
-		parent,
-		wxutil::strFromView(caption),
-		wxString::FromUTF8(ui::getStateString(ui::FILEDIALOG_LAST_DIR)),
-		wxutil::strFromView(fn_default),
-		wxutil::strFromView(extensions),
-		wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-
-	// Select default extension
-	fd.SetFilterIndex(ext_default);
-
-	// Run the dialog
-	if (fd.ShowModal() == wxID_OK)
-	{
-		auto filename = fd.GetPath().utf8_string();
-		ui::saveStateString(ui::FILEDIALOG_LAST_DIR, strutil::Path::pathOf(filename));
-		return filename;
-	}
+	if (FDInfo info; saveFile(info, caption, extensions, parent, fn_default, ext_default))
+		return info.filenames[0];
 
 	return {};
 }
@@ -388,4 +373,88 @@ string filedialog::executableFileName(string_view exe_name)
 		return string{ exe_name } + ".exe";
 	else
 		return string{ exe_name };
+}
+
+
+// -----------------------------------------------------------------------------
+//
+// MultiFileSaveSession Struct Functions
+//
+// -----------------------------------------------------------------------------
+
+
+// -----------------------------------------------------------------------------
+// Processes a file save for [filename], checking if it already exists and
+// prompting the user for action if it does. If the user chooses to overwrite or
+// rename, [file_path] will be set to the path to save the file to.
+// Returns true if the file should be saved, false if it should be skipped
+// -----------------------------------------------------------------------------
+bool filedialog::MultiFileSaveSession::processFile(string_view filename, wxWindow* parent)
+{
+	enum ExistingFileResponse
+	{
+		Overwrite,
+		OverwriteAll,
+		Rename,
+		RenameAll,
+		Skip,
+		SkipAll,
+	};
+
+	file_path = string{ filename };
+
+	// Check if file exists
+	if (!fileutil::fileExists(filename))
+		return true; // File doesn't exist, ok to continue with save
+
+	// File exists, prompt user for action
+	ExistingFileResponse response;
+	if (prev_response == OverwriteAll || prev_response == RenameAll || prev_response == SkipAll)
+		response = static_cast<ExistingFileResponse>(prev_response); // Use previous response if it was "all"
+	else
+	{
+		// Pop up a dialog to ask the user what to do
+		wxRichMessageDialog dlg(
+			parent,
+			WX_FMT(
+				"A file with the name \"{}\" already exists at the selected location.\nWhat would you like to do?",
+				strutil::Path::fileNameOf(filename)),
+			wxS("File Already Exists"),
+#ifdef __WXMSW__
+			wxYES_NO | wxCANCEL | wxICON_WARNING);
+#else
+			wxYES_NO | wxCANCEL | wxICON_QUESTION);
+#endif
+		dlg.SetYesNoCancelLabels(wxS("Overwrite"), wxS("Rename"), wxS("Skip"));
+		dlg.ShowCheckBox(wxS("Apply to All"), false);
+
+		auto result = dlg.ShowModal();
+		if (result == wxID_YES)
+			response = dlg.IsCheckBoxChecked() ? OverwriteAll : Overwrite;
+		else if (result == wxID_NO)
+			response = dlg.IsCheckBoxChecked() ? RenameAll : Rename;
+		else
+			response = dlg.IsCheckBoxChecked() ? SkipAll : Skip;
+	}
+
+	prev_response = static_cast<int>(response);
+
+	switch (response)
+	{
+	// Skip chosen - don't save this file
+	case Skip:
+	case SkipAll:
+		return false;
+
+		// Rename chosen - generate a unique filename
+	case Rename:
+	case RenameAll:
+		file_path = fileutil::ensureUniqueFilename(filename);
+		break;
+
+		// Overwrite chosen - do nothing, just continue with save
+	default: break;
+	}
+
+	return true;
 }

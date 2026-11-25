@@ -73,4 +73,18 @@ string openDirectory(string_view caption, wxWindow* parent = nullptr);
 
 string executableExtensionString();
 string executableFileName(string_view exe_name);
+
+// A helper for saving multiple files in a single session, which handles
+// checking if the file already exists and prompting the user for action.
+//
+// For each file to be saved, call processFile() with the filename.
+// If it returns true, the file should be saved to the path in [file_path].
+// If it returns false, the file should not be saved (the user chose to skip it)
+struct MultiFileSaveSession
+{
+	string file_path;
+	int    prev_response = -1;
+
+	bool processFile(string_view filename, wxWindow* parent = nullptr);
+};
 } // namespace slade::filedialog
