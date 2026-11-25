@@ -294,6 +294,10 @@ void MoveObjects::end(bool accept)
 		// Do merge
 		bool merge = context_->map().mergeArch(moved_verts);
 
+		// Clear selection if anything was merged
+		if (merge)
+			context_->selection().clear();
+
 		context_->endUndoRecord(merge || !map_merge_undo_step);
 	}
 
