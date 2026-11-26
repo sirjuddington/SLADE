@@ -29,6 +29,7 @@ public:
 
 	const vector<unique_ptr<CTexture>>& textures() const { return textures_; }
 	uint32_t                            size() const { return textures_.size(); }
+	const vector<string>&               includes() const { return includes_; }
 
 	CTexture*      texture(size_t index) const;
 	CTexture*      texture(string_view name) const;
@@ -51,7 +52,7 @@ public:
 	bool readTEXTUREXData(const ArchiveEntry* texturex, const PatchTable& patch_table, bool add = false);
 	bool writeTEXTUREXData(ArchiveEntry* texturex, const PatchTable& patch_table) const;
 
-	bool readTEXTURESData(const ArchiveEntry* textures);
+	bool readTEXTURESData(const ArchiveEntry* textures, bool add = false);
 	bool writeTEXTURESData(ArchiveEntry* textures) const;
 
 	bool convertToTEXTURES();
@@ -63,5 +64,6 @@ private:
 	vector<unique_ptr<CTexture>> textures_;
 	TextureXFormat               txformat_ = TextureXFormat::Normal;
 	unique_ptr<CTexture>         tex_invalid_;
+	vector<string>               includes_;
 };
 } // namespace slade

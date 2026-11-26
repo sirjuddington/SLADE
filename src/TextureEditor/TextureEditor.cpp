@@ -39,8 +39,8 @@
 #include "Archive/EntryType/EntryType.h"
 #include "General/Clipboard.h"
 #include "General/Misc.h"
-#include "General/UndoRedo.h"
 #include "General/ResourceManager.h"
+#include "General/UndoRedo.h"
 #include "Graphics/CTexture/CTexture.h"
 #include "Graphics/CTexture/PatchTable.h"
 #include "Graphics/CTexture/TextureXList.h"
@@ -155,6 +155,35 @@ TextureEditor::TextureEditor(shared_ptr<Archive> archive) : archive_{ archive }
 		if (auto tx_list = std::make_unique<TextureXList>(); tx_list->readTEXTURESData(entry))
 			texturex_entries_.emplace_back(
 				TextureXEntry{ .entry = entry->getShared(), .texturex = std::move(tx_list) });
+	}
+
+	// Open any #included TEXTURES entries
+	for (auto i = 0; i < texturex_entries_.size(); ++i)
+	{
+		const auto& tx = texturex_entries_[i];
+
+		if (tx.texturex->format() != TextureXFormat::Textures)
+			continue;
+
+		for (auto inc_path : tx.texturex->includes())
+		{
+			// Find the included entry
+			auto inc_entry = archive_->entryAtPath(inc_path);
+			if (!inc_entry)
+				continue;
+
+			// Check if we already have it open
+			if (std::ranges::any_of(
+					texturex_entries_, [&](const auto& e) { return e.entry.lock().get() == inc_entry; }))
+				continue;
+
+			// Try to read it as a TEXTURES entry
+			if (auto inc_list = std::make_unique<TextureXList>(); inc_list->readTEXTURESData(inc_entry))
+				texturex_entries_.emplace_back(
+					TextureXEntry{ .entry = inc_entry->getShared(), .texturex = std::move(inc_list) });
+			else
+				log::warning("Failed to read included TEXTURES entry {}.", inc_entry->name());
+		}
 	}
 
 	// Lock all opened entries
@@ -306,7 +335,8 @@ string TextureEditor::textureListName(unsigned index) const
 
 	if (auto entry = texturex_entries_[index].entry.lock(); entry)
 	{
-		string name = entry->name();
+		// Get entry path+name without leading /
+		string name = entry->path(true).substr(1);
 
 		// Remove common extensions
 		// (we want to keep other extensions, eg. TEXTURES.floors)
