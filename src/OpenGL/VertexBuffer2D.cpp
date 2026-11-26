@@ -145,7 +145,7 @@ void VertexBuffer2D::push()
 		vao_ = initVAO(buffer_);
 
 	buffer_.upload(vertices_);
-	vertices_.clear();
+	vector<Vertex2D>{}.swap(vertices_);
 }
 
 // -----------------------------------------------------------------------------

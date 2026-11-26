@@ -312,7 +312,7 @@ void LineBuffer::push(bool clear)
 	buffer_.upload(lines_);
 
 	if (clear)
-		lines_.clear();
+		vector<Line>{}.swap(lines_);
 }
 
 // -----------------------------------------------------------------------------

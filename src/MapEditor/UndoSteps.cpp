@@ -176,8 +176,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 	if (!vertices_changed)
 	{
 		// No change, clear
-		vertices_.clear();
-		vertices_.push_back(0);
+		vector<unsigned>{ 0 }.swap(vertices_);
 		log::info(3, "MapObjectCreateDeleteUS: No vertices added/deleted");
 	}
 
@@ -195,8 +194,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 	if (!lines_changed)
 	{
 		// No change, clear
-		lines_.clear();
-		lines_.push_back(0);
+		vector<unsigned>{ 0 }.swap(lines_);
 		log::info(3, "MapObjectCreateDeleteUS: No lines added/deleted");
 	}
 
@@ -214,8 +212,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 	if (!sides_changed)
 	{
 		// No change, clear
-		sides_.clear();
-		sides_.push_back(0);
+		vector<unsigned>{ 0 }.swap(sides_);
 		log::info(3, "MapObjectCreateDeleteUS: No sides added/deleted");
 	}
 
@@ -233,8 +230,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 	if (!sectors_changed)
 	{
 		// No change, clear
-		sectors_.clear();
-		sectors_.push_back(0);
+		vector<unsigned>{ 0 }.swap(sectors_);
 		log::info(3, "MapObjectCreateDeleteUS: No sectors added/deleted");
 	}
 
@@ -252,8 +248,7 @@ void MapObjectCreateDeleteUS::checkChanges()
 	if (!things_changed)
 	{
 		// No change, clear
-		things_.clear();
-		things_.push_back(0);
+		vector<unsigned>{ 0 }.swap(things_);
 		log::info(3, "MapObjectCreateDeleteUS: No things added/deleted");
 	}
 }

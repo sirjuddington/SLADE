@@ -149,7 +149,7 @@ void PointSpriteBuffer::push()
 		initVAO();
 
 	buffer_.upload(sprites_);
-	sprites_.clear();
+	vector<PointSprite>{}.swap(sprites_);
 }
 
 // -----------------------------------------------------------------------------

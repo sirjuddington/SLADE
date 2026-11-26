@@ -78,7 +78,7 @@ void SpriteBuffer3D::push(bool clear)
 	buffer_sprites_->upload(sprites_);
 
 	if (clear)
-		sprites_.clear();
+		vector<Instance>{}.swap(sprites_);
 }
 
 // -----------------------------------------------------------------------------

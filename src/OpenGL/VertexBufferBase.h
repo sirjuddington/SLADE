@@ -34,7 +34,7 @@ public:
 
 		buffer_.upload(vertices_);
 		if (clear)
-			vertices_.clear();
+			vector<T>{}.swap(vertices_);
 	}
 
 	bool pull()

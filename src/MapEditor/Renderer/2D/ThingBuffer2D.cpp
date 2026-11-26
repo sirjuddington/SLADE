@@ -218,7 +218,7 @@ void ThingBuffer2D::push()
 		initVAO();
 
 	buffer_things_->upload(things_);
-	things_.clear();
+	vector<ThingInstance>{}.swap(things_);
 }
 
 // -----------------------------------------------------------------------------
