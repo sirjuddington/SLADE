@@ -1,6 +1,5 @@
 name: Bug Report
 description: File a bug report
-labels: ["bug"]
 type: bug
 body:
   - type: markdown
@@ -15,7 +14,7 @@ body:
     attributes:
       label: SLADE Version
       description: "The version displayed in Help→About. Please add the commit hash if you have compiled SLADE yourself."
-      placeholder: "3.2.5"
+      placeholder: "3.3.0"
     validations:
       required: true
   - type: dropdown
