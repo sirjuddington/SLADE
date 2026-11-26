@@ -1,5 +1,6 @@
 name: Other Issue
 description: Any other issue that doesn't fit the other options
+type: task
 body:
   - type: input
     id: version
