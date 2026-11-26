@@ -124,6 +124,38 @@ endif ()
 
 set_target_properties(slade PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
 
+if (BUILD_MAP_SCRIPT_CLI AND NOT NO_LUA)
+	set(SLADE_MAP_SCRIPT_SOURCES ${SLADE_SOURCES})
+	list(FILTER SLADE_MAP_SCRIPT_SOURCES INCLUDE REGEX "\\.cpp$")
+	list(APPEND SLADE_MAP_SCRIPT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/CLI/MapScriptCli.cpp")
+
+	add_executable(slade-map-script EXCLUDE_FROM_ALL ${SLADE_MAP_SCRIPT_SOURCES})
+	target_compile_definitions(slade-map-script PRIVATE SLADE_MAP_SCRIPT_CLI)
+	target_link_libraries(slade-map-script
+		${ZLIB_LIBRARY}
+		${BZIP2_LIBRARIES}
+		${EXTERNAL_LIBRARIES}
+		${wxWidgets_LIBRARIES}
+		${SFML_LIBRARIES}
+		${FREETYPE_LIBRARIES}
+		${OPENGL_LIBRARIES}
+		${MPG123_LIBRARIES}
+		${FLUIDSYNTH_LIBRARIES}
+		glm::glm
+		cpptrace::cpptrace
+		PNG::PNG
+		libxmp::xmp_shared
+		LibArchive::LibArchive
+	)
+
+	if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION LESS 9)
+		target_link_libraries(slade-map-script -lstdc++fs)
+	endif ()
+
+	set_target_properties(slade-map-script PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${SLADE_OUTPUT_DIR})
+	target_precompile_headers(slade-map-script PRIVATE "Application/Main.h")
+endif ()
+
 # TODO: Installation targets for APPLE
 if (APPLE)
 	set_target_properties(slade PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${OSX_PLIST})

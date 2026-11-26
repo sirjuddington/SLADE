@@ -3,8 +3,15 @@
 class wxWebRequestEvent;
 class wxSingleInstanceChecker;
 class MainAppFileListener;
+class wxWindow;
 
-class SLADEWxApp : public wxApp
+#ifdef SLADE_MAP_SCRIPT_CLI
+using SLADEWxAppBase = wxAppConsole;
+#else
+using SLADEWxAppBase = wxApp;
+#endif
+
+class SLADEWxApp : public SLADEWxAppBase
 {
 public:
 	SLADEWxApp();
@@ -12,12 +19,24 @@ public:
 
 	bool isSessionEnding() const { return session_ending_; }
 
+#ifdef SLADE_MAP_SCRIPT_CLI
+	// Some shared source files refer to these wxApp GUI helpers. The CLI never
+	// creates windows, but retaining no-op forms lets it share the core without
+	// initializing a GUI toolkit.
+	bool      IsActive() const { return false; }
+	void      SetTopWindow(wxWindow*) {}
+	wxWindow* GetTopWindow() const { return nullptr; }
+#endif
+
 	bool OnInit() override;
 	int  OnExit() override;
+#ifdef SLADE_MAP_SCRIPT_CLI
+	int OnRun() override;
+#endif
 	void OnFatalException() override;
 	bool OnExceptionInMainLoop() override;
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(SLADE_MAP_SCRIPT_CLI)
 	virtual void MacOpenFile(const wxString& fileName) override;
 #endif // __APPLE__
 

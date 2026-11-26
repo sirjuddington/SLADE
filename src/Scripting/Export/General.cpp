@@ -297,10 +297,12 @@ static void registerColourType(lua_State* lua)
 void registerMiscTypes(lua_State* lua)
 {
 	// Point type
-	luabridge::getGlobalNamespace(lua)
-		.beginClass<Vec2d>("Point")
-		.addProperty("x", &Vec2d::x, &Vec2d::x)
-		.addProperty("y", &Vec2d::y, &Vec2d::y);
+	auto lua_point = luabridge::getGlobalNamespace(lua).beginClass<Vec2d>("Point");
+	lua_point.addConstructor<void(), void(double, double)>();
+	lua_point.addStaticFunction(
+		"new", [] { return Vec2d{ 0.0, 0.0 }; }, [](double x, double y) { return Vec2d{ x, y }; });
+	lua_point.addProperty("x", &Vec2d::x, &Vec2d::x);
+	lua_point.addProperty("y", &Vec2d::y, &Vec2d::y);
 
 	// Colour type
 	registerColourType(lua);

@@ -22,6 +22,8 @@ namespace app
 	Archive*         programResource();
 
 	bool init(const vector<string>& args);
+	bool initHeadless();
+	void exitHeadless();
 	void saveConfiguration();
 	void exit(bool save_config);
 	void handleException();

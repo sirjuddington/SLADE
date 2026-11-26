@@ -275,10 +275,17 @@ bool initDirectories()
 	{
 		// Setup standard user/data dirs
 #ifdef __WXGTK__
+	#ifdef SLADE_MAP_SCRIPT_CLI
+	// wxTheApp downcasts to wxApp in a GUI-enabled wxWidgets build, but the
+	// command-line target deliberately derives from wxAppConsole.
+	const auto app_name = wxAppConsole::GetInstance()->GetAppName();
+	#else
+	const auto app_name = wxTheApp->GetAppName();
+	#endif
 		dir_user = wxStandardPaths::Get()
 					   .GetUserConfigDir()
 					   .Append(wxString::FromUTF8(dir_separator))
-					   .Append(wxTheApp->GetAppName())
+					   .Append(app_name)
 					   .utf8_string();
 #else
 		dir_user = wxStandardPaths::Get().GetUserDataDir().utf8_string();
@@ -789,6 +796,74 @@ bool app::init(const vector<string>& args)
 		ui::popupWhatsNewDialog(maineditor::windowWx(), version().toString(false));
 
 	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Initialises the non-UI services required by command-line tools.
+// -----------------------------------------------------------------------------
+bool app::initHeadless()
+{
+	// Get the id of the current thread (should be the main one)
+	main_thread_id = std::this_thread::get_id();
+
+	// Set numeric locale to C so that the tokenizer will work properly
+	// even in locales where the decimal separator is a comma.
+	wxSetlocale(LC_NUMERIC, "C");
+
+	if (!initDirectories())
+		return false;
+
+	log::init();
+	log::info("Initialising headless mode");
+
+	// Configuration is needed for selecting the game/port definitions used when
+	// maps are read and written.
+	readConfigFile();
+
+	EntryDataFormat::initBuiltinFormats();
+	EntryType::initTypes();
+
+	archive_manager.init();
+	if (!archive_manager.resArchiveOK())
+	{
+		log::error("Unable to find slade.pk3");
+		return false;
+	}
+
+	EntryType::loadEntryTypes();
+	TextLanguage::loadLanguages();
+	game::init();
+
+#ifndef NO_LUA
+	if (!scripting::init())
+		return false;
+#endif
+
+	init_ok = true;
+	return true;
+}
+
+// -----------------------------------------------------------------------------
+// Cleans up services initialised by initHeadless(). Unlike app::exit(), this
+// does not write user configuration or interact with the GUI.
+// -----------------------------------------------------------------------------
+void app::exitHeadless()
+{
+	// Match app::exit(): static resource destructors must not access services
+	// which are being torn down during process shutdown.
+	exiting = true;
+
+	if (!init_ok)
+		return;
+
+	game::cleanup();
+	archive_manager.closeAll(true);
+
+#ifndef NO_LUA
+	scripting::close();
+#endif
+
+	init_ok = false;
 }
 
 // -----------------------------------------------------------------------------
