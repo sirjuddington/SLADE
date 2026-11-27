@@ -931,11 +931,7 @@ void ArchiveManager::removeBaseResourcePath(unsigned index)
 // -----------------------------------------------------------------------------
 string ArchiveManager::getBaseResourcePath(unsigned index)
 {
-	// Check index
-	if (index >= base_resource_paths_.size())
-		return "INVALID INDEX";
-
-	return base_resource_paths_[index];
+	return index >= base_resource_paths_.size() ? "" : base_resource_paths_[index];
 }
 
 // -----------------------------------------------------------------------------
