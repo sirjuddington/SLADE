@@ -47,7 +47,7 @@ public:
 	void undo();
 	void redo();
 
-	void saveAll() const;
+	bool saveAll() const;
 	bool close();
 
 private:
@@ -136,6 +136,8 @@ private:
 	void exportTexturesToEntries() const;
 	void exportTexturesAsPNG() const;
 	void modifyTextureOffsets();
+
+	bool checkDuplicates(bool notify_no_issues) const;
 
 	// SActionHandler
 	bool handleAction(string_view id) override;

@@ -60,6 +60,7 @@ TextureEditorSettingsPanel::TextureEditorSettingsPanel(wxWindow* parent) : Setti
 	// Add controls to settings table
 	settings_general_->addCheckBox("Show patch info text on hover", "tx_hover_info");
 	settings_general_->addCheckBox("Zoom towards cursor when using mouse wheel", "tx_zoom_towards_cursor");
+	settings_general_->addCheckBox("Check for duplicate texture/patch names on save", "txed_check_on_save");
 }
 
 // -----------------------------------------------------------------------------

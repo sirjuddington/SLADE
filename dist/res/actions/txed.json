@@ -190,5 +190,10 @@
     "help_text": "Show patch info text on hover",
     "type": "check",
     "linked_cvar": "tx_hover_info"
+  },
+  "txed_check_duplicates": {
+    "text": "Check for Duplicates",
+    "icon": "check_duplicates",
+    "help_text": "Check for duplicate texture and patch names"
   }
 }

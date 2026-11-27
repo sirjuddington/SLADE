@@ -105,6 +105,10 @@ public:
 	void removePatchFromTable(unsigned index) const;
 	void replacePatchInTable(unsigned index, string_view newname) const;
 
+	// Checks
+	string checkDuplicateTextureNames() const;
+	string checkDuplicatePatchNames() const;
+
 	struct Signals
 	{
 		// Texture modified (not the current texture)

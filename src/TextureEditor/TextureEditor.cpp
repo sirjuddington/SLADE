@@ -1635,6 +1635,61 @@ void TextureEditor::replacePatchInTable(unsigned index, string_view newname) con
 }
 
 // -----------------------------------------------------------------------------
+// Checks for duplicate texture names across all texture lists, returning a
+// string describing any duplicates found (or an empty string if none are found)
+// -----------------------------------------------------------------------------
+string TextureEditor::checkDuplicateTextureNames() const
+{
+	std::map<string, vector<CTexture*>> texture_map;
+
+	for (auto& tx : texturex_entries_)
+		if (auto texturex = tx.texturex.get())
+			for (auto& tex : texturex->textures())
+				texture_map[strutil::upper(tex->name())].push_back(tex.get());
+
+	string duplicates;
+	for (const auto& [name, appearances] : texture_map)
+	{
+		if (appearances.size() > 1)
+		{
+			std::map<TextureXList*, int> list_counts;
+			for (auto& tex : appearances)
+				list_counts[tex->list()]++;
+
+			duplicates += fmt::format("Texture \"{}\" is duplicated {} times:\n  Appears in", name, appearances.size());
+			for (const auto& [list, count] : list_counts)
+				duplicates += fmt::format(" {} {} time(s), ", textureListName(*list), count);
+			duplicates.pop_back();
+			duplicates.pop_back();
+			duplicates += "\n";
+		}
+	}
+
+	return duplicates;
+}
+
+// -----------------------------------------------------------------------------
+// Checks for duplicate patch names in the patch table, returning a string
+// describing any duplicates found (or an empty string if none are found)
+// -----------------------------------------------------------------------------
+string TextureEditor::checkDuplicatePatchNames() const
+{
+	if (!patch_table_ || patch_table_->nPatches() == 0)
+		return "";
+
+	std::map<string, int> patch_counts;
+	for (unsigned a = 0; a < patch_table_->nPatches(); a++)
+		patch_counts[strutil::upper(patch_table_->patch(a).name)]++;
+
+	string duplicates;
+	for (const auto& [name, count] : patch_counts)
+		if (count > 1)
+			duplicates += fmt::format("Patch \"{}\" appears in the patch table {} times\n", name, count);
+
+	return duplicates;
+}
+
+// -----------------------------------------------------------------------------
 // Static function to check if an [archive] has sufficient texture related
 // entries, and if not, prompts the user to either create or import them.
 // Returns true if the entries exist (or were created), false otherwise

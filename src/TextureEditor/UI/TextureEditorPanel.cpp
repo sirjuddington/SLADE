@@ -62,6 +62,7 @@
 #include "UI/Controls/SIconButton.h"
 #include "UI/Controls/Splitter.h"
 #include "UI/Controls/ZoomControl.h"
+#include "UI/Dialogs/ExtMessageDialog.h"
 #include "UI/Dialogs/GfxConvDialog.h"
 #include "UI/Dialogs/ModifyOffsetsDialog.h"
 #include "UI/Layout.h"
@@ -84,6 +85,7 @@ using namespace texeditor;
 //
 // -----------------------------------------------------------------------------
 CVAR(Bool, txed_show_filter, false, CVar::Flag::Save)
+CVAR(Bool, txed_check_on_save, true, CVar::Flag::Save)
 
 
 // -----------------------------------------------------------------------------
@@ -325,6 +327,10 @@ TextureEditorPanel::TextureEditorPanel(wxWindow* parent, shared_ptr<Archive> arc
 	SAction::fromId("txed_patch_forward")->addToMenu(menu_patch);
 	SAction::fromId("txed_patch_duplicate")->addToMenu(menu_patch);
 	menu_texture_->AppendSubMenu(menu_patch, wxS("&Patch"));
+	menu_texture_->AppendSeparator();
+	auto menu_checks = new wxMenu();
+	SAction::fromId("txed_check_duplicates")->addToMenu(menu_checks);
+	menu_texture_->AppendSubMenu(menu_checks, wxS("&Checks"))->SetBitmap(icons::getIcon(icons::Type::General, "tick"));
 
 	auto sizer = new wxBoxSizer(wxHORIZONTAL);
 	SetSizer(sizer);
@@ -492,12 +498,34 @@ void TextureEditorPanel::redo()
 }
 
 // -----------------------------------------------------------------------------
-// Saves all texture lists and the patch table (if modified)
+// Saves all texture lists and the patch table (if modified).
+// Returns false if the save operation was cancelled by the user
 // -----------------------------------------------------------------------------
-void TextureEditorPanel::saveAll() const
+bool TextureEditorPanel::saveAll() const
 {
+	// Check for any issues before saving if needed
+	if (txed_check_on_save)
+	{
+		// Check for duplicate texture/patch names
+		if (checkDuplicates(false))
+		{
+			auto result = wxMessageBox(
+				wxS("Duplicate texture/patch names were found. Save anyway?"),
+				wxS("Duplicate Names Found"),
+				wxYES_NO | wxCANCEL | wxICON_QUESTION,
+				maineditor::windowWx());
+
+			if (result == wxNO)
+				return true;
+			else if (result == wxCANCEL)
+				return false;
+		}
+	}
+
 	editor_->saveAll();
 	textures_tree_view_->Refresh();
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -518,7 +546,7 @@ bool TextureEditorPanel::close()
 			this);
 
 		if (result == wxYES)
-			saveAll(); // User selected to save
+			return saveAll(); // User selected to save
 		else if (result == wxCANCEL)
 			return false; // User selected cancel, don't close the editor
 	}
@@ -1611,6 +1639,41 @@ void TextureEditorPanel::modifyTextureOffsets()
 }
 
 // -----------------------------------------------------------------------------
+// Checks for duplicate texture and patch names, showing a message box if any
+// are found.
+// If [notify_no_issues] is true, a message box will still be shown even if no
+// duplicates are found.
+// Returns true if any duplicates were found, false otherwise.
+// -----------------------------------------------------------------------------
+bool TextureEditorPanel::checkDuplicates(bool notify_no_issues) const
+{
+	string issues;
+	issues += editor_->checkDuplicateTextureNames();
+	issues += editor_->checkDuplicatePatchNames();
+
+	if (issues.empty())
+	{
+		if (notify_no_issues)
+		{
+			wxMessageBox(
+				wxS("No duplicate texture or patch names were found."),
+				wxS("Duplicate Texture/Patch Names"),
+				wxOK | wxICON_INFORMATION);
+		}
+
+		return false;
+	}
+
+	ExtMessageDialog dlg(maineditor::windowWx(), "Duplicate Texture/Patch Names");
+	dlg.setMessage("The following duplicate texture/patch names were found:");
+	dlg.setExt(issues);
+	dlg.CenterOnParent();
+	dlg.ShowModal();
+
+	return true;
+}
+
+// -----------------------------------------------------------------------------
 // Handles the SAction [id]. Returns true if handled
 // -----------------------------------------------------------------------------
 bool TextureEditorPanel::handleAction(string_view id)
@@ -1702,6 +1765,9 @@ bool TextureEditorPanel::handleAction(string_view id)
 
 	else if (id == "txed_offsets")
 		modifyTextureOffsets();
+
+	else if (id == "txed_check_duplicates")
+		checkDuplicates(true);
 
 	else
 		return false; // Not handled
