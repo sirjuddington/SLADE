@@ -70,14 +70,6 @@ if (APPLE)
 	set_source_files_properties(${OSX_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 endif (APPLE)
 
-# Enable SSE instructions for dumb library
-include(CheckCCompilerFlag)
-check_c_compiler_flag(-msse HAVE_SSE)
-if (HAVE_SSE)
-	add_compile_options(-msse)
-	add_definitions(-D_USE_SSE)
-endif ()
-
 # Define a SLADE_DEBUG macro
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -DSLADE_DEBUG")
 
