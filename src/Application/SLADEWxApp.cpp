@@ -419,6 +419,12 @@ int SLADEWxApp::OnExit()
 void SLADEWxApp::OnFatalException()
 {
 #ifndef _DEBUG
+	// Avoid re-entrancy
+	static bool handling_fatal_exception = false;
+	if (handling_fatal_exception)
+		return;
+	handling_fatal_exception = true;
+
 	dynamic_cast<ui::CrashReportDialog*>(crash_dialog_)
 		->loadFromCpptrace(cpptrace::generate_trace(), currentExceptionInfo());
 	crash_dialog_->CenterOnParent();

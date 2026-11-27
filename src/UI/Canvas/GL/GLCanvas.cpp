@@ -108,10 +108,7 @@ void GLCanvas::setupMousePanning()
 bool GLCanvas::activateContext()
 {
 	if (auto* context = gl::getContext(this))
-	{
-		context->SetCurrent(*this);
-		return true;
-	}
+		return context->SetCurrent(*this);
 
 	return false;
 }
