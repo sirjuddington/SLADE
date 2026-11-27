@@ -13,3 +13,9 @@ To get the stack trace, simply click the 'Copy Stack Trace' button.
 ### Feature Requests
 
 If you have a feature request, first make sure that it hasn't already been [requested](https://github.com/sirjuddington/SLADE/issues?q=is%3Aopen+is%3Aissue+label%3A%22feature+request%22), and that it is not already a [planned feature](https://github.com/sirjuddington/SLADE/wiki/Planned-Features).
+
+### Code Contributions & AI
+
+**Code contributions generated via AI will not be accepted.**
+
+I am fine with usage of AI to help understand the codebase (it has grown quite a lot over time and some of its organization could be better for sure) or to help with some kinds of tedious/manual work, in these cases please disclose what AI was used for in the pull request for review.
