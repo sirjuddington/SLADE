@@ -153,6 +153,14 @@ ThingBuffer2D::ThingBuffer2D()
 }
 
 // -----------------------------------------------------------------------------
+// ThingBuffer2D class destructor
+// -----------------------------------------------------------------------------
+ThingBuffer2D::~ThingBuffer2D()
+{
+	gl::deleteVAO(vao_);
+}
+
+// -----------------------------------------------------------------------------
 // Sets up the buffer for a thing type, using the type's properties
 // -----------------------------------------------------------------------------
 void ThingBuffer2D::setup(const game::ThingType& type)

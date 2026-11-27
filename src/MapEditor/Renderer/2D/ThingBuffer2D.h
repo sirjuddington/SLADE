@@ -16,7 +16,7 @@ namespace gl
 	{
 	public:
 		ThingBuffer2D();
-		~ThingBuffer2D() = default;
+		~ThingBuffer2D();
 
 		const glm::vec4& colour() const { return colour_; }
 		float            radius() const { return radius_; }
