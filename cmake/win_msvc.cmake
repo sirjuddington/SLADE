@@ -110,3 +110,29 @@ target_link_libraries(slade
 	LibArchive::LibArchive
 	FluidSynth::libfluidsynth
 )
+
+if (BUILD_MAP_SCRIPT_CLI AND NOT NO_LUA)
+	set(SLADE_MAP_SCRIPT_SOURCES ${SLADE_SOURCES})
+	list(FILTER SLADE_MAP_SCRIPT_SOURCES INCLUDE REGEX "\\.cpp$")
+	list(APPEND SLADE_MAP_SCRIPT_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/CLI/MapScriptCli.cpp")
+
+	add_executable(slade-map-script EXCLUDE_FROM_ALL ${SLADE_MAP_SCRIPT_SOURCES})
+	target_compile_definitions(slade-map-script PRIVATE SLADE_MAP_SCRIPT_CLI)
+	set_target_properties(slade-map-script PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/${SLADE_EXE_DIR}")
+	target_precompile_headers(slade-map-script PRIVATE "Application/Main.h")
+	target_link_libraries(slade-map-script
+		${BZIP2_LIBRARIES}
+		${EXTERNAL_LIBRARIES}
+		${FREETYPE_LIBRARIES}
+		${OPENGL_LIBRARIES}
+		${SFML_LIBRARIES}
+		${WX_LIBS}
+		${ZLIB_LIBRARY}
+		MPG123::libmpg123
+		glm::glm
+		cpptrace::cpptrace
+		libxmp::xmp_static
+		LibArchive::LibArchive
+		FluidSynth::libfluidsynth
+	)
+endif ()

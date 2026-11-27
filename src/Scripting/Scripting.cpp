@@ -282,7 +282,13 @@ template<class T> static bool runEditorScript(const string& script, T param)
 		auto exec_func = luabridge::LuaRef::fromStack(lua);
 		if (exec_func.isFunction())
 		{
-			exec_func(param);
+			const auto result = exec_func(param);
+			if (!result)
+			{
+				processError("Runtime", result.errorMessage());
+				logError(script_error);
+				success = false;
+			}
 		}
 		else
 		{
@@ -437,6 +443,23 @@ bool scripting::runFile(const string& filename)
 	if (fileutil::readFileToString(filename, script))
 		return run(script);
 
+	return false;
+}
+
+// -----------------------------------------------------------------------------
+// Runs a map editor script from a text file [filename]
+// -----------------------------------------------------------------------------
+bool scripting::runMapScriptFile(const string& filename, SLADEMap* map)
+{
+	string script;
+
+	if (fileutil::readFileToString(filename, script))
+		return runMapScript(script, map);
+
+	script_error.type    = "IO";
+	script_error.message = fmt::format("Unable to read script file '{}'", filename);
+	script_error.line_no = -1;
+	logError(script_error);
 	return false;
 }
 

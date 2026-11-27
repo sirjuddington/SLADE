@@ -16,6 +16,7 @@ jobs:
           - name: "Linux GCC"
             os: ubuntu-24.04
             build_wx33: true
+            run_map_script_cli: true
             shell: bash
             extra_options: "-DCMAKE_BUILD_TYPE=RelWithDebInfo -DWITH_WXPATH=./wxWidgets/build-cmake"
             package_name: "linux_gcc"
@@ -61,12 +62,16 @@ jobs:
       - name: Configure
         run: |
           mkdir build
-          cmake -G Ninja -B build ${{ matrix.config.extra_options }} .
+          cmake -G Ninja -B build -DBUILD_MAP_SCRIPT_CLI_TESTS=ON ${{ matrix.config.extra_options }} .
 
       - name: Build
         run: |
           export MAKEFLAGS=--keep-going
           cmake --build build
+
+      - name: Run map-script CLI regression
+        if: ${{ matrix.config.run_map_script_cli }}
+        run: cmake --build build --target check-map-script-cli
 
       - name: Install (for AppImage)
         run: cmake --install build --prefix AppDir/usr

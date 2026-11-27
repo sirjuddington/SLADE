@@ -29,6 +29,7 @@ markdown_extensions:
 # Documentation Pages
 nav:
 - Home: index.md
+- Map Script CLI: 'md/MapScriptCLI.md'
 - Examples:
   - Archvile Madness: 'md/Examples/ArchvileMadness.md'
   - Change Textures: 'md/Examples/ChangeTextures.md'

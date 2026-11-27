@@ -32,6 +32,9 @@
 #include "Main.h"
 #include "SLADEWxApp.h"
 #include "App.h"
+#ifdef SLADE_MAP_SCRIPT_CLI
+#include "CLI/MapScriptCli.h"
+#endif
 #include "Archive/ArchiveEntry.h"
 #include "Archive/ArchiveManager.h"
 #include "Database/Database.h"
@@ -50,31 +53,6 @@
 
 using namespace slade;
 
-
-// -----------------------------------------------------------------------------
-//
-// Variables
-//
-// -----------------------------------------------------------------------------
-namespace slade::global
-{
-string error;
-
-#ifdef GIT_DESCRIPTION
-string sc_rev = GIT_DESCRIPTION;
-#else
-string sc_rev;
-#endif
-
-#ifdef DEBUG
-bool debug = true;
-#else
-bool debug = false;
-#endif
-
-int win_version_major = 0;
-int win_version_minor = 0;
-} // namespace slade::global
 
 namespace
 {
@@ -243,7 +221,11 @@ string currentExceptionInfo()
 // SLADEWxApp Class Functions
 //
 // -----------------------------------------------------------------------------
+#ifdef SLADE_MAP_SCRIPT_CLI
+wxIMPLEMENT_APP_CONSOLE(SLADEWxApp);
+#else
 IMPLEMENT_APP(SLADEWxApp)
+#endif
 
 
 // -----------------------------------------------------------------------------
@@ -306,6 +288,14 @@ bool SLADEWxApp::singleInstanceCheck()
 // -----------------------------------------------------------------------------
 bool SLADEWxApp::OnInit()
 {
+#ifdef SLADE_MAP_SCRIPT_CLI
+#ifdef __WINDOWS__
+	SetAppName(wxS("SLADE3"));
+#else
+	SetAppName(wxS("slade3"));
+#endif
+	return true;
+#else
 	// Set application name (for wx directory stuff)
 #ifdef __WINDOWS__
 	SetAppName(wxS("SLADE3"));
@@ -386,13 +376,32 @@ bool SLADEWxApp::OnInit()
 	Bind(wxEVT_QUERY_END_SESSION, &SLADEWxApp::onEndSession, this);
 
 	return true;
+#endif
 }
+
+#ifdef SLADE_MAP_SCRIPT_CLI
+// -----------------------------------------------------------------------------
+// Runs the command-line map script workflow without entering the GUI event loop
+// -----------------------------------------------------------------------------
+int SLADEWxApp::OnRun()
+{
+	vector<string> args;
+	for (int index = 1; index < argc; ++index)
+		args.push_back(argv[index].utf8_string());
+
+	return mapscriptcli::run(args);
+}
+#endif
 
 // -----------------------------------------------------------------------------
 // Application shutdown, run when program is closed
 // -----------------------------------------------------------------------------
 int SLADEWxApp::OnExit()
 {
+#ifdef SLADE_MAP_SCRIPT_CLI
+	app::exitHeadless();
+	return wxAppConsole::OnExit();
+#else
 	wxTheClipboard->Flush(); // Need to do this so the clipboard isn't cleared when SLADE exits
 	wxSocketBase::Shutdown();
 	delete single_instance_checker_;
@@ -410,6 +419,7 @@ int SLADEWxApp::OnExit()
 #endif
 
 	return retcode;
+#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -455,7 +465,7 @@ bool SLADEWxApp::OnExceptionInMainLoop()
 	return true;
 }
 
-#ifdef __APPLE__
+#if defined(__APPLE__) && !defined(SLADE_MAP_SCRIPT_CLI)
 void SLADEWxApp::MacOpenFile(const wxString& fileName)
 {
 	theMainWindow->archiveManagerPanel()->openFile(fileName.utf8_string());

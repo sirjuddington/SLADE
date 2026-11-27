@@ -40,6 +40,7 @@ namespace scripting
 
 	bool run(const string& program);
 	bool runFile(const string& filename);
+	bool runMapScriptFile(const string& filename, SLADEMap* map);
 	bool runArchiveScript(const string& script, Archive* archive);
 	bool runEntryScript(const string& script, vector<ArchiveEntry*>& entries);
 	bool runMapScript(const string& script, SLADEMap* map);
